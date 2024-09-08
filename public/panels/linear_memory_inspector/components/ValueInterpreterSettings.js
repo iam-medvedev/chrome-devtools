@@ -18,12 +18,12 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/components/ValueInterpreterSettings.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const GROUP_TO_TYPES = new Map([
-    ["Integer" /* ValueTypeGroup.Integer */, ["Integer 8-bit" /* ValueType.Int8 */, "Integer 16-bit" /* ValueType.Int16 */, "Integer 32-bit" /* ValueType.Int32 */, "Integer 64-bit" /* ValueType.Int64 */]],
-    ["Floating point" /* ValueTypeGroup.Float */, ["Float 32-bit" /* ValueType.Float32 */, "Float 64-bit" /* ValueType.Float64 */]],
-    ["Other" /* ValueTypeGroup.Other */, ["Pointer 32-bit" /* ValueType.Pointer32 */, "Pointer 64-bit" /* ValueType.Pointer64 */]],
+    ["Integer" /* ValueTypeGroup.INTEGER */, ["Integer 8-bit" /* ValueType.INT8 */, "Integer 16-bit" /* ValueType.INT16 */, "Integer 32-bit" /* ValueType.INT32 */, "Integer 64-bit" /* ValueType.INT64 */]],
+    ["Floating point" /* ValueTypeGroup.FLOAT */, ["Float 32-bit" /* ValueType.FLOAT32 */, "Float 64-bit" /* ValueType.FLOAT64 */]],
+    ["Other" /* ValueTypeGroup.OTHER */, ["Pointer 32-bit" /* ValueType.POINTER32 */, "Pointer 64-bit" /* ValueType.POINTER64 */]],
 ]);
 function valueTypeGroupToLocalizedString(group) {
-    if (group === "Other" /* ValueTypeGroup.Other */) {
+    if (group === "Other" /* ValueTypeGroup.OTHER */) {
         return i18nString(UIStrings.otherGroup);
     }
     // The remaining group type names should not be localized.

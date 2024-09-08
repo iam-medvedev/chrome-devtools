@@ -35,8 +35,8 @@ describeWithMockConnection('StorageView', () => {
         // must be called 4 times, twice with DOMStorageRemoved for local and non-local storage and twice with DOMStorageAdded
         assert.isTrue(spyClearDataForStorageKey.calledOnce);
         assert.strictEqual(dispatcherSpy.callCount, 4);
-        sinon.assert.calledWith(dispatcherSpy, "DOMStorageRemoved" /* Resources.DOMStorageModel.Events.DOMStorageRemoved */);
-        sinon.assert.calledWith(dispatcherSpy, "DOMStorageAdded" /* Resources.DOMStorageModel.Events.DOMStorageAdded */);
+        sinon.assert.calledWith(dispatcherSpy, "DOMStorageRemoved" /* Resources.DOMStorageModel.Events.DOM_STORAGE_REMOVED */);
+        sinon.assert.calledWith(dispatcherSpy, "DOMStorageAdded" /* Resources.DOMStorageModel.Events.DOM_STORAGE_ADDED */);
     });
     it('changes subtitle on MainStorageKeyChanged event', () => {
         assert.exists(domStorageModel);

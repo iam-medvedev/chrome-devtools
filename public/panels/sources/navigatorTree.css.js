@@ -34,24 +34,8 @@ styles.replaceSync(
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-:host {
-  overflow-y: auto;
-}
-
-.icon,
-.icon-basic,
-.icon-badge {
-  margin: -3px -5px;
-}
-
-.navigator-fs-tree-item:not(.has-mapped-files):not(.selected) > :not(.selection),
-.navigator-fs-folder-tree-item:not(.has-mapped-files):not(.selected) > :not(.selection) {
-  filter: grayscale(50%);
-  opacity: 50%;
-}
-
 .is-ignore-listed {
-  opacity: 50%;
+  opacity: 40%;
 }
 
 .tree-outline li {
@@ -114,6 +98,16 @@ styles.replaceSync(
   color: var(--icon-folder-authored);
 }
 
+.navigator-fs-tree-item:not(.has-mapped-files):not(.selected) > :not(.selection),
+.navigator-fs-folder-tree-item:not(.has-mapped-files):not(.selected) > :not(.selection) {
+  color: var(--sys-color-on-surface-subtle);
+  opacity: 40%;
+
+  & devtools-icon {
+    color: var(--sys-color-on-surface-subtle);
+  }
+}
+
 .tree-outline:not(:has(.navigator-deployed-tree-item)) .navigator-sm-folder-tree-item .tree-element-title,
 .tree-outline:not(:has(.navigator-deployed-tree-item)) .navigator-sm-script-tree-item .tree-element-title,
 .tree-outline:not(:has(.navigator-deployed-tree-item)) .navigator-sm-stylesheet-tree-item .tree-element-title {
@@ -125,7 +119,8 @@ styles.replaceSync(
     color: ButtonText;
   }
 
-  .tree-outline li:hover:not(.selected) .selection {
+  .tree-outline li:hover:not(.selected) .selection,
+  .tree-outline li:hover:not(:has(span[is="dt-checkbox"])) .selection {
     forced-color-adjust: none;
     background-color: Highlight;
   }

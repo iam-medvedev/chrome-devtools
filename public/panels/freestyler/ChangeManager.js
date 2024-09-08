@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 export const AI_ASSISTANT_CSS_CLASS_NAME = 'ai-assistant-change';
 /**
@@ -63,20 +64,31 @@ export class ChangeManager {
     async addChange(cssModel, frameId, change) {
         const stylesheetId = await this.#getStylesheet(cssModel, frameId);
         const changes = this.#stylesheetChanges.get(stylesheetId) || [];
-        changes.push(change);
+        const existingChange = changes.find(c => c.className === change.className);
+        if (existingChange) {
+            Object.assign(existingChange.styles, change.styles);
+        }
+        else {
+            changes.push(change);
+        }
         await cssModel.setStyleSheetText(stylesheetId, this.buildChanges(changes), true);
         this.#stylesheetChanges.set(stylesheetId, changes);
     }
     buildChanges(changes) {
-        return `.${AI_ASSISTANT_CSS_CLASS_NAME} {
-${changes
+        function formatStyles(styles) {
+            const kebabStyles = Platform.StringUtilities.toKebabCaseKeys(styles);
+            const lines = Object.entries(kebabStyles).map(([key, value]) => `${key}: ${value};`);
+            return lines.join('\n');
+        }
+        return changes
             .map(change => {
-            return `  ${change.selector}& {
-    ${change.styles}
-  }`;
-        })
-            .join('\n')}
+            return `.${change.className} {
+  ${change.selector}& {
+    ${formatStyles(change.styles)}
+  }
 }`;
+        })
+            .join('\n');
     }
 }
 //# sourceMappingURL=ChangeManager.js.map

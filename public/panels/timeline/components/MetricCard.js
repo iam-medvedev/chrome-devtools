@@ -150,17 +150,18 @@ export class MetricCard extends HTMLElement {
             return;
         }
         document.body.removeEventListener('keydown', this.#hideTooltipOnEsc);
-        tooltipEl.style.left = '';
-        tooltipEl.style.maxWidth = '';
-        tooltipEl.style.display = 'none';
+        tooltipEl.style.removeProperty('left');
+        tooltipEl.style.removeProperty('visibility');
+        tooltipEl.style.removeProperty('transition-delay');
     }
-    #showTooltip() {
+    #showTooltip(delayMs = 0) {
         const tooltipEl = this.#tooltipEl;
-        if (!tooltipEl || tooltipEl.style.display === 'block') {
+        if (!tooltipEl || tooltipEl.style.visibility === 'visible') {
             return;
         }
         document.body.addEventListener('keydown', this.#hideTooltipOnEsc);
-        tooltipEl.style.display = 'block';
+        tooltipEl.style.visibility = 'visible';
+        tooltipEl.style.transitionDelay = `${Math.round(delayMs)}ms`;
         const container = this.#data.tooltipContainer;
         if (!container) {
             return;
@@ -453,7 +454,7 @@ export class MetricCard extends HTMLElement {
           ${this.#getTitle()}
         </h3>
         <div tabindex="0" class="metric-values-section"
-          @mouseenter=${this.#showTooltip}
+          @mouseenter=${() => this.#showTooltip(500)}
           @mouseleave=${this.#hideTooltipOnMouseLeave}
           @focusin=${this.#showTooltip}
           @focusout=${this.#hideTooltipOnFocusOut}

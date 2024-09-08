@@ -146,6 +146,7 @@ style.setProperty('--image-file-gear', 'url(\"' + new URL('./src/gear.svg', impo
 style.setProperty('--image-file-gears', 'url(\"' + new URL('./src/gears.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-google', 'url(\"' + new URL('./src/google.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-goto-filled', 'url(\"' + new URL('./src/goto-filled.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-group', 'url(\"' + new URL('./src/group.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL('./src/heap-snapshot.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshots', 'url(\"' + new URL('./src/heap-snapshots.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-help', 'url(\"' + new URL('./src/help.svg', import.meta.url).toString() + '\")');
@@ -194,6 +195,9 @@ style.setProperty('--image-file-network-settings', 'url(\"' + new URL('./src/net
 style.setProperty('--image-file-open-externally', 'url(\"' + new URL('./src/open-externally.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL('./src/pause.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pen-spark', 'url(\"' + new URL('./src/pen-spark.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-diagram', 'url(\"' + new URL('./src/performance-panel-diagram.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-entry-label', 'url(\"' + new URL('./src/performance-panel-entry-label.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-time-range', 'url(\"' + new URL('./src/performance-panel-time-range.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance', 'url(\"' + new URL('./src/performance.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-person', 'url(\"' + new URL('./src/person.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-play', 'url(\"' + new URL('./src/play.svg', import.meta.url).toString() + '\")');

@@ -7,11 +7,11 @@ declare global {
     }
 }
 export declare const enum ParameterType {
-    String = "string",
-    Number = "number",
-    Boolean = "boolean",
-    Array = "array",
-    Object = "object"
+    STRING = "string",
+    NUMBER = "number",
+    BOOLEAN = "boolean",
+    ARRAY = "array",
+    OBJECT = "object"
 }
 interface BaseParameter {
     optional: boolean;
@@ -22,23 +22,23 @@ interface BaseParameter {
     isKeyEditable?: boolean;
 }
 interface ArrayParameter extends BaseParameter {
-    type: ParameterType.Array;
+    type: ParameterType.ARRAY;
     value?: Parameter[];
 }
 interface NumberParameter extends BaseParameter {
-    type: ParameterType.Number;
+    type: ParameterType.NUMBER;
     value?: number;
 }
 interface StringParameter extends BaseParameter {
-    type: ParameterType.String;
+    type: ParameterType.STRING;
     value?: string;
 }
 interface BooleanParameter extends BaseParameter {
-    type: ParameterType.Boolean;
+    type: ParameterType.BOOLEAN;
     value?: boolean;
 }
 interface ObjectParameter extends BaseParameter {
-    type: ParameterType.Object;
+    type: ParameterType.OBJECT;
     value?: Parameter[];
 }
 export type Parameter = ArrayParameter | NumberParameter | StringParameter | BooleanParameter | ObjectParameter;

@@ -57,7 +57,7 @@ describeWithLocale('StackTrace', () => {
         const component = new ApplicationComponents.StackTrace.StackTrace();
         renderElementIntoDOM(component);
         component.data = {
-            frame: frame,
+            frame,
             buildStackTraceRows: mockBuildStackTraceRows,
         };
         assert.isNotNull(component.shadowRoot);
@@ -72,8 +72,8 @@ describeWithLocale('StackTrace', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText, [
-            'function1\xA0@\xA0www.example.com/script1.js',
-            'function2\xA0@\xA0www.example.com/script2.js',
+            'function1 \xA0@\xA0www.example.com/script1.js',
+            'function2 \xA0@\xA0www.example.com/script2.js',
         ]);
     });
     it('hides hidden rows behind "show all" button', async () => {
@@ -103,7 +103,7 @@ describeWithLocale('StackTrace', () => {
         const component = new ApplicationComponents.StackTrace.StackTrace();
         renderElementIntoDOM(component);
         component.data = {
-            frame: frame,
+            frame,
             buildStackTraceRows: mockBuildStackTraceRows,
         };
         assert.isNotNull(component.shadowRoot);
@@ -123,7 +123,7 @@ describeWithLocale('StackTrace', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText, [
-            'function1\xA0@\xA0www.example.com/script.js',
+            'function1 \xA0@\xA0www.example.com/script.js',
             'Show 1 more frame',
         ]);
         const stackTraceLinkButton = getElementWithinComponent(expandableList, 'devtools-stack-trace-link-button', ApplicationComponents.StackTrace.StackTraceLinkButton);
@@ -138,8 +138,8 @@ describeWithLocale('StackTrace', () => {
                 openedStackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(openedStackTraceText, [
-            'function1\xA0@\xA0www.example.com/script.js',
-            'function2\xA0@\xA0www.example.com/hidden.js',
+            'function1 \xA0@\xA0www.example.com/script.js',
+            'function2 \xA0@\xA0www.example.com/hidden.js',
             'Show less',
         ]);
         const newStackTraceLinkButton = getElementWithinComponent(expandableList, 'devtools-stack-trace-link-button', ApplicationComponents.StackTrace.StackTraceLinkButton);
@@ -153,7 +153,7 @@ describeWithLocale('StackTrace', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText, [
-            'function1\xA0@\xA0www.example.com/script.js',
+            'function1 \xA0@\xA0www.example.com/script.js',
             'Show 1 more frame',
         ]);
     });

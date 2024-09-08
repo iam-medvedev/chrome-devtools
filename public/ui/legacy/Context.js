@@ -43,7 +43,7 @@ export class Context {
         if (!dispatcher) {
             return;
         }
-        dispatcher.dispatchEventToListeners("FlavorChanged" /* Events.FlavorChanged */, flavorValue);
+        dispatcher.dispatchEventToListeners("FlavorChanged" /* Events.FLAVOR_CHANGED */, flavorValue);
     }
     addFlavorChangeListener(flavorType, listener, thisObject) {
         let dispatcher = this.eventDispatchers.get(flavorType);
@@ -51,15 +51,15 @@ export class Context {
             dispatcher = new Common.ObjectWrapper.ObjectWrapper();
             this.eventDispatchers.set(flavorType, dispatcher);
         }
-        dispatcher.addEventListener("FlavorChanged" /* Events.FlavorChanged */, listener, thisObject);
+        dispatcher.addEventListener("FlavorChanged" /* Events.FLAVOR_CHANGED */, listener, thisObject);
     }
     removeFlavorChangeListener(flavorType, listener, thisObject) {
         const dispatcher = this.eventDispatchers.get(flavorType);
         if (!dispatcher) {
             return;
         }
-        dispatcher.removeEventListener("FlavorChanged" /* Events.FlavorChanged */, listener, thisObject);
-        if (!dispatcher.hasEventListeners("FlavorChanged" /* Events.FlavorChanged */)) {
+        dispatcher.removeEventListener("FlavorChanged" /* Events.FLAVOR_CHANGED */, listener, thisObject);
+        if (!dispatcher.hasEventListeners("FlavorChanged" /* Events.FLAVOR_CHANGED */)) {
             this.eventDispatchers.delete(flavorType);
         }
     }

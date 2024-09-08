@@ -70,12 +70,12 @@ export declare class SamplingHeapProfileType extends SamplingHeapProfileTypeBase
 }
 export declare namespace SamplingHeapProfileType {
     const enum Events {
-        RecordingStopped = "RecordingStopped",
-        StatsUpdate = "StatsUpdate"
+        RECORDING_STOPPED = "RecordingStopped",
+        STATS_UPDATE = "StatsUpdate"
     }
     type EventTypes = {
-        [Events.RecordingStopped]: void;
-        [Events.StatsUpdate]: Protocol.HeapProfiler.SamplingHeapProfile | null;
+        [Events.RECORDING_STOPPED]: void;
+        [Events.STATS_UPDATE]: Protocol.HeapProfiler.SamplingHeapProfile | null;
     };
 }
 export declare class SamplingHeapProfileHeader extends WritableProfileHeader {

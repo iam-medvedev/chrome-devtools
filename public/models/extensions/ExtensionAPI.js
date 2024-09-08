@@ -121,7 +121,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             extensionServer.sendRequest({ command: "getHAR" /* PrivateAPI.Commands.GetHAR */ }, callback && callbackWrapper);
         },
         addRequestHeaders: function (headers) {
-            extensionServer.sendRequest({ command: "addRequestHeaders" /* PrivateAPI.Commands.AddRequestHeaders */, headers: headers, extensionId: window.location.hostname });
+            extensionServer.sendRequest({ command: "addRequestHeaders" /* PrivateAPI.Commands.AddRequestHeaders */, headers, extensionId: window.location.hostname });
         },
     };
     function RequestImpl(id) {
@@ -149,7 +149,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             Object.defineProperty(this, panel, { get: panelGetter.bind(null, panel), enumerable: true });
         }
         this.applyStyleSheet = function (styleSheet) {
-            extensionServer.sendRequest({ command: "applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */, styleSheet: styleSheet });
+            extensionServer.sendRequest({ command: "applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */, styleSheet });
         };
     }
     Panels.prototype = {
@@ -180,7 +180,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             }
             // Only send command if we either removed an existing handler or added handler and had none before.
             if (hadHandler === !callback) {
-                extensionServer.sendRequest({ command: "setOpenResourceHandler" /* PrivateAPI.Commands.SetOpenResourceHandler */, 'handlerPresent': Boolean(callback) });
+                extensionServer.sendRequest({ command: "setOpenResourceHandler" /* PrivateAPI.Commands.SetOpenResourceHandler */, handlerPresent: Boolean(callback) });
             }
         },
         setThemeChangeHandler: function (callback) {
@@ -198,7 +198,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             }
             // Only send command if we either removed an existing handler or added handler and had none before.
             if (hadHandler === !callback) {
-                extensionServer.sendRequest({ command: "setThemeChangeHandler" /* PrivateAPI.Commands.SetThemeChangeHandler */, 'handlerPresent': Boolean(callback) });
+                extensionServer.sendRequest({ command: "setThemeChangeHandler" /* PrivateAPI.Commands.SetThemeChangeHandler */, handlerPresent: Boolean(callback) });
             }
         },
         openResource: function (url, lineNumber, columnNumber, _callback) {
@@ -506,7 +506,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             extensionServer.sendRequest({
                 command: "createToolbarButton" /* PrivateAPI.Commands.CreateToolbarButton */,
                 panel: this._id,
-                id: id,
+                id,
                 icon: iconPath,
                 tooltip: tooltipText,
                 disabled: Boolean(disabled),
@@ -538,14 +538,14 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     }
     ExtensionSidebarPaneImpl.prototype = {
         setHeight: function (height) {
-            extensionServer.sendRequest({ command: "setSidebarHeight" /* PrivateAPI.Commands.SetSidebarHeight */, id: this._id, height: height });
+            extensionServer.sendRequest({ command: "setSidebarHeight" /* PrivateAPI.Commands.SetSidebarHeight */, id: this._id, height });
         },
         setExpression: function (expression, rootTitle, evaluateOptions, _callback) {
             extensionServer.sendRequest({
                 command: "setSidebarContent" /* PrivateAPI.Commands.SetSidebarContent */,
                 id: this._id,
-                expression: expression,
-                rootTitle: rootTitle,
+                expression,
+                rootTitle,
                 evaluateOnPage: true,
                 evaluateOptions: (typeof evaluateOptions === 'object' ? evaluateOptions : {}),
             }, extractCallbackArgument(arguments));
@@ -555,11 +555,11 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
                 command: "setSidebarContent" /* PrivateAPI.Commands.SetSidebarContent */,
                 id: this._id,
                 expression: jsonObject,
-                rootTitle: rootTitle,
+                rootTitle,
             }, callback);
         },
         setPage: function (page) {
-            extensionServer.sendRequest({ command: "setSidebarPage" /* PrivateAPI.Commands.SetSidebarPage */, id: this._id, page: page });
+            extensionServer.sendRequest({ command: "setSidebarPage" /* PrivateAPI.Commands.SetSidebarPage */, id: this._id, page });
         },
         __proto__: ExtensionViewImpl.prototype,
     };
@@ -616,7 +616,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
                 console.warn('Passing userAgent as string parameter to inspectedWindow.reload() is deprecated. ' +
                     'Use inspectedWindow.reload({ userAgent: value}) instead.');
             }
-            extensionServer.sendRequest({ command: "Reload" /* PrivateAPI.Commands.Reload */, options: options });
+            extensionServer.sendRequest({ command: "Reload" /* PrivateAPI.Commands.Reload */, options });
         },
         eval: function (expression, evaluateOptions) {
             const callback = extractCallbackArgument(arguments);
@@ -631,7 +631,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             }
             extensionServer.sendRequest({
                 command: "evaluateOnInspectedPage" /* PrivateAPI.Commands.EvaluateOnInspectedPage */,
-                expression: expression,
+                expression,
                 evaluateOptions: (typeof evaluateOptions === 'object' ? evaluateOptions : undefined),
             }, callback && callbackWrapper);
             return null;
@@ -668,7 +668,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             extensionServer.sendRequest({ command: "getResourceContent" /* PrivateAPI.Commands.GetResourceContent */, url: this._url }, callback && callbackWrapper);
         },
         setContent: function (content, commit, callback) {
-            extensionServer.sendRequest({ command: "setResourceContent" /* PrivateAPI.Commands.SetResourceContent */, url: this._url, content: content, commit: commit }, callback);
+            extensionServer.sendRequest({ command: "setResourceContent" /* PrivateAPI.Commands.SetResourceContent */, url: this._url, content, commit }, callback);
         },
     };
     function getTabId() {

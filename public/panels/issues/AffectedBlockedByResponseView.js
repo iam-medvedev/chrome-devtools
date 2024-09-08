@@ -47,7 +47,7 @@ export class AffectedBlockedByResponseView extends AffectedResourcesView {
         element.classList.add('affected-resource-row');
         const requestCell = this.createRequestCell(details.request, {
             additionalOnClickAction() {
-                Host.userMetrics.issuesPanelResourceOpened("CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */, "Request" /* AffectedItem.Request */);
+                Host.userMetrics.issuesPanelResourceOpened("CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */, "Request" /* AffectedItem.REQUEST */);
             },
         });
         element.appendChild(requestCell);

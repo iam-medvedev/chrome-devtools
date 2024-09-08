@@ -681,15 +681,15 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         if (request.mixedContentType === "none" /* Protocol.Security.MixedContentType.None */) {
             return;
         }
-        let filterKey = "all" /* NetworkForward.UIFilter.MixedContentFilterValues.All */;
+        let filterKey = "all" /* NetworkForward.UIFilter.MixedContentFilterValues.ALL */;
         if (request.wasBlocked()) {
-            filterKey = "blocked" /* NetworkForward.UIFilter.MixedContentFilterValues.Blocked */;
+            filterKey = "blocked" /* NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED */;
         }
         else if (request.mixedContentType === "blockable" /* Protocol.Security.MixedContentType.Blockable */) {
-            filterKey = "block-overridden" /* NetworkForward.UIFilter.MixedContentFilterValues.BlockOverridden */;
+            filterKey = "block-overridden" /* NetworkForward.UIFilter.MixedContentFilterValues.BLOCK_OVERRIDDEN */;
         }
         else if (request.mixedContentType === "optionally-blockable" /* Protocol.Security.MixedContentType.OptionallyBlockable */) {
-            filterKey = "displayed" /* NetworkForward.UIFilter.MixedContentFilterValues.Displayed */;
+            filterKey = "displayed" /* NetworkForward.UIFilter.MixedContentFilterValues.DISPLAYED */;
         }
         const currentCount = this.filterRequestCounts.get(filterKey);
         if (!currentCount) {
@@ -896,10 +896,12 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
 }
 export var OriginGroup;
 (function (OriginGroup) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     OriginGroup["MainOrigin"] = "MainOrigin";
     OriginGroup["NonSecure"] = "NonSecure";
     OriginGroup["Secure"] = "Secure";
     OriginGroup["Unknown"] = "Unknown";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(OriginGroup || (OriginGroup = {}));
 export class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
     selectCallback;
@@ -1223,10 +1225,10 @@ export class SecurityMainView extends UI.Widget.VBox {
             else {
                 switch (explanation.mixedContentType) {
                     case "blockable" /* Protocol.Security.MixedContentType.Blockable */:
-                        this.addMixedContentExplanation(this.securityExplanationsMain, explanation, "block-overridden" /* NetworkForward.UIFilter.MixedContentFilterValues.BlockOverridden */);
+                        this.addMixedContentExplanation(this.securityExplanationsMain, explanation, "block-overridden" /* NetworkForward.UIFilter.MixedContentFilterValues.BLOCK_OVERRIDDEN */);
                         break;
                     case "optionally-blockable" /* Protocol.Security.MixedContentType.OptionallyBlockable */:
-                        this.addMixedContentExplanation(this.securityExplanationsMain, explanation, "displayed" /* NetworkForward.UIFilter.MixedContentFilterValues.Displayed */);
+                        this.addMixedContentExplanation(this.securityExplanationsMain, explanation, "displayed" /* NetworkForward.UIFilter.MixedContentFilterValues.DISPLAYED */);
                         break;
                     default:
                         this.addExplanation(this.securityExplanationsMain, explanation);
@@ -1234,7 +1236,7 @@ export class SecurityMainView extends UI.Widget.VBox {
                 }
             }
         }
-        if (this.panel.filterRequestCount("blocked" /* NetworkForward.UIFilter.MixedContentFilterValues.Blocked */) > 0) {
+        if (this.panel.filterRequestCount("blocked" /* NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED */) > 0) {
             const explanation = {
                 securityState: "info" /* Protocol.Security.SecurityState.Info */,
                 summary: i18nString(UIStrings.blockedMixedContent),
@@ -1243,7 +1245,7 @@ export class SecurityMainView extends UI.Widget.VBox {
                 certificate: [],
                 title: '',
             };
-            this.addMixedContentExplanation(this.securityExplanationsMain, explanation, "blocked" /* NetworkForward.UIFilter.MixedContentFilterValues.Blocked */);
+            this.addMixedContentExplanation(this.securityExplanationsMain, explanation, "blocked" /* NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED */);
         }
     }
     addMixedContentExplanation(parent, explanation, filterKey) {

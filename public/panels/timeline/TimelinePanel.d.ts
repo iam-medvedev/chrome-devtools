@@ -79,13 +79,14 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private loadFromCpuProfile;
     private setState;
     private createSettingCheckbox;
+    private populateDownloadMenu;
     private populateToolbar;
     private createSettingsPane;
     private createNetworkConditionsSelect;
     private prepareToLoadTimeline;
     private createFileSelector;
     private contextMenu;
-    saveToFile(isEnhancedTraces?: boolean): Promise<void>;
+    saveToFile(isEnhancedTraces?: boolean, addModifications?: boolean): Promise<void>;
     showHistoryDropdown(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;
@@ -135,12 +136,12 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private handleDrop;
 }
 export declare const enum State {
-    Idle = "Idle",
-    StartPending = "StartPending",
-    Recording = "Recording",
-    StopPending = "StopPending",
-    Loading = "Loading",
-    RecordingFailed = "RecordingFailed"
+    IDLE = "Idle",
+    START_PENDING = "StartPending",
+    RECORDING = "Recording",
+    STOP_PENDING = "StopPending",
+    LOADING = "Loading",
+    RECORDING_FAILED = "RecordingFailed"
 }
 export declare const rowHeight = 18;
 export declare const headerHeight = 20;

@@ -103,7 +103,7 @@ export class Infobar {
         this.closeButton.setTabbable(true);
         ARIAUtils.setDescription(this.closeButton, i18nString(UIStrings.close));
         self.onInvokeElement(this.closeButton, this.dispose.bind(this));
-        if (type !== "issue" /* Type.Issue */) {
+        if (type !== "issue" /* Type.ISSUE */) {
             this.contentElement.tabIndex = 0;
         }
         ARIAUtils.setLabel(this.contentElement, text);

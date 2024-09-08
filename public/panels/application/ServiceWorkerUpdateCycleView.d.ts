@@ -27,9 +27,9 @@ export declare class ServiceWorkerUpdateCycleView {
     refresh(): void;
 }
 export declare const enum ServiceWorkerUpdateNames {
-    Install = "Install",
-    Wait = "Wait",
-    Activate = "Activate"
+    INSTALL = "Install",
+    WAIT = "Wait",
+    ACTIVATE = "Activate"
 }
 export interface ServiceWorkerUpdateRange {
     id: string;

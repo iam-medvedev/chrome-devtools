@@ -172,6 +172,10 @@ const UIStrings = {
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
+    exemptionReasonTopLevelTPCDDeprecationTrial: 'This cookie is allowed by top-level third-party cookie deprecation trial. Learn more: goo.gle/ps-dt.',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
     exemptionReasonTPCDHeuristics: 'This cookie is allowed by third-party cookie heuristics. Learn more: goo.gle/hbe',
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
@@ -1252,7 +1256,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     addProtocolFrame(response, time, sent) {
         const type = sent ? WebSocketFrameType.Send : WebSocketFrameType.Receive;
         this.addFrame({
-            type: type,
+            type,
             text: response.payloadData,
             time: this.pseudoWallTime(time),
             opCode: response.opcode,
@@ -1360,7 +1364,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         for (const blockedCookie of this.#blockedResponseCookiesInternal) {
             if (blockedCookie.blockedReasons.includes("NameValuePairExceedsMaxSize" /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */)) {
                 const message = i18nString(UIStrings.setcookieHeaderIsIgnoredIn, { PH1: this.url() });
-                networkManager.dispatchEventToListeners(NetworkManagerEvents.MessageGenerated, { message: message, requestId: this.#requestIdInternal, warning: true });
+                networkManager.dispatchEventToListeners(NetworkManagerEvents.MessageGenerated, { message, requestId: this.#requestIdInternal, warning: true });
             }
         }
         const cookieModel = networkManager.target().model(CookieModel);
@@ -1500,6 +1504,8 @@ export const cookieExemptionReasonToUiString = function (exemptionReason) {
             return i18nString(UIStrings.exemptionReasonUserSetting);
         case "TPCDMetadata" /* Protocol.Network.CookieExemptionReason.TPCDMetadata */:
             return i18nString(UIStrings.exemptionReasonTPCDMetadata);
+        case "TopLevelTPCDDeprecationTrial" /* Protocol.Network.CookieExemptionReason.TopLevelTPCDDeprecationTrial */:
+            return i18nString(UIStrings.exemptionReasonTopLevelTPCDDeprecationTrial);
         case "TPCDDeprecationTrial" /* Protocol.Network.CookieExemptionReason.TPCDDeprecationTrial */:
             return i18nString(UIStrings.exemptionReasonTPCDDeprecationTrial);
         case "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */:

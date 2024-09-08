@@ -24,10 +24,10 @@ export declare class ResizerWidget extends Common.ObjectWrapper.ObjectWrapper<Ev
     private dragEnd;
 }
 export declare const enum Events {
-    ResizeStart = "ResizeStart",
-    ResizeUpdateXY = "ResizeUpdateXY",
-    ResizeUpdatePosition = "ResizeUpdatePosition",
-    ResizeEnd = "ResizeEnd"
+    RESIZE_START = "ResizeStart",
+    RESIZE_UPDATE_XY = "ResizeUpdateXY",
+    RESIZE_UPDATE_POSITION = "ResizeUpdatePosition",
+    RESIZE_END = "ResizeEnd"
 }
 export interface ResizeStartXYEvent {
     startX: number;
@@ -52,10 +52,10 @@ export interface ResizeUpdatePositionEvent {
     shiftKey: boolean;
 }
 export type EventTypes = {
-    [Events.ResizeStart]: ResizeStartXYEvent | ResizeStartPositionEvent;
-    [Events.ResizeUpdateXY]: ResizeUpdateXYEvent;
-    [Events.ResizeUpdatePosition]: ResizeUpdatePositionEvent;
-    [Events.ResizeEnd]: void;
+    [Events.RESIZE_START]: ResizeStartXYEvent | ResizeStartPositionEvent;
+    [Events.RESIZE_UPDATE_XY]: ResizeUpdateXYEvent;
+    [Events.RESIZE_UPDATE_POSITION]: ResizeUpdatePositionEvent;
+    [Events.RESIZE_END]: void;
 };
 export declare class SimpleResizerWidget extends ResizerWidget {
     private isVerticalInternal;

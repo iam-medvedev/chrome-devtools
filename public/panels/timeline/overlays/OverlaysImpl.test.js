@@ -406,9 +406,9 @@ describeWithEnvironment('Overlays', () => {
             const component = overlayDOM?.querySelector('devtools-time-range-overlay');
             assert.isOk(component?.shadowRoot);
             component.connectedCallback();
-            const label = component.shadowRoot.querySelector('.label');
-            assert.isOk(label);
-            const labelBox = label.querySelector('.label-text');
+            const rangeContainer = component.shadowRoot.querySelector('.range-container');
+            assert.isOk(rangeContainer);
+            const labelBox = rangeContainer.querySelector('.label-text');
             assert.isOk(labelBox);
             // Double click on the label box to make it editable and focus on it
             labelBox.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
@@ -438,9 +438,9 @@ describeWithEnvironment('Overlays', () => {
             const component = overlayDOM?.querySelector('devtools-time-range-overlay');
             assert.isOk(component?.shadowRoot);
             component.connectedCallback();
-            const label = component.shadowRoot.querySelector('.label');
-            assert.isOk(label);
-            const labelBox = label.querySelector('.label-text');
+            const rangeContainer = component.shadowRoot.querySelector('.range-container');
+            assert.isOk(rangeContainer);
+            const labelBox = rangeContainer.querySelector('.label-text');
             assert.isOk(labelBox);
             // Double click on the label box to make it editable and focus on it
             labelBox.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
@@ -608,9 +608,9 @@ describeWithEnvironment('Overlays', () => {
             const overlayDOM = container.querySelector('.overlay-type-TIME_RANGE');
             const component = overlayDOM?.querySelector('devtools-time-range-overlay');
             assert.isOk(component?.shadowRoot);
-            const label = component.shadowRoot.querySelector('.label');
-            assert.isOk(label);
-            const duration = label.querySelector('.duration');
+            const rangeContainer = component.shadowRoot.querySelector('.range-container');
+            assert.isOk(rangeContainer);
+            const duration = rangeContainer.querySelector('.duration');
             assert.isOk(duration);
             assert.strictEqual(duration?.innerText, '1.26\xA0s');
         });

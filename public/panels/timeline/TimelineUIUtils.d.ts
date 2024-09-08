@@ -4,7 +4,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
-import { type CategoryPalette, type TimelineCategory, TimelineRecordStyle } from './EventUICategory.js';
+import * as TimelineComponents from './components/components.js';
 type LinkifyLocationOptions = {
     scriptId: Protocol.Runtime.ScriptId | null;
     url: string;
@@ -17,7 +17,7 @@ type LinkifyLocationOptions = {
 export declare class TimelineUIUtils {
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
     static testContentMatching(traceEvent: TraceEngine.Types.TraceEvents.TraceEventData, regExp: RegExp, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
-    static eventStyle(event: TraceEngine.Types.TraceEvents.TraceEventData): TimelineRecordStyle;
+    static eventStyle(event: TraceEngine.Types.TraceEvents.TraceEventData): TimelineComponents.EntryStyles.TimelineRecordStyle;
     static eventColor(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
     static eventTitle(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
@@ -46,12 +46,12 @@ export declare class TimelineUIUtils {
     static buildPicturePreviewContent(traceData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventPaint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: TraceEngine.Types.TraceEvents.TraceEventData, zeroTime: number): Element;
     static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter;
-    static categories(): CategoryPalette;
+    static categories(): TimelineComponents.EntryStyles.CategoryPalette;
     static generatePieChart(aggregatedStats: {
         [x: string]: number;
-    }, selfCategory?: TimelineCategory, selfTime?: number): Element;
-    static generateDetailsContentForFrame(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame, filmStrip: TraceEngine.Extras.FilmStrip.Data | null, filmStripFrame: TraceEngine.Extras.FilmStrip.Frame | null): DocumentFragment;
-    static frameDuration(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): Element;
+    }, selfCategory?: TimelineComponents.EntryStyles.TimelineCategory, selfTime?: number): Element;
+    static generateDetailsContentForFrame(frame: TraceEngine.Types.TraceEvents.LegacyTimelineFrame, filmStrip: TraceEngine.Extras.FilmStrip.Data | null, filmStripFrame: TraceEngine.Extras.FilmStrip.Frame | null): DocumentFragment;
+    static frameDuration(frame: TraceEngine.Types.TraceEvents.LegacyTimelineFrame): Element;
     static quadWidth(quad: number[]): number;
     static quadHeight(quad: number[]): number;
     static eventDispatchDesciptors(): EventDispatchTypeDescriptor[];

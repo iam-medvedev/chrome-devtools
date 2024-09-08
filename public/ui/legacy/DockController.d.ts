@@ -32,18 +32,18 @@ export declare const enum DockState {
     UNDOCKED = "undocked"
 }
 export declare const enum Events {
-    BeforeDockSideChanged = "BeforeDockSideChanged",
-    DockSideChanged = "DockSideChanged",
-    AfterDockSideChanged = "AfterDockSideChanged"
+    BEFORE_DOCK_SIDE_CHANGED = "BeforeDockSideChanged",
+    DOCK_SIDE_CHANGED = "DockSideChanged",
+    AFTER_DOCK_SIDE_CHANGED = "AfterDockSideChanged"
 }
 export interface ChangeEvent {
     from: DockState | undefined;
     to: DockState;
 }
 export type EventTypes = {
-    [Events.BeforeDockSideChanged]: ChangeEvent;
-    [Events.DockSideChanged]: ChangeEvent;
-    [Events.AfterDockSideChanged]: ChangeEvent;
+    [Events.BEFORE_DOCK_SIDE_CHANGED]: ChangeEvent;
+    [Events.DOCK_SIDE_CHANGED]: ChangeEvent;
+    [Events.AFTER_DOCK_SIDE_CHANGED]: ChangeEvent;
 };
 export declare class ToggleDockActionDelegate implements ActionDelegate {
     handleAction(_context: Context, _actionId: string): boolean;

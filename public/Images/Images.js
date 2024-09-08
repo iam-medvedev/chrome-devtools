@@ -145,6 +145,7 @@ style.setProperty('--image-file-gear', 'url(\"' + new URL(new URL('gear.svg', im
 style.setProperty('--image-file-gears', 'url(\"' + new URL(new URL('gears.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-google', 'url(\"' + new URL(new URL('google.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-goto-filled', 'url(\"' + new URL(new URL('goto-filled.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-group', 'url(\"' + new URL(new URL('group.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL(new URL('heap-snapshot.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshots', 'url(\"' + new URL(new URL('heap-snapshots.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-help', 'url(\"' + new URL(new URL('help.svg', import.meta.url).href, import.meta.url).toString() + '\")');
@@ -193,6 +194,9 @@ style.setProperty('--image-file-network-settings', 'url(\"' + new URL(new URL('n
 style.setProperty('--image-file-open-externally', 'url(\"' + new URL(new URL('open-externally.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL(new URL('pause.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pen-spark', 'url(\"' + new URL(new URL('pen-spark.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-diagram', 'url(\"' + new URL(new URL('performance-panel-diagram.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-entry-label', 'url(\"' + new URL(new URL('performance-panel-entry-label.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-time-range', 'url(\"' + new URL(new URL('performance-panel-time-range.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance', 'url(\"' + new URL(new URL('performance.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-person', 'url(\"' + new URL(new URL('person.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-play', 'url(\"' + new URL(new URL('play.svg', import.meta.url).href, import.meta.url).toString() + '\")');

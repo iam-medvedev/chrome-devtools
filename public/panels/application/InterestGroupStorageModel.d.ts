@@ -21,8 +21,8 @@ export declare class InterestGroupStorageModel extends SDK.SDKModel.SDKModel<Eve
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
 }
 export declare const enum Events {
-    InterestGroupAccess = "InterestGroupAccess"
+    INTEREST_GROUP_ACCESS = "InterestGroupAccess"
 }
 export type EventTypes = {
-    [Events.InterestGroupAccess]: Protocol.Storage.InterestGroupAccessedEvent;
+    [Events.INTEREST_GROUP_ACCESS]: Protocol.Storage.InterestGroupAccessedEvent;
 };

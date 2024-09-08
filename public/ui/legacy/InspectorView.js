@@ -157,10 +157,10 @@ export class InspectorView extends VBox {
         this.drawerTabbedPane.element.setAttribute('jslog', `${VisualLogging.drawer()}`);
         const closeDrawerButton = new ToolbarButton(i18nString(UIStrings.closeDrawer), 'cross');
         closeDrawerButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
-        closeDrawerButton.addEventListener("Click" /* ToolbarButton.Events.Click */, this.closeDrawer, this);
+        closeDrawerButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, this.closeDrawer, this);
         this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'drawer'), this);
         const selectedDrawerTab = this.drawerTabbedPane.selectedTabId;
-        if (this.drawerSplitWidget.showMode() !== "OnlyMain" /* ShowMode.OnlyMain */ && selectedDrawerTab) {
+        if (this.drawerSplitWidget.showMode() !== "OnlyMain" /* ShowMode.ONLY_MAIN */ && selectedDrawerTab) {
             Host.userMetrics.panelShown(selectedDrawerTab, true);
             Host.userMetrics.panelShownInLocation(selectedDrawerTab, 'drawer');
         }
@@ -289,7 +289,7 @@ export class InspectorView extends VBox {
         }
     }
     emitDrawerChangeEvent(isDrawerOpen) {
-        const evt = new CustomEvent("drawerchange" /* Events.DrawerChange */, { bubbles: true, cancelable: true, detail: { isDrawerOpen } });
+        const evt = new CustomEvent("drawerchange" /* Events.DRAWER_CHANGE */, { bubbles: true, cancelable: true, detail: { isDrawerOpen } });
         document.body.dispatchEvent(evt);
     }
     getTabbedPaneForTabId(tabId) {
@@ -406,7 +406,7 @@ export class InspectorView extends VBox {
     }
     displayReloadRequiredWarning(message) {
         if (!this.reloadRequiredInfobar) {
-            const infobar = new Infobar("info" /* InfobarType.Info */, message, [
+            const infobar = new Infobar("info" /* InfobarType.INFO */, message, [
                 {
                     text: i18nString(UIStrings.reloadDevtools),
                     highlight: true,
@@ -425,7 +425,7 @@ export class InspectorView extends VBox {
     }
     displaySelectOverrideFolderInfobar(callback) {
         if (!this.#selectOverrideFolderInfobar) {
-            const infobar = new Infobar("info" /* InfobarType.Info */, i18nString(UIStrings.selectOverrideFolder), [
+            const infobar = new Infobar("info" /* InfobarType.INFO */, i18nString(UIStrings.selectOverrideFolder), [
                 {
                     text: i18nString(UIStrings.selectFolder),
                     highlight: true,
@@ -478,7 +478,7 @@ function createLocaleInfobar() {
     const locale = new Intl.Locale(closestSupportedLocale);
     const closestSupportedLanguageInCurrentLocale = new Intl.DisplayNames([devtoolsLocale.locale], { type: 'language' }).of(locale.language || 'en') || 'English';
     const languageSetting = Common.Settings.Settings.instance().moduleSetting('language');
-    return new Infobar("info" /* InfobarType.Info */, i18nString(UIStrings.devToolsLanguageMissmatch, { PH1: closestSupportedLanguageInCurrentLocale }), [
+    return new Infobar("info" /* InfobarType.INFO */, i18nString(UIStrings.devToolsLanguageMissmatch, { PH1: closestSupportedLanguageInCurrentLocale }), [
         {
             text: i18nString(UIStrings.setToBrowserLanguage),
             highlight: true,

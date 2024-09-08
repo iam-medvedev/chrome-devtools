@@ -52,13 +52,13 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             this.contentElement.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Escape' })}`);
         }
         this.widget().setDefaultFocusedElement(this.contentElement);
-        this.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BlockedByGlassPane */);
+        this.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
         this.setOutsideClickCallback(event => {
             this.hide();
             event.consume(true);
         });
         ARIAUtils.markAsModalDialog(this.contentElement);
-        this.tabIndexBehavior = "DisableAllTabIndex" /* OutsideTabIndexBehavior.DisableAllOutsideTabIndex */;
+        this.tabIndexBehavior = "DisableAllTabIndex" /* OutsideTabIndexBehavior.DISABLE_ALL_OUTSIDE_TAB_INDEX */;
         this.tabIndexMap = new Map();
         this.focusRestorer = null;
         this.closeOnEscape = true;
@@ -92,7 +92,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             this.targetDocument.removeEventListener('keydown', this.targetDocumentKeyDownHandler, true);
         }
         this.restoreTabIndexOnElements();
-        this.dispatchEventToListeners("hidden" /* Events.Hidden */);
+        this.dispatchEventToListeners("hidden" /* Events.HIDDEN */);
         Dialog.instance = null;
     }
     setCloseOnEscape(close) {
@@ -109,11 +109,11 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         this.tabIndexBehavior = tabIndexBehavior;
     }
     disableTabIndexOnElements(document) {
-        if (this.tabIndexBehavior === "PreserveTabIndex" /* OutsideTabIndexBehavior.PreserveTabIndex */) {
+        if (this.tabIndexBehavior === "PreserveTabIndex" /* OutsideTabIndexBehavior.PRESERVE_TAB_INDEX */) {
             return;
         }
         let exclusionSet = null;
-        if (this.tabIndexBehavior === "PreserveMainViewTabIndex" /* OutsideTabIndexBehavior.PreserveMainViewTabIndex */) {
+        if (this.tabIndexBehavior === "PreserveMainViewTabIndex" /* OutsideTabIndexBehavior.PRESERVE_MAIN_VIEW_TAB_INDEX */) {
             exclusionSet = this.getMainWidgetTabIndexElements(InspectorView.instance().ownerSplit());
         }
         this.tabIndexMap.clear();

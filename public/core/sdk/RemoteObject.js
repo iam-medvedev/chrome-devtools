@@ -92,7 +92,7 @@ export class RemoteObject {
         if (object instanceof RemoteObject) {
             const unserializableValue = object.unserializableValue();
             if (unserializableValue !== undefined) {
-                return { unserializableValue: unserializableValue };
+                return { unserializableValue };
             }
         }
         else if (objectAsProtocolRemoteObject.unserializableValue !== undefined) {

@@ -27,15 +27,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import { setCategories, setEventStylesMap, setTimelineMainEventCategories, stringIsEventCategory, } from './EventUICategory.js';
+import * as Components from './components/components.js';
 import { TimelineController } from './TimelineController.js';
 import { UIDevtoolsUtils } from './UIDevtoolsUtils.js';
 export class UIDevtoolsController extends TimelineController {
     constructor(rootTarget, primaryPageTarget, client) {
         super(rootTarget, primaryPageTarget, client);
-        setEventStylesMap(UIDevtoolsUtils.categorizeEvents());
-        setCategories(UIDevtoolsUtils.categories());
-        setTimelineMainEventCategories(UIDevtoolsUtils.getMainCategoriesList().filter(stringIsEventCategory));
+        Components.EntryStyles.setEventStylesMap(UIDevtoolsUtils.categorizeEvents());
+        Components.EntryStyles.setCategories(UIDevtoolsUtils.categories());
+        Components.EntryStyles.setTimelineMainEventCategories(UIDevtoolsUtils.getMainCategoriesList().filter(Components.EntryStyles.stringIsEventCategory));
     }
 }
 //# sourceMappingURL=UIDevtoolsController.js.map

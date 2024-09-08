@@ -156,7 +156,7 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
             middle -= start;
             start = 0;
         }
-        return { start: start, middle: middle, end: end };
+        return { start, middle, end };
     }
     computePercentageFromEventTime(eventTime) {
         // This function computes a percentage in terms of the total loading time
@@ -172,7 +172,7 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
     }
     boundaryChanged() {
         void this.boundryChangedEventThrottler.schedule(async () => {
-            this.dispatchEventToListeners("BoundariesChanged" /* Events.BoundariesChanged */);
+            this.dispatchEventToListeners("BoundariesChanged" /* Events.BOUNDARIES_CHANGED */);
         });
     }
     updateBoundariesForEventTime(eventTime) {
@@ -211,7 +211,7 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
         else if (request.cached()) {
             tooltip = i18nString(UIStrings.sFromCache, { PH1: String(tooltip) });
         }
-        return { left: leftLabel, right: rightLabel, tooltip: tooltip };
+        return { left: leftLabel, right: rightLabel, tooltip };
     }
     updateBoundaries(request) {
         const lowerBound = this.lowerBound(request);

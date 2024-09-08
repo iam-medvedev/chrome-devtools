@@ -99,6 +99,10 @@ styles.replaceSync(
   font-weight: bold;
 }
 
+dd.dl-title {
+  text-align: right;
+}
+
 .dl-value {
   font-weight: bold;
 }

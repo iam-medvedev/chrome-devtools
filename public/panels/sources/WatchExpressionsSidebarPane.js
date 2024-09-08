@@ -101,11 +101,11 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
         this.watchExpressionsSetting =
             Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []);
         this.addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addWatchExpression), 'plus', undefined, 'add-watch-expression');
-        this.addButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
+        this.addButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
             void this.addButtonClicked();
         });
         this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refreshWatchExpressions), 'refresh', undefined, 'refresh-watch-expressions');
-        this.refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.update, this);
+        this.refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.update, this);
         this.contentElement.classList.add('watch-expressions');
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.watch')}`);
         this.contentElement.addEventListener('contextmenu', this.contextMenu.bind(this), false);
@@ -178,7 +178,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
         this.contentElement.appendChild(this.treeOutline.element);
         const watchExpression = new WatchExpression(expression, this.expandController, this.linkifier);
         UI.ARIAUtils.setLabel(this.contentElement, i18nString(UIStrings.addWatchExpression));
-        watchExpression.addEventListener("ExpressionUpdated" /* Events.ExpressionUpdated */, this.watchExpressionUpdated, this);
+        watchExpression.addEventListener("ExpressionUpdated" /* Events.EXPRESSION_UPDATED */, this.watchExpressionUpdated, this);
         this.treeOutline.appendChild(watchExpression.treeElement());
         this.watchExpressions.push(watchExpression);
         return watchExpression;
@@ -374,7 +374,7 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.expressionInternal = newExpression;
         this.update();
-        this.dispatchEventToListeners("ExpressionUpdated" /* Events.ExpressionUpdated */, this);
+        this.dispatchEventToListeners("ExpressionUpdated" /* Events.EXPRESSION_UPDATED */, this);
     }
     deleteWatchExpression(event) {
         event.consume(true);

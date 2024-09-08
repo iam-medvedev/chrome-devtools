@@ -165,7 +165,7 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#updateTimeout = setTimeout(() => {
             // Making a copy to prevent mutations of this.userFlow by event consumers.
-            this.dispatchEventToListeners("recordingupdated" /* Events.RecordingUpdated */, structuredClone(this.#userFlow));
+            this.dispatchEventToListeners("recordingupdated" /* Events.RECORDING_UPDATED */, structuredClone(this.#userFlow));
             this.#updateTimeout = undefined;
             for (const resolve of this.#updateListeners) {
                 resolve();
@@ -279,7 +279,7 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
         for (let index = 0; index < shortcutLength - 1; index++) {
             this.#userFlow.steps.pop();
         }
-        this.dispatchEventToListeners("recordingstopped" /* Events.RecordingStopped */, structuredClone(this.#userFlow));
+        this.dispatchEventToListeners("recordingstopped" /* Events.RECORDING_STOPPED */, structuredClone(this.#userFlow));
     }
     #receiveBindingCalled(target, event) {
         switch (event.data.name) {

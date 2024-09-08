@@ -52,10 +52,6 @@ function estimateSavingsWithGraphs(deferredIds, lanternContext) {
     return Math.round(Math.max(estimateBeforeInline - estimateAfterInline, 0));
 }
 function hasImageLCP(traceParsedData, context) {
-    const nav = traceParsedData.Meta.navigationsByNavigationId.get(context.navigationId);
-    if (!nav) {
-        throw new Error('no trace navigation');
-    }
     const frameMetrics = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
     if (!frameMetrics) {
         throw new Error('no frame metrics');
@@ -79,8 +75,8 @@ function computeSavings(traceParsedData, context, renderBlockingRequests) {
     const metricSavings = { FCP: 0, LCP: 0 };
     const requestIdToWastedMs = new Map();
     const deferredNodeIds = new Set();
-    for (const resource of renderBlockingRequests) {
-        const nodeAndTiming = nodesAndTimingsByRequestId.get(resource.args.data.requestId);
+    for (const request of renderBlockingRequests) {
+        const nodeAndTiming = nodesAndTimingsByRequestId.get(request.args.data.requestId);
         if (!nodeAndTiming) {
             continue;
         }
@@ -125,8 +121,8 @@ export function generateInsight(traceParsedData, context) {
         if (req.args.data.syntheticData.finishTime > firstPaintTs) {
             continue;
         }
-        // If a resource is marked `in_body_parser_blocking` it should only be considered render blocking if it is a
-        // high enough priority. Some resources (e.g. scripts) are not marked as high priority if they are fetched
+        // If a request is marked `in_body_parser_blocking` it should only be considered render blocking if it is a
+        // high enough priority. Some requests (e.g. scripts) are not marked as high priority if they are fetched
         // after a non-preloaded image. (See "early" definition in https://web.dev/articles/fetch-priority)
         //
         // There are edge cases and exceptions (e.g. priority hints) but this gives us the best approximation
@@ -140,10 +136,9 @@ export function generateInsight(traceParsedData, context) {
             }
         }
         const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceParsedData.Meta.navigationsByFrameId);
-        if (navigation?.args.data?.navigationId !== context.navigationId) {
-            continue;
+        if (navigation === context.navigation) {
+            renderBlockingRequests.push(req);
         }
-        renderBlockingRequests.push(req);
     }
     const savings = computeSavings(traceParsedData, context, renderBlockingRequests);
     return {

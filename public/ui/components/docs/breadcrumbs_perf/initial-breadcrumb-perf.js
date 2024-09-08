@@ -15,6 +15,7 @@ const breadcrumb = {
     child: null,
 };
 breadcrumbsUI.data = {
-    breadcrumb: breadcrumb,
+    initialBreadcrumb: breadcrumb,
+    activeBreadcrumb: breadcrumb,
 };
 //# sourceMappingURL=initial-breadcrumb-perf.js.map

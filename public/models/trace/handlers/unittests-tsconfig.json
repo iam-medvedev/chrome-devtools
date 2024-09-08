@@ -84,6 +84,9 @@
       "path": "../../../panels/timeline/bundle-tsconfig.json"
     },
     {
+      "path": "../../../panels/timeline/components/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../testing/testing-tsconfig.json"
     }
   ]

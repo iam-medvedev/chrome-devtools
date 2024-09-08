@@ -36,6 +36,7 @@
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.ts",
     "../../../../../../../front_end/models/trace/insights/LargestContentfulPaint.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.ts",
+    "../../../../../../../front_end/models/trace/insights/ThirdPartyWeb.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.ts",
     "../../../../../../../front_end/models/trace/insights/types.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
@@ -43,6 +44,12 @@
     "../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
+    {
+      "path": "../../../third_party/third-party-web/bundle-tsconfig.json"
+    },
+    {
+      "path": "../extras/bundle-tsconfig.json"
+    },
     {
       "path": "../handlers/bundle-tsconfig.json"
     },

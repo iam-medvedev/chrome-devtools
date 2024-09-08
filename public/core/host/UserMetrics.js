@@ -51,10 +51,6 @@ export class UserMetrics {
         const panelWithLocation = PanelWithLocation[panelWithLocationName] || 0;
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShownInLocation" /* EnumeratedHistogram.PanelShownInLocation */, panelWithLocation, PanelWithLocation.MAX_VALUE);
     }
-    sourcesSidebarTabShown(sidebarPaneName) {
-        const code = SourcesSidebarTabCodes[sidebarPaneName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Sources.SidebarTabShown" /* EnumeratedHistogram.SourcesSidebarTabShown */, code, SourcesSidebarTabCodes.MAX_VALUE);
-    }
     settingsPanelShown(settingsViewId) {
         this.panelShown('settings-' + settingsViewId);
     }
@@ -687,18 +683,6 @@ export var ElementsSidebarTabCodes;
     /* eslint-enable @typescript-eslint/naming-convention */
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["MAX_VALUE"] = 8] = "MAX_VALUE";
 })(ElementsSidebarTabCodes || (ElementsSidebarTabCodes = {}));
-export var SourcesSidebarTabCodes;
-(function (SourcesSidebarTabCodes) {
-    /* eslint-disable @typescript-eslint/naming-convention */
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["OtherSidebarPane"] = 0] = "OtherSidebarPane";
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-network"] = 1] = "navigator-network";
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-files"] = 2] = "navigator-files";
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-overrides"] = 3] = "navigator-overrides";
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-content-scripts"] = 4] = "navigator-content-scripts";
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-snippets"] = 5] = "navigator-snippets";
-    /* eslint-enable @typescript-eslint/naming-convention */
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["MAX_VALUE"] = 6] = "MAX_VALUE";
-})(SourcesSidebarTabCodes || (SourcesSidebarTabCodes = {}));
 export var MediaTypes;
 (function (MediaTypes) {
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -898,7 +882,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["styles-pane-css-changes"] = 55] = "styles-pane-css-changes";
     DevtoolsExperiments[DevtoolsExperiments["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
     DevtoolsExperiments[DevtoolsExperiments["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
-    DevtoolsExperiments[DevtoolsExperiments["important-dom-properties"] = 64] = "important-dom-properties";
     DevtoolsExperiments[DevtoolsExperiments["just-my-code"] = 65] = "just-my-code";
     DevtoolsExperiments[DevtoolsExperiments["preloading-status-panel"] = 68] = "preloading-status-panel";
     DevtoolsExperiments[DevtoolsExperiments["outermost-target-selector"] = 71] = "outermost-target-selector";

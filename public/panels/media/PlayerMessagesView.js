@@ -81,8 +81,8 @@ class MessageLevelSelector {
         this.view = view;
         this.itemMap = new Map();
         this.hiddenLevels = [];
-        this.bitFieldValue = 7 /* MessageLevelBitfield.Default */;
-        this.savedBitFieldValue = 7 /* MessageLevelBitfield.Default */;
+        this.bitFieldValue = 7 /* MessageLevelBitfield.DEFAULT */;
+        this.savedBitFieldValue = 7 /* MessageLevelBitfield.DEFAULT */;
         this.defaultTitleInternal = i18nString(UIStrings.default);
         this.customTitle = i18nString(UIStrings.custom);
         this.allTitle = i18nString(UIStrings.all);
@@ -99,42 +99,42 @@ class MessageLevelSelector {
             title: this.defaultTitleInternal,
             overwrite: true,
             stringValue: '',
-            value: 7 /* MessageLevelBitfield.Default */,
+            value: 7 /* MessageLevelBitfield.DEFAULT */,
             selectable: undefined,
         });
         this.items.insert(this.items.length, {
             title: this.allTitle,
             overwrite: true,
             stringValue: '',
-            value: 15 /* MessageLevelBitfield.All */,
+            value: 15 /* MessageLevelBitfield.ALL */,
             selectable: undefined,
         });
         this.items.insert(this.items.length, {
             title: i18nString(UIStrings.error),
             overwrite: false,
             stringValue: 'error',
-            value: 1 /* MessageLevelBitfield.Error */,
+            value: 1 /* MessageLevelBitfield.ERROR */,
             selectable: undefined,
         });
         this.items.insert(this.items.length, {
             title: i18nString(UIStrings.warning),
             overwrite: false,
             stringValue: 'warning',
-            value: 2 /* MessageLevelBitfield.Warning */,
+            value: 2 /* MessageLevelBitfield.WARNING */,
             selectable: undefined,
         });
         this.items.insert(this.items.length, {
             title: i18nString(UIStrings.info),
             overwrite: false,
             stringValue: 'info',
-            value: 4 /* MessageLevelBitfield.Info */,
+            value: 4 /* MessageLevelBitfield.INFO */,
             selectable: undefined,
         });
         this.items.insert(this.items.length, {
             title: i18nString(UIStrings.debug),
             overwrite: false,
             stringValue: 'debug',
-            value: 8 /* MessageLevelBitfield.Debug */,
+            value: 8 /* MessageLevelBitfield.DEBUG */,
             selectable: undefined,
         });
     }
@@ -164,10 +164,10 @@ class MessageLevelSelector {
         else {
             this.bitFieldValue ^= item.value;
         }
-        if (this.bitFieldValue === 7 /* MessageLevelBitfield.Default */) {
+        if (this.bitFieldValue === 7 /* MessageLevelBitfield.DEFAULT */) {
             return this.defaultTitleInternal;
         }
-        if (this.bitFieldValue === 15 /* MessageLevelBitfield.All */) {
+        if (this.bitFieldValue === 15 /* MessageLevelBitfield.ALL */) {
             return this.allTitle;
         }
         const potentialMatch = this.itemMap.get(this.bitFieldValue);
@@ -233,7 +233,7 @@ export class PlayerMessagesView extends UI.Widget.VBox {
     }
     createFilterInput() {
         const filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByLogMessages), 1, 1);
-        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, (data) => {
+        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, (data) => {
             this.filterByString(data);
         }, this);
         return filterInput;

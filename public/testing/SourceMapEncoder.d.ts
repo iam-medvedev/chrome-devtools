@@ -15,7 +15,7 @@ export declare class GeneratedRangeBuilder {
     /** The 'names' field of the SourceMap. The builder will modify it. */
     constructor(names: string[]);
     start(line: number, column: number, options?: {
-        isScope?: boolean;
+        isFunctionScope?: boolean;
         definition?: {
             sourceIdx: number;
             scopeIdx: number;

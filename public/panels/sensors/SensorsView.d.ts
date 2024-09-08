@@ -56,12 +56,11 @@ export declare class SensorsView extends UI.Widget.VBox {
     private appendIdleEmulator;
 }
 export declare const enum DeviceOrientationModificationSource {
-    UserInput = "userInput",
-    UserDrag = "userDrag",
-    ResetButton = "resetButton",
-    SelectPreset = "selectPreset"
+    USER_INPUT = "userInput",
+    USER_DRAG = "userDrag",
+    RESET_BUTTON = "resetButton",
+    SELECT_PRESET = "selectPreset"
 }
-/** {string} */
 export declare const NonPresetOptions: {
     NoOverride: string;
     Custom: string;

@@ -228,35 +228,35 @@ export class RequestTimingView extends UI.Widget.VBox {
     }
     static timeRangeTitle(name) {
         switch (name) {
-            case "push" /* RequestTimeRangeNames.Push */:
+            case "push" /* RequestTimeRangeNames.PUSH */:
                 return i18nString(UIStrings.receivingPush);
-            case "queueing" /* RequestTimeRangeNames.Queueing */:
+            case "queueing" /* RequestTimeRangeNames.QUEUEING */:
                 return i18nString(UIStrings.queueing);
-            case "blocking" /* RequestTimeRangeNames.Blocking */:
+            case "blocking" /* RequestTimeRangeNames.BLOCKING */:
                 return i18nString(UIStrings.stalled);
-            case "connecting" /* RequestTimeRangeNames.Connecting */:
+            case "connecting" /* RequestTimeRangeNames.CONNECTING */:
                 return i18nString(UIStrings.initialConnection);
             case "dns" /* RequestTimeRangeNames.DNS */:
                 return i18nString(UIStrings.dnsLookup);
-            case "proxy" /* RequestTimeRangeNames.Proxy */:
+            case "proxy" /* RequestTimeRangeNames.PROXY */:
                 return i18nString(UIStrings.proxyNegotiation);
-            case "receiving-push" /* RequestTimeRangeNames.ReceivingPush */:
+            case "receiving-push" /* RequestTimeRangeNames.RECEIVING_PUSH */:
                 return i18nString(UIStrings.readingPush);
-            case "receiving" /* RequestTimeRangeNames.Receiving */:
+            case "receiving" /* RequestTimeRangeNames.RECEIVING */:
                 return i18nString(UIStrings.contentDownload);
-            case "sending" /* RequestTimeRangeNames.Sending */:
+            case "sending" /* RequestTimeRangeNames.SENDING */:
                 return i18nString(UIStrings.requestSent);
-            case "serviceworker" /* RequestTimeRangeNames.ServiceWorker */:
+            case "serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */:
                 return i18nString(UIStrings.requestToServiceworker);
-            case "serviceworker-preparation" /* RequestTimeRangeNames.ServiceWorkerPreparation */:
+            case "serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */:
                 return i18nString(UIStrings.startup);
-            case "serviceworker-respondwith" /* RequestTimeRangeNames.ServiceWorkerRespondWith */:
+            case "serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */:
                 return i18nString(UIStrings.respondwith);
             case "ssl" /* RequestTimeRangeNames.SSL */:
                 return i18nString(UIStrings.ssl);
-            case "total" /* RequestTimeRangeNames.Total */:
+            case "total" /* RequestTimeRangeNames.TOTAL */:
                 return i18nString(UIStrings.total);
-            case "waiting" /* RequestTimeRangeNames.Waiting */:
+            case "waiting" /* RequestTimeRangeNames.WAITING */:
                 return i18nString(UIStrings.waitingTtfb);
             default:
                 return name;
@@ -266,7 +266,7 @@ export class RequestTimingView extends UI.Widget.VBox {
         const result = [];
         function addRange(name, start, end) {
             if (start < Number.MAX_VALUE && start <= end) {
-                result.push({ name: name, start: start, end: end });
+                result.push({ name, start, end });
             }
         }
         function firstPositive(numbers) {
@@ -297,44 +297,44 @@ export class RequestTimingView extends UI.Widget.VBox {
                 (hasDifferentIssueAndStartTime ? request.startTime : Number.MAX_VALUE) :
                 request.responseReceivedTime;
             const end = (request.endTime === -1) ? Number.MAX_VALUE : request.endTime;
-            addRange("total" /* RequestTimeRangeNames.Total */, start, end);
-            addRange("blocking" /* RequestTimeRangeNames.Blocking */, start, middle);
-            const state = request.responseReceivedTime === -1 ? "connecting" /* RequestTimeRangeNames.Connecting */ : "receiving" /* RequestTimeRangeNames.Receiving */;
+            addRange("total" /* RequestTimeRangeNames.TOTAL */, start, end);
+            addRange("blocking" /* RequestTimeRangeNames.BLOCKING */, start, middle);
+            const state = request.responseReceivedTime === -1 ? "connecting" /* RequestTimeRangeNames.CONNECTING */ : "receiving" /* RequestTimeRangeNames.RECEIVING */;
             addRange(state, middle, end);
             return result;
         }
         const issueTime = request.issueTime();
         const startTime = timing.requestTime;
         const endTime = firstPositive([request.endTime, request.responseReceivedTime]) || startTime;
-        addRange("total" /* RequestTimeRangeNames.Total */, issueTime < startTime ? issueTime : startTime, endTime);
+        addRange("total" /* RequestTimeRangeNames.TOTAL */, issueTime < startTime ? issueTime : startTime, endTime);
         if (timing.pushStart) {
             const pushEnd = timing.pushEnd || endTime;
             // Only show the part of push that happened after the navigation/reload.
             // Pushes that happened on the same connection before we started main request will not be shown.
             if (pushEnd > navigationStart) {
-                addRange("push" /* RequestTimeRangeNames.Push */, Math.max(timing.pushStart, navigationStart), pushEnd);
+                addRange("push" /* RequestTimeRangeNames.PUSH */, Math.max(timing.pushStart, navigationStart), pushEnd);
             }
         }
         if (issueTime < startTime) {
-            addRange("queueing" /* RequestTimeRangeNames.Queueing */, issueTime, startTime);
+            addRange("queueing" /* RequestTimeRangeNames.QUEUEING */, issueTime, startTime);
         }
         const responseReceived = (request.responseReceivedTime - startTime) * 1000;
         if (request.fetchedViaServiceWorker) {
-            addOffsetRange("blocking" /* RequestTimeRangeNames.Blocking */, 0, timing.workerStart);
-            addOffsetRange("serviceworker-preparation" /* RequestTimeRangeNames.ServiceWorkerPreparation */, timing.workerStart, timing.workerReady);
-            addOffsetRange("serviceworker-respondwith" /* RequestTimeRangeNames.ServiceWorkerRespondWith */, timing.workerFetchStart, timing.workerRespondWithSettled);
-            addOffsetRange("serviceworker" /* RequestTimeRangeNames.ServiceWorker */, timing.workerReady, timing.sendEnd);
-            addOffsetRange("waiting" /* RequestTimeRangeNames.Waiting */, timing.sendEnd, responseReceived);
+            addOffsetRange("blocking" /* RequestTimeRangeNames.BLOCKING */, 0, timing.workerStart);
+            addOffsetRange("serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */, timing.workerStart, timing.workerReady);
+            addOffsetRange("serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */, timing.workerFetchStart, timing.workerRespondWithSettled);
+            addOffsetRange("serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */, timing.workerReady, timing.sendEnd);
+            addOffsetRange("waiting" /* RequestTimeRangeNames.WAITING */, timing.sendEnd, responseReceived);
         }
         else if (!timing.pushStart) {
             const blockingEnd = firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart, responseReceived]) || 0;
-            addOffsetRange("blocking" /* RequestTimeRangeNames.Blocking */, 0, blockingEnd);
-            addOffsetRange("proxy" /* RequestTimeRangeNames.Proxy */, timing.proxyStart, timing.proxyEnd);
+            addOffsetRange("blocking" /* RequestTimeRangeNames.BLOCKING */, 0, blockingEnd);
+            addOffsetRange("proxy" /* RequestTimeRangeNames.PROXY */, timing.proxyStart, timing.proxyEnd);
             addOffsetRange("dns" /* RequestTimeRangeNames.DNS */, timing.dnsStart, timing.dnsEnd);
-            addOffsetRange("connecting" /* RequestTimeRangeNames.Connecting */, timing.connectStart, timing.connectEnd);
+            addOffsetRange("connecting" /* RequestTimeRangeNames.CONNECTING */, timing.connectStart, timing.connectEnd);
             addOffsetRange("ssl" /* RequestTimeRangeNames.SSL */, timing.sslStart, timing.sslEnd);
-            addOffsetRange("sending" /* RequestTimeRangeNames.Sending */, timing.sendStart, timing.sendEnd);
-            addOffsetRange("waiting" /* RequestTimeRangeNames.Waiting */, Math.max(timing.sendEnd, timing.connectEnd, timing.dnsEnd, timing.proxyEnd, blockingEnd), responseReceived);
+            addOffsetRange("sending" /* RequestTimeRangeNames.SENDING */, timing.sendStart, timing.sendEnd);
+            addOffsetRange("waiting" /* RequestTimeRangeNames.WAITING */, Math.max(timing.sendEnd, timing.connectEnd, timing.dnsEnd, timing.proxyEnd, blockingEnd), responseReceived);
         }
         const { serviceWorkerRouterInfo } = request;
         if (serviceWorkerRouterInfo) {
@@ -349,18 +349,18 @@ export class RequestTimingView extends UI.Widget.VBox {
                 else if (serviceWorkerRouterInfo?.actualSourceType === "fetch-event" /* Protocol.Network.ServiceWorkerRouterSource.FetchEvent */) {
                     routerEvaluationEnd = timing.workerStart;
                 }
-                addMaybeNegativeOffsetRange("serviceworker-routerevaluation" /* RequestTimeRangeNames.ServiceWorkerRouterEvaluation */, timing.workerRouterEvaluationStart, routerEvaluationEnd);
+                addMaybeNegativeOffsetRange("serviceworker-routerevaluation" /* RequestTimeRangeNames.SERVICE_WORKER_ROUTER_EVALUATION */, timing.workerRouterEvaluationStart, routerEvaluationEnd);
             }
             if (timing.workerCacheLookupStart) {
                 let cacheLookupEnd = timing.sendStart;
                 if (serviceWorkerRouterInfo?.actualSourceType === "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */) {
                     cacheLookupEnd = timing.receiveHeadersStart;
                 }
-                addMaybeNegativeOffsetRange("serviceworker-cachelookup" /* RequestTimeRangeNames.ServiceWorkerCacheLookup */, timing.workerCacheLookupStart, cacheLookupEnd);
+                addMaybeNegativeOffsetRange("serviceworker-cachelookup" /* RequestTimeRangeNames.SERVICE_WORKER_CACHE_LOOKUP */, timing.workerCacheLookupStart, cacheLookupEnd);
             }
         }
         if (request.endTime !== -1) {
-            addRange(timing.pushStart ? "receiving-push" /* RequestTimeRangeNames.ReceivingPush */ : "receiving" /* RequestTimeRangeNames.Receiving */, request.responseReceivedTime, endTime);
+            addRange(timing.pushStart ? "receiving-push" /* RequestTimeRangeNames.RECEIVING_PUSH */ : "receiving" /* RequestTimeRangeNames.RECEIVING */, request.responseReceivedTime, endTime);
         }
         return result;
     }
@@ -402,14 +402,14 @@ export class RequestTimingView extends UI.Widget.VBox {
         for (let i = 0; i < timeRanges.length; ++i) {
             const range = timeRanges[i];
             const rangeName = range.name;
-            if (rangeName === "total" /* RequestTimeRangeNames.Total */) {
+            if (rangeName === "total" /* RequestTimeRangeNames.TOTAL */) {
                 totalDuration = range.end - range.start;
                 continue;
             }
-            if (rangeName === "push" /* RequestTimeRangeNames.Push */) {
+            if (rangeName === "push" /* RequestTimeRangeNames.PUSH */) {
                 createHeader(i18nString(UIStrings.serverPush));
             }
-            else if (rangeName === "queueing" /* RequestTimeRangeNames.Queueing */) {
+            else if (rangeName === "queueing" /* RequestTimeRangeNames.QUEUEING */) {
                 if (!queueingHeader) {
                     queueingHeader = createHeader(i18nString(UIStrings.resourceScheduling));
                 }
@@ -607,14 +607,14 @@ export class RequestTimingView extends UI.Widget.VBox {
     wasShown() {
         this.request.addEventListener(SDK.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
         this.request.addEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
-        this.calculator.addEventListener("BoundariesChanged" /* Events.BoundariesChanged */, this.boundaryChanged, this);
+        this.calculator.addEventListener("BoundariesChanged" /* Events.BOUNDARIES_CHANGED */, this.boundaryChanged, this);
         this.registerCSSFiles([networkingTimingTableStyles]);
         this.refresh();
     }
     willHide() {
         this.request.removeEventListener(SDK.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
         this.request.removeEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
-        this.calculator.removeEventListener("BoundariesChanged" /* Events.BoundariesChanged */, this.boundaryChanged, this);
+        this.calculator.removeEventListener("BoundariesChanged" /* Events.BOUNDARIES_CHANGED */, this.boundaryChanged, this);
     }
     refresh() {
         if (this.tableElement) {
@@ -636,18 +636,18 @@ export class RequestTimingView extends UI.Widget.VBox {
     }
 }
 export const ServiceWorkerRangeNames = new Set([
-    "serviceworker" /* RequestTimeRangeNames.ServiceWorker */,
-    "serviceworker-preparation" /* RequestTimeRangeNames.ServiceWorkerPreparation */,
-    "serviceworker-respondwith" /* RequestTimeRangeNames.ServiceWorkerRespondWith */,
-    "serviceworker-routerevaluation" /* RequestTimeRangeNames.ServiceWorkerRouterEvaluation */,
-    "serviceworker-cachelookup" /* RequestTimeRangeNames.ServiceWorkerCacheLookup */,
+    "serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */,
+    "serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */,
+    "serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */,
+    "serviceworker-routerevaluation" /* RequestTimeRangeNames.SERVICE_WORKER_ROUTER_EVALUATION */,
+    "serviceworker-cachelookup" /* RequestTimeRangeNames.SERVICE_WORKER_CACHE_LOOKUP */,
 ]);
 export const ConnectionSetupRangeNames = new Set([
-    "queueing" /* RequestTimeRangeNames.Queueing */,
-    "blocking" /* RequestTimeRangeNames.Blocking */,
-    "connecting" /* RequestTimeRangeNames.Connecting */,
+    "queueing" /* RequestTimeRangeNames.QUEUEING */,
+    "blocking" /* RequestTimeRangeNames.BLOCKING */,
+    "connecting" /* RequestTimeRangeNames.CONNECTING */,
     "dns" /* RequestTimeRangeNames.DNS */,
-    "proxy" /* RequestTimeRangeNames.Proxy */,
+    "proxy" /* RequestTimeRangeNames.PROXY */,
     "ssl" /* RequestTimeRangeNames.SSL */,
 ]);
 //# sourceMappingURL=RequestTimingView.js.map

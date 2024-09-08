@@ -1,9 +1,9 @@
 export declare const CSSAngleRegex: RegExp;
 export declare const enum AngleUnit {
-    Deg = "deg",
-    Grad = "grad",
-    Rad = "rad",
-    Turn = "turn"
+    DEG = "deg",
+    GRAD = "grad",
+    RAD = "rad",
+    TURN = "turn"
 }
 export interface Angle {
     value: number;

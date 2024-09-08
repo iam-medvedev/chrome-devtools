@@ -78,16 +78,16 @@ describeWithEnvironment('ThreadAppender', function () {
         const { entryTypeByLevel } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
         // This includes all tracks rendered by the ThreadAppender.
         const execptedLevelTypes = [
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
         ];
         assert.deepStrictEqual(entryTypeByLevel, execptedLevelTypes);
     });
@@ -293,7 +293,7 @@ describeWithEnvironment('ThreadAppender', function () {
             { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
             {
                 type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                'startAtTime': TraceModel.Types.Timing.MicroSeconds(50_000),
+                startAtTime: TraceModel.Types.Timing.MicroSeconds(50_000),
             },
         ]);
     });

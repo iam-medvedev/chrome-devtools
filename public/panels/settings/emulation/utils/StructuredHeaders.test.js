@@ -108,10 +108,10 @@ function makeItemWithParams(bareItem, params) {
     return { kind: 4 /* StructuredHeaders.ResultKind.ITEM */, value: bareItem, parameters: makeParams(params) };
 }
 function makeList(items) {
-    return { kind: 11 /* StructuredHeaders.ResultKind.LIST */, items: items };
+    return { kind: 11 /* StructuredHeaders.ResultKind.LIST */, items };
 }
 function makeInnerList(items, params) {
-    return { kind: 12 /* StructuredHeaders.ResultKind.INNER_LIST */, items: items, parameters: makeParams(params) };
+    return { kind: 12 /* StructuredHeaders.ResultKind.INNER_LIST */, items, parameters: makeParams(params) };
 }
 describe('StructuredHeaders', () => {
     describe('Parsing', () => {

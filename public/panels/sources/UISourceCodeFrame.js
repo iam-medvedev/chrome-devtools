@@ -299,7 +299,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
                 this.plugins.push(new pluginType(pluginUISourceCode, this));
             }
         }
-        this.dispatchEventToListeners("ToolbarItemsChanged" /* Events.ToolbarItemsChanged */);
+        this.dispatchEventToListeners("ToolbarItemsChanged" /* Events.TOOLBAR_ITEMS_CHANGED */);
     }
     disposePlugins() {
         for (const plugin of this.plugins) {

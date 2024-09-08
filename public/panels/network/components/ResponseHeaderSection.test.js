@@ -19,7 +19,7 @@ async function renderResponseHeaderSection(request) {
     Object.setPrototypeOf(request, SDK.NetworkRequest.NetworkRequest.prototype);
     component.data = {
         request,
-        toReveal: { section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */, header: 'highlighted-header' },
+        toReveal: { section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, header: 'highlighted-header' },
     };
     await coordinator.done();
     assert.instanceOf(component, HTMLElement);
@@ -32,7 +32,7 @@ async function editHeaderRow(component, index, headerAttribute, newValue) {
     assert.isTrue(rows.length >= index + 1, 'Trying to edit row with index greater than # of rows.');
     const row = rows[index];
     assert.isNotNull(row.shadowRoot);
-    const selector = headerAttribute === "HeaderName" /* HeaderAttribute.HeaderName */ ? '.header-name' : '.header-value';
+    const selector = headerAttribute === "HeaderName" /* HeaderAttribute.HEADER_NAME */ ? '.header-name' : '.header-value';
     const editableComponent = row.shadowRoot.querySelector(`${selector} devtools-editable-span`);
     assert.instanceOf(editableComponent, HTMLElement);
     assert.isNotNull(editableComponent.shadowRoot);
@@ -153,10 +153,10 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.isTrue(regex.test(row.shadowRoot.querySelector('.header-name')?.textContent || ''));
         assert.strictEqual(row.shadowRoot.querySelector('.header-value')?.textContent?.trim(), '');
         assert.strictEqual(getCleanTextContentFromElements(row.shadowRoot, '.call-to-action')[0], 'To use this resource from a different origin, the server needs to specify a cross-origin ' +
-            'resource policy in the response headers:Cross-Origin-Resource-Policy: same-siteChoose ' +
-            'this option if the resource and the document are served from the same site.' +
-            'Cross-Origin-Resource-Policy: cross-originOnly choose this option if an arbitrary website ' +
-            'including this resource does not impose a security risk.Learn more');
+            'resource policy in the response headers: Cross-Origin-Resource-Policy: same-site Choose ' +
+            'this option if the resource and the document are served from the same site. ' +
+            'Cross-Origin-Resource-Policy: cross-origin Only choose this option if an arbitrary website ' +
+            'including this resource does not impose a security risk. Learn more');
     });
     it('displays info about blocked "Set-Cookie"-headers', async () => {
         const request = {
@@ -383,7 +383,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             { name: 'server', value: 'original server' },
         ];
         const { component, spy } = await setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders);
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'max-age=9999');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'max-age=9999');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -409,10 +409,10 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.strictEqual(rows.length, 1);
         checkHeaderSectionRow(rows[0], 'foo:', 'syn ax', false, false, true);
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'syn ax');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'syn ax');
         assert.isTrue(spy.notCalled);
         checkHeaderSectionRow(rows[0], 'foo:', 'syn ax', false, false, true);
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'syntax');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'syntax');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -444,7 +444,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             { name: 'server', value: 'original server' },
         ];
         const { component, spy } = await setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders);
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'edited value');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'edited value');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -598,7 +598,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             { name: 'server', value: 'original server' },
         ];
         const { component, spy } = await setupHeaderEditing('[]', actualHeaders, actualHeaders);
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'overridden server');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'overridden server');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -611,7 +611,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.strictEqual(spy.callCount, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify(expected, null, 2)));
         spy.resetHistory();
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'original server');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'original server');
         assert.strictEqual(spy.callCount, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify([], null, 2)));
     });
@@ -648,7 +648,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             }];
         assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideHeaderAdded));
-        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HeaderName */, 'foo');
+        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'foo');
         expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -663,7 +663,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                 ],
             }];
         assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'bar');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'bar');
         expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -698,9 +698,9 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         addHeaderButton.click();
         await coordinator.done();
         assert.strictEqual(spy.callCount, 1);
-        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HeaderName */, 'valid');
+        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'valid');
         assert.strictEqual(spy.callCount, 2);
-        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HeaderName */, 'in:valid');
+        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'in:valid');
         assert.strictEqual(spy.callCount, 2);
     });
     it('can remove a newly added header', async () => {
@@ -808,8 +808,8 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             { name: 'server', value: 'original server' },
         ];
         const { component, spy } = await setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders);
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'edited cache-control');
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'edited server');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'edited cache-control');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'edited server');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -836,7 +836,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             { name: 'link', value: 'second value' },
         ];
         const { component, spy } = await setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders);
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'third value');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'third value');
         let expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -847,7 +847,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                 ],
             }];
         assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'fourth value');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'fourth value');
         expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -888,7 +888,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             { name: 'link', value: 'second value' },
         ];
         const { component, spy } = await setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders);
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'fifth value');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'fifth value');
         let expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -903,7 +903,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                 ],
             }];
         assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'sixth value');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'sixth value');
         expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -938,9 +938,9 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await coordinator.done();
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'unit test');
-        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HeaderName */, 'foo');
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'bar');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'unit test');
+        await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'foo');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'bar');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -1009,7 +1009,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await coordinator.done();
-        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'unit test');
+        await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'unit test');
         sinon.stub(Workspace.Workspace.WorkspaceImpl.instance(), 'uiSourceCodeForURL').callsFake(() => null);
         component.data = { request };
         await coordinator.done();
@@ -1076,7 +1076,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         checkHeaderSectionRow(rows[5], 'set-cookie:', 'wrong format', true, false, true);
         assert.isNotNull(rows[6].shadowRoot);
         checkHeaderSectionRow(rows[6], 'z-header:', 'zzz', false, false, true);
-        await editHeaderRow(component, 2, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'foo=edited');
+        await editHeaderRow(component, 2, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'foo=edited');
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -1095,7 +1095,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                 ],
             }];
         assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
-        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HeaderValue */, 'bar=edited');
+        await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'bar=edited');
         expected[0].headers.push({ name: 'set-cookie', value: 'bar=edited' });
         assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
     });
@@ -1149,7 +1149,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.isNotNull(rows[0].shadowRoot);
         checkRow(rows[0].shadowRoot, 'abc:', 'def', false);
         assert.isNotNull(rows[1].shadowRoot);
-        checkRow(rows[1].shadowRoot, 'not-setcross-origin-embedder-policy:', '', false);
+        checkRow(rows[1].shadowRoot, 'not-set cross-origin-embedder-policy:', '', false);
     });
 });
 //# sourceMappingURL=ResponseHeaderSection.test.js.map

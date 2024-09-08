@@ -8,7 +8,6 @@ import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { getEventLevel } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
-import { getEventStyle } from './EventUICategory.js';
 import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
@@ -43,7 +42,7 @@ export function entryIsVisibleInTimeline(entry, traceParsedData) {
     }
     // Default styles are globally defined for each event name. Some
     // events are hidden by default.
-    const eventStyle = getEventStyle(entry.name);
+    const eventStyle = TimelineComponents.EntryStyles.getEventStyle(entry.name);
     const eventIsTiming = TraceEngine.Types.TraceEvents.isTraceEventConsoleTime(entry) ||
         TraceEngine.Types.TraceEvents.isTraceEventPerformanceMeasure(entry) ||
         TraceEngine.Types.TraceEvents.isTraceEventPerformanceMark(entry);
@@ -345,7 +344,7 @@ export class CompatibilityTracksAppender {
         this.#trackForLevel.set(level, appender);
         const index = this.#entryData.length;
         this.#entryData.push(event);
-        this.#legacyEntryTypeByLevel[level] = "TrackAppender" /* EntryType.TrackAppender */;
+        this.#legacyEntryTypeByLevel[level] = "TrackAppender" /* EntryType.TRACK_APPENDER */;
         this.#flameChartData.entryLevels[index] = level;
         this.#flameChartData.entryStartTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
         const dur = event.dur || TraceEngine.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
@@ -381,7 +380,7 @@ export class CompatibilityTracksAppender {
             eventAppendedCallback?.(event, index);
         }
         this.#legacyEntryTypeByLevel.length = trackStartLevel + lastTimestampByLevel.length;
-        this.#legacyEntryTypeByLevel.fill("TrackAppender" /* EntryType.TrackAppender */, trackStartLevel);
+        this.#legacyEntryTypeByLevel.fill("TrackAppender" /* EntryType.TRACK_APPENDER */, trackStartLevel);
         return trackStartLevel + lastTimestampByLevel.length;
     }
     /**

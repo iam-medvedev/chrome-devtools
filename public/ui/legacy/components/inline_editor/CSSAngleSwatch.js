@@ -12,7 +12,7 @@ export class CSSAngleSwatch extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     angle = {
         value: 0,
-        unit: "rad" /* AngleUnit.Rad */,
+        unit: "rad" /* AngleUnit.RAD */,
     };
     connectedCallback() {
         this.shadow.adoptedStyleSheets = [cssAngleSwatchStyles];

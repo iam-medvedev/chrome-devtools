@@ -63,10 +63,10 @@ export class InplaceFormatterEditorAction {
             return this.button;
         }
         this.sourcesView = sourcesView;
-        this.sourcesView.addEventListener("EditorSelected" /* Events.EditorSelected */, this.editorSelected.bind(this));
-        this.sourcesView.addEventListener("EditorClosed" /* Events.EditorClosed */, this.editorClosed.bind(this));
+        this.sourcesView.addEventListener("EditorSelected" /* Events.EDITOR_SELECTED */, this.editorSelected.bind(this));
+        this.sourcesView.addEventListener("EditorClosed" /* Events.EDITOR_CLOSED */, this.editorClosed.bind(this));
         this.button = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.format), 'brackets');
-        this.button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.formatSourceInPlace, this);
+        this.button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.formatSourceInPlace, this);
         this.updateButton(sourcesView.currentUISourceCode());
         return this.button;
     }

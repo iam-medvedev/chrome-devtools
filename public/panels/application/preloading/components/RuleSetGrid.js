@@ -171,7 +171,7 @@ function ruleSetRenderer(ruleSet, pageURL) {
             if (request === null) {
                 return;
             }
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.Preview */, { clearFilter: false });
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.PREVIEW */, { clearFilter: false });
             await Common.Revealer.reveal(requestLocation);
         };
         // Disabled until https://crbug.com/1079231 is fixed.

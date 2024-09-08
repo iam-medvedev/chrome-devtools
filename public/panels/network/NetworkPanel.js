@@ -206,7 +206,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.rightToolbar = new UI.Toolbar.Toolbar('', networkToolbarContainer);
         this.filterBar = new UI.FilterBar.FilterBar('network-panel', true);
         this.filterBar.show(panel.contentElement);
-        this.filterBar.addEventListener("Changed" /* UI.FilterBar.FilterBarEvents.Changed */, this.handleFilterChanged.bind(this));
+        this.filterBar.addEventListener("Changed" /* UI.FilterBar.FilterBarEvents.CHANGED */, this.handleFilterChanged.bind(this));
         this.settingsPane = new UI.Widget.HBox();
         this.settingsPane.element.classList.add('network-settings-pane');
         this.settingsPane.show(panel.contentElement);
@@ -217,7 +217,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.filmStripPlaceholderElement = panel.contentElement.createChild('div', 'network-film-strip-placeholder');
         // Create top overview component.
         this.overviewPane = new PerfUI.TimelineOverviewPane.TimelineOverviewPane('network');
-        this.overviewPane.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged */, this.onWindowChanged.bind(this));
+        this.overviewPane.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_WINDOW_CHANGED */, this.onWindowChanged.bind(this));
         this.overviewPane.element.id = 'network-overview-panel';
         this.networkOverview = new NetworkOverview();
         this.overviewPane.setOverviewControls([this.networkOverview]);
@@ -248,7 +248,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             void VisualLogging.logKeyDown(event.currentTarget, event, 'hide-sidebar');
         });
         const closeSidebar = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.close), 'cross');
-        closeSidebar.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => splitWidget.hideSidebar());
+        closeSidebar.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => splitWidget.hideSidebar());
         closeSidebar.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         tabbedPane.rightToolbar().appendToolbarItem(closeSidebar);
         splitWidget.setSidebarWidget(tabbedPane);
@@ -340,7 +340,7 @@ export class NetworkPanel extends UI.Panel.Panel {
     setupToolbarButtons(splitWidget) {
         const searchToggle = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.search), 'search', undefined, 'search');
         function updateSidebarToggle() {
-            const isSidebarShowing = splitWidget.showMode() !== "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */;
+            const isSidebarShowing = splitWidget.showMode() !== "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */;
             searchToggle.setToggled(isSidebarShowing);
             if (!isSidebarShowing) {
                 searchToggle.element.focus();
@@ -351,8 +351,8 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.panelToolbar.appendSeparator();
         this.panelToolbar.appendToolbarItem(this.filterBar.filterButton());
         updateSidebarToggle();
-        splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.ShowModeChanged */, updateSidebarToggle);
-        searchToggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.SHOW_MODE_CHANGED */, updateSidebarToggle);
+        searchToggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             void this.searchToggleClick();
         });
         this.panelToolbar.appendToolbarItem(searchToggle);
@@ -363,7 +363,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.panelToolbar.appendToolbarItem(disableCacheCheckbox);
         this.panelToolbar.appendToolbarItem(this.throttlingSelect);
         const networkConditionsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.moreNetworkConditions), 'network-settings', undefined, 'network-conditions');
-        networkConditionsButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        networkConditionsButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             void UI.ViewManager.ViewManager.instance().showView('network.config');
         }, this);
         this.panelToolbar.appendToolbarItem(networkConditionsButton);
@@ -380,10 +380,10 @@ export class NetworkPanel extends UI.Panel.Panel {
         settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.networkRecordFilmStripSetting, i18nString(UIStrings.captureScreenshotsWhenLoadingA), i18nString(UIStrings.captureScreenshots)));
         this.panelToolbar.appendSeparator();
         const importHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.importHarFile), 'import', undefined, 'import-har');
-        importHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.fileSelectorElement.click(), this);
+        importHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.fileSelectorElement.click(), this);
         this.panelToolbar.appendToolbarItem(importHarButton);
         const exportHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.exportHar), 'download', undefined, 'export-har');
-        exportHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
+        exportHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
             void this.networkLogView.exportAll();
         }, this);
         this.panelToolbar.appendToolbarItem(exportHarButton);
@@ -471,9 +471,9 @@ export class NetworkPanel extends UI.Panel.Panel {
             this.filmStripView.element.setAttribute('jslog', `${VisualLogging.section('film-strip')}`);
             this.filmStripRecorder = new FilmStripRecorder(this.networkLogView.timeCalculator(), this.filmStripView);
             this.filmStripView.show(this.filmStripPlaceholderElement);
-            this.filmStripView.addEventListener("FrameSelected" /* PerfUI.FilmStripView.Events.FrameSelected */, this.onFilmFrameSelected, this);
-            this.filmStripView.addEventListener("FrameEnter" /* PerfUI.FilmStripView.Events.FrameEnter */, this.onFilmFrameEnter, this);
-            this.filmStripView.addEventListener("FrameExit" /* PerfUI.FilmStripView.Events.FrameExit */, this.onFilmFrameExit, this);
+            this.filmStripView.addEventListener("FrameSelected" /* PerfUI.FilmStripView.Events.FRAME_SELECTED */, this.onFilmFrameSelected, this);
+            this.filmStripView.addEventListener("FrameEnter" /* PerfUI.FilmStripView.Events.FRAME_ENTER */, this.onFilmFrameEnter, this);
+            this.filmStripView.addEventListener("FrameExit" /* PerfUI.FilmStripView.Events.FRAME_EXIT */, this.onFilmFrameExit, this);
             this.resetFilmStripView();
         }
         if (!toggled && this.filmStripRecorder) {
@@ -546,7 +546,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
     }
     showRequestPanel(shownTab, takeFocus) {
-        if (this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.Both */ && !shownTab && !takeFocus) {
+        if (this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.BOTH */ && !shownTab && !takeFocus) {
             // If panel is already shown, and we are not forcing a specific tab, return.
             return;
         }
@@ -565,7 +565,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.updateUI();
     }
     updateNetworkItemView() {
-        if (this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.Both */) {
+        if (this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
             this.clearNetworkItemView();
             this.createNetworkItemView();
             this.updateUI();
@@ -606,7 +606,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
                 .showView('network')
                 .then(this.networkLogView.resetFilter.bind(this.networkLogView))
-                .then(this.selectAndActivateRequest.bind(this, request.request, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */, 
+                .then(this.selectAndActivateRequest.bind(this, request.request, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, 
             /* FilterOptions= */ undefined)), { jslogContext: 'timeline.reveal-in-network' });
         };
         if (event.target.isSelfOrDescendant(this.element)) {

@@ -34,6 +34,24 @@ styles.replaceSync(
   flex-direction: column;
 }
 
+.select-element {
+  display: flex;
+  gap: var(--sys-size-3);
+  align-items: center;
+
+  .resource-link {
+    padding: var(--sys-size-2) var(--sys-size-4);
+    font: var(--sys-typescale-body4-size);
+    border: var(--sys-size-1) solid var(--sys-color-divider);
+    border-radius: var(--sys-shape-corner-extra-small);
+  }
+
+  .resource-link.not-selected {
+    color: var(--sys-color-state-disabled);
+    border-color: var(--sys-color-neutral-outline);
+  }
+}
+
 .input-form {
   display: flex;
   flex-direction: column;
@@ -45,39 +63,61 @@ styles.replaceSync(
 
 .chat-input-container {
   margin: var(--sys-size-3) 0;
-  padding: 0 2px;
-  border-radius: 4px;
-  border: 1px solid var(--sys-color-neutral-outline);
   width: 100%;
   display: flex;
-  background-color: var(--sys-color-cdt-base-container);
+  position: relative;
 }
 
 .chat-input {
-  border: 0;
-  height: var(--sys-size-11);
-  padding: 0 6px;
-  flex-grow: 1;
+  --right-padding: calc(var(--sys-size-5) + 26px + var(--sys-size-4)); /* Gap between the button and the edge + icon's width + gap between icon and the textarea */
+
+  field-sizing: content; /* stylelint-disable-line property-no-unknown */
+  resize: none;
+  width: 100%;
+  max-height: 84px; /* 4 rows */
+  border: 1px solid var(--sys-color-neutral-outline);
+  border-radius: var(--sys-shape-corner-small);
+  font: var(--sys-typescale-body4-regular);
+  line-height: 18px;
+  min-height: var(--sys-size-11);
+  padding: var(--sys-size-3) var(--right-padding) var(--sys-size-3) var(--sys-size-5);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
+
+  &::placeholder {
+    opacity: 60%;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--sys-color-primary);
+    border-color: var(--sys-color-primary);
+  }
+
+  &:disabled {
+    color: var(--sys-color-state-disabled);
+    background-color: var(--sys-color-state-disabled-container);
+  }
 }
 
-.chat-input:focus-visible {
-  outline: none;
+.chat-input-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: var(--sys-size-3) var(--sys-size-5);
 }
 
-.chat-input-container:has(.chat-input:focus-visible) {
-  outline: 1px solid var(--sys-color-primary);
-}
+.disclaimer {
+  display: flex;
+  justify-content: center;
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 
-.chat-input::placeholder {
-  color: var(--sys-color-state-disabled);
-}
-
-.chat-input-disclaimer {
-  text-align: center;
-  color: var(--sys-color-on-surface-subtle);
-  margin-bottom: var(--sys-size-4);
+  .disclaimer-text {
+    max-width: var(--sys-size-36);
+    color: var(--sys-color-on-surface-subtle);
+    font: var(--sys-typescale-body5-regular);
+    text-wrap: pretty;
+    padding: var(--sys-size-5);
+  }
 }
 
 .messages-scroll-container {
@@ -132,8 +172,19 @@ styles.replaceSync(
 }
 
 .step {
+  width: fit-content;
+  background-color: var(--sys-color-surface3);
+  border-radius: var(--sys-size-6);
+
+  &:not(&[open]):hover {
+    background-color: var(--sys-color-state-hover-on-subtle);
+  }
+
   devtools-icon {
     vertical-align: bottom;
+  }
+
+  .indicator {
     color: var(--sys-color-green-bright);
 
     &.loading {
@@ -145,12 +196,38 @@ styles.replaceSync(
     }
   }
 
-  summary {
+  .summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    padding: var(--sys-size-3);
     line-height: var(--sys-size-9);
+
+    .title {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+  }
+
+  &[open] {
+    width: auto;
+
+    .summary .title {
+      white-space: normal;
+      overflow: unset;
+    }
+
+    .summary .arrow {
+      transform: rotate(180deg);
+    }
+  }
+
+  summary::marker {
+    content: "";
   }
 
   .step-details {
-    padding-left: var(--sys-size-6);
+    padding: 0 var(--sys-size-10) var(--sys-size-3);
   }
 }
 
@@ -216,11 +293,6 @@ styles.replaceSync(
 }
 
 .side-effect-confirmation {
-  background: var(--color-background);
-  padding: 24px;
-  border-radius: var(--sys-size-6);
-  margin-bottom: 8px;
-
   p {
     margin: 0;
     margin-bottom: 12px;
@@ -229,11 +301,8 @@ styles.replaceSync(
 }
 
 .side-effect-buttons-container {
-  margin-top: 8px;
-
-  devtools-button {
-    margin-top: 4px;
-  }
+  display: flex;
+  gap: var(--sys-size-4);
 }
 
 .consent-view {

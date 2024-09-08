@@ -14,17 +14,17 @@ class SharedStorageItemsListener {
     #refreshed = false;
     constructor(dispatcher) {
         this.#dispatcher = dispatcher;
-        this.#dispatcher.addEventListener("ItemsRefreshed" /* Application.SharedStorageItemsView.SharedStorageItemsDispatcher.Events.ItemsRefreshed */, this.#itemsRefreshed, this);
+        this.#dispatcher.addEventListener("ItemsRefreshed" /* Application.SharedStorageItemsView.SharedStorageItemsDispatcher.Events.ITEMS_REFRESHED */, this.#itemsRefreshed, this);
     }
     dispose() {
-        this.#dispatcher.removeEventListener("ItemsRefreshed" /* Application.SharedStorageItemsView.SharedStorageItemsDispatcher.Events.ItemsRefreshed */, this.#itemsRefreshed, this);
+        this.#dispatcher.removeEventListener("ItemsRefreshed" /* Application.SharedStorageItemsView.SharedStorageItemsDispatcher.Events.ITEMS_REFRESHED */, this.#itemsRefreshed, this);
     }
     #itemsRefreshed() {
         this.#refreshed = true;
     }
     async waitForItemsRefreshed() {
         if (!this.#refreshed) {
-            await this.#dispatcher.once("ItemsRefreshed" /* Application.SharedStorageItemsView.SharedStorageItemsDispatcher.Events.ItemsRefreshed */);
+            await this.#dispatcher.once("ItemsRefreshed" /* Application.SharedStorageItemsView.SharedStorageItemsDispatcher.Events.ITEMS_REFRESHED */);
         }
         this.#refreshed = false;
     }

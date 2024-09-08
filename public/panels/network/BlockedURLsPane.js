@@ -140,10 +140,10 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         const url = editor.control('url').value;
         const patterns = this.manager.blockedPatterns();
         if (isNew) {
-            patterns.push({ enabled: true, url: url });
+            patterns.push({ enabled: true, url });
         }
         else {
-            patterns.splice(patterns.indexOf(item), 1, { enabled: true, url: url });
+            patterns.splice(patterns.indexOf(item), 1, { enabled: true, url });
         }
         this.manager.setBlockedPatterns(patterns);
     }

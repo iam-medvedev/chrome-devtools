@@ -144,8 +144,8 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.elementInternal.classList.add('text-prompt');
         ARIAUtils.markAsTextBox(this.elementInternal);
-        ARIAUtils.setAutocomplete(this.elementInternal, "both" /* ARIAUtils.AutocompleteInteractionModel.Both */);
-        ARIAUtils.setHasPopup(this.elementInternal, "listbox" /* ARIAUtils.PopupRole.ListBox */);
+        ARIAUtils.setAutocomplete(this.elementInternal, "both" /* ARIAUtils.AutocompleteInteractionModel.BOTH */);
+        ARIAUtils.setHasPopup(this.elementInternal, "listbox" /* ARIAUtils.PopupRole.LIST_BOX */);
         this.elementInternal.setAttribute('contenteditable', 'plaintext-only');
         this.element().addEventListener('keydown', this.boundOnKeyDown, false);
         this.elementInternal.addEventListener('input', this.boundOnInput, false);
@@ -178,7 +178,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.element().removeAttribute('contenteditable');
         this.element().removeAttribute('role');
         ARIAUtils.clearAutocomplete(this.element());
-        ARIAUtils.setHasPopup(this.element(), "false" /* ARIAUtils.PopupRole.False */);
+        ARIAUtils.setHasPopup(this.element(), "false" /* ARIAUtils.PopupRole.FALSE */);
     }
     textWithCurrentSuggestion() {
         const text = this.text();
@@ -397,7 +397,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.refreshGhostText();
         this.previousText = text;
-        this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+        this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
         this.changed = true;
         this.autoCompleteSoon();
     }
@@ -424,7 +424,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.queryRange = null;
         this.refreshGhostText();
         if (beforeText !== this.textWithCurrentSuggestion()) {
-            this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+            this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
             this.changed = true;
         }
     }
@@ -543,7 +543,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.currentSuggestion = suggestion;
         this.refreshGhostText();
         if (isIntermediateSuggestion) {
-            this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+            this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
             this.changed = true;
         }
     }
@@ -562,7 +562,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.setDOMSelection(this.queryRange.startColumn + startColumn, this.queryRange.startColumn + endColumn);
         this.updateLeftParenthesesIndices();
         this.clearAutocomplete();
-        this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+        this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
         this.changed = true;
         return true;
     }

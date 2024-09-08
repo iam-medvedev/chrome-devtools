@@ -1,6 +1,6 @@
 export declare const enum Navigation {
-    Backward = "Backward",
-    Forward = "Forward"
+    BACKWARD = "Backward",
+    FORWARD = "Forward"
 }
 export declare class AddressInputChangedEvent extends Event {
     static readonly eventName = "addressinputchanged";
@@ -33,9 +33,9 @@ export interface LinearMemoryNavigatorData {
     error: string | undefined;
 }
 export declare const enum Mode {
-    Edit = "Edit",
-    Submitted = "Submitted",
-    InvalidSubmit = "InvalidSubmit"
+    EDIT = "Edit",
+    SUBMITTED = "Submitted",
+    INVALID_SUBMIT = "InvalidSubmit"
 }
 export declare class LinearMemoryNavigator extends HTMLElement {
     #private;

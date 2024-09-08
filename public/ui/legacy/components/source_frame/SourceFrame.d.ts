@@ -9,12 +9,12 @@ export interface SourceFrameOptions {
     lineWrapping?: boolean;
 }
 export declare const enum Events {
-    EditorUpdate = "EditorUpdate",
-    EditorScroll = "EditorScroll"
+    EDITOR_UPDATE = "EditorUpdate",
+    EDITOR_SCROLL = "EditorScroll"
 }
 export type EventTypes = {
-    [Events.EditorUpdate]: CodeMirror.ViewUpdate;
-    [Events.EditorScroll]: void;
+    [Events.EDITOR_UPDATE]: CodeMirror.ViewUpdate;
+    [Events.EDITOR_SCROLL]: void;
 };
 type FormatFn = (lineNo: number, state: CodeMirror.EditorState) => string;
 export declare const LINE_NUMBER_FORMATTER: CodeMirror.Facet<FormatFn, FormatFn>;

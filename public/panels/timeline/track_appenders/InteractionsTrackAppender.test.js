@@ -32,7 +32,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
             // All events fit on the top level
             assert.strictEqual(entryTypeByLevel.length, 1);
             assert.deepEqual(entryTypeByLevel, [
-                "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
+                "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
             ]);
         });
         it('takes over no levels if there are no interactions', async function () {

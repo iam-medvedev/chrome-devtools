@@ -102,8 +102,8 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         // enable stick-to-bottom if the last item is visible
         this.stickToBottom = end === nodes.length;
         return {
-            topPadding: topPadding,
-            bottomPadding: bottomPadding,
+            topPadding,
+            bottomPadding,
             contentHeight: y - topPadding,
             visibleNodes: nodes.slice(start, end),
             offset: start,
@@ -172,7 +172,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
             this.updateWidths();
         }
         this.visibleNodes = visibleNodes;
-        this.dispatchEventToListeners("ViewportCalculated" /* Events.ViewportCalculated */);
+        this.dispatchEventToListeners("ViewportCalculated" /* Events.VIEWPORT_CALCULATED */);
     }
     revealViewportNode(node) {
         const nodes = this.rootNode().flatChildren();

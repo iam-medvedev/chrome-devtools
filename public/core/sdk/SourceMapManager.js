@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { Type } from './Target.js';
-import { TargetManager } from './TargetManager.js';
 import { PageResourceLoader } from './PageResourceLoader.js';
 import { parseSourceMap, SourceMap } from './SourceMap.js';
+import { Type } from './Target.js';
 export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     #target;
     #isEnabled;
@@ -20,7 +19,6 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#attachingClient = null;
         this.#clientData = new Map();
         this.#sourceMaps = new Map();
-        TargetManager.instance().addEventListener("InspectedURLChanged" /* TargetManagerEvents.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
     }
     setEnabled(isEnabled) {
         if (isEnabled === this.#isEnabled) {
@@ -47,19 +45,6 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     static resolveRelativeSourceURL(target, url) {
         url = Common.ParsedURL.ParsedURL.completeURL(SourceMapManager.getBaseUrl(target), url) ?? url;
         return url;
-    }
-    inspectedURLChanged(event) {
-        if (event.data !== this.#target) {
-            return;
-        }
-        // We need this copy, because `this.#clientData` is getting modified
-        // in the loop body and trying to iterate over it at the same time
-        // leads to an infinite loop.
-        const clientData = [...this.#clientData.entries()];
-        for (const [client, { relativeSourceURL, relativeSourceMapURL }] of clientData) {
-            this.detachSourceMap(client);
-            this.attachSourceMap(client, relativeSourceURL, relativeSourceMapURL);
-        }
     }
     sourceMapForClient(client) {
         return this.#clientData.get(client)?.sourceMap;
@@ -167,9 +152,6 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         else {
             this.dispatchEventToListeners(Events.SourceMapFailedToAttach, { client });
         }
-    }
-    dispose() {
-        TargetManager.instance().removeEventListener("InspectedURLChanged" /* TargetManagerEvents.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
     }
 }
 async function loadSourceMap(url, initiator) {

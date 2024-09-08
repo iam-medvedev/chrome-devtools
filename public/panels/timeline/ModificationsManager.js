@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
@@ -29,6 +30,7 @@ export class ModificationsManager extends EventTarget {
     #traceParsedData;
     #eventsSerializer;
     #overlayForAnnotation;
+    #annotationsHiddenSetting;
     /**
      * Gets the ModificationsManager instance corresponding to a trace
      * given its index used in Model#traces. If no index is passed gets
@@ -78,10 +80,14 @@ export class ModificationsManager extends EventTarget {
         super();
         const entryToNodeMap = new Map([...traceParsedData.Samples.entryToNode, ...traceParsedData.Renderer.entryToNode]);
         this.#entriesFilter = new EntriesFilter(entryToNodeMap);
+        // Create first breadcrumb from the initial full window
         this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(traceBounds);
         this.#modifications = modifications || null;
         this.#traceParsedData = traceParsedData;
         this.#eventsSerializer = new EventsSerializer();
+        // This method is also called in SidebarAnnotationsTab, but calling this multiple times doesn't recreate the setting.
+        // Instead, after the second call, the cached setting is returned.
+        this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting('annotations-hidden');
         // TODO: Assign annotations loaded from the trace file
         this.#overlayForAnnotation = new Map();
     }
@@ -91,7 +97,16 @@ export class ModificationsManager extends EventTarget {
     getTimelineBreadcrumbs() {
         return this.#timelineBreadcrumbs;
     }
-    createAnnotation(newAnnotation) {
+    createAnnotation(newAnnotation, loadedFromFile = false) {
+        // If the new annotation created was not loaded from the file, set the annotations visibility setting to true. That way we make sure
+        // the annotations are on when a new one is created.
+        if (!loadedFromFile) {
+            // Time range annotation could also be used to check the length of a selection in the timeline. Therefore, only set the annotations
+            // hidden to true if annotations label is added. This is done in OverlaysImpl.
+            if (newAnnotation.type !== 'TIME_RANGE') {
+                this.#annotationsHiddenSetting.set(false);
+            }
+        }
         const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
@@ -165,6 +180,7 @@ export class ModificationsManager extends EventTarget {
         }
         if ((updatedOverlay.type === 'ENTRY_LABEL' && annotationForUpdatedOverlay.type === 'ENTRY_LABEL') ||
             (updatedOverlay.type === 'TIME_RANGE' && annotationForUpdatedOverlay.type === 'TIME_RANGE')) {
+            this.#annotationsHiddenSetting.set(false);
             annotationForUpdatedOverlay.label = updatedOverlay.label;
         }
         this.dispatchEvent(new AnnotationModifiedEvent(updatedOverlay, 'UpdateLabel'));
@@ -196,8 +212,8 @@ export class ModificationsManager extends EventTarget {
             .filter(entry => entry !== null);
         this.#modifications = {
             entriesModifications: {
-                hiddenEntries: hiddenEntries,
-                expandableEntries: expandableEntries,
+                hiddenEntries,
+                expandableEntries,
             },
             initialBreadcrumb: this.#timelineBreadcrumbs.initialBreadcrumb,
             annotations: this.#annotationsJSON(),
@@ -247,39 +263,38 @@ export class ModificationsManager extends EventTarget {
         };
     }
     applyModificationsIfPresent() {
-        const modifications = this.#modifications;
-        if (!modifications || !modifications.annotations) {
+        if (!this.#modifications || !this.#modifications.annotations) {
             return;
         }
-        const hiddenEntries = modifications.entriesModifications.hiddenEntries;
-        const expandableEntries = modifications.entriesModifications.expandableEntries;
+        const hiddenEntries = this.#modifications.entriesModifications.hiddenEntries;
+        const expandableEntries = this.#modifications.entriesModifications.expandableEntries;
         this.#applyEntriesFilterModifications(hiddenEntries, expandableEntries);
-        this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(modifications.initialBreadcrumb);
+        this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(this.#modifications.initialBreadcrumb);
         // Assign annotations to an empty array if they don't exist to not
         // break the traces that were saved before those annotations were implemented
-        const entryLabels = modifications.annotations.entryLabels ?? [];
+        const entryLabels = this.#modifications.annotations.entryLabels ?? [];
         entryLabels.forEach(entryLabel => {
             this.createAnnotation({
                 type: 'ENTRY_LABEL',
                 entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#traceParsedData),
                 label: entryLabel.label,
-            });
+            }, true);
         });
-        const timeRanges = modifications.annotations.labelledTimeRanges ?? [];
+        const timeRanges = this.#modifications.annotations.labelledTimeRanges ?? [];
         timeRanges.forEach(timeRange => {
             this.createAnnotation({
                 type: 'TIME_RANGE',
                 bounds: timeRange.bounds,
                 label: timeRange.label,
-            });
+            }, true);
         });
-        const linksBetweenEntries = modifications.annotations.linksBetweenEntries ?? [];
+        const linksBetweenEntries = this.#modifications.annotations.linksBetweenEntries ?? [];
         linksBetweenEntries.forEach(linkBetweenEntries => {
             this.createAnnotation({
                 type: 'ENTRIES_LINK',
                 entryFrom: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryFrom, this.#traceParsedData),
                 entryTo: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryTo, this.#traceParsedData),
-            });
+            }, true);
         });
     }
     #applyEntriesFilterModifications(hiddenEntriesKeys, expandableEntriesKeys) {

@@ -193,7 +193,7 @@ primaryToggleIconButton.data = {
     variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
     toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
     iconName: testIcon,
-    toggledIconName: toggledIconName,
+    toggledIconName,
     toggled: false,
 };
 appendButton(primaryToggleIconButton);
@@ -204,7 +204,7 @@ redToggleIconButton.data = {
     variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
     toggleType: "red-toggle" /* Buttons.Button.ToggleType.RED */,
     iconName: testIcon,
-    toggledIconName: toggledIconName,
+    toggledIconName,
     toggled: true,
 };
 appendButton(redToggleIconButton);

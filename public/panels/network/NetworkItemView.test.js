@@ -36,8 +36,8 @@ describeWithMockConnection('NetworkItemView', () => {
         const headersViewComponent = networkItemView.getHeadersViewComponent();
         const headersViewComponentSpy = sinon.spy(headersViewComponent, 'revealHeader');
         assert.isTrue(headersViewComponentSpy.notCalled);
-        networkItemView.revealHeader("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */, 'headerName');
-        assert.isTrue(headersViewComponentSpy.calledWith("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */, 'headerName'));
+        networkItemView.revealHeader("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, 'headerName');
+        assert.isTrue(headersViewComponentSpy.calledWith("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, 'headerName'));
         networkItemView.detach();
     });
 });
@@ -92,8 +92,8 @@ describeWithEnvironment('NetworkItemView', () => {
     it('shows the Response and EventSource tab for text/event-stream requests', () => {
         request.mimeType = 'text/event-stream';
         const networkItemView = renderNetworkItemView(request);
-        assert.isTrue(networkItemView.hasTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EventSource */));
-        assert.isTrue(networkItemView.hasTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.Response */));
+        assert.isTrue(networkItemView.hasTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EVENT_SOURCE */));
+        assert.isTrue(networkItemView.hasTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */));
         networkItemView.detach();
     });
 });

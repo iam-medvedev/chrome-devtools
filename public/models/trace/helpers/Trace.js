@@ -13,7 +13,7 @@ import { eventTimingsMicroSeconds } from './Timing.js';
  * one based this function can yield unexpected results when used
  * indiscriminately.
  */
-function stackTraceForEvent(event) {
+export function stackTraceForEvent(event) {
     if (event.args?.data?.stackTrace) {
         return event.args.data.stackTrace;
     }
@@ -453,7 +453,7 @@ export function findUpdateLayoutTreeEvents(events, startTime, endTime) {
  * overriden making use of the config.ignoreAsyncEvents parameter.
  */
 export function forEachEvent(events, config) {
-    const globalStartTime = config.startTime || Types.Timing.MicroSeconds(0);
+    const globalStartTime = config.startTime ?? Types.Timing.MicroSeconds(0);
     const globalEndTime = config.endTime || Types.Timing.MicroSeconds(Infinity);
     const ignoreAsyncEvents = config.ignoreAsyncEvents === false ? false : true;
     const stack = [];

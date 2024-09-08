@@ -228,7 +228,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
                     contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
                         Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
-                        this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+                        this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
                     }, {
                         jslogContext: 'remove-from-ignore-list',
                     });
@@ -236,7 +236,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 else {
                     contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
                         Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
-                        this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+                        this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
                     }, {
                         jslogContext: 'add-to-ignore-list',
                     });
@@ -250,7 +250,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         ModificationsManager.activeManager()?.getEntriesFilter().applyFilterAction({ type: action, entry });
         this.timelineData(true);
         this.buildFlowForInitiator(entryIndex);
-        this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+        this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
     }
     findPossibleContextMenuActions(entryIndex) {
         const entry = this.entryData[entryIndex];
@@ -363,10 +363,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     entryTitle(entryIndex) {
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType === "Screenshot" /* EntryType.Screenshot */) {
+        if (entryType === "Screenshot" /* EntryType.SCREENSHOT */) {
             return '';
         }
-        if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
+        if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             const timelineData = this.timelineDataInternal;
             const eventLevel = timelineData.entryLevels[entryIndex];
             const event = this.entryData[entryIndex];
@@ -519,7 +519,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     static timelineEntryIsTraceEvent(entry) {
         return entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame === false;
     }
-    search(startTime, endTime, filter) {
+    search(visibleWindow, filter) {
         const results = [];
         this.timelineData();
         for (let i = 0; i < this.entryData.length; ++i) {
@@ -535,16 +535,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 // Screenshots are represented as trace events, but you can't search for them, so skip.
                 continue;
             }
-            const entryStartTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).startTime;
-            const entryEndTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).endTime;
-            if (entryStartTime > endTime) {
-                continue;
-            }
-            if ((entryEndTime || entryStartTime) < startTime) {
+            if (!TraceEngine.Helpers.Timing.eventIsInBounds(entry, visibleWindow)) {
                 continue;
             }
             if (filter.accept(entry, this.traceEngineData || undefined)) {
-                results.push({ index: i, startTimeMilli: entryStartTime, provider: 'main' });
+                const startTimeMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
+                results.push({ index: i, startTimeMilli, provider: 'main' });
             }
         }
         return results;
@@ -577,7 +573,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.framesHeader.collapsible = hasScreenshots;
         const expanded = Root.Runtime.Runtime.queryParam('flamechart-force-expand') === 'frames';
         this.appendHeader(i18nString(UIStrings.frames), this.framesHeader, false /* selectable */, expanded);
-        this.entryTypeByLevel[this.currentLevel] = "Frame" /* EntryType.Frame */;
+        this.entryTypeByLevel[this.currentLevel] = "Frame" /* EntryType.FRAME */;
         for (const frame of this.traceEngineData.Frames.frames) {
             this.#appendNewEngineFrame(frame);
         }
@@ -592,7 +588,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return;
         }
         this.appendHeader('', this.screenshotsHeader, false /* selectable */);
-        this.entryTypeByLevel[this.currentLevel] = "Screenshot" /* EntryType.Screenshot */;
+        this.entryTypeByLevel[this.currentLevel] = "Screenshot" /* EntryType.SCREENSHOT */;
         let prevTimestamp = undefined;
         for (const filmStripFrame of filmStrip.frames) {
             const screenshotTimeInMilliSeconds = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(filmStripFrame.screenshotEvent.ts);
@@ -622,7 +618,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         let nameSpanTimelineInfoTime = 'timeline-info-time';
         const additionalContent = [];
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
+        if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             if (!this.compatibilityTracksAppender) {
                 return null;
             }
@@ -639,7 +635,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 additionalContent.push(breakdown);
             }
         }
-        else if (entryType === "Frame" /* EntryType.Frame */) {
+        else if (entryType === "Frame" /* EntryType.FRAME */) {
             const frame = this.entryData[entryIndex];
             time = i18n.TimeUtilities.preciseMillisToString(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.duration), 1);
             if (frame.idle) {
@@ -697,10 +693,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     entryColor(entryIndex) {
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType === "Frame" /* EntryType.Frame */) {
+        if (entryType === "Frame" /* EntryType.FRAME */) {
             return 'white';
         }
-        if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
+        if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             const timelineData = this.timelineDataInternal;
             const eventLevel = timelineData.entryLevels[entryIndex];
             const event = this.entryData[entryIndex];
@@ -783,7 +779,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             const data = screenshot.args.dataUri;
             const image = await UI.UIUtils.loadImage(data);
             this.screenshotImageCache.set(screenshot, image);
-            this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+            this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
             return;
         }
         const image = this.screenshotImageCache.get(screenshot);
@@ -806,15 +802,15 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio) {
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType === "Frame" /* EntryType.Frame */) {
+        if (entryType === "Frame" /* EntryType.FRAME */) {
             this.drawFrame(entryIndex, context, text, barX, barY, barWidth, barHeight);
             return true;
         }
-        if (entryType === "Screenshot" /* EntryType.Screenshot */) {
+        if (entryType === "Screenshot" /* EntryType.SCREENSHOT */) {
             void this.drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight);
             return true;
         }
-        if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
+        if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             const entry = this.entryData[entryIndex];
             if (TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(entry)) {
                 this.#drawInteractionEventWithWhiskers(context, entryIndex, text, entry, barX, barY, unclippedBarX, barWidth, barHeight, timeToPixelRatio);
@@ -911,10 +907,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     forceDecoration(entryIndex) {
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType === "Frame" /* EntryType.Frame */) {
+        if (entryType === "Frame" /* EntryType.FRAME */) {
             return true;
         }
-        if (entryType === "Screenshot" /* EntryType.Screenshot */) {
+        if (entryType === "Screenshot" /* EntryType.SCREENSHOT */) {
             return true;
         }
         const event = this.entryData[entryIndex];
@@ -927,7 +923,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return Boolean(this.traceEngineData?.Warnings.perEvent.get(event));
     }
     appendHeader(title, style, selectable, expanded) {
-        const group = { startLevel: this.currentLevel, name: title, style: style, selectable: selectable, expanded };
+        const group = { startLevel: this.currentLevel, name: title, style, selectable, expanded };
         this.timelineDataInternal.groups.push(group);
         return group;
     }
@@ -951,7 +947,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (entry && TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(entry)) {
             timelineSelection = TimelineSelection.fromTraceEvent(entry);
         }
-        else if (entryType === "Frame" /* EntryType.Frame */) {
+        else if (entryType === "Frame" /* EntryType.FRAME */) {
             timelineSelection = TimelineSelection.fromFrame(this.entryData[entryIndex]);
         }
         if (timelineSelection) {
@@ -1041,7 +1037,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return true;
         }
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType !== "TrackAppender" /* EntryType.TrackAppender */) {
+        if (entryType !== "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             return false;
         }
         const event = this.entryData[entryIndex];
@@ -1076,10 +1072,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return null;
         }
         const entryType = this.#entryTypeForIndex(entryIndex);
-        if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
+        if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             return this.entryData[entryIndex];
         }
-        if (entryType === "Frame" /* EntryType.Frame */) {
+        if (entryType === "Frame" /* EntryType.FRAME */) {
             return this.entryData[entryIndex];
         }
         return null;

@@ -5,6 +5,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { getMainThread } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
+import * as Components from './components/components.js';
 import * as Timeline from './timeline.js';
 describeWithEnvironment('TimelineFilters', () => {
     describe('IsLong', () => {
@@ -44,14 +45,14 @@ describeWithEnvironment('TimelineFilters', () => {
             const { traceData } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             // These events are usually visible, so make the category hidden before
             // running this test.
-            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = true;
+            Components.EntryStyles.getCategoryStyles()['scripting'].hidden = true;
             const userTimingEvent = traceData.UserTimings.performanceMeasures.at(0);
             if (!userTimingEvent) {
                 throw new Error('Could not find expected event.');
             }
             const filter = new Timeline.TimelineFilters.Category();
             assert.isFalse(filter.accept(userTimingEvent));
-            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = false;
+            Components.EntryStyles.getCategoryStyles()['scripting'].hidden = false;
         });
         it('returns true for a new event if it has a category that is visible', async function () {
             const { traceData } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
@@ -61,7 +62,7 @@ describeWithEnvironment('TimelineFilters', () => {
             }
             const filter = new Timeline.TimelineFilters.Category();
             assert.isTrue(filter.accept(userTimingEvent));
-            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = false;
+            Components.EntryStyles.getCategoryStyles()['scripting'].hidden = false;
         });
     });
 });

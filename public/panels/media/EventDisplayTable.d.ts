@@ -8,9 +8,9 @@ export interface EventDisplayColumnConfig {
     weight?: number;
 }
 export declare const enum MediaEventColumnKeys {
-    Timestamp = "display-timestamp",
-    Event = "event",
-    Value = "value"
+    TIMESTAMP = "display-timestamp",
+    EVENT = "event",
+    VALUE = "value"
 }
 export declare class EventNode extends DataGrid.DataGrid.DataGridNode<EventNode> {
     private expandableElement;

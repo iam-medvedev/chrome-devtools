@@ -23,10 +23,10 @@ interface StoredRecording {
     flow: Models.Schema.UserFlow;
 }
 export declare const enum Pages {
-    StartPage = "StartPage",
-    AllRecordingsPage = "AllRecordingsPage",
-    CreateRecordingPage = "CreateRecordingPage",
-    RecordingPage = "RecordingPage"
+    START_PAGE = "StartPage",
+    ALL_RECORDINGS_PAGE = "AllRecordingsPage",
+    CREATE_RECORDING_PAGE = "CreateRecordingPage",
+    RECORDING_PAGE = "RecordingPage"
 }
 export declare class RecorderController extends LitElement {
     #private;

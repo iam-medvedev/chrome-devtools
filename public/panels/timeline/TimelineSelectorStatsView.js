@@ -95,12 +95,12 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             showScrollbar: true,
             autoScrollToBottom: false,
             initialSort: {
-                columnId: "elapsed (us)" /* SelectorTimingsKey.Elapsed */,
+                columnId: "elapsed (us)" /* SelectorTimingsKey.ELAPSED */,
                 direction: "DESC" /* DataGrid.DataGridUtils.SortDirection.DESC */,
             },
             columns: [
                 {
-                    id: "elapsed (us)" /* SelectorTimingsKey.Elapsed */,
+                    id: "elapsed (us)" /* SelectorTimingsKey.ELAPSED */,
                     title: i18nString(UIStrings.elapsed),
                     sortable: true,
                     widthWeighting: 1,
@@ -111,7 +111,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     },
                 },
                 {
-                    id: "match_attempts" /* SelectorTimingsKey.MatchAttempts */,
+                    id: "match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */,
                     title: i18nString(UIStrings.matchAttempts),
                     sortable: true,
                     widthWeighting: 1,
@@ -122,7 +122,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     },
                 },
                 {
-                    id: "match_count" /* SelectorTimingsKey.MatchCount */,
+                    id: "match_count" /* SelectorTimingsKey.MATCH_COUNT */,
                     title: i18nString(UIStrings.matchCount),
                     sortable: true,
                     widthWeighting: 1,
@@ -133,7 +133,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     },
                 },
                 {
-                    id: "reject_percentage" /* SelectorTimingsKey.RejectPercentage */,
+                    id: "reject_percentage" /* SelectorTimingsKey.REJECT_PERCENTAGE */,
                     title: i18nString(UIStrings.rejectPercentage),
                     titleElement: LitHtml.html `<span title=${i18nString(UIStrings.rejectPercentageExplanation)}>${i18nString(UIStrings.rejectPercentage)}</span>`,
                     sortable: true,
@@ -145,7 +145,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     },
                 },
                 {
-                    id: "selector" /* SelectorTimingsKey.Selector */,
+                    id: "selector" /* SelectorTimingsKey.SELECTOR */,
                     title: i18nString(UIStrings.selector),
                     sortable: true,
                     widthWeighting: 3,
@@ -153,7 +153,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     hideable: true,
                 },
                 {
-                    id: "style_sheet_id" /* SelectorTimingsKey.StyleSheetId */,
+                    id: "style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */,
                     title: i18nString(UIStrings.styleSheetId),
                     sortable: true,
                     widthWeighting: 1.5,
@@ -171,7 +171,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                         for (const rowData of rows) {
                             const cellsValue = rowData.cells;
                             const rowValue = cellsValue.map(cell => {
-                                if (cell.columnId === "style_sheet_id" /* SelectorTimingsKey.StyleSheetId */) {
+                                if (cell.columnId === "style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */) {
                                     // Export link via raw StyleSheetId data
                                     const defaultLinkValue = i18nString(UIStrings.unableToLink);
                                     let linkData = '';
@@ -226,10 +226,10 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             return;
         }
         const sums = {
-            ["elapsed (us)" /* SelectorTimingsKey.Elapsed */]: 0,
-            ["match_attempts" /* SelectorTimingsKey.MatchAttempts */]: 0,
-            ["match_count" /* SelectorTimingsKey.MatchCount */]: 0,
-            ["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */]: 0,
+            ["elapsed (us)" /* SelectorTimingsKey.ELAPSED */]: 0,
+            ["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */]: 0,
+            ["match_count" /* SelectorTimingsKey.MATCH_COUNT */]: 0,
+            ["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */]: 0,
         };
         // Now we want to check if the set of events we have been given matches the
         // set of events we last rendered. We can't just compare the arrays because
@@ -257,22 +257,22 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             else {
                 const data = selectorStats.timings;
                 for (const timing of data) {
-                    const key = timing["selector" /* SelectorTimingsKey.Selector */] + '_' + timing["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */];
+                    const key = timing["selector" /* SelectorTimingsKey.SELECTOR */] + '_' + timing["style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */];
                     const findTiming = selectorMap.get(key);
                     if (findTiming !== undefined) {
-                        findTiming["elapsed (us)" /* SelectorTimingsKey.Elapsed */] += timing["elapsed (us)" /* SelectorTimingsKey.Elapsed */];
-                        findTiming["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */] += timing["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */];
-                        findTiming["match_attempts" /* SelectorTimingsKey.MatchAttempts */] += timing["match_attempts" /* SelectorTimingsKey.MatchAttempts */];
-                        findTiming["match_count" /* SelectorTimingsKey.MatchCount */] += timing["match_count" /* SelectorTimingsKey.MatchCount */];
+                        findTiming["elapsed (us)" /* SelectorTimingsKey.ELAPSED */] += timing["elapsed (us)" /* SelectorTimingsKey.ELAPSED */];
+                        findTiming["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */] += timing["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */];
+                        findTiming["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */] += timing["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */];
+                        findTiming["match_count" /* SelectorTimingsKey.MATCH_COUNT */] += timing["match_count" /* SelectorTimingsKey.MATCH_COUNT */];
                     }
                     else {
                         selectorMap.set(key, structuredClone(timing));
                     }
                     // Keep track of the total times for a sum row.
-                    sums["elapsed (us)" /* SelectorTimingsKey.Elapsed */] += timing["elapsed (us)" /* SelectorTimingsKey.Elapsed */];
-                    sums["match_attempts" /* SelectorTimingsKey.MatchAttempts */] += timing["match_attempts" /* SelectorTimingsKey.MatchAttempts */];
-                    sums["match_count" /* SelectorTimingsKey.MatchCount */] += timing["match_count" /* SelectorTimingsKey.MatchCount */];
-                    sums["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */] += timing["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */];
+                    sums["elapsed (us)" /* SelectorTimingsKey.ELAPSED */] += timing["elapsed (us)" /* SelectorTimingsKey.ELAPSED */];
+                    sums["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */] += timing["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */];
+                    sums["match_count" /* SelectorTimingsKey.MATCH_COUNT */] += timing["match_count" /* SelectorTimingsKey.MATCH_COUNT */];
+                    sums["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */] += timing["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */];
                 }
             }
         }
@@ -288,12 +288,12 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         }
         // Add the sum row.
         timings.unshift({
-            ["elapsed (us)" /* SelectorTimingsKey.Elapsed */]: sums["elapsed (us)" /* SelectorTimingsKey.Elapsed */],
-            ["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */]: sums["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */],
-            ["match_attempts" /* SelectorTimingsKey.MatchAttempts */]: sums["match_attempts" /* SelectorTimingsKey.MatchAttempts */],
-            ["match_count" /* SelectorTimingsKey.MatchCount */]: sums["match_count" /* SelectorTimingsKey.MatchCount */],
-            ["selector" /* SelectorTimingsKey.Selector */]: i18nString(UIStrings.totalForAllSelectors),
-            ["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */]: 'n/a',
+            ["elapsed (us)" /* SelectorTimingsKey.ELAPSED */]: sums["elapsed (us)" /* SelectorTimingsKey.ELAPSED */],
+            ["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */]: sums["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */],
+            ["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */]: sums["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */],
+            ["match_count" /* SelectorTimingsKey.MATCH_COUNT */]: sums["match_count" /* SelectorTimingsKey.MATCH_COUNT */],
+            ["selector" /* SelectorTimingsKey.SELECTOR */]: i18nString(UIStrings.totalForAllSelectors),
+            ["style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */]: 'n/a',
         });
         void this.createRowsForTable(timings).then(rows => {
             this.#datagrid.data = { ...this.#datagrid.data, rows };
@@ -309,7 +309,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                 return undefined;
             }
             // get the locations from cache if available
-            const key = JSON.stringify({ selectorText: selectorText, styleSheetId: styleSheetId });
+            const key = JSON.stringify({ selectorText, styleSheetId });
             let ranges = selectorLocations.get(key);
             if (!ranges) {
                 const result = await cssModel.agent.invoke_getLocationForSelector({ styleSheetId, selectorText });
@@ -335,49 +335,49 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             return [];
         }
         const rows = await Promise.all(timings.map(async (x) => {
-            const styleSheetId = x["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */];
-            const selectorText = x["selector" /* SelectorTimingsKey.Selector */].trim();
-            const elapsedTimeInMs = x["elapsed (us)" /* SelectorTimingsKey.Elapsed */] / 1000.0;
-            const nonMatches = x["match_attempts" /* SelectorTimingsKey.MatchAttempts */] - x["match_count" /* SelectorTimingsKey.MatchCount */];
-            const rejectPercentage = (nonMatches ? x["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */] / nonMatches : 1) * 100;
+            const styleSheetId = x["style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */];
+            const selectorText = x["selector" /* SelectorTimingsKey.SELECTOR */].trim();
+            const elapsedTimeInMs = x["elapsed (us)" /* SelectorTimingsKey.ELAPSED */] / 1000.0;
+            const nonMatches = x["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */] - x["match_count" /* SelectorTimingsKey.MATCH_COUNT */];
+            const rejectPercentage = (nonMatches ? x["fast_reject_count" /* SelectorTimingsKey.FAST_REJECT_COUNT */] / nonMatches : 1) * 100;
             const locations = styleSheetId === 'n/a' ?
                 null :
                 await toSourceFileLocation(cssModel, styleSheetId, selectorText, this.#selectorLocations);
             return {
                 cells: [
                     {
-                        columnId: "elapsed (us)" /* SelectorTimingsKey.Elapsed */,
+                        columnId: "elapsed (us)" /* SelectorTimingsKey.ELAPSED */,
                         value: elapsedTimeInMs,
                         renderer() {
                             return LitHtml.html `${elapsedTimeInMs.toFixed(3)}`;
                         },
                     },
-                    { columnId: "match_attempts" /* SelectorTimingsKey.MatchAttempts */, value: x["match_attempts" /* SelectorTimingsKey.MatchAttempts */] },
-                    { columnId: "match_count" /* SelectorTimingsKey.MatchCount */, value: x["match_count" /* SelectorTimingsKey.MatchCount */] },
+                    { columnId: "match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */, value: x["match_attempts" /* SelectorTimingsKey.MATCH_ATTEMPTS */] },
+                    { columnId: "match_count" /* SelectorTimingsKey.MATCH_COUNT */, value: x["match_count" /* SelectorTimingsKey.MATCH_COUNT */] },
                     {
-                        columnId: "reject_percentage" /* SelectorTimingsKey.RejectPercentage */,
+                        columnId: "reject_percentage" /* SelectorTimingsKey.REJECT_PERCENTAGE */,
                         value: rejectPercentage,
                         renderer() {
                             return LitHtml.html `${rejectPercentage.toFixed(1)}`;
                         },
                     },
                     {
-                        columnId: "selector" /* SelectorTimingsKey.Selector */,
-                        title: x["selector" /* SelectorTimingsKey.Selector */],
-                        value: x["selector" /* SelectorTimingsKey.Selector */],
+                        columnId: "selector" /* SelectorTimingsKey.SELECTOR */,
+                        title: x["selector" /* SelectorTimingsKey.SELECTOR */],
+                        value: x["selector" /* SelectorTimingsKey.SELECTOR */],
                     },
                     {
-                        columnId: "style_sheet_id" /* SelectorTimingsKey.StyleSheetId */,
-                        value: x["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */],
+                        columnId: "style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */,
+                        value: x["style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */],
                         renderer() {
                             if (locations === null) {
                                 return LitHtml.html `<span></span>`;
                             }
                             if (locations === undefined) {
                                 return LitHtml.html `<span title=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {
-                                    PH1: x["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */],
+                                    PH1: x["style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */],
                                 })} aria-label=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {
-                                    PH1: x["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */],
+                                    PH1: x["style_sheet_id" /* SelectorTimingsKey.STYLE_SHEET_ID */],
                                 })}>${i18nString(UIStrings.unableToLink)}</span>`;
                             }
                             return LitHtml.html `

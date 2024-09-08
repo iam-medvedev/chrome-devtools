@@ -183,7 +183,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
             const enabled = (id === typeId);
             profileType.setCustomContentEnabled(enabled);
         }
-        this.dispatchEventToListeners("ProfileTypeSelected" /* Events.ProfileTypeSelected */, type);
+        this.dispatchEventToListeners("ProfileTypeSelected" /* Events.PROFILE_TYPE_SELECTED */, type);
     }
     controlButtonClicked() {
         this.panel.toggleRecord();
@@ -193,7 +193,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         const type = this.typeIdToOptionElementAndProfileType.get(typeId).profileType;
         type.setCustomContentEnabled(false);
         profileType.setCustomContentEnabled(true);
-        this.dispatchEventToListeners("ProfileTypeSelected" /* Events.ProfileTypeSelected */, profileType);
+        this.dispatchEventToListeners("ProfileTypeSelected" /* Events.PROFILE_TYPE_SELECTED */, profileType);
         this.isInstantProfile = profileType.isInstantProfile();
         this.isEnabled = profileType.isEnabled();
         this.updateControls();

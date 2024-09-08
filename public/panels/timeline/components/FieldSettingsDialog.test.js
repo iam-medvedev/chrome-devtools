@@ -42,7 +42,7 @@ function mockResponse() {
         record: {
             key: {},
             metrics: {
-                'largest_contentful_paint': {
+                largest_contentful_paint: {
                     histogram: [
                         { start: 0, end: 2500, density: 0.5 },
                         { start: 2500, end: 4000, density: 0.3 },
@@ -50,7 +50,7 @@ function mockResponse() {
                     ],
                     percentiles: { p75: 1000 },
                 },
-                'cumulative_layout_shift': {
+                cumulative_layout_shift: {
                     histogram: [
                         { start: 0, end: 0.1, density: 0.1 },
                         { start: 0.1, end: 0.25, density: 0.1 },

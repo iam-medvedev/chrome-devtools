@@ -316,7 +316,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const deleteButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteS, { PH1: label }), 'bin', undefined, 'delete');
         deleteToolbar.appendToolbarItem(deleteButton);
         const fontSelectorObject = { label: selectLabel, input: selectInput, deleteButton, index };
-        deleteButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        deleteButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             this.deleteFontSelector(fontSelectorObject.index);
         });
         deleteButton.element.addEventListener('keydown', (event) => {
@@ -356,10 +356,10 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updatePropertyValue('font-family', value);
     }
     updatePropertyValue(propertyName, value) {
-        this.dispatchEventToListeners("FontChanged" /* Events.FontChanged */, { propertyName, value });
+        this.dispatchEventToListeners("FontChanged" /* Events.FONT_CHANGED */, { propertyName, value });
     }
     resizePopout() {
-        this.dispatchEventToListeners("FontEditorResized" /* Events.FontEditorResized */);
+        this.dispatchEventToListeners("FontEditorResized" /* Events.FONT_EDITOR_RESIZED */);
     }
 }
 class FontPropertyInputs {

@@ -1,7 +1,7 @@
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare const enum ScreenshotMode {
     FROM_VIEWPORT = "fromViewport",
     FROM_CLIP = "fromClip",
@@ -34,6 +34,7 @@ export declare class ScreenCaptureModel extends SDKModel<void> implements Protoc
     frameStartedLoading(_params: Protocol.Page.FrameStartedLoadingEvent): void;
     frameStoppedLoading(_params: Protocol.Page.FrameStoppedLoadingEvent): void;
     frameRequestedNavigation(_params: Protocol.Page.FrameRequestedNavigationEvent): void;
+    frameSubtreeWillBeDetached(_params: Protocol.Page.FrameSubtreeWillBeDetachedEvent): void;
     frameScheduledNavigation(_params: Protocol.Page.FrameScheduledNavigationEvent): void;
     frameClearedScheduledNavigation(_params: Protocol.Page.FrameClearedScheduledNavigationEvent): void;
     frameResized(): void;

@@ -10,10 +10,10 @@ interface Row {
     type: RowType;
 }
 export declare const enum RowType {
-    Deletion = "deletion",
-    Addition = "addition",
-    Equal = "equal",
-    Spacer = "spacer"
+    DELETION = "deletion",
+    ADDITION = "addition",
+    EQUAL = "equal",
+    SPACER = "spacer"
 }
 export declare function buildDiffRows(diff: Diff.Diff.DiffArray): {
     originalLines: readonly string[];

@@ -139,11 +139,11 @@ export declare class StatisticsPerspective extends Perspective {
 }
 declare const HeapSnapshotProfileType_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<HeapSnapshotProfileTypeEventTypes>;
-    addEventListener<T extends HeapSnapshotProfileTypeEvents.SnapshotReceived>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<HeapSnapshotProfileTypeEventTypes, T>;
-    once<T extends HeapSnapshotProfileTypeEvents.SnapshotReceived>(eventType: T): Promise<HeapSnapshotProfileTypeEventTypes[T]>;
-    removeEventListener<T extends HeapSnapshotProfileTypeEvents.SnapshotReceived>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: HeapSnapshotProfileTypeEvents.SnapshotReceived): boolean;
-    dispatchEventToListeners<T extends HeapSnapshotProfileTypeEvents.SnapshotReceived>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<HeapSnapshotProfileTypeEventTypes, T>): void;
+    addEventListener<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<HeapSnapshotProfileTypeEventTypes, T>;
+    once<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: T): Promise<HeapSnapshotProfileTypeEventTypes[T]>;
+    removeEventListener<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED): boolean;
+    dispatchEventToListeners<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<HeapSnapshotProfileTypeEventTypes, T>): void;
 }) & typeof ProfileType;
 export declare class HeapSnapshotProfileType extends HeapSnapshotProfileType_base implements SDK.TargetManager.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
     readonly exposeInternals: Common.Settings.Setting<boolean>;
@@ -170,10 +170,10 @@ export declare class HeapSnapshotProfileType extends HeapSnapshotProfileType_bas
     static readonly SnapshotReceived = "SnapshotReceived";
 }
 export declare const enum HeapSnapshotProfileTypeEvents {
-    SnapshotReceived = "SnapshotReceived"
+    SNAPSHOT_RECEIVED = "SnapshotReceived"
 }
 export type HeapSnapshotProfileTypeEventTypes = {
-    [HeapSnapshotProfileTypeEvents.SnapshotReceived]: ProfileHeader;
+    [HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED]: ProfileHeader;
 };
 declare const TrackingHeapSnapshotProfileType_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TrackingHeapSnapshotProfileTypeEventTypes>;
@@ -215,14 +215,14 @@ export declare class TrackingHeapSnapshotProfileType extends TrackingHeapSnapsho
     static readonly TrackingStopped = "TrackingStopped";
 }
 export declare const enum TrackingHeapSnapshotProfileTypeEvents {
-    HeapStatsUpdate = "HeapStatsUpdate",
-    TrackingStarted = "TrackingStarted",
-    TrackingStopped = "TrackingStopped"
+    HEAP_STATS_UPDATE = "HeapStatsUpdate",
+    TRACKING_STARTED = "TrackingStarted",
+    TRACKING_STOPPED = "TrackingStopped"
 }
 export type TrackingHeapSnapshotProfileTypeEventTypes = {
-    [TrackingHeapSnapshotProfileTypeEvents.HeapStatsUpdate]: Samples;
-    [TrackingHeapSnapshotProfileTypeEvents.TrackingStarted]: void;
-    [TrackingHeapSnapshotProfileTypeEvents.TrackingStopped]: void;
+    [TrackingHeapSnapshotProfileTypeEvents.HEAP_STATS_UPDATE]: Samples;
+    [TrackingHeapSnapshotProfileTypeEvents.TRACKING_STARTED]: void;
+    [TrackingHeapSnapshotProfileTypeEvents.TRACKING_STOPPED]: void;
 };
 export declare class HeapProfileHeader extends ProfileHeader {
     readonly heapProfilerModelInternal: SDK.HeapProfilerModel.HeapProfilerModel | null;

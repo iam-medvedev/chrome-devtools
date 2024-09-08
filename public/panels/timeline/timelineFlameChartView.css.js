@@ -50,6 +50,10 @@ styles.replaceSync(
   &.outline-reason-ERROR {
     border-color: var(--sys-color-error-bright);
   }
+
+  &.outline-reason-INFO {
+    border-color: var(--sys-color-primary);
+  }
 }
 
 .overlay-type-CANDY_STRIPED_TIME_RANGE {
@@ -81,23 +85,15 @@ styles.replaceSync(
 }
 
 .overlay-type-TIME_RANGE {
-  background: linear-gradient(180deg, rgb(255 125 210 / 0%) 0%, rgb(255 125 210 / 15%) 85%); /* stylelint-disable-line plugin/use_theme_colors */
-  border-color: var(--ref-palette-pink80);
-  border-width: 1px;
-  border-style: solid;
-  pointer-events: none;
   top: 0;
   bottom: 0;
-  border-bottom-width: 5px;
 
   &.overlap-1 {
     bottom: 55px;
-    border-color: var(--ref-palette-pink70);
   }
 
   &.overlap-2 {
     bottom: 105px;
-    border-color: var(--ref-palette-pink60);
   }
 }
 

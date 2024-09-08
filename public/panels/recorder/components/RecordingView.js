@@ -135,8 +135,8 @@ export class PlayRecordingEvent extends Event {
     static eventName = 'playrecording';
     data;
     constructor(data = {
-        targetPanel: "chrome-recorder" /* TargetPanel.Default */,
-        speed: "normal" /* PlayRecordingSpeed.Normal */,
+        targetPanel: "chrome-recorder" /* TargetPanel.DEFAULT */,
+        speed: "normal" /* PlayRecordingSpeed.NORMAL */,
     }) {
         super(PlayRecordingEvent.eventName);
         this.data = data;
@@ -198,12 +198,12 @@ const networkConditionPresets = [
 ];
 function converterIdToFlowMetric(converterId) {
     switch (converterId) {
-        case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
-        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */:
+        case "puppeteer" /* Models.ConverterIds.ConverterIds.PUPPETEER */:
+        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */:
             return 1 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_PUPPETEER */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
             return 2 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_JSON */;
-        case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */:
+        case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */:
             return 3 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_REPLAY */;
         default:
             return 4 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_EXTENSION */;
@@ -211,12 +211,12 @@ function converterIdToFlowMetric(converterId) {
 }
 function converterIdToStepMetric(converterId) {
     switch (converterId) {
-        case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
-        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */:
+        case "puppeteer" /* Models.ConverterIds.ConverterIds.PUPPETEER */:
+        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */:
             return 5 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_PUPPETEER */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
             return 6 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_JSON */;
-        case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */:
+        case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */:
             return 7 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_REPLAY */;
         default:
             return 8 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_EXTENSION */;
@@ -306,51 +306,51 @@ export class RecordingView extends HTMLElement {
     }
     #handleTogglePlaying(event) {
         this.dispatchEvent(new PlayRecordingEvent({
-            targetPanel: "chrome-recorder" /* TargetPanel.Default */,
+            targetPanel: "chrome-recorder" /* TargetPanel.DEFAULT */,
             speed: event.speed,
             extension: event.extension,
         }));
     }
     #getStepState(step) {
         if (!this.#currentStep) {
-            return "default" /* State.Default */;
+            return "default" /* State.DEFAULT */;
         }
         if (step === this.#currentStep) {
             if (this.#currentError) {
-                return "error" /* State.Error */;
+                return "error" /* State.ERROR */;
             }
             if (!this.#replayState.isPlaying) {
-                return "success" /* State.Success */;
+                return "success" /* State.SUCCESS */;
             }
             if (this.#replayState.isPausedOnBreakpoint) {
-                return "stopped" /* State.Stopped */;
+                return "stopped" /* State.STOPPED */;
             }
-            return "current" /* State.Current */;
+            return "current" /* State.CURRENT */;
         }
         const currentIndex = this.#steps.indexOf(this.#currentStep);
         if (currentIndex === -1) {
-            return "default" /* State.Default */;
+            return "default" /* State.DEFAULT */;
         }
         const index = this.#steps.indexOf(step);
-        return index < currentIndex ? "success" /* State.Success */ : "outstanding" /* State.Outstanding */;
+        return index < currentIndex ? "success" /* State.SUCCESS */ : "outstanding" /* State.OUTSTANDING */;
     }
     #getSectionState(section) {
         const currentStep = this.#currentStep;
         if (!currentStep) {
-            return "default" /* State.Default */;
+            return "default" /* State.DEFAULT */;
         }
         const currentSection = this.#sections.find(section => section.steps.includes(currentStep));
         if (!currentSection) {
             if (this.#currentError) {
-                return "error" /* State.Error */;
+                return "error" /* State.ERROR */;
             }
         }
         if (section === currentSection) {
-            return "success" /* State.Success */;
+            return "success" /* State.SUCCESS */;
         }
         const index = this.#sections.indexOf(currentSection);
         const ownIndex = this.#sections.indexOf(section);
-        return index >= ownIndex ? "success" /* State.Success */ : "outstanding" /* State.Outstanding */;
+        return index >= ownIndex ? "success" /* State.SUCCESS */ : "outstanding" /* State.OUTSTANDING */;
     }
     #renderStep(section, step, isLastSection) {
         const stepIndex = this.#steps.indexOf(step);
@@ -504,7 +504,7 @@ export class RecordingView extends HTMLElement {
         }
         event.preventDefault();
         await this.#copyCurrentSelection(this.#selectedStep);
-        Host.userMetrics.keyboardShortcutFired("chrome-recorder.copy-recording-or-step" /* Actions.RecorderActions.CopyRecordingOrStep */);
+        Host.userMetrics.keyboardShortcutFired("chrome-recorder.copy-recording-or-step" /* Actions.RecorderActions.COPY_RECORDING_OR_STEP */);
     }
     #renderSettings() {
         if (!this.#settings) {
@@ -724,7 +724,7 @@ export class RecordingView extends HTMLElement {
             })}
               </${Menus.SelectMenu.SelectMenu.litTagName}>
               <${Buttons.Button.Button.litTagName}
-                title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */)}
+                title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */)}
                 .data=${{
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
@@ -774,8 +774,8 @@ export class RecordingView extends HTMLElement {
     #handleMeasurePerformanceClickEvent(event) {
         event.stopPropagation();
         this.dispatchEvent(new PlayRecordingEvent({
-            targetPanel: "timeline" /* TargetPanel.PerformancePanel */,
-            speed: "normal" /* PlayRecordingSpeed.Normal */,
+            targetPanel: "timeline" /* TargetPanel.PERFORMANCE_PANEL */,
+            speed: "normal" /* PlayRecordingSpeed.NORMAL */,
         }));
     }
     showCodeToggle = () => {
@@ -861,9 +861,9 @@ export class RecordingView extends HTMLElement {
           class="show-code"
           .data=${{
                 variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
-                title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */),
+                title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */),
             }}
-          jslog=${VisualLogging.toggleSubpane("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */).track({ click: true })}
+          jslog=${VisualLogging.toggleSubpane("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */).track({ click: true })}
         >
           ${i18nString(UIStrings.showCode)}
         </${Buttons.Button.Button.litTagName}>
@@ -891,7 +891,7 @@ export class RecordingView extends HTMLElement {
             sectionIndex: i,
             isRecording: this.#isRecording,
             isPlaying: this.#replayState.isPlaying,
-            error: this.#getSectionState(section) === "error" /* State.Error */
+            error: this.#getSectionState(section) === "error" /* State.ERROR */
                 ? this.#currentError
                 : undefined,
             hasBreakpoint: false,
@@ -938,7 +938,7 @@ export class RecordingView extends HTMLElement {
                   jslog=${VisualLogging.value('title').track({ change: true })}
                   class=${LitHtml.Directives.classMap({
             'has-error': this.#isTitleInvalid,
-            'disabled': !isTitleEditable,
+            disabled: !isTitleEditable,
         })}
                   .innerText=${LitHtml.Directives.live(title)}></span>
             <div class="title-button-bar">
@@ -997,7 +997,7 @@ export class RecordingView extends HTMLElement {
             .disabled=${this.#recordingTogglingInProgress}
             .shape=${'square'}
             .label=${translation}
-            title=${Models.Tooltip.getTooltipForActions(translation, "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */)}
+            title=${Models.Tooltip.getTooltipForActions(translation, "chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */)}
           >
           </devtools-control-button>
         </div>
@@ -1010,8 +1010,8 @@ export class RecordingView extends HTMLElement {
             wrapper: true,
             'is-recording': this.#isRecording,
             'is-playing': this.#replayState.isPlaying,
-            'was-successful': this.#lastReplayResult === "Success" /* Models.RecordingPlayer.ReplayResult.Success */,
-            'was-failure': this.#lastReplayResult === "Failure" /* Models.RecordingPlayer.ReplayResult.Failure */,
+            'was-successful': this.#lastReplayResult === "Success" /* Models.RecordingPlayer.ReplayResult.SUCCESS */,
+            'was-failure': this.#lastReplayResult === "Failure" /* Models.RecordingPlayer.ReplayResult.FAILURE */,
         };
         // clang-format off
         LitHtml.render(LitHtml.html `

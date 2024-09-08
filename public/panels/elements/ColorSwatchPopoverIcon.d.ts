@@ -25,10 +25,10 @@ export declare class BezierPopoverIcon {
     private onPopoverHidden;
 }
 export declare const enum ColorSwatchPopoverIconEvents {
-    ColorChanged = "colorchanged"
+    COLOR_CHANGED = "colorchanged"
 }
 export type ColorSwatchPopoverIconEventTypes = {
-    [ColorSwatchPopoverIconEvents.ColorChanged]: string;
+    [ColorSwatchPopoverIconEvents.COLOR_CHANGED]: string;
 };
 export declare class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper<ColorSwatchPopoverIconEventTypes> {
     private treeElement;
@@ -52,10 +52,10 @@ export declare class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectW
     private onPopoverHidden;
 }
 export declare const enum ShadowEvents {
-    ShadowChanged = "shadowChanged"
+    SHADOW_CHANGED = "shadowChanged"
 }
 export interface ShadowEventTypes {
-    [ShadowEvents.ShadowChanged]: InlineEditor.CSSShadowEditor.CSSShadowModel;
+    [ShadowEvents.SHADOW_CHANGED]: InlineEditor.CSSShadowEditor.CSSShadowModel;
 }
 export declare class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper<ShadowEventTypes> {
     private treeElement;

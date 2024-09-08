@@ -13,7 +13,7 @@ export function findRequest(traceData, context, url) {
             return false;
         }
         const nav = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceData.Meta.navigationsByFrameId);
-        return nav?.args.data?.navigationId === context.navigationId;
+        return nav === context.navigation;
     });
     return request ?? null;
 }

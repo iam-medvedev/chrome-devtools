@@ -141,7 +141,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         }
         titleElement.createChild('div', 'scope-chain-sidebar-pane-section-subtitle').textContent = subtitle;
         titleElement.createChild('div', 'scope-chain-sidebar-pane-section-title').textContent = title;
-        const section = new ObjectUI.ObjectPropertiesSection.RootElement(scope.object(), this.linkifier, emptyPlaceholder, 0 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.All */, scope.extraProperties());
+        const section = new ObjectUI.ObjectPropertiesSection.RootElement(scope.object(), this.linkifier, emptyPlaceholder, 0 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.ALL */, scope.extraProperties());
         section.title = titleElement;
         section.listItemElement.classList.add('scope-chain-sidebar-pane-section');
         section.listItemElement.setAttribute('aria-label', title);

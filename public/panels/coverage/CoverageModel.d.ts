@@ -6,13 +6,13 @@ import type * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 export declare const enum CoverageType {
     CSS = 1,
-    JavaScript = 2,
-    JavaScriptPerFunction = 4
+    JAVA_SCRIPT = 2,
+    JAVA_SCRIPT_PER_FUNCTION = 4
 }
 export declare const enum SuspensionState {
-    Active = "Active",
-    Suspending = "Suspending",
-    Suspended = "Suspended"
+    ACTIVE = "Active",
+    SUSPENDING = "Suspending",
+    SUSPENDED = "Suspended"
 }
 export declare enum Events {
     CoverageUpdated = "CoverageUpdated",

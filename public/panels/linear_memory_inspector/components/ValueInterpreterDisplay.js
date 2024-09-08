@@ -59,7 +59,7 @@ export class JumpToPointerAddressEvent extends Event {
 export class ValueInterpreterDisplay extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-linear-memory-inspector-interpreter-display`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #endianness = "Little Endian" /* Endianness.Little */;
+    #endianness = "Little Endian" /* Endianness.LITTLE */;
     #buffer = new ArrayBuffer(0);
     #valueTypes = new Set();
     #valueTypeModeConfig = getDefaultValueTypeMapping();
@@ -162,13 +162,13 @@ export class ValueInterpreterDisplay extends HTMLElement {
         const unsignedValue = this.#parse({ type, signed: false });
         const signedValue = this.#parse({ type, signed: true });
         const mode = this.#valueTypeModeConfig.get(type);
-        const showSignedAndUnsigned = signedValue !== unsignedValue && mode !== "hex" /* ValueTypeMode.Hexadecimal */ && mode !== "oct" /* ValueTypeMode.Octal */;
+        const showSignedAndUnsigned = signedValue !== unsignedValue && mode !== "hex" /* ValueTypeMode.HEXADECIMAL */ && mode !== "oct" /* ValueTypeMode.OCTAL */;
         const unsignedRendered = html `<span class="value-type-cell selectable-text"  title=${i18nString(UIStrings.unsignedValue)} data-value="true">${unsignedValue}</span>`;
         if (!showSignedAndUnsigned) {
             return unsignedRendered;
         }
         // Some values are too long to show in one line, we're putting them into the next line.
-        const showInMultipleLines = type === "Integer 32-bit" /* ValueType.Int32 */ || type === "Integer 64-bit" /* ValueType.Int64 */;
+        const showInMultipleLines = type === "Integer 32-bit" /* ValueType.INT32 */ || type === "Integer 64-bit" /* ValueType.INT64 */;
         const signedRendered = html `<span class="selectable-text" data-value="true" title=${i18nString(UIStrings.signedValue)}>${signedValue}</span>`;
         if (showInMultipleLines) {
             return html `

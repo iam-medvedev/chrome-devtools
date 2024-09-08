@@ -59,6 +59,12 @@ export const getMarkdownLink = (key) => {
     if (/^https:\/\/developer\.chrome\.com\/blog\//.test(key)) {
         return key;
     }
+    if (/^https:\/\/developers\.google\.com\/web\//.test(key)) {
+        return key;
+    }
+    if (/^https:\/\/web\.dev\/learn\//.test(key)) {
+        return key;
+    }
     const link = markdownLinks.get(key);
     if (!link) {
         throw new Error(`Markdown link with key '${key}' is not available, please check MarkdownLinksMap.ts`);

@@ -11,6 +11,7 @@ export function getLoggingConfig(element) {
 }
 export var VisualElements;
 (function (VisualElements) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Indexed access. */
     VisualElements[VisualElements["TreeItem"] = 1] = "TreeItem";
     VisualElements[VisualElements["Close"] = 2] = "Close";
     VisualElements[VisualElements["Counter"] = 3] = "Counter";
@@ -86,6 +87,7 @@ export var VisualElements;
     VisualElements[VisualElements["ResponsivePresets"] = 73] = "ResponsivePresets";
     VisualElements[VisualElements["DeviceModeRuler"] = 74] = "DeviceModeRuler";
     VisualElements[VisualElements["MediaInspectorView"] = 75] = "MediaInspectorView";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(VisualElements || (VisualElements = {}));
 function resolveVe(ve) {
     return VisualElements[ve] ?? 0;

@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../../../core/common/common.js';
-import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Root from '../../../../core/root/root.js';
@@ -239,6 +238,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         this.canvas.addEventListener('mouseout', this.onMouseOut.bind(this), false);
         this.canvas.addEventListener('click', this.onClick.bind(this), false);
+        this.canvas.addEventListener('dblclick', this.#onDblClick.bind(this), false);
         this.canvas.addEventListener('keydown', this.onKeyDown.bind(this), false);
         this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
         this.popoverElement =
@@ -251,7 +251,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
         }
         this.canvas.addEventListener('focus', () => {
-            this.dispatchEventToListeners("CanvasFocused" /* Events.CanvasFocused */);
+            this.dispatchEventToListeners("CanvasFocused" /* Events.CANVAS_FOCUSED */);
         }, false);
         UI.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), null);
         this.rulerEnabled = true;
@@ -337,7 +337,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.highlightedEntryIndex = entryIndex;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
-        this.dispatchEventToListeners("EntryHovered" /* Events.EntryHovered */, entryIndex);
+        this.dispatchEventToListeners("EntryHovered" /* Events.ENTRY_HOVERED */, entryIndex);
     }
     highlightAllEntries(entries) {
         for (const entry of entries) {
@@ -367,7 +367,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.highlightedEntryIndex = -1;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
-        this.dispatchEventToListeners("EntryHovered" /* Events.EntryHovered */, -1);
+        this.dispatchEventToListeners("EntryHovered" /* Events.ENTRY_HOVERED */, -1);
     }
     createCandyStripePattern() {
         // Set the candy stripe pattern to 17px so it repeats well.
@@ -468,9 +468,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      *   2. Inside a track header -> mouse style will be a "pointer", indicating track can be focused
      *   3. Inside a track -> update the highlight of hovered event
      */
-    onMouseMove(event) {
+    onMouseMove(mouseEvent) {
         this.#searchResultEntryIndex = -1;
-        const mouseEvent = event;
         this.lastMouseOffsetX = mouseEvent.offsetX;
         this.lastMouseOffsetY = mouseEvent.offsetY;
         if (!this.enabled()) {
@@ -480,7 +479,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         const timeMilliSeconds = TraceEngine.Types.Timing.MilliSeconds(this.chartViewport.pixelToTime(mouseEvent.offsetX));
-        this.dispatchEventToListeners("MouseMove" /* Events.MouseMove */, {
+        this.dispatchEventToListeners("MouseMove" /* Events.MOUSE_MOVE */, {
             mouseEvent,
             timeInMicroSeconds: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(timeMilliSeconds),
         });
@@ -627,7 +626,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.updatePopoverOffset();
         }
         this.lastPopoverState = {
-            groupIndex: groupIndex,
+            groupIndex,
             entryIndex: -1,
             hiddenEntriesPopover: false,
         };
@@ -663,6 +662,23 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.popoverElement.style.top = (y || 0) + this.#tooltipPopoverYAdjustment + 'px';
     }
     /**
+     * Handle double mouse click event in flame chart.
+     */
+    #onDblClick(mouseEvent) {
+        this.focus();
+        const { groupIndex } = this.coordinatesToGroupIndexAndHoverType(mouseEvent.offsetX, mouseEvent.offsetY);
+        /**
+         * When a hovered entry on any track is double clicked, create a label for it.
+         *
+         * Checking the existance of `highlightedEntryIndex` is enough to make sure that the double
+         * click happenned on the entry since an entry is only highlighted if the mouse is hovering it.
+         */
+        if (this.highlightedEntryIndex !== -1) {
+            this.#selectGroup(groupIndex);
+            this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.highlightedEntryIndex);
+        }
+    }
+    /**
      * Handle mouse click event in flame chart
      *
      * And the handle priority will be:
@@ -671,11 +687,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      * 2. Inside a track header -> Select and Expand/Collapse a track
      * 3. Inside a track -> Select a track
      * 3.1 shift + click -> Select the time range of clicked event
-     * 3.2 cmd or ctrl + click -> Create entry label annotation on the clicked entry
-     * 3.3 click -> update highlight (handle in other functions)
+     * 3.2 click -> update highlight (handle in other functions)
      */
-    onClick(event) {
-        const mouseEvent = event;
+    onClick(mouseEvent) {
         this.focus();
         // onClick comes after dragStart and dragEnd events.
         // So if there was drag (mouse move) in the middle of that events
@@ -711,18 +725,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 case "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */: {
                     this.#selectGroup(groupIndex);
                     const timelineData = this.timelineData();
-                    const isMetaOrControl = Host.Platform.isMac() ? mouseEvent.metaKey : mouseEvent.ctrlKey;
                     if (mouseEvent.shiftKey && this.highlightedEntryIndex !== -1 && timelineData) {
                         const start = timelineData.entryStartTimes[this.highlightedEntryIndex];
                         const end = start + timelineData.entryTotalTimes[this.highlightedEntryIndex];
                         this.chartViewport.setRangeSelection(start, end);
                     }
-                    else if (isMetaOrControl && this.highlightedEntryIndex !== -1 && timelineData) {
-                        this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.EntryLabelAnnotationAdded */, this.highlightedEntryIndex);
-                    }
                     else {
                         this.chartViewport.onClick(mouseEvent);
-                        this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.highlightedEntryIndex);
+                        this.dispatchEventToListeners("EntryInvoked" /* Events.ENTRY_INVOKED */, this.highlightedEntryIndex);
                     }
                     return;
                 }
@@ -982,46 +992,41 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // context menu, so finish here.
             return;
         }
-        if (this.dataProvider.customizedContextMenu) {
-            // Update the selected index to match the highlighted index, which
-            // represents the entry under the cursor where the user has right clicked
-            // to trigger a context menu.
-            this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.highlightedEntryIndex);
-            this.setSelectedEntry(this.highlightedEntryIndex);
-            // Update the selected group as well.
-            this.#selectGroup(groupIndex);
-            // Build the context menu for right clicking individual entries.
-            // The context menu only applies if the user is hovering over an individual
-            // entry, and we are not in edit mode (which we know we cannot be in given
-            // the conditional checks above)
-            // If the flame chart provider can build a customized context menu for the
-            // given entry, we will use that, otherwise just do nothing and fall back to
-            // default context menu.
-            // We need to use |selectedEntryIndex| instead of |highlightedEntryIndex|.
-            // The reason is when we call the |setSelectedEntry| and |#selectGroup|,
-            // the flame chart will be redrawn, so the |highlightedEntryIndex| will be
-            // reset to -1.
-            // In real life, because we might trigger the |mousemove| event again, the
-            // |highlightedEntryIndex| might be correct, but to make the code easier
-            // to maintain, let's use |selectedEntryIndex|.
-            this.contextMenu = this.dataProvider.customizedContextMenu(event, this.selectedEntryIndex, groupIndex);
-            if (!this.contextMenu) {
-                return;
-            }
-            if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-                const annotationSection = this.contextMenu.section('annotations');
-                const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
-                    this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.EntryLabelAnnotationAdded */, this.selectedEntryIndex);
-                });
-                const prefix = Host.Platform.isMac() ? 'Cmd' : 'Ctrl';
-                labelEntryAnnotationOption.setShortcut(`${prefix} + Click`);
-                const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
-                    this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.EntriesLinkAnnotationCreated */, { entryFromIndex: this.selectedEntryIndex });
-                });
-                linkEntriesAnnotationOption.setShortcut(`${prefix} + Click`);
-            }
-            void this.contextMenu.show();
+        // Update the selected index to match the highlighted index, which
+        // represents the entry under the cursor where the user has right clicked
+        // to trigger a context menu.
+        this.dispatchEventToListeners("EntryInvoked" /* Events.ENTRY_INVOKED */, this.highlightedEntryIndex);
+        this.setSelectedEntry(this.highlightedEntryIndex);
+        // Update the selected group as well.
+        this.#selectGroup(groupIndex);
+        // Build the context menu for right clicking individual entries.
+        // The context menu only applies if the user is hovering over an individual
+        // entry, and we are not in edit mode (which we know we cannot be in given
+        // the conditional checks above)
+        // If the flame chart provider can build a customized context menu for the
+        // given entry, we will use that, otherwise just do nothing and fall back to
+        // default context menu.
+        // We need to use |selectedEntryIndex| instead of |highlightedEntryIndex|.
+        // The reason is when we call the |setSelectedEntry| and |#selectGroup|,
+        // the flame chart will be redrawn, so the |highlightedEntryIndex| will be
+        // reset to -1.
+        // In real life, because we might trigger the |mousemove| event again, the
+        // |highlightedEntryIndex| might be correct, but to make the code easier
+        // to maintain, let's use |selectedEntryIndex|.
+        this.contextMenu = this.dataProvider.customizedContextMenu?.(event, this.selectedEntryIndex, groupIndex) ??
+            new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
+            const annotationSection = this.contextMenu.section('annotations');
+            const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
+                this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.selectedEntryIndex);
+            });
+            labelEntryAnnotationOption.setShortcut('Double Click');
+            const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
+                this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.ENTRIES_LINK_ANNOTATION_CREATED */, { entryFromIndex: this.selectedEntryIndex });
+            });
+            linkEntriesAnnotationOption.setShortcut('Double Click');
         }
+        void this.contextMenu.show();
     }
     #handleFlameChartTransformEvent(event) {
         // TODO(crbug.com/1469887): Indicate Shortcuts to the user when the designs are complete.
@@ -1238,7 +1243,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             indexOnLevel += keyboardEvent.keyCode === keys.Left.code ? -1 : 1;
             event.consume(true);
             if (indexOnLevel >= 0 && indexOnLevel < levelIndexes.length) {
-                this.dispatchEventToListeners("EntrySelected" /* Events.EntrySelected */, levelIndexes[indexOnLevel]);
+                this.dispatchEventToListeners("EntrySelected" /* Events.ENTRY_SELECTED */, levelIndexes[indexOnLevel]);
             }
             return true;
         }
@@ -1268,12 +1273,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 }
             }
             keyboardEvent.consume(true);
-            this.dispatchEventToListeners("EntrySelected" /* Events.EntrySelected */, levelIndexes[indexOnLevel]);
+            this.dispatchEventToListeners("EntrySelected" /* Events.ENTRY_SELECTED */, levelIndexes[indexOnLevel]);
             return true;
         }
         if (event.key === 'Enter') {
             event.consume(true);
-            this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.selectedEntryIndex);
+            this.dispatchEventToListeners("EntryInvoked" /* Events.ENTRY_INVOKED */, this.selectedEntryIndex);
             return true;
         }
         return false;
@@ -1487,20 +1492,20 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                     if (this.#inTrackConfigEditMode) {
                         if (mouseInHeaderRow) {
                             if (UP_ICON_LEFT <= x && x < UP_ICON_LEFT + EDIT_ICON_WIDTH) {
-                                return { groupIndex: groupIndex, hoverType: "TRACK_CONFIG_UP_BUTTON" /* HoverType.TRACK_CONFIG_UP_BUTTON */ };
+                                return { groupIndex, hoverType: "TRACK_CONFIG_UP_BUTTON" /* HoverType.TRACK_CONFIG_UP_BUTTON */ };
                             }
                             if (DOWN_ICON_LEFT <= x && x < DOWN_ICON_LEFT + EDIT_ICON_WIDTH) {
-                                return { groupIndex: groupIndex, hoverType: "TRACK_CONFIG_DOWN_BUTTON" /* HoverType.TRACK_CONFIG_DOWN_BUTTON */ };
+                                return { groupIndex, hoverType: "TRACK_CONFIG_DOWN_BUTTON" /* HoverType.TRACK_CONFIG_DOWN_BUTTON */ };
                             }
                             if (HIDE_ICON_LEFT <= x && x < HIDE_ICON_LEFT + EDIT_ICON_WIDTH) {
                                 return {
-                                    groupIndex: groupIndex,
+                                    groupIndex,
                                     hoverType: groups[groupIndex].hidden ? "TRACK_CONFIG_SHOW_BUTTON" /* HoverType.TRACK_CONFIG_SHOW_BUTTON */ :
                                         "TRACK_CONFIG_HIDE_BUTTON" /* HoverType.TRACK_CONFIG_HIDE_BUTTON */,
                                 };
                             }
                             if (mouseInHeaderRow && x <= headerRight) {
-                                return { groupIndex: groupIndex, hoverType: "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */ };
+                                return { groupIndex, hoverType: "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */ };
                             }
                         }
                         // Ignore any other actions when user is customizing the tracks.
@@ -1509,9 +1514,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                     else {
                         // User is not in edit mode so they can either be in the header, or in the track.
                         if (mouseInHeaderRow && x <= headerRight) {
-                            return { groupIndex: groupIndex, hoverType: "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */ };
+                            return { groupIndex, hoverType: "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */ };
                         }
-                        return { groupIndex: groupIndex, hoverType: "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */ };
+                        return { groupIndex, hoverType: "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */ };
                     }
                 }
             }
@@ -1569,7 +1574,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         this.resetCanvas();
-        this.dispatchEventToListeners("LatestDrawDimensions" /* Events.LatestDrawDimensions */, {
+        this.dispatchEventToListeners("LatestDrawDimensions" /* Events.LATEST_DRAW_DIMENSIONS */, {
             chart: {
                 widthPixels: this.offsetWidth,
                 heightPixels: this.offsetHeight,
@@ -1622,7 +1627,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
             this.#drawGenericEvents(context, timelineData, color, indexes);
         }
-        this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.ChartPlayableStateChange */, wideEntryExists);
+        this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.CHART_PLAYABLE_STATE_CHANGED */, wideEntryExists);
         this.drawMarkers(context, timelineData, markerIndices);
         this.drawEventTitles(context, timelineData, titleIndices, canvasWidth);
         // If there is a `forceDecoration` function, it will be called in `drawEventTitles`, which will overwrite the

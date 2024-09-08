@@ -31,7 +31,7 @@ describeWithEnvironment('LayoutShiftsTrackAppender', function () {
         // Only one row of layout shifts.
         assert.strictEqual(entryTypeByLevel.length, 1);
         assert.deepEqual(entryTypeByLevel, [
-            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */,
+            "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
         ]);
     });
     it('does not append anything if there are no layout shifts', async function () {

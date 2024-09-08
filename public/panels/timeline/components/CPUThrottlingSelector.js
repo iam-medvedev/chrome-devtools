@@ -8,6 +8,7 @@ import * as Menus from '../../../ui/components/menus/menus.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
+import cpuThrottlingSelectorStyles from './cpuThrottlingSelector.css.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -42,6 +43,7 @@ export class CPUThrottlingSelector extends HTMLElement {
         this.#render();
     }
     connectedCallback() {
+        this.#shadow.adoptedStyleSheets = [cpuThrottlingSelectorStyles];
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.#onRateChange, this);
     }
     disconnectedCallback() {

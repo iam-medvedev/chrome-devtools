@@ -77,16 +77,16 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     toggleBreakpointsActiveState(active: boolean): void;
 }
 export declare const enum Events {
-    EditorClosed = "EditorClosed",
-    EditorSelected = "EditorSelected"
+    EDITOR_CLOSED = "EditorClosed",
+    EDITOR_SELECTED = "EditorSelected"
 }
 export interface EditorClosedEvent {
     uiSourceCode: Workspace.UISourceCode.UISourceCode;
     wasSelected: boolean;
 }
 export type EventTypes = {
-    [Events.EditorClosed]: EditorClosedEvent;
-    [Events.EditorSelected]: Workspace.UISourceCode.UISourceCode;
+    [Events.EDITOR_CLOSED]: EditorClosedEvent;
+    [Events.EDITOR_SELECTED]: Workspace.UISourceCode.UISourceCode;
 };
 export interface EditorAction {
     getOrCreateButton(sourcesView: SourcesView): UI.Toolbar.ToolbarButton;

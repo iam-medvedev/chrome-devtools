@@ -26,13 +26,13 @@ describe('Infobar', () => {
         assert.isFalse(detailsRow.classList.contains('hidden'), 'Details row should not be hidden after clicking on learn-more-button');
     };
     it('shows details message containing a string', () => {
-        const component = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, 'This is a warning');
+        const component = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.WARNING */, 'This is a warning');
         const messageText = 'This is a more detailed warning';
         component.createDetailsRowMessage(messageText);
         checkDetailsMessage(component, messageText);
     });
     it('shows details message containing HTML element(s)', () => {
-        const component = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, 'This is a warning');
+        const component = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.WARNING */, 'This is a warning');
         const linkText = 'example-link';
         const link = UI.XLink.XLink.create('https://www.example.com', linkText);
         component.createDetailsRowMessage(link);

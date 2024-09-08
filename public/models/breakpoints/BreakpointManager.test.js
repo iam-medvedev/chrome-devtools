@@ -53,11 +53,11 @@ describeWithMockConnection('BreakpointManager', () => {
     const ORIGINAL_SCRIPT_SOURCE_URL = 'https://site/original-script.js';
     // Created with `terser -m -o script.min.js --source-map "includeSources;url=script.min.js.map" original-script.js`
     const sourceMapContent = JSON.stringify({
-        'version': 3,
-        'names': ['foo', 'console', 'log'],
-        'sources': ['/original-script.js'],
-        'sourcesContent': [ORIGINAL_SCRIPT_SOURCES_CONTENT],
-        'mappings': 'AAAA,SAASA,MACPC,QAAQC,IAAI,QACd',
+        version: 3,
+        names: ['foo', 'console', 'log'],
+        sources: ['/original-script.js'],
+        sourcesContent: [ORIGINAL_SCRIPT_SOURCES_CONTENT],
+        mappings: 'AAAA,SAASA,MACPC,QAAQC,IAAI,QACd',
     });
     let target;
     let backend;
@@ -215,11 +215,11 @@ describeWithMockConnection('BreakpointManager', () => {
             const scriptInfo = { url: URL, content: 'function adder(n,r){const t=n+r;return t}' };
             // Created with `terser -m -o script.min.js --source-map "includeSources;url=script.min.js.map" original-script.js`
             const sourceMapContent = JSON.stringify({
-                'version': 3,
-                'names': ['adder', 'param1', 'param2', 'result'],
-                'sources': ['/original-script.js'],
-                'sourcesContent': ['function adder(param1, param2) {\n  const result = param1 + param2;\n  return result;\n}\n\n'],
-                'mappings': 'AAAA,SAASA,MAAMC,EAAQC,GACrB,MAAMC,EAASF,EAASC,EACxB,OAAOC,CACT',
+                version: 3,
+                names: ['adder', 'param1', 'param2', 'result'],
+                sources: ['/original-script.js'],
+                sourcesContent: ['function adder(param1, param2) {\n  const result = param1 + param2;\n  return result;\n}\n\n'],
+                mappings: 'AAAA,SAASA,MAAMC,EAAQC,GACrB,MAAMC,EAASF,EAASC,EACxB,OAAOC,CACT',
             });
             const sourceMapInfo = { url: SOURCE_MAP_URL, content: sourceMapContent };
             const script = await backend.addScript(target, scriptInfo, sourceMapInfo);
@@ -258,11 +258,11 @@ describeWithMockConnection('BreakpointManager', () => {
         // The source map is the same for both 'bundles'.
         // Created with `terser -m -o script.min.js --source-map "includeSources;url=script.min.js.map" original-script.js`
         const sourceMapContent = JSON.stringify({
-            'version': 3,
-            'names': ['adder', 'param1', 'param2', 'result'],
-            'sources': ['/original-script.js'],
-            'sourcesContent': ['function adder(param1, param2) {\n  const result = param1 + param2;\n  return result;\n}\n\n'],
-            'mappings': 'AAAA,SAASA,MAAMC,EAAQC,GACrB,MAAMC,EAASF,EAASC,EACxB,OAAOC,CACT',
+            version: 3,
+            names: ['adder', 'param1', 'param2', 'result'],
+            sources: ['/original-script.js'],
+            sourcesContent: ['function adder(param1, param2) {\n  const result = param1 + param2;\n  return result;\n}\n\n'],
+            mappings: 'AAAA,SAASA,MAAMC,EAAQC,GACrB,MAAMC,EAASF,EAASC,EACxB,OAAOC,CACT',
         });
         const sourceMapInfo = { url: SOURCE_MAP_URL, content: sourceMapContent };
         await Promise.all([
@@ -713,7 +713,7 @@ describeWithMockConnection('BreakpointManager', () => {
         async function testBreakpointMovedOnInstrumentationBreak(fileSystemPath, fileSystemFileUrl, content, type) {
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             assert.exists(debuggerModel);
-            const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({ fileSystemFileUrl, fileSystemPath, type: type }, scriptDescription.url, content, target);
+            const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({ fileSystemFileUrl, fileSystemPath, type }, scriptDescription.url, content, target);
             const breakpointLine = 0;
             const resolvedBreakpointLine = 1;
             // Set the breakpoint on the file system uiSourceCode.

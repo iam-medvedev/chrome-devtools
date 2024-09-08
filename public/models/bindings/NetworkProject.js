@@ -58,7 +58,7 @@ export class NetworkProject {
             return;
         }
         const attribution = new Map();
-        attribution.set(frameId, { frame: frame, count: 1 });
+        attribution.set(frameId, { frame, count: 1 });
         uiSourceCodeToAttributionMap.set(uiSourceCode, attribution);
     }
     static cloneInitialFrameAttribution(fromUISourceCode, toUISourceCode) {
@@ -84,13 +84,13 @@ export class NetworkProject {
         if (!frameAttribution) {
             return;
         }
-        const attributionInfo = frameAttribution.get(frameId) || { frame: frame, count: 0 };
+        const attributionInfo = frameAttribution.get(frameId) || { frame, count: 0 };
         attributionInfo.count += 1;
         frameAttribution.set(frameId, attributionInfo);
         if (attributionInfo.count !== 1) {
             return;
         }
-        const data = { uiSourceCode: uiSourceCode, frame: frame };
+        const data = { uiSourceCode, frame };
         NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionAdded" /* Events.FRAME_ATTRIBUTION_ADDED */, data);
     }
     static removeFrameAttribution(uiSourceCode, frameId) {
@@ -108,7 +108,7 @@ export class NetworkProject {
             return;
         }
         frameAttribution.delete(frameId);
-        const data = { uiSourceCode: uiSourceCode, frame: attributionInfo.frame };
+        const data = { uiSourceCode, frame: attributionInfo.frame };
         NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionRemoved" /* Events.FRAME_ATTRIBUTION_REMOVED */, data);
     }
     static targetForUISourceCode(uiSourceCode) {

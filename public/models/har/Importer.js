@@ -123,7 +123,7 @@ export class Importer {
                     continue;
                 }
                 const mask = message.type === SDK.NetworkRequest.WebSocketFrameType.Send;
-                request.addFrame({ time: message.time, text: message.data, opCode: message.opcode, mask: mask, type: message.type });
+                request.addFrame({ time: message.time, text: message.data, opCode: message.opcode, mask, type: message.type });
             }
         }
         // Restore Service Worker related response.

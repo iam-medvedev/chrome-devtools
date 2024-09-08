@@ -50,7 +50,7 @@ export class BezierPopoverIcon {
         const model = InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(this.swatch.bezierText()) ||
             InlineEditor.AnimationTimingModel.LINEAR_BEZIER;
         this.bezierEditor = new InlineEditor.BezierEditor.BezierEditor(model);
-        this.bezierEditor.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BezierChanged */, this.boundBezierChanged);
+        this.bezierEditor.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BEZIER_CHANGED */, this.boundBezierChanged);
         this.swatchPopoverHelper.show(this.bezierEditor, this.swatch.iconElement(), this.onPopoverHidden.bind(this));
         this.scrollerElement = this.swatch.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         if (this.scrollerElement) {
@@ -75,7 +75,7 @@ export class BezierPopoverIcon {
             this.scrollerElement.removeEventListener('scroll', this.boundOnScroll, false);
         }
         if (this.bezierEditor) {
-            this.bezierEditor.removeEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BezierChanged */, this.boundBezierChanged);
+            this.bezierEditor.removeEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BEZIER_CHANGED */, this.boundBezierChanged);
         }
         this.bezierEditor = undefined;
         const propertyText = commitEdit ? this.treeElement.renderedPropertyText() : this.originalPropertyText || '';
@@ -125,7 +125,7 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
             colors.push(value.value);
             colorNames.push(cssVariable);
         }
-        return { title: 'CSS Variables', mutable: false, matchUserFormat: true, colors: colors, colorNames: colorNames };
+        return { title: 'CSS Variables', mutable: false, matchUserFormat: true, colors, colorNames };
     }
     setContrastInfo(contrastInfo) {
         this.contrastInfo = contrastInfo;
@@ -149,8 +149,8 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
         this.spectrum = new ColorPicker.Spectrum.Spectrum(this.contrastInfo);
         this.spectrum.setColor(color);
         this.spectrum.addPalette(this.generateCSSVariablesPalette());
-        this.spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SizeChanged */, this.spectrumResized, this);
-        this.spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.ColorChanged */, this.boundSpectrumChanged);
+        this.spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SIZE_CHANGED */, this.spectrumResized, this);
+        this.spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.COLOR_CHANGED */, this.boundSpectrumChanged);
         this.swatchPopoverHelper.show(this.spectrum, this.swatch, this.onPopoverHidden.bind(this));
         this.scrollerElement = this.swatch.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         if (this.scrollerElement) {
@@ -183,7 +183,7 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
         }
         // `asString` somehow can return null.
         if (text) {
-            this.dispatchEventToListeners("colorchanged" /* ColorSwatchPopoverIconEvents.ColorChanged */, text);
+            this.dispatchEventToListeners("colorchanged" /* ColorSwatchPopoverIconEvents.COLOR_CHANGED */, text);
         }
     }
     onScroll(_event) {
@@ -194,7 +194,7 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
             this.scrollerElement.removeEventListener('scroll', this.boundOnScroll, false);
         }
         if (this.spectrum) {
-            this.spectrum.removeEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.ColorChanged */, this.boundSpectrumChanged);
+            this.spectrum.removeEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.COLOR_CHANGED */, this.boundSpectrumChanged);
         }
         this.spectrum = undefined;
         const propertyText = commitEdit ? this.treeElement.renderedPropertyText() : this.originalPropertyText || '';
@@ -237,7 +237,7 @@ export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrappe
         }
         this.cssShadowEditor = new InlineEditor.CSSShadowEditor.CSSShadowEditor();
         this.cssShadowEditor.setModel(this.shadowSwatch.model());
-        this.cssShadowEditor.addEventListener("ShadowChanged" /* InlineEditor.CSSShadowEditor.Events.ShadowChanged */, this.boundShadowChanged);
+        this.cssShadowEditor.addEventListener("ShadowChanged" /* InlineEditor.CSSShadowEditor.Events.SHADOW_CHANGED */, this.boundShadowChanged);
         this.swatchPopoverHelper.show(this.cssShadowEditor, this.iconElement, this.onPopoverHidden.bind(this));
         this.scrollerElement = this.iconElement.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         if (this.scrollerElement) {
@@ -251,7 +251,7 @@ export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrappe
         }
     }
     shadowChanged(event) {
-        this.dispatchEventToListeners("shadowChanged" /* ShadowEvents.ShadowChanged */, event.data);
+        this.dispatchEventToListeners("shadowChanged" /* ShadowEvents.SHADOW_CHANGED */, event.data);
     }
     onScroll(_event) {
         this.swatchPopoverHelper.hide(true);
@@ -261,7 +261,7 @@ export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrappe
             this.scrollerElement.removeEventListener('scroll', this.boundOnScroll, false);
         }
         if (this.cssShadowEditor) {
-            this.cssShadowEditor.removeEventListener("ShadowChanged" /* InlineEditor.CSSShadowEditor.Events.ShadowChanged */, this.boundShadowChanged);
+            this.cssShadowEditor.removeEventListener("ShadowChanged" /* InlineEditor.CSSShadowEditor.Events.SHADOW_CHANGED */, this.boundShadowChanged);
         }
         this.cssShadowEditor = undefined;
         const propertyText = commitEdit ? this.treeElement.renderedPropertyText() : this.originalPropertyText || '';
@@ -376,8 +376,8 @@ export class FontEditorSectionManager {
         this.parentPane = parentPane;
         const propertyValueMap = this.createPropertyValueMap();
         this.fontEditor = new InlineEditor.FontEditor.FontEditor(propertyValueMap);
-        this.fontEditor.addEventListener("FontChanged" /* InlineEditor.FontEditor.Events.FontChanged */, this.boundFontChanged);
-        this.fontEditor.addEventListener("FontEditorResized" /* InlineEditor.FontEditor.Events.FontEditorResized */, this.boundResized);
+        this.fontEditor.addEventListener("FontChanged" /* InlineEditor.FontEditor.Events.FONT_CHANGED */, this.boundFontChanged);
+        this.fontEditor.addEventListener("FontEditorResized" /* InlineEditor.FontEditor.Events.FONT_EDITOR_RESIZED */, this.boundResized);
         this.swatchPopoverHelper.show(this.fontEditor, iconElement, this.onPopoverHidden.bind(this));
         this.scrollerElement = iconElement.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         if (this.scrollerElement) {
@@ -394,7 +394,7 @@ export class FontEditorSectionManager {
         }
         this.section.onpopulate();
         if (this.fontEditor) {
-            this.fontEditor.removeEventListener("FontChanged" /* InlineEditor.FontEditor.Events.FontChanged */, this.boundFontChanged);
+            this.fontEditor.removeEventListener("FontChanged" /* InlineEditor.FontEditor.Events.FONT_CHANGED */, this.boundFontChanged);
         }
         this.fontEditor = null;
         if (this.parentPane) {

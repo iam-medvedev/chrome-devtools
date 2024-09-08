@@ -30,15 +30,15 @@ export declare class FontEditor extends FontEditor_base {
     private resizePopout;
 }
 export declare const enum Events {
-    FontChanged = "FontChanged",
-    FontEditorResized = "FontEditorResized"
+    FONT_CHANGED = "FontChanged",
+    FONT_EDITOR_RESIZED = "FontEditorResized"
 }
 export interface FontChangedEvent {
     propertyName: string;
     value: string;
 }
 export type EventTypes = {
-    [Events.FontChanged]: FontChangedEvent;
-    [Events.FontEditorResized]: void;
+    [Events.FONT_CHANGED]: FontChangedEvent;
+    [Events.FONT_EDITOR_RESIZED]: void;
 };
 export {};

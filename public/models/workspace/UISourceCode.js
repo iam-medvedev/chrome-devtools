@@ -171,7 +171,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
             this.contentTypeInternal = contentType;
         }
         this.dispatchEventToListeners(Events.TitleChanged, this);
-        this.project().workspace().dispatchEventToListeners(WorkspaceImplEvents.UISourceCodeRenamed, { oldURL: oldURL, uiSourceCode: this });
+        this.project().workspace().dispatchEventToListeners(WorkspaceImplEvents.UISourceCodeRenamed, { oldURL, uiSourceCode: this });
     }
     contentURL() {
         return this.url();

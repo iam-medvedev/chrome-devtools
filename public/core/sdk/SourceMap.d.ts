@@ -1,6 +1,6 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Platform from '../platform/platform.js';
-import { type CallFrame } from './DebuggerModel.js';
+import { type CallFrame, type ScopeChainEntry } from './DebuggerModel.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -145,6 +145,7 @@ export declare class SourceMap {
      */
     compatibleForURL(sourceURL: Platform.DevToolsPath.UrlString, other: SourceMap): boolean;
     expandCallFrame(frame: CallFrame): CallFrame[];
+    resolveScopeChain(frame: CallFrame): ScopeChainEntry[] | null;
 }
 export declare class TokenIterator {
     #private;

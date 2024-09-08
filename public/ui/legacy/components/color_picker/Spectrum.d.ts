@@ -127,12 +127,12 @@ export declare const ChangeSource: {
     Other: string;
 };
 export declare const enum Events {
-    ColorChanged = "ColorChanged",
-    SizeChanged = "SizeChanged"
+    COLOR_CHANGED = "ColorChanged",
+    SIZE_CHANGED = "SizeChanged"
 }
 export type EventTypes = {
-    [Events.ColorChanged]: string;
-    [Events.SizeChanged]: void;
+    [Events.COLOR_CHANGED]: string;
+    [Events.SIZE_CHANGED]: void;
 };
 export declare class PaletteGenerator {
     private readonly callback;

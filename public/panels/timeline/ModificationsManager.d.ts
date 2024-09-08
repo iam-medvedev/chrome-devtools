@@ -26,7 +26,7 @@ export declare class ModificationsManager extends EventTarget {
     private constructor();
     getEntriesFilter(): EntriesFilter;
     getTimelineBreadcrumbs(): TimelineComponents.Breadcrumbs.Breadcrumbs;
-    createAnnotation(newAnnotation: TraceEngine.Types.File.Annotation): void;
+    createAnnotation(newAnnotation: TraceEngine.Types.File.Annotation, loadedFromFile?: boolean): void;
     removeAnnotation(removedAnnotation: TraceEngine.Types.File.Annotation): void;
     removeAnnotationOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
     updateAnnotation(updatedAnnotation: TraceEngine.Types.File.Annotation): void;

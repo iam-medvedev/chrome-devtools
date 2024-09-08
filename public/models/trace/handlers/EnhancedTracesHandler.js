@@ -157,9 +157,9 @@ export function data() {
         throw new Error('Enhanced Traces Handler is not finalized');
     }
     return {
-        targets: targets,
-        executionContexts: executionContexts,
-        scripts: scripts,
+        targets,
+        executionContexts,
+        scripts,
     };
 }
 //# sourceMappingURL=EnhancedTracesHandler.js.map

@@ -71,7 +71,7 @@ class ResponseHeaderSectionBase extends HTMLElement {
         }));
     }
     highlightHeaders(data) {
-        if (data.toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */) {
+        if (data.toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */) {
             this.headerDetails.filter(header => compareHeaders(header.name, data.toReveal?.header?.toLowerCase()))
                 .forEach(header => {
                 header.highlight = true;
@@ -97,7 +97,7 @@ export class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
         render(html `
       ${this.headerDetails.map(header => html `
         <${HeaderSectionRow.litTagName} .data=${{
-            header: header,
+            header,
         }}></${HeaderSectionRow.litTagName}>
       `)}
     `, this.shadow, { host: this });
@@ -111,13 +111,13 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
     #headerEditors = [];
     #uiSourceCode = null;
     #overrides = [];
-    #isEditingAllowed = 0 /* EditingAllowedStatus.Disabled */;
+    #isEditingAllowed = 0 /* EditingAllowedStatus.DISABLED */;
     set data(data) {
         this.#request = data.request;
         this.#isEditingAllowed =
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ?
-                2 /* EditingAllowedStatus.Forbidden */ :
-                0 /* EditingAllowedStatus.Disabled */;
+                2 /* EditingAllowedStatus.FORBIDDEN */ :
+                0 /* EditingAllowedStatus.DISABLED */;
         // If the request has been locally overridden, its 'sortedResponseHeaders'
         // contains no 'set-cookie' headers, because they have been filtered out by
         // the Chromium backend. DevTools therefore uses previously stored values.
@@ -198,8 +198,8 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
         }
         this.#isEditingAllowed =
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ?
-                2 /* EditingAllowedStatus.Forbidden */ :
-                0 /* EditingAllowedStatus.Disabled */;
+                2 /* EditingAllowedStatus.FORBIDDEN */ :
+                0 /* EditingAllowedStatus.DISABLED */;
         this.#headerEditors = this.headerDetails.map(header => ({
             name: header.name,
             value: header.value,
@@ -228,8 +228,8 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
                 throw 'Type mismatch after parsing';
             }
             if (Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').get() &&
-                this.#isEditingAllowed === 0 /* EditingAllowedStatus.Disabled */) {
-                this.#isEditingAllowed = 1 /* EditingAllowedStatus.Enabled */;
+                this.#isEditingAllowed === 0 /* EditingAllowedStatus.DISABLED */) {
+                this.#isEditingAllowed = 1 /* EditingAllowedStatus.ENABLED */;
             }
             for (const header of this.#headerEditors) {
                 header.valueEditable = this.#isEditingAllowed;
@@ -434,7 +434,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             value: i18n.i18n.lockedString('header value'),
             isOverride: true,
             nameEditable: true,
-            valueEditable: 1 /* EditingAllowedStatus.Enabled */,
+            valueEditable: 1 /* EditingAllowedStatus.ENABLED */,
         });
         const index = this.#headerEditors.length - 1;
         this.#updateOverrides(this.#headerEditors[index].name, this.#headerEditors[index].value || '', index);
@@ -462,7 +462,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             jslog=${VisualLogging.item('response-header')}
         ></${HeaderSectionRow.litTagName}>
       `)}
-      ${this.#isEditingAllowed === 1 /* EditingAllowedStatus.Enabled */ ? html `
+      ${this.#isEditingAllowed === 1 /* EditingAllowedStatus.ENABLED */ ? html `
         <${Buttons.Button.Button.litTagName}
           class="add-header-button"
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}

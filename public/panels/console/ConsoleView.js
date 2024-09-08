@@ -308,7 +308,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.searchableViewInternal.setPlaceholder(i18nString(UIStrings.findStringInLogs));
         this.searchableViewInternal.setMinimalSearchQuerySize(0);
         this.sidebar = new ConsoleSidebar();
-        this.sidebar.addEventListener("FilterSelected" /* Events.FilterSelected */, this.onFilterChanged.bind(this));
+        this.sidebar.addEventListener("FilterSelected" /* Events.FILTER_SELECTED */, this.onFilterChanged.bind(this));
         this.isSidebarOpen = false;
         this.filter = new ConsoleViewFilter(this.onFilterChanged.bind(this));
         this.consoleToolbarContainer = this.element.createChild('div', 'console-toolbar-container');
@@ -318,10 +318,10 @@ export class ConsoleView extends UI.Widget.VBox {
         this.splitWidget.show(this.element);
         this.splitWidget.hideSidebar();
         this.splitWidget.enableShowModeSaving();
-        this.isSidebarOpen = this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.Both */;
+        this.isSidebarOpen = this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.BOTH */;
         this.filter.setLevelMenuOverridden(this.isSidebarOpen);
-        this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.ShowModeChanged */, event => {
-            this.isSidebarOpen = event.data === "Both" /* UI.SplitWidget.ShowMode.Both */;
+        this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.SHOW_MODE_CHANGED */, event => {
+            this.isSidebarOpen = event.data === "Both" /* UI.SplitWidget.ShowMode.BOTH */;
             if (this.isSidebarOpen) {
                 if (!this.userHasOpenedSidebarAtLeastOnce) {
                     /**
@@ -389,7 +389,7 @@ export class ConsoleView extends UI.Widget.VBox {
             },
             issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
             accessibleName: i18nString(UIStrings.issueToolbarTooltipGeneral),
-            displayMode: "OmitEmpty" /* IssueCounter.IssueCounter.DisplayMode.OmitEmpty */,
+            displayMode: "OmitEmpty" /* IssueCounter.IssueCounter.DisplayMode.OMIT_EMPTY */,
         };
         toolbar.appendToolbarItem(issuesToolbarItem);
         toolbar.appendSeparator();
@@ -457,13 +457,13 @@ export class ConsoleView extends UI.Widget.VBox {
         const throttler = new Common.Throttler.Throttler(100);
         const refilterMessages = () => throttler.schedule(async () => this.onFilterChanged());
         this.linkifier = new Components.Linkifier.Linkifier(MaxLengthForLinks);
-        this.linkifier.addEventListener("liveLocationUpdated" /* Components.Linkifier.Events.LiveLocationUpdated */, refilterMessages);
+        this.linkifier.addEventListener("liveLocationUpdated" /* Components.Linkifier.Events.LIVE_LOCATION_UPDATED */, refilterMessages);
         this.consoleMessages = [];
         this.consoleGroupStarts = [];
         this.prompt = new ConsolePrompt();
         this.prompt.show(this.promptElement);
         this.prompt.element.addEventListener('keydown', this.promptKeyDown.bind(this), true);
-        this.prompt.addEventListener("TextChanged" /* ConsolePromptEvents.TextChanged */, this.promptTextChanged, this);
+        this.prompt.addEventListener("TextChanged" /* ConsolePromptEvents.TEXT_CHANGED */, this.promptTextChanged, this);
         this.messagesElement.addEventListener('keydown', this.messagesKeyDown.bind(this), false);
         this.prompt.element.addEventListener('focusin', () => {
             if (this.isScrolledToBottom()) {
@@ -1384,7 +1384,7 @@ export class ConsoleViewFilter {
         if (this.textFilterSetting.get()) {
             this.textFilterUI.setValue(this.textFilterSetting.get());
         }
-        this.textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, () => {
+        this.textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, () => {
             this.textFilterSetting.set(this.textFilterUI.value());
             this.onFilterChanged();
         });

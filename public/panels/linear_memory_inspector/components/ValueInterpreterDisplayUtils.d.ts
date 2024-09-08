@@ -1,23 +1,23 @@
 export declare const VALUE_INTEPRETER_MAX_NUM_BYTES = 8;
 export declare const enum ValueType {
-    Int8 = "Integer 8-bit",
-    Int16 = "Integer 16-bit",
-    Int32 = "Integer 32-bit",
-    Int64 = "Integer 64-bit",
-    Float32 = "Float 32-bit",
-    Float64 = "Float 64-bit",
-    Pointer32 = "Pointer 32-bit",
-    Pointer64 = "Pointer 64-bit"
+    INT8 = "Integer 8-bit",
+    INT16 = "Integer 16-bit",
+    INT32 = "Integer 32-bit",
+    INT64 = "Integer 64-bit",
+    FLOAT32 = "Float 32-bit",
+    FLOAT64 = "Float 64-bit",
+    POINTER32 = "Pointer 32-bit",
+    POINTER64 = "Pointer 64-bit"
 }
 export declare const enum Endianness {
-    Little = "Little Endian",
-    Big = "Big Endian"
+    LITTLE = "Little Endian",
+    BIG = "Big Endian"
 }
 export declare const enum ValueTypeMode {
-    Decimal = "dec",
-    Hexadecimal = "hex",
-    Octal = "oct",
-    Scientific = "sci"
+    DECIMAL = "dec",
+    HEXADECIMAL = "hex",
+    OCTAL = "oct",
+    SCIENTIFIC = "sci"
 }
 export declare function getDefaultValueTypeMapping(): Map<ValueType, ValueTypeMode>;
 export declare const VALUE_TYPE_MODE_LIST: ValueTypeMode[];

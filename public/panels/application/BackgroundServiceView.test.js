@@ -26,7 +26,7 @@ describeWithMockConnection('BackgroundServiceView', () => {
         });
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => { },
-            shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: 0, name: '' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DefaultShortcut */)],
+            shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: 0, name: '' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */)],
         });
         assert.exists(backgroundServiceModel);
         view = new Resources.BackgroundServiceView.BackgroundServiceView(serviceName, backgroundServiceModel);

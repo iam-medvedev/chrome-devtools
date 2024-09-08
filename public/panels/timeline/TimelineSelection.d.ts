@@ -1,5 +1,5 @@
 import * as TraceEngine from '../../models/trace/trace.js';
-type PermittedObjectTypes = TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData | SelectionRange;
+type PermittedObjectTypes = TraceEngine.Types.TraceEvents.LegacyTimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData | SelectionRange;
 declare const SelectionRangeSymbol: unique symbol;
 export type SelectionRange = typeof SelectionRangeSymbol;
 export declare class TimelineSelection {
@@ -7,8 +7,8 @@ export declare class TimelineSelection {
     readonly endTime: TraceEngine.Types.Timing.MilliSeconds;
     readonly object: PermittedObjectTypes;
     constructor(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, object: PermittedObjectTypes);
-    static isFrameObject(object: PermittedObjectTypes): object is TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame;
-    static fromFrame(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): TimelineSelection;
+    static isLegacyTimelineFrame(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.LegacyTimelineFrame;
+    static fromFrame(frame: TraceEngine.Types.TraceEvents.LegacyTimelineFrame): TimelineSelection;
     static isSyntheticNetworkRequestDetailsEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.SyntheticNetworkRequest;
     static isNetworkEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent;
     static isTraceEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.TraceEventData;

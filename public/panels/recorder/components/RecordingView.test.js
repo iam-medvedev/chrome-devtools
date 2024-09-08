@@ -85,7 +85,7 @@ describeWithEnvironment('RecordingView', () => {
     async function changeCodeView(view) {
         const menu = view.shadowRoot?.querySelector('devtools-select-menu');
         assert.ok(menu);
-        const event = new Menus.SelectMenu.SelectMenuItemSelectedEvent("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */);
+        const event = new Menus.SelectMenu.SelectMenuItemSelectedEvent("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
         menu.dispatchEvent(event);
     }
     it('should show code and highlight on hover', async () => {

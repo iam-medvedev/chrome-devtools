@@ -129,7 +129,7 @@ export class NetworkManager extends SDKModel {
         if (!manager || !requestId || request.isRedirect()) {
             return [];
         }
-        const response = await manager.#networkAgent.invoke_searchInResponseBody({ requestId, query: query, caseSensitive: caseSensitive, isRegex: isRegex });
+        const response = await manager.#networkAgent.invoke_searchInResponseBody({ requestId, query, caseSensitive, isRegex });
         return TextUtils.TextUtils.performSearchInSearchMatches(response.result || [], query, caseSensitive, isRegex);
     }
     static async requestContentData(request) {
@@ -399,7 +399,7 @@ export class NetworkDispatcher {
         for (const name in headersMap) {
             const values = headersMap[name].split('\n');
             for (let i = 0; i < values.length; ++i) {
-                result.push({ name: name, value: values[i] });
+                result.push({ name, value: values[i] });
             }
         }
         return result;
@@ -590,7 +590,7 @@ export class NetworkDispatcher {
             const eventData = {
                 url: response.url,
                 frameId: frameId ?? null,
-                loaderId: loaderId,
+                loaderId,
                 resourceType: type,
                 mimeType: response.mimeType,
                 lastModified: lastModifiedHeader ? new Date(lastModifiedHeader) : null,
@@ -639,7 +639,7 @@ export class NetworkDispatcher {
             networkRequest.setBlockedReason(blockedReason);
             if (blockedReason === "inspector" /* Protocol.Network.BlockedReason.Inspector */) {
                 const message = i18nString(UIStrings.requestWasBlockedByDevtoolsS, { PH1: networkRequest.url() });
-                this.#manager.dispatchEventToListeners(Events.MessageGenerated, { message: message, requestId: requestId, warning: true });
+                this.#manager.dispatchEventToListeners(Events.MessageGenerated, { message, requestId, warning: true });
             }
         }
         if (corsErrorStatus) {
@@ -868,7 +868,7 @@ export class NetworkDispatcher {
             else {
                 message = i18nString(UIStrings.sFinishedLoadingSS, { PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url() });
             }
-            this.#manager.dispatchEventToListeners(Events.MessageGenerated, { message: message, requestId: networkRequest.requestId(), warning: false });
+            this.#manager.dispatchEventToListeners(Events.MessageGenerated, { message, requestId: networkRequest.requestId(), warning: false });
         }
     }
     clearRequests() {
@@ -1159,7 +1159,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     updateUserAgentOverride() {
         const userAgent = this.currentUserAgent();
         for (const agent of this.#networkAgents) {
-            void agent.invoke_setUserAgentOverride({ userAgent: userAgent, userAgentMetadata: this.#userAgentMetadataOverride || undefined });
+            void agent.invoke_setUserAgentOverride({ userAgent, userAgentMetadata: this.#userAgentMetadataOverride || undefined });
         }
     }
     setUserAgentOverride(userAgent, userAgentMetadataOverride) {

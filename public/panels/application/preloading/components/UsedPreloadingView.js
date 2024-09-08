@@ -157,64 +157,64 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         const forThisPage = this.#data.previousAttempts.filter(attempt => Common.ParsedURL.ParsedURL.urlWithoutHash(attempt.key.url) === pageURL);
         const prefetch = forThisPage.filter(attempt => attempt.key.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */)[0];
         const prerender = forThisPage.filter(attempt => attempt.key.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */)[0];
-        let kind = "NoPreloads" /* UsedKind.NoPreloads */;
+        let kind = "NoPreloads" /* UsedKind.NO_PRELOADS */;
         // Prerender -> prefetch downgrade case
         //
         // This code does not handle the case SpecRules designate these preloads rather than prerenderer automatically downgrade prerendering.
         // TODO(https://crbug.com/1410709): Improve this logic once automatic downgrade implemented.
         if (prerender?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */ &&
             prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
-            kind = "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DowngradedPrerenderToPrefetchAndUsed */;
+            kind = "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED */;
         }
         else if (prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
-            kind = "PrefetchUsed" /* UsedKind.PrefetchUsed */;
+            kind = "PrefetchUsed" /* UsedKind.PREFETCH_USED */;
         }
         else if (prerender?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
-            kind = "PrerenderUsed" /* UsedKind.PrerenderUsed */;
+            kind = "PrerenderUsed" /* UsedKind.PRERENDER_USED */;
         }
         else if (prefetch?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
-            kind = "PrefetchFailed" /* UsedKind.PrefetchFailed */;
+            kind = "PrefetchFailed" /* UsedKind.PREFETCH_FAILED */;
         }
         else if (prerender?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
-            kind = "PrerenderFailed" /* UsedKind.PrerenderFailed */;
+            kind = "PrerenderFailed" /* UsedKind.PRERENDER_FAILED */;
         }
         else {
-            kind = "NoPreloads" /* UsedKind.NoPreloads */;
+            kind = "NoPreloads" /* UsedKind.NO_PRELOADS */;
         }
         let badge;
         let basicMessage;
         switch (kind) {
-            case "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DowngradedPrerenderToPrefetchAndUsed */:
+            case "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED */:
                 badge = this.#badgeSuccess();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.downgradedPrefetchUsed)}`;
                 break;
-            case "PrefetchUsed" /* UsedKind.PrefetchUsed */:
+            case "PrefetchUsed" /* UsedKind.PREFETCH_USED */:
                 badge = this.#badgeSuccess();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prefetchUsed)}`;
                 break;
-            case "PrerenderUsed" /* UsedKind.PrerenderUsed */:
+            case "PrerenderUsed" /* UsedKind.PRERENDER_USED */:
                 badge = this.#badgeSuccess();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prerenderUsed)}`;
                 break;
-            case "PrefetchFailed" /* UsedKind.PrefetchFailed */:
+            case "PrefetchFailed" /* UsedKind.PREFETCH_FAILED */:
                 badge = this.#badgeFailure();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prefetchFailed)}`;
                 break;
-            case "PrerenderFailed" /* UsedKind.PrerenderFailed */:
+            case "PrerenderFailed" /* UsedKind.PRERENDER_FAILED */:
                 badge = this.#badgeFailure();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prerenderFailed)}`;
                 break;
-            case "NoPreloads" /* UsedKind.NoPreloads */:
+            case "NoPreloads" /* UsedKind.NO_PRELOADS */:
                 badge = this.#badgeNeutral(i18nString(UIStrings.badgeNoSpeculativeLoads));
                 basicMessage = LitHtml.html `${i18nString(UIStrings.noPreloads)}`;
                 break;
         }
         let maybeFailureReasonMessage;
-        if (kind === "PrefetchFailed" /* UsedKind.PrefetchFailed */) {
+        if (kind === "PrefetchFailed" /* UsedKind.PREFETCH_FAILED */) {
             assertNotNullOrUndefined(prefetch);
             maybeFailureReasonMessage = prefetchFailureReason(prefetch);
         }
-        else if (kind === "PrerenderFailed" /* UsedKind.PrerenderFailed */ || kind === "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DowngradedPrerenderToPrefetchAndUsed */) {
+        else if (kind === "PrerenderFailed" /* UsedKind.PRERENDER_FAILED */ || kind === "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED */) {
             assertNotNullOrUndefined(prerender);
             maybeFailureReasonMessage = prerenderFailureReason(prerender);
         }
@@ -253,7 +253,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // clang-format on
     }
     #maybeMismatchedSections(kind) {
-        if (kind !== "NoPreloads" /* UsedKind.NoPreloads */ || this.#data.previousAttempts.length === 0) {
+        if (kind !== "NoPreloads" /* UsedKind.NO_PRELOADS */ || this.#data.previousAttempts.length === 0) {
             return LitHtml.nothing;
         }
         const rows = this.#data.previousAttempts.map(attempt => {

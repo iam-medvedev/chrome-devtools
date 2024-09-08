@@ -94,18 +94,18 @@ export declare class LightDarkColorMatcher extends LightDarkColorMatcher_base {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare const enum LinkableNameProperties {
-    Animation = "animation",
-    AnimationName = "animation-name",
-    FontPalette = "font-palette",
-    PositionTryFallbacks = "position-try-fallbacks",
-    PositionTry = "position-try"
+    ANIMATION = "animation",
+    ANIMATION_NAME = "animation-name",
+    FONT_PALETTE = "font-palette",
+    POSITION_TRY_FALLBACKS = "position-try-fallbacks",
+    POSITION_TRY = "position-try"
 }
 declare const enum AnimationLonghandPart {
-    Direction = "direction",
-    FillMode = "fill-mode",
-    PlayState = "play-state",
-    IterationCount = "iteration-count",
-    EasingFunction = "easing-function"
+    DIRECTION = "direction",
+    FILL_MODE = "fill-mode",
+    PLAY_STATE = "play-state",
+    ITERATION_COUNT = "iteration-count",
+    EASING_FUNCTION = "easing-function"
 }
 export declare class LinkableNameMatch implements Match {
     readonly text: string;
@@ -153,8 +153,8 @@ export declare class StringMatcher extends StringMatcher_base {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare const enum ShadowType {
-    BoxShadow = "boxShadow",
-    TextShadow = "textShadow"
+    BOX_SHADOW = "boxShadow",
+    TEXT_SHADOW = "textShadow"
 }
 export declare class ShadowMatch implements Match {
     readonly text: string;

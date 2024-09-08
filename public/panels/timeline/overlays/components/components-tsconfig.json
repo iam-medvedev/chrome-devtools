@@ -48,6 +48,9 @@
       "path": "../../../../ui/components/helpers/bundle-tsconfig.json"
     },
     {
+      "path": "../../../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../ui/lit-html/bundle-tsconfig.json"
     }
   ]

@@ -44,7 +44,9 @@ styles.replaceSync(
   font-size: 11px;
   user-select: text;
   cursor: text;
-  background: var(--sys-color-surface1);
+  background-color: var(--sys-color-surface4);
+  border-radius: 2px;
+  padding: 1px 3px;
 }
 
 .devtools-link {

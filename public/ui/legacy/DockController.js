@@ -82,7 +82,7 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         this.closeButton = new ToolbarButton(i18nString(UIStrings.close), 'cross');
         this.closeButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         this.closeButton.element.classList.add('close-devtools');
-        this.closeButton.addEventListener("Click" /* ToolbarButton.Events.Click */, Host.InspectorFrontendHost.InspectorFrontendHostInstance.closeWindow.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance));
+        this.closeButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, Host.InspectorFrontendHost.InspectorFrontendHostInstance.closeWindow.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance));
         this.currentDockStateSetting = Common.Settings.Settings.instance().moduleSetting('currentDockState');
         this.lastDockStateSetting = Common.Settings.Settings.instance().createSetting('last-dock-state', "bottom" /* DockState.BOTTOM */);
         if (!canDock) {
@@ -147,16 +147,16 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.savedFocus = Platform.DOMUtilities.deepActiveElement(document);
         const eventData = { from: this.dockSideInternal, to: dockSide };
-        this.dispatchEventToListeners("BeforeDockSideChanged" /* Events.BeforeDockSideChanged */, eventData);
+        this.dispatchEventToListeners("BeforeDockSideChanged" /* Events.BEFORE_DOCK_SIDE_CHANGED */, eventData);
         console.timeStamp('DockController.setIsDocked');
         this.dockSideInternal = dockSide;
         this.currentDockStateSetting.set(dockSide);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(dockSide !== "undocked" /* DockState.UNDOCKED */, this.setIsDockedResponse.bind(this, eventData));
         this.closeButton.setVisible(this.dockSideInternal !== "undocked" /* DockState.UNDOCKED */);
-        this.dispatchEventToListeners("DockSideChanged" /* Events.DockSideChanged */, eventData);
+        this.dispatchEventToListeners("DockSideChanged" /* Events.DOCK_SIDE_CHANGED */, eventData);
     }
     setIsDockedResponse(eventData) {
-        this.dispatchEventToListeners("AfterDockSideChanged" /* Events.AfterDockSideChanged */, eventData);
+        this.dispatchEventToListeners("AfterDockSideChanged" /* Events.AFTER_DOCK_SIDE_CHANGED */, eventData);
         if (this.savedFocus) {
             this.savedFocus.focus();
             this.savedFocus = null;

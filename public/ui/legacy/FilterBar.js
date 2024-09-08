@@ -95,7 +95,7 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     addFilter(filter) {
         this.filters.push(filter);
         this.element.appendChild(filter.element());
-        filter.addEventListener("FilterChanged" /* FilterUIEvents.FilterChanged */, this.filterChanged, this);
+        filter.addEventListener("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */, this.filterChanged, this);
         this.updateFilterButton();
     }
     setEnabled(enabled) {
@@ -112,7 +112,7 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     }
     filterChanged() {
         this.updateFilterButton();
-        this.dispatchEventToListeners("Changed" /* FilterBarEvents.Changed */);
+        this.dispatchEventToListeners("Changed" /* FilterBarEvents.CHANGED */);
     }
     wasShown() {
         super.wasShown();
@@ -176,7 +176,7 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         filterToolbar.element.style.borderBottom = 'none';
         this.#filter = new ToolbarFilter(undefined, 1, 1, UIStrings.egSmalldUrlacomb, this.completions.bind(this));
         filterToolbar.appendToolbarItem(this.#filter);
-        this.#filter.addEventListener("TextChanged" /* ToolbarInput.Event.TextChanged */, () => this.valueChanged());
+        this.#filter.addEventListener("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, () => this.valueChanged());
         this.suggestionProvider = null;
     }
     completions(expression, prefix, force) {
@@ -206,7 +206,7 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.suggestionProvider = suggestionProvider;
     }
     valueChanged() {
-        this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FilterChanged */);
+        this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */);
     }
     clear() {
         this.setValue('');
@@ -280,7 +280,7 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
             element.classList.toggle('selected', active);
             ARIAUtils.setSelected(element, active);
         }
-        this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FilterChanged */);
+        this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */);
     }
     addBit(name, label, title) {
         const typeFilterElement = this.filtersElement.createChild('span', name);
@@ -418,7 +418,7 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         return this.label;
     }
     fireUpdated() {
-        this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FilterChanged */);
+        this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */);
     }
 }
 //# sourceMappingURL=FilterBar.js.map

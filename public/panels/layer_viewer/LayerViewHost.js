@@ -37,31 +37,31 @@ export class Selection {
 export class LayerSelection extends Selection {
     constructor(layer) {
         console.assert(Boolean(layer), 'LayerSelection with empty layer');
-        super("Layer" /* Type.Layer */, layer);
+        super("Layer" /* Type.LAYER */, layer);
     }
     isEqual(other) {
-        return other.typeInternal === "Layer" /* Type.Layer */ && other.layer().id() === this.layer().id();
+        return other.typeInternal === "Layer" /* Type.LAYER */ && other.layer().id() === this.layer().id();
     }
 }
 export class ScrollRectSelection extends Selection {
     scrollRectIndex;
     constructor(layer, scrollRectIndex) {
-        super("ScrollRect" /* Type.ScrollRect */, layer);
+        super("ScrollRect" /* Type.SCROLL_RECT */, layer);
         this.scrollRectIndex = scrollRectIndex;
     }
     isEqual(other) {
-        return other.typeInternal === "ScrollRect" /* Type.ScrollRect */ && this.layer().id() === other.layer().id() &&
+        return other.typeInternal === "ScrollRect" /* Type.SCROLL_RECT */ && this.layer().id() === other.layer().id() &&
             this.scrollRectIndex === other.scrollRectIndex;
     }
 }
 export class SnapshotSelection extends Selection {
     snapshotInternal;
     constructor(layer, snapshot) {
-        super("Snapshot" /* Type.Snapshot */, layer);
+        super("Snapshot" /* Type.SNAPSHOT */, layer);
         this.snapshotInternal = snapshot;
     }
     isEqual(other) {
-        return other.typeInternal === "Snapshot" /* Type.Snapshot */ && this.layer().id() === other.layer().id() &&
+        return other.typeInternal === "Snapshot" /* Type.SNAPSHOT */ && this.layer().id() === other.layer().id() &&
             this.snapshotInternal === other.snapshotInternal;
     }
     snapshot() {

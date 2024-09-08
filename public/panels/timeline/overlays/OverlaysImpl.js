@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as TraceEngine from '../../../models/trace/trace.js';
 import * as Components from './components/components.js';
@@ -82,11 +83,16 @@ export class Overlays extends EventTarget {
      * created so we can manage its contents as overlays come and go.
      */
     #overlaysContainer;
+    // Setting that specififed if the annotations overlays need to be visible.
+    // It is switched on/off from the annotations tab in the sidebar.
+    #annotationsHiddenSetting;
     constructor(init) {
         super();
         this.#overlaysContainer = init.container;
         this.#charts = init.charts;
         this.#entriesLinkInProgress = null;
+        this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting('annotations-hidden');
+        this.#annotationsHiddenSetting.addChangeListener(this.update.bind(this));
         // HTMLElements of both Flamecharts. They are used to get the mouse position over the Flamecharts.
         init.flameChartsContainers.main.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'main'));
         init.flameChartsContainers.network.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'network'));
@@ -123,7 +129,7 @@ export class Overlays extends EventTarget {
      * of entry.
      */
     timingsForOverlayEntry(entry) {
-        if (entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame) {
+        if (TraceEngine.Types.TraceEvents.isLegacyTimelineFrame(entry)) {
             return {
                 startTime: entry.startTime,
                 endTime: entry.endTime,
@@ -141,7 +147,7 @@ export class Overlays extends EventTarget {
         return TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
     }
     #chartForOverlayEntry(entry) {
-        if (entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame) {
+        if (TraceEngine.Types.TraceEvents.isLegacyTimelineFrame(entry)) {
             return 'main';
         }
         if (TraceEngine.Types.TraceEvents.isNetworkTrackEntry(entry)) {
@@ -351,6 +357,7 @@ export class Overlays extends EventTarget {
         }
     }
     #positionOverlay(overlay, element) {
+        const annotationsAreHidden = this.#annotationsHiddenSetting.get();
         switch (overlay.type) {
             case 'ENTRY_SELECTED': {
                 const isVisible = this.entryIsVisibleOnChart(overlay.entry);
@@ -375,6 +382,11 @@ export class Overlays extends EventTarget {
                 break;
             }
             case 'TIME_RANGE': {
+                // The time range annotation can also be used to measure a selection in the timeline and is not saved if no label is added.
+                // Therefore, we only care about the annotation hidden setting if the time range has a label.
+                if (overlay.label.length) {
+                    this.#setOverlayElementVisibility(element, !annotationsAreHidden);
+                }
                 this.#positionTimeRangeOverlay(overlay, element);
                 const component = element.querySelector('devtools-time-range-overlay');
                 if (component) {
@@ -384,7 +396,7 @@ export class Overlays extends EventTarget {
             }
             case 'ENTRY_LABEL': {
                 const entryVisible = this.entryIsVisibleOnChart(overlay.entry);
-                this.#setOverlayElementVisibility(element, entryVisible);
+                this.#setOverlayElementVisibility(element, entryVisible && !annotationsAreHidden);
                 if (entryVisible) {
                     const entryLabelParams = this.#positionEntryLabelOverlay(overlay, element);
                     const component = element.querySelector('devtools-entry-label-overlay');
@@ -395,6 +407,7 @@ export class Overlays extends EventTarget {
                 break;
             }
             case 'ENTRIES_LINK': {
+                this.#setOverlayElementVisibility(element, !annotationsAreHidden);
                 this.#positionEntriesLinkOverlay(overlay, element);
                 break;
             }
@@ -811,7 +824,8 @@ export class Overlays extends EventTarget {
         div.classList.add('overlay-item', `overlay-type-${overlay.type}`);
         switch (overlay.type) {
             case 'ENTRY_LABEL': {
-                const component = new Components.EntryLabelOverlay.EntryLabelOverlay(overlay.label, this.#chartForOverlayEntry(overlay.entry) === 'main');
+                const shouldDrawLabelBelowEntry = TraceEngine.Types.TraceEvents.isLegacyTimelineFrame(overlay.entry);
+                const component = new Components.EntryLabelOverlay.EntryLabelOverlay(overlay.label, this.#chartForOverlayEntry(overlay.entry) === 'main', shouldDrawLabelBelowEntry);
                 component.addEventListener(Components.EntryLabelOverlay.EmptyEntryLabelRemoveEvent.eventName, () => {
                     this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
                 });

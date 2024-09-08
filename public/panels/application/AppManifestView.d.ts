@@ -66,11 +66,11 @@ export declare class AppManifestView extends AppManifestView_base implements SDK
     private appendWindowControlsToSection;
 }
 export declare const enum Events {
-    ManifestDetected = "ManifestDetected",
-    ManifestRendered = "ManifestRendered"
+    MANIFEST_DETECTED = "ManifestDetected",
+    MANIFEST_RENDERED = "ManifestRendered"
 }
 export type EventTypes = {
-    [Events.ManifestDetected]: boolean;
-    [Events.ManifestRendered]: void;
+    [Events.MANIFEST_DETECTED]: boolean;
+    [Events.MANIFEST_RENDERED]: void;
 };
 export {};

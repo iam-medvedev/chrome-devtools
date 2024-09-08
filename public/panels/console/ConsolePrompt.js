@@ -162,7 +162,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             this.previewRequestForTest = this.textChangeThrottler.schedule(this.requestPreviewBound, asSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */ : "Default" /* Common.Throttler.Scheduling.DEFAULT */);
         }
         this.updatePromptIcon();
-        this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+        this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
     }
     async requestPreview() {
         const id = ++this.requestPreviewCurrent;

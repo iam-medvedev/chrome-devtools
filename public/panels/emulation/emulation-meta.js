@@ -78,11 +78,11 @@ UI.ActionRegistration.registerActionExtension({
     iconClass: "devices" /* UI.ActionRegistration.IconClass.LARGEICON_PHONE */,
     bindings: [
         {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
             shortcut: 'Shift+Ctrl+M',
         },
         {
-            platform: "mac" /* UI.ActionRegistration.Platforms.Mac */,
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
             shortcut: 'Shift+Meta+M',
         },
     ],

@@ -227,7 +227,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.deepStrictEqual(getRowsTextFromCategory(responseHeadersCategory), [['devtools:', 'rock'], ['foo:', 'bar'], ['highlightme:', 'some value']]);
         assert.deepStrictEqual(getRowHighlightStatus(responseHeadersCategory), [false, false, false]);
-        component.revealHeader("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */, 'HiGhLiGhTmE');
+        component.revealHeader("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, 'HiGhLiGhTmE');
         await coordinator.done();
         assert.deepStrictEqual(getRowHighlightStatus(responseHeadersCategory), [false, false, true]);
     });
@@ -244,7 +244,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(requestHeadersCategory, HTMLElement);
         assert.deepStrictEqual(getRowsTextFromCategory(requestHeadersCategory), [['devtools:', 'rock'], ['foo:', 'bar'], ['highlightme:', 'some value']]);
         assert.deepStrictEqual(getRowHighlightStatus(requestHeadersCategory), [false, false, false]);
-        component.revealHeader("Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.Request */, 'HiGhLiGhTmE');
+        component.revealHeader("Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.REQUEST */, 'HiGhLiGhTmE');
         await coordinator.done();
         assert.deepStrictEqual(getRowHighlightStatus(requestHeadersCategory), [false, false, true]);
     });

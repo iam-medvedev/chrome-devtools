@@ -435,9 +435,9 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.windowRight = windowRight;
         this.updateCurtains();
         if (this.calculator) {
-            this.dispatchEventToListeners("WindowChangedWithPosition" /* Events.WindowChangedWithPosition */, this.calculateWindowPosition());
+            this.dispatchEventToListeners("WindowChangedWithPosition" /* Events.WINDOW_CHANGED_WITH_POSITION */, this.calculateWindowPosition());
         }
-        this.dispatchEventToListeners("WindowChanged" /* Events.WindowChanged */);
+        this.dispatchEventToListeners("WindowChanged" /* Events.WINDOW_CHANGED */);
         this.#changeBreadcrumbButtonVisibility(windowLeft, windowRight);
     }
     // "Create breadcrumb" button is only visible when the window is set to
@@ -454,7 +454,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     #createBreadcrumb() {
-        this.dispatchEventToListeners("BreadcrumbAdded" /* Events.BreadcrumbAdded */, this.calculateWindowPosition());
+        this.dispatchEventToListeners("BreadcrumbAdded" /* Events.BREADCRUMB_ADDED */, this.calculateWindowPosition());
     }
     updateCurtains() {
         const windowLeft = this.windowLeft || 0;

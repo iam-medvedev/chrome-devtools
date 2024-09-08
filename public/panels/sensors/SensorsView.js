@@ -470,7 +470,7 @@ export class SensorsView extends UI.Widget.VBox {
             const parsedValue = JSON.parse(value);
             this.deviceOrientationOverrideEnabled = true;
             this.deviceOrientation = new SDK.EmulationModel.DeviceOrientation(parsedValue[0], parsedValue[1], parsedValue[2]);
-            this.setDeviceOrientation(this.deviceOrientation, "selectPreset" /* DeviceOrientationModificationSource.SelectPreset */);
+            this.setDeviceOrientation(this.deviceOrientation, "selectPreset" /* DeviceOrientationModificationSource.SELECT_PRESET */);
         }
     }
     applyDeviceOrientation() {
@@ -486,11 +486,11 @@ export class SensorsView extends UI.Widget.VBox {
         selectElement.selectedIndex = optionValues.indexOf(labelValue);
     }
     applyDeviceOrientationUserInput() {
-        this.setDeviceOrientation(SDK.EmulationModel.DeviceOrientation.parseUserInput(this.alphaElement.value.trim(), this.betaElement.value.trim(), this.gammaElement.value.trim()), "userInput" /* DeviceOrientationModificationSource.UserInput */);
+        this.setDeviceOrientation(SDK.EmulationModel.DeviceOrientation.parseUserInput(this.alphaElement.value.trim(), this.betaElement.value.trim(), this.gammaElement.value.trim()), "userInput" /* DeviceOrientationModificationSource.USER_INPUT */);
         this.setSelectElementLabel(this.orientationSelectElement, NonPresetOptions.Custom);
     }
     resetDeviceOrientation() {
-        this.setDeviceOrientation(new SDK.EmulationModel.DeviceOrientation(0, 90, 0), "resetButton" /* DeviceOrientationModificationSource.ResetButton */);
+        this.setDeviceOrientation(new SDK.EmulationModel.DeviceOrientation(0, 90, 0), "resetButton" /* DeviceOrientationModificationSource.RESET_BUTTON */);
         this.setSelectElementLabel(this.orientationSelectElement, '[0, 90, 0]');
     }
     setDeviceOrientation(deviceOrientation, modificationSource) {
@@ -500,7 +500,7 @@ export class SensorsView extends UI.Widget.VBox {
         function roundAngle(angle) {
             return Math.round(angle * 10000) / 10000;
         }
-        if (modificationSource !== "userInput" /* DeviceOrientationModificationSource.UserInput */) {
+        if (modificationSource !== "userInput" /* DeviceOrientationModificationSource.USER_INPUT */) {
             // Even though the angles in |deviceOrientation| will not be rounded
             // here, their precision will be rounded by CSS when we change
             // |this.orientationLayer.style| in setBoxOrientation().
@@ -508,7 +508,7 @@ export class SensorsView extends UI.Widget.VBox {
             this.betaSetter(String(roundAngle(deviceOrientation.beta)));
             this.gammaSetter(String(roundAngle(deviceOrientation.gamma)));
         }
-        const animate = modificationSource !== "userDrag" /* DeviceOrientationModificationSource.UserDrag */;
+        const animate = modificationSource !== "userDrag" /* DeviceOrientationModificationSource.USER_DRAG */;
         this.setBoxOrientation(deviceOrientation, animate);
         this.deviceOrientation = deviceOrientation;
         this.applyDeviceOrientation();
@@ -603,7 +603,7 @@ export class SensorsView extends UI.Widget.VBox {
         const currentMatrix = new DOMMatrixReadOnly().rotateAxisAngle(-axis.x, axis.z, axis.y, angle).multiply(this.originalBoxMatrix);
         const eulerAngles = UI.Geometry.EulerAngles.fromDeviceOrientationRotationMatrix(currentMatrix);
         const newOrientation = new SDK.EmulationModel.DeviceOrientation(eulerAngles.alpha, eulerAngles.beta, eulerAngles.gamma);
-        this.setDeviceOrientation(newOrientation, "userDrag" /* DeviceOrientationModificationSource.UserDrag */);
+        this.setDeviceOrientation(newOrientation, "userDrag" /* DeviceOrientationModificationSource.USER_DRAG */);
         this.setSelectElementLabel(this.orientationSelectElement, NonPresetOptions.Custom);
         return false;
     }
@@ -645,7 +645,6 @@ export class SensorsView extends UI.Widget.VBox {
         }
     }
 }
-/** {string} */
 export const NonPresetOptions = {
     NoOverride: 'noOverride',
     Custom: 'custom',

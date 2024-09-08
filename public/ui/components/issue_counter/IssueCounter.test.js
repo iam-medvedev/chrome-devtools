@@ -90,7 +90,7 @@ describeWithLocale('IssueCounter', () => {
                 const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
                 assert.deepEqual(iconNames, ['issue-cross-filled', 'issue-exclamation-filled']);
             }
-            component.data = { ...component.data, displayMode: "OnlyMostImportant" /* IssueCounter.IssueCounter.DisplayMode.OnlyMostImportant */ };
+            component.data = { ...component.data, displayMode: "OnlyMostImportant" /* IssueCounter.IssueCounter.DisplayMode.ONLY_MOST_IMPORTANT */ };
             {
                 const icons = extractIconGroups(shadowRoot);
                 assert.strictEqual(icons.length, 1);
@@ -117,7 +117,7 @@ describeWithLocale('IssueCounter', () => {
             const issuesManager = new MockIssuesManager([]);
             const { shadowRoot } = renderIssueCounter({
                 issuesManager: issuesManager,
-                displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.ShowAlways */,
+                displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.SHOW_ALWAYS */,
                 throttlerTimeout: 0,
             });
             const icons = extractIconGroups(shadowRoot);
@@ -130,7 +130,7 @@ describeWithLocale('IssueCounter', () => {
             const issuesManager = new MockIssuesManager([]);
             const { shadowRoot } = renderIssueCounter({
                 issuesManager: issuesManager,
-                displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.ShowAlways */,
+                displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.SHOW_ALWAYS */,
                 throttlerTimeout: 0,
             });
             {

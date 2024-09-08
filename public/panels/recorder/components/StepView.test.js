@@ -24,7 +24,7 @@ describeWithEnvironment('StepView', () => {
         component.data = {
             step: opts.step !== undefined ? step : undefined,
             section: opts.section !== undefined ? section : undefined,
-            state: "default" /* Components.StepView.State.Default */,
+            state: "default" /* Components.StepView.State.DEFAULT */,
             isEndOfGroup: opts.isEndOfGroup ?? false,
             isStartOfGroup: opts.isStartOfGroup ?? false,
             isFirstSection: opts.isFirstSection ?? false,
@@ -50,22 +50,22 @@ describeWithEnvironment('StepView', () => {
             const { viewFunction, getViewInput } = createViewFunctionSpy();
             await createStepView(viewFunction, { step });
             assert.deepStrictEqual(getViewInput().actions, [
-                { 'id': 'add-step-before', 'label': 'Add step before', 'group': 'stepManagement', 'groupTitle': 'Manage steps' },
-                { 'id': 'add-step-after', 'label': 'Add step after', 'group': 'stepManagement', 'groupTitle': 'Manage steps' },
+                { id: 'add-step-before', label: 'Add step before', group: 'stepManagement', groupTitle: 'Manage steps' },
+                { id: 'add-step-after', label: 'Add step after', group: 'stepManagement', groupTitle: 'Manage steps' },
                 {
-                    'id': 'add-breakpoint',
-                    'label': 'Add breakpoint',
-                    'group': 'breakPointManagement',
-                    'groupTitle': 'Breakpoints',
+                    id: 'add-breakpoint',
+                    label: 'Add breakpoint',
+                    group: 'breakPointManagement',
+                    groupTitle: 'Breakpoints',
                 },
-                { 'id': 'copy-step-as-json', 'label': 'JSON', 'group': 'copy', 'groupTitle': 'Copy as' },
+                { id: 'copy-step-as-json', label: 'JSON', group: 'copy', groupTitle: 'Copy as' },
             ]);
         });
         it('should produce actions for a section', async () => {
             const { viewFunction, getViewInput } = createViewFunctionSpy();
             await createStepView(viewFunction, { section });
             assert.deepStrictEqual(getViewInput().actions, [
-                { 'id': 'add-step-after', 'label': 'Add step after', 'group': 'stepManagement', 'groupTitle': 'Manage steps' },
+                { id: 'add-step-after', label: 'Add step after', group: 'stepManagement', groupTitle: 'Manage steps' },
             ]);
         });
         it('should dispatch "AddStep before" events on steps', async () => {

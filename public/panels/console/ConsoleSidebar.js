@@ -51,8 +51,9 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     constructor() {
         super(true);
         this.setMinimumSize(125, 0);
-        this.tree = new UI.TreeOutline.TreeOutlineInShadow();
+        this.tree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
+        this.tree.hideOverflow();
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.contentElement.appendChild(this.tree.element);
         this.selectedTreeElement = null;
@@ -64,12 +65,12 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 negative: false,
                 regex: undefined,
             }];
-        this.appendGroup("message" /* GroupName.All */, [], ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create('list'), selectedFilterSetting);
-        this.appendGroup("user message" /* GroupName.ConsoleAPI */, consoleAPIParsedFilters, ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create('profile'), selectedFilterSetting);
-        this.appendGroup("error" /* GroupName.Error */, [], ConsoleFilter.singleLevelMask("error" /* Protocol.Log.LogEntryLevel.Error */), IconButton.Icon.create('cross-circle'), selectedFilterSetting);
-        this.appendGroup("warning" /* GroupName.Warning */, [], ConsoleFilter.singleLevelMask("warning" /* Protocol.Log.LogEntryLevel.Warning */), IconButton.Icon.create('warning'), selectedFilterSetting);
-        this.appendGroup("info" /* GroupName.Info */, [], ConsoleFilter.singleLevelMask("info" /* Protocol.Log.LogEntryLevel.Info */), IconButton.Icon.create('info'), selectedFilterSetting);
-        this.appendGroup("verbose" /* GroupName.Verbose */, [], ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */), IconButton.Icon.create('bug'), selectedFilterSetting);
+        this.appendGroup("message" /* GroupName.ALL */, [], ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create('list'), selectedFilterSetting);
+        this.appendGroup("user message" /* GroupName.CONSOLE_API */, consoleAPIParsedFilters, ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create('profile'), selectedFilterSetting);
+        this.appendGroup("error" /* GroupName.ERROR */, [], ConsoleFilter.singleLevelMask("error" /* Protocol.Log.LogEntryLevel.Error */), IconButton.Icon.create('cross-circle'), selectedFilterSetting);
+        this.appendGroup("warning" /* GroupName.WARNING */, [], ConsoleFilter.singleLevelMask("warning" /* Protocol.Log.LogEntryLevel.Warning */), IconButton.Icon.create('warning'), selectedFilterSetting);
+        this.appendGroup("info" /* GroupName.INFO */, [], ConsoleFilter.singleLevelMask("info" /* Protocol.Log.LogEntryLevel.Info */), IconButton.Icon.create('info'), selectedFilterSetting);
+        this.appendGroup("verbose" /* GroupName.VERBOSE */, [], ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */), IconButton.Icon.create('bug'), selectedFilterSetting);
         const selectedTreeElementName = selectedFilterSetting.get();
         const defaultTreeElement = this.treeElements.find(x => x.name() === selectedTreeElementName) || this.treeElements[0];
         defaultTreeElement.select();
@@ -98,7 +99,7 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     selectionChanged(event) {
         this.selectedTreeElement = event.data;
-        this.dispatchEventToListeners("FilterSelected" /* Events.FilterSelected */);
+        this.dispatchEventToListeners("FilterSelected" /* Events.FILTER_SELECTED */);
     }
     wasShown() {
         super.wasShown();
@@ -136,12 +137,12 @@ export class URLGroupTreeElement extends ConsoleSidebarTreeElement {
  * construct a filter or get a new message.
  */
 const stringForFilterSidebarItemMap = new Map([
-    ["user message" /* GroupName.ConsoleAPI */, UIStrings.dUserMessages],
-    ["message" /* GroupName.All */, UIStrings.dMessages],
-    ["error" /* GroupName.Error */, UIStrings.dErrors],
-    ["warning" /* GroupName.Warning */, UIStrings.dWarnings],
-    ["info" /* GroupName.Info */, UIStrings.dInfo],
-    ["verbose" /* GroupName.Verbose */, UIStrings.dVerbose],
+    ["user message" /* GroupName.CONSOLE_API */, UIStrings.dUserMessages],
+    ["message" /* GroupName.ALL */, UIStrings.dMessages],
+    ["error" /* GroupName.ERROR */, UIStrings.dErrors],
+    ["warning" /* GroupName.WARNING */, UIStrings.dWarnings],
+    ["info" /* GroupName.INFO */, UIStrings.dInfo],
+    ["verbose" /* GroupName.VERBOSE */, UIStrings.dVerbose],
 ]);
 export class FilterTreeElement extends ConsoleSidebarTreeElement {
     selectedFilterSetting;

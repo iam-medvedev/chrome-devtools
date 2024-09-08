@@ -6,11 +6,11 @@ import { SharedStorageForOrigin } from './SharedStorageModel.js';
 import { StorageItemsView } from './StorageItemsView.js';
 export declare namespace SharedStorageItemsDispatcher {
     const enum Events {
-        FilteredItemsCleared = "FilteredItemsCleared",
-        ItemDeleted = "ItemDeleted",
-        ItemEdited = "ItemEdited",
-        ItemsCleared = "ItemsCleared",
-        ItemsRefreshed = "ItemsRefreshed"
+        FILTERED_ITEMS_CLEARED = "FilteredItemsCleared",
+        ITEM_DELETED = "ItemDeleted",
+        ITEM_EDITED = "ItemEdited",
+        ITEMS_CLEARED = "ItemsCleared",
+        ITEMS_REFRESHED = "ItemsRefreshed"
     }
     interface ItemDeletedEvent {
         key: string;
@@ -21,11 +21,11 @@ export declare namespace SharedStorageItemsDispatcher {
         newText: string;
     }
     type EventTypes = {
-        [Events.FilteredItemsCleared]: void;
-        [Events.ItemDeleted]: ItemDeletedEvent;
-        [Events.ItemEdited]: ItemEditedEvent;
-        [Events.ItemsCleared]: void;
-        [Events.ItemsRefreshed]: void;
+        [Events.FILTERED_ITEMS_CLEARED]: void;
+        [Events.ITEM_DELETED]: ItemDeletedEvent;
+        [Events.ITEM_EDITED]: ItemEditedEvent;
+        [Events.ITEMS_CLEARED]: void;
+        [Events.ITEMS_REFRESHED]: void;
     };
 }
 export declare class SharedStorageItemsView extends StorageItemsView {

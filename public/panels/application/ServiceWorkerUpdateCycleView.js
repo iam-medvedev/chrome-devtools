@@ -53,17 +53,17 @@ export class ServiceWorkerUpdateCycleView {
          * Add ranges representing Install, Wait or Activate of a sw version represented by id.
          */
         function addNormalizedRanges(ranges, id, startInstallTime, endInstallTime, startActivateTime, endActivateTime, status) {
-            addRange(ranges, { id, phase: "Install" /* ServiceWorkerUpdateNames.Install */, start: startInstallTime, end: endInstallTime });
+            addRange(ranges, { id, phase: "Install" /* ServiceWorkerUpdateNames.INSTALL */, start: startInstallTime, end: endInstallTime });
             if (status === "activating" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activating */ ||
                 status === "activated" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activated */ ||
                 status === "redundant" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Redundant */) {
                 addRange(ranges, {
                     id,
-                    phase: "Wait" /* ServiceWorkerUpdateNames.Wait */,
+                    phase: "Wait" /* ServiceWorkerUpdateNames.WAIT */,
                     start: endInstallTime,
                     end: startActivateTime,
                 });
-                addRange(ranges, { id, phase: "Activate" /* ServiceWorkerUpdateNames.Activate */, start: startActivateTime, end: endActivateTime });
+                addRange(ranges, { id, phase: "Activate" /* ServiceWorkerUpdateNames.ACTIVATE */, start: startActivateTime, end: endActivateTime });
             }
         }
         function rangesForVersion(version) {

@@ -113,17 +113,17 @@ export declare class SplitWidget extends SplitWidget_base {
     private updateShowHideSidebarButton;
 }
 export declare const enum ShowMode {
-    Both = "Both",
-    OnlyMain = "OnlyMain",
-    OnlySidebar = "OnlySidebar"
+    BOTH = "Both",
+    ONLY_MAIN = "OnlyMain",
+    ONLY_SIDEBAR = "OnlySidebar"
 }
 export declare const enum Events {
-    SidebarSizeChanged = "SidebarSizeChanged",
-    ShowModeChanged = "ShowModeChanged"
+    SIDEBAR_SIZE_CHANGED = "SidebarSizeChanged",
+    SHOW_MODE_CHANGED = "ShowModeChanged"
 }
 export type EventTypes = {
-    [Events.SidebarSizeChanged]: number;
-    [Events.ShowModeChanged]: string;
+    [Events.SIDEBAR_SIZE_CHANGED]: number;
+    [Events.SHOW_MODE_CHANGED]: string;
 };
 export interface SettingForOrientation {
     showMode: string;

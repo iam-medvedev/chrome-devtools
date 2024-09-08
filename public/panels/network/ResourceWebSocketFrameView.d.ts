@@ -33,12 +33,12 @@ export declare class ResourceWebSocketFrameView extends UI.Widget.VBox {
     private sortItems;
 }
 declare const enum OpCodes {
-    ContinuationFrame = 0,
-    TextFrame = 1,
-    BinaryFrame = 2,
-    ConnectionCloseFrame = 8,
-    PingFrame = 9,
-    PongFrame = 10
+    CONTINUATION_FRAME = 0,
+    TEXT_FRAME = 1,
+    BINARY_FRAME = 2,
+    CONNECTION_CLOSE_FRAME = 8,
+    PING_FRAME = 9,
+    PONG_FRAME = 10
 }
 export declare const opCodeDescriptions: (() => string)[];
 export declare class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.SortableDataGridNode<unknown> {

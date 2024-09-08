@@ -11,24 +11,12 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-:host {
-  overflow: auto;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-.tree-outline-disclosure {
-  max-width: 100%;
-  padding-left: 6px;
-}
-
 .count {
   flex: none;
-  margin: 0 8px;
+  margin: 0 var(--sys-size-3);
 }
 
 devtools-icon {
-  margin: 0 5px;
-
   &[name="cross-circle"] {
     color: var(--sys-color-error-bright);
   }
@@ -42,44 +30,8 @@ devtools-icon {
   }
 }
 
-li {
-  height: 24px;
-}
-
 .tree-element-title {
-  flex-shrink: 100;
   flex-grow: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tree-outline li:hover:not(.selected) .selection {
-  display: block;
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-@media (forced-colors: active) {
-  devtools-icon {
-    color: ButtonText;
-  }
-
-  .tree-outline li:hover:not(.selected) .selection {
-    forced-color-adjust: none;
-    background-color: Highlight;
-  }
-
-  .tree-outline li:hover .tree-element-title,
-  .tree-outline li.selected .tree-element-title,
-  .tree-outline li:hover .count,
-  .tree-outline li.selected .count {
-    forced-color-adjust: none;
-    color: HighlightText;
-  }
-
-  .tree-outline li:hover devtools-icon,
-  .tree-outline li.selected devtools-icon {
-    color: HighlightText !important; /* stylelint-disable-line declaration-no-important */
-  }
 }
 
 /*# sourceURL=consoleSidebar.css */

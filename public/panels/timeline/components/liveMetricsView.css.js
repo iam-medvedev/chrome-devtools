@@ -104,8 +104,14 @@ styles.replaceSync(
   margin-bottom: 4px;
 }
 
-.setting-recommendation {
+.device-toolbar-description {
   margin-bottom: 12px;
+  display: flex;
+}
+
+.network-cache-setting {
+  display: inline-block;
+  max-width: max-content;
 }
 
 .throttling-recommendation-value {
@@ -135,6 +141,11 @@ styles.replaceSync(
   flex: 1;
   overflow: hidden;
   min-height: min-content;
+}
+
+.interactions-clear {
+  margin-left: 4px;
+  vertical-align: sub;
 }
 
 .interactions-list {
@@ -197,10 +208,8 @@ styles.replaceSync(
   flex-shrink: 0;
 }
 
-.live-metrics-option {
-  display: block;
-  margin-top: 8px;
-  min-width: 0;
+.field-data-option {
+  margin: 8px 0;
   max-width: 100%;
 }
 
@@ -225,6 +234,20 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   margin-top: 10px;
   padding-left: 12px;
   border-left: 1px solid var(--sys-color-divider);
+}
+
+.environment-option {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.field-data-hint {
+  margin-left: 6px;
+  vertical-align: bottom;
+  cursor: help;
+  height: 18px;
+  width: 18px;
 }
 
 /*# sourceURL=liveMetricsView.css */

@@ -59,12 +59,16 @@ export declare class TreeOutline extends Common.ObjectWrapper.ObjectWrapper<Even
     deferredScrollIntoView(treeElement: TreeElement, center: boolean): void;
     onStartedEditingTitle(_treeElement: TreeElement): void;
 }
+export declare const enum TreeVariant {
+    NAVIGATION_TREE = "NavigationTree",
+    OTHER = "Other"
+}
 export declare class TreeOutlineInShadow extends TreeOutline {
     element: HTMLElement;
     shadowRoot: ShadowRoot;
     private readonly disclosureElement;
     renderSelection: boolean;
-    constructor();
+    constructor(variant?: TreeVariant);
     registerRequiredCSS(cssFile: {
         cssContent: string;
     }): void;

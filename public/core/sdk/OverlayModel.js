@@ -393,7 +393,7 @@ export class OverlayModel extends SDKModel {
         if (hinge) {
             const { x, y, width, height, contentColor, outlineColor } = hinge;
             void this.overlayAgent.invoke_setShowHinge({
-                hingeConfig: { rect: { x: x, y: y, width: width, height: height }, contentColor: contentColor, outlineColor: outlineColor },
+                hingeConfig: { rect: { x, y, width, height }, contentColor, outlineColor },
             });
         }
         else {
@@ -420,7 +420,7 @@ export class OverlayModel extends SDKModel {
         const showRulers = Common.Settings.Settings.instance().moduleSetting('show-metrics-rulers').get();
         const highlightConfig = {
             showInfo: mode === 'all' || mode === 'container-outline',
-            showRulers: showRulers,
+            showRulers,
             showStyles: showDetailedToolip,
             showAccessibilityInfo: showDetailedToolip,
             showExtensionLines: showRulers,

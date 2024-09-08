@@ -339,11 +339,11 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+Alt+C',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
         {
             shortcut: 'Meta+Alt+C',
-            platform: "mac" /* UI.ActionRegistration.Platforms.Mac */,
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
         },
     ],
 });
@@ -361,11 +361,11 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+Z',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
         {
             shortcut: 'Meta+Z',
-            platform: "mac" /* UI.ActionRegistration.Platforms.Mac */,
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
         },
     ],
 });
@@ -383,11 +383,11 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+Y',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
         {
             shortcut: 'Meta+Shift+Z',
-            platform: "mac" /* UI.ActionRegistration.Platforms.Mac */,
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
         },
     ],
 });
@@ -414,11 +414,11 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+Shift+C',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
         {
             shortcut: 'Meta+Shift+C',
-            platform: "mac" /* UI.ActionRegistration.Platforms.Mac */,
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
         },
     ],
 });
@@ -494,6 +494,13 @@ Common.Settings.registerSettingExtension({
             title: i18nLazyString(UIStrings.hideHtmlComments),
         },
     ],
+});
+Common.Settings.registerSettingExtension({
+    category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+    settingName: 'annotations-hidden',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,

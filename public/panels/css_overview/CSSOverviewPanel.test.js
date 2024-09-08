@@ -15,7 +15,7 @@ describeWithMockConnection('CSSOverviewPanel', () => {
     it('reacts to start event and sends completion event', async () => {
         const controller = new CSSOverview.CSSOverviewController.OverviewController();
         new CSSOverview.CSSOverviewPanel.CSSOverviewPanel(controller);
-        const overviewCompleted = controller.once("OverviewCompleted" /* CSSOverview.CSSOverviewController.Events.OverviewCompleted */);
+        const overviewCompleted = controller.once("OverviewCompleted" /* CSSOverview.CSSOverviewController.Events.OVERVIEW_COMPLETED */);
         sinon.stub(target.runtimeAgent(), 'invoke_evaluate').resolves({
             result: {},
         });
@@ -25,7 +25,7 @@ describeWithMockConnection('CSSOverviewPanel', () => {
         sinon.stub(target.cssAgent(), 'invoke_getMediaQueries').resolves({
             medias: [],
         });
-        controller.dispatchEventToListeners("RequestOverviewStart" /* CSSOverview.CSSOverviewController.Events.RequestOverviewStart */);
+        controller.dispatchEventToListeners("RequestOverviewStart" /* CSSOverview.CSSOverviewController.Events.REQUEST_OVERVIEW_START */);
         await overviewCompleted;
     });
 });

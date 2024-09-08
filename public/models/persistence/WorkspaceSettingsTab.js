@@ -125,7 +125,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
         UI.Tooltip.Tooltip.install(path, fileSystemPath);
         const toolbar = new UI.Toolbar.Toolbar('');
         const button = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.remove), 'cross', undefined, 'settings.remove-file-system');
-        button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.removeFileSystemClicked.bind(this, fileSystem));
+        button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.removeFileSystemClicked.bind(this, fileSystem));
         toolbar.appendToolbarItem(button);
         header.appendChild(toolbar.element);
         return element;

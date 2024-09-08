@@ -666,6 +666,13 @@ export class SourceMap {
         }
         return result;
     }
+    resolveScopeChain(frame) {
+        this.#ensureMappingsProcessed();
+        if (this.#scopesInfo === null) {
+            return null;
+        }
+        return this.#scopesInfo.resolveMappedScopeChain(frame);
+    }
 }
 const VLQ_BASE_SHIFT = 5;
 const VLQ_BASE_MASK = (1 << 5) - 1;

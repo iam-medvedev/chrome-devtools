@@ -6,7 +6,7 @@ import * as Models from '../models/models.js';
 import { PuppeteerConverter } from './PuppeteerConverter.js';
 export class PuppeteerFirefoxConverter extends PuppeteerConverter {
     getId() {
-        return "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */;
+        return "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */;
     }
     createExtension() {
         return new PuppeteerReplay.PuppeteerStringifyExtension('firefox');

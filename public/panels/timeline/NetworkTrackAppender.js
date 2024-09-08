@@ -89,7 +89,7 @@ export class NetworkTrackAppender {
             useDecoratorsForOverview: true,
         });
         const legends = [];
-        for (const category in NetworkCategory) {
+        for (const category of Object.values(NetworkCategory)) {
             legends.push({
                 color: Utils.colorForNetworkCategory(category),
                 category,

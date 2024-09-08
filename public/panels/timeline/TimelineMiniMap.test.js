@@ -66,7 +66,6 @@ describeWithEnvironment('TimelineMiniMap', function () {
                 showScreenshots: true,
             },
         });
-        minimap.addInitialBreadcrumb();
         await raf();
         if (!minimap.breadcrumbs) {
             throw new Error('The MiniMap unexpectedly did not create any breadcrumbs');
@@ -84,7 +83,6 @@ describeWithEnvironment('TimelineMiniMap', function () {
                 showScreenshots: true,
             },
         });
-        minimap.addInitialBreadcrumb();
         const entireTraceBounds = traceData.Meta.traceBounds;
         const newBounds = {
             ...entireTraceBounds,

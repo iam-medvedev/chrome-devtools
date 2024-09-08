@@ -68,7 +68,7 @@ export class LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(U
     }
     #tabClosed(event) {
         const { tabId } = event.data;
-        this.dispatchEventToListeners("ViewClosed" /* Events.ViewClosed */, tabId);
+        this.dispatchEventToListeners("ViewClosed" /* Events.VIEW_CLOSED */, tabId);
     }
 }
 class LinearMemoryInspectorView extends UI.Widget.VBox {
@@ -147,8 +147,8 @@ class LinearMemoryInspectorView extends UI.Widget.VBox {
         }
         void LinearMemoryInspectorController.getMemoryRange(this.#memoryWrapper, start, end).then(memory => {
             this.#inspector.data = {
-                memory: memory,
-                address: address,
+                memory,
+                address,
                 memoryOffset: start,
                 outerMemoryLength: this.#memoryWrapper.length(),
                 highlightInfo: this.#getHighlightInfo(),

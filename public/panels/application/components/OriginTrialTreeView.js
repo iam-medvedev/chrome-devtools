@@ -133,7 +133,7 @@ function constructTokenNode(token) {
 }
 function renderTokenDetails(node) {
     return LitHtml.html `
-    <${OriginTrialTokenRows.litTagName} .data=${{ node: node }}>
+    <${OriginTrialTokenRows.litTagName} .data=${{ node }}>
     </${OriginTrialTokenRows.litTagName}>
     `;
 }

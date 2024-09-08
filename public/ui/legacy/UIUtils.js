@@ -155,7 +155,7 @@ class DragHandler {
         this.glassPaneInUse = true;
         if (!DragHandler.glassPaneUsageCount++) {
             DragHandler.glassPane = new GlassPane();
-            DragHandler.glassPane.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BlockedByGlassPane */);
+            DragHandler.glassPane.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
             if (DragHandler.documentForMouseOut) {
                 DragHandler.glassPane.show(DragHandler.documentForMouseOut);
             }
@@ -1355,7 +1355,7 @@ export const MaxLengthForDisplayedURLs = 150;
 export class MessageDialog {
     static async show(message, where, jslogContext) {
         const dialog = new Dialog(jslogContext);
-        dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MeasureContent */);
+        dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         dialog.setDimmed(true);
         const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: confirmDialogStyles, delegatesFocus: undefined });
         const content = shadowRoot.createChild('div', 'widget');
@@ -1376,7 +1376,7 @@ export class MessageDialog {
 export class ConfirmDialog {
     static async show(message, where, options) {
         const dialog = new Dialog(options?.jslogContext);
-        dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MeasureContent */);
+        dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         dialog.setDimmed(true);
         ARIAUtils.setLabel(dialog.contentElement, message);
         const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: confirmDialogStyles, delegatesFocus: undefined });

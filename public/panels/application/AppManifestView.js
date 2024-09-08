@@ -554,12 +554,12 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         if ((!data || data === '{}') && !errors.length) {
             this.emptyView.showWidget();
             this.reportView.hideWidget();
-            this.dispatchEventToListeners("ManifestDetected" /* Events.ManifestDetected */, false);
+            this.dispatchEventToListeners("ManifestDetected" /* Events.MANIFEST_DETECTED */, false);
             return;
         }
         this.emptyView.hideWidget();
         this.reportView.showWidget();
-        this.dispatchEventToListeners("ManifestDetected" /* Events.ManifestDetected */, true);
+        this.dispatchEventToListeners("ManifestDetected" /* Events.MANIFEST_DETECTED */, true);
         const link = Components.Linkifier.Linkifier.linkifyURL(url);
         link.tabIndex = 0;
         this.reportView.setURL(link);
@@ -828,7 +828,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         const wcoDocumentationLink = UI.XLink.XLink.create('https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay', i18nString(UIStrings.customizePwaTitleBar), undefined, undefined, 'customize-pwa-tittle-bar');
         this.windowControlsSection.appendRow().appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNeedHelpReadMore, { PH1: wcoDocumentationLink }));
-        this.dispatchEventToListeners("ManifestRendered" /* Events.ManifestRendered */);
+        this.dispatchEventToListeners("ManifestRendered" /* Events.MANIFEST_RENDERED */);
     }
     getInstallabilityErrorMessages(installabilityErrors) {
         const errorMessages = [];

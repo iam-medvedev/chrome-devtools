@@ -92,7 +92,7 @@ export class ResourceTreeModel extends SDKModel {
         if (!this.framesInternal.has(frameId)) {
             return null;
         }
-        const response = await this.storageAgent.invoke_getStorageKeyForFrame({ frameId: frameId });
+        const response = await this.storageAgent.invoke_getStorageKeyForFrame({ frameId });
         if (response.getError() === 'Frame tree node for given frame not found') {
             return null;
         }
@@ -420,9 +420,9 @@ export class ResourceTreeModel extends SDKModel {
             }
         }
         return {
-            securityOrigins: securityOrigins,
-            mainSecurityOrigin: mainSecurityOrigin,
-            unreachableMainSecurityOrigin: unreachableMainSecurityOrigin,
+            securityOrigins,
+            mainSecurityOrigin,
+            unreachableMainSecurityOrigin,
         };
     }
     async getStorageKeyData() {
@@ -439,7 +439,7 @@ export class ResourceTreeModel extends SDKModel {
                 storageKeys.add(storageKey);
             }
         }
-        return { storageKeys: storageKeys, mainStorageKey: mainStorageKey };
+        return { storageKeys, mainStorageKey };
     }
     updateSecurityOrigins() {
         const data = this.getSecurityOriginData();
@@ -878,6 +878,8 @@ export class PageDispatcher {
     }
     frameDetached({ frameId, reason }) {
         this.#resourceTreeModel.frameDetached(frameId, reason === "swap" /* Protocol.Page.FrameDetachedEventReason.Swap */);
+    }
+    frameSubtreeWillBeDetached(_params) {
     }
     frameStartedLoading({}) {
     }

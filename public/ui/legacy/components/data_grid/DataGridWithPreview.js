@@ -65,13 +65,13 @@ export class DataGridWithPreview {
             deleteCallback: this.#deleteCallback.bind(this),
             refreshCallback: this.#callbacks.refreshItems,
         });
-        this.#dataGrid.addEventListener("SelectedNode" /* Events.SelectedNode */, event => {
+        this.#dataGrid.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, event => {
             void this.#previewEntry(event.data);
         });
-        this.#dataGrid.addEventListener("DeselectedNode" /* Events.DeselectedNode */, () => {
+        this.#dataGrid.addEventListener("DeselectedNode" /* Events.DESELECTED_NODE */, () => {
             void this.#previewEntry(null);
         });
-        this.#dataGrid.addEventListener("SortingChanged" /* Events.SortingChanged */, this.#callbacks.refreshItems, this);
+        this.#dataGrid.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, this.#callbacks.refreshItems, this);
         this.#dataGrid.setStriped(true);
         this.#dataGrid.setName(`${id}-datagrid-with-preview`);
         this.#splitWidget = new SplitWidget.SplitWidget(
@@ -160,7 +160,7 @@ export class DataGridWithPreview {
         for (const item of filteredList) {
             const key = item[0];
             const value = item[1];
-            const node = new DataGridNode({ key: key, value: value }, false);
+            const node = new DataGridNode({ key, value }, false);
             node.selectable = true;
             rootNode.appendChild(node);
             if (!selectedNode || key === selectedKey) {

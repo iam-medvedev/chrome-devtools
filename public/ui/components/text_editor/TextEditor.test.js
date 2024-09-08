@@ -126,31 +126,31 @@ describeWithEnvironment('TextEditor', () => {
             }
         }
         it('recognizes expression queries', async () => {
-            await testQueryType('foo', 3, 0 /* TextEditor.JavaScript.QueryType.Expression */, 'foo');
-            await testQueryType('foo ', 4, 0 /* TextEditor.JavaScript.QueryType.Expression */, '');
-            await testQueryType('let', 3, 0 /* TextEditor.JavaScript.QueryType.Expression */, 'let');
+            await testQueryType('foo', 3, 0 /* TextEditor.JavaScript.QueryType.EXPRESSION */, 'foo');
+            await testQueryType('foo ', 4, 0 /* TextEditor.JavaScript.QueryType.EXPRESSION */, '');
+            await testQueryType('let', 3, 0 /* TextEditor.JavaScript.QueryType.EXPRESSION */, 'let');
         });
         it('recognizes propery name queries', async () => {
-            await testQueryType('foo.bar', 7, 1 /* TextEditor.JavaScript.QueryType.PropertyName */, 'bar', 'foo.bar');
-            await testQueryType('foo.', 4, 1 /* TextEditor.JavaScript.QueryType.PropertyName */, '', 'foo.');
-            await testQueryType('if (foo.', 8, 1 /* TextEditor.JavaScript.QueryType.PropertyName */, '', 'foo.');
-            await testQueryType('new foo.bar().', 14, 1 /* TextEditor.JavaScript.QueryType.PropertyName */, '', 'new foo.bar().');
-            await testQueryType('foo?.', 5, 1 /* TextEditor.JavaScript.QueryType.PropertyName */, '', 'foo?.');
-            await testQueryType('foo?.b', 6, 1 /* TextEditor.JavaScript.QueryType.PropertyName */, 'b', 'foo?.b');
+            await testQueryType('foo.bar', 7, 1 /* TextEditor.JavaScript.QueryType.PROPERTY_NAME */, 'bar', 'foo.bar');
+            await testQueryType('foo.', 4, 1 /* TextEditor.JavaScript.QueryType.PROPERTY_NAME */, '', 'foo.');
+            await testQueryType('if (foo.', 8, 1 /* TextEditor.JavaScript.QueryType.PROPERTY_NAME */, '', 'foo.');
+            await testQueryType('new foo.bar().', 14, 1 /* TextEditor.JavaScript.QueryType.PROPERTY_NAME */, '', 'new foo.bar().');
+            await testQueryType('foo?.', 5, 1 /* TextEditor.JavaScript.QueryType.PROPERTY_NAME */, '', 'foo?.');
+            await testQueryType('foo?.b', 6, 1 /* TextEditor.JavaScript.QueryType.PROPERTY_NAME */, 'b', 'foo?.b');
         });
         it('recognizes property expression queries', async () => {
-            await testQueryType('foo[', 4, 2 /* TextEditor.JavaScript.QueryType.PropertyExpression */, '', 'foo[');
-            await testQueryType('foo["ba', 7, 2 /* TextEditor.JavaScript.QueryType.PropertyExpression */, '"ba', 'foo["ba');
+            await testQueryType('foo[', 4, 2 /* TextEditor.JavaScript.QueryType.PROPERTY_EXPRESSION */, '', 'foo[');
+            await testQueryType('foo["ba', 7, 2 /* TextEditor.JavaScript.QueryType.PROPERTY_EXPRESSION */, '"ba', 'foo["ba');
         });
         describe('potential map key retrievals', () => {
             it('recognizes potential maps', async () => {
-                await testQueryType('foo.get(', 8, 3 /* TextEditor.JavaScript.QueryType.PotentiallyRetrievingFromMap */, '', 'foo');
-                await testQueryType('foo\n.get(', 9, 3 /* TextEditor.JavaScript.QueryType.PotentiallyRetrievingFromMap */, '', 'foo');
+                await testQueryType('foo.get(', 8, 3 /* TextEditor.JavaScript.QueryType.POTENTIALLY_RETRIEVING_FROM_MAP */, '', 'foo');
+                await testQueryType('foo\n.get(', 9, 3 /* TextEditor.JavaScript.QueryType.POTENTIALLY_RETRIEVING_FROM_MAP */, '', 'foo');
             });
             it('leaves other expressions as-is', async () => {
-                await testQueryType('foo.method(', 11, 0 /* TextEditor.JavaScript.QueryType.Expression */);
-                await testQueryType('5 + (', 5, 0 /* TextEditor.JavaScript.QueryType.Expression */);
-                await testQueryType('functionCall(', 13, 0 /* TextEditor.JavaScript.QueryType.Expression */);
+                await testQueryType('foo.method(', 11, 0 /* TextEditor.JavaScript.QueryType.EXPRESSION */);
+                await testQueryType('5 + (', 5, 0 /* TextEditor.JavaScript.QueryType.EXPRESSION */);
+                await testQueryType('functionCall(', 13, 0 /* TextEditor.JavaScript.QueryType.EXPRESSION */);
             });
         });
         it('does not complete in inappropriate places', async () => {

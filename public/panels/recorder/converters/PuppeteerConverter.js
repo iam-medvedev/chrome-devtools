@@ -11,7 +11,7 @@ export class PuppeteerConverter {
         this.#extension = this.createExtension();
     }
     getId() {
-        return "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */;
+        return "puppeteer" /* Models.ConverterIds.ConverterIds.PUPPETEER */;
     }
     createExtension() {
         return new PuppeteerReplay.PuppeteerStringifyExtension();

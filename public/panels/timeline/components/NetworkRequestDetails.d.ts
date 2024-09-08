@@ -6,7 +6,7 @@ export declare class NetworkRequestDetails extends HTMLElement {
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(linkifier: LegacyComponents.Linkifier.Linkifier);
     connectedCallback(): void;
-    setData(networkRequest: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, maybeTarget: SDK.Target.Target | null): Promise<void>;
+    setData(traceParsedData: TraceEngine.Handlers.Types.TraceParseData, networkRequest: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, maybeTarget: SDK.Target.Target | null): Promise<void>;
 }
 declare global {
     interface HTMLElementTagNameMap {

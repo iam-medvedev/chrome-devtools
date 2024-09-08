@@ -315,7 +315,7 @@ export class ThrottlingManager {
                 input.setEnabled(this.hardwareConcurrencyOverrideEnabled);
                 setHardwareConcurrency(this.hardwareConcurrencyOverrideEnabled ? Number(inputElement.value) : defaultValue);
             });
-            reset.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+            reset.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
                 inputElement.value = `${defaultValue}`;
                 setHardwareConcurrency(defaultValue);
             });

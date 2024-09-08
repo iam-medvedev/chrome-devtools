@@ -129,6 +129,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private innerUpdateChildren;
     private markersChanged;
     private topLayerElementsChanged;
+    private scrollableFlagUpdated;
     private static treeOutlineSymbol;
 }
 export declare namespace ElementsTreeOutline {

@@ -22,16 +22,16 @@ export declare enum FilterType {
     Url = "url"
 }
 export declare const enum IsFilterType {
-    Running = "running",
-    FromCache = "from-cache",
-    ServiceWorkerIntercepted = "service-worker-intercepted",
-    ServiceWorkerInitiated = "service-worker-initiated"
+    RUNNING = "running",
+    FROM_CACHE = "from-cache",
+    SERVICE_WORKER_INTERCEPTED = "service-worker-intercepted",
+    SERVICE_WORKER_INITIATED = "service-worker-initiated"
 }
 export declare const enum MixedContentFilterValues {
-    All = "all",
-    Displayed = "displayed",
-    Blocked = "blocked",
-    BlockOverridden = "block-overridden"
+    ALL = "all",
+    DISPLAYED = "displayed",
+    BLOCKED = "blocked",
+    BLOCK_OVERRIDDEN = "block-overridden"
 }
 interface UIFilter {
     filterType: FilterType | null;

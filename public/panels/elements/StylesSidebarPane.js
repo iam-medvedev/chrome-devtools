@@ -233,7 +233,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.sectionsContainer.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
         this.sectionByElement = new WeakMap();
         this.swatchPopoverHelperInternal = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
-        this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WillShowPopover */, this.hideAllPopovers, this);
+        this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
         this.linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
         this.decorator = new StylePropertyHighlighter(this);
         this.lastRevealedProperty = null;
@@ -634,10 +634,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 this.appendToolbarItem(this.#copyChangesButton);
                 this.#copyChangesButton.element.classList.add('hidden');
             }
-            this.dispatchEventToListeners("InitialUpdateCompleted" /* Events.InitialUpdateCompleted */);
+            this.dispatchEventToListeners("InitialUpdateCompleted" /* Events.INITIAL_UPDATE_COMPLETED */);
         }
         this.nodeStylesUpdatedForTest(this.node(), true);
-        this.dispatchEventToListeners("StylesUpdateCompleted" /* Events.StylesUpdateCompleted */, { hasMatchedStyles: this.hasMatchedStyles });
+        this.dispatchEventToListeners("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, { hasMatchedStyles: this.hasMatchedStyles });
     }
     async fetchComputedStylesFor(nodeId) {
         const node = this.node();
@@ -845,7 +845,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.swatchPopoverHelper().reposition();
         // Record the elements tool load time after the sidepane has loaded.
         Host.userMetrics.panelLoaded('elements', 'DevTools.Launch.Elements');
-        this.dispatchEventToListeners("StylesUpdateCompleted" /* Events.StylesUpdateCompleted */, { hasMatchedStyles: false });
+        this.dispatchEventToListeners("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, { hasMatchedStyles: false });
     }
     nodeStylesUpdatedForTest(_node, _rebuild) {
         // For sniffing in tests.
@@ -905,13 +905,13 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
         const customHighlightPseudoRulesets = Array.from(matchedStyles.customHighlightPseudoNames()).map(highlightName => {
             return {
-                'highlightName': highlightName,
-                'pseudoType': "highlight" /* Protocol.DOM.PseudoType.Highlight */,
-                'pseudoStyles': matchedStyles.customHighlightPseudoStyles(highlightName),
+                highlightName,
+                pseudoType: "highlight" /* Protocol.DOM.PseudoType.Highlight */,
+                pseudoStyles: matchedStyles.customHighlightPseudoStyles(highlightName),
             };
         });
         const otherPseudoRulesets = [...matchedStyles.pseudoTypes()].map(pseudoType => {
-            return { 'highlightName': null, 'pseudoType': pseudoType, 'pseudoStyles': matchedStyles.pseudoStyles(pseudoType) };
+            return { highlightName: null, pseudoType, pseudoStyles: matchedStyles.pseudoStyles(pseudoType) };
         });
         const pseudoRulesets = customHighlightPseudoRulesets.concat(otherPseudoRulesets).sort((a, b) => {
             // We want to show the ::before pseudos first, followed by the remaining pseudos
@@ -1171,7 +1171,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const { diff, formattedCurrentMapping } = diffResponse;
         const { rows } = DiffView.DiffView.buildDiffRows(diff);
         for (const row of rows) {
-            if (row.type === "addition" /* DiffView.DiffView.RowType.Addition */) {
+            if (row.type === "addition" /* DiffView.DiffView.RowType.ADDITION */) {
                 changedLines.add(row.currentLineNumber);
             }
         }
@@ -1200,7 +1200,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
         const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
         const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false);
-        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
+        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         void toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
         this.toolbar = toolbar;
@@ -1314,7 +1314,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         // TODO(1296947): implement a dedicated component to share between all copy buttons
         copyAllChangesButton.element.setAttribute('data-content', i18nString(UIStrings.copiedToClipboard));
         let timeout;
-        copyAllChangesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, async () => {
+        copyAllChangesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, async () => {
             const allChanges = await this.getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
             Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.ALL_CHANGES_VIA_STYLES_TAB */);

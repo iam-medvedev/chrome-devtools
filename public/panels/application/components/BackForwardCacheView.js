@@ -136,7 +136,7 @@ const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     static litTagName = LitHtml.literal `devtools-resources-back-forward-cache-view`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #screenStatus = "Result" /* ScreenStatusType.Result */;
+    #screenStatus = "Result" /* ScreenStatusType.RESULT */;
     #nextNodeId = 0;
     #historyIndex = 0;
     constructor() {
@@ -170,7 +170,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
     }
     #renderBackForwardCacheTestResult() {
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#renderBackForwardCacheTestResult, this);
-        this.#screenStatus = "Result" /* ScreenStatusType.Result */;
+        this.#screenStatus = "Result" /* ScreenStatusType.RESULT */;
         void this.render();
     }
     async #onNavigatedAway() {
@@ -205,7 +205,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
             return;
         }
         this.#historyIndex = historyResults.currentIndex;
-        this.#screenStatus = "Running" /* ScreenStatusType.Running */;
+        this.#screenStatus = "Running" /* ScreenStatusType.RUNNING */;
         void this.render();
         // This event listener is removed inside of onNavigatedAway().
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#onNavigatedAway, this);
@@ -229,7 +229,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
       `;
             // clang-format on
         }
-        const isTestRunning = (this.#screenStatus === "Running" /* ScreenStatusType.Running */);
+        const isTestRunning = (this.#screenStatus === "Running" /* ScreenStatusType.RUNNING */);
         // Prevent running BFCache test on the DevTools window itself via DevTools on DevTools
         const isTestingForbidden = Common.ParsedURL.schemeIs(frame.url, 'devtools:');
         // clang-format off

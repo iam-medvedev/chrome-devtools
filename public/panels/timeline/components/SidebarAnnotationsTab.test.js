@@ -66,6 +66,25 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         assert.strictEqual(annotationEntryIdentifierElements[1].style['backgroundColor'], 'rgb(252, 3, 157)');
         assert.strictEqual(annotationEntryLabelElements[2].innerText, 'Labelled Time Range');
     });
+    it('uses the URL for displaying network event labels and truncates it', async function () {
+        const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const event = traceData.NetworkRequests.byTime.find(event => {
+            return event.args.data.url.includes('private-aggregation-test');
+        });
+        assert.isOk(event);
+        const annotation = {
+            type: 'ENTRY_LABEL',
+            entry: event,
+            label: 'hello world',
+        };
+        const component = new SidebarAnnotationsTab();
+        renderElementIntoDOM(component);
+        component.annotations = [annotation];
+        await coordinator.done();
+        assert.isNotNull(component.shadowRoot);
+        const label = component.shadowRoot.querySelector('.annotation-identifier');
+        assert.strictEqual(label?.innerText, 'private-aggregation-test.js (shared-sto…');
+    });
     it('dispatches RemoveAnnotation Events when delete annotation button is clicked', async function () {
         const component = new SidebarAnnotationsTab();
         const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');

@@ -34,7 +34,7 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.overviewCanvas =
             this.overviewContainer.createChild('canvas', 'heap-recording-overview-canvas');
         this.overviewContainer.appendChild(this.overviewGrid.element);
-        this.overviewGrid.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WindowChanged */, this.onWindowChanged, this);
+        this.overviewGrid.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED */, this.onWindowChanged, this);
         this.windowLeft = 0.0;
         this.windowRight = 1.0;
         this.overviewGrid.setWindow(this.windowLeft, this.windowRight);
@@ -219,7 +219,7 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         }
         const minId = minIndex > 0 ? ids[minIndex - 1] : 0;
         const maxId = maxIndex < ids.length ? ids[maxIndex] : Infinity;
-        this.dispatchEventToListeners("IdsRangeChanged" /* Events.IdsRangeChanged */, { minId, maxId, size });
+        this.dispatchEventToListeners("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, { minId, maxId, size });
     }
 }
 export class SmoothScale {

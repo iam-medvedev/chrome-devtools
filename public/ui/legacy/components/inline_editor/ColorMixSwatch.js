@@ -35,7 +35,7 @@ export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement)
             this.colorMixText = this.colorMixText.replace(this.firstColorText, text);
         }
         this.firstColorText = text;
-        this.dispatchEventToListeners("colorChanged" /* Events.ColorChanged */, { text: this.colorMixText });
+        this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
         this.#render();
     }
     setSecondColor(text) {
@@ -46,12 +46,12 @@ export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement)
             this.colorMixText = Platform.StringUtilities.replaceLast(this.colorMixText, this.secondColorText, text);
         }
         this.secondColorText = text;
-        this.dispatchEventToListeners("colorChanged" /* Events.ColorChanged */, { text: this.colorMixText });
+        this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
         this.#render();
     }
     setColorMixText(text) {
         this.colorMixText = text;
-        this.dispatchEventToListeners("colorChanged" /* Events.ColorChanged */, { text: this.colorMixText });
+        this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
         this.#render();
     }
     setRegisterPopoverCallback(callback) {

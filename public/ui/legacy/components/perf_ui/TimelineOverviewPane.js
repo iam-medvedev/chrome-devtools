@@ -61,8 +61,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.cursorArea.addEventListener('mousemove', this.onMouseMove.bind(this), true);
         this.cursorArea.addEventListener('mouseleave', this.hideCursor.bind(this), true);
         this.overviewGrid.setResizeEnabled(false);
-        this.overviewGrid.addEventListener("WindowChangedWithPosition" /* OverviewGridEvents.WindowChangedWithPosition */, this.onWindowChanged, this);
-        this.overviewGrid.addEventListener("BreadcrumbAdded" /* OverviewGridEvents.BreadcrumbAdded */, this.onBreadcrumbAdded, this);
+        this.overviewGrid.addEventListener("WindowChangedWithPosition" /* OverviewGridEvents.WINDOW_CHANGED_WITH_POSITION */, this.onWindowChanged, this);
+        this.overviewGrid.addEventListener("BreadcrumbAdded" /* OverviewGridEvents.BREADCRUMB_ADDED */, this.onBreadcrumbAdded, this);
         this.overviewGrid.setClickHandler(this.onClick.bind(this));
         this.overviewControls = [];
         this.markers = new Map();
@@ -203,7 +203,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         return this.overviewControls.some(control => control.onClick(event));
     }
     onBreadcrumbAdded() {
-        this.dispatchEventToListeners("OverviewPaneBreadcrumbAdded" /* Events.OverviewPaneBreadcrumbAdded */, {
+        this.dispatchEventToListeners("OverviewPaneBreadcrumbAdded" /* Events.OVERVIEW_PANE_BREADCRUMB_ADDED */, {
             startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
         });
@@ -224,7 +224,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
             startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
         };
-        this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OverviewPaneWindowChanged */, windowTimes);
+        this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OVERVIEW_PANE_WINDOW_CHANGED */, windowTimes);
     }
     setWindowTimes(startTime, endTime) {
         if (startTime === this.windowStartTime && endTime === this.windowEndTime) {
@@ -233,7 +233,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowStartTime = startTime;
         this.windowEndTime = endTime;
         this.updateWindow();
-        this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OverviewPaneWindowChanged */, {
+        this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OVERVIEW_PANE_WINDOW_CHANGED */, {
             startTime: TraceEngine.Types.Timing.MilliSeconds(startTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(endTime),
         });
@@ -312,9 +312,9 @@ export class OverviewInfo {
     constructor(anchor) {
         this.anchorElement = anchor;
         this.glassPane = new UI.GlassPane.GlassPane();
-        this.glassPane.setPointerEventsBehavior("PierceContents" /* UI.GlassPane.PointerEventsBehavior.PierceContents */);
-        this.glassPane.setMarginBehavior("Arrow" /* UI.GlassPane.MarginBehavior.Arrow */);
-        this.glassPane.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
+        this.glassPane.setPointerEventsBehavior("PierceContents" /* UI.GlassPane.PointerEventsBehavior.PIERCE_CONTENTS */);
+        this.glassPane.setMarginBehavior("Arrow" /* UI.GlassPane.MarginBehavior.ARROW */);
+        this.glassPane.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
         this.visible = false;
         this.element = UI.UIUtils
             .createShadowRootWithCoreStyles(this.glassPane.contentElement, {

@@ -49,11 +49,11 @@ export declare const Keys: {
     [x: string]: Key;
 };
 export declare const enum Type {
-    UserShortcut = "UserShortcut",
-    DefaultShortcut = "DefaultShortcut",
-    DisabledDefault = "DisabledDefault",
-    UnsetShortcut = "UnsetShortcut",
-    KeybindSetShortcut = "KeybindSetShortcut"
+    USER_SHORTCUT = "UserShortcut",
+    DEFAULT_SHORTCUT = "DefaultShortcut",
+    DISABLED_DEFAULT = "DisabledDefault",
+    UNSET_SHORTCUT = "UnsetShortcut",
+    KEYBIND_SET_SHORTCUT = "KeybindSetShortcut"
 }
 export declare const KeyBindings: {
     [x: string]: Key;

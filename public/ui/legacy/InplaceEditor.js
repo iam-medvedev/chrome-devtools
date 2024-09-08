@@ -70,7 +70,7 @@ export class InplaceEditor {
             return null;
         }
         const config = inputConfig || new Config(function () { }, function () { });
-        const editingContext = { element: element, config: config, oldRole: null, oldTabIndex: null, oldText: null };
+        const editingContext = { element, config, oldRole: null, oldTabIndex: null, oldText: null };
         const committedCallback = config.commitHandler;
         const cancelledCallback = config.cancelHandler;
         const pasteCallback = config.pasteHandler;

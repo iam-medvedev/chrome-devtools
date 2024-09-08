@@ -146,7 +146,7 @@ class ColorSwatchWidget extends CodeMirror.WidgetType {
             event.consume(true);
             view.dispatch({
                 effects: setTooltip.of({
-                    type: 0 /* TooltipType.Color */,
+                    type: 0 /* TooltipType.COLOR */,
                     pos: view.posAtDOM(swatch),
                     text: this.#text,
                     swatch,
@@ -179,7 +179,7 @@ class CurveSwatchWidget extends CodeMirror.WidgetType {
             event.consume(true);
             view.dispatch({
                 effects: setTooltip.of({
-                    type: 1 /* TooltipType.Curve */,
+                    type: 1 /* TooltipType.CURVE */,
                     pos: view.posAtDOM(swatch),
                     text: this.text,
                     swatch,
@@ -201,12 +201,12 @@ function createCSSTooltip(active) {
         create(view) {
             let text = active.text;
             let widget, addListener;
-            if (active.type === 0 /* TooltipType.Color */) {
+            if (active.type === 0 /* TooltipType.COLOR */) {
                 const spectrum = new ColorPicker.Spectrum.Spectrum();
                 addListener = handler => {
-                    spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.ColorChanged */, handler);
+                    spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.COLOR_CHANGED */, handler);
                 };
-                spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SizeChanged */, () => view.requestMeasure());
+                spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SIZE_CHANGED */, () => view.requestMeasure());
                 spectrum.setColor(active.color);
                 widget = spectrum;
                 Host.userMetrics.colorPickerOpenedFrom(0 /* Host.UserMetrics.ColorPickerOpenedFrom.SOURCES_PANEL */);
@@ -215,7 +215,7 @@ function createCSSTooltip(active) {
                 const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);
                 widget = spectrum;
                 addListener = handler => {
-                    spectrum.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BezierChanged */, handler);
+                    spectrum.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BEZIER_CHANGED */, handler);
                 };
             }
             const dom = document.createElement('div');

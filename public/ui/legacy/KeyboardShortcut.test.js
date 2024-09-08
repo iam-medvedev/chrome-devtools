@@ -5,13 +5,13 @@ import * as UI from './legacy.js';
 describe('KeyboardShortcut', () => {
     it('can be instantiated', () => {
         const descriptors = [{ key: 587, name: 'Ctrl + K' }, { key: 595, name: 'Ctrl + S' }];
-        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut(descriptors, 'settings.shortcuts', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DefaultShortcut */);
+        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut(descriptors, 'settings.shortcuts', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */);
         assert.deepEqual(shortcut.descriptors, descriptors, 'descriptors should be set');
         assert.strictEqual(shortcut.action, 'settings.shortcuts', 'action should be set');
     });
     it('creates a title', () => {
         const descriptors = [{ key: 587, name: 'Ctrl + K' }, { key: 595, name: 'Ctrl + S' }];
-        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut(descriptors, 'settings.shortcuts', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DefaultShortcut */);
+        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut(descriptors, 'settings.shortcuts', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */);
         assert.strictEqual(shortcut.title(), 'Ctrl + K Ctrl + S');
     });
     it('can make a key from an event', () => {

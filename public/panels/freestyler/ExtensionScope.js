@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AI_ASSISTANT_CSS_CLASS_NAME } from './ChangeManager.js';
@@ -44,7 +43,7 @@ export class ExtensionScope {
         this.#listeners.push(handler);
         await target.runtimeAgent().invoke_addBinding({
             name: FREESTYLER_BINDING_NAME,
-            executionContextId: executionContextId,
+            executionContextId,
         });
         await this.#simpleEval(isolatedWorldContext, freestylerBinding);
         await this.#simpleEval(isolatedWorldContext, functions);
@@ -94,15 +93,15 @@ export class ExtensionScope {
             const { object } = await this.#simpleEval(executionContext, `freestyler.getArgs(${id})`);
             const arg = JSON.parse(object.value);
             const selector = arg.selector;
-            const styles = Platform.StringUtilities.toKebabCaseKeys(arg.styles);
-            const lines = Object.entries(styles).map(([key, value]) => `${key}: ${value};`);
+            const className = arg.className;
             const cssModel = target.model(SDK.CSSModel.CSSModel);
             if (!cssModel) {
                 throw new Error('CSSModel is not found');
             }
             await this.#changeManager.addChange(cssModel, this.#frameId, {
                 selector,
-                styles: lines.join('\n'),
+                className,
+                styles: arg.styles,
             });
             await this.#simpleEval(executionContext, `freestyler.respond(${id})`);
         });
@@ -141,7 +140,7 @@ const functions = `async function setElementStyles(el, styles) {
   } else if (el.classList.length) {
     const parts = [];
     for (const cls of el.classList) {
-      if (cls === '${AI_ASSISTANT_CSS_CLASS_NAME}') {
+      if (cls.startsWith('${AI_ASSISTANT_CSS_CLASS_NAME}')) {
         continue;
       }
       parts.push('.' + cls);
@@ -151,12 +150,25 @@ const functions = `async function setElementStyles(el, styles) {
     }
   }
 
-  el.classList.add('${AI_ASSISTANT_CSS_CLASS_NAME}');
+  // __freestylerClassName is not exposed to the page due to this being
+  // run in the isolated world.
+  const className = el.__freestylerClassName ?? '${AI_ASSISTANT_CSS_CLASS_NAME}-' + freestyler.id;
+  el.__freestylerClassName = className;
+  el.classList.add(className);
+
+  // Remove inline styles with the same keys so that the edit applies.
+  for (const [key, value] of Object.entries(styles)) {
+    // if it's kebap case.
+    el.style.removeProperty(key);
+    // If it's camel case.
+    el.style[key] = '';
+  }
 
   await freestyler({
     method: 'setElementStyles',
     selector: selector,
-    styles: styles
+    className,
+    styles
   });
 }`;
 //# sourceMappingURL=ExtensionScope.js.map

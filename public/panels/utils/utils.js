@@ -52,10 +52,10 @@ export class PanelUtils {
         let recordedOriginalSelector, recordedCurrentSelector;
         let hasOpenDeclarationBlock = false;
         for (const { currentLineNumber, originalLineNumber, type } of rows) {
-            if (type !== "deletion" /* DiffView.DiffView.RowType.Deletion */ && type !== "addition" /* DiffView.DiffView.RowType.Addition */) {
+            if (type !== "deletion" /* DiffView.DiffView.RowType.DELETION */ && type !== "addition" /* DiffView.DiffView.RowType.ADDITION */) {
                 continue;
             }
-            const isDeletion = type === "deletion" /* DiffView.DiffView.RowType.Deletion */;
+            const isDeletion = type === "deletion" /* DiffView.DiffView.RowType.DELETION */;
             const lines = isDeletion ? originalLines : currentLines;
             // Diff line arrays starts at 0, but line numbers start at 1.
             const lineIndex = isDeletion ? originalLineNumber - 1 : currentLineNumber - 1;

@@ -187,20 +187,20 @@ export class ProfileView extends UI.View.SimpleView {
             deleteCallback: undefined,
             refreshCallback: undefined,
         });
-        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortProfile, this);
-        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.nodeSelected.bind(this, true));
-        this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DeselectedNode */, this.nodeSelected.bind(this, false));
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortProfile, this);
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.nodeSelected.bind(this, true));
+        this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, this.nodeSelected.bind(this, false));
         this.dataGrid.setRowContextMenuCallback(this.populateContextMenu.bind(this));
         this.viewSelectComboBox = new UI.Toolbar.ToolbarComboBox(this.changeView.bind(this), i18nString(UIStrings.profileViewMode), undefined, 'profile-view.selected-view');
         this.focusButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.focusSelectedFunction), 'eye', undefined, 'profile-view.focus-selected-function');
         this.focusButton.setEnabled(false);
-        this.focusButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.focusClicked, this);
+        this.focusButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.focusClicked, this);
         this.excludeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.excludeSelectedFunction), 'cross', undefined, 'profile-view.exclude-selected-function');
         this.excludeButton.setEnabled(false);
-        this.excludeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.excludeClicked, this);
+        this.excludeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.excludeClicked, this);
         this.resetButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.restoreAllFunctions), 'refresh', undefined, 'profile-view.restore-all-functions');
         this.resetButton.setEnabled(false);
-        this.resetButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.resetClicked, this);
+        this.resetButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.resetClicked, this);
         this.linkifierInternal = new Components.Linkifier.Linkifier(maxLinkLength);
     }
     static buildPopoverTable(entryInfo) {
@@ -224,12 +224,12 @@ export class ProfileView extends UI.View.SimpleView {
     }
     initialize(nodeFormatter) {
         this.nodeFormatter = nodeFormatter;
-        this.viewType = Common.Settings.Settings.instance().createSetting('profile-view', "Heavy" /* ViewTypes.Heavy */);
-        const viewTypes = ["Flame" /* ViewTypes.Flame */, "Heavy" /* ViewTypes.Heavy */, "Tree" /* ViewTypes.Tree */];
+        this.viewType = Common.Settings.Settings.instance().createSetting('profile-view', "Heavy" /* ViewTypes.HEAVY */);
+        const viewTypes = ["Flame" /* ViewTypes.FLAME */, "Heavy" /* ViewTypes.HEAVY */, "Tree" /* ViewTypes.TREE */];
         const optionNames = new Map([
-            ["Flame" /* ViewTypes.Flame */, i18nString(UIStrings.chart)],
-            ["Heavy" /* ViewTypes.Heavy */, i18nString(UIStrings.heavyBottomUp)],
-            ["Tree" /* ViewTypes.Tree */, i18nString(UIStrings.treeTopDown)],
+            ["Flame" /* ViewTypes.FLAME */, i18nString(UIStrings.chart)],
+            ["Heavy" /* ViewTypes.HEAVY */, i18nString(UIStrings.heavyBottomUp)],
+            ["Tree" /* ViewTypes.TREE */, i18nString(UIStrings.treeTopDown)],
         ]);
         const options = new Map(viewTypes.map(type => [type, this.viewSelectComboBox.createOption(optionNames.get(type), type)]));
         const optionName = this.viewType.get() || viewTypes[0];
@@ -346,7 +346,7 @@ export class ProfileView extends UI.View.SimpleView {
         }
         this.dataProvider = this.createFlameChartDataProvider();
         this.flameChart = new ProfileFlameChart(this.searchableViewInternal, this.dataProvider);
-        this.flameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, event => {
+        this.flameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.ENTRY_INVOKED */, event => {
             void this.onEntryInvoked(event);
         });
     }
@@ -378,25 +378,25 @@ export class ProfileView extends UI.View.SimpleView {
         }
         this.viewType.set(this.viewSelectComboBox.selectedOption().value);
         switch (this.viewType.get()) {
-            case "Flame" /* ViewTypes.Flame */:
+            case "Flame" /* ViewTypes.FLAME */:
                 this.ensureFlameChartCreated();
                 this.visibleView = this.flameChart;
                 this.searchableElement = this.flameChart;
                 break;
-            case "Tree" /* ViewTypes.Tree */:
+            case "Tree" /* ViewTypes.TREE */:
                 this.profileDataGridTree = this.getTopDownProfileDataGridTree();
                 this.sortProfile();
                 this.visibleView = this.dataGrid.asWidget();
                 this.searchableElement = this.profileDataGridTree;
                 break;
-            case "Heavy" /* ViewTypes.Heavy */:
+            case "Heavy" /* ViewTypes.HEAVY */:
                 this.profileDataGridTree = this.getBottomUpProfileDataGridTree();
                 this.sortProfile();
                 this.visibleView = this.dataGrid.asWidget();
                 this.searchableElement = this.profileDataGridTree;
                 break;
         }
-        const isFlame = this.viewType.get() === "Flame" /* ViewTypes.Flame */;
+        const isFlame = this.viewType.get() === "Flame" /* ViewTypes.FLAME */;
         this.focusButton.setVisible(!isFlame);
         this.excludeButton.setVisible(!isFlame);
         this.resetButton.setVisible(!isFlame);

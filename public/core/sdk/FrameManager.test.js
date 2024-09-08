@@ -90,12 +90,12 @@ describe('FrameManager', () => {
         mockModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameDetached, { frame: mockChildFrame, isSwap: false });
         assert.strictEqual(dispatchedEvents[0].type, 'FrameAddedToTarget');
         assert.deepEqual(mockFrameToObjectForAssertion(dispatchedEvents[0].data.frame), {
-            targetId: targetId,
+            targetId,
             id: parentFrameId,
         });
         assert.strictEqual(dispatchedEvents[1].type, 'FrameAddedToTarget');
         assert.deepEqual(mockFrameToObjectForAssertion(dispatchedEvents[1].data.frame), {
-            targetId: targetId,
+            targetId,
             id: childFrameId,
         });
         assert.strictEqual(dispatchedEvents[2].type, 'FrameRemoved');
@@ -115,12 +115,12 @@ describe('FrameManager', () => {
         frameManager.modelRemoved(mockModel);
         assert.strictEqual(dispatchedEvents[0].type, 'FrameAddedToTarget');
         assert.deepEqual(mockFrameToObjectForAssertion(dispatchedEvents[0].data.frame), {
-            targetId: targetId,
+            targetId,
             id: parentFrameId,
         });
         assert.strictEqual(dispatchedEvents[1].type, 'FrameAddedToTarget');
         assert.deepEqual(mockFrameToObjectForAssertion(dispatchedEvents[1].data.frame), {
-            targetId: targetId,
+            targetId,
             id: childFrameId,
         });
         assert.strictEqual(dispatchedEvents[2].type, 'FrameRemoved');

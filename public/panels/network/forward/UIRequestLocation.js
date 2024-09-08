@@ -17,10 +17,10 @@ export class UIRequestLocation {
         this.filterOptions = filterOptions;
     }
     static requestHeaderMatch(request, header) {
-        return new UIRequestLocation(request, { section: "Request" /* UIHeaderSection.Request */, header }, null, false, undefined, undefined);
+        return new UIRequestLocation(request, { section: "Request" /* UIHeaderSection.REQUEST */, header }, null, false, undefined, undefined);
     }
     static responseHeaderMatch(request, header) {
-        return new UIRequestLocation(request, { section: "Response" /* UIHeaderSection.Response */, header }, null, false, undefined, undefined);
+        return new UIRequestLocation(request, { section: "Response" /* UIHeaderSection.RESPONSE */, header }, null, false, undefined, undefined);
     }
     static bodyMatch(request, searchMatch) {
         return new UIRequestLocation(request, null, searchMatch, false, undefined, undefined);

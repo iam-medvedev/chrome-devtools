@@ -21,13 +21,13 @@ describe('RecordingPlayer', () => {
                 createCustomStep(),
             ],
         }, {
-            speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */,
+            speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
             breakpointIndexes: new Set(),
         });
         const stepEventHandlerStub = sinon.stub().callsFake(async ({ data: { resolve } }) => {
             resolve();
         });
-        recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.Step */, stepEventHandlerStub);
+        recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, stepEventHandlerStub);
         await recordingPlayer.play();
         assert.isTrue(stepEventHandlerStub.getCalls().length === 3);
     });
@@ -41,18 +41,18 @@ describe('RecordingPlayer', () => {
                     createCustomStep(),
                 ],
             }, {
-                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */,
+                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
                 breakpointIndexes: new Set([1]),
             });
             const stepEventHandlerStub = sinon.stub().callsFake(async ({ data: { resolve } }) => {
                 resolve();
             });
             const stopEventPromise = new Promise(resolve => {
-                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                     resolve();
                 });
             });
-            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.Step */, stepEventHandlerStub);
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, stepEventHandlerStub);
             void recordingPlayer.play();
             await stopEventPromise;
             assert.strictEqual(stepEventHandlerStub.getCalls().length, 2);
@@ -67,23 +67,23 @@ describe('RecordingPlayer', () => {
                     createCustomStep(),
                 ],
             }, {
-                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */,
+                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
                 breakpointIndexes: new Set([1]),
             });
             const stepEventHandlerStub = sinon.stub().callsFake(async ({ data: { resolve } }) => {
                 resolve();
             });
             let stopEventPromise = new Promise(resolve => {
-                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                     resolve();
                     stopEventPromise = new Promise(nextResolve => {
-                        recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                        recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                             nextResolve();
                         }, { once: true });
                     });
                 }, { once: true });
             });
-            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.Step */, stepEventHandlerStub);
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, stepEventHandlerStub);
             void recordingPlayer.play();
             await stopEventPromise;
             assert.strictEqual(stepEventHandlerStub.getCalls().length, 2);
@@ -102,23 +102,23 @@ describe('RecordingPlayer', () => {
                     createCustomStep(),
                 ],
             }, {
-                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */,
+                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
                 breakpointIndexes: new Set([1, 3]),
             });
             const stepEventHandlerStub = sinon.stub().callsFake(async ({ data: { resolve } }) => {
                 resolve();
             });
             let stopEventPromise = new Promise(resolve => {
-                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                     resolve();
                     stopEventPromise = new Promise(nextResolve => {
-                        recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                        recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                             nextResolve();
                         }, { once: true });
                     });
                 }, { once: true });
             });
-            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.Step */, stepEventHandlerStub);
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, stepEventHandlerStub);
             void recordingPlayer.play();
             await stopEventPromise;
             assert.strictEqual(stepEventHandlerStub.getCalls().length, 2);
@@ -137,28 +137,28 @@ describe('RecordingPlayer', () => {
                     createCustomStep(),
                 ],
             }, {
-                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */,
+                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
                 breakpointIndexes: new Set([1]),
             });
             const stepEventHandlerStub = sinon.stub().callsFake(async ({ data: { resolve } }) => {
                 resolve();
             });
             let stopEventPromise = new Promise(resolve => {
-                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                     resolve();
                     stopEventPromise = new Promise(nextResolve => {
-                        recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.Stop */, () => {
+                        recordingPlayer.addEventListener("Stop" /* Models.RecordingPlayer.Events.STOP */, () => {
                             nextResolve();
                         }, { once: true });
                     });
                 }, { once: true });
             });
             const doneEventPromise = new Promise(resolve => {
-                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.Done */, () => {
+                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => {
                     resolve();
                 }, { once: true });
             });
-            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.Step */, stepEventHandlerStub);
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, stepEventHandlerStub);
             void recordingPlayer.play();
             await stopEventPromise;
             assert.strictEqual(stepEventHandlerStub.getCalls().length, 2);

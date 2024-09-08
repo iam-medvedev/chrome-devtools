@@ -393,11 +393,11 @@ export class DebuggerModel extends SDKModel {
         }
         columnNumber = Math.max(columnNumber || 0, minColumnNumber);
         const response = await this.agent.invoke_setBreakpointByUrl({
-            lineNumber: lineNumber,
+            lineNumber,
             url: urlRegex ? undefined : url,
-            urlRegex: urlRegex,
-            columnNumber: columnNumber,
-            condition: condition,
+            urlRegex,
+            columnNumber,
+            condition,
         });
         if (response.getError()) {
             return { locations: [], breakpointId: null };
@@ -409,7 +409,7 @@ export class DebuggerModel extends SDKModel {
         return { locations, breakpointId: response.breakpointId };
     }
     async setBreakpointInAnonymousScript(scriptHash, lineNumber, columnNumber, condition) {
-        const response = await this.agent.invoke_setBreakpointByUrl({ lineNumber: lineNumber, scriptHash: scriptHash, columnNumber: columnNumber, condition: condition });
+        const response = await this.agent.invoke_setBreakpointByUrl({ lineNumber, scriptHash, columnNumber, condition });
         if (response.getError()) {
             return { locations: [], breakpointId: null };
         }
@@ -426,7 +426,7 @@ export class DebuggerModel extends SDKModel {
         const response = await this.agent.invoke_getPossibleBreakpoints({
             start: startLocation.payload(),
             end: endLocation ? endLocation.payload() : undefined,
-            restrictToFunction: restrictToFunction,
+            restrictToFunction,
         });
         if (response.getError() || !response.locations) {
             return [];
@@ -747,7 +747,6 @@ export class DebuggerModel extends SDKModel {
         return !error;
     }
     dispose() {
-        this.#sourceMapManagerInternal.dispose();
         if (this.#debuggerId) {
             debuggerIdToModel.delete(this.#debuggerId);
         }
@@ -969,7 +968,7 @@ export class CallFrame {
         if (!this.#returnValueInternal) {
             return null;
         }
-        const evaluateResponse = await this.debuggerModel.agent.invoke_evaluateOnCallFrame({ callFrameId: this.id, expression: expression, silent: true, objectGroup: 'backtrace' });
+        const evaluateResponse = await this.debuggerModel.agent.invoke_evaluateOnCallFrame({ callFrameId: this.id, expression, silent: true, objectGroup: 'backtrace' });
         if (evaluateResponse.getError() || evaluateResponse.exceptionDetails) {
             return null;
         }
@@ -1009,7 +1008,7 @@ export class CallFrame {
         });
         const error = response.getError();
         if (error) {
-            return { error: error };
+            return { error };
         }
         return { object: runtimeModel.createRemoteObject(response.result), exceptionDetails: response.exceptionDetails };
     }

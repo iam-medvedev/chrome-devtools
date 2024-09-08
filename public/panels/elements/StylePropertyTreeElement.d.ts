@@ -75,10 +75,10 @@ export declare class BezierRenderer implements MatchRenderer<BezierMatch> {
 export declare const enum ShadowPropertyType {
     X = "x",
     Y = "y",
-    Spread = "spread",
-    Blur = "blur",
-    Inset = "inset",
-    Color = "color"
+    SPREAD = "spread",
+    BLUR = "blur",
+    INSET = "inset",
+    COLOR = "color"
 }
 type ShadowProperty = {
     value: string | CodeMirror.SyntaxNode;

@@ -11,7 +11,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime, } from './AppenderUtils.js';
 import { entryIsVisibleInTimeline, } from './CompatibilityTracksAppender.js';
-import { getCategoryStyles, getEventStyle } from './EventUICategory.js';
+import * as Components from './components/components.js';
 import * as ModificationsManager from './ModificationsManager.js';
 const UIStrings = {
     /**
@@ -504,18 +504,19 @@ export class ThreadAppender {
         }
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             if (event.callFrame.functionName === '(idle)') {
-                return getCategoryStyles().idle.getComputedColorValue();
+                return Components.EntryStyles.getCategoryStyles().idle.getComputedColorValue();
             }
             if (event.callFrame.scriptId === '0') {
                 // If we can not match this frame to a script, return the
                 // generic "scripting" color.
-                return getCategoryStyles().scripting.getComputedColorValue();
+                return Components.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
             }
             // Otherwise, return a color created based on its URL.
             return this.#colorGenerator.colorForID(event.callFrame.url);
         }
-        const defaultColor = getEventStyle(event.name)?.category.getComputedColorValue();
-        return defaultColor || getCategoryStyles().other.getComputedColorValue();
+        const defaultColor = Components.EntryStyles.getEventStyle(event.name)
+            ?.category.getComputedColorValue();
+        return defaultColor || Components.EntryStyles.getCategoryStyles().other.getComputedColorValue();
     }
     /**
      * Gets the title an event added by this appender should be rendered with.
@@ -546,7 +547,7 @@ export class ThreadAppender {
             // add the type ("click") to help the user understand the event.
             return i18nString(UIStrings.eventDispatchS, { PH1: entry.args.data.type });
         }
-        const defaultName = getEventStyle(entry.name)?.title;
+        const defaultName = Components.EntryStyles.getEventStyle(entry.name)?.title;
         return defaultName || entry.name;
     }
     /**

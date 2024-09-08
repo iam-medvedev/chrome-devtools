@@ -128,7 +128,7 @@ export class DOMDebuggerModel extends SDKModel {
             insertion = auxData['insertion'] || false;
             targetNode = this.#domModel.nodeForId(auxData['targetNodeId']);
         }
-        return { type: type, node: node, targetNode: targetNode, insertion: insertion };
+        return { type, node, targetNode, insertion };
     }
     currentURL() {
         const domDocument = this.#domModel.existingDocument();
@@ -528,7 +528,7 @@ export class DOMDebuggerManager {
         }
     }
     updateCSPViolationBreakpointsForModel(model, violationTypes) {
-        void model.agent.invoke_setBreakOnCSPViolation({ violationTypes: violationTypes });
+        void model.agent.invoke_setBreakOnCSPViolation({ violationTypes });
     }
     xhrBreakpoints() {
         return this.#xhrBreakpointsInternal;
@@ -536,7 +536,7 @@ export class DOMDebuggerManager {
     saveXHRBreakpoints() {
         const breakpoints = [];
         for (const url of this.#xhrBreakpointsInternal.keys()) {
-            breakpoints.push({ url: url, enabled: this.#xhrBreakpointsInternal.get(url) || false });
+            breakpoints.push({ url, enabled: this.#xhrBreakpointsInternal.get(url) || false });
         }
         this.#xhrBreakpointsSetting.set(breakpoints);
     }
@@ -574,7 +574,7 @@ export class DOMDebuggerManager {
     modelAdded(domDebuggerModel) {
         for (const url of this.#xhrBreakpointsInternal.keys()) {
             if (this.#xhrBreakpointsInternal.get(url)) {
-                void domDebuggerModel.agent.invoke_setXHRBreakpoint({ url: url });
+                void domDebuggerModel.agent.invoke_setXHRBreakpoint({ url });
             }
         }
         for (const breakpoint of this.#eventListenerBreakpointsInternal) {

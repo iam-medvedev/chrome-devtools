@@ -1172,7 +1172,7 @@ export class NetworkRequestNode extends NetworkNode {
                 this.setTextAndTitleAsLink(cell, i18nString(UIStrings.blockeds, { PH1: reason }), i18nString(UIStrings.blockedTooltip), () => {
                     this.parentView().dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, {
                         showPanel: true,
-                        tab: "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
+                        tab: "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */,
                     });
                 });
             }

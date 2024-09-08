@@ -36,8 +36,8 @@ export declare class RecordingFinishedEvent extends Event {
     constructor();
 }
 export declare const enum TargetPanel {
-    PerformancePanel = "timeline",
-    Default = "chrome-recorder"
+    PERFORMANCE_PANEL = "timeline",
+    DEFAULT = "chrome-recorder"
 }
 interface PlayRecordingEventData {
     targetPanel: TargetPanel;

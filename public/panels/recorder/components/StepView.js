@@ -292,11 +292,11 @@ function viewFunction(input, _output, target) {
     const stepClasses = {
         step: true,
         expanded: input.showDetails,
-        'is-success': input.state === "success" /* State.Success */,
-        'is-current': input.state === "current" /* State.Current */,
-        'is-outstanding': input.state === "outstanding" /* State.Outstanding */,
-        'is-error': input.state === "error" /* State.Error */,
-        'is-stopped': input.state === "stopped" /* State.Stopped */,
+        'is-success': input.state === "success" /* State.SUCCESS */,
+        'is-current': input.state === "current" /* State.CURRENT */,
+        'is-outstanding': input.state === "outstanding" /* State.OUTSTANDING */,
+        'is-error': input.state === "error" /* State.ERROR */,
+        'is-stopped': input.state === "stopped" /* State.STOPPED */,
         'is-start-of-group': input.isStartOfGroup,
         'is-first-section': input.isFirstSection,
         'has-breakpoint': input.hasBreakpoint,
@@ -381,7 +381,7 @@ export class StepView extends HTMLElement {
         this.#viewInput.isVisible = result[0].isIntersecting;
     });
     #viewInput = {
-        state: "default" /* State.Default */,
+        state: "default" /* State.DEFAULT */,
         showDetails: false,
         isEndOfGroup: false,
         isStartOfGroup: false,

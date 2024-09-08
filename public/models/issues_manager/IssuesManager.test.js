@@ -128,8 +128,8 @@ describeWithMockConnection('IssuesManager', () => {
         // These settings have been updated by clicking on "hide issue" and cause the updateHiddenIssues
         // method to be called. These issues are being added to the IssuesManager after this has happened.
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);
@@ -160,12 +160,12 @@ describeWithMockConnection('IssuesManager', () => {
         }
         // Setting is updated by clicking on "hide issue".
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         assert.deepStrictEqual(hiddenIssues, ['HiddenStubIssue1']);
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         assert.deepStrictEqual(hiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2']);
     });
@@ -183,10 +183,10 @@ describeWithMockConnection('IssuesManager', () => {
             issuesManager.addIssue(model, issue);
         }
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'UnhiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            UnhiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            UnhiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         let unhiddenIssues = [];
         issuesManager.addEventListener("FullUpdateRequired" /* IssuesManager.IssuesManager.Events.FULL_UPDATE_REQUIRED */, () => {
@@ -199,17 +199,17 @@ describeWithMockConnection('IssuesManager', () => {
         });
         // Setting updated by clicking on "unhide issue"
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'UnhiddenStubIssue1': "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
-            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            UnhiddenStubIssue1: "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
+            UnhiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         assert.deepStrictEqual(unhiddenIssues, ['UnhiddenStubIssue1']);
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'UnhiddenStubIssue1': "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
-            'UnhiddenStubIssue2': "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            UnhiddenStubIssue1: "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
+            UnhiddenStubIssue2: "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
         });
         assert.deepStrictEqual(unhiddenIssues, ['UnhiddenStubIssue1', 'UnhiddenStubIssue2']);
     });
@@ -227,10 +227,10 @@ describeWithMockConnection('IssuesManager', () => {
             issuesManager.addIssue(model, issue);
         }
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'UnhiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
-            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            UnhiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            UnhiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         let unhiddenIssues = [];
         issuesManager.addEventListener("FullUpdateRequired" /* IssuesManager.IssuesManager.Events.FULL_UPDATE_REQUIRED */, () => {

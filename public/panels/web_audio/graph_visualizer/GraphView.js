@@ -79,7 +79,7 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
      * Add a Node-to-Node connection to the graph.
      */
     addNodeToNodeConnection(edgeData) {
-        const edge = new EdgeView(edgeData, "NodeToNode" /* EdgeTypes.NodeToNode */);
+        const edge = new EdgeView(edgeData, "NodeToNode" /* EdgeTypes.NODE_TO_NODE */);
         this.addEdge(edge);
     }
     /**
@@ -88,7 +88,7 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
     removeNodeToNodeConnection(edgeData) {
         if (edgeData.destinationId) {
             // Remove a single edge if destinationId is specified.
-            const edgePortIds = generateEdgePortIdsByData(edgeData, "NodeToNode" /* EdgeTypes.NodeToNode */);
+            const edgePortIds = generateEdgePortIdsByData(edgeData, "NodeToNode" /* EdgeTypes.NODE_TO_NODE */);
             if (!edgePortIds) {
                 throw new Error('Unable to generate edge port IDs');
             }
@@ -104,14 +104,14 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
      * Add a Node-to-Param connection to the graph.
      */
     addNodeToParamConnection(edgeData) {
-        const edge = new EdgeView(edgeData, "NodeToParam" /* EdgeTypes.NodeToParam */);
+        const edge = new EdgeView(edgeData, "NodeToParam" /* EdgeTypes.NODE_TO_PARAM */);
         this.addEdge(edge);
     }
     /**
      * Remove a Node-to-Param connection from the graph.
      */
     removeNodeToParamConnection(edgeData) {
-        const edgePortIds = generateEdgePortIdsByData(edgeData, "NodeToParam" /* EdgeTypes.NodeToParam */);
+        const edgePortIds = generateEdgePortIdsByData(edgeData, "NodeToParam" /* EdgeTypes.NODE_TO_PARAM */);
         if (!edgePortIds) {
             throw new Error('Unable to generate edge port IDs');
         }
@@ -159,7 +159,7 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
         this.notifyShouldRedraw();
     }
     notifyShouldRedraw() {
-        this.dispatchEventToListeners("ShouldRedraw" /* Events.ShouldRedraw */, this);
+        this.dispatchEventToListeners("ShouldRedraw" /* Events.SHOULD_REDRAW */, this);
     }
 }
 //# sourceMappingURL=GraphView.js.map

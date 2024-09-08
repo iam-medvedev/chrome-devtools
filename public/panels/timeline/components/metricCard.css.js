@@ -127,7 +127,8 @@ styles.replaceSync(
 }
 
 .tooltip {
-  display: none;
+  visibility: hidden;
+  transition-property: visibility;
   width: min(var(--tooltip-container-width, 350px), 350px);
   max-width: max-content;
   position: absolute;

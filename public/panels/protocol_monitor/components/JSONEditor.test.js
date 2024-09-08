@@ -38,30 +38,30 @@ describeWithEnvironment('JSONEditor', () => {
                     },
                     'Test.test2': {
                         parameters: [{
-                                'optional': true,
-                                'type': 'array',
-                                'name': 'test2',
-                                'typeRef': 'string',
+                                optional: true,
+                                type: 'array',
+                                name: 'test2',
+                                typeRef: 'string',
                             }],
                     },
                     'Test.test3': {
                         parameters: [{
-                                'optional': false,
-                                'type': 'object',
-                                'value': [
+                                optional: false,
+                                type: 'object',
+                                value: [
                                     {
-                                        'optional': true,
-                                        'type': 'string',
-                                        'name': 'param1',
+                                        optional: true,
+                                        type: 'string',
+                                        name: 'param1',
                                     },
                                     {
-                                        'optional': true,
-                                        'type': 'string',
-                                        'name': 'param2',
+                                        optional: true,
+                                        type: 'string',
+                                        name: 'param2',
                                     },
                                 ],
-                                'name': 'test3',
-                                'typeRef': 'string',
+                                name: 'test3',
+                                typeRef: 'string',
                             }],
                     },
                     'Test.test4': {
@@ -119,11 +119,11 @@ describeWithEnvironment('JSONEditor', () => {
                     'Test.test9': {
                         parameters: [
                             {
-                                'name': 'traceConfig',
-                                'type': 'object',
-                                'optional': false,
-                                'description': '',
-                                'typeRef': 'Tracing.TraceConfig',
+                                name: 'traceConfig',
+                                type: 'object',
+                                optional: false,
+                                description: '',
+                                typeRef: 'Tracing.TraceConfig',
                             },
                         ],
                         description: 'Description9.',
@@ -132,11 +132,11 @@ describeWithEnvironment('JSONEditor', () => {
                     'Test.test10': {
                         parameters: [
                             {
-                                'name': 'NoTypeRef',
-                                'type': 'object',
-                                'optional': true,
-                                'description': '',
-                                'typeRef': 'NoTypeRef',
+                                name: 'NoTypeRef',
+                                type: 'object',
+                                optional: true,
+                                description: '',
+                                typeRef: 'NoTypeRef',
                             },
                         ],
                         description: 'Description10.',
@@ -144,30 +144,30 @@ describeWithEnvironment('JSONEditor', () => {
                     },
                     'Test.test11': {
                         parameters: [{
-                                'optional': false,
-                                'type': 'array',
-                                'name': 'test11',
-                                'typeRef': 'Test.arrayTypeRef',
+                                optional: false,
+                                type: 'array',
+                                name: 'test11',
+                                typeRef: 'Test.arrayTypeRef',
                             }],
                     },
                     'Test.test12': {
                         parameters: [{
-                                'optional': true,
-                                'type': 'object',
-                                'value': [
+                                optional: true,
+                                type: 'object',
+                                value: [
                                     {
-                                        'optional': false,
-                                        'type': 'string',
-                                        'name': 'param1',
+                                        optional: false,
+                                        type: 'string',
+                                        name: 'param1',
                                     },
                                     {
-                                        'optional': false,
-                                        'type': 'number',
-                                        'name': 'param2',
+                                        optional: false,
+                                        type: 'number',
+                                        name: 'param2',
                                     },
                                 ],
-                                'name': 'test12',
-                                'typeRef': 'Optional.Object',
+                                name: 'test12',
+                                typeRef: 'Optional.Object',
                             }],
                     },
                     'Test.test13': {
@@ -183,10 +183,10 @@ describeWithEnvironment('JSONEditor', () => {
                     'Test.test14': {
                         parameters: [
                             {
-                                'name': 'NoTypeRef',
-                                'type': 'object',
-                                'optional': true,
-                                'description': '',
+                                name: 'NoTypeRef',
+                                type: 'object',
+                                optional: true,
+                                description: '',
                             },
                         ],
                         description: 'Description14.',
@@ -318,9 +318,9 @@ describeWithEnvironment('JSONEditor', () => {
     describe('Binding input bar', () => {
         it('should show the command written in the input bar inside the editor when parameters are strings with the correct value', async () => {
             const cdpCommand = {
-                'command': 'Test.test',
-                'parameters': {
-                    'test': 'test',
+                command: 'Test.test',
+                parameters: {
+                    test: 'test',
                 },
             };
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
@@ -332,9 +332,9 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('should show the command written in the input bar inside the editor when parameters are arrays with the correct value', async () => {
             const cdpCommand = {
-                'command': 'Test.test2',
-                'parameters': {
-                    'test2': ['test'],
+                command: 'Test.test2',
+                parameters: {
+                    test2: ['test'],
                 },
             };
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
@@ -346,11 +346,11 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('should show the command written in the input bar inside the editor when parameters are object with the correct value', async () => {
             const cdpCommand = {
-                'command': 'Test.test3',
-                'parameters': {
-                    'test3': {
-                        'param1': 'test1',
-                        'param2': 'test2',
+                command: 'Test.test3',
+                parameters: {
+                    test3: {
+                        param1: 'test1',
+                        param2: 'test2',
                     },
                 },
             };
@@ -363,9 +363,9 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('should should every parameter of a command as undefined even if some parameters have not been entered inside the input bar', async () => {
             const cdpCommand = {
-                'command': 'Test.test5',
-                'parameters': {
-                    'test': 'test',
+                command: 'Test.test5',
+                parameters: {
+                    test: 'test',
                 },
             };
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
@@ -398,8 +398,8 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('checks that the command input field remains empty when there is no command parameter entered', async () => {
             const cdpCommand = {
-                'parameters': {
-                    'test': 'test',
+                parameters: {
+                    test: 'test',
                 },
             };
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
@@ -422,7 +422,7 @@ describeWithEnvironment('JSONEditor', () => {
             jsonEditor.parameters = [
                 {
                     name: 'test',
-                    type: "string" /* ProtocolComponents.JSONEditor.ParameterType.String */,
+                    type: "string" /* ProtocolComponents.JSONEditor.ParameterType.STRING */,
                     description: 'test',
                     optional: false,
                     value: 'test',
@@ -511,7 +511,7 @@ describeWithEnvironment('JSONEditor', () => {
     describe('Suggestion box', () => {
         it('should display suggestion box with correct suggestions when the parameter is an enum', async () => {
             const enumsByName = new Map([
-                ['Test.testRef', { 'Test': 'test', 'Test1': 'test1', 'Test2': 'test2' }],
+                ['Test.testRef', { Test: 'test', Test1: 'test1', Test2: 'test2' }],
             ]);
             const command = 'Test.test';
             const jsonEditor = renderJSONEditor();
@@ -528,7 +528,7 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('should show the suggestion box for enum parameters nested inside arrays', async () => {
             const enumsByName = new Map([
-                ['Test.arrayTypeRef', { 'Test': 'test', 'Test1': 'test1', 'Test2': 'test2' }],
+                ['Test.arrayTypeRef', { Test: 'test', Test1: 'test1', Test2: 'test2' }],
             ]);
             const command = 'Test.test11';
             const jsonEditor = renderJSONEditor();
@@ -569,8 +569,8 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('should update the values inside the suggestion box when the command changes', async () => {
             const enumsByName = new Map();
-            enumsByName.set('Test.testRef', { 'Test': 'test', 'Test1': 'test1', 'Test2': 'test2' });
-            enumsByName.set('Test.newTestRef', { 'NewTest': 'newtest', 'NewTest1': 'newtest1', 'NewTest2': 'newtest2' });
+            enumsByName.set('Test.testRef', { Test: 'test', Test1: 'test1', Test2: 'test2' });
+            enumsByName.set('Test.newTestRef', { NewTest: 'newtest', NewTest1: 'newtest1', NewTest2: 'newtest2' });
             const command = 'Test.test';
             const jsonEditor = renderJSONEditor();
             await populateMetadata(jsonEditor);
@@ -611,14 +611,14 @@ describeWithEnvironment('JSONEditor', () => {
             const typesByName = new Map();
             typesByName.set('Optional.Object', [
                 {
-                    'optional': false,
-                    'type': 'string',
-                    'name': 'param1',
+                    optional: false,
+                    type: 'string',
+                    name: 'param1',
                 },
                 {
-                    'optional': false,
-                    'type': 'number',
-                    'name': 'param2',
+                    optional: false,
+                    type: 'number',
+                    name: 'param2',
                 },
             ]);
             const jsonEditor = renderJSONEditor();
@@ -646,11 +646,11 @@ describeWithEnvironment('JSONEditor', () => {
     describe('Reset to default values', () => {
         it('should reset the value of keys of object parameter to default value when clicking on clear button', async () => {
             const cdpCommand = {
-                'command': 'Test.test3',
-                'parameters': {
-                    'test3': {
-                        'param1': 'test1',
-                        'param2': 'test2',
+                command: 'Test.test3',
+                parameters: {
+                    test3: {
+                        param1: 'test1',
+                        param2: 'test2',
                     },
                 },
             };
@@ -708,14 +708,14 @@ describeWithEnvironment('JSONEditor', () => {
             const typesByName = new Map();
             typesByName.set('Optional.Object', [
                 {
-                    'optional': false,
-                    'type': 'string',
-                    'name': 'param1',
+                    optional: false,
+                    type: 'string',
+                    name: 'param1',
                 },
                 {
-                    'optional': false,
-                    'type': 'number',
-                    'name': 'param2',
+                    optional: false,
+                    type: 'number',
+                    name: 'param2',
                 },
             ]);
             const jsonEditor = renderJSONEditor();
@@ -812,70 +812,70 @@ describeWithEnvironment('JSONEditor', () => {
             const jsonEditor = renderJSONEditor();
             const inputParameters = [
                 {
-                    'optional': true,
-                    'type': 'string',
-                    'value': 'test0',
-                    'name': 'test0',
+                    optional: true,
+                    type: 'string',
+                    value: 'test0',
+                    name: 'test0',
                 },
                 {
-                    'optional': true,
-                    'type': 'string',
-                    'value': 'test1',
-                    'name': 'test1',
+                    optional: true,
+                    type: 'string',
+                    value: 'test1',
+                    name: 'test1',
                 },
                 {
-                    'optional': false,
-                    'type': 'string',
-                    'value': 'test2',
-                    'name': 'test2',
+                    optional: false,
+                    type: 'string',
+                    value: 'test2',
+                    name: 'test2',
                 },
                 {
-                    'optional': true,
-                    'type': 'array',
-                    'value': [
+                    optional: true,
+                    type: 'array',
+                    value: [
                         {
-                            'optional': true,
-                            'type': 'string',
-                            'value': 'param1Value',
-                            'name': 'param1',
+                            optional: true,
+                            type: 'string',
+                            value: 'param1Value',
+                            name: 'param1',
                         },
                         {
-                            'optional': true,
-                            'type': 'string',
-                            'value': 'param2Value',
-                            'name': 'param2',
-                        },
-                    ],
-                    'name': 'test3',
-                },
-                {
-                    'optional': true,
-                    'type': 'object',
-                    'value': [
-                        {
-                            'optional': true,
-                            'type': 'string',
-                            'value': 'param1Value',
-                            'name': 'param1',
-                        },
-                        {
-                            'optional': true,
-                            'type': 'string',
-                            'value': 'param2Value',
-                            'name': 'param2',
+                            optional: true,
+                            type: 'string',
+                            value: 'param2Value',
+                            name: 'param2',
                         },
                     ],
-                    'name': 'test4',
+                    name: 'test3',
+                },
+                {
+                    optional: true,
+                    type: 'object',
+                    value: [
+                        {
+                            optional: true,
+                            type: 'string',
+                            value: 'param1Value',
+                            name: 'param1',
+                        },
+                        {
+                            optional: true,
+                            type: 'string',
+                            value: 'param2Value',
+                            name: 'param2',
+                        },
+                    ],
+                    name: 'test4',
                 },
             ];
             const expectedParameters = {
-                'test0': 'test0',
-                'test1': 'test1',
-                'test2': 'test2',
-                'test3': ['param1Value', 'param2Value'],
-                'test4': {
-                    'param1': 'param1Value',
-                    'param2': 'param2Value',
+                test0: 'test0',
+                test1: 'test1',
+                test2: 'test2',
+                test3: ['param1Value', 'param2Value'],
+                test4: {
+                    param1: 'param1Value',
+                    param2: 'param2Value',
                 },
             };
             jsonEditor.parameters = inputParameters;
@@ -890,7 +890,7 @@ describeWithEnvironment('JSONEditor', () => {
             jsonEditor.parameters = [
                 {
                     name: 'testName',
-                    type: "string" /* ProtocolComponents.JSONEditor.ParameterType.String */,
+                    type: "string" /* ProtocolComponents.JSONEditor.ParameterType.STRING */,
                     description: 'test',
                     optional: false,
                     value: 'testValue',
@@ -906,7 +906,7 @@ describeWithEnvironment('JSONEditor', () => {
             toolbar.dispatchEvent(event);
             const response = await responsePromise;
             const expectedParameters = {
-                'testName': 'testValue',
+                testName: 'testValue',
             };
             assert.deepStrictEqual(response.data.parameters, expectedParameters);
         });
@@ -924,7 +924,7 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('should show a warning icon if the type of the parameter is enum but the entered value is not among the accepted values', async () => {
             const enumsByName = new Map([
-                ['Test.testRef', { 'Test': 'test', 'Test1': 'test1', 'Test2': 'test2' }],
+                ['Test.testRef', { Test: 'test', Test1: 'test1', Test2: 'test2' }],
             ]);
             const command = 'Test.test';
             const warningIcon = await renderWarningIcon(command, enumsByName);
@@ -959,7 +959,7 @@ describeWithEnvironment('JSONEditor', () => {
         jsonEditor.parameters = [
             {
                 name: 'test',
-                type: "string" /* ProtocolComponents.JSONEditor.ParameterType.String */,
+                type: "string" /* ProtocolComponents.JSONEditor.ParameterType.STRING */,
                 description: 'test',
                 optional: false,
                 value: 'test',
@@ -974,7 +974,7 @@ describeWithEnvironment('JSONEditor', () => {
         const event = new ProtocolComponents.Toolbar.CopyCommandEvent();
         toolbar.dispatchEvent(event);
         const [text] = await copyText;
-        assert.strictEqual(JSON.stringify({ command: 'Test.test', parameters: { 'test': 'test' } }), text);
+        assert.strictEqual(JSON.stringify({ command: 'Test.test', parameters: { test: 'test' } }), text);
     });
     it('should display the correct parameters with a command with array nested inside object', async () => {
         const command = 'Test.test9';
@@ -982,39 +982,39 @@ describeWithEnvironment('JSONEditor', () => {
         // This nested object contains every subtype including array
         typesByName.set('Tracing.TraceConfig', [
             {
-                'name': 'recordMode',
-                'type': 'string',
-                'optional': true,
-                'description': 'Controls how the trace buffer stores data.',
-                'typeRef': null,
+                name: 'recordMode',
+                type: 'string',
+                optional: true,
+                description: 'Controls how the trace buffer stores data.',
+                typeRef: null,
             },
             {
-                'name': 'traceBufferSizeInKb',
-                'type': 'number',
-                'optional': true,
-                'description': 'Size of the trace buffer in kilobytes. If not specified or zero is passed, a default value of 200 MB would be used.',
-                'typeRef': null,
+                name: 'traceBufferSizeInKb',
+                type: 'number',
+                optional: true,
+                description: 'Size of the trace buffer in kilobytes. If not specified or zero is passed, a default value of 200 MB would be used.',
+                typeRef: null,
             },
             {
-                'name': 'enableSystrace',
-                'type': 'boolean',
-                'optional': true,
-                'description': 'Turns on system tracing.',
-                'typeRef': null,
+                name: 'enableSystrace',
+                type: 'boolean',
+                optional: true,
+                description: 'Turns on system tracing.',
+                typeRef: null,
             },
             {
-                'name': 'includedCategories',
-                'type': 'array',
-                'optional': true,
-                'description': 'Included category filters.',
-                'typeRef': 'string',
+                name: 'includedCategories',
+                type: 'array',
+                optional: true,
+                description: 'Included category filters.',
+                typeRef: 'string',
             },
             {
-                'name': 'memoryDumpConfig',
-                'type': 'object',
-                'optional': true,
-                'description': 'Configuration for memory dump triggers. Used only when \\"memory-infra\\" category is enabled.',
-                'typeRef': 'Tracing.MemoryDumpConfig', // This typeref is on purpose not added to show that this param will be treated as a string parameter
+                name: 'memoryDumpConfig',
+                type: 'object',
+                optional: true,
+                description: 'Configuration for memory dump triggers. Used only when \\"memory-infra\\" category is enabled.',
+                typeRef: 'Tracing.MemoryDumpConfig', // This typeref is on purpose not added to show that this param will be treated as a string parameter
             },
         ]);
         const jsonEditor = renderJSONEditor();
@@ -1035,11 +1035,11 @@ describeWithEnvironment('JSONEditor', () => {
         // We set the map typesBynames without the key NoTypeRef
         typesByName.set('Tracing.TraceConfig', [
             {
-                'name': 'memoryDumpConfig',
-                'type': 'object',
-                'optional': true,
-                'description': 'Configuration for memory dump triggers. Used only when \\"memory-infra\\" category is enabled.',
-                'typeRef': 'Tracing.MemoryDumpConfig', // This typeref is on purpose not added to show that this param will be treated as a string parameter
+                name: 'memoryDumpConfig',
+                type: 'object',
+                optional: true,
+                description: 'Configuration for memory dump triggers. Used only when \\"memory-infra\\" category is enabled.',
+                typeRef: 'Tracing.MemoryDumpConfig', // This typeref is on purpose not added to show that this param will be treated as a string parameter
             },
         ]);
         const jsonEditor = renderJSONEditor();
@@ -1093,9 +1093,9 @@ describeWithEnvironment('JSONEditor', () => {
         dispatchKeyDownEvent(jsonEditor, { key: 'Enter', ctrlKey: true, metaKey: true });
         const response = await responsePromise;
         const expectedParameters = {
-            'NoTypeRef': {
-                'testName1': 'testValue1',
-                'testName2': 'testValue2',
+            NoTypeRef: {
+                testName1: 'testValue1',
+                testName2: 'testValue2',
             },
         };
         assert.deepStrictEqual(response.data.parameters, expectedParameters);

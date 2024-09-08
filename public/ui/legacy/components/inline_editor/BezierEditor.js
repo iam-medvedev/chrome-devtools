@@ -96,7 +96,7 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     }
     onchange() {
         this.updateUI();
-        this.dispatchEventToListeners("BezierChanged" /* Events.BezierChanged */, this.model.asCSSText());
+        this.dispatchEventToListeners("BezierChanged" /* Events.BEZIER_CHANGED */, this.model.asCSSText());
     }
     updateUI() {
         const labelText = this.selectedCategory ? this.selectedCategory.presets[this.selectedCategory.presetIndex].name :

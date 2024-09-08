@@ -200,7 +200,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             headerCount: this.#request.earlyHintsHeaders.length,
             checked: undefined,
             additionalContent: undefined,
-            forceOpen: this.#toReveal?.section === "EarlyHints" /* NetworkForward.UIRequestLocation.UIHeaderSection.EarlyHints */,
+            forceOpen: this.#toReveal?.section === "EarlyHints" /* NetworkForward.UIRequestLocation.UIHeaderSection.EARLY_HINTS */,
             loggingContext: 'early-hints-headers',
         }}
         aria-label=${i18nString(UIStrings.earlyHintsHeaders)}
@@ -235,7 +235,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             headerCount: this.#request.sortedResponseHeaders.length,
             checked: this.#request.responseHeadersText ? this.#showResponseHeadersText : undefined,
             additionalContent: this.#renderHeaderOverridesLink(),
-            forceOpen: this.#toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */,
+            forceOpen: this.#toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */,
             loggingContext: 'response-headers',
         }}
         aria-label=${i18nString(UIStrings.responseHeaders)}
@@ -327,7 +327,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             title: i18nString(UIStrings.requestHeaders),
             headerCount: this.#request.requestHeaders().length,
             checked: requestHeadersText ? this.#showRequestHeadersText : undefined,
-            forceOpen: this.#toReveal?.section === "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.Request */,
+            forceOpen: this.#toReveal?.section === "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.REQUEST */,
             loggingContext: 'request-headers',
         }}
         aria-label=${i18nString(UIStrings.requestHeaders)}
@@ -434,7 +434,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         .data=${{
             name: 'general',
             title: i18nString(UIStrings.general),
-            forceOpen: this.#toReveal?.section === "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.General */,
+            forceOpen: this.#toReveal?.section === "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.GENERAL */,
             loggingContext: 'general',
         }}
         aria-label=${i18nString(UIStrings.general)}
@@ -451,7 +451,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // clang-format on
     }
     #renderGeneralRow(name, value, classNames) {
-        const isHighlighted = this.#toReveal?.section === "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.General */ &&
+        const isHighlighted = this.#toReveal?.section === "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.GENERAL */ &&
             name.toLowerCase() === this.#toReveal?.header?.toLowerCase();
         return html `
       <div class="row ${isHighlighted ? 'header-highlight' : ''}">

@@ -173,7 +173,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
         this.nameFilter = null;
         this.nodeFilterInternal = new HeapSnapshotModel.HeapSnapshotModel.NodeFilter();
         this.addEventListener(HeapSnapshotSortableDataGridEvents.SortingComplete, this.sortingComplete, this);
-        this.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
+        this.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
         this.setRowContextMenuCallback(this.populateContextMenu.bind(this));
     }
     async setDataSource(_snapshot, _nodeIndex) {
@@ -209,7 +209,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
     }
     wasShown() {
         if (this.nameFilter) {
-            this.nameFilter.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onNameFilterChanged, this);
+            this.nameFilter.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onNameFilterChanged, this);
             this.updateVisibleNodes(true);
         }
         if (this.populatedAndSorted) {
@@ -223,7 +223,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
     }
     willHide() {
         if (this.nameFilter) {
-            this.nameFilter.removeEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onNameFilterChanged, this);
+            this.nameFilter.removeEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onNameFilterChanged, this);
         }
     }
     populateContextMenu(contextMenu, gridNode) {
@@ -351,9 +351,11 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
 }
 export var HeapSnapshotSortableDataGridEvents;
 (function (HeapSnapshotSortableDataGridEvents) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     HeapSnapshotSortableDataGridEvents["ContentShown"] = "ContentShown";
     HeapSnapshotSortableDataGridEvents["SortingComplete"] = "SortingComplete";
     HeapSnapshotSortableDataGridEvents["ExpandRetainersComplete"] = "ExpandRetainersComplete";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(HeapSnapshotSortableDataGridEvents || (HeapSnapshotSortableDataGridEvents = {}));
 export class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDataGrid {
     topPaddingHeight;
@@ -655,7 +657,9 @@ export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataG
 // TODO(crbug.com/1228674): Remove this enum, it is only used in web tests.
 export var HeapSnapshotRetainmentDataGridEvents;
 (function (HeapSnapshotRetainmentDataGridEvents) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     HeapSnapshotRetainmentDataGridEvents["ExpandRetainersComplete"] = "ExpandRetainersComplete";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(HeapSnapshotRetainmentDataGridEvents || (HeapSnapshotRetainmentDataGridEvents = {}));
 export class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewportDataGrid {
     profileIndex;

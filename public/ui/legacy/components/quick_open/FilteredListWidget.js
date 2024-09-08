@@ -85,7 +85,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         this.itemElementsContainer.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         UI.ARIAUtils.markAsListBox(this.itemElementsContainer);
         UI.ARIAUtils.setControls(this.inputBoxElement, this.itemElementsContainer);
-        UI.ARIAUtils.setAutocomplete(this.inputBoxElement, "list" /* UI.ARIAUtils.AutocompleteInteractionModel.List */);
+        UI.ARIAUtils.setAutocomplete(this.inputBoxElement, "list" /* UI.ARIAUtils.AutocompleteInteractionModel.LIST */);
         this.notFoundElement = this.bottomElementsContainer.createChild('div', 'not-found-text');
         this.notFoundElement.classList.add('hidden');
         this.setDefaultFocusedElement(this.inputBoxElement);
@@ -148,13 +148,13 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         this.dialog = new UI.Dialog.Dialog('quick-open');
         UI.ARIAUtils.setLabel(this.dialog.contentElement, dialogTitle);
         this.dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
-        this.dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight */);
+        this.dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         this.dialog.setContentPosition(null, 22);
         this.dialog.contentElement.style.setProperty('border-radius', '4px');
         this.show(this.dialog.contentElement);
         UI.ARIAUtils.setExpanded(this.contentElement, true);
-        void this.dialog.once("hidden" /* UI.Dialog.Events.Hidden */).then(() => {
-            this.dispatchEventToListeners("hidden" /* Events.Hidden */);
+        void this.dialog.once("hidden" /* UI.Dialog.Events.HIDDEN */).then(() => {
+            this.dispatchEventToListeners("hidden" /* Events.HIDDEN */);
         });
         // @ts-ignore
         this.dialog.show();

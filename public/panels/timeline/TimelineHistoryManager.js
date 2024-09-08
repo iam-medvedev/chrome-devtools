@@ -388,10 +388,10 @@ export class DropDown {
     selectionDone;
     constructor(availableTraceDataIndexes) {
         this.glassPane = new UI.GlassPane.GlassPane();
-        this.glassPane.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
+        this.glassPane.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
         this.glassPane.setOutsideClickCallback(() => this.close(null));
-        this.glassPane.setPointerEventsBehavior("BlockedByGlassPane" /* UI.GlassPane.PointerEventsBehavior.BlockedByGlassPane */);
-        this.glassPane.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PreferBottom */);
+        this.glassPane.setPointerEventsBehavior("BlockedByGlassPane" /* UI.GlassPane.PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
+        this.glassPane.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PREFER_BOTTOM */);
         this.glassPane.element.addEventListener('blur', () => this.close(null));
         const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, {
             cssFile: [timelineHistoryManagerStyles],
@@ -527,7 +527,7 @@ export class ToolbarButton extends UI.Toolbar.ToolbarItem {
         this.contentElement = this.element.createChild('span', 'content');
         this.element.addEventListener('click', () => void action.execute(), false);
         this.setEnabled(action.enabled());
-        action.addEventListener("Enabled" /* UI.ActionRegistration.Events.Enabled */, event => this.setEnabled(event.data));
+        action.addEventListener("Enabled" /* UI.ActionRegistration.Events.ENABLED */, event => this.setEnabled(event.data));
         this.setTitle(action.title());
     }
     setText(text) {

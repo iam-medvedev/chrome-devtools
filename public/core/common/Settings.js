@@ -428,10 +428,10 @@ export class Setting {
             return this.#registration.options.map(opt => {
                 const { value, title, text, raw } = opt;
                 return {
-                    value: value,
+                    value,
                     title: title(),
                     text: typeof text === 'function' ? text() : text,
-                    raw: raw,
+                    raw,
                 };
             });
         }
@@ -591,25 +591,25 @@ export class VersionController {
     }
     updateVersionFrom4To5() {
         const settingNames = {
-            'FileSystemViewSidebarWidth': 'fileSystemViewSplitViewState',
-            'elementsSidebarWidth': 'elementsPanelSplitViewState',
-            'StylesPaneSplitRatio': 'stylesPaneSplitViewState',
-            'heapSnapshotRetainersViewSize': 'heapSnapshotSplitViewState',
+            FileSystemViewSidebarWidth: 'fileSystemViewSplitViewState',
+            elementsSidebarWidth: 'elementsPanelSplitViewState',
+            StylesPaneSplitRatio: 'stylesPaneSplitViewState',
+            heapSnapshotRetainersViewSize: 'heapSnapshotSplitViewState',
             'InspectorView.splitView': 'InspectorView.splitViewState',
             'InspectorView.screencastSplitView': 'InspectorView.screencastSplitViewState',
             'Inspector.drawerSplitView': 'Inspector.drawerSplitViewState',
-            'layerDetailsSplitView': 'layerDetailsSplitViewState',
-            'networkSidebarWidth': 'networkPanelSplitViewState',
-            'sourcesSidebarWidth': 'sourcesPanelSplitViewState',
-            'scriptsPanelNavigatorSidebarWidth': 'sourcesPanelNavigatorSplitViewState',
-            'sourcesPanelSplitSidebarRatio': 'sourcesPanelDebuggerSidebarSplitViewState',
+            layerDetailsSplitView: 'layerDetailsSplitViewState',
+            networkSidebarWidth: 'networkPanelSplitViewState',
+            sourcesSidebarWidth: 'sourcesPanelSplitViewState',
+            scriptsPanelNavigatorSidebarWidth: 'sourcesPanelNavigatorSplitViewState',
+            sourcesPanelSplitSidebarRatio: 'sourcesPanelDebuggerSidebarSplitViewState',
             'timeline-details': 'timelinePanelDetailsSplitViewState',
             'timeline-split': 'timelinePanelRecorsSplitViewState',
             'timeline-view': 'timelinePanelTimelineStackSplitViewState',
-            'auditsSidebarWidth': 'auditsPanelSplitViewState',
-            'layersSidebarWidth': 'layersPanelSplitViewState',
-            'profilesSidebarWidth': 'profilesPanelSplitViewState',
-            'resourcesSidebarWidth': 'resourcesPanelSplitViewState',
+            auditsSidebarWidth: 'auditsPanelSplitViewState',
+            layersSidebarWidth: 'layersPanelSplitViewState',
+            profilesSidebarWidth: 'profilesPanelSplitViewState',
+            resourcesSidebarWidth: 'resourcesPanelSplitViewState',
         };
         const empty = {};
         for (const oldName in settingNames) {
@@ -641,8 +641,8 @@ export class VersionController {
     }
     updateVersionFrom5To6() {
         const settingNames = {
-            'debuggerSidebarHidden': 'sourcesPanelSplitViewState',
-            'navigatorHidden': 'sourcesPanelNavigatorSplitViewState',
+            debuggerSidebarHidden: 'sourcesPanelSplitViewState',
+            navigatorHidden: 'sourcesPanelNavigatorSplitViewState',
             'WebInspector.Drawer.showOnLoad': 'Inspector.drawerSplitViewState',
         };
         for (const oldName in settingNames) {
@@ -675,10 +675,10 @@ export class VersionController {
     }
     updateVersionFrom6To7() {
         const settingNames = {
-            'sourcesPanelNavigatorSplitViewState': 'sourcesPanelNavigatorSplitViewState',
-            'elementsPanelSplitViewState': 'elementsPanelSplitViewState',
-            'stylesPaneSplitViewState': 'stylesPaneSplitViewState',
-            'sourcesPanelDebuggerSidebarSplitViewState': 'sourcesPanelDebuggerSidebarSplitViewState',
+            sourcesPanelNavigatorSplitViewState: 'sourcesPanelNavigatorSplitViewState',
+            elementsPanelSplitViewState: 'elementsPanelSplitViewState',
+            stylesPaneSplitViewState: 'stylesPaneSplitViewState',
+            sourcesPanelDebuggerSidebarSplitViewState: 'sourcesPanelDebuggerSidebarSplitViewState',
         };
         const empty = {};
         for (const name in settingNames) {
@@ -773,7 +773,7 @@ export class VersionController {
         removeSetting(Settings.instance().createSetting('timelineOverviewMode', ''));
     }
     updateVersionFrom13To14() {
-        const defaultValue = { 'throughput': -1, 'latency': 0 };
+        const defaultValue = { throughput: -1, latency: 0 };
         Settings.instance().createSetting('networkConditions', defaultValue).set(defaultValue);
     }
     updateVersionFrom14To15() {

@@ -66,7 +66,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         const toolbar = new UI.Toolbar.Toolbar('developer-resource-view-toolbar', toolbarContainer);
         this.textFilterRegExp = null;
         this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByText), 1);
-        this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
+        this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(this.filterInput);
         const loadThroughTarget = SDK.PageResourceLoader.getLoadThroughTargetSetting();
         const loadThroughTargetCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(loadThroughTarget, i18nString(UIStrings.loadHttpsDeveloperResources), i18nString(UIStrings.enableLoadingThroughTarget));

@@ -169,13 +169,13 @@ export class LighthousePanel extends UI.Panel.Panel {
         const toolbar = new UI.Toolbar.Toolbar('', lighthouseToolbarContainer);
         this.newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.performAnAudit), 'plus');
         toolbar.appendToolbarItem(this.newButton);
-        this.newButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.renderStartView.bind(this));
+        this.newButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.renderStartView.bind(this));
         toolbar.appendSeparator();
         this.reportSelector = new ReportSelector(() => this.renderStartView());
         toolbar.appendToolbarItem(this.reportSelector.comboBox());
         this.clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'clear');
         toolbar.appendToolbarItem(this.clearButton);
-        this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.clearAll.bind(this));
+        this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.clearAll.bind(this));
         this.settingsPane = new UI.Widget.HBox();
         this.settingsPane.show(this.contentElement);
         this.settingsPane.element.classList.add('lighthouse-settings-pane');

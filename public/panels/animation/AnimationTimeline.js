@@ -236,7 +236,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         const topToolbar = new UI.Toolbar.Toolbar('animation-timeline-toolbar', toolbarContainer);
         this.#clearButton =
             new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'clear', undefined, 'animations.clear');
-        this.#clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.#clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationGroupsCleared);
             this.reset();
         });
@@ -244,7 +244,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         topToolbar.appendSeparator();
         this.#pauseButton =
             new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.pauseAll), 'pause', 'resume', 'animations.pause-resume-all');
-        this.#pauseButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.#pauseButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             this.togglePauseAll();
         });
         topToolbar.appendToolbarItem(this.#pauseButton);
@@ -281,8 +281,8 @@ export class AnimationTimeline extends UI.Widget.VBox {
         const toolbar = new UI.Toolbar.Toolbar('animation-controls-toolbar', controls);
         this.#controlButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.replayTimeline), 'replay', undefined, 'animations.play-replay-pause-animation-group');
         this.#controlButton.element.classList.add('toolbar-state-on');
-        this.#controlState = "replay-outline" /* ControlState.Replay */;
-        this.#controlButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.controlButtonToggle.bind(this));
+        this.#controlState = "replay-outline" /* ControlState.REPLAY */;
+        this.#controlButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.controlButtonToggle.bind(this));
         toolbar.appendToolbarItem(this.#controlButton);
         this.#gridHeader = container.createChild('div', 'animation-grid-header');
         this.#gridHeader.setAttribute('jslog', `${VisualLogging.timeline('animations.grid-header').track({ drag: true, click: true })}`);
@@ -351,10 +351,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
         }
     }
     controlButtonToggle() {
-        if (this.#controlState === "play-outline" /* ControlState.Play */) {
+        if (this.#controlState === "play-outline" /* ControlState.PLAY */) {
             this.togglePause(false);
         }
-        else if (this.#controlState === "replay-outline" /* ControlState.Replay */) {
+        else if (this.#controlState === "replay-outline" /* ControlState.REPLAY */) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationGroupReplayed);
             this.replay();
         }
@@ -368,20 +368,20 @@ export class AnimationTimeline extends UI.Widget.VBox {
         }
         this.#controlButton.setEnabled(Boolean(this.#selectedGroup) && this.hasAnimationGroupActiveNodes() && !this.#selectedGroup?.isScrollDriven());
         if (this.#selectedGroup && this.#selectedGroup.paused()) {
-            this.#controlState = "play-outline" /* ControlState.Play */;
+            this.#controlState = "play-outline" /* ControlState.PLAY */;
             this.#controlButton.element.classList.toggle('toolbar-state-on', true);
             this.#controlButton.setTitle(i18nString(UIStrings.playTimeline));
             this.#controlButton.setGlyph('play');
         }
         else if (!this.#scrubberPlayer || !this.#scrubberPlayer.currentTime ||
             typeof this.#scrubberPlayer.currentTime !== 'number' || this.#scrubberPlayer.currentTime >= this.duration()) {
-            this.#controlState = "replay-outline" /* ControlState.Replay */;
+            this.#controlState = "replay-outline" /* ControlState.REPLAY */;
             this.#controlButton.element.classList.toggle('toolbar-state-on', true);
             this.#controlButton.setTitle(i18nString(UIStrings.replayTimeline));
             this.#controlButton.setGlyph('replay');
         }
         else {
-            this.#controlState = "pause-outline" /* ControlState.Pause */;
+            this.#controlState = "pause-outline" /* ControlState.PAUSE */;
             this.#controlButton.element.classList.toggle('toolbar-state-on', false);
             this.#controlButton.setTitle(i18nString(UIStrings.pauseTimeline));
             this.#controlButton.setGlyph('pause');

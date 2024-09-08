@@ -1,6 +1,6 @@
 import type * as Protocol from '../../../generated/protocol.js';
 import { type TraceWindowMicroSeconds } from './Timing.js';
-import { type ProcessID, type SampleIndex, type ThreadID, type TraceEventData } from './TraceEvents.js';
+import { type LegacyTimelineFrame, type ProcessID, type SampleIndex, type ThreadID, type TraceEventData } from './TraceEvents.js';
 export type TraceFile = {
     traceEvents: readonly TraceEventData[];
     metadata: MetaData;
@@ -16,7 +16,8 @@ export declare const enum DataOrigin {
 export declare const enum EventKeyType {
     RAW_EVENT = "r",
     SYNTHETIC_EVENT = "s",
-    PROFILE_CALL = "p"
+    PROFILE_CALL = "p",
+    LEGACY_TIMELINE_FRAME = "l"
 }
 /**
  * Represents an object that is saved in the file when user created annotations in the timeline.
@@ -33,7 +34,7 @@ export interface SerializedAnnotations {
  */
 export interface EntryLabelAnnotation {
     type: 'ENTRY_LABEL';
-    entry: TraceEventData;
+    entry: TraceEventData | LegacyTimelineFrame;
     label: string;
 }
 /**
@@ -87,7 +88,8 @@ export declare function isEntriesLinkAnnotation(annotation: Annotation): annotat
 export type RawEventKey = `${EventKeyType.RAW_EVENT}-${number}`;
 export type SyntheticEventKey = `${EventKeyType.SYNTHETIC_EVENT}-${number}`;
 export type ProfileCallKey = `${EventKeyType.PROFILE_CALL}-${ProcessID}-${ThreadID}-${SampleIndex}-${Protocol.integer}`;
-export type TraceEventSerializableKey = RawEventKey | ProfileCallKey | SyntheticEventKey;
+export type LegacyTimelineFrameKey = `${EventKeyType.LEGACY_TIMELINE_FRAME}-${number}`;
+export type TraceEventSerializableKey = RawEventKey | ProfileCallKey | SyntheticEventKey | LegacyTimelineFrameKey;
 export type RawEventKeyValues = {
     type: EventKeyType.RAW_EVENT;
     rawIndex: number;
@@ -103,7 +105,11 @@ export type ProfileCallKeyValues = {
     sampleIndex: SampleIndex;
     protocol: Protocol.integer;
 };
-export type TraceEventSerializableKeyValues = RawEventKeyValues | ProfileCallKeyValues | SyntheticEventKeyValues;
+export type LegacyTimelineFrameKeyValues = {
+    type: EventKeyType.LEGACY_TIMELINE_FRAME;
+    rawIndex: number;
+};
+export type TraceEventSerializableKeyValues = RawEventKeyValues | ProfileCallKeyValues | SyntheticEventKeyValues | LegacyTimelineFrameKeyValues;
 export interface Modifications {
     entriesModifications: {
         hiddenEntries: TraceEventSerializableKey[];

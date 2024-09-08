@@ -8,12 +8,12 @@ declare global {
     }
 }
 export declare const enum State {
-    Default = "default",
-    Success = "success",
-    Current = "current",
-    Outstanding = "outstanding",
-    Error = "error",
-    Stopped = "stopped"
+    DEFAULT = "default",
+    SUCCESS = "success",
+    CURRENT = "current",
+    OUTSTANDING = "outstanding",
+    ERROR = "error",
+    STOPPED = "stopped"
 }
 export interface StepViewData {
     state: State;

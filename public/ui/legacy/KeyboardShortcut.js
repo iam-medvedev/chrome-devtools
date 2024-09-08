@@ -46,8 +46,8 @@ export class KeyboardShortcut {
         return this.descriptors.map(descriptor => descriptor.name).join(' ');
     }
     isDefault() {
-        return this.type === "DefaultShortcut" /* Type.DefaultShortcut */ || this.type === "DisabledDefault" /* Type.DisabledDefault */ ||
-            (this.type === "KeybindSetShortcut" /* Type.KeybindSetShortcut */ && this.keybindSets.has(DefaultShortcutSetting));
+        return this.type === "DefaultShortcut" /* Type.DEFAULT_SHORTCUT */ || this.type === "DisabledDefault" /* Type.DISABLED_DEFAULT */ ||
+            (this.type === "KeybindSetShortcut" /* Type.KEYBIND_SET_SHORTCUT */ && this.keybindSets.has(DefaultShortcutSetting));
     }
     changeType(type) {
         return new KeyboardShortcut(this.descriptors, this.action, type);

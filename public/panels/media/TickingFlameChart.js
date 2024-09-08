@@ -321,7 +321,7 @@ class TickingFlameChartDataProvider {
     addGroup(name, depth) {
         if (this.timelineDataInternal.groups) {
             const newGroup = {
-                name: name,
+                name,
                 startLevel: this.maxLevel,
                 expanded: true,
                 selectable: false,

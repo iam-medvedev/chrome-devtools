@@ -23,11 +23,11 @@ export class TimelineLayersView extends UI.SplitWidget.SplitWidget {
         const layerTreeOutline = new LayerViewer.LayerTreeOutline.LayerTreeOutline(this.layerViewHost);
         vbox.element.appendChild(layerTreeOutline.element);
         this.layers3DView = new LayerViewer.Layers3DView.Layers3DView(this.layerViewHost);
-        this.layers3DView.addEventListener("PaintProfilerRequested" /* LayerViewer.Layers3DView.Events.PaintProfilerRequested */, this.onPaintProfilerRequested, this);
+        this.layers3DView.addEventListener("PaintProfilerRequested" /* LayerViewer.Layers3DView.Events.PAINT_PROFILER_REQUESTED */, this.onPaintProfilerRequested, this);
         this.rightSplitWidget.setMainWidget(this.layers3DView);
         const layerDetailsView = new LayerViewer.LayerDetailsView.LayerDetailsView(this.layerViewHost);
         this.rightSplitWidget.setSidebarWidget(layerDetailsView);
-        layerDetailsView.addEventListener("PaintProfilerRequested" /* LayerViewer.LayerDetailsView.Events.PaintProfilerRequested */, this.onPaintProfilerRequested, this);
+        layerDetailsView.addEventListener("PaintProfilerRequested" /* LayerViewer.LayerDetailsView.Events.PAINT_PROFILER_REQUESTED */, this.onPaintProfilerRequested, this);
     }
     showLayerTree(frameLayerTree) {
         this.frameLayerTree = frameLayerTree;

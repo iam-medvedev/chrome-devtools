@@ -6,10 +6,10 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { setupPageResourceLoaderForSourceMap } from '../../testing/SourceMapHelpers.js';
 import * as SDK from './sdk.js';
 const content = JSON.stringify({
-    'version': 3,
-    'file': '/script.js',
-    'mappings': '',
-    'sources': [
+    version: 3,
+    file: '/script.js',
+    mappings: '',
+    sources: [
         '/original-script.js',
     ],
 });

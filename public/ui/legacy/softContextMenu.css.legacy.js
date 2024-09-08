@@ -110,6 +110,7 @@ export default {
   text-align: right;
   padding-left: var(--sys-size-6);
 
+  .soft-context-menu-disabled &,
   .soft-context-menu-item-mouse-over & {
     color: inherit;
   }

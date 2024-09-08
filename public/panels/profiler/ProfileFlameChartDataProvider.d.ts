@@ -105,11 +105,11 @@ export declare class OverviewCalculator implements PerfUI.TimelineGrid.Calculato
 }
 declare const OverviewPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<OverviewPaneEventTypes>;
-    addEventListener<T extends OverviewPaneEvents.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<OverviewPaneEventTypes, T>;
-    once<T extends OverviewPaneEvents.WindowChanged>(eventType: T): Promise<OverviewPaneEventTypes[T]>;
-    removeEventListener<T extends OverviewPaneEvents.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: OverviewPaneEvents.WindowChanged): boolean;
-    dispatchEventToListeners<T extends OverviewPaneEvents.WindowChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<OverviewPaneEventTypes, T>): void;
+    addEventListener<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<OverviewPaneEventTypes, T>;
+    once<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: T): Promise<OverviewPaneEventTypes[T]>;
+    removeEventListener<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: OverviewPaneEvents.WINDOW_CHANGED): boolean;
+    dispatchEventToListeners<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<OverviewPaneEventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class OverviewPane extends OverviewPane_base implements PerfUI.FlameChart.FlameChartDelegate {
     overviewContainer: HTMLElement;
@@ -135,13 +135,13 @@ export declare class OverviewPane extends OverviewPane_base implements PerfUI.Fl
     resetCanvas(width: number, height: number): void;
 }
 export declare const enum OverviewPaneEvents {
-    WindowChanged = "WindowChanged"
+    WINDOW_CHANGED = "WindowChanged"
 }
 export interface OverviewPaneWindowChangedEvent {
     windowTimeLeft: number;
     windowTimeRight: number;
 }
 export type OverviewPaneEventTypes = {
-    [OverviewPaneEvents.WindowChanged]: OverviewPaneWindowChangedEvent;
+    [OverviewPaneEvents.WINDOW_CHANGED]: OverviewPaneWindowChangedEvent;
 };
 export {};

@@ -1,13 +1,49 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../core/common/common.js';
+import * as Host from '../../../core/host/host.js';
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as TraceEngine from '../../../models/trace/trace.js';
 import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
+import * as Settings from '../../../ui/components/settings/settings.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { nameForEntry } from './EntryName.js';
 import { RemoveAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
+const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
+const entryLabelImageUrl = new URL('../../../Images/performance-panel-entry-label.svg', import.meta.url).toString();
+const timeRangeImageUrl = new URL('../../../Images/performance-panel-time-range.svg', import.meta.url).toString();
+const UIStrings = {
+    /**
+     * @description Title for entry label.
+     */
+    entryLabel: 'Entry label',
+    /**
+     * @description Text for how to create an entry label.
+     */
+    entryLabelDescription: 'Double click on an entry to create  an entry label.',
+    /**
+     * @description  Title for diagram.
+     */
+    diagram: 'Diagram',
+    /**
+     * @description Text for how to create a diagram between entries.
+     */
+    diagramDescription: 'Double click on an entry to create a diagram.',
+    /**
+     * @description  Title for time range.
+     */
+    timeRange: 'Time range',
+    /**
+     * @description Text for how to create a time range selection and add note.
+     */
+    timeRangeDescription: 'Shift and drag on the canvas to create a time range.',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/SidebarAnnotationsTab.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SidebarAnnotationsTab extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-annotations`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -16,6 +52,11 @@ export class SidebarAnnotationsTab extends HTMLElement {
     // A map with annotated entries and the colours that are used to display them in the FlameChart.
     // We need this map to display the entries in the sidebar with the same colours.
     #annotationEntryToColorMap = new Map();
+    #annotationsHiddenSetting;
+    constructor() {
+        super();
+        this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting('annotations-hidden');
+    }
     set annotations(annotations) {
         this.#annotations = annotations;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
@@ -41,9 +82,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
     #renderAnnotationIdentifier(annotation) {
         switch (annotation.type) {
             case 'ENTRY_LABEL': {
-                const entryName = TraceEngine.Types.TraceEvents.isProfileCall(annotation.entry) ?
-                    annotation.entry.callFrame.functionName :
-                    annotation.entry.name;
+                const entryName = nameForEntry(annotation.entry);
                 const color = this.#annotationEntryToColorMap.get(annotation.entry);
                 return LitHtml.html `
               <span class="annotation-identifier" style="background-color: ${color}">
@@ -141,30 +180,66 @@ export class SidebarAnnotationsTab extends HTMLElement {
             console.error('Could not calculate zoom in window for ', annotation);
         }
     }
+    #renderTutorialCard() {
+        return LitHtml.html `
+      <div class="annotation-tutorial-container">
+        Try the new annotation feature:
+        <div class="tutorial-card">
+          <div class="tutorial-image"> <img src=${entryLabelImageUrl}></img></div>
+          <div class="tutorial-title">${i18nString(UIStrings.entryLabel)}</div>
+          <div class="tutorial-description">${i18nString(UIStrings.entryLabelDescription)}</div>
+          <div class="tutorial-shortcut">${Host.Platform.isMac() ? 'Cmd' : 'Ctrl'} + Click</div>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-image"> <img src=${diagramImageUrl}></img></div>
+          <div class="tutorial-title">${i18nString(UIStrings.diagram)}</div>
+          <div class="tutorial-description">${i18nString(UIStrings.diagramDescription)}</div>
+          <div class="tutorial-shortcut">
+            <div class="keybinds-shortcut">
+              <span class="keybinds-key">${Host.Platform.isMac() ? 'Cmd' : 'Ctrl'} + Click</span>
+            </div>
+          </div>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-image"> <img src=${timeRangeImageUrl}></img></div>
+          <div class="tutorial-title">${i18nString(UIStrings.timeRange)}</div>
+          <div class="tutorial-description">${i18nString(UIStrings.timeRangeDescription)}</div>
+        </div>
+      </div>
+    `;
+    }
     #render() {
         // clang-format off
         LitHtml.render(LitHtml.html `
-          <span class="annotations">
-            ${this.#annotations.map(annotation => LitHtml.html `
-                <div class="annotation-container" @click=${() => this.#zoomIntoAnnotation(annotation)}>
-                  <div class="annotation">
-                    ${this.#renderAnnotationIdentifier(annotation)}
-                    <span class="label">
-                      ${(annotation.type === 'ENTRY_LABEL' || annotation.type === 'TIME_RANGE') ? annotation.label : ''}
-                    </span>
-                  </div>
-                  <${IconButton.Icon.Icon.litTagName} class="bin-icon" .data=${{
-            iconName: 'bin',
-            color: 'var(--icon-default)',
-            width: '20px',
-            height: '20px',
-        }} @click=${(event) => {
-            // Stop propagation to not zoom into the annotation when the delete button is clicked
-            event.stopPropagation();
-            this.dispatchEvent(new RemoveAnnotation(annotation));
-        }}>
-                </div>`)}
-          </span>`, this.#shadow, { host: this });
+        <span class="annotations">
+          ${this.#annotations.length === 0 ?
+            this.#renderTutorialCard() :
+            LitHtml.html `
+              ${this.#annotations.map(annotation => LitHtml.html `
+                  <div class="annotation-container" @click=${() => this.#zoomIntoAnnotation(annotation)}>
+                    <div class="annotation">
+                      ${this.#renderAnnotationIdentifier(annotation)}
+                      <span class="label">
+                        ${(annotation.type === 'ENTRY_LABEL' || annotation.type === 'TIME_RANGE') ? annotation.label : ''}
+                      </span>
+                    </div>
+                    <${IconButton.Icon.Icon.litTagName} class="bin-icon" .data=${{
+                iconName: 'bin',
+                color: 'var(--icon-default)',
+                width: '20px',
+                height: '20px',
+            }} @click=${(event) => {
+                // Stop propagation to not zoom into the annotation when the delete button is clicked
+                event.stopPropagation();
+                this.dispatchEvent(new RemoveAnnotation(annotation));
+            }}>
+                  </div>`)}
+              <${Settings.SettingCheckbox.SettingCheckbox.litTagName} class="visibility-setting" .data=${{
+                setting: this.#annotationsHiddenSetting,
+                textOverride: 'Hide annotations',
+            }}>
+            </${Settings.SettingCheckbox.SettingCheckbox.litTagName}>
+        </span>`}`, this.#shadow, { host: this });
         // clang-format on
     }
 }

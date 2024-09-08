@@ -292,7 +292,7 @@ export class ColorRenderer {
         swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, onColorChanged);
         if (editable) {
             const swatchIcon = new ColorSwatchPopoverIcon(this.treeElement, this.treeElement.parentPane().swatchPopoverHelper(), swatch);
-            swatchIcon.addEventListener("colorchanged" /* ColorSwatchPopoverIconEvents.ColorChanged */, ev => {
+            swatchIcon.addEventListener("colorchanged" /* ColorSwatchPopoverIconEvents.COLOR_CHANGED */, ev => {
                 const color = Common.Color.parse(ev.data);
                 if (color) {
                     swatch.setColorText(color);
@@ -397,7 +397,7 @@ export class ColorMixRenderer {
                     node.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => onChange(ev.data.color.getAuthoredText() ?? ev.data.color.asString()));
                 }
                 else {
-                    node.addEventListener("colorChanged" /* InlineEditor.ColorMixSwatch.Events.ColorChanged */, ev => onChange(ev.data.text));
+                    node.addEventListener("colorChanged" /* InlineEditor.ColorMixSwatch.Events.COLOR_CHANGED */, ev => onChange(ev.data.text));
                 }
                 const color = node.getText();
                 if (color) {
@@ -514,23 +514,23 @@ export class LinkableNameRenderer {
     }
     #getLinkData(match) {
         switch (match.properyName) {
-            case "animation" /* LinkableNameProperties.Animation */:
-            case "animation-name" /* LinkableNameProperties.AnimationName */:
+            case "animation" /* LinkableNameProperties.ANIMATION */:
+            case "animation-name" /* LinkableNameProperties.ANIMATION_NAME */:
                 return {
                     jslogContext: 'css-animation-name',
                     metric: 1 /* Host.UserMetrics.SwatchType.ANIMATION_NAME_LINK */,
                     ruleBlock: '@keyframes',
                     isDefined: Boolean(this.#treeElement.matchedStyles().keyframes().find(kf => kf.name().text === match.text)),
                 };
-            case "font-palette" /* LinkableNameProperties.FontPalette */:
+            case "font-palette" /* LinkableNameProperties.FONT_PALETTE */:
                 return {
                     jslogContext: 'css-font-palette',
                     metric: null,
                     ruleBlock: '@font-palette-values',
                     isDefined: this.#treeElement.matchedStyles().fontPaletteValuesRule()?.name().text === match.text,
                 };
-            case "position-try" /* LinkableNameProperties.PositionTry */:
-            case "position-try-fallbacks" /* LinkableNameProperties.PositionTryFallbacks */:
+            case "position-try" /* LinkableNameProperties.POSITION_TRY */:
+            case "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */:
                 return {
                     jslogContext: 'css-position-try',
                     metric: 10 /* Host.UserMetrics.SwatchType.POSITION_TRY_LINK */,
@@ -597,10 +597,10 @@ export class ShadowModel {
         this.#context = context;
     }
     isBoxShadow() {
-        return this.#shadowType === "boxShadow" /* ShadowType.BoxShadow */;
+        return this.#shadowType === "boxShadow" /* ShadowType.BOX_SHADOW */;
     }
     inset() {
-        return Boolean(this.#properties.find(property => property.propertyType === "inset" /* ShadowPropertyType.Inset */));
+        return Boolean(this.#properties.find(property => property.propertyType === "inset" /* ShadowPropertyType.INSET */));
     }
     #length(lengthType) {
         return this.#properties.find((property) => property.propertyType === lengthType)
@@ -614,10 +614,10 @@ export class ShadowModel {
         return this.#length("y" /* ShadowPropertyType.Y */);
     }
     blurRadius() {
-        return this.#length("blur" /* ShadowPropertyType.Blur */);
+        return this.#length("blur" /* ShadowPropertyType.BLUR */);
     }
     spreadRadius() {
-        return this.#length("spread" /* ShadowPropertyType.Spread */);
+        return this.#length("spread" /* ShadowPropertyType.SPREAD */);
     }
     #needsExpansion(property) {
         return Boolean(property.expansionContext && property.source);
@@ -642,7 +642,7 @@ export class ShadowModel {
         if (!this.isBoxShadow()) {
             return;
         }
-        const { property, index } = this.#expandOrGetProperty("inset" /* ShadowPropertyType.Inset */);
+        const { property, index } = this.#expandOrGetProperty("inset" /* ShadowPropertyType.INSET */);
         if (property) {
             // For `inset`, remove the entry if value is false, otherwise don't touch it.
             if (!inset) {
@@ -650,7 +650,7 @@ export class ShadowModel {
             }
         }
         else {
-            this.#properties.unshift({ value: 'inset', source: null, expansionContext: null, propertyType: "inset" /* ShadowPropertyType.Inset */ });
+            this.#properties.unshift({ value: 'inset', source: null, expansionContext: null, propertyType: "inset" /* ShadowPropertyType.INSET */ });
         }
     }
     #setLength(value, propertyType) {
@@ -666,7 +666,7 @@ export class ShadowModel {
             // present.
             const insertionIdx = 1 +
                 this.#properties.findLastIndex(property => property.propertyType === "y" /* ShadowPropertyType.Y */ ||
-                    (propertyType === "spread" /* ShadowPropertyType.Spread */ && property.propertyType === "blur" /* ShadowPropertyType.Blur */));
+                    (propertyType === "spread" /* ShadowPropertyType.SPREAD */ && property.propertyType === "blur" /* ShadowPropertyType.BLUR */));
             if (insertionIdx > 0 && insertionIdx < this.#properties.length &&
                 this.#needsExpansion(this.#properties[insertionIdx]) &&
                 this.#properties[insertionIdx - 1].source === this.#properties[insertionIdx].source) {
@@ -684,11 +684,11 @@ export class ShadowModel {
         this.#setLength(value, "y" /* ShadowPropertyType.Y */);
     }
     setBlurRadius(value) {
-        this.#setLength(value, "blur" /* ShadowPropertyType.Blur */);
+        this.#setLength(value, "blur" /* ShadowPropertyType.BLUR */);
     }
     setSpreadRadius(value) {
         if (this.isBoxShadow()) {
-            this.#setLength(value, "spread" /* ShadowPropertyType.Spread */);
+            this.#setLength(value, "spread" /* ShadowPropertyType.SPREAD */);
         }
     }
     renderContents(parent) {
@@ -722,7 +722,7 @@ export class ShadowRenderer {
     }
     shadowModel(shadow, shadowType, context) {
         const properties = [];
-        const missingLengths = ["spread" /* ShadowPropertyType.Spread */, "blur" /* ShadowPropertyType.Blur */, "y" /* ShadowPropertyType.Y */, "x" /* ShadowPropertyType.X */];
+        const missingLengths = ["spread" /* ShadowPropertyType.SPREAD */, "blur" /* ShadowPropertyType.BLUR */, "y" /* ShadowPropertyType.Y */, "x" /* ShadowPropertyType.X */];
         let stillAcceptsLengths = true;
         // We're parsing the individual shadow properties into an array here retaining the ordering. This also looks through
         // var() functions by re-parsing the variable values on the fly. For properties coming from a var() we're keeping
@@ -737,7 +737,7 @@ export class ShadowRenderer {
                 }
                 const propertyType = missingLengths.pop();
                 if (propertyType === undefined ||
-                    (propertyType === "spread" /* ShadowPropertyType.Spread */ && shadowType === "textShadow" /* ShadowType.TextShadow */)) {
+                    (propertyType === "spread" /* ShadowPropertyType.SPREAD */ && shadowType === "textShadow" /* ShadowType.TEXT_SHADOW */)) {
                     return null;
                 }
                 const length = InlineEditor.CSSShadowEditor.CSSLength.parse(text);
@@ -770,17 +770,17 @@ export class ShadowRenderer {
                 // property, we will not allow any future lengths.
                 stillAcceptsLengths = missingLengths.length === 4;
                 if (value.name === 'ValueName' && text.toLowerCase() === 'inset') {
-                    if (shadowType === "textShadow" /* ShadowType.TextShadow */ ||
-                        properties.find(({ propertyType }) => propertyType === "inset" /* ShadowPropertyType.Inset */)) {
+                    if (shadowType === "textShadow" /* ShadowType.TEXT_SHADOW */ ||
+                        properties.find(({ propertyType }) => propertyType === "inset" /* ShadowPropertyType.INSET */)) {
                         return null;
                     }
-                    properties.push({ value, source, propertyType: "inset" /* ShadowPropertyType.Inset */, expansionContext });
+                    properties.push({ value, source, propertyType: "inset" /* ShadowPropertyType.INSET */, expansionContext });
                 }
                 else if (match instanceof ColorMatch || match instanceof ColorMixMatch) {
-                    if (properties.find(({ propertyType }) => propertyType === "color" /* ShadowPropertyType.Color */)) {
+                    if (properties.find(({ propertyType }) => propertyType === "color" /* ShadowPropertyType.COLOR */)) {
                         return null;
                     }
-                    properties.push({ value, source, propertyType: "color" /* ShadowPropertyType.Color */, expansionContext });
+                    properties.push({ value, source, propertyType: "color" /* ShadowPropertyType.COLOR */, expansionContext });
                 }
                 else if (value.name !== 'Comment' && value.name !== 'Important') {
                     return null;
@@ -814,7 +814,7 @@ export class ShadowRenderer {
             });
             model.renderContents(swatch);
             const popoverHelper = new ShadowSwatchPopoverHelper(this.#treeElement, this.#treeElement.parentPane().swatchPopoverHelper(), swatch);
-            popoverHelper.addEventListener("shadowChanged" /* ShadowEvents.ShadowChanged */, () => {
+            popoverHelper.addEventListener("shadowChanged" /* ShadowEvents.SHADOW_CHANGED */, () => {
                 model.renderContents(swatch);
                 void this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), false);
             });
@@ -896,7 +896,7 @@ async function decorateAnchorForAnchorLink(container, treeElement, options) {
     const anchorNode = await treeElement.node()?.getAnchorBySpecifier(options.identifier) ?? undefined;
     const link = new ElementsComponents.AnchorFunctionLinkSwatch.AnchorFunctionLinkSwatch({
         identifier: options.identifier,
-        anchorNode: anchorNode,
+        anchorNode,
         needsSpace: options.needsSpace,
         onLinkActivate: () => {
             if (!anchorNode) {
@@ -1370,6 +1370,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.listItemElement.createChild('span', 'styles-name-value-separator').textContent = separator;
             if (this.expandElement) {
                 this.listItemElement.appendChild(this.expandElement);
+                this.updateExpandElement();
             }
             this.listItemElement.appendChild(this.valueElement);
             const semicolon = this.listItemElement.createChild('span', 'styles-semicolon');
@@ -1719,7 +1720,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         selectedElement.parentElement?.scrollIntoViewIfNeeded(false);
         this.prompt = new CSSPropertyPrompt(this, context.isEditingName, Array.from(this.#gridNames ?? []));
         this.prompt.setAutocompletionTimeout(0);
-        this.prompt.addEventListener("TextChanged" /* UI.TextPrompt.Events.TextChanged */, () => {
+        this.prompt.addEventListener("TextChanged" /* UI.TextPrompt.Events.TEXT_CHANGED */, () => {
             void this.applyFreeFlowStyleTextEdit(context);
         });
         const invalidString = this.property.getInvalidStringForInvalidProperty();

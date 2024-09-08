@@ -3,6 +3,7 @@ import { type InsightResult, type NavigationInsightContext, type RequiredData } 
 export type CLSInsightResult = InsightResult<{
     animationFailures?: readonly NoncompositedAnimationFailure[];
     shifts?: Map<Types.TraceEvents.TraceEventLayoutShift, LayoutShiftRootCausesData>;
+    clusters: Types.TraceEvents.SyntheticLayoutShiftCluster[];
 }>;
 export declare function deps(): ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
 export declare const enum AnimationFailureReasons {

@@ -129,7 +129,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.triggerDropDownTimeout = null;
         this.dropDownButton = this.createDropDownButton();
         this.currentDevicePixelRatio = window.devicePixelRatio;
-        ZoomManager.instance().addEventListener("ZoomChanged" /* ZoomManagerEvents.ZoomChanged */, this.zoomChanged, this);
+        ZoomManager.instance().addEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.zoomChanged, this);
         this.makeTabSlider();
     }
     setAccessibleName(name) {
@@ -852,10 +852,12 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["TabInvoked"] = "TabInvoked";
     Events["TabSelected"] = "TabSelected";
     Events["TabClosed"] = "TabClosed";
     Events["TabOrderChanged"] = "TabOrderChanged";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class TabbedPaneTab {
     closeable;

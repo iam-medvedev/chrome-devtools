@@ -230,7 +230,6 @@ export class SourcesPanel extends UI.Panel.Panel {
         const navigatorMenuButton = new UI.Toolbar.ToolbarMenuButton(this.populateNavigatorMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'more-options', 'dots-vertical');
         navigatorMenuButton.setTitle(i18nString(UIStrings.moreOptions));
         tabbedPane.rightToolbar().appendToolbarItem(navigatorMenuButton);
-        tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, ({ data: { tabId } }) => Host.userMetrics.sourcesSidebarTabShown(tabId));
         if (UI.ViewManager.ViewManager.instance().hasViewsForLocation('run-view-sidebar')) {
             const navigatorSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'source-panel-navigator-sidebar-split-view-state');
             navigatorSplitWidget.setMainWidget(tabbedPane);
@@ -245,7 +244,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             this.editorView.setSidebarWidget(tabbedPane);
         }
         this.sourcesViewInternal = new SourcesView();
-        this.sourcesViewInternal.addEventListener("EditorSelected" /* Events.EditorSelected */, this.editorSelected.bind(this));
+        this.sourcesViewInternal.addEventListener("EditorSelected" /* Events.EDITOR_SELECTED */, this.editorSelected.bind(this));
         this.toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton(i18nString(UIStrings.showNavigator), i18nString(UIStrings.hideNavigator), i18nString(UIStrings.navigatorShown), i18nString(UIStrings.navigatorHidden), 'navigator');
         this.toggleDebuggerSidebarButton = this.splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showDebugger), i18nString(UIStrings.hideDebugger), i18nString(UIStrings.debuggerShown), i18nString(UIStrings.debuggerHidden), 'debugger');
         this.editorView.setMainWidget(this.sourcesViewInternal);
@@ -739,9 +738,9 @@ export class SourcesPanel extends UI.Panel.Panel {
         const debugToolbar = new UI.Toolbar.Toolbar('scripts-debug-toolbar');
         debugToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('debug').track({ keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space' })}`);
         const longResumeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.resumeWithAllPausesBlockedForMs), 'play');
-        longResumeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.longResume, this);
+        longResumeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.longResume, this);
         const terminateExecutionButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.terminateCurrentJavascriptCall), 'stop');
-        terminateExecutionButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.terminateExecution, this);
+        terminateExecutionButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.terminateExecution, this);
         const pauseActionButton = UI.Toolbar.Toolbar.createLongPressActionButton(this.togglePauseAction, [terminateExecutionButton, longResumeButton], []);
         pauseActionButton.toggleOnClick(false);
         debugToolbar.appendToolbarItem(pauseActionButton);
@@ -866,7 +865,7 @@ export class SourcesPanel extends UI.Panel.Panel {
                 const result = await remoteObject.callFunctionJSON(toStringForClipboard, [{
                         value: {
                             subtype: remoteObject.subtype,
-                            indent: indent,
+                            indent,
                         },
                     }]);
                 inspectorFrontendHost.copyText(result);

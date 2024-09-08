@@ -10,6 +10,10 @@ export declare class CLSCulprits extends BaseInsight {
     internalName: string;
     userVisibleTitle: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    /**
+     * getTopCulprits gets the top 3 shift root causes based on clusters.
+     */
+    getTopCulprits(clusters: TraceEngine.Types.TraceEvents.SyntheticLayoutShiftCluster[], culpritsByShift: Map<TraceEngine.Types.TraceEvents.TraceEventLayoutShift, TraceEngine.Insights.InsightRunners.CumulativeLayoutShift.LayoutShiftRootCausesData> | undefined): string[];
     render(): void;
 }
 declare global {

@@ -562,7 +562,7 @@ export class ScreencastView extends UI.Widget.VBox {
         const bordersSize = BORDERS_SIZE;
         const width = this.element.offsetWidth - bordersSize - gutterSize;
         const height = this.element.offsetHeight - bordersSize - gutterSize - NAVBAR_HEIGHT;
-        return { width: width, height: height };
+        return { width, height };
     }
     setInspectMode(mode, config) {
         this.inspectModeConfig = mode !== "none" /* Protocol.Overlay.InspectMode.None */ ? config : null;

@@ -1,6 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import { MediaModel, type PlayerEvent } from './MediaModel.js';
 export interface TriggerHandler {
     onProperty(property: Protocol.Media.PlayerProperty): void;

@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenuItemLabels, } from '../../testing/ContextMenuHelpers.js';
-import { dispatchClickEvent, dispatchMouseUpEvent, raf, } from '../../testing/DOMHelpers.js';
+import { dispatchMouseUpEvent, raf, } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
@@ -172,8 +172,8 @@ describeWithMockConnection('NetworkLogView', () => {
             const URL_2 = 'http://example.com/favicon.ico';
             function makeHarEntry(url) {
                 return {
-                    request: { method: 'GET', url: url, headersSize: -1, bodySize: 0 },
-                    response: { status: 0, content: { 'size': 0, 'mimeType': 'x-unknown' }, headersSize: -1, bodySize: -1 },
+                    request: { method: 'GET', url, headersSize: -1, bodySize: 0 },
+                    response: { status: 0, content: { size: 0, mimeType: 'x-unknown' }, headersSize: -1, bodySize: -1 },
                     startedDateTime: null,
                     time: null,
                     timings: { blocked: null, dns: -1, ssl: -1, connect: -1, send: 0, wait: 0, receive: 0 },
@@ -326,115 +326,6 @@ describeWithMockConnection('NetworkLogView', () => {
         dropdown.discard();
         networkLogView.detach();
     });
-    it('can automatically check the `All` option in the `Request Type` when the only type checked becomes unchecked', async () => {
-        Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const dropdown = setupRequestTypesDropdown();
-        const button = dropdown.element().querySelector('.toolbar-button');
-        assert.instanceOf(button, HTMLElement);
-        dispatchClickEvent(button, { bubbles: true, composed: true });
-        await raf();
-        const optionImg = getRequestTypeDropdownOption('Image');
-        const optionImgCheckmark = optionImg?.querySelector('.checkmark') || null;
-        const optionAll = getRequestTypeDropdownOption('All');
-        const optionAllCheckmark = optionAll?.querySelector('.checkmark') || null;
-        assert.instanceOf(optionImg, HTMLElement);
-        assert.instanceOf(optionImgCheckmark, HTMLElement);
-        assert.instanceOf(optionAll, HTMLElement);
-        assert.instanceOf(optionAllCheckmark, HTMLElement);
-        assert.isTrue(optionAll.ariaLabel === 'All, checked');
-        assert.isTrue(optionImg.ariaLabel === 'Image, unchecked');
-        assert.isTrue(window.getComputedStyle(optionAllCheckmark).getPropertyValue('opacity') === '1');
-        assert.isTrue(window.getComputedStyle(optionImgCheckmark).getPropertyValue('opacity') === '0');
-        await selectRequestTypesOption('Image');
-        assert.isTrue(optionAll.ariaLabel === 'All, unchecked');
-        assert.isTrue(optionImg.ariaLabel === 'Image, checked');
-        assert.isTrue(window.getComputedStyle(optionAllCheckmark).getPropertyValue('opacity') === '0');
-        assert.isTrue(window.getComputedStyle(optionImgCheckmark).getPropertyValue('opacity') === '1');
-        await selectRequestTypesOption('Image');
-        assert.isTrue(optionAll.ariaLabel === 'All, checked');
-        assert.isTrue(optionImg.ariaLabel === 'Image, unchecked');
-        assert.isTrue(window.getComputedStyle(optionAllCheckmark).getPropertyValue('opacity') === '1');
-        assert.isTrue(window.getComputedStyle(optionImgCheckmark).getPropertyValue('opacity') === '0');
-        dropdown.discard();
-        await raf();
-    });
-    it('shows correct selected request types count', async () => {
-        Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const umaCountSpy = sinon.spy(Host.userMetrics, 'resourceTypeFilterNumberOfSelectedChanged');
-        const umaTypeSpy = sinon.spy(Host.userMetrics, 'resourceTypeFilterItemSelected');
-        const dropdown = setupRequestTypesDropdown();
-        const button = dropdown.element().querySelector('.toolbar-button');
-        assert.instanceOf(button, HTMLElement);
-        let countAdorner = button.querySelector('.active-filters-count');
-        assert.isTrue(countAdorner?.classList.contains('hidden'));
-        dispatchClickEvent(button, { bubbles: true, composed: true });
-        await raf();
-        await selectRequestTypesOption('Image');
-        countAdorner = button.querySelector('.active-filters-count');
-        assert.isFalse(countAdorner?.classList.contains('hidden'));
-        assert.strictEqual(countAdorner?.querySelector('[slot="content"]')?.textContent, '1');
-        dropdown.discard();
-        await raf();
-        assert.isTrue(umaCountSpy.calledOnceWith(1));
-        assert.isTrue(umaTypeSpy.calledOnceWith('Image'));
-    });
-    it('adjusts request types label dynamically', async () => {
-        Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const dropdown = setupRequestTypesDropdown();
-        const button = dropdown.element().querySelector('.toolbar-button');
-        assert.instanceOf(button, HTMLElement);
-        let toolbarText = button.querySelector('.toolbar-text')?.textContent;
-        assert.strictEqual(toolbarText, 'Request types');
-        dispatchClickEvent(button, { bubbles: true, composed: true });
-        await raf();
-        await selectRequestTypesOption('Image');
-        await selectRequestTypesOption('JavaScript');
-        toolbarText = button.querySelector('.toolbar-text')?.textContent;
-        assert.strictEqual(toolbarText, 'JS, Img');
-        await selectRequestTypesOption('CSS');
-        toolbarText = button.querySelector('.toolbar-text')?.textContent;
-        assert.strictEqual(toolbarText, 'CSS, JS...');
-        dropdown.discard();
-        await raf();
-    });
-    it('lists selected types in requests types tooltip', async () => {
-        Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const umaCountSpy = sinon.spy(Host.userMetrics, 'resourceTypeFilterNumberOfSelectedChanged');
-        const umaTypeSpy = sinon.spy(Host.userMetrics, 'resourceTypeFilterItemSelected');
-        const dropdown = setupRequestTypesDropdown();
-        const button = dropdown.element().querySelector('.toolbar-button');
-        assert.instanceOf(button, HTMLElement);
-        let tooltipText = button.title;
-        assert.strictEqual(tooltipText, 'Filter requests by type');
-        dispatchClickEvent(button, { bubbles: true, composed: true });
-        await raf();
-        await selectRequestTypesOption('Image');
-        await selectRequestTypesOption('JavaScript');
-        tooltipText = button.title;
-        assert.strictEqual(tooltipText, 'Show only JavaScript, Image');
-        dropdown.discard();
-        await raf();
-        assert.isTrue(umaCountSpy.calledOnceWith(2));
-        assert.isTrue(umaTypeSpy.calledTwice);
-        assert.isTrue(umaTypeSpy.calledWith('Image'));
-        assert.isTrue(umaTypeSpy.calledWith('JavaScript'));
-    });
-    it('updates tooltip to default when request type deselected', async () => {
-        Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const dropdown = setupRequestTypesDropdown();
-        const button = dropdown.element().querySelector('.toolbar-button');
-        assert.instanceOf(button, HTMLElement);
-        dispatchClickEvent(button, { bubbles: true, composed: true });
-        await raf();
-        await selectRequestTypesOption('Image');
-        let tooltipText = button.title;
-        assert.strictEqual(tooltipText, 'Show only Image');
-        await selectRequestTypesOption('Image');
-        tooltipText = button.title;
-        assert.strictEqual(tooltipText, 'Filter requests by type');
-        dropdown.discard();
-        await raf();
-    });
     it('can filter requests with blocked response cookies from checkbox', async () => {
         const request1 = createNetworkRequest('url1', { target });
         request1.blockedResponseCookies = () => [{
@@ -539,22 +430,22 @@ describeWithMockConnection('NetworkLogView', () => {
     it('correctly shows and hides waterfall column', async () => {
         const columnSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});
         columnSettings.set({
-            'waterfall': { visible: false, title: 'waterfall' },
+            waterfall: { visible: false, title: 'waterfall' },
         });
         networkLogView = createNetworkLogView();
         let columns = networkLogView.columns();
         let networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
         assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
-        assert.strictEqual(networkColumnWidget.showMode(), "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */);
+        assert.strictEqual(networkColumnWidget.showMode(), "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */);
         columnSettings.set({
-            'waterfall': { visible: true, title: 'waterfall' },
+            waterfall: { visible: true, title: 'waterfall' },
         });
         networkLogView = createNetworkLogView();
         columns = networkLogView.columns();
         columns.switchViewMode(true);
         networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
         assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
-        assert.strictEqual(networkColumnWidget.showMode(), "Both" /* UI.SplitWidget.ShowMode.Both */);
+        assert.strictEqual(networkColumnWidget.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
     });
     function createOverrideRequests() {
         const urlNotOverridden = 'url-not-overridden';
@@ -805,34 +696,12 @@ function getCheckbox(filterBar, title) {
     assert.instanceOf(checkbox, HTMLInputElement);
     return checkbox;
 }
-function getRequestTypeDropdownOption(requestType) {
-    const dropDownVbox = document.querySelector('.vbox')?.shadowRoot?.querySelectorAll('.soft-context-menu-item') || [];
-    const dropdownOptions = Array.from(dropDownVbox);
-    return dropdownOptions.find(el => el.textContent?.includes(requestType)) || null;
-}
-async function selectRequestTypesOption(option) {
-    const item = getRequestTypeDropdownOption(option);
-    assert.instanceOf(item, HTMLElement);
-    dispatchMouseUpEvent(item, { bubbles: true, composed: true });
-    await raf();
-}
 async function openMoreTypesDropdown(filterBar, networkLogView) {
     const button = filterBar.element.querySelector('[aria-label="Show only/hide requests dropdown"]')
         ?.querySelector('.toolbar-button');
     button?.dispatchEvent(new Event('click'));
     await raf();
     const dropdown = networkLogView.getMoreFiltersDropdown();
-    return dropdown;
-}
-function setupRequestTypesDropdown() {
-    const filterItems = Object.entries(Common.ResourceType.resourceCategories).map(([key, category]) => ({
-        name: category.title(),
-        label: () => category.shortTitle(),
-        title: category.title(),
-        jslogContext: key,
-    }));
-    const setting = Common.Settings.Settings.instance().createSetting('network-resource-type-filters', { all: true });
-    const dropdown = new Network.NetworkLogView.DropDownTypesUI(filterItems, setting);
     return dropdown;
 }
 function getCountAdorner(filterBar) {

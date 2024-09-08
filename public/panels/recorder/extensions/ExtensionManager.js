@@ -43,7 +43,7 @@ export class ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
         return view;
     }
     #handlePlugin = () => {
-        this.dispatchEventToListeners("extensionsUpdated" /* Events.ExtensionsUpdated */, this.extensions());
+        this.dispatchEventToListeners("extensionsUpdated" /* Events.EXTENSIONS_UPDATED */, this.extensions());
     };
     #handleView = (event) => {
         const descriptor = event.data;

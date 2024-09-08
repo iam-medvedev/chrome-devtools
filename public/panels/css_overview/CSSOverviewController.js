@@ -15,7 +15,7 @@ export class OverviewController extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.currentUrl = SDK.TargetManager.TargetManager.instance().inspectedURL();
-        this.dispatchEventToListeners("Reset" /* Events.Reset */);
+        this.dispatchEventToListeners("Reset" /* Events.RESET */);
     }
 }
 //# sourceMappingURL=CSSOverviewController.js.map

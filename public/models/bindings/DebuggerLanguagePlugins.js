@@ -190,7 +190,7 @@ class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
         for (const namespace in namespaces) {
             properties.push(makeProperty(namespace, namespaces[namespace]));
         }
-        return { properties: properties, internalProperties: [] };
+        return { properties, internalProperties: [] };
     }
 }
 export class SourceScope {
@@ -681,7 +681,7 @@ export class DebuggerLanguagePluginManager {
                                 const resourceUrl = resource;
                                 return { resourceUrl, initiator };
                             });
-                            return { missingSymbolFiles: missingSymbolFiles };
+                            return { missingSymbolFiles };
                         }
                         const sourceFileURLs = addModuleResult;
                         if (sourceFileURLs.length === 0) {

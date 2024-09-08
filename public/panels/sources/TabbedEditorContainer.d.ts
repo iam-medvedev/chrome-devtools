@@ -69,8 +69,8 @@ export declare class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWr
     currentFile(): Workspace.UISourceCode.UISourceCode | null;
 }
 export declare const enum Events {
-    EditorSelected = "EditorSelected",
-    EditorClosed = "EditorClosed"
+    EDITOR_SELECTED = "EditorSelected",
+    EDITOR_CLOSED = "EditorClosed"
 }
 export interface EditorSelectedEvent {
     currentFile: Workspace.UISourceCode.UISourceCode;
@@ -79,8 +79,8 @@ export interface EditorSelectedEvent {
     userGesture: boolean | undefined;
 }
 export type EventTypes = {
-    [Events.EditorSelected]: EditorSelectedEvent;
-    [Events.EditorClosed]: Workspace.UISourceCode.UISourceCode;
+    [Events.EDITOR_SELECTED]: EditorSelectedEvent;
+    [Events.EDITOR_CLOSED]: Workspace.UISourceCode.UISourceCode;
 };
 interface SerializedHistoryItem {
     url: string;

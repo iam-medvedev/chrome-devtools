@@ -48,10 +48,10 @@ export declare class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWr
     upperBound(_request: SDK.NetworkRequest.NetworkRequest): number;
 }
 export declare const enum Events {
-    BoundariesChanged = "BoundariesChanged"
+    BOUNDARIES_CHANGED = "BoundariesChanged"
 }
 export type EventTypes = {
-    [Events.BoundariesChanged]: void;
+    [Events.BOUNDARIES_CHANGED]: void;
 };
 export declare class NetworkTransferTimeCalculator extends NetworkTimeCalculator {
     constructor();

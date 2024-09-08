@@ -24,10 +24,10 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
 }
 export declare namespace HeapSnapshotWorkerProxy {
     const enum Events {
-        Wait = "Wait"
+        WAIT = "Wait"
     }
     type EventTypes = {
-        [Events.Wait]: boolean;
+        [Events.WAIT]: boolean;
     };
 }
 export declare class HeapSnapshotProxyObject {

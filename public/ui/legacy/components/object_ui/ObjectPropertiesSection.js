@@ -30,9 +30,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Root from '../../../../core/root/root.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import * as JavaScriptMetaData from '../../../../models/javascript_metadata/javascript_metadata.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as TextEditor from '../../../components/text_editor/text_editor.js';
@@ -132,7 +130,6 @@ const EXPANDABLE_MAX_LENGTH = 50;
 const EXPANDABLE_MAX_DEPTH = 100;
 const parentMap = new WeakMap();
 const objectPropertiesSectionMap = new WeakMap();
-const domPinnedProperties = JavaScriptMetaData.JavaScriptMetadata.JavaScriptMetadataImpl.domPinnedProperties.DOMPinnedProperties;
 export const getObjectPropertiesSectionFrom = (element) => {
     return objectPropertiesSectionMap.get(element);
 };
@@ -193,50 +190,6 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             objectPropertiesSection.setEditable(false);
         }
         return objectPropertiesSection;
-    }
-    static assignWebIDLMetadata(value, properties) {
-        if (!value) {
-            return;
-        }
-        const isInstance = value.type === 'object' && value.className !== null;
-        const webIdlType = isInstance ? domPinnedProperties[value.className] : undefined;
-        if (webIdlType) {
-            value.webIdl = { info: webIdlType, state: new Map() };
-        }
-        else {
-            return;
-        }
-        const includedWebIdlTypes = webIdlType.includes?.map(className => domPinnedProperties[className]) ?? [];
-        const includedWebIdlProps = includedWebIdlTypes.flatMap(webIdlType => Object.entries(webIdlType?.props ?? {}));
-        const webIdlProps = { ...webIdlType.props, ...Object.fromEntries(includedWebIdlProps) };
-        for (const property of properties) {
-            const webIdlProperty = webIdlProps[property.name];
-            if (webIdlProperty) {
-                property.webIdl = { info: webIdlProperty };
-            }
-        }
-        const names = ObjectPropertiesSection.getPropertyValuesByNames(properties);
-        const parentRules = value.webIdl.info.rules;
-        if (parentRules) {
-            for (const { when: name, is: expected } of parentRules) {
-                if (names.get(name)?.value === expected) {
-                    value.webIdl.state.set(name, expected);
-                }
-            }
-        }
-        for (const property of properties) {
-            if (property.webIdl) {
-                const parentState = value.webIdl.state;
-                const propertyRules = property.webIdl.info.rules;
-                if (!parentRules && !propertyRules) {
-                    property.webIdl.applicable = true;
-                }
-                else {
-                    property.webIdl.applicable =
-                        !propertyRules || propertyRules?.some(rule => parentState.get(rule.when) === rule.is);
-                }
-            }
-        }
     }
     static getPropertyValuesByNames(properties) {
         const map = new Map();
@@ -606,7 +559,7 @@ export class RootElement extends UI.TreeOutline.TreeElement {
     extraProperties;
     targetObject;
     toggleOnClick;
-    constructor(object, linkifier, emptyPlaceholder, propertiesMode = 1 /* ObjectPropertiesMode.OwnAndInternalAndInherited */, extraProperties = [], targetObject = object) {
+    constructor(object, linkifier, emptyPlaceholder, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */, extraProperties = [], targetObject = object) {
         const contentElement = document.createElement('slot');
         super(contentElement);
         this.object = object;
@@ -685,7 +638,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.dataset.objectPropertyNameForTest = property.name;
         this.setExpandRecursively(property.name !== '[[Prototype]]');
     }
-    static async populate(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, propertiesMode = 1 /* ObjectPropertiesMode.OwnAndInternalAndInherited */, extraProperties, targetValue) {
+    static async populate(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */, extraProperties, targetValue) {
         if (value.arrayLength() > ARRAY_LOAD_THRESHOLD) {
             treeElement.removeChildren();
             void ArrayGroupingTreeElement.populateArray(treeElement, value, 0, value.arrayLength() - 1, linkifier);
@@ -693,10 +646,10 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         let properties, internalProperties = null;
         switch (propertiesMode) {
-            case 0 /* ObjectPropertiesMode.All */:
+            case 0 /* ObjectPropertiesMode.ALL */:
                 ({ properties } = await value.getAllProperties(false /* accessorPropertiesOnly */, true /* generatePreview */));
                 break;
-            case 1 /* ObjectPropertiesMode.OwnAndInternalAndInherited */:
+            case 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */:
                 ({ properties, internalProperties } =
                     await SDK.RemoteObject.RemoteObject.loadFromObjectPerProto(value, true /* generatePreview */));
                 break;
@@ -711,7 +664,6 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         ObjectPropertyTreeElement.populateWithProperties(treeElement, properties, internalProperties, skipProto, skipGettersAndSetters, targetValue || value, linkifier, emptyPlaceholder);
     }
     static populateWithProperties(treeNode, properties, internalProperties, skipProto, skipGettersAndSetters, value, linkifier, emptyPlaceholder) {
-        ObjectPropertiesSection.assignWebIDLMetadata(value, properties);
         properties.sort(ObjectPropertiesSection.compareProperties);
         internalProperties = internalProperties || [];
         const entriesProperty = internalProperties.find(property => property.name === '[[Entries]]');
@@ -989,21 +941,8 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (this.property.value && valueText && !this.property.wasThrown) {
             this.expandedValueElement = this.createExpandedValueElement(this.property.value, this.property.synthetic);
         }
-        const experiment = Root.Runtime.experiments.isEnabled("important-dom-properties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */);
-        let adorner = '';
+        const adorner = '';
         let container;
-        if (this.property.webIdl?.applicable && experiment) {
-            const icon = new IconButton.Icon.Icon();
-            icon.data = {
-                iconName: 'star',
-                color: 'var(--icon-default)',
-                width: '16px',
-                height: '16px',
-            };
-            adorner = UI.Fragment.html `
-         <span class='adorner'>${icon}</span>
-       `;
-        }
         if (isInternalEntries) {
             container = UI.Fragment.html `
         <span class='name-and-value'>${adorner}${this.nameElement}</span>
@@ -1017,9 +956,6 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.removeChildren();
         this.rowContainer = container;
         this.listItemElement.appendChild(this.rowContainer);
-        if (experiment) {
-            this.listItemElement.dataset.webidl = this.property.webIdl?.applicable ? 'true' : 'false';
-        }
     }
     updatePropertyPath() {
         if (this.nameElement.title) {
@@ -1310,7 +1246,7 @@ export class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement {
                     ranges.push([groupStart, groupEnd, count]);
                 }
             }
-            return { ranges: ranges };
+            return { ranges };
         }
         async function callback(result) {
             if (!result) {

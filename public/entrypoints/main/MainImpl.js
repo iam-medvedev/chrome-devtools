@@ -152,7 +152,7 @@ export class MainImpl {
         const veLogging = Common.Settings.Settings.instance().getHostConfig()?.devToolsVeLogging;
         if (veLogging?.enabled) {
             if (veLogging?.testing) {
-                VisualLogging.setVeDebugLoggingEnabled(true, VisualLogging.DebugLoggingFormat.Test);
+                VisualLogging.setVeDebugLoggingEnabled(true, "Test" /* VisualLogging.DebugLoggingFormat.TEST */);
                 const options = {
                     processingThrottler: new Common.Throttler.Throttler(0),
                     keyboardLogThrottler: new Common.Throttler.Throttler(10),
@@ -297,8 +297,6 @@ export class MainImpl {
         Root.Runtime.experiments.register("authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, 'Group sources into authored and deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
         // Hide third party code (as determined by ignore lists or source maps)
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in Sources tree view');
-        // Highlight important DOM properties in the Object Properties viewer.
-        Root.Runtime.experiments.register("important-dom-properties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */, 'Highlight important DOM properties in the Properties tab');
         Root.Runtime.experiments.register("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, 'Enable speculative loads panel in Application panel', true);
         Root.Runtime.experiments.register("outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */, 'Enable background page selector (for prerendering)', false);
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
@@ -315,6 +313,7 @@ export class MainImpl {
             "preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
             "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
+            "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
@@ -475,6 +474,25 @@ export class MainImpl {
         window.setTimeout(this.#lateInitialization.bind(this), 100);
         MainImpl.timeEnd('Main._initializeTarget');
     }
+    // TODO(crbug.com/350668580) Move this to AISettingsTab once the setting is only available
+    // there and not in the general settings screen anymore.
+    // The ConsoleInsightsEnabledSetting represents the toggle/checkbox allowing the user to turn the feature on/off.
+    // If the user turns the feature off, we want them to go through the full onboarding flow should they later turn
+    // the feature on again. We achieve this by resetting the onboardig setting.
+    #onConsoleInsightsEnabledSettingChanged() {
+        const settingValue = this.#getConsoleInsightsEnabledSetting()?.get();
+        if (settingValue === false) {
+            Common.Settings.Settings.instance().createLocalSetting('console-insights-onboarding-finished', false).set(false);
+        }
+    }
+    #getConsoleInsightsEnabledSetting() {
+        try {
+            return Common.Settings.moduleSetting('console-insights-enabled');
+        }
+        catch {
+            return;
+        }
+    }
     async #lateInitialization() {
         MainImpl.time('Main._lateInitialization');
         Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
@@ -498,6 +516,12 @@ export class MainImpl {
                 };
                 Common.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
             }
+        }
+        // TODO(crbug.com/350668580) Move this to AISettingsTab once the setting is only available
+        // there and not in the general settings screen anymore.
+        const consoleInsightsSetting = this.#getConsoleInsightsEnabledSetting();
+        if (consoleInsightsSetting) {
+            consoleInsightsSetting.addChangeListener(this.#onConsoleInsightsEnabledSettingChanged, this);
         }
         this.#lateInitDonePromise = Promise.all(promises).then(() => undefined);
         MainImpl.timeEnd('Main._lateInitialization');
@@ -654,14 +678,14 @@ export class MainMenuItem {
             const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom', undefined, 'current-dock-state-bottom');
             const right = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToRight), 'dock-right', undefined, 'current-dock-state-right');
             const left = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToLeft), 'dock-left', undefined, 'current-dock-state-left');
-            undock.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
-            bottom.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
-            right.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
-            left.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
-            undock.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "undocked" /* UI.DockController.DockState.UNDOCKED */));
-            bottom.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "bottom" /* UI.DockController.DockState.BOTTOM */));
-            right.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "right" /* UI.DockController.DockState.RIGHT */));
-            left.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "left" /* UI.DockController.DockState.LEFT */));
+            undock.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MOUSE_DOWN */, event => event.data.consume());
+            bottom.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MOUSE_DOWN */, event => event.data.consume());
+            right.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MOUSE_DOWN */, event => event.data.consume());
+            left.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MOUSE_DOWN */, event => event.data.consume());
+            undock.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, setDockSide.bind(null, "undocked" /* UI.DockController.DockState.UNDOCKED */));
+            bottom.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, setDockSide.bind(null, "bottom" /* UI.DockController.DockState.BOTTOM */));
+            right.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, setDockSide.bind(null, "right" /* UI.DockController.DockState.RIGHT */));
+            left.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, setDockSide.bind(null, "left" /* UI.DockController.DockState.LEFT */));
             undock.setToggled(UI.DockController.DockController.instance().dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */);
             bottom.setToggled(UI.DockController.DockController.instance().dockSide() === "bottom" /* UI.DockController.DockState.BOTTOM */);
             right.setToggled(UI.DockController.DockController.instance().dockSide() === "right" /* UI.DockController.DockState.RIGHT */);
@@ -696,7 +720,9 @@ export class MainMenuItem {
         }
         const button = this.#itemInternal.element;
         function setDockSide(side) {
-            void UI.DockController.DockController.instance().once("AfterDockSideChanged" /* UI.DockController.Events.AfterDockSideChanged */).then(() => {
+            void UI.DockController.DockController.instance()
+                .once("AfterDockSideChanged" /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */)
+                .then(() => {
                 button.focus();
             });
             UI.DockController.DockController.instance().setDockSide(side);

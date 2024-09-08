@@ -756,9 +756,9 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         };
         const classMap = {
             'breakpoint-item': true,
-            'hit': breakpointItem.isHit,
+            hit: breakpointItem.isHit,
             'conditional-breakpoint': breakpointItem.type === "CONDITIONAL_BREAKPOINT" /* SDK.DebuggerModel.BreakpointType.CONDITIONAL_BREAKPOINT */,
-            'logpoint': breakpointItem.type === "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */,
+            logpoint: breakpointItem.type === "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */,
         };
         const breakpointItemDescription = this.#getBreakpointItemDescription(breakpointItem);
         const codeSnippet = Platform.StringUtilities.trimEndWithMaxLength(breakpointItem.codeSnippet, MAX_SNIPPET_LENGTH);

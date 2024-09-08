@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 export var FilterType;
 (function (FilterType) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     FilterType["Domain"] = "domain";
     FilterType["HasResponseHeader"] = "has-response-header";
     FilterType["HasOverrides"] = "has-overrides";
@@ -24,6 +25,7 @@ export var FilterType;
     FilterType["CookieValue"] = "cookie-value";
     FilterType["StatusCode"] = "status-code";
     FilterType["Url"] = "url";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(FilterType || (FilterType = {}));
 export class UIRequestFilter {
     filters;

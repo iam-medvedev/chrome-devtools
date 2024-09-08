@@ -37,19 +37,19 @@ export declare function reset(): void;
 export declare function getRegisteredActionExtensions(): Array<Action>;
 export declare function maybeRemoveActionExtension(actionId: string): boolean;
 export declare const enum Platforms {
-    All = "All platforms",
-    Mac = "mac",
-    WindowsLinux = "windows,linux",
-    Android = "Android",
-    Windows = "windows"
+    ALL = "All platforms",
+    MAC = "mac",
+    WINDOWS_LINUX = "windows,linux",
+    ANDROID = "Android",
+    WINDOWS = "windows"
 }
 export declare const enum Events {
-    Enabled = "Enabled",
-    Toggled = "Toggled"
+    ENABLED = "Enabled",
+    TOGGLED = "Toggled"
 }
 export type EventTypes = {
-    [Events.Enabled]: boolean;
-    [Events.Toggled]: boolean;
+    [Events.ENABLED]: boolean;
+    [Events.TOGGLED]: boolean;
 };
 export declare const enum ActionCategory {
     NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.

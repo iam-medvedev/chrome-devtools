@@ -49,10 +49,10 @@ export declare class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<
     private bgColorPicked;
 }
 export declare const enum Events {
-    BackgroundColorPickerWillBeToggled = "BackgroundColorPickerWillBeToggled"
+    BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED = "BackgroundColorPickerWillBeToggled"
 }
 export type EventTypes = {
-    [Events.BackgroundColorPickerWillBeToggled]: boolean;
+    [Events.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED]: boolean;
 };
 export declare class Swatch {
     private readonly parentElement;

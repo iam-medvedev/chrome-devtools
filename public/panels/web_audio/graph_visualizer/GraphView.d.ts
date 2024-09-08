@@ -59,8 +59,8 @@ export declare class GraphView extends Common.ObjectWrapper.ObjectWrapper<EventT
     private notifyShouldRedraw;
 }
 export declare const enum Events {
-    ShouldRedraw = "ShouldRedraw"
+    SHOULD_REDRAW = "ShouldRedraw"
 }
 export type EventTypes = {
-    [Events.ShouldRedraw]: GraphView;
+    [Events.SHOULD_REDRAW]: GraphView;
 };

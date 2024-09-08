@@ -43,10 +43,10 @@ export class RequestHeaderSection extends HTMLElement {
         this.#headers = this.#request.requestHeaders().map(header => ({
             name: Platform.StringUtilities.toLowerCaseString(header.name),
             value: header.value,
-            valueEditable: 2 /* EditingAllowedStatus.Forbidden */,
+            valueEditable: 2 /* EditingAllowedStatus.FORBIDDEN */,
         }));
         this.#headers.sort((a, b) => Platform.StringUtilities.compare(a.name, b.name));
-        if (data.toReveal?.section === "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.Request */) {
+        if (data.toReveal?.section === "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.REQUEST */) {
             this.#headers.filter(header => header.name === data.toReveal?.header?.toLowerCase()).forEach(header => {
                 header.highlight = true;
             });
@@ -63,7 +63,7 @@ export class RequestHeaderSection extends HTMLElement {
       ${this.#maybeRenderProvisionalHeadersWarning()}
       ${this.#headers.map(header => html `
         <${HeaderSectionRow.litTagName}
-          .data=${{ header: header }}
+          .data=${{ header }}
           jslog=${VisualLogging.item('request-header')}
         ></${HeaderSectionRow.litTagName}>
       `)}

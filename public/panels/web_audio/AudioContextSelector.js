@@ -34,7 +34,7 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper {
         this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
         this.toolbarItemInternal.setEnabled(false);
         this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.placeholderText }));
-        this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ItemsReplaced */, this.onListItemReplaced, this);
+        this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, this.onListItemReplaced, this);
         this.toolbarItemInternal.element.classList.add('toolbar-has-dropdown');
         this.selectedContextInternal = null;
     }
@@ -102,7 +102,7 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper {
             this.selectedContextInternal = item;
             this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.titleFor(item) }));
         }
-        this.dispatchEventToListeners("ContextSelected" /* Events.ContextSelected */, item);
+        this.dispatchEventToListeners("ContextSelected" /* Events.CONTEXT_SELECTED */, item);
     }
     reset() {
         this.items.replaceAll([]);

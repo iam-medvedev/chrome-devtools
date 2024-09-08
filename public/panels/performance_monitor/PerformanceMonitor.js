@@ -90,7 +90,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
         UI.ARIAUtils.setLabel(this.canvas, i18nString(UIStrings.graphsDisplayingARealtimeViewOf));
         this.contentElement.createChild('div', 'perfmon-chart-suspend-overlay fill').createChild('div').textContent =
             i18nString(UIStrings.paused);
-        this.controlPane.addEventListener("MetricChanged" /* Events.MetricChanged */, this.recalcChartHeight, this);
+        this.controlPane.addEventListener("MetricChanged" /* Events.METRIC_CHANGED */, this.recalcChartHeight, this);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.PerformanceMetricsModel.PerformanceMetricsModel, this);
     }
     wasShown() {
@@ -170,7 +170,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
         const data = await this.model.requestMetrics();
         const timestamp = data.timestamp;
         const metrics = data.metrics;
-        this.metricsBuffer.push({ timestamp, metrics: metrics });
+        this.metricsBuffer.push({ timestamp, metrics });
         const millisPerWidth = this.width / this.pixelsPerMs;
         // Multiply by 2 as the pollInterval has some jitter and to have some extra samples if window is resized.
         const maxCount = Math.ceil(millisPerWidth / this.pollIntervalMs * 2);
@@ -437,7 +437,7 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper {
                         color: themeSupport.getComputedValue('--override-color-perf-monitor-cpu-recalc-style-duration', this.element),
                     },
                 ],
-                format: "Percent" /* Format.Percent */,
+                format: "Percent" /* Format.PERCENT */,
                 smooth: true,
                 stacked: true,
                 color: themeSupport.getComputedValue('--override-color-perf-monitor-cpu', this.element),
@@ -457,7 +457,7 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper {
                         color: themeSupport.getComputedValue('--override-color-perf-monitor-jsheap-used-size', this.element),
                     },
                 ],
-                format: "Bytes" /* Format.Bytes */,
+                format: "Bytes" /* Format.BYTES */,
                 color: themeSupport.getComputedValue('--override-color-perf-monitor-jsheap'),
             },
             {
@@ -536,7 +536,7 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper {
             this.enabledCharts.delete(chartName);
         }
         this.enabledChartsSetting.set(Array.from(this.enabledCharts));
-        this.dispatchEventToListeners("MetricChanged" /* Events.MetricChanged */);
+        this.dispatchEventToListeners("MetricChanged" /* Events.METRIC_CHANGED */);
     }
     charts() {
         return this.chartsInfo;
@@ -585,9 +585,9 @@ export class MetricIndicator {
             percentFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1, style: 'percent' });
         }
         switch (info.format) {
-            case "Percent" /* Format.Percent */:
+            case "Percent" /* Format.PERCENT */:
                 return percentFormatter.format(value);
-            case "Bytes" /* Format.Bytes */:
+            case "Bytes" /* Format.BYTES */:
                 return Platform.NumberUtilities.bytesToString(value);
             default:
                 return numberFormatter.format(value);

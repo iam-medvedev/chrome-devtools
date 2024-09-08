@@ -50,9 +50,9 @@ interface BlockedDetailsDescriptor {
     reveal?: () => void;
 }
 export declare const enum EditingAllowedStatus {
-    Disabled = 0,// Local overrides are currently disabled.
-    Enabled = 1,// The header is free to be edited.
-    Forbidden = 2
+    DISABLED = 0,// Local overrides are currently disabled.
+    ENABLED = 1,// The header is free to be edited.
+    FORBIDDEN = 2
 }
 export interface HeaderDetailsDescriptor {
     name: Platform.StringUtilities.LowerCaseString;

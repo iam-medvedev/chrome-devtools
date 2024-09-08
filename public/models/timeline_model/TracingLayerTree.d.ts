@@ -5,7 +5,7 @@ export declare class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     private tileById;
     private paintProfilerModel;
     constructor(target: SDK.Target.Target | null);
-    setLayers(root: TracingLayerPayload | null, layers: TracingLayerPayload[] | null, paints: TraceEngine.Handlers.ModelHandlers.Frames.LayerPaintEvent[]): Promise<void>;
+    setLayers(root: TracingLayerPayload | null, layers: TracingLayerPayload[] | null, paints: TraceEngine.Types.TraceEvents.LegacyLayerPaintEvent[]): Promise<void>;
     setTiles(tiles: TracingLayerTile[]): void;
     pictureForRasterTile(tileId: string): Promise<SDK.PaintProfiler.SnapshotWithRect | null>;
     private setPaints;
@@ -14,9 +14,9 @@ export declare class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
 }
 export declare class TracingFrameLayerTree {
     #private;
-    constructor(target: SDK.Target.Target | null, data: TraceEngine.Handlers.ModelHandlers.Frames.FrameLayerTreeData);
+    constructor(target: SDK.Target.Target | null, data: TraceEngine.Types.TraceEvents.LegacyFrameLayerTreeData);
     layerTreePromise(): Promise<TracingLayerTree | null>;
-    paints(): TraceEngine.Handlers.ModelHandlers.Frames.LayerPaintEvent[];
+    paints(): TraceEngine.Types.TraceEvents.LegacyLayerPaintEvent[];
 }
 export declare class TracingLayer implements SDK.LayerTreeBase.Layer {
     private parentLayerId;
@@ -64,7 +64,7 @@ export declare class TracingLayer implements SDK.LayerTreeBase.Layer {
     pictureForRect(targetRect: number[]): Promise<SDK.PaintProfiler.SnapshotWithRect | null>;
     private scrollRectsFromParams;
     private createScrollRects;
-    addPaintEvent(paint: TraceEngine.Handlers.ModelHandlers.Frames.LayerPaintEvent): void;
+    addPaintEvent(paint: TraceEngine.Types.TraceEvents.LegacyLayerPaintEvent): void;
     requestCompositingReasons(): Promise<string[]>;
     requestCompositingReasonIds(): Promise<string[]>;
     drawsContent(): boolean;

@@ -160,13 +160,13 @@ class DataGridNode extends DataGrid.DataGrid.DataGridNode {
         }
         const exportButton = UI.UIUtils.createTextButton(i18nString(UIStrings.export), () => {
             if (this.dataGrid) {
-                this.dataGrid.dispatchEventToListeners("ExportCredential" /* Events.ExportCredential */, this.credential);
+                this.dataGrid.dispatchEventToListeners("ExportCredential" /* Events.EXPORT_CREDENTIAL */, this.credential);
             }
         }, { jslogContext: 'webauthn.export-credential' });
         cell.appendChild(exportButton);
         const removeButton = UI.UIUtils.createTextButton(i18nString(UIStrings.remove), () => {
             if (this.dataGrid) {
-                this.dataGrid.dispatchEventToListeners("RemoveCredential" /* Events.RemoveCredential */, this.credential);
+                this.dataGrid.dispatchEventToListeners("RemoveCredential" /* Events.REMOVE_CREDENTIAL */, this.credential);
             }
         }, { jslogContext: 'webauthn.remove-credential' });
         cell.appendChild(removeButton);
@@ -180,7 +180,7 @@ class WebauthnDataGrid extends Common.ObjectWrapper.eventMixin(WebauthnDataGridB
 class EmptyDataGridNode extends DataGrid.DataGrid.DataGridNode {
     createCells(element) {
         element.removeChildren();
-        const td = this.createTDWithClass("center" /* DataGrid.DataGrid.Align.Center */);
+        const td = this.createTDWithClass("center" /* DataGrid.DataGrid.Align.CENTER */);
         if (this.dataGrid) {
             td.colSpan = this.dataGrid.visibleColumnsArray.length;
         }
@@ -296,7 +296,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
             {
                 id: 'isResidentCredential',
                 title: i18nString(UIStrings.isResident),
-                dataType: "Boolean" /* DataGrid.DataGrid.DataType.Boolean */,
+                dataType: "Boolean" /* DataGrid.DataGrid.DataType.BOOLEAN */,
                 weight: 10,
             },
             {
@@ -323,8 +323,8 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const dataGrid = new WebauthnDataGrid(dataGridConfig);
         dataGrid.renderInline();
         dataGrid.setStriped(true);
-        dataGrid.addEventListener("ExportCredential" /* Events.ExportCredential */, this.#handleExportCredential, this);
-        dataGrid.addEventListener("RemoveCredential" /* Events.RemoveCredential */, this.#handleRemoveCredential.bind(this, authenticatorId));
+        dataGrid.addEventListener("ExportCredential" /* Events.EXPORT_CREDENTIAL */, this.#handleExportCredential, this);
+        dataGrid.addEventListener("RemoveCredential" /* Events.REMOVE_CREDENTIAL */, this.#handleRemoveCredential.bind(this, authenticatorId));
         dataGrid.rootNode().appendChild(new EmptyDataGridNode());
         this.dataGrids.set(authenticatorId, dataGrid);
         return dataGrid;
@@ -563,8 +563,8 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const userFriendlyName = authenticatorId.slice(-5); // User friendly name defaults to last 5 chars of UUID.
         nameField.value = i18nString(UIStrings.authenticatorS, { PH1: userFriendlyName });
         this.#updateActiveLabelTitle(activeLabel, nameField.value);
-        editName.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.#handleEditNameButton(titleElement, nameField, editName, saveName));
-        saveName.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.#handleSaveNameButton(titleElement, nameField, editName, saveName, activeLabel));
+        editName.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.#handleEditNameButton(titleElement, nameField, editName, saveName));
+        saveName.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.#handleSaveNameButton(titleElement, nameField, editName, saveName, activeLabel));
         nameField.addEventListener('focusout', () => this.#handleSaveNameButton(titleElement, nameField, editName, saveName, activeLabel));
         nameField.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {

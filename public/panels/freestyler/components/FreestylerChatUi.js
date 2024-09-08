@@ -27,7 +27,7 @@ const UIStringsTemp = {
     /**
      *@description Disclaimer text right after the chat input.
      */
-    inputDisclaimer: 'Chat messages and data from this page will be sent to Google, reviewed by humans, and used to improve the feature. Do not use on pages with personal or sensitive information. AI assistant may display inaccurate information.',
+    inputDisclaimer: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
     /**
      *@description Title for the send icon button.
      */
@@ -40,6 +40,10 @@ const UIStringsTemp = {
      *@description Label for the "select an element" button.
      */
     selectAnElement: 'Select an element',
+    /**
+     *@description Label for the "select an element" button.
+     */
+    noElementSelected: 'No element selected',
     /**
      *@description Text for the empty state of the Freestyler panel.
      */
@@ -95,9 +99,9 @@ const UIStringsTemp = {
      */
     sideEffectConfirmationDescription: 'The code contains side effects. Do you wish to continue?',
     /**
-     * @description Side effect confirmation text for the button that says "Execute"
+     * @description Side effect confirmation text for the button that says "Continue"
      */
-    positiveSideEffectConfirmation: 'Execute',
+    positiveSideEffectConfirmation: 'Continue',
     /**
      * @description Side effect confirmation text for the button that says "Cancel"
      */
@@ -125,7 +129,11 @@ const UIStringsTemp = {
     /**
      *@description The fallback text when a step has no title yet
      */
-    performingAction: 'Performing action',
+    investigating: 'Investigating',
+    /**
+     *@description Prefix to the title of each thinking step of a user action is required to continue
+     */
+    paused: 'Paused',
 };
 // const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 // const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -183,11 +191,11 @@ export class FreestylerChatUi extends HTMLElement {
         this.#render();
     }
     focusTextInput() {
-        const input = this.#shadow.querySelector('.chat-input');
-        if (!input) {
+        const textArea = this.#shadow.querySelector('.chat-input');
+        if (!textArea) {
             return;
         }
-        input.focus();
+        textArea.focus();
     }
     scrollToLastMessage() {
         const message = this.#shadow.querySelector('.chat-message:last-child');
@@ -198,12 +206,26 @@ export class FreestylerChatUi extends HTMLElement {
     }
     #handleSubmit = (ev) => {
         ev.preventDefault();
-        const input = this.#shadow.querySelector('.chat-input');
-        if (!input || !input.value) {
+        const textArea = this.#shadow.querySelector('.chat-input');
+        if (!textArea || !textArea.value) {
             return;
         }
-        this.#props.onTextSubmit(input.value);
-        input.value = '';
+        this.#props.onTextSubmit(textArea.value);
+        textArea.value = '';
+    };
+    #handleTextAreaKeyDown = (ev) => {
+        if (!ev.target || !(ev.target instanceof HTMLTextAreaElement)) {
+            return;
+        }
+        if (ev.key === 'Enter' && !ev.shiftKey) {
+            // Do not go to a new line whenver Shift + Enter is pressed.
+            ev.preventDefault();
+            // Only submit the text when there isn't a request already in flight.
+            if (!this.#props.isLoading) {
+                this.#props.onTextSubmit(ev.target.value);
+                ev.target.value = '';
+            }
+        }
     };
     #handleCancel = (ev) => {
         ev.preventDefault();
@@ -249,14 +271,12 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     }
     #renderTitle(step) {
-        if (step.isLoading) {
-            return LitHtml.html `<span>Loading...</span>`;
-        }
-        const actionTitle = step.title ?? i18nString(UIStringsTemp.performingAction);
-        return LitHtml.html `<span>${actionTitle}</span>`;
+        const paused = step.sideEffect ? `${i18nString(UIStringsTemp.paused)}: ` : '';
+        const actionTitle = step.title ?? `${i18nString(UIStringsTemp.investigating)}…`;
+        return LitHtml.html `<span class="title">${paused}${actionTitle}</span>`;
     }
     #renderStepDetails(step, options) {
-        const sideEffects = options.isLast && step.sideEffect ? this.#renderSideEffectConfirmationUi(step.sideEffect) : LitHtml.nothing;
+        const sideEffects = options.isLast && step.sideEffect ? this.#renderSideEffectConfirmationUi(step) : LitHtml.nothing;
         const thought = step.thought ? LitHtml.html `<p>${this.#renderTextAsMarkdown(step.thought)}</p>` : LitHtml.nothing;
         const code = step.code ? LitHtml.html `
           <div class="action-result">
@@ -266,15 +286,15 @@ export class FreestylerChatUi extends HTMLElement {
                 .displayToolbar=${false}
                 .displayNotice=${true}
               ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
-              <div class="js-code-output">${step.output}</div>
-
           </div>` :
             LitHtml.nothing;
+        const output = step.output ? LitHtml.html `<div class="js-code-output">${step.output}</div>` : LitHtml.nothing;
         // clang-format off
         return LitHtml.html `<div class="step-details">
       ${thought}
-      ${sideEffects}
       ${code}
+      ${sideEffects}
+      ${output}
     </div>`;
         // clang-format on
     }
@@ -289,18 +309,25 @@ export class FreestylerChatUi extends HTMLElement {
             iconName = 'dots-horizontal';
         }
         const iconClasses = LitHtml.Directives.classMap({
-            'loading': isLoading,
-            'paused': Boolean(step.sideEffect),
+            indicator: true,
+            loading: isLoading,
+            paused: Boolean(step.sideEffect),
         });
         // clang-format off
         return LitHtml.html `
-      <details class="step" open>
+      <details class="step" .open=${Boolean(step.sideEffect)}>
         <summary>
-          <${IconButton.Icon.Icon.litTagName}
-            class=${iconClasses}
-            .name=${iconName}
-          ></${IconButton.Icon.Icon.litTagName}>
-          ${this.#renderTitle(step)}
+          <div class="summary">
+            <${IconButton.Icon.Icon.litTagName}
+              class=${iconClasses}
+              .name=${iconName}
+            ></${IconButton.Icon.Icon.litTagName}>
+            ${this.#renderTitle(step)}
+            <${IconButton.Icon.Icon.litTagName}
+              class="arrow"
+              .name=${'chevron-down'}
+            ></${IconButton.Icon.Icon.litTagName}>
+          </div>
         </summary>
         ${this.#renderStepDetails(step, {
             isLast: options.isLast,
@@ -308,33 +335,33 @@ export class FreestylerChatUi extends HTMLElement {
       </details>`;
         // clang-format on
     }
-    #renderSideEffectConfirmationUi(confirmSideEffectDialog) {
+    #renderSideEffectConfirmationUi(step) {
+        if (!step.sideEffect) {
+            return LitHtml.nothing;
+        }
+        const sideEffectAction = step.sideEffect.onAnswer;
         // clang-format off
         return LitHtml.html `<div
       class="side-effect-confirmation"
       jslog=${VisualLogging.section('side-effect-confirmation')}
     >
       <p>${i18nString(UIStringsTemp.sideEffectConfirmationDescription)}</p>
-      <${MarkdownView.CodeBlock.CodeBlock.litTagName}
-        .code=${confirmSideEffectDialog.code}
-        .codeLang=${'js'}
-        .displayToolbar=${false}
-      ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
       <div class="side-effect-buttons-container">
-        <${Buttons.Button.Button.litTagName}
-          .data=${{
-            variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-            jslogContext: 'accept-execute-code',
-        }}
-          @click=${() => confirmSideEffectDialog.onAnswer(true)}
-          >${i18nString(UIStringsTemp.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
         <${Buttons.Button.Button.litTagName}
           .data=${{
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             jslogContext: 'decline-execute-code',
         }}
-          @click=${() => confirmSideEffectDialog.onAnswer(false)}
+          @click=${() => sideEffectAction(false)}
         >${i18nString(UIStringsTemp.negativeSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+        <${Buttons.Button.Button.litTagName}
+          .data=${{
+            variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+            jslogContext: 'accept-execute-code',
+            iconName: 'play',
+        }}
+          @click=${() => sideEffectAction(true)}
+        >${i18nString(UIStringsTemp.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
       </div>
     </div>`;
         // clang-format on
@@ -359,7 +386,7 @@ export class FreestylerChatUi extends HTMLElement {
             <span>${name}</span>
           </div>
         </div>
-        <div>${message.text}</div>
+        <div>${this.#renderTextAsMarkdown(message.text)}</div>
       </div>`;
             // clang-format on
         }
@@ -401,34 +428,30 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     };
     #renderSelectAnElement = () => {
-        const data = {
-            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+        const resourceClass = LitHtml.Directives.classMap({
+            'not-selected': !this.#props.selectedElement,
+            'resource-link': true,
+        });
+        // clang-format off
+        return LitHtml.html `
+      <div class="select-element">
+        <${Buttons.Button.Button.litTagName}
+          .data=${{
+            variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+            size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
             iconName: 'select-element',
             toggledIconName: 'select-element',
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             toggled: this.#props.inspectElementToggled,
             title: i18nString(UIStringsTemp.selectAnElement),
             jslogContext: 'select-element',
-        };
-        // clang-format off
-        return this.#props.selectedElement
-            ? LitHtml.html `
-        <${Buttons.Button.Button.litTagName}
-          .data=${{
-                variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
-                ...data,
-            }}
+        }}
           @click=${this.#props.onInspectElementClick}
         ></${Buttons.Button.Button.litTagName}>
-        ${LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedElement))}`
-            : LitHtml.html `
-        <${Buttons.Button.Button.litTagName}
-          .data=${{
-                variant: "text" /* Buttons.Button.Variant.TEXT */,
-                ...data,
-            }}
-          @click=${this.#props.onInspectElementClick}
-        ><span class="select-an-element-text">${i18nString(UIStringsTemp.selectAnElement)}</span></${Buttons.Button.Button.litTagName}>`;
+        <div class=${resourceClass}>${this.#props.selectedElement
+            ? LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedElement))
+            : LitHtml.html `<span>${i18nString(UIStringsTemp.noElementSelected)}</span>`}</div>
+      </div>`;
         // clang-format on
     };
     #renderFeedbackLink = () => {
@@ -468,7 +491,7 @@ export class FreestylerChatUi extends HTMLElement {
     </div>`;
         // clang-format on
     };
-    #renderChatUi = () => {
+    #renderChatInput = () => {
         // TODO(ergunsh): Show a better UI for the states where Aida client is not available.
         const isAidaAvailable = this.#props.aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
         const showsSideEffects = this.#props.messages.some(message => {
@@ -477,6 +500,46 @@ export class FreestylerChatUi extends HTMLElement {
             });
         });
         const isInputDisabled = !Boolean(this.#props.selectedElement) || !isAidaAvailable || showsSideEffects;
+        // clang-format off
+        return LitHtml.html `
+      <div class="chat-input-container">
+        <textarea class="chat-input"
+          .disabled=${isInputDisabled}
+          wrap="hard"
+          @keydown=${this.#handleTextAreaKeyDown}
+          placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}
+          jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}></textarea>
+          ${this.#props.isLoading
+            ? LitHtml.html `<${Buttons.Button.Button.litTagName}
+              class="chat-input-button"
+              aria-label=${i18nString(UIStringsTemp.cancelButtonTitle)}
+              @click=${this.#handleCancel}
+              .data=${{
+                variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                disabled: isInputDisabled,
+                iconName: 'stop',
+                title: i18nString(UIStringsTemp.cancelButtonTitle),
+                jslogContext: 'stop',
+            }}
+            ></${Buttons.Button.Button.litTagName}>`
+            : LitHtml.html `<${Buttons.Button.Button.litTagName}
+              class="chat-input-button"
+              aria-label=${i18nString(UIStringsTemp.sendButtonTitle)}
+              .data=${{
+                type: 'submit',
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                disabled: isInputDisabled,
+                iconName: 'send',
+                title: i18nString(UIStringsTemp.sendButtonTitle),
+                jslogContext: 'send',
+            }}
+            ></${Buttons.Button.Button.litTagName}>`}
+      </div>`;
+        // clang-format on
+    };
+    #renderChatUi = () => {
         // clang-format off
         return LitHtml.html `
       <div class="chat-ui">
@@ -492,48 +555,18 @@ export class FreestylerChatUi extends HTMLElement {
               ${this.#renderFeedbackLink()}
             </div>
           </div>
-          <div class="chat-input-container">
-            <input type="text" class="chat-input" .disabled=${isInputDisabled}
-              placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}
-              jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}
-            >${this.#props.isLoading
-            ? LitHtml.html `
-                    <${Buttons.Button.Button.litTagName}
-                      class="step-actions"
-                      aria-label=${i18nString(UIStringsTemp.cancelButtonTitle)}
-                      @click=${this.#handleCancel}
-                      .data=${{
-                variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                disabled: isInputDisabled,
-                iconName: 'stop',
-                title: i18nString(UIStringsTemp.cancelButtonTitle),
-                jslogContext: 'stop',
-            }}
-                    ></${Buttons.Button.Button.litTagName}>`
-            : LitHtml.html `
-                    <${Buttons.Button.Button.litTagName}
-                      class="step-actions"
-                      aria-label=${i18nString(UIStringsTemp.sendButtonTitle)}
-                      .data=${{
-                type: 'submit',
-                variant: "icon" /* Buttons.Button.Variant.ICON */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                disabled: isInputDisabled,
-                iconName: 'send',
-                title: i18nString(UIStringsTemp.sendButtonTitle),
-                jslogContext: 'send',
-            }}
-                    ></${Buttons.Button.Button.litTagName}>`}
-          </div>
-          <span class="chat-input-disclaimer">${i18nString(UIStringsTemp.inputDisclaimer)} See <x-link
+          ${this.#renderChatInput()}
+        </form>
+        <div class="disclaimer">
+          <div class="disclaimer-text">${i18nString(UIStringsTemp.inputDisclaimer)} See <x-link
               class="link"
               href=${DOGFOOD_INFO}
               jslog=${VisualLogging.link('freestyler.dogfood-info').track({
             click: true,
         })}
-            >dogfood terms</x-link>.</span>
-        </form>
+            >dogfood terms</x-link>.
+          </div>
+        </div>
       </div>
     `;
         // clang-format on

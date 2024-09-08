@@ -52,7 +52,6 @@ import inspectorCommonStyles from '../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { CLSRect } from './CLSLinkifier.js';
 import * as TimelineComponents from './components/components.js';
-import { getCategoryStyles, getEventStyle, TimelineRecordStyle, visibleTypes, } from './EventUICategory.js';
 import * as Extensions from './extensions/extensions.js';
 import { Tracker } from './FreshRecording.js';
 import { titleForInteractionEvent } from './InteractionsTrackAppender.js';
@@ -563,17 +562,15 @@ export class TimelineUIUtils {
         }
     }
     static eventStyle(event) {
-        if (TraceEngine.Helpers.Trace.eventHasCategory(event, TraceEngine.Types.TraceEvents.Categories.Console) ||
-            TraceEngine.Helpers.Trace.eventHasCategory(event, TraceEngine.Types.TraceEvents.Categories.UserTiming)) {
-            return new TimelineRecordStyle(event.name, getCategoryStyles()['scripting']);
+        if (TraceEngine.Types.TraceEvents.isProfileCall(event) && event.callFrame.functionName === '(idle)') {
+            return new TimelineComponents.EntryStyles.TimelineRecordStyle(event.name, TimelineComponents.EntryStyles.getCategoryStyles().idle);
         }
-        if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
-            if (event.callFrame.functionName === '(idle)') {
-                return new TimelineRecordStyle(event.name, getCategoryStyles().idle);
-            }
+        if (event.cat === TraceEngine.Types.TraceEvents.Categories.Console ||
+            event.cat === TraceEngine.Types.TraceEvents.Categories.UserTiming) {
+            return new TimelineComponents.EntryStyles.TimelineRecordStyle(event.name, TimelineComponents.EntryStyles.getCategoryStyles()['scripting']);
         }
-        const defaultStyles = new TimelineRecordStyle(event.name, getCategoryStyles().other);
-        return getEventStyle(event.name) || defaultStyles;
+        return TimelineComponents.EntryStyles.getEventStyle(event.name) ??
+            new TimelineComponents.EntryStyles.TimelineRecordStyle(event.name, TimelineComponents.EntryStyles.getCategoryStyles().other);
     }
     static eventColor(event) {
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
@@ -589,7 +586,7 @@ export class TimelineUIUtils {
         // This event is considered idle time but still rendered as a scripting event here
         // to connect the StreamingCompileScriptParsing events it belongs to.
         if (event.name === "v8.parseOnBackgroundWaiting" /* TraceEngine.Types.TraceEvents.KnownEventName.STREAMING_COMPILE_SCRIPT_WAITING */) {
-            parsedColor = getCategoryStyles().scripting.getComputedColorValue();
+            parsedColor = TimelineComponents.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
             if (!parsedColor) {
                 throw new Error('Unable to parse color from getCategoryStyles().scripting.color');
             }
@@ -818,7 +815,7 @@ export class TimelineUIUtils {
                     scriptId: unsafeEventData['scriptId'],
                     url: unsafeEventData['url'],
                     lineNumber: lineNumber || 0,
-                    columnNumber: columnNumber,
+                    columnNumber,
                     target,
                     isFreshRecording,
                     linkifier,
@@ -1373,7 +1370,7 @@ export class TimelineUIUtils {
     }
     static statsForTimeRange(events, startTime, endTime) {
         if (!events.length) {
-            return { 'idle': endTime - startTime };
+            return { idle: endTime - startTime };
         }
         buildRangeStatsCacheIfNeeded(events);
         const aggregatedStats = subtractStats(aggregatedStatsAtTime(endTime), aggregatedStatsAtTime(startTime));
@@ -1450,8 +1447,9 @@ export class TimelineUIUtils {
             }
             function onStartEvent(e) {
                 const { startTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
-                const category = getEventStyle(e.name)?.category.name ||
-                    getCategoryStyles().other.name;
+                const category = TimelineComponents.EntryStyles.getEventStyle(e.name)
+                    ?.category.name ||
+                    TimelineComponents.EntryStyles.getCategoryStyles().other.name;
                 const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
                 if (category !== parentCategory) {
                     categoryChange(parentCategory || null, category, startTime);
@@ -1495,7 +1493,7 @@ export class TimelineUIUtils {
         return highlightContainer;
     }
     static stackTraceFromCallFrames(callFrames) {
-        return { callFrames: callFrames };
+        return { callFrames };
     }
     static async generateCauses(event, contentHelper, traceParseData) {
         const { startTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
@@ -1767,12 +1765,12 @@ export class TimelineUIUtils {
         return eventDivider;
     }
     static visibleEventsFilter() {
-        return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(visibleTypes());
+        return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(TimelineComponents.EntryStyles.visibleTypes());
     }
     // Included only for layout tests.
     // TODO(crbug.com/1386091): Fix/port layout tests and remove.
     static categories() {
-        return getCategoryStyles();
+        return TimelineComponents.EntryStyles.getCategoryStyles();
     }
     static generatePieChart(aggregatedStats, selfCategory, selfTime) {
         let total = 0;
@@ -1803,8 +1801,9 @@ export class TimelineUIUtils {
             }
         }
         // Add other categories.
-        for (const categoryName in getCategoryStyles()) {
-            const category = getCategoryStyles()[categoryName];
+        for (const categoryName in TimelineComponents.EntryStyles.getCategoryStyles()) {
+            const category = TimelineComponents.EntryStyles
+                .getCategoryStyles()[categoryName];
             if (categoryName === selfCategory?.name) {
                 // Do not add an entry for this event's self category because 2
                 // entries for it where added just before this for loop (for
@@ -1884,7 +1883,7 @@ export class TimelineUIUtils {
             TraceEngine.Helpers.Trace.eventHasCategory(event, TraceEngine.Types.TraceEvents.Categories.Console) ||
             TraceEngine.Helpers.Trace.eventHasCategory(event, TraceEngine.Types.TraceEvents.Categories.UserTiming)) {
             return {
-                title: title,
+                title,
                 dashStyle: tallMarkerDashStyle,
                 lineWidth: 0.5,
                 color: TraceEngine.Helpers.Trace.eventHasCategory(event, TraceEngine.Types.TraceEvents.Categories.Console) ?
@@ -1930,11 +1929,11 @@ export class TimelineUIUtils {
                 break;
         }
         return {
-            title: title,
+            title,
             dashStyle: tallMarkerDashStyle,
             lineWidth: 0.5,
-            color: color,
-            tall: tall,
+            color,
+            tall,
             lowPriority: false,
         };
     }

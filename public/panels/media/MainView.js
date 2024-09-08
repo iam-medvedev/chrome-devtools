@@ -30,7 +30,7 @@ class PlayerDataCollection {
         this.events.push(event);
     }
     export() {
-        return { 'properties': this.properties, 'messages': this.messages, 'events': this.events, 'errors': this.errors };
+        return { properties: this.properties, messages: this.messages, events: this.events, errors: this.errors };
     }
 }
 export class PlayerDataDownloadManager {
@@ -125,18 +125,18 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     }
     addEventListeners(mediaModel) {
         mediaModel.ensureEnabled();
-        mediaModel.addEventListener("PlayerPropertiesChanged" /* Events.PlayerPropertiesChanged */, this.propertiesChanged, this);
-        mediaModel.addEventListener("PlayerEventsAdded" /* Events.PlayerEventsAdded */, this.eventsAdded, this);
-        mediaModel.addEventListener("PlayerMessagesLogged" /* Events.PlayerMessagesLogged */, this.messagesLogged, this);
-        mediaModel.addEventListener("PlayerErrorsRaised" /* Events.PlayerErrorsRaised */, this.errorsRaised, this);
-        mediaModel.addEventListener("PlayersCreated" /* Events.PlayersCreated */, this.playersCreated, this);
+        mediaModel.addEventListener("PlayerPropertiesChanged" /* Events.PLAYER_PROPERTIES_CHANGED */, this.propertiesChanged, this);
+        mediaModel.addEventListener("PlayerEventsAdded" /* Events.PLAYER_EVENTS_ADDED */, this.eventsAdded, this);
+        mediaModel.addEventListener("PlayerMessagesLogged" /* Events.PLAYER_MESSAGES_LOGGED */, this.messagesLogged, this);
+        mediaModel.addEventListener("PlayerErrorsRaised" /* Events.PLAYER_ERRORS_RAISED */, this.errorsRaised, this);
+        mediaModel.addEventListener("PlayersCreated" /* Events.PLAYERS_CREATED */, this.playersCreated, this);
     }
     removeEventListeners(mediaModel) {
-        mediaModel.removeEventListener("PlayerPropertiesChanged" /* Events.PlayerPropertiesChanged */, this.propertiesChanged, this);
-        mediaModel.removeEventListener("PlayerEventsAdded" /* Events.PlayerEventsAdded */, this.eventsAdded, this);
-        mediaModel.removeEventListener("PlayerMessagesLogged" /* Events.PlayerMessagesLogged */, this.messagesLogged, this);
-        mediaModel.removeEventListener("PlayerErrorsRaised" /* Events.PlayerErrorsRaised */, this.errorsRaised, this);
-        mediaModel.removeEventListener("PlayersCreated" /* Events.PlayersCreated */, this.playersCreated, this);
+        mediaModel.removeEventListener("PlayerPropertiesChanged" /* Events.PLAYER_PROPERTIES_CHANGED */, this.propertiesChanged, this);
+        mediaModel.removeEventListener("PlayerEventsAdded" /* Events.PLAYER_EVENTS_ADDED */, this.eventsAdded, this);
+        mediaModel.removeEventListener("PlayerMessagesLogged" /* Events.PLAYER_MESSAGES_LOGGED */, this.messagesLogged, this);
+        mediaModel.removeEventListener("PlayerErrorsRaised" /* Events.PLAYER_ERRORS_RAISED */, this.errorsRaised, this);
+        mediaModel.removeEventListener("PlayersCreated" /* Events.PLAYERS_CREATED */, this.playersCreated, this);
     }
     onPlayerCreated(playerID) {
         this.sidebar.addMediaElementItem(playerID);

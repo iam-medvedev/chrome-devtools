@@ -63,8 +63,8 @@ export class AnimationUI {
         this.#activeIntervalGroup = UI.UIUtils.createSVGChild(this.#svg, 'g');
         this.#activeIntervalGroup.setAttribute('jslog', `${VisualLogging.animationClip().track({ drag: true })}`);
         if (!this.#animationInternal.viewOrScrollTimeline()) {
-            UI.UIUtils.installDragHandle(this.#activeIntervalGroup, this.mouseDown.bind(this, "AnimationDrag" /* Events.AnimationDrag */, null), this.mouseMove.bind(this), this.mouseUp.bind(this), '-webkit-grabbing', '-webkit-grab');
-            AnimationUI.installDragHandleKeyboard(this.#activeIntervalGroup, this.keydownMove.bind(this, "AnimationDrag" /* Events.AnimationDrag */, null));
+            UI.UIUtils.installDragHandle(this.#activeIntervalGroup, this.mouseDown.bind(this, "AnimationDrag" /* Events.ANIMATION_DRAG */, null), this.mouseMove.bind(this), this.mouseUp.bind(this), '-webkit-grabbing', '-webkit-grab');
+            AnimationUI.installDragHandleKeyboard(this.#activeIntervalGroup, this.keydownMove.bind(this, "AnimationDrag" /* Events.ANIMATION_DRAG */, null));
         }
         this.#cachedElements = [];
         this.#movementInMs = 0;
@@ -158,13 +158,13 @@ export class AnimationUI {
         }
         let eventType;
         if (keyframeIndex === 0) {
-            eventType = "StartEndpointMove" /* Events.StartEndpointMove */;
+            eventType = "StartEndpointMove" /* Events.START_ENDPOINT_MOVE */;
         }
         else if (keyframeIndex === -1) {
-            eventType = "FinishEndpointMove" /* Events.FinishEndpointMove */;
+            eventType = "FinishEndpointMove" /* Events.FINISH_ENDPOINT_MOVE */;
         }
         else {
-            eventType = "KeyframeMove" /* Events.KeyframeMove */;
+            eventType = "KeyframeMove" /* Events.KEYFRAME_MOVE */;
         }
         if (!this.animation().viewOrScrollTimeline()) {
             UI.UIUtils.installDragHandle(circle, this.mouseDown.bind(this, eventType, keyframeIndex), this.mouseMove.bind(this), this.mouseUp.bind(this), 'ew-resize');
@@ -203,7 +203,7 @@ export class AnimationUI {
         else {
             const stepFunction = StepTimingFunction.parse(easing);
             group.removeChildren();
-            const offsetMap = { 'start': 0, 'middle': 0.5, 'end': 1 };
+            const offsetMap = { start: 0, middle: 0.5, end: 1 };
             if (stepFunction) {
                 const offsetWeight = offsetMap[stepFunction.stepAtPosition];
                 for (let i = 0; i < stepFunction.steps; i++) {
@@ -286,17 +286,17 @@ export class AnimationUI {
     }
     delayOrStartTime() {
         let delay = this.#animationInternal.delayOrStartTime();
-        if (this.#mouseEventType === "AnimationDrag" /* Events.AnimationDrag */ || this.#mouseEventType === "StartEndpointMove" /* Events.StartEndpointMove */) {
+        if (this.#mouseEventType === "AnimationDrag" /* Events.ANIMATION_DRAG */ || this.#mouseEventType === "StartEndpointMove" /* Events.START_ENDPOINT_MOVE */) {
             delay += this.#movementInMs;
         }
         return delay;
     }
     duration() {
         let duration = this.#animationInternal.iterationDuration();
-        if (this.#mouseEventType === "FinishEndpointMove" /* Events.FinishEndpointMove */) {
+        if (this.#mouseEventType === "FinishEndpointMove" /* Events.FINISH_ENDPOINT_MOVE */) {
             duration += this.#movementInMs;
         }
-        else if (this.#mouseEventType === "StartEndpointMove" /* Events.StartEndpointMove */) {
+        else if (this.#mouseEventType === "StartEndpointMove" /* Events.START_ENDPOINT_MOVE */) {
             duration -= this.#movementInMs;
         }
         return Math.max(0, duration);
@@ -306,7 +306,7 @@ export class AnimationUI {
             throw new Error('Unable to calculate offset; keyframes do not exist');
         }
         let offset = this.#keyframes[i].offsetAsNumber();
-        if (this.#mouseEventType === "KeyframeMove" /* Events.KeyframeMove */ && i === this.#keyframeMoved) {
+        if (this.#mouseEventType === "KeyframeMove" /* Events.KEYFRAME_MOVE */ && i === this.#keyframeMoved) {
             console.assert(i > 0 && i < this.#keyframes.length - 1, 'First and last keyframe cannot be moved');
             offset += this.#movementInMs / this.#animationInternal.iterationDuration();
             offset = Math.max(offset, this.#keyframes[i - 1].offsetAsNumber());
@@ -351,7 +351,7 @@ export class AnimationUI {
         const mouseEvent = event;
         this.#movementInMs = (mouseEvent.clientX - (this.#downMouseX || 0)) / this.#timeline.pixelTimeRatio();
         // Commit changes
-        if (this.#mouseEventType === "KeyframeMove" /* Events.KeyframeMove */) {
+        if (this.#mouseEventType === "KeyframeMove" /* Events.KEYFRAME_MOVE */) {
             if (this.#keyframes && this.#keyframeMoved !== null && typeof this.#keyframeMoved !== 'undefined') {
                 this.#keyframes[this.#keyframeMoved].setOffset(this.offset(this.#keyframeMoved));
             }
@@ -359,12 +359,12 @@ export class AnimationUI {
         else {
             this.#animationInternal.setTiming(this.duration(), this.delayOrStartTime());
         }
-        Host.userMetrics.animationPointDragged(this.#mouseEventType === "AnimationDrag" /* Events.AnimationDrag */ ? 0 /* Host.UserMetrics.AnimationPointDragType.ANIMATION_DRAG */ :
-            this.#mouseEventType === "KeyframeMove" /* Events.KeyframeMove */ ?
+        Host.userMetrics.animationPointDragged(this.#mouseEventType === "AnimationDrag" /* Events.ANIMATION_DRAG */ ? 0 /* Host.UserMetrics.AnimationPointDragType.ANIMATION_DRAG */ :
+            this.#mouseEventType === "KeyframeMove" /* Events.KEYFRAME_MOVE */ ?
                 1 /* Host.UserMetrics.AnimationPointDragType.KEYFRAME_MOVE */ :
-                this.#mouseEventType === "StartEndpointMove" /* Events.StartEndpointMove */ ?
+                this.#mouseEventType === "StartEndpointMove" /* Events.START_ENDPOINT_MOVE */ ?
                     2 /* Host.UserMetrics.AnimationPointDragType.START_ENDPOINT_MOVE */ :
-                    this.#mouseEventType === "FinishEndpointMove" /* Events.FinishEndpointMove */ ?
+                    this.#mouseEventType === "FinishEndpointMove" /* Events.FINISH_ENDPOINT_MOVE */ ?
                         3 /* Host.UserMetrics.AnimationPointDragType.FINISH_ENDPOINT_MOVE */ :
                         4 /* Host.UserMetrics.AnimationPointDragType.OTHER */);
         this.#movementInMs = 0;
@@ -389,7 +389,7 @@ export class AnimationUI {
             default:
                 return;
         }
-        if (this.#mouseEventType === "KeyframeMove" /* Events.KeyframeMove */) {
+        if (this.#mouseEventType === "KeyframeMove" /* Events.KEYFRAME_MOVE */) {
             if (this.#keyframes && this.#keyframeMoved !== null) {
                 this.#keyframes[this.#keyframeMoved].setOffset(this.offset(this.#keyframeMoved));
             }

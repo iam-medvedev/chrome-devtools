@@ -173,6 +173,76 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
   padding-right: 3px;
 }
 
+/* Navigation tree variant */
+.tree-outline.tree-variant-navigation {
+  padding: var(--sys-size-3) 0 var(--sys-size-3) var(--sys-size-3);
+}
+
+/* It does not look like the linter works with CSS nesting correctly. */
+/* stylelint-disable no-descending-specificity */
+.tree-outline.tree-variant-navigation li,
+.tree-outline.hide-selection-when-blurred.tree-variant-navigation li {
+  height: var(--sys-size-10);
+  margin-right: var(--sys-size-5);
+  padding-right: var(--sys-size-5);
+  padding-left: 6px;
+
+  &::before {
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-right: 3px;
+    margin-left: -3px;
+  }
+
+  & .selection {
+    border-radius: 0 var(--sys-shape-corner-full) var(--sys-shape-corner-full) 0;
+  }
+
+  &.selected,
+  &.selected:focus {
+    color: var(--app-color-navigation-drawer-label-selected);
+    background: transparent;
+
+    & .selection {
+      display: block;
+      background-color: var(--app-color-navigation-drawer-background-selected);
+    }
+
+    & .leading-icons devtools-icon {
+      color: var(--app-color-navigation-drawer-label-selected);
+    }
+  }
+
+  &:active .selection::before {
+    background-color: var(--sys-color-state-ripple-neutral-on-subtle);
+    content: "";
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  & .leading-icons {
+    margin-right: var(--sys-size-4);
+    overflow: hidden;
+  }
+
+  & .tree-element-title {
+    height: inherit;
+    flex-shrink: 100;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    align-content: center;
+  }
+}
+/* stylelint-enable no-descending-specificity */
+
+ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.selected:focus .selection {
+  background-color: var(--app-color-navigation-drawer-background-selected);
+}
+
 @media (forced-colors: active) {
   .tree-outline-disclosure li.parent::before,
   .tree-outline:not(.hide-selection-when-blurred) li.parent:not(.selected)::before {
@@ -199,6 +269,16 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
   .tree-outline.hide-selection-when-blurred .selected:focus-visible {
     forced-color-adjust: none;
     background-color: Highlight;
+  }
+
+  ol.tree-outline.tree-variant-navigation li.selected {
+    &.selected,
+    &.selected:focus {
+      & .selection {
+        forced-color-adjust: none;
+        background-color: ButtonText;
+      }
+    }
   }
 
   ol.tree-outline:not(.hide-selection-when-blurred) li.parent.selected::before,

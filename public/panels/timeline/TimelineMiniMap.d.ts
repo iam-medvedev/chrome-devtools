@@ -31,7 +31,6 @@ declare const TimelineMiniMap_base: (new (...args: any[]) => {
  */
 export declare class TimelineMiniMap extends TimelineMiniMap_base {
     #private;
-    breadcrumbsActivated: boolean;
     breadcrumbs: TimelineComponents.Breadcrumbs.Breadcrumbs | null;
     constructor();
     addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.OverviewPaneBreadcrumbAddedEvent): void;
@@ -39,6 +38,5 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     reset(): void;
     getControls(): TimelineEventOverview[];
     setData(data: OverviewData): void;
-    addInitialBreadcrumb(): void;
 }
 export {};

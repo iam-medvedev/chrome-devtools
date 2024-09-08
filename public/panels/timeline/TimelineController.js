@@ -5,6 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Extensions from '../../models/extensions/extensions.js';
+import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 const UIStrings = {
     /**
@@ -23,9 +24,7 @@ export class TimelineController {
     #collectedEvents = [];
     #recordingStartTime = null;
     client;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tracingCompleteCallback;
+    tracingCompletePromise = null;
     /**
      * We always need to profile against the DevTools root target, which is
      * the target that DevTools is attached to.
@@ -119,10 +118,10 @@ export class TimelineController {
         if (Root.Runtime.experiments.isEnabled('timeline-compiled-sources')) {
             categoriesArray.push(disabledByDefault('devtools.v8-source-rundown-sources'));
         }
+        await LiveMetrics.LiveMetrics.instance().disable();
         this.#recordingStartTime = Date.now();
         const response = await this.startRecordingWithCategories(categoriesArray.join(','));
         if (response.getError()) {
-            await this.waitForTracingToStop(false);
             await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         }
         return response;
@@ -132,17 +131,14 @@ export class TimelineController {
             this.tracingManager.stop();
         }
         this.client.loadingStarted();
-        await this.waitForTracingToStop(true);
+        await this.waitForTracingToStop();
         await this.allSourcesFinished();
+        await LiveMetrics.LiveMetrics.instance().enable();
     }
-    async waitForTracingToStop(awaitTracingCompleteCallback) {
-        const tracingStoppedPromises = [];
-        if (this.tracingManager && awaitTracingCompleteCallback) {
-            tracingStoppedPromises.push(new Promise(resolve => {
-                this.tracingCompleteCallback = resolve;
-            }));
+    async waitForTracingToStop() {
+        if (this.tracingManager) {
+            await this.tracingCompletePromise?.promise;
         }
-        await Promise.all(tracingStoppedPromises);
     }
     async startRecordingWithCategories(categories) {
         if (!this.tracingManager) {
@@ -152,6 +148,7 @@ export class TimelineController {
         // caused by starting CPU profiler, that needs to traverse JS heap to collect
         // all the functions data.
         await SDK.TargetManager.TargetManager.instance().suspendAllTargets('performance-timeline');
+        this.tracingCompletePromise = Promise.withResolvers();
         const response = await this.tracingManager.start(this, categories, '');
         await this.warmupJsProfiler();
         Extensions.ExtensionServer.ExtensionServer.instance().profilingStarted();
@@ -176,11 +173,11 @@ export class TimelineController {
         this.#collectedEvents.push(...events);
     }
     tracingComplete() {
-        if (!this.tracingCompleteCallback) {
+        if (!this.tracingCompletePromise) {
             return;
         }
-        this.tracingCompleteCallback(undefined);
-        this.tracingCompleteCallback = null;
+        this.tracingCompletePromise.resolve(undefined);
+        this.tracingCompletePromise = null;
     }
     async allSourcesFinished() {
         this.client.processingStarted();

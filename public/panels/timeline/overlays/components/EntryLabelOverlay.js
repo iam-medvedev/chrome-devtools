@@ -42,6 +42,7 @@ export class EntryLabelOverlay extends HTMLElement {
     #connectorLineContainer = null;
     #label;
     #entryIsInMainChart;
+    #shouldDrawBelowEntry;
     /*
   The entry label overlay consists of 3 parts - the label part with the label string inside,
   the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.
@@ -61,9 +62,10 @@ export class EntryLabelOverlay extends HTMLElement {
   
   Otherwise, the entry label overlay object only gets repositioned.
   */
-    constructor(label, entryIsInMainChart) {
+    constructor(label, entryIsInMainChart, shouldDrawBelowEntry = false) {
         super();
         this.#render();
+        this.#shouldDrawBelowEntry = shouldDrawBelowEntry;
         this.#labelPartsWrapper = this.#shadow.querySelector('.label-parts-wrapper');
         this.#labelBox = this.#labelPartsWrapper?.querySelector('.label-box') ?? null;
         this.#connectorLineContainer = this.#labelPartsWrapper?.querySelector('.connectorContainer') ?? null;
@@ -72,6 +74,11 @@ export class EntryLabelOverlay extends HTMLElement {
         this.#label = label;
         this.#entryIsInMainChart = entryIsInMainChart;
         this.#drawLabel(label);
+        // If the label is not empty, it was loaded from the trace file.
+        // In that case, do not auto-focus it as if the user were creating it for the first time
+        if (label !== '') {
+            this.#setLabelEditabilityAndRemoveEmptyLabel(false);
+        }
         this.#drawConnector();
     }
     connectedCallback() {
@@ -144,11 +151,19 @@ export class EntryLabelOverlay extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
         // We need to redraw the entry wrapper only if the entry dimensions change
         this.#drawEntryHighlightWrapper();
+        // The label and connector can move depending on the height of the entry
+        this.#drawLabel();
+        this.#drawConnector();
     }
     #drawConnector() {
         if (!this.#connectorLineContainer) {
             console.error('`connectorLineContainer` element is missing.');
             return;
+        }
+        if (this.#shouldDrawBelowEntry && this.#entryLabelParams) {
+            const translation = this.#entryLabelParams.height - this.#entryLabelParams.cutOffEntryHeight +
+                EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
+            this.#connectorLineContainer.style.transform = `translateY(${translation}px) rotate(180deg)`;
         }
         const connector = this.#connectorLineContainer.querySelector('line');
         const circle = this.#connectorLineContainer.querySelector('circle');
@@ -181,13 +196,40 @@ export class EntryLabelOverlay extends HTMLElement {
             console.error('`labelBox` element is missing.');
             return;
         }
-        this.#labelBox.innerText = initialLabel;
+        if (typeof initialLabel === 'string') {
+            this.#labelBox.innerText = initialLabel;
+        }
+        let xTranslation = null;
+        let yTranslation = null;
         // PART 1: draw the label box
-        this.#labelBox.style.transform = `translateX(-${EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH}px)`;
-        // If the label is not empty, it was loaded from the trace file.
-        // In that case, do not make just created label editable.
-        if (initialLabel !== '') {
-            this.#setLabelEditabilityAndRemoveEmptyLabel(false);
+        if (this.#shouldDrawBelowEntry) {
+            // Label is drawn below and slightly to the right.
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
+        }
+        else {
+            // If the label is drawn above, the connector goes up and to the left, so
+            // we pull the label back slightly to align it nicely.
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
+        }
+        if (this.#shouldDrawBelowEntry && this.#entryLabelParams) {
+            // Move the label down from above the entry to below it. The label is positioned by default quite far above the entry, hence why we add:
+            // 1. the height of the entry + of the label (inc its padding)
+            // 2. the height of the connector (*2), so we have room to draw it
+            // 3. another 4 px, because it looks nicer than if we don't have that :)
+            const verticalTransform = this.#entryLabelParams.height - this.#entryLabelParams.cutOffEntryHeight +
+                EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 +
+                EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2;
+            yTranslation = verticalTransform;
+        }
+        let transformString = '';
+        if (xTranslation) {
+            transformString += `translateX(${xTranslation}px) `;
+        }
+        if (yTranslation) {
+            transformString += `translateY(${yTranslation}px)`;
+        }
+        if (transformString.length) {
+            this.#labelBox.style.transform = transformString;
         }
     }
     #drawEntryHighlightWrapper() {
@@ -200,8 +242,6 @@ export class EntryLabelOverlay extends HTMLElement {
         // Therefore, set the bottom border to hidden and hide the label and connector parts of the label.
         // If it's partly hidden in the network chart, it's hidden from the bottom. In that case, hide the bottom border.
         if (this.#entryIsInMainChart) {
-            this.#labelBox.style.visibility = cutOffEntryHeight > 0 ? 'hidden' : 'visible';
-            this.#connectorLineContainer.style.visibility = cutOffEntryHeight > 0 ? 'hidden' : 'visible';
             this.#entryHighlightWrapper.style.borderTopWidth = cutOffEntryHeight > 0 ? '0' : '2px';
         }
         else {

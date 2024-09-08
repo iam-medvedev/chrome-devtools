@@ -37,6 +37,7 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/NodeLink.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/RenderBlocking.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/SidebarInsight.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/ThirdParties.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Viewport.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/types.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",

@@ -8,11 +8,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type AggregatedIssue } from './IssueAggregator.js';
 import { type IssueView } from './IssueView.js';
 export declare const enum AffectedItem {
-    Cookie = "Cookie",
-    Directive = "Directive",
-    Element = "Element",
-    Request = "Request",
-    Source = "Source"
+    COOKIE = "Cookie",
+    DIRECTIVE = "Directive",
+    ELEMENT = "Element",
+    REQUEST = "Request",
+    SOURCE = "Source"
 }
 export declare const extractShortPath: (path: Platform.DevToolsPath.UrlString) => string;
 export interface CreateRequestCellOptions {

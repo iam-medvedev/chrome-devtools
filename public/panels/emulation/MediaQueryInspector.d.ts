@@ -27,9 +27,9 @@ export declare class MediaQueryInspector extends UI.Widget.Widget implements SDK
     private createElementFromMediaQueryModel;
 }
 export declare const enum Section {
-    Max = 0,
-    MinMax = 1,
-    Min = 2
+    MAX = 0,
+    MIN_MAX = 1,
+    MIN = 2
 }
 export declare class MediaQueryUIModel {
     private cssMedia;

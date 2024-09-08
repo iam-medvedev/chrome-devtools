@@ -38,7 +38,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
             //   * 1 used by console.time calls.
             const levelCount = 7;
             assert.strictEqual(entryTypeByLevel.length, levelCount);
-            const allEntriesAreTrackAppender = entryTypeByLevel.every(type => type === "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TrackAppender */);
+            const allEntriesAreTrackAppender = entryTypeByLevel.every(type => type === "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */);
             assert.isTrue(allEntriesAreTrackAppender);
         });
         it('creates a flamechart group for the timings track', () => {

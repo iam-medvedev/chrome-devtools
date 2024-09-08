@@ -42,7 +42,7 @@ export class DOMStorage extends Common.ObjectWrapper.ObjectWrapper {
         this.isLocalStorageInternal = isLocalStorage;
     }
     static storageId(storageKey, isLocalStorage) {
-        return { storageKey: storageKey, isLocalStorage: isLocalStorage };
+        return { storageKey, isLocalStorage };
     }
     get id() {
         return DOMStorage.storageId(this.storageKeyInternal, this.isLocalStorageInternal);
@@ -119,7 +119,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
             console.assert(!this.storagesInternal[key]);
             const storage = new DOMStorage(this, storageKey, isLocal);
             this.storagesInternal[key] = storage;
-            this.dispatchEventToListeners("DOMStorageAdded" /* Events.DOMStorageAdded */, storage);
+            this.dispatchEventToListeners("DOMStorageAdded" /* Events.DOM_STORAGE_ADDED */, storage);
         }
     }
     storageKeyRemoved(event) {
@@ -133,7 +133,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
                 continue;
             }
             delete this.storagesInternal[key];
-            this.dispatchEventToListeners("DOMStorageRemoved" /* Events.DOMStorageRemoved */, storage);
+            this.dispatchEventToListeners("DOMStorageRemoved" /* Events.DOM_STORAGE_REMOVED */, storage);
         }
     }
     storageKey(storageKey, isLocalStorage) {
@@ -144,31 +144,31 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
         if (!domStorage) {
             return;
         }
-        domStorage.dispatchEventToListeners("DOMStorageItemsCleared" /* DOMStorage.Events.DOMStorageItemsCleared */);
+        domStorage.dispatchEventToListeners("DOMStorageItemsCleared" /* DOMStorage.Events.DOM_STORAGE_ITEMS_CLEARED */);
     }
     domStorageItemRemoved(storageId, key) {
         const domStorage = this.storageForId(storageId);
         if (!domStorage) {
             return;
         }
-        const eventData = { key: key };
-        domStorage.dispatchEventToListeners("DOMStorageItemRemoved" /* DOMStorage.Events.DOMStorageItemRemoved */, eventData);
+        const eventData = { key };
+        domStorage.dispatchEventToListeners("DOMStorageItemRemoved" /* DOMStorage.Events.DOM_STORAGE_ITEM_REMOVED */, eventData);
     }
     domStorageItemAdded(storageId, key, value) {
         const domStorage = this.storageForId(storageId);
         if (!domStorage) {
             return;
         }
-        const eventData = { key: key, value: value };
-        domStorage.dispatchEventToListeners("DOMStorageItemAdded" /* DOMStorage.Events.DOMStorageItemAdded */, eventData);
+        const eventData = { key, value };
+        domStorage.dispatchEventToListeners("DOMStorageItemAdded" /* DOMStorage.Events.DOM_STORAGE_ITEM_ADDED */, eventData);
     }
     domStorageItemUpdated(storageId, key, oldValue, value) {
         const domStorage = this.storageForId(storageId);
         if (!domStorage) {
             return;
         }
-        const eventData = { key: key, oldValue: oldValue, value: value };
-        domStorage.dispatchEventToListeners("DOMStorageItemUpdated" /* DOMStorage.Events.DOMStorageItemUpdated */, eventData);
+        const eventData = { key, oldValue, value };
+        domStorage.dispatchEventToListeners("DOMStorageItemUpdated" /* DOMStorage.Events.DOM_STORAGE_ITEM_UPDATED */, eventData);
     }
     storageForId(storageId) {
         console.assert(Boolean(storageId.storageKey));

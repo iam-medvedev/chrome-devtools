@@ -3,11 +3,11 @@ import * as UI from '../../legacy.js';
 import { AnimationTimingModel } from './AnimationTimingModel.js';
 declare const BezierEditor_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.BezierChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.BezierChanged>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.BezierChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.BezierChanged): boolean;
-    dispatchEventToListeners<T extends Events.BezierChanged>(eventType: import("../../../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.BEZIER_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.BEZIER_CHANGED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.BEZIER_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.BEZIER_CHANGED): boolean;
+    dispatchEventToListeners<T extends Events.BEZIER_CHANGED>(eventType: import("../../../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class BezierEditor extends BezierEditor_base {
     private model;
@@ -36,10 +36,10 @@ export declare class BezierEditor extends BezierEditor_base {
     private startPreviewAnimation;
 }
 export declare const enum Events {
-    BezierChanged = "BezierChanged"
+    BEZIER_CHANGED = "BezierChanged"
 }
 export type EventTypes = {
-    [Events.BezierChanged]: string;
+    [Events.BEZIER_CHANGED]: string;
 };
 export declare const Presets: {
     name: string;

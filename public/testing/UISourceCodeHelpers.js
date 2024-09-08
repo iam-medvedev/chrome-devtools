@@ -80,7 +80,7 @@ export function setupMockedUISourceCode(url = 'https://example.com/') {
     const urlStringTagExample = url;
     const contentTypeStub = sinon.createStubInstance(Common.ResourceType.ResourceType);
     const uiSourceCode = new Workspace.UISourceCode.UISourceCode(projectStub, urlStringTagExample, contentTypeStub);
-    return { sut: uiSourceCode, projectStub: projectStub, contentTypeStub: contentTypeStub };
+    return { sut: uiSourceCode, projectStub, contentTypeStub };
 }
 export function createFakeScriptMapping(debuggerModel, uiSourceCode, uiLineNumber, scriptId) {
     const sdkLocation = new SDK.DebuggerModel.Location(debuggerModel, scriptId, 13);

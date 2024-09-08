@@ -4,11 +4,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type LayerView, type LayerViewHost, type Selection } from './LayerViewHost.js';
 declare const LayerTreeOutline_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.PaintProfilerRequested>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.PaintProfilerRequested>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.PaintProfilerRequested>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.PaintProfilerRequested): boolean;
-    dispatchEventToListeners<T extends Events.PaintProfilerRequested>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.PAINT_PROFILER_REQUESTED): boolean;
+    dispatchEventToListeners<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.TreeOutline.TreeOutline;
 export declare class LayerTreeOutline extends LayerTreeOutline_base implements Common.EventTarget.EventTarget<EventTypes>, LayerView {
     private layerViewHost;
@@ -29,10 +29,10 @@ export declare class LayerTreeOutline extends LayerTreeOutline_base implements C
     private selectionForNode;
 }
 export declare const enum Events {
-    PaintProfilerRequested = "PaintProfilerRequested"
+    PAINT_PROFILER_REQUESTED = "PaintProfilerRequested"
 }
 export type EventTypes = {
-    [Events.PaintProfilerRequested]: Selection;
+    [Events.PAINT_PROFILER_REQUESTED]: Selection;
 };
 export declare class LayerTreeElement extends UI.TreeOutline.TreeElement {
     treeOutlineInternal: LayerTreeOutline;

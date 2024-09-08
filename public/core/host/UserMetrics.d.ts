@@ -3,7 +3,6 @@ export declare class UserMetrics {
     constructor();
     panelShown(panelName: string, isLaunching?: boolean): void;
     panelShownInLocation(panelName: string, location: 'main' | 'drawer'): void;
-    sourcesSidebarTabShown(sidebarPaneName: string): void;
     settingsPanelShown(settingsViewId: string): void;
     sourcesPanelFileDebugged(mediaType?: string): void;
     sourcesPanelFileOpened(mediaType?: string): void;
@@ -436,15 +435,6 @@ export declare enum ElementsSidebarTabCodes {
     'accessibility.view' = 7,
     MAX_VALUE = 8
 }
-export declare enum SourcesSidebarTabCodes {
-    'OtherSidebarPane' = 0,
-    'navigator-network' = 1,
-    'navigator-files' = 2,
-    'navigator-overrides' = 3,
-    'navigator-content-scripts' = 4,
-    'navigator-snippets' = 5,
-    MAX_VALUE = 6
-}
 export declare enum MediaTypes {
     Unknown = 0,
     'text/css' = 2,
@@ -642,7 +632,6 @@ export declare enum DevtoolsExperiments {
     'styles-pane-css-changes' = 55,
     'instrumentation-breakpoints' = 61,
     'authored-deployed-grouping' = 63,
-    'important-dom-properties' = 64,
     'just-my-code' = 65,
     'preloading-status-panel' = 68,
     'outermost-target-selector' = 71,

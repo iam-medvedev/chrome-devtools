@@ -55,35 +55,35 @@ const UIStrings = {
 };
 const items = [
     {
-        value: "normal" /* PlayRecordingSpeed.Normal */,
+        value: "normal" /* PlayRecordingSpeed.NORMAL */,
         buttonIconName: 'play',
         buttonLabel: () => i18nString(UIStrings.ReplayNormalButtonLabel),
         label: () => i18nString(UIStrings.ReplayNormalItemLabel),
     },
     {
-        value: "slow" /* PlayRecordingSpeed.Slow */,
+        value: "slow" /* PlayRecordingSpeed.SLOW */,
         buttonIconName: 'play',
         buttonLabel: () => i18nString(UIStrings.ReplaySlowButtonLabel),
         label: () => i18nString(UIStrings.ReplaySlowItemLabel),
     },
     {
-        value: "very_slow" /* PlayRecordingSpeed.VerySlow */,
+        value: "very_slow" /* PlayRecordingSpeed.VERY_SLOW */,
         buttonIconName: 'play',
         buttonLabel: () => i18nString(UIStrings.ReplayVerySlowButtonLabel),
         label: () => i18nString(UIStrings.ReplayVerySlowItemLabel),
     },
     {
-        value: "extremely_slow" /* PlayRecordingSpeed.ExtremelySlow */,
+        value: "extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */,
         buttonIconName: 'play',
         buttonLabel: () => i18nString(UIStrings.ReplayExtremelySlowButtonLabel),
         label: () => i18nString(UIStrings.ReplayExtremelySlowItemLabel),
     },
 ];
 const replaySpeedToMetricSpeedMap = {
-    ["normal" /* PlayRecordingSpeed.Normal */]: 1 /* Host.UserMetrics.RecordingReplaySpeed.NORMAL */,
-    ["slow" /* PlayRecordingSpeed.Slow */]: 2 /* Host.UserMetrics.RecordingReplaySpeed.SLOW */,
-    ["very_slow" /* PlayRecordingSpeed.VerySlow */]: 3 /* Host.UserMetrics.RecordingReplaySpeed.VERY_SLOW */,
-    ["extremely_slow" /* PlayRecordingSpeed.ExtremelySlow */]: 4 /* Host.UserMetrics.RecordingReplaySpeed.EXTREMELY_SLOW */,
+    ["normal" /* PlayRecordingSpeed.NORMAL */]: 1 /* Host.UserMetrics.RecordingReplaySpeed.NORMAL */,
+    ["slow" /* PlayRecordingSpeed.SLOW */]: 2 /* Host.UserMetrics.RecordingReplaySpeed.SLOW */,
+    ["very_slow" /* PlayRecordingSpeed.VERY_SLOW */]: 3 /* Host.UserMetrics.RecordingReplaySpeed.VERY_SLOW */,
+    ["extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */]: 4 /* Host.UserMetrics.RecordingReplaySpeed.EXTREMELY_SLOW */,
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/components/ReplaySection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -135,11 +135,11 @@ export class ReplaySection extends HTMLElement {
                 this.#settings.replayExtension = event.value;
             }
             const extensionIdx = Number(event.value.substring(REPLAY_EXTENSION_PREFIX.length));
-            this.dispatchEvent(new StartReplayEvent("normal" /* PlayRecordingSpeed.Normal */, this.#replayExtensions[extensionIdx]));
+            this.dispatchEvent(new StartReplayEvent("normal" /* PlayRecordingSpeed.NORMAL */, this.#replayExtensions[extensionIdx]));
             void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
             return;
         }
-        this.dispatchEvent(new StartReplayEvent(this.#settings ? this.#settings.speed : "normal" /* PlayRecordingSpeed.Normal */));
+        this.dispatchEvent(new StartReplayEvent(this.#settings ? this.#settings.speed : "normal" /* PlayRecordingSpeed.NORMAL */));
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     #render() {
@@ -165,11 +165,11 @@ export class ReplaySection extends HTMLElement {
       .variant=${"primary" /* SelectButtonVariant.PRIMARY */}
       .showItemDivider=${false}
       .disabled=${this.#props.disabled}
-      .action=${"chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */}
+      .action=${"chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */}
       .value=${this.#settings?.replayExtension || this.#settings?.speed}
       .buttonLabel=${i18nString(UIStrings.Replay)}
       .groups=${groups}
-      jslog=${VisualLogging.action("chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */).track({ click: true })}>
+      jslog=${VisualLogging.action("chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */).track({ click: true })}>
     </${SelectButton.litTagName}>`, this.#shadow, { host: this });
         // clang-format on
     }

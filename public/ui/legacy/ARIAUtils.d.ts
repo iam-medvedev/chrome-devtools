@@ -58,21 +58,21 @@ export declare function unsetExpandable(element: Element): void;
 export declare function setHidden(element: Element, value: boolean): void;
 export declare function setLevel(element: Element, level: number): void;
 export declare const enum AutocompleteInteractionModel {
-    Inline = "inline",
-    List = "list",
-    Both = "both",
-    None = "none"
+    INLINE = "inline",
+    LIST = "list",
+    BOTH = "both",
+    NONE = "none"
 }
 export declare function setAutocomplete(element: Element, interactionModel?: AutocompleteInteractionModel): void;
 export declare function clearAutocomplete(element: Element): void;
 export declare const enum PopupRole {
-    False = "false",// (default) Indicates the element does not have a popup.
-    True = "true",// Indicates the popup is a menu.
-    Menu = "menu",// Indicates the popup is a menu.
-    ListBox = "listbox",// Indicates the popup is a listbox.
-    Tree = "tree",// Indicates the popup is a tree.
-    Grid = "grid",// Indicates the popup is a grid.
-    Dialog = "dialog"
+    FALSE = "false",// (default) Indicates the element does not have a popup.
+    TRUE = "true",// Indicates the popup is a menu.
+    MENU = "menu",// Indicates the popup is a menu.
+    LIST_BOX = "listbox",// Indicates the popup is a listbox.
+    TREE = "tree",// Indicates the popup is a tree.
+    GRID = "grid",// Indicates the popup is a grid.
+    DIALOG = "dialog"
 }
 export declare function setHasPopup(element: Element, value?: PopupRole): void;
 export declare function setSelected(element: Element, value: boolean): void;

@@ -54,11 +54,11 @@ export declare class CSSOverviewCompletedView extends UI.Widget.VBox {
 }
 declare const DetailsView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.TabClosed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.TabClosed>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.TabClosed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.TabClosed): boolean;
-    dispatchEventToListeners<T extends Events.TabClosed>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.TAB_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.TAB_CLOSED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.TAB_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.TAB_CLOSED): boolean;
+    dispatchEventToListeners<T extends Events.TAB_CLOSED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class DetailsView extends DetailsView_base {
     #private;
@@ -67,10 +67,10 @@ export declare class DetailsView extends DetailsView_base {
     closeTabs(): void;
 }
 export declare const enum Events {
-    TabClosed = "TabClosed"
+    TAB_CLOSED = "TabClosed"
 }
 export type EventTypes = {
-    [Events.TabClosed]: number;
+    [Events.TAB_CLOSED]: number;
 };
 export declare class ElementDetailsView extends UI.Widget.Widget {
     #private;

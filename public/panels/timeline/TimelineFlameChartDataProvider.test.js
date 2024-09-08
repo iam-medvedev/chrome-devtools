@@ -119,8 +119,8 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const framesLevel = framesTrack.startLevel;
         const screenshotsLevel = framesLevel + 1;
         // The frames track first shows the frames, and then shows screenhots just below it.
-        assert.strictEqual(dataProvider.getEntryTypeForLevel(framesLevel), "Frame" /* Timeline.TimelineFlameChartDataProvider.EntryType.Frame */);
-        assert.strictEqual(dataProvider.getEntryTypeForLevel(screenshotsLevel), "Screenshot" /* Timeline.TimelineFlameChartDataProvider.EntryType.Screenshot */);
+        assert.strictEqual(dataProvider.getEntryTypeForLevel(framesLevel), "Frame" /* Timeline.TimelineFlameChartDataProvider.EntryType.FRAME */);
+        assert.strictEqual(dataProvider.getEntryTypeForLevel(screenshotsLevel), "Screenshot" /* Timeline.TimelineFlameChartDataProvider.EntryType.SCREENSHOT */);
         // There are 5 screenshots in this trace, so we expect there to be 5 events on the screenshots track level.
         const eventsOnScreenshotsLevel = dataProvider.timelineData().entryLevels.filter(e => e === screenshotsLevel);
         assert.lengthOf(eventsOnScreenshotsLevel, 5);
@@ -162,9 +162,9 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         dataProvider.setModel(traceData);
-        const bounds = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(traceData.Meta.traceBounds);
+        const bounds = traceData.Meta.traceBounds;
         const filter = new Timeline.TimelineFilters.TimelineRegExp(/Evaluate Script/);
-        const results = dataProvider.search(bounds.min, bounds.max, filter);
+        const results = dataProvider.search(bounds, filter);
         assert.lengthOf(results, 12);
         assert.deepEqual(results[0], { index: 154, startTimeMilli: 122411041.395, provider: 'main' });
     });

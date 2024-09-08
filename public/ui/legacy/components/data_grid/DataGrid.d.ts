@@ -123,37 +123,37 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
 }
 export declare const CornerWidth = 14;
 export declare const enum Events {
-    SelectedNode = "SelectedNode",
-    DeselectedNode = "DeselectedNode",
-    OpenedNode = "OpenedNode",
-    SortingChanged = "SortingChanged",
-    PaddingChanged = "PaddingChanged"
+    SELECTED_NODE = "SelectedNode",
+    DESELECTED_NODE = "DeselectedNode",
+    OPENED_NODE = "OpenedNode",
+    SORTING_CHANGED = "SortingChanged",
+    PADDING_CHANGED = "PaddingChanged"
 }
 export type EventTypes<T> = {
-    [Events.SelectedNode]: DataGridNode<T>;
-    [Events.DeselectedNode]: void;
-    [Events.OpenedNode]: DataGridNode<T>;
-    [Events.SortingChanged]: void;
-    [Events.PaddingChanged]: void;
+    [Events.SELECTED_NODE]: DataGridNode<T>;
+    [Events.DESELECTED_NODE]: void;
+    [Events.OPENED_NODE]: DataGridNode<T>;
+    [Events.SORTING_CHANGED]: void;
+    [Events.PADDING_CHANGED]: void;
 };
 export declare enum Order {
     Ascending = "sort-ascending",
     Descending = "sort-descending"
 }
 export declare const enum Align {
-    Center = "center",
-    Right = "right"
+    CENTER = "center",
+    RIGHT = "right"
 }
 export declare const enum DataType {
-    String = "String",
-    Boolean = "Boolean"
+    STRING = "String",
+    BOOLEAN = "Boolean"
 }
 export declare const ColumnResizePadding = 34;
 export declare const CenterResizerOverBorderAdjustment = 3;
 export declare const enum ResizeMethod {
-    Nearest = "nearest",
-    First = "first",
-    Last = "last"
+    NEAREST = "nearest",
+    FIRST = "first",
+    LAST = "last"
 }
 export type DataGridData = {
     [key: string]: any;

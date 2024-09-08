@@ -153,7 +153,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
     }
     commitChanges(item, editedShortcuts) {
         for (const [originalShortcut, newDescriptors] of editedShortcuts) {
-            if (originalShortcut.type !== "UnsetShortcut" /* UI.KeyboardShortcut.Type.UnsetShortcut */) {
+            if (originalShortcut.type !== "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */) {
                 UI.ShortcutRegistry.ShortcutRegistry.instance().removeShortcut(originalShortcut);
                 if (!newDescriptors) {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ShortcutRemoved);
@@ -161,8 +161,8 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
             }
             if (newDescriptors) {
                 UI.ShortcutRegistry.ShortcutRegistry.instance().registerUserShortcut(originalShortcut.changeKeys(newDescriptors)
-                    .changeType("UserShortcut" /* UI.KeyboardShortcut.Type.UserShortcut */));
-                if (originalShortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UnsetShortcut */) {
+                    .changeType("UserShortcut" /* UI.KeyboardShortcut.Type.USER_SHORTCUT */));
+                if (originalShortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */) {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.UserShortcutAdded);
                 }
                 else {
@@ -359,7 +359,7 @@ export class ShortcutListItem {
         });
     }
     addShortcut() {
-        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut([], this.item.id(), "UnsetShortcut" /* UI.KeyboardShortcut.Type.UnsetShortcut */);
+        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut([], this.item.id(), "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */);
         this.shortcuts.push(shortcut);
         this.update();
         const shortcutInput = this.shortcutInputs.get(shortcut);
@@ -372,7 +372,7 @@ export class ShortcutListItem {
             return;
         }
         let icon;
-        if (shortcut.type !== "UnsetShortcut" /* UI.KeyboardShortcut.Type.UnsetShortcut */ && !shortcut.isDefault()) {
+        if (shortcut.type !== "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */ && !shortcut.isDefault()) {
             icon = IconButton.Icon.create('keyboard-pen', 'keybinds-modified');
             UI.ARIAUtils.setLabel(icon, i18nString(UIStrings.shortcutModified));
             this.element.appendChild(icon);
@@ -489,11 +489,11 @@ export class ShortcutListItem {
     resetShortcutsToDefaults() {
         this.editedShortcuts.clear();
         for (const shortcut of this.shortcuts) {
-            if (shortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UnsetShortcut */) {
+            if (shortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */) {
                 const index = this.shortcuts.indexOf(shortcut);
                 this.shortcuts.splice(index, 1);
             }
-            else if (shortcut.type === "UserShortcut" /* UI.KeyboardShortcut.Type.UserShortcut */) {
+            else if (shortcut.type === "UserShortcut" /* UI.KeyboardShortcut.Type.USER_SHORTCUT */) {
                 this.editedShortcuts.set(shortcut, null);
             }
         }

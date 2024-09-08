@@ -16,9 +16,9 @@ export declare class Selection {
     isEqual(_other: Selection): boolean;
 }
 export declare const enum Type {
-    Layer = "Layer",
-    ScrollRect = "ScrollRect",
-    Snapshot = "Snapshot"
+    LAYER = "Layer",
+    SCROLL_RECT = "ScrollRect",
+    SNAPSHOT = "Snapshot"
 }
 export declare class LayerSelection extends Selection {
     constructor(layer: SDK.LayerTreeBase.Layer);

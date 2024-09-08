@@ -396,23 +396,19 @@ export class TimelineFlameChartNetworkDataProvider {
      * searches entries within the specified time and returns a list of entry
      * indexes
      */
-    search(startTime, endTime, filter) {
+    search(visibleWindow, filter) {
         const results = [];
         for (let i = 0; i < this.#events.length; i++) {
             const entry = this.#events.at(i);
             if (!entry) {
                 continue;
             }
-            const entryStartTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).startTime;
-            const entryEndTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).endTime;
-            if (entryStartTime > endTime) {
-                continue;
-            }
-            if (entryEndTime < startTime) {
+            if (!TraceEngine.Helpers.Timing.eventIsInBounds(entry, visibleWindow)) {
                 continue;
             }
             if (filter.accept(entry, this.#traceParseData ?? undefined)) {
-                results.push({ startTimeMilli: entryStartTime, index: i, provider: 'network' });
+                const startTimeMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
+                results.push({ startTimeMilli, index: i, provider: 'network' });
             }
         }
         return results;

@@ -97,7 +97,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
         this.#networkDiscoveryConfig = [];
         this.#list.clear();
         for (const address of networkDiscoveryConfig) {
-            const item = { address: address, port: '' };
+            const item = { address, port: '' };
             this.#networkDiscoveryConfig.push(item);
             this.#list.appendItem(item, true);
         }

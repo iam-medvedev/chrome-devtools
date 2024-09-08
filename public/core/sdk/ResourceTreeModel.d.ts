@@ -211,6 +211,7 @@ export declare class PageDispatcher implements ProtocolProxyApi.PageDispatcher {
     frameNavigated({ frame, type }: Protocol.Page.FrameNavigatedEvent): void;
     documentOpened({ frame }: Protocol.Page.DocumentOpenedEvent): void;
     frameDetached({ frameId, reason }: Protocol.Page.FrameDetachedEvent): void;
+    frameSubtreeWillBeDetached(_params: Protocol.Page.FrameSubtreeWillBeDetachedEvent): void;
     frameStartedLoading({}: Protocol.Page.FrameStartedLoadingEvent): void;
     frameStoppedLoading({}: Protocol.Page.FrameStoppedLoadingEvent): void;
     frameRequestedNavigation({}: Protocol.Page.FrameRequestedNavigationEvent): void;

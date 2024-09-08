@@ -42,7 +42,7 @@ export class ValueTypeToggledEvent extends Event {
 export class LinearMemoryValueInterpreter extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-linear-memory-inspector-interpreter`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #endianness = "Little Endian" /* Endianness.Little */;
+    #endianness = "Little Endian" /* Endianness.LITTLE */;
     #buffer = new ArrayBuffer(0);
     #valueTypes = new Set();
     #valueTypeModeConfig = new Map();
@@ -111,7 +111,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
         jslog=${VisualLogging.dropDown('linear-memory-inspector.endianess').track({ change: true })}
         style="border: none; background-color: transparent; cursor: pointer;"
         data-endianness="true" @change=${onEnumSettingChange}>
-        ${["Little Endian" /* Endianness.Little */, "Big Endian" /* Endianness.Big */].map(endianness => {
+        ${["Little Endian" /* Endianness.LITTLE */, "Big Endian" /* Endianness.BIG */].map(endianness => {
             return html `<option value=${endianness} .selected=${this.#endianness === endianness}
             jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(endianness)).track({ click: true })}>${i18n.i18n.lockedString(endianness)}</option>`;
         })}

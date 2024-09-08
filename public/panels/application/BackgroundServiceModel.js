@@ -38,7 +38,9 @@ export class BackgroundServiceModel extends SDK.SDKModel.SDKModel {
 SDK.SDKModel.SDKModel.register(BackgroundServiceModel, { capabilities: 1 /* SDK.Target.Capability.BROWSER */, autostart: false });
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["RecordingStateChanged"] = "RecordingStateChanged";
     Events["BackgroundServiceEventReceived"] = "BackgroundServiceEventReceived";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 //# sourceMappingURL=BackgroundServiceModel.js.map

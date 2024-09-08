@@ -125,7 +125,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.profileViewToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('profile-view')}`);
         this.profileGroups = {};
         this.launcherView = new ProfileLauncherView(this);
-        this.launcherView.addEventListener("ProfileTypeSelected" /* ProfileLauncherEvents.ProfileTypeSelected */, this.onProfileTypeSelected, this);
+        this.launcherView.addEventListener("ProfileTypeSelected" /* ProfileLauncherEvents.PROFILE_TYPE_SELECTED */, this.onProfileTypeSelected, this);
         this.profileToView = [];
         this.typeIdToSidebarSection = {};
         const types = this.profileTypes;
@@ -277,10 +277,10 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         function profileComplete(event) {
             this.showProfile(event.data);
         }
-        profileType.addEventListener("view-updated" /* ProfileTypeEvents.ViewUpdated */, this.updateProfileTypeSpecificUI, this);
-        profileType.addEventListener("add-profile-header" /* ProfileTypeEvents.AddProfileHeader */, onAddProfileHeader, this);
-        profileType.addEventListener("remove-profile-header" /* ProfileTypeEvents.RemoveProfileHeader */, onRemoveProfileHeader, this);
-        profileType.addEventListener("profile-complete" /* ProfileTypeEvents.ProfileComplete */, profileComplete, this);
+        profileType.addEventListener("view-updated" /* ProfileTypeEvents.VIEW_UPDATED */, this.updateProfileTypeSpecificUI, this);
+        profileType.addEventListener("add-profile-header" /* ProfileTypeEvents.ADD_PROFILE_HEADER */, onAddProfileHeader, this);
+        profileType.addEventListener("remove-profile-header" /* ProfileTypeEvents.REMOVE_PROFILE_HEADER */, onRemoveProfileHeader, this);
+        profileType.addEventListener("profile-complete" /* ProfileTypeEvents.PROFILE_COMPLETE */, profileComplete, this);
         const profiles = profileType.getProfiles();
         for (let i = 0; i < profiles.length; i++) {
             this.addProfileHeader(profiles[i]);
@@ -352,7 +352,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         }
         const view = profile.createView(this);
         view.element.classList.add('profile-view');
-        this.profileToView.push({ profile: profile, view: view });
+        this.profileToView.push({ profile, view });
         return view;
     }
     indexOfViewForProfile(profile) {

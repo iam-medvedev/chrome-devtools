@@ -172,7 +172,7 @@ export class StubConnection {
             data: messageObject,
         };
         if (this.onMessage) {
-            this.onMessage.call(null, { id: messageObject.id, error: error });
+            this.onMessage.call(null, { id: messageObject.id, error });
         }
     }
     async disconnect() {

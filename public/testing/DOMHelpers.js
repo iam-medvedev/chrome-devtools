@@ -205,7 +205,7 @@ export function stripLitHtmlCommentNodes(text) {
 export function getCleanTextContentFromElements(el, selector) {
     const elements = Array.from(el.querySelectorAll(selector));
     return elements.map(element => {
-        return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, '') : '';
+        return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, ' ') : '';
     });
 }
 export function assertNodeTextContent(component, expectedContent) {

@@ -62,7 +62,7 @@ export class AffectedCookiesView extends AffectedResourcesView {
             link.tabIndex = 0;
             link.setAttribute('jslog', `${VisualLogging.link('issues.filter-network-requests-by-cookie').track({ click: true })}`);
             link.addEventListener('click', () => {
-                Host.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Cookie" /* AffectedItem.Cookie */);
+                Host.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Cookie" /* AffectedItem.COOKIE */);
                 void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
                     {
                         filterType: NetworkForward.UIFilter.FilterType.CookieDomain,
