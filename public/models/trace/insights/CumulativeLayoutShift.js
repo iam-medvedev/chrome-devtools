@@ -183,15 +183,17 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
 export function generateInsight(traceParsedData, context) {
     const isWithinSameNavigation = ((event) => {
         const nav = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, traceParsedData.Meta.navigationsByFrameId);
-        return nav?.args.data?.navigationId === context.navigationId;
+        return nav === context.navigation;
     });
     const compositeAnimationEvents = traceParsedData.Animations.animations.filter(isWithinSameNavigation);
     const animationFailures = getNonCompositedAnimations(compositeAnimationEvents);
     const iframeEvents = traceParsedData.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinSameNavigation);
     const networkRequests = traceParsedData.NetworkRequests.byTime.filter(isWithinSameNavigation);
-    const layoutShifts = traceParsedData.LayoutShifts.clusters.flatMap(cluster => 
-    // Use one of the events in the cluster to determine if within the same navigation.
-    isWithinSameNavigation(cluster.events[0]) ? cluster.events : []);
+    // Sort by cumulative score, since for insights we interpret these for their "bad" scores.
+    const clusters = traceParsedData.LayoutShifts.clustersByNavigationId.get(context.navigationId)
+        ?.sort((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ??
+        [];
+    const layoutShifts = clusters.flatMap(cluster => cluster.events);
     const prePaintEvents = traceParsedData.LayoutShifts.prePaintEvents.filter(isWithinSameNavigation);
     // Get root causes.
     const rootCausesByShift = new Map();
@@ -204,6 +206,7 @@ export function generateInsight(traceParsedData, context) {
     return {
         animationFailures,
         shifts: rootCausesByShift,
+        clusters,
     };
 }
 //# sourceMappingURL=CumulativeLayoutShift.js.map

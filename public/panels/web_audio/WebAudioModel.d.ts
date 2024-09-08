@@ -25,36 +25,36 @@ export declare class WebAudioModel extends SDK.SDKModel.SDKModel<EventTypes> imp
     requestRealtimeData(contextId: Protocol.WebAudio.GraphObjectId): Promise<Protocol.WebAudio.ContextRealtimeData | null>;
 }
 export declare const enum Events {
-    ContextCreated = "ContextCreated",
-    ContextDestroyed = "ContextDestroyed",
-    ContextChanged = "ContextChanged",
-    ModelReset = "ModelReset",
-    ModelSuspend = "ModelSuspend",
-    AudioListenerCreated = "AudioListenerCreated",
-    AudioListenerWillBeDestroyed = "AudioListenerWillBeDestroyed",
-    AudioNodeCreated = "AudioNodeCreated",
-    AudioNodeWillBeDestroyed = "AudioNodeWillBeDestroyed",
-    AudioParamCreated = "AudioParamCreated",
-    AudioParamWillBeDestroyed = "AudioParamWillBeDestroyed",
-    NodesConnected = "NodesConnected",
-    NodesDisconnected = "NodesDisconnected",
-    NodeParamConnected = "NodeParamConnected",
-    NodeParamDisconnected = "NodeParamDisconnected"
+    CONTEXT_CREATED = "ContextCreated",
+    CONTEXT_DESTROYED = "ContextDestroyed",
+    CONTEXT_CHANGED = "ContextChanged",
+    MODEL_RESET = "ModelReset",
+    MODEL_SUSPEND = "ModelSuspend",
+    AUDIO_LISTENER_CREATED = "AudioListenerCreated",
+    AUDIO_LISTENER_WILL_BE_DESTROYED = "AudioListenerWillBeDestroyed",
+    AUDIO_NODE_CREATED = "AudioNodeCreated",
+    AUDIO_NODE_WILL_BE_DESTROYED = "AudioNodeWillBeDestroyed",
+    AUDIO_PARAM_CREATED = "AudioParamCreated",
+    AUDIO_PARAM_WILL_BE_DESTROYED = "AudioParamWillBeDestroyed",
+    NODES_CONNECTED = "NodesConnected",
+    NODES_DISCONNECTED = "NodesDisconnected",
+    NODE_PARAM_CONNECTED = "NodeParamConnected",
+    NODE_PARAM_DISCONNECTED = "NodeParamDisconnected"
 }
 export type EventTypes = {
-    [Events.ContextCreated]: Protocol.WebAudio.BaseAudioContext;
-    [Events.ContextDestroyed]: Protocol.WebAudio.GraphObjectId;
-    [Events.ContextChanged]: Protocol.WebAudio.BaseAudioContext;
-    [Events.ModelReset]: void;
-    [Events.ModelSuspend]: void;
-    [Events.AudioListenerCreated]: Protocol.WebAudio.AudioListener;
-    [Events.AudioListenerWillBeDestroyed]: Protocol.WebAudio.AudioListenerWillBeDestroyedEvent;
-    [Events.AudioNodeCreated]: Protocol.WebAudio.AudioNode;
-    [Events.AudioNodeWillBeDestroyed]: Protocol.WebAudio.AudioNodeWillBeDestroyedEvent;
-    [Events.AudioParamCreated]: Protocol.WebAudio.AudioParam;
-    [Events.AudioParamWillBeDestroyed]: Protocol.WebAudio.AudioParamWillBeDestroyedEvent;
-    [Events.NodesConnected]: Protocol.WebAudio.NodesConnectedEvent;
-    [Events.NodesDisconnected]: Protocol.WebAudio.NodesDisconnectedEvent;
-    [Events.NodeParamConnected]: Protocol.WebAudio.NodeParamConnectedEvent;
-    [Events.NodeParamDisconnected]: Protocol.WebAudio.NodeParamDisconnectedEvent;
+    [Events.CONTEXT_CREATED]: Protocol.WebAudio.BaseAudioContext;
+    [Events.CONTEXT_DESTROYED]: Protocol.WebAudio.GraphObjectId;
+    [Events.CONTEXT_CHANGED]: Protocol.WebAudio.BaseAudioContext;
+    [Events.MODEL_RESET]: void;
+    [Events.MODEL_SUSPEND]: void;
+    [Events.AUDIO_LISTENER_CREATED]: Protocol.WebAudio.AudioListener;
+    [Events.AUDIO_LISTENER_WILL_BE_DESTROYED]: Protocol.WebAudio.AudioListenerWillBeDestroyedEvent;
+    [Events.AUDIO_NODE_CREATED]: Protocol.WebAudio.AudioNode;
+    [Events.AUDIO_NODE_WILL_BE_DESTROYED]: Protocol.WebAudio.AudioNodeWillBeDestroyedEvent;
+    [Events.AUDIO_PARAM_CREATED]: Protocol.WebAudio.AudioParam;
+    [Events.AUDIO_PARAM_WILL_BE_DESTROYED]: Protocol.WebAudio.AudioParamWillBeDestroyedEvent;
+    [Events.NODES_CONNECTED]: Protocol.WebAudio.NodesConnectedEvent;
+    [Events.NODES_DISCONNECTED]: Protocol.WebAudio.NodesDisconnectedEvent;
+    [Events.NODE_PARAM_CONNECTED]: Protocol.WebAudio.NodeParamConnectedEvent;
+    [Events.NODE_PARAM_DISCONNECTED]: Protocol.WebAudio.NodeParamDisconnectedEvent;
 };

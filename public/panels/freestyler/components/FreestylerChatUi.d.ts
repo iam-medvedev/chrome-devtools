@@ -5,7 +5,7 @@ import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 export declare const DOGFOOD_INFO: Platform.DevToolsPath.UrlString;
-export interface CollapsibleStep {
+export interface Step {
     isLoading: boolean;
     thought?: string;
     title?: string;
@@ -14,7 +14,6 @@ export interface CollapsibleStep {
     sideEffect?: ConfirmSideEffectDialog;
 }
 interface ConfirmSideEffectDialog {
-    code: string;
     onAnswer: (result: boolean) => void;
 }
 export declare const enum ChatMessageEntity {
@@ -28,7 +27,7 @@ export interface UserChatMessage {
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
     suggestingFix: boolean;
-    steps: CollapsibleStep[];
+    steps: Step[];
     answer?: string;
     error?: string;
     rpcId?: number;

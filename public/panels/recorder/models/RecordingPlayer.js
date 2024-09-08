@@ -6,10 +6,10 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as PuppeteerService from '../../../services/puppeteer/puppeteer.js';
 import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
 const speedDelayMap = {
-    ["normal" /* PlayRecordingSpeed.Normal */]: 0,
-    ["slow" /* PlayRecordingSpeed.Slow */]: 500,
-    ["very_slow" /* PlayRecordingSpeed.VerySlow */]: 1000,
-    ["extremely_slow" /* PlayRecordingSpeed.ExtremelySlow */]: 2000,
+    ["normal" /* PlayRecordingSpeed.NORMAL */]: 0,
+    ["slow" /* PlayRecordingSpeed.SLOW */]: 500,
+    ["very_slow" /* PlayRecordingSpeed.VERY_SLOW */]: 1000,
+    ["extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */]: 2000,
 };
 export const defaultTimeout = 5000; // ms
 function isPageTarget(target) {
@@ -170,7 +170,7 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
                 const promise = new Promise(r => {
                     resolver = r;
                 });
-                player.dispatchEventToListeners("Step" /* Events.Step */, {
+                player.dispatchEventToListeners("Step" /* Events.STEP */, {
                     step,
                     resolve: resolver,
                 });
@@ -179,9 +179,9 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
                 const shouldStopAtCurrentStep = player.steppingOver || player.breakpointIndexes.has(currentStepIndex);
                 const shouldWaitForSpeed = step.type !== 'setViewport' && step.type !== 'navigate' && !player.aborted;
                 if (shouldStopAtCurrentStep) {
-                    player.dispatchEventToListeners("Stop" /* Events.Stop */);
+                    player.dispatchEventToListeners("Stop" /* Events.STOP */);
                     await player.stop();
-                    player.dispatchEventToListeners("Continue" /* Events.Continue */);
+                    player.dispatchEventToListeners("Continue" /* Events.CONTINUE */);
                 }
                 else if (shouldWaitForSpeed) {
                     await Promise.race([
@@ -219,13 +219,13 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
             await RecordingPlayer.disconnectPuppeteer(browser);
         }
         if (this.aborted) {
-            this.dispatchEventToListeners("Abort" /* Events.Abort */);
+            this.dispatchEventToListeners("Abort" /* Events.ABORT */);
         }
         else if (error) {
-            this.dispatchEventToListeners("Error" /* Events.Error */, error);
+            this.dispatchEventToListeners("Error" /* Events.ERROR */, error);
         }
         else {
-            this.dispatchEventToListeners("Done" /* Events.Done */);
+            this.dispatchEventToListeners("Done" /* Events.DONE */);
         }
     }
 }

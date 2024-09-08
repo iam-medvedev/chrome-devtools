@@ -119,15 +119,15 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private createCopyAllChangesButton;
 }
 export declare const enum Events {
-    InitialUpdateCompleted = "InitialUpdateCompleted",
-    StylesUpdateCompleted = "StylesUpdateCompleted"
+    INITIAL_UPDATE_COMPLETED = "InitialUpdateCompleted",
+    STYLES_UPDATE_COMPLETED = "StylesUpdateCompleted"
 }
 export interface StylesUpdateCompletedEvent {
     hasMatchedStyles: boolean;
 }
 export type EventTypes = {
-    [Events.InitialUpdateCompleted]: void;
-    [Events.StylesUpdateCompleted]: StylesUpdateCompletedEvent;
+    [Events.INITIAL_UPDATE_COMPLETED]: void;
+    [Events.STYLES_UPDATE_COMPLETED]: StylesUpdateCompletedEvent;
 };
 export declare class SectionBlock {
     #private;

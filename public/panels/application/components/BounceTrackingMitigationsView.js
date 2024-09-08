@@ -58,7 +58,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
     static litTagName = LitHtml.literal `devtools-bounce-tracking-mitigations-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #trackingSites = [];
-    #screenStatus = "Result" /* ScreenStatusType.Result */;
+    #screenStatus = "Result" /* ScreenStatusType.RESULT */;
     #checkedFeature = false;
     #seenButtonClick = false;
     connectedCallback() {
@@ -79,7 +79,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         if (!this.#checkedFeature) {
             await this.#checkFeatureState();
         }
-        if (this.#screenStatus === "Disabled" /* ScreenStatusType.Disabled */) {
+        if (this.#screenStatus === "Disabled" /* ScreenStatusType.DISABLED */) {
             const mitigationsFlagLink = new ChromeLink.ChromeLink.ChromeLink();
             mitigationsFlagLink.href = 'chrome://flags/#bounce-tracking-mitigations';
             mitigationsFlagLink.textContent = i18nString(UIStrings.featureFlag);
@@ -109,7 +109,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         // clang-format on
     }
     #renderForceRunButton() {
-        const isMitigationRunning = (this.#screenStatus === "Running" /* ScreenStatusType.Running */);
+        const isMitigationRunning = (this.#screenStatus === "Running" /* ScreenStatusType.RUNNING */);
         // clang-format off
         return LitHtml.html `
       <${Buttons.Button.Button.litTagName}
@@ -135,7 +135,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
             // clang-format off
             return LitHtml.html `
         <${ReportView.ReportView.ReportSection.litTagName}>
-        ${(this.#screenStatus === "Running" /* ScreenStatusType.Running */) ? LitHtml.html `
+        ${(this.#screenStatus === "Running" /* ScreenStatusType.RUNNING */) ? LitHtml.html `
           ${i18nString(UIStrings.checkingPotentialTrackers)}` : `
           ${i18nString(UIStrings.noPotentialBounceTrackersIdentified)}
         `}
@@ -175,7 +175,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
             return;
         }
         this.#seenButtonClick = true;
-        this.#screenStatus = "Running" /* ScreenStatusType.Running */;
+        this.#screenStatus = "Running" /* ScreenStatusType.RUNNING */;
         void this.#render();
         const response = await mainTarget.storageAgent().invoke_runBounceTrackingMitigations();
         this.#trackingSites = [];
@@ -185,7 +185,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         this.#renderMitigationsResult();
     }
     #renderMitigationsResult() {
-        this.#screenStatus = "Result" /* ScreenStatusType.Result */;
+        this.#screenStatus = "Result" /* ScreenStatusType.RESULT */;
         void this.#render();
     }
     #buildRowsFromDeletedSites() {
@@ -203,7 +203,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
             return;
         }
         if (!(await mainTarget.systemInfo().invoke_getFeatureState({ featureState: 'DIPS' })).featureEnabled) {
-            this.#screenStatus = "Disabled" /* ScreenStatusType.Disabled */;
+            this.#screenStatus = "Disabled" /* ScreenStatusType.DISABLED */;
         }
     }
 }

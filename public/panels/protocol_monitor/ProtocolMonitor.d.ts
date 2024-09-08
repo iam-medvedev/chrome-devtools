@@ -88,12 +88,12 @@ export declare class InfoWidget extends UI.Widget.VBox {
     } | null): void;
 }
 export declare const enum Events {
-    CommandSent = "CommandSent",
-    CommandChange = "CommandChange"
+    COMMAND_SENT = "CommandSent",
+    COMMAND_CHANGE = "CommandChange"
 }
 export type EventTypes = {
-    [Events.CommandSent]: Components.JSONEditor.Command;
-    [Events.CommandChange]: Components.JSONEditor.Command;
+    [Events.COMMAND_SENT]: Components.JSONEditor.Command;
+    [Events.COMMAND_CHANGE]: Components.JSONEditor.Command;
 };
 declare const EditorWidget_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;

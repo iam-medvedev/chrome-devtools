@@ -22,6 +22,11 @@ export declare enum ClientFeature {
     CHROME_CONSOLE_INSIGHTS = 1,
     CHROME_FREESTYLER = 2
 }
+export declare enum UserTier {
+    USER_TIER_UNSPECIFIED = 0,
+    TESTERS = 1,
+    PUBLIC = 3
+}
 export interface AidaRequest {
     input: string;
     preamble?: string;
@@ -34,6 +39,7 @@ export interface AidaRequest {
     metadata?: {
         disable_user_content_logging: boolean;
         string_session_id?: string;
+        user_tier?: UserTier;
     };
     functionality_type?: FunctionalityType;
     client_feature?: ClientFeature;
@@ -87,3 +93,4 @@ export declare class AidaClient {
     fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
     registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
 }
+export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;

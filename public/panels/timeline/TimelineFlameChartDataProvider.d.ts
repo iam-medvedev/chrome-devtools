@@ -69,7 +69,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     minimumBoundary(): number;
     totalTime(): number;
     static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is TraceEngine.Types.TraceEvents.TraceEventData;
-    search(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     isIgnoreListedEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     private isIgnoreListedURL;
     getEntryTypeForLevel(level: number): EntryType;
@@ -97,13 +97,13 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
 }
 export declare const InstantEventVisibleDurationMs: TraceEngine.Types.Timing.MilliSeconds;
 export declare const enum Events {
-    DataChanged = "DataChanged"
+    DATA_CHANGED = "DataChanged"
 }
 export type EventTypes = {
-    [Events.DataChanged]: void;
+    [Events.DATA_CHANGED]: void;
 };
 export declare const enum EntryType {
-    Frame = "Frame",
-    TrackAppender = "TrackAppender",
-    Screenshot = "Screenshot"
+    FRAME = "Frame",
+    TRACK_APPENDER = "TrackAppender",
+    SCREENSHOT = "Screenshot"
 }

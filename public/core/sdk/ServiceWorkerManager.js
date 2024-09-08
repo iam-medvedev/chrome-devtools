@@ -256,7 +256,7 @@ export class ServiceWorkerManager extends SDKModel {
             return;
         }
         registration.errors.push(payload);
-        this.dispatchEventToListeners("RegistrationErrorAdded" /* Events.REGISTRATION_ERROR_ADDED */, { registration: registration, error: payload });
+        this.dispatchEventToListeners("RegistrationErrorAdded" /* Events.REGISTRATION_ERROR_ADDED */, { registration, error: payload });
     }
     forceUpdateOnReloadSetting() {
         return this.#forceUpdateSetting;

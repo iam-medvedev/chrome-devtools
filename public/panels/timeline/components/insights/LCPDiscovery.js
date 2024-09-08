@@ -51,7 +51,7 @@ function getImageData(insights, navigationId) {
     if (!lcpInsight) {
         return null;
     }
-    if (lcpInsight.lcpResource === undefined) {
+    if (lcpInsight.lcpRequest === undefined) {
         return null;
     }
     const shouldIncreasePriorityHint = lcpInsight.shouldIncreasePriorityHint;
@@ -67,11 +67,11 @@ function getImageData(insights, navigationId) {
         shouldIncreasePriorityHint,
         shouldPreloadImage,
         shouldRemoveLazyLoading,
-        resource: lcpInsight.lcpResource,
+        request: lcpInsight.lcpRequest,
         discoveryDelay: null,
     };
-    if (lcpInsight.earliestDiscoveryTimeTs && lcpInsight.lcpResource) {
-        const discoveryDelay = lcpInsight.lcpResource.ts - lcpInsight.earliestDiscoveryTimeTs;
+    if (lcpInsight.earliestDiscoveryTimeTs && lcpInsight.lcpRequest) {
+        const discoveryDelay = lcpInsight.lcpRequest.ts - lcpInsight.earliestDiscoveryTimeTs;
         data.discoveryDelay = TraceEngine.Types.Timing.MicroSeconds(discoveryDelay);
     }
     return data;
@@ -105,18 +105,18 @@ export class LCPDiscovery extends BaseInsight {
         if (!imageResults || !imageResults.discoveryDelay) {
             return [];
         }
-        const delay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(TraceEngine.Types.Timing.MicroSeconds(imageResults.resource.ts - imageResults.discoveryDelay), imageResults.resource.ts);
+        const delay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(TraceEngine.Types.Timing.MicroSeconds(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
         const label = LitHtml.html `<div class="discovery-delay"> ${this.#renderDiscoveryDelay(delay.range)}</div>`;
         return [
             {
                 type: 'ENTRY_OUTLINE',
-                entry: imageResults.resource,
+                entry: imageResults.request,
                 outlineReason: 'ERROR',
             },
             {
                 type: 'CANDY_STRIPED_TIME_RANGE',
                 bounds: delay,
-                entry: imageResults.resource,
+                entry: imageResults.request,
             },
             {
                 type: 'TIMESPAN_BREAKDOWN',
@@ -125,7 +125,7 @@ export class LCPDiscovery extends BaseInsight {
                         label,
                         showDuration: false,
                     }],
-                entry: imageResults.resource,
+                entry: imageResults.request,
             },
         ];
     }
@@ -157,10 +157,10 @@ export class LCPDiscovery extends BaseInsight {
             </ul>
           </div>
           <div slot="insight-content" class="insight-content">
-            <img class="element-img" data-src=${imageData.resource.args.data.url} src=${imageData.resource.args.data.url}>
+            <img class="element-img" data-src=${imageData.request.args.data.url} src=${imageData.request.args.data.url}>
             <div class="element-img-details">
-              ${Common.ParsedURL.ParsedURL.extractName(imageData.resource.args.data.url ?? '')}
-              <div class="element-img-details-size">${Platform.NumberUtilities.bytesToString(imageData.resource.args.data.decodedBodyLength ?? 0)}</div>
+              ${Common.ParsedURL.ParsedURL.extractName(imageData.request.args.data.url ?? '')}
+              <div class="element-img-details-size">${Platform.NumberUtilities.bytesToString(imageData.request.args.data.decodedBodyLength ?? 0)}</div>
             </div>
           </div>
         </${SidebarInsight.SidebarInsight}>

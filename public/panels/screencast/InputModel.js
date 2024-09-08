@@ -39,9 +39,9 @@ export class InputModel extends SDK.SDKModel.SDKModel {
         }
         const text = event.type === 'keypress' ? String.fromCharCode(event.charCode) : undefined;
         void this.inputAgent.invoke_dispatchKeyEvent({
-            type: type,
+            type,
             modifiers: this.modifiersForEvent(event),
-            text: text,
+            text,
             unmodifiedText: text ? text.toLowerCase() : undefined,
             keyIdentifier: event.keyIdentifier,
             code: event.code,

@@ -125,8 +125,10 @@ export class ConsoleFilter {
 }
 export var FilterType;
 (function (FilterType) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     FilterType["Context"] = "context";
     FilterType["Source"] = "source";
     FilterType["Url"] = "url";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(FilterType || (FilterType = {}));
 //# sourceMappingURL=ConsoleFilter.js.map

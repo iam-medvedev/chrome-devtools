@@ -138,7 +138,7 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
             icon.data = { iconName: 'code-circle', color: 'var(--icon-link)', width: '16px', height: '16px' };
             icon.classList.add('link', 'elements-panel');
             icon.onclick = async () => {
-                Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.Element */);
+                Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.ELEMENT */);
                 const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
                 if (frame) {
                     const ownerNode = await frame.getOwnerDOMNodeOrDocument();
@@ -175,7 +175,7 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
             return cellElement;
         }
         function sendTelemetry() {
-            Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.Element */);
+            Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.ELEMENT */);
         }
         const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
         const anchorElement = (await Common.Linkifier.Linkifier.linkify(deferredDOMNode));

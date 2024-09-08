@@ -74,13 +74,13 @@ export function processEventForDebugging(event, state, extraInfo) {
         return;
     }
     switch (format) {
-        case DebugLoggingFormat.Intuitive:
+        case "Intuitive" /* DebugLoggingFormat.INTUITIVE */:
             processEventForIntuitiveDebugging(event, state, extraInfo);
             break;
-        case DebugLoggingFormat.Test:
+        case "Test" /* DebugLoggingFormat.TEST */:
             processEventForTestDebugging(event, state, extraInfo);
             break;
-        case DebugLoggingFormat.AdHocAnalysis:
+        case "AdHocAnalysis" /* DebugLoggingFormat.AD_HOC_ANALYSIS */:
             processEventForAdHocAnalysisDebugging(event, state, extraInfo);
             break;
     }
@@ -121,13 +121,13 @@ function deleteUndefinedFields(entry) {
 export function processImpressionsForDebugging(states) {
     const format = localStorage.getItem('veDebugLoggingEnabled');
     switch (format) {
-        case DebugLoggingFormat.Intuitive:
+        case "Intuitive" /* DebugLoggingFormat.INTUITIVE */:
             processImpressionsForIntuitiveDebugLog(states);
             break;
-        case DebugLoggingFormat.Test:
+        case "Test" /* DebugLoggingFormat.TEST */:
             processImpressionsForTestDebugLog(states);
             break;
-        case DebugLoggingFormat.AdHocAnalysis:
+        case "AdHocAnalysis" /* DebugLoggingFormat.AD_HOC_ANALYSIS */:
             processImpressionsForAdHocAnalysisDebugLog(states);
             break;
         default:
@@ -257,18 +257,12 @@ function maybeLogDebugEvent(entry) {
         return;
     }
     veDebugEventsLog.push(entry);
-    if (format === DebugLoggingFormat.Intuitive) {
+    if (format === "Intuitive" /* DebugLoggingFormat.INTUITIVE */) {
         // eslint-disable-next-line no-console
         console.info('VE Debug:', entry);
     }
 }
-export var DebugLoggingFormat;
-(function (DebugLoggingFormat) {
-    DebugLoggingFormat["Intuitive"] = "Intuitive";
-    DebugLoggingFormat["Test"] = "Test";
-    DebugLoggingFormat["AdHocAnalysis"] = "AdHocAnalysis";
-})(DebugLoggingFormat || (DebugLoggingFormat = {}));
-export function setVeDebugLoggingEnabled(enabled, format = DebugLoggingFormat.Intuitive) {
+export function setVeDebugLoggingEnabled(enabled, format = "Intuitive" /* DebugLoggingFormat.INTUITIVE */) {
     if (enabled) {
         localStorage.setItem('veDebugLoggingEnabled', format);
     }
@@ -458,7 +452,7 @@ function buildStateFlow() {
 let sessionStartTime = Date.now();
 export function processStartLoggingForDebugging() {
     sessionStartTime = Date.now();
-    if (localStorage.getItem('veDebugLoggingEnabled') === DebugLoggingFormat.Intuitive) {
+    if (localStorage.getItem('veDebugLoggingEnabled') === "Intuitive" /* DebugLoggingFormat.INTUITIVE */) {
         maybeLogDebugEvent({ event: 'SessionStart' });
     }
 }

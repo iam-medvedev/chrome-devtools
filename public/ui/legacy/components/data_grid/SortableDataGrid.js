@@ -61,7 +61,7 @@ export class SortableDataGrid extends ViewportDataGrid {
         for (let i = 0; i < length; ++i) {
             rootNode.appendChild(nodes[i]);
         }
-        dataGrid.addEventListener("SortingChanged" /* Events.SortingChanged */, sortDataGrid);
+        dataGrid.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, sortDataGrid);
         function sortDataGrid() {
             const nodes = dataGrid.rootNode().children;
             const sortColumnId = dataGrid.sortColumnId();

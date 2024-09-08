@@ -18,13 +18,13 @@ export class ProfileHeader extends Common.ObjectWrapper.ObjectWrapper {
     }
     setTitle(title) {
         this.title = title;
-        this.dispatchEventToListeners("ProfileTitleChanged" /* Events.ProfileTitleChanged */, this);
+        this.dispatchEventToListeners("ProfileTitleChanged" /* Events.PROFILE_TITLE_CHANGED */, this);
     }
     profileType() {
         return this.profileTypeInternal;
     }
     updateStatus(subtitle, wait) {
-        this.dispatchEventToListeners("UpdateStatus" /* Events.UpdateStatus */, new StatusUpdate(subtitle, wait));
+        this.dispatchEventToListeners("UpdateStatus" /* Events.UPDATE_STATUS */, new StatusUpdate(subtitle, wait));
     }
     /**
      * Must be implemented by subclasses.
@@ -160,7 +160,7 @@ export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {
     }
     addProfile(profile) {
         this.profiles.push(profile);
-        this.dispatchEventToListeners("add-profile-header" /* ProfileEvents.AddProfileHeader */, profile);
+        this.dispatchEventToListeners("add-profile-header" /* ProfileEvents.ADD_PROFILE_HEADER */, profile);
     }
     removeProfile(profile) {
         const index = this.profiles.indexOf(profile);
@@ -191,7 +191,7 @@ export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {
         this.nextProfileUidInternal = 1;
     }
     disposeProfile(profile) {
-        this.dispatchEventToListeners("remove-profile-header" /* ProfileEvents.RemoveProfileHeader */, profile);
+        this.dispatchEventToListeners("remove-profile-header" /* ProfileEvents.REMOVE_PROFILE_HEADER */, profile);
         profile.dispose();
         if (this.profileBeingRecordedInternal === profile) {
             this.profileBeingRecordedRemoved();

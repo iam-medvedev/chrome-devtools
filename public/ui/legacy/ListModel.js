@@ -83,7 +83,7 @@ export class ListModel extends Common.ObjectWrapper.ObjectWrapper {
         return this.items.some(callback);
     }
     replaced(index, removed, inserted, keepSelectedIndex) {
-        this.dispatchEventToListeners("ItemsReplaced" /* Events.ItemsReplaced */, { index, removed, inserted, keepSelectedIndex });
+        this.dispatchEventToListeners("ItemsReplaced" /* Events.ITEMS_REPLACED */, { index, removed, inserted, keepSelectedIndex });
     }
 }
 //# sourceMappingURL=ListModel.js.map

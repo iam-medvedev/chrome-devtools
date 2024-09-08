@@ -133,7 +133,7 @@ export class JSONView extends UI.Widget.VBox {
         if (start === -1 || end === -1 || end < start) {
             length = -1;
         }
-        return { start: start, end: end, length: length };
+        return { start, end, length };
     }
     wasShown() {
         this.initialize();

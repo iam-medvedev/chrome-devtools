@@ -159,7 +159,12 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         if (!oldSettingValue && !this.#isConsoleInsightsSettingExpanded) {
             this.#isConsoleInsightsSettingExpanded = true;
         }
-        UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
+        if (oldSettingValue === false) {
+            // Allows skipping the consent reminder if the user enabled the feature via settings in the current session
+            Common.Settings.Settings.instance()
+                .createSetting('console-insights-skip-reminder', true, "Session" /* Common.Settings.SettingStorageType.SESSION */)
+                .set(true);
+        }
         void this.render();
     }
     #expandFreestylerSetting() {
@@ -239,8 +244,8 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             open: this.#isConsoleInsightsSettingExpanded,
         };
         const tabindex = this.#isConsoleInsightsSettingExpanded ? '0' : '-1';
-        const tosLink = UI.XLink.XLink.create('http://policies.google.com/terms', i18nString(UIStrings.termsOfService), undefined, undefined, 'terms-of-service', tabindex);
-        const privacyNoticeLink = UI.XLink.XLink.create('http://policies.google.com/privacy', i18nString(UIStrings.privacyNotice), undefined, undefined, 'privacy-notice', tabindex);
+        const tosLink = UI.XLink.XLink.create('https://policies.google.com/terms', i18nString(UIStrings.termsOfService), undefined, undefined, 'terms-of-service', tabindex);
+        const privacyNoticeLink = UI.XLink.XLink.create('https://policies.google.com/privacy', i18nString(UIStrings.privacyNotice), undefined, undefined, 'privacy-notice', tabindex);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return LitHtml.html `
@@ -290,7 +295,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             `)}
             ${this.#renderSettingItem('warning', LitHtml.html `
               <x-link
-                href="http://support.google.com/legal/answer/13505487"
+                href="https://support.google.com/legal/answer/13505487"
                 class="link"
                 tabindex=${tabindex}
                 jslog=${VisualLogging.link('code-snippets-explainer.console-insights').track({
@@ -300,7 +305,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             `)}
             <div class="expansion-grid-whole-row">
               <x-link
-                href="http://goo.gle/devtools-console-messages-ai"
+                href="https://goo.gle/devtools-console-messages-ai"
                 class="link"
                 tabindex=${tabindex}
                 jslog=${VisualLogging.link('learn-more.console-insights').track({
@@ -320,8 +325,8 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             open: this.#isFreestylerSettingExpanded,
         };
         const tabindex = this.#isFreestylerSettingExpanded ? '0' : '-1';
-        const tosLink = UI.XLink.XLink.create('http://policies.google.com/terms', i18nString(UIStrings.termsOfService), undefined, undefined, 'terms-of-service', tabindex);
-        const privacyNoticeLink = UI.XLink.XLink.create('http://policies.google.com/privacy', i18nString(UIStrings.privacyNotice), undefined, undefined, 'privacy-notice', tabindex);
+        const tosLink = UI.XLink.XLink.create('https://policies.google.com/terms', i18nString(UIStrings.termsOfService), undefined, undefined, 'terms-of-service', tabindex);
+        const privacyNoticeLink = UI.XLink.XLink.create('https://policies.google.com/privacy', i18nString(UIStrings.privacyNotice), undefined, undefined, 'privacy-notice', tabindex);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return LitHtml.html `
@@ -371,7 +376,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             `)}
             ${this.#renderSettingItem('warning', LitHtml.html `
               <x-link
-                href="http://support.google.com/legal/answer/13505487"
+                href="https://support.google.com/legal/answer/13505487"
                 class="link"
                 tabindex=${tabindex}
                 jslog=${VisualLogging.link('code-snippets-explainer.freestyler').track({

@@ -645,8 +645,10 @@ export const RuntimeSettings = [
 ];
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["PageAuditabilityChanged"] = "PageAuditabilityChanged";
     Events["PageWarningsChanged"] = "PageWarningsChanged";
     Events["AuditProgressChanged"] = "AuditProgressChanged";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 //# sourceMappingURL=LighthouseController.js.map

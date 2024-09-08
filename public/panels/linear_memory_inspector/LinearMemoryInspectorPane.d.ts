@@ -3,11 +3,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type LazyUint8Array } from './LinearMemoryInspectorController.js';
 declare const LinearMemoryInspectorPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.ViewClosed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.ViewClosed>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.ViewClosed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.ViewClosed): boolean;
-    dispatchEventToListeners<T extends Events.ViewClosed>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.VIEW_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.VIEW_CLOSED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.VIEW_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.VIEW_CLOSED): boolean;
+    dispatchEventToListeners<T extends Events.VIEW_CLOSED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class LinearMemoryInspectorPane extends LinearMemoryInspectorPane_base {
     #private;
@@ -19,9 +19,9 @@ export declare class LinearMemoryInspectorPane extends LinearMemoryInspectorPane
     refreshView(tabId: string): void;
 }
 export declare const enum Events {
-    ViewClosed = "ViewClosed"
+    VIEW_CLOSED = "ViewClosed"
 }
 export type EventTypes = {
-    [Events.ViewClosed]: string;
+    [Events.VIEW_CLOSED]: string;
 };
 export {};

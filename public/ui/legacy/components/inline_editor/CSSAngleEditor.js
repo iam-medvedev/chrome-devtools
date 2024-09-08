@@ -14,7 +14,7 @@ export class CSSAngleEditor extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     angle = {
         value: 0,
-        unit: "rad" /* AngleUnit.Rad */,
+        unit: "rad" /* AngleUnit.RAD */,
     };
     onAngleUpdate;
     background = '';
@@ -45,7 +45,7 @@ export class CSSAngleEditor extends HTMLElement {
         if (shouldSnapToMultipleOf15Degrees) {
             const multipleInRadian = getRadiansFromAngle({
                 value: 15,
-                unit: "deg" /* AngleUnit.Deg */,
+                unit: "deg" /* AngleUnit.DEG */,
             });
             const closestMultipleOf15Degrees = Math.round(radian / multipleInRadian) * multipleInRadian;
             this.onAngleUpdate(getAngleFromRadians(closestMultipleOf15Degrees, this.angle.unit));
@@ -125,7 +125,7 @@ export class CSSAngleEditor extends HTMLElement {
                 const radius = this.clockRadius - CLOCK_DIAL_LENGTH - 3 /* clock border */;
                 const { translateX, translateY } = get2DTranslationsForAngle({
                     value: deg,
-                    unit: "deg" /* AngleUnit.Deg */,
+                    unit: "deg" /* AngleUnit.DEG */,
                 }, radius);
                 const dialStyles = {
                     transform: `translate(${translateX}px, ${translateY}px) rotate(${deg}deg)`,

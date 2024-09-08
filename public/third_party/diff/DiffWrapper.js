@@ -77,9 +77,11 @@ export const DiffWrapper = {
 };
 export var Operation;
 (function (Operation) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Operation[Operation["Equal"] = 0] = "Equal";
     Operation[Operation["Insert"] = 1] = "Insert";
     Operation[Operation["Delete"] = -1] = "Delete";
     Operation[Operation["Edit"] = 2] = "Edit";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Operation || (Operation = {}));
 //# sourceMappingURL=DiffWrapper.js.map

@@ -94,7 +94,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     static setLinkDecorator(linkDecorator) {
         console.assert(!decorator, 'Cannot re-register link decorator.');
         decorator = linkDecorator;
-        linkDecorator.addEventListener("LinkIconChanged" /* LinkDecorator.Events.LinkIconChanged */, onLinkIconChanged);
+        linkDecorator.addEventListener("LinkIconChanged" /* LinkDecorator.Events.LINK_ICON_CHANGED */, onLinkIconChanged);
         for (const linkifier of instances) {
             linkifier.updateAllAnchorDecorations();
         }
@@ -245,7 +245,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         };
         const updateDelegate = async (liveLocation) => {
             await this.updateAnchor(link, linkDisplayOptions, liveLocation);
-            this.dispatchEventToListeners("liveLocationUpdated" /* Events.LiveLocationUpdated */, liveLocation);
+            this.dispatchEventToListeners("liveLocationUpdated" /* Events.LIVE_LOCATION_UPDATED */, liveLocation);
         };
         void Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
             .createLiveLocation(rawLocation, updateDelegate.bind(this), pool)
@@ -321,7 +321,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         const linkDisplayOptions = { showColumnNumber: false };
         const updateDelegate = async (liveLocation) => {
             await this.updateAnchor(link, linkDisplayOptions, liveLocation);
-            this.dispatchEventToListeners("liveLocationUpdated" /* Events.LiveLocationUpdated */, liveLocation);
+            this.dispatchEventToListeners("liveLocationUpdated" /* Events.LIVE_LOCATION_UPDATED */, liveLocation);
         };
         void Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
             .createStackTraceTopFrameLiveLocation(debuggerModel.createRawLocationsByStackTrace(stackTrace), updateDelegate.bind(this), pool)
@@ -346,7 +346,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         const linkDisplayOptions = { showColumnNumber: false };
         const updateDelegate = async (liveLocation) => {
             await this.updateAnchor(link, linkDisplayOptions, liveLocation);
-            this.dispatchEventToListeners("liveLocationUpdated" /* Events.LiveLocationUpdated */, liveLocation);
+            this.dispatchEventToListeners("liveLocationUpdated" /* Events.LIVE_LOCATION_UPDATED */, liveLocation);
         };
         void Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance()
             .createLiveLocation(rawLocation, updateDelegate.bind(this), pool)

@@ -6,6 +6,48 @@ import * as OnEachInteraction from './OnEachInteraction.js';
 import * as Spec from './spec/spec.js';
 const { onLCP, onCLS, onINP } = WebVitals.Attribution;
 const { onEachInteraction } = OnEachInteraction;
+const windowListeners = [];
+const documentListeners = [];
+const observers = [];
+const originalWindowAddListener = Window.prototype.addEventListener;
+Window.prototype.addEventListener = function (...args) {
+    windowListeners.push(args);
+    return originalWindowAddListener.call(this, ...args);
+};
+const originalDocumentAddListener = Document.prototype.addEventListener;
+Document.prototype.addEventListener = function (...args) {
+    documentListeners.push(args);
+    return originalDocumentAddListener.call(this, ...args);
+};
+class InternalPerformanceObserver extends PerformanceObserver {
+    constructor(...args) {
+        super(...args);
+        observers.push(this);
+    }
+}
+globalThis.PerformanceObserver = InternalPerformanceObserver;
+let killed = false;
+/**
+ * This is a hack solution to remove any listeners that were added by web-vitals.js
+ * or additional services in this bundle. Once this function is called, the execution
+ * context should be considered dead and a new one will need to be created for live metrics
+ * to be served again.
+ */
+window[Spec.INTERNAL_KILL_SWITCH] = () => {
+    if (killed) {
+        return;
+    }
+    for (const observer of observers) {
+        observer.disconnect();
+    }
+    for (const args of windowListeners) {
+        window.removeEventListener(...args);
+    }
+    for (const args of documentListeners) {
+        document.removeEventListener(...args);
+    }
+    killed = true;
+};
 function sendEventToDevTools(event) {
     const payload = JSON.stringify(event);
     window[Spec.EVENT_BINDING_NAME](payload);

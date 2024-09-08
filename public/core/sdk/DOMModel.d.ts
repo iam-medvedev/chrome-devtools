@@ -36,6 +36,7 @@ export declare class DOMNode {
     private requestChildDocument;
     isAdFrameNode(): boolean;
     isSVGNode(): boolean;
+    isScrollable(): boolean;
     isMediaNode(): boolean;
     isViewTransitionPseudoNode(): boolean;
     creationStackTrace(): Promise<Protocol.Runtime.StackTrace | null>;
@@ -44,6 +45,7 @@ export declare class DOMNode {
     backendNodeId(): Protocol.DOM.BackendNodeId;
     children(): DOMNode[] | null;
     setChildren(children: DOMNode[]): void;
+    setIsScrollable(isScrollable: boolean): void;
     hasAttributes(): boolean;
     childNodeCount(): number;
     setChildNodeCount(childNodeCount: number): void;
@@ -86,6 +88,7 @@ export declare class DOMNode {
     setAttributeValuePromise(name: string, value: string): Promise<string | null>;
     attributes(): Attribute[];
     removeAttribute(name: string): Promise<void>;
+    getChildNodesPromise(): Promise<DOMNode[] | null>;
     getChildNodes(callback: (arg0: Array<DOMNode> | null) => void): void;
     getSubtree(depth: number, pierce: boolean): Promise<DOMNode[] | null>;
     getOuterHTML(): Promise<string | null>;
@@ -194,6 +197,7 @@ export declare class DOMModel extends SDKModel<EventTypes> {
     shadowRootPushed(hostId: Protocol.DOM.NodeId, root: Protocol.DOM.Node): void;
     shadowRootPopped(hostId: Protocol.DOM.NodeId, rootId: Protocol.DOM.NodeId): void;
     pseudoElementAdded(parentId: Protocol.DOM.NodeId, pseudoElement: Protocol.DOM.Node): void;
+    scrollableFlagUpdated(nodeId: Protocol.DOM.NodeId, isScrollable: boolean): void;
     topLayerElementsUpdated(): void;
     pseudoElementRemoved(parentId: Protocol.DOM.NodeId, pseudoElementId: Protocol.DOM.NodeId): void;
     distributedNodesUpdated(insertionPointId: Protocol.DOM.NodeId, distributedNodes: Protocol.DOM.BackendNode[]): void;
@@ -233,7 +237,8 @@ export declare enum Events {
     ChildNodeCountUpdated = "ChildNodeCountUpdated",
     DistributedNodesChanged = "DistributedNodesChanged",
     MarkersChanged = "MarkersChanged",
-    TopLayerElementsChanged = "TopLayerElementsChanged"
+    TopLayerElementsChanged = "TopLayerElementsChanged",
+    ScrollableFlagUpdated = "ScrollableFlagUpdated"
 }
 export type EventTypes = {
     [Events.AttrModified]: {
@@ -256,6 +261,9 @@ export type EventTypes = {
     [Events.DistributedNodesChanged]: DOMNode;
     [Events.MarkersChanged]: DOMNode;
     [Events.TopLayerElementsChanged]: void;
+    [Events.ScrollableFlagUpdated]: {
+        node: DOMNode;
+    };
 };
 export declare class DOMModelUndoStack {
     #private;

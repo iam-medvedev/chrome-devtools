@@ -18,11 +18,11 @@ export declare class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapp
     fetchComputedStyle(): Promise<ComputedStyle | null>;
 }
 export declare const enum Events {
-    ComputedStyleChanged = "ComputedStyleChanged"
+    COMPUTED_STYLE_CHANGED = "ComputedStyleChanged"
 }
 export type ComputedStyleChangedEvent = SDK.CSSStyleSheetHeader.CSSStyleSheetHeader | SDK.CSSModel.StyleSheetChangedEvent | void | SDK.CSSModel.PseudoStateForcedEvent | null;
 export type EventTypes = {
-    [Events.ComputedStyleChanged]: ComputedStyleChangedEvent;
+    [Events.COMPUTED_STYLE_CHANGED]: ComputedStyleChangedEvent;
 };
 export declare class ComputedStyle {
     node: SDK.DOMModel.DOMNode;

@@ -123,7 +123,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.layerViewHost = layerViewHost;
         this.layerViewHost.registerView(this);
         this.transformController = new TransformController(this.contentElement);
-        this.transformController.addEventListener("TransformChanged" /* TransformControllerEvents.TransformChanged */, this.update, this);
+        this.transformController.addEventListener("TransformChanged" /* TransformControllerEvents.TRANSFORM_CHANGED */, this.update, this);
         this.initToolbar();
         this.canvasElement = this.contentElement.createChild('canvas');
         this.canvasElement.tabIndex = 0;
@@ -162,7 +162,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         }
         void UI.UIUtils.loadImage(imageURL).then(image => {
             const texture = image && LayerTextureManager.createTextureForImage(this.gl || null, image);
-            this.layerTexture = texture ? { layer: layer, texture: texture } : null;
+            this.layerTexture = texture ? { layer, texture } : null;
             this.update();
         });
     }
@@ -197,7 +197,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.setOutline(OutlineType.Selected, selection);
     }
     snapshotForSelection(selection) {
-        if (selection.type() === "Snapshot" /* Type.Snapshot */) {
+        if (selection.type() === "Snapshot" /* Type.SNAPSHOT */) {
             const snapshotWithRect = selection.snapshot();
             snapshotWithRect.snapshot.addReference();
             return Promise.resolve(snapshotWithRect);
@@ -285,7 +285,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         if (textureScale !== this.oldTextureScale) {
             this.oldTextureScale = textureScale;
             this.textureManager.setScale(textureScale);
-            this.dispatchEventToListeners("ScaleChanged" /* Events.ScaleChanged */, textureScale);
+            this.dispatchEventToListeners("ScaleChanged" /* Events.SCALE_CHANGED */, textureScale);
         }
         const scaleAndRotationMatrix = new WebKitCSSMatrix()
             .scale(scale, scale, scale)
@@ -352,9 +352,9 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
                     image && LayerTextureManager.createTextureForImage(this.gl || null, image) || undefined;
             });
         }
-        loadChromeTexture.call(this, 0 /* ChromeTexture.Left */, 'Images/chromeLeft.avif');
-        loadChromeTexture.call(this, 1 /* ChromeTexture.Middle */, 'Images/chromeMiddle.avif');
-        loadChromeTexture.call(this, 2 /* ChromeTexture.Right */, 'Images/chromeRight.avif');
+        loadChromeTexture.call(this, 0 /* ChromeTexture.LEFT */, 'Images/chromeLeft.avif');
+        loadChromeTexture.call(this, 1 /* ChromeTexture.MIDDLE */, 'Images/chromeMiddle.avif');
+        loadChromeTexture.call(this, 2 /* ChromeTexture.RIGHT */, 'Images/chromeRight.avif');
     }
     initGLIfNecessary() {
         if (this.gl) {
@@ -607,7 +607,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
                 if (!image) {
                     continue;
                 }
-                const width = i === 1 /* ChromeTexture.Middle */ ? middleFragmentWidth : image.naturalWidth;
+                const width = i === 1 /* ChromeTexture.MIDDLE */ ? middleFragmentWidth : image.naturalWidth;
                 if (width < 0 || x + width > viewportWidth) {
                     break;
                 }
@@ -726,8 +726,8 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
             jslogContext: 'layers.3d-center',
         });
         const selection = this.selectionFromEventPoint(event);
-        if (selection && selection.type() === "Snapshot" /* Type.Snapshot */) {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.showPaintProfiler), () => this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PaintProfilerRequested */, selection), {
+        if (selection && selection.type() === "Snapshot" /* Type.SNAPSHOT */) {
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.showPaintProfiler), () => this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PAINT_PROFILER_REQUESTED */, selection), {
                 jslogContext: 'layers.paint-profiler',
             });
         }
@@ -758,8 +758,8 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     }
     onDoubleClick(event) {
         const selection = this.selectionFromEventPoint(event);
-        if (selection && (selection.type() === "Snapshot" /* Type.Snapshot */ || selection.layer())) {
-            this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PaintProfilerRequested */, selection);
+        if (selection && (selection.type() === "Snapshot" /* Type.SNAPSHOT */ || selection.layer())) {
+            this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PAINT_PROFILER_REQUESTED */, selection);
         }
         event.stopPropagation();
     }
@@ -779,8 +779,10 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
 }
 export var OutlineType;
 (function (OutlineType) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     OutlineType["Hovered"] = "hovered";
     OutlineType["Selected"] = "selected";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(OutlineType || (OutlineType = {}));
 export const FragmentShader = '' +
     'precision mediump float;\n' +

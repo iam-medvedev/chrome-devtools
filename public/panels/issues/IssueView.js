@@ -85,11 +85,11 @@ class AffectedRequestsView extends AffectedResourcesView {
             const element = document.createElement('tr');
             element.classList.add('affected-resource-request');
             const category = this.issue.getCategory();
-            const tab = issueTypeToNetworkHeaderMap.get(category) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
+            const tab = issueTypeToNetworkHeaderMap.get(category) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
             element.appendChild(this.createRequestCell(affectedRequest, {
                 networkTab: tab,
                 additionalOnClickAction() {
-                    Host.userMetrics.issuesPanelResourceOpened(category, "Request" /* AffectedItem.Request */);
+                    Host.userMetrics.issuesPanelResourceOpened(category, "Request" /* AffectedItem.REQUEST */);
                 },
             }));
             this.affectedResources.appendChild(element);
@@ -120,15 +120,15 @@ class AffectedRequestsView extends AffectedResourcesView {
 const issueTypeToNetworkHeaderMap = new Map([
     [
         "Cookie" /* IssuesManager.Issue.IssueCategory.COOKIE */,
-        "cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.Cookies */,
+        "cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.COOKIES */,
     ],
     [
         "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */,
-        "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
+        "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */,
     ],
     [
         "MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */,
-        "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
+        "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */,
     ],
 ]);
 class AffectedMixedContentView extends AffectedResourcesView {
@@ -153,11 +153,11 @@ class AffectedMixedContentView extends AffectedResourcesView {
         element.classList.add('affected-resource-mixed-content');
         if (mixedContent.request) {
             const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
-                "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
+                "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
             element.appendChild(this.createRequestCell(mixedContent.request, {
                 networkTab,
                 additionalOnClickAction() {
-                    Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */, "Request" /* AffectedItem.Request */);
+                    Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */, "Request" /* AffectedItem.REQUEST */);
                 },
             }));
         }

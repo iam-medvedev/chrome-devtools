@@ -24,14 +24,14 @@ export declare class FilmStripView extends FilmStripView_base {
     setStatusText(text: string): void;
 }
 export declare const enum Events {
-    FrameSelected = "FrameSelected",
-    FrameEnter = "FrameEnter",
-    FrameExit = "FrameExit"
+    FRAME_SELECTED = "FrameSelected",
+    FRAME_ENTER = "FrameEnter",
+    FRAME_EXIT = "FrameExit"
 }
 export type EventTypes = {
-    [Events.FrameSelected]: number;
-    [Events.FrameEnter]: number;
-    [Events.FrameExit]: number;
+    [Events.FRAME_SELECTED]: number;
+    [Events.FRAME_ENTER]: number;
+    [Events.FRAME_EXIT]: number;
 };
 export declare class Dialog {
     #private;

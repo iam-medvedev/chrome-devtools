@@ -196,14 +196,14 @@ export function setHidden(element, value) {
 export function setLevel(element, level) {
     element.setAttribute('aria-level', level.toString());
 }
-export function setAutocomplete(element, interactionModel = "none" /* AutocompleteInteractionModel.None */) {
+export function setAutocomplete(element, interactionModel = "none" /* AutocompleteInteractionModel.NONE */) {
     element.setAttribute('aria-autocomplete', interactionModel);
 }
 export function clearAutocomplete(element) {
     element.removeAttribute('aria-autocomplete');
 }
-export function setHasPopup(element, value = "false" /* PopupRole.False */) {
-    if (value !== "false" /* PopupRole.False */) {
+export function setHasPopup(element, value = "false" /* PopupRole.FALSE */) {
+    if (value !== "false" /* PopupRole.FALSE */) {
         element.setAttribute('aria-haspopup', value);
     }
     else {

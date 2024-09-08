@@ -12,7 +12,7 @@ describeWithLocale('Elements tree expand button', () => {
         let clicks = 0;
         const clickHandler = () => clicks++;
         component.data = {
-            clickHandler: clickHandler,
+            clickHandler,
         };
         renderElementIntoDOM(component);
         await coordinator.done();

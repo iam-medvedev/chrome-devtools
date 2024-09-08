@@ -97,7 +97,7 @@ export class DetachedElementsProfileType extends Common.ObjectWrapper.eventMixin
         const data = await domModel.getDetachedDOMNodes();
         const profile = new DetachedElementsProfileHeader(heapProfilerModel, this, data);
         this.addProfile(profile);
-        this.dispatchEventToListeners("profile-complete" /* ProfileTypeEvents.ProfileComplete */, profile);
+        this.dispatchEventToListeners("profile-complete" /* ProfileTypeEvents.PROFILE_COMPLETE */, profile);
     }
     get treeItemTitle() {
         return i18nString(UIStrings.detachedElementsTitle);

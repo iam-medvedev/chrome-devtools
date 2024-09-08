@@ -1,20 +1,20 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 export declare const enum Events {
-    ColorChanged = "colorChanged"
+    COLOR_CHANGED = "colorChanged"
 }
 export interface EventTypes {
-    [Events.ColorChanged]: {
+    [Events.COLOR_CHANGED]: {
         text: string;
     };
 }
 declare const ColorMixSwatch_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.ColorChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.ColorChanged>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.ColorChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.ColorChanged): boolean;
-    dispatchEventToListeners<T extends Events.ColorChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.COLOR_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.COLOR_CHANGED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.COLOR_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.COLOR_CHANGED): boolean;
+    dispatchEventToListeners<T extends Events.COLOR_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & {
     new (): HTMLElement;
     prototype: HTMLElement;

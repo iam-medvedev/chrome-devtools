@@ -5,11 +5,11 @@ import { type ToolbarButton } from './Toolbar.js';
 import { HBox } from './Widget.js';
 declare const FilterBar_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<FilterBarEventTypes>;
-    addEventListener<T extends FilterBarEvents.Changed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<FilterBarEventTypes, T>;
-    once<T extends FilterBarEvents.Changed>(eventType: T): Promise<FilterBarEventTypes[T]>;
-    removeEventListener<T extends FilterBarEvents.Changed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: FilterBarEvents.Changed): boolean;
-    dispatchEventToListeners<T extends FilterBarEvents.Changed>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<FilterBarEventTypes, T>): void;
+    addEventListener<T extends FilterBarEvents.CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<FilterBarEventTypes, T>;
+    once<T extends FilterBarEvents.CHANGED>(eventType: T): Promise<FilterBarEventTypes[T]>;
+    removeEventListener<T extends FilterBarEvents.CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: FilterBarEvents.CHANGED): boolean;
+    dispatchEventToListeners<T extends FilterBarEvents.CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<FilterBarEventTypes, T>): void;
 }) & typeof HBox;
 export declare class FilterBar extends FilterBar_base {
     private enabled;
@@ -36,20 +36,20 @@ export declare class FilterBar extends FilterBar_base {
     visible(): boolean;
 }
 export declare const enum FilterBarEvents {
-    Changed = "Changed"
+    CHANGED = "Changed"
 }
 export type FilterBarEventTypes = {
-    [FilterBarEvents.Changed]: void;
+    [FilterBarEvents.CHANGED]: void;
 };
 export interface FilterUI extends Common.EventTarget.EventTarget<FilterUIEventTypes> {
     isActive(): boolean;
     element(): Element;
 }
 export declare const enum FilterUIEvents {
-    FilterChanged = "FilterChanged"
+    FILTER_CHANGED = "FilterChanged"
 }
 export type FilterUIEventTypes = {
-    [FilterUIEvents.FilterChanged]: void;
+    [FilterUIEvents.FILTER_CHANGED]: void;
 };
 export declare class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {
     #private;

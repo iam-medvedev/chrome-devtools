@@ -72,9 +72,9 @@ export declare class ProfileView extends UI.View.SimpleView implements UI.Search
 }
 export declare const maxLinkLength = 30;
 export declare const enum ViewTypes {
-    Flame = "Flame",
-    Tree = "Tree",
-    Heavy = "Heavy"
+    FLAME = "Flame",
+    TREE = "Tree",
+    HEAVY = "Heavy"
 }
 export declare class WritableProfileHeader extends ProfileHeader implements Common.StringOutputStream.OutputStream {
     #private;

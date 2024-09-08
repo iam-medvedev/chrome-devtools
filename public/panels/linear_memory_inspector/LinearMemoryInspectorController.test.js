@@ -73,12 +73,12 @@ describeWithEnvironment('LinearMemoryInspectorController', () => {
     });
     it('triggers saving and loading of settings on settings changed event', () => {
         const instance = LinearMemoryInspectorController.LinearMemoryInspectorController.instance();
-        const valueTypes = new Set(["Integer 16-bit" /* ValueInterpreterDisplayUtils.ValueType.Int16 */, "Float 32-bit" /* ValueInterpreterDisplayUtils.ValueType.Float32 */]);
-        const valueTypeModes = new Map([["Integer 16-bit" /* ValueInterpreterDisplayUtils.ValueType.Int16 */, "hex" /* ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */]]);
+        const valueTypes = new Set(["Integer 16-bit" /* ValueInterpreterDisplayUtils.ValueType.INT16 */, "Float 32-bit" /* ValueInterpreterDisplayUtils.ValueType.FLOAT32 */]);
+        const valueTypeModes = new Map([["Integer 16-bit" /* ValueInterpreterDisplayUtils.ValueType.INT16 */, "hex" /* ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */]]);
         const settings = {
             valueTypes,
             modes: valueTypeModes,
-            endianness: "Little Endian" /* ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* ValueInterpreterDisplayUtils.Endianness.LITTLE */,
         };
         const defaultSettings = instance.loadSettings();
         instance.saveSettings(settings);

@@ -16,16 +16,16 @@ class SharedStorageListener {
         this.#storagesWatched = new Array();
         this.#accessEvents = new Array();
         this.#changeEvents = new Map();
-        this.#model.addEventListener("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SharedStorageAdded */, this.#sharedStorageAdded, this);
-        this.#model.addEventListener("SharedStorageRemoved" /* Resources.SharedStorageModel.Events.SharedStorageRemoved */, this.#sharedStorageRemoved, this);
-        this.#model.addEventListener("SharedStorageAccess" /* Resources.SharedStorageModel.Events.SharedStorageAccess */, this.#sharedStorageAccess, this);
+        this.#model.addEventListener("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_ADDED */, this.#sharedStorageAdded, this);
+        this.#model.addEventListener("SharedStorageRemoved" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_REMOVED */, this.#sharedStorageRemoved, this);
+        this.#model.addEventListener("SharedStorageAccess" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_ACCESS */, this.#sharedStorageAccess, this);
     }
     dispose() {
-        this.#model.removeEventListener("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SharedStorageAdded */, this.#sharedStorageAdded, this);
-        this.#model.removeEventListener("SharedStorageRemoved" /* Resources.SharedStorageModel.Events.SharedStorageRemoved */, this.#sharedStorageRemoved, this);
-        this.#model.removeEventListener("SharedStorageAccess" /* Resources.SharedStorageModel.Events.SharedStorageAccess */, this.#sharedStorageAccess, this);
+        this.#model.removeEventListener("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_ADDED */, this.#sharedStorageAdded, this);
+        this.#model.removeEventListener("SharedStorageRemoved" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_REMOVED */, this.#sharedStorageRemoved, this);
+        this.#model.removeEventListener("SharedStorageAccess" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_ACCESS */, this.#sharedStorageAccess, this);
         for (const storage of this.#storagesWatched) {
-            storage.removeEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SharedStorageChanged */, this.#sharedStorageChanged.bind(this, storage), this);
+            storage.removeEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, this.#sharedStorageChanged.bind(this, storage), this);
         }
     }
     get accessEvents() {
@@ -40,11 +40,11 @@ class SharedStorageListener {
     #sharedStorageAdded(event) {
         const storage = event.data;
         this.#storagesWatched.push(storage);
-        storage.addEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SharedStorageChanged */, this.#sharedStorageChanged.bind(this, storage), this);
+        storage.addEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, this.#sharedStorageChanged.bind(this, storage), this);
     }
     #sharedStorageRemoved(event) {
         const storage = event.data;
-        storage.removeEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SharedStorageChanged */, this.#sharedStorageChanged.bind(this, storage), this);
+        storage.removeEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, this.#sharedStorageChanged.bind(this, storage), this);
         const index = this.#storagesWatched.indexOf(storage);
         if (index === -1) {
             return;
@@ -62,7 +62,7 @@ class SharedStorageListener {
     }
     async waitForStoragesAdded(expectedCount) {
         while (this.#storagesWatched.length < expectedCount) {
-            await this.#model.once("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SharedStorageAdded */);
+            await this.#model.once("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_ADDED */);
         }
     }
 }

@@ -71,12 +71,12 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
         UI.ARIAUtils.markAsButton(element);
         const imageElement = element.createChild('div', 'thumbnail').createChild('img');
         imageElement.alt = i18nString(UIStrings.screenshot);
-        element.addEventListener('mousedown', this.onMouseEvent.bind(this, "FrameSelected" /* Events.FrameSelected */, time), false);
-        element.addEventListener('mouseenter', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FrameEnter */, time), false);
-        element.addEventListener('mouseout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FrameExit */, time), false);
+        element.addEventListener('mousedown', this.onMouseEvent.bind(this, "FrameSelected" /* Events.FRAME_SELECTED */, time), false);
+        element.addEventListener('mouseenter', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FRAME_ENTER */, time), false);
+        element.addEventListener('mouseout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FRAME_EXIT */, time), false);
         element.addEventListener('dblclick', this.onDoubleClick.bind(this, frame), false);
-        element.addEventListener('focusin', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FrameEnter */, time), false);
-        element.addEventListener('focusout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FrameExit */, time), false);
+        element.addEventListener('focusin', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FRAME_ENTER */, time), false);
+        element.addEventListener('focusout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FRAME_EXIT */, time), false);
         FilmStripView.setImageData(imageElement, frame.screenshotEvent.args.dataUri);
         return element;
     }
@@ -169,7 +169,7 @@ export class Dialog {
             this.dialog.setDefaultFocusedElement(this.widget);
             this.dialog.show();
         }
-        this.dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
+        this.dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
     }
     keyDown(event) {
         const keyboardEvent = event;

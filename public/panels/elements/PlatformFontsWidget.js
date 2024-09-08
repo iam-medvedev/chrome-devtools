@@ -69,7 +69,7 @@ export class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
     constructor(sharedModel) {
         super(true);
         this.sharedModel = sharedModel;
-        this.sharedModel.addEventListener("ComputedStyleChanged" /* Events.ComputedStyleChanged */, this.update, this);
+        this.sharedModel.addEventListener("ComputedStyleChanged" /* Events.COMPUTED_STYLE_CHANGED */, this.update, this);
         this.sectionTitle = document.createElement('div');
         this.sectionTitle.classList.add('title');
         this.contentElement.classList.add('platform-fonts');

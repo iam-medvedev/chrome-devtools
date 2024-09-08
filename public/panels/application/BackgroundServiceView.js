@@ -211,11 +211,11 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         this.recordButton.toggleOnClick(false);
         this.toolbar.appendToolbarItem(this.recordButton);
         const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'background-service.clear');
-        clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.clearEvents());
+        clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.clearEvents());
         this.toolbar.appendToolbarItem(clearButton);
         this.toolbar.appendSeparator();
         this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveEvents), 'download', undefined, 'background-service.save-events');
-        this.saveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
+        this.saveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
             void this.saveToFile();
         });
         this.saveButton.setEnabled(false);
@@ -320,7 +320,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             deleteCallback: undefined,
         });
         dataGrid.setStriped(true);
-        dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, event => this.showPreview(event.data));
+        dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, event => this.showPreview(event.data));
         return dataGrid;
     }
     /**

@@ -178,7 +178,7 @@ function parseInnerList(input) {
             }
             return {
                 kind: 12 /* ResultKind.INNER_LIST */,
-                items: items,
+                items,
                 parameters: params,
             };
         }

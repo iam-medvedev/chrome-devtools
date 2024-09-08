@@ -145,11 +145,11 @@ export class SettingsScreen extends UI.Widget.VBox {
         dialog.contentElement.tabIndex = -1;
         dialog.addCloseButton();
         dialog.setOutsideClickCallback(() => { });
-        dialog.setPointerEventsBehavior("PierceGlassPane" /* UI.GlassPane.PointerEventsBehavior.PierceGlassPane */);
-        dialog.setOutsideTabIndexBehavior("PreserveMainViewTabIndex" /* UI.Dialog.OutsideTabIndexBehavior.PreserveMainViewTabIndex */);
+        dialog.setPointerEventsBehavior("PierceGlassPane" /* UI.GlassPane.PointerEventsBehavior.PIERCE_GLASS_PANE */);
+        dialog.setOutsideTabIndexBehavior("PreserveMainViewTabIndex" /* UI.Dialog.OutsideTabIndexBehavior.PRESERVE_MAIN_VIEW_TAB_INDEX */);
         settingsScreen.show(dialog.contentElement);
         dialog.setEscapeKeyCallback(settingsScreen.onEscapeKeyPressed.bind(settingsScreen));
-        dialog.setMarginBehavior("NoMargin" /* UI.GlassPane.MarginBehavior.NoMargin */);
+        dialog.setMarginBehavior("NoMargin" /* UI.GlassPane.MarginBehavior.NO_MARGIN */);
         // UI.Dialog extends GlassPane and overrides the `show` method with a wider
         // accepted type. However, TypeScript uses the supertype declaration to
         // determine the full type, which requires a `!Document`.
@@ -448,7 +448,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
     }
     setFilter(filterText) {
         this.#inputElement.value = filterText;
-        this.#inputElement.dispatchEvent(new Event('input', { 'bubbles': true, 'cancelable': true }));
+        this.#inputElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(ExperimentsSettingsTab, this);

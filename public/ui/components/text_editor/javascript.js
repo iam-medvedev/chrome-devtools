@@ -98,17 +98,17 @@ export function getQueryType(tree, pos, doc) {
     }
     if (node.name === 'PropertyName' || node.name === 'PrivatePropertyName') {
         return parent?.name !== 'MemberExpression' ? null :
-            { type: 1 /* QueryType.PropertyName */, from: node.from, relatedNode: parent };
+            { type: 1 /* QueryType.PROPERTY_NAME */, from: node.from, relatedNode: parent };
     }
     if (node.name === 'VariableName' ||
         // Treat alphabetic keywords as variables
         !node.firstChild && node.to - node.from < 20 && !/[^a-z]/.test(doc.sliceString(node.from, node.to))) {
-        return { type: 0 /* QueryType.Expression */, from: node.from };
+        return { type: 0 /* QueryType.EXPRESSION */, from: node.from };
     }
     if (node.name === 'String') {
         const parent = node.parent;
         return parent?.name === 'MemberExpression' && parent.childBefore(node.from)?.name === '[' ?
-            { type: 2 /* QueryType.PropertyExpression */, from: node.from, relatedNode: parent } :
+            { type: 2 /* QueryType.PROPERTY_EXPRESSION */, from: node.from, relatedNode: parent } :
             null;
     }
     // Enter unfinished nodes before the position.
@@ -120,10 +120,10 @@ export function getQueryType(tree, pos, doc) {
     if (node.name === 'MemberExpression') {
         const before = node.childBefore(Math.min(pos, node.to));
         if (before?.name === '[') {
-            return { type: 2 /* QueryType.PropertyExpression */, relatedNode: node };
+            return { type: 2 /* QueryType.PROPERTY_EXPRESSION */, relatedNode: node };
         }
         if (before?.name === '.' || before?.name === '?.') {
-            return { type: 1 /* QueryType.PropertyName */, relatedNode: node };
+            return { type: 1 /* QueryType.PROPERTY_NAME */, relatedNode: node };
         }
     }
     if (node.name === '(') {
@@ -137,16 +137,16 @@ export function getQueryType(tree, pos, doc) {
                 if (propertyExpression && doc.sliceString(propertyExpression.from, propertyExpression.to) === 'get') {
                     // map
                     const potentiallyMapObject = callReceiver?.firstChild;
-                    return { type: 3 /* QueryType.PotentiallyRetrievingFromMap */, relatedNode: potentiallyMapObject || undefined };
+                    return { type: 3 /* QueryType.POTENTIALLY_RETRIEVING_FROM_MAP */, relatedNode: potentiallyMapObject || undefined };
                 }
             }
         }
     }
-    return { type: 0 /* QueryType.Expression */ };
+    return { type: 0 /* QueryType.EXPRESSION */ };
 }
 export async function javascriptCompletionSource(cx) {
     const query = getQueryType(CodeMirror.syntaxTree(cx.state), cx.pos, cx.state.doc);
-    if (!query || query.from === undefined && !cx.explicit && query.type === 0 /* QueryType.Expression */) {
+    if (!query || query.from === undefined && !cx.explicit && query.type === 0 /* QueryType.EXPRESSION */) {
         return null;
     }
     const script = getExecutionContext()?.debuggerModel.selectedCallFrame()?.script;
@@ -156,7 +156,7 @@ export async function javascriptCompletionSource(cx) {
     }
     let result;
     let quote = undefined;
-    if (query.type === 0 /* QueryType.Expression */) {
+    if (query.type === 0 /* QueryType.EXPRESSION */) {
         const [scope, global] = await Promise.all([
             completeExpressionInScope(),
             completeExpressionGlobal(),
@@ -171,9 +171,9 @@ export async function javascriptCompletionSource(cx) {
             result = global;
         }
     }
-    else if (query.type === 1 /* QueryType.PropertyName */ || query.type === 2 /* QueryType.PropertyExpression */) {
+    else if (query.type === 1 /* QueryType.PROPERTY_NAME */ || query.type === 2 /* QueryType.PROPERTY_EXPRESSION */) {
         const objectExpr = query.relatedNode.getChild('Expression');
-        if (query.type === 2 /* QueryType.PropertyExpression */) {
+        if (query.type === 2 /* QueryType.PROPERTY_EXPRESSION */) {
             quote = query.from === undefined ? '\'' : cx.state.sliceDoc(query.from, query.from + 1);
         }
         if (!objectExpr) {
@@ -181,7 +181,7 @@ export async function javascriptCompletionSource(cx) {
         }
         result = await completeProperties(cx.state.sliceDoc(objectExpr.from, objectExpr.to), quote, cx.state.sliceDoc(cx.pos, cx.pos + 1) === ']');
     }
-    else if (query.type === 3 /* QueryType.PotentiallyRetrievingFromMap */) {
+    else if (query.type === 3 /* QueryType.POTENTIALLY_RETRIEVING_FROM_MAP */) {
         const potentialMapObject = query.relatedNode;
         if (!potentialMapObject) {
             return null;

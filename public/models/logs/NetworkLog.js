@@ -249,7 +249,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
         }
-        return { initiators: this.initiatorChain(request), initiated: initiated };
+        return { initiators: this.initiatorChain(request), initiated };
     }
     initiatorChain(request) {
         const initiatorDataForRequest = this.initializeInitiatorSymbolIfNeeded(request);

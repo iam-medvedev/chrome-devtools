@@ -140,7 +140,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
             renderChart(chartInstance);
             const highlightedEventListener = sinon.stub();
-            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, highlightedEventListener);
+            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, highlightedEventListener);
             // Nothing highlighted, so the highlightElement should be hidden.
             assert.isTrue(chartInstance.highlightElement.classList.contains('hidden'));
             const entryIndexToHighlight = 2;
@@ -165,7 +165,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
             renderChart(chartInstance);
             const highlightedEventListener = sinon.stub();
-            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, highlightedEventListener);
+            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, highlightedEventListener);
             chartInstance.highlightEntry(2);
             chartInstance.highlightEntry(2);
             // Ensure that there is only one event listener called, despite the
@@ -184,7 +184,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
             renderChart(chartInstance);
             const highlightedEventListener = sinon.stub();
-            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, highlightedEventListener);
+            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, highlightedEventListener);
             chartInstance.highlightEntry(2);
             // No calls because entryColor returned a false value.
             assert.strictEqual(highlightedEventListener.callCount, 0);
@@ -195,7 +195,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
             renderChart(chartInstance);
             const highlightedEventListener = sinon.stub();
-            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, highlightedEventListener);
+            chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, highlightedEventListener);
             chartInstance.highlightEntry(2);
             chartInstance.hideHighlight();
             // Ensure the argument to the last event listener call was -1

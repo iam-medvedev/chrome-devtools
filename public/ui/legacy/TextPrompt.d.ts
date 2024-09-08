@@ -100,8 +100,8 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     suggestBoxForTest(): SuggestBox | undefined;
 }
 export declare const enum Events {
-    TextChanged = "TextChanged"
+    TEXT_CHANGED = "TextChanged"
 }
 export type EventTypes = {
-    [Events.TextChanged]: void;
+    [Events.TEXT_CHANGED]: void;
 };

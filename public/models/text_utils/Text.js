@@ -29,7 +29,7 @@ export class Text {
     positionFromOffset(offset) {
         const lineEndings = this.lineEndings();
         const lineNumber = Platform.ArrayUtilities.lowerBound(lineEndings, offset, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
-        return { lineNumber: lineNumber, columnNumber: offset - (lineNumber && (lineEndings[lineNumber - 1] + 1)) };
+        return { lineNumber, columnNumber: offset - (lineNumber && (lineEndings[lineNumber - 1] + 1)) };
     }
     lineAt(lineNumber) {
         const lineEndings = this.lineEndings();

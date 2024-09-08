@@ -77,7 +77,7 @@ export function rotateFlexDirectionIcon(direction) {
     }
     return {
         iconName: 'flex-direction',
-        rotate: rotate,
+        rotate,
         scaleX: flipX ? -1 : 1,
         scaleY: flipY ? -1 : 1,
     };

@@ -47,7 +47,7 @@ export function expandWindowByPercentOrToOneMillisecond(annotationWindow, maxTra
 export function eventTimingsMicroSeconds(event) {
     return {
         startTime: event.ts,
-        endTime: Types.Timing.MicroSeconds(event.ts + (event.dur || Types.Timing.MicroSeconds(0))),
+        endTime: Types.Timing.MicroSeconds(event.ts + (event.dur ?? Types.Timing.MicroSeconds(0))),
         duration: Types.Timing.MicroSeconds(event.dur || 0),
     };
 }
@@ -113,6 +113,11 @@ export function boundsIncludeTimeRange(data) {
     const { min: visibleMin, max: visibleMax } = data.bounds;
     const { min: rangeMin, max: rangeMax } = data.timeRange;
     return visibleMin <= rangeMax && visibleMax >= rangeMin;
+}
+/** Checks to see if the event is within or overlaps the bounds */
+export function eventIsInBounds(event, bounds) {
+    const startTime = event.ts;
+    return startTime <= bounds.max && bounds.min <= (startTime + (event.dur ?? 0));
 }
 export function timestampIsInBounds(bounds, timestamp) {
     return timestamp >= bounds.min && timestamp <= bounds.max;

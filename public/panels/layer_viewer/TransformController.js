@@ -60,17 +60,17 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         this.modeButtons = {};
         if (!disableRotate) {
             const panModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.panModeX), '3d-pan', undefined, 'layers.3d-pan', /* toggleOnClick */ false);
-            panModeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.setMode.bind(this, "Pan" /* Modes.Pan */));
-            this.modeButtons["Pan" /* Modes.Pan */] = panModeButton;
+            panModeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.setMode.bind(this, "Pan" /* Modes.PAN */));
+            this.modeButtons["Pan" /* Modes.PAN */] = panModeButton;
             this.controlPanelToolbar.appendToolbarItem(panModeButton);
             const rotateModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.rotateModeV), '3d-rotate', undefined, 'layers.3d-rotate', /* toggleOnClick */ false);
-            rotateModeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.setMode.bind(this, "Rotate" /* Modes.Rotate */));
-            this.modeButtons["Rotate" /* Modes.Rotate */] = rotateModeButton;
+            rotateModeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.setMode.bind(this, "Rotate" /* Modes.ROTATE */));
+            this.modeButtons["Rotate" /* Modes.ROTATE */] = rotateModeButton;
             this.controlPanelToolbar.appendToolbarItem(rotateModeButton);
         }
-        this.setMode("Pan" /* Modes.Pan */);
+        this.setMode("Pan" /* Modes.PAN */);
         const resetButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.resetTransform), '3d-center', undefined, 'layers.3d-center');
-        resetButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.resetAndNotify.bind(this, undefined));
+        resetButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.resetAndNotify.bind(this, undefined));
         this.controlPanelToolbar.appendToolbarItem(resetButton);
         this.reset();
     }
@@ -85,11 +85,11 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
                 return true;
             },
             'layers.pan-mode': async () => {
-                this.setMode("Pan" /* Modes.Pan */);
+                this.setMode("Pan" /* Modes.PAN */);
                 return true;
             },
             'layers.rotate-mode': async () => {
-                this.setMode("Rotate" /* Modes.Rotate */);
+                this.setMode("Rotate" /* Modes.ROTATE */);
                 return true;
             },
             'layers.zoom-in': this.onKeyboardZoom.bind(this, zoomFactor),
@@ -101,7 +101,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         });
     }
     postChangeEvent() {
-        this.dispatchEventToListeners("TransformChanged" /* Events.TransformChanged */);
+        this.dispatchEventToListeners("TransformChanged" /* Events.TRANSFORM_CHANGED */);
     }
     reset() {
         this.scaleInternal = 1;
@@ -179,7 +179,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
     async onKeyboardPanOrRotate(xMultiplier, yMultiplier) {
         const panStepInPixels = 6;
         const rotateStepInDegrees = 5;
-        if (this.mode === "Rotate" /* Modes.Rotate */) {
+        if (this.mode === "Rotate" /* Modes.ROTATE */) {
             // Sic! onRotate treats X and Y as "rotate around X" and "rotate around Y", so swap X/Y multiplers.
             this.onRotate(this.rotateXInternal + yMultiplier * rotateStepInDegrees, this.rotateYInternal + xMultiplier * rotateStepInDegrees);
         }
@@ -199,7 +199,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
     }
     onDrag(event) {
         const { clientX, clientY } = event;
-        if (this.mode === "Rotate" /* Modes.Rotate */) {
+        if (this.mode === "Rotate" /* Modes.ROTATE */) {
             this.onRotate(this.oldRotateX + (this.originY - clientY) / this.element.clientHeight * 180, this.oldRotateY - (this.originX - clientX) / this.element.clientWidth * 180);
         }
         else {

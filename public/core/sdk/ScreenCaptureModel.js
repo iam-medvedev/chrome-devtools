@@ -26,8 +26,8 @@ export class ScreenCaptureModel extends SDKModel {
     }
     async captureScreenshot(format, quality, mode, clip) {
         const properties = {
-            format: format,
-            quality: quality,
+            format,
+            quality,
             fromSurface: true,
         };
         switch (mode) {
@@ -96,6 +96,8 @@ export class ScreenCaptureModel extends SDKModel {
     frameStoppedLoading(_params) {
     }
     frameRequestedNavigation(_params) {
+    }
+    frameSubtreeWillBeDetached(_params) {
     }
     frameScheduledNavigation(_params) {
     }

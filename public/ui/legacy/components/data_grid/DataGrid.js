@@ -204,7 +204,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.resizers = [];
         this.columnWidthsInitialized = false;
         this.cornerWidth = CornerWidth;
-        this.resizeMethod = "nearest" /* ResizeMethod.Nearest */;
+        this.resizeMethod = "nearest" /* ResizeMethod.NEAREST */;
         this.headerContextMenuCallback = null;
         this.rowContextMenuCallback = null;
         this.elementToDataGridNode = new WeakMap();
@@ -238,7 +238,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         if (parentElement) {
             gridNode = this.elementToDataGridNode.get(parentElement);
         }
-        if (column.dataType === "Boolean" /* DataType.Boolean */) {
+        if (column.dataType === "Boolean" /* DataType.BOOLEAN */) {
             DataGridImpl.setElementBoolean(element, Boolean(value), gridNode);
         }
         else if (value !== null) {
@@ -445,7 +445,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.topFillerRow.style.height = topPx;
         this.bottomFillerRow.style.height = bottomPx;
         if (!isConstructorTime) {
-            this.dispatchEventToListeners("PaddingChanged" /* Events.PaddingChanged */);
+            this.dispatchEventToListeners("PaddingChanged" /* Events.PADDING_CHANGED */);
         }
     }
     setRootNode(rootNode) {
@@ -494,7 +494,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             element.textContent = elementLongText;
         }
         const column = this.visibleColumnsArray[cellIndex];
-        if (column.dataType === "Boolean" /* DataType.Boolean */) {
+        if (column.dataType === "Boolean" /* DataType.BOOLEAN */) {
             const checkboxLabel = UI.UIUtils.CheckboxLabel.create(undefined, node.data[column.id]);
             UI.ARIAUtils.setLabel(checkboxLabel, column.title || '');
             let hasChanged = false;
@@ -1063,7 +1063,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                 this.startEditing(selectedNodeElement.children[this.nextEditableColumn(-1)]);
             }
             else {
-                this.dispatchEventToListeners("OpenedNode" /* Events.OpenedNode */, this.selectedNode);
+                this.dispatchEventToListeners("OpenedNode" /* Events.OPENED_NODE */, this.selectedNode);
             }
         }
         if (nextSelectedNode) {
@@ -1145,7 +1145,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.sortColumnCell = cell;
         cell.classList.add(sortOrder);
-        this.dispatchEventToListeners("SortingChanged" /* Events.SortingChanged */);
+        this.dispatchEventToListeners("SortingChanged" /* Events.SORTING_CHANGED */);
     }
     markColumnAsSortedBy(columnId, sortOrder) {
         if (this.sortColumnCell) {
@@ -1177,7 +1177,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         else {
             gridNode.select();
-            this.dispatchEventToListeners("OpenedNode" /* Events.OpenedNode */, gridNode);
+            this.dispatchEventToListeners("OpenedNode" /* Events.OPENED_NODE */, gridNode);
         }
     }
     setHeaderContextMenuCallback(callback) {
@@ -1320,10 +1320,10 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             leftEdgeOfPreviousColumn += this.getPreferredWidth(i);
         }
         // Differences for other resize methods
-        if (this.resizeMethod === "last" /* ResizeMethod.Last */) {
+        if (this.resizeMethod === "last" /* ResizeMethod.LAST */) {
             rightCellIndex = this.resizers.length;
         }
-        else if (this.resizeMethod === "first" /* ResizeMethod.First */) {
+        else if (this.resizeMethod === "first" /* ResizeMethod.FIRST */) {
             leftEdgeOfPreviousColumn += this.getPreferredWidth(leftCellIndex) - this.getPreferredWidth(0);
             leftCellIndex = 0;
         }
@@ -1406,8 +1406,10 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
 export const CornerWidth = 14;
 export var Order;
 (function (Order) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Order["Ascending"] = "sort-ascending";
     Order["Descending"] = "sort-descending";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Order || (Order = {}));
 export const ColumnResizePadding = 34;
 export const CenterResizerOverBorderAdjustment = 3;
@@ -1516,7 +1518,7 @@ export class DataGridNode {
             const column = columnsArray[i];
             const cell = element.appendChild(this.createCell(column.id));
             // Add each visibile cell to the node's accessible text by gathering 'Column Title: content'
-            if (column.dataType === "Boolean" /* DataType.Boolean */ && this.data[column.id] === true) {
+            if (column.dataType === "Boolean" /* DataType.BOOLEAN */ && this.data[column.id] === true) {
                 this.setCellAccessibleName(i18nString(UIStrings.checked), cell, column.id);
             }
             accessibleTextArray.push(`${column.title}: ${this.cellAccessibleTextMap.get(column.id) || cell.textContent}`);
@@ -1936,7 +1938,7 @@ export class DataGridNode {
             this.dataGrid.announceSelectedGridNode();
         }
         if (!supressSelectedEvent) {
-            this.dataGrid.dispatchEventToListeners("SelectedNode" /* Events.SelectedNode */, this);
+            this.dataGrid.dispatchEventToListeners("SelectedNode" /* Events.SELECTED_NODE */, this);
         }
     }
     revealAndSelect() {
@@ -1957,7 +1959,7 @@ export class DataGridNode {
             this.dataGrid.setHasSelection(false);
         }
         if (!supressDeselectedEvent) {
-            this.dataGrid.dispatchEventToListeners("DeselectedNode" /* Events.DeselectedNode */);
+            this.dataGrid.dispatchEventToListeners("DeselectedNode" /* Events.DESELECTED_NODE */);
         }
     }
     traverseNextNode(skipHidden, stayWithin, dontPopulate, info) {

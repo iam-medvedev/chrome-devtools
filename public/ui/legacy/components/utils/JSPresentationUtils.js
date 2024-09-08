@@ -83,7 +83,7 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, upd
     const stackTraceRows = [];
     if (updateCallback) {
         const throttler = new Common.Throttler.Throttler(100);
-        linkifier.addEventListener("liveLocationUpdated" /* LinkifierEvents.LiveLocationUpdated */, () => {
+        linkifier.addEventListener("liveLocationUpdated" /* LinkifierEvents.LIVE_LOCATION_UPDATED */, () => {
             void throttler.schedule(async () => updateHiddenRows(updateCallback, stackTraceRows));
         });
     }
@@ -102,7 +102,7 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, upd
             let ignoreListHide = false;
             const functionName = UI.UIUtils.beautifyFunctionName(stackFrame.functionName);
             const link = linkifier.maybeLinkifyConsoleCallFrame(target, stackFrame, {
-                showColumnNumber: showColumnNumber,
+                showColumnNumber,
                 tabStop: Boolean(tabStops),
                 inlineFrameIndex: 0,
                 revealBreakpoint: previousStackFrameWasBreakpointCondition,

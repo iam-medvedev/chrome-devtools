@@ -283,7 +283,7 @@ export function makeProfileCall(functionName, tsMs, durMs, pid = TraceEngine.Typ
         callFrame: {
             functionName,
             scriptId: '',
-            url: url,
+            url,
             lineNumber: -1,
             columnNumber: -1,
         },

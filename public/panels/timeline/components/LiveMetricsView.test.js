@@ -18,14 +18,17 @@ function getFieldMetricValue(view, metric) {
     return card.shadowRoot.querySelector('#field-value .metric-value');
 }
 function getThrottlingRecommendation(view) {
-    return view.shadowRoot.querySelector('#network-recommendation');
+    return view.shadowRoot.querySelector('#network-recommendation')?.title ?? null;
 }
 function getDeviceRecommendation(view) {
-    return view.shadowRoot.querySelector('#device-recommendation');
+    return view.shadowRoot.querySelector('#device-recommendation')?.title ?? null;
 }
 function getInteractions(view) {
-    const interactionsListEl = view.shadowRoot?.querySelector('.interactions-list');
-    return Array.from(interactionsListEl.querySelectorAll('.interaction'));
+    const interactionsListEl = view.shadowRoot.querySelector('.interactions-list');
+    return Array.from(interactionsListEl?.querySelectorAll('.interaction') || []);
+}
+function getClearInteractionsButton(view) {
+    return view.shadowRoot.querySelector('.interactions-clear');
 }
 function selectDeviceOption(view, deviceOption) {
     const deviceScopeSelector = view.shadowRoot.querySelector('devtools-select-menu#device-scope-select');
@@ -60,7 +63,7 @@ function createMockFieldData() {
                 origin: 'https://example.com',
             },
             metrics: {
-                'largest_contentful_paint': {
+                largest_contentful_paint: {
                     histogram: [
                         { start: 0, end: 2500, density: 0.5 },
                         { start: 2500, end: 4000, density: 0.3 },
@@ -68,7 +71,7 @@ function createMockFieldData() {
                     ],
                     percentiles: { p75: 1000 },
                 },
-                'cumulative_layout_shift': {
+                cumulative_layout_shift: {
                     histogram: [
                         { start: 0, end: 0.1 },
                         { start: 0.1, end: 0.25, density: 0.2 },
@@ -76,10 +79,10 @@ function createMockFieldData() {
                     ],
                     percentiles: { p75: 0.25 },
                 },
-                'round_trip_time': {
+                round_trip_time: {
                     percentiles: { p75: 150 },
                 },
-                'form_factors': {
+                form_factors: {
                     fractions: {
                         desktop: 0.6,
                         phone: 0.3,
@@ -178,6 +181,27 @@ describeWithMockConnection('LiveMetricsView', () => {
         assert.strictEqual(durationEl2.textContent, '500 ms');
         assert.strictEqual(durationEl2.className, 'metric-value needs-improvement dim');
     });
+    it('clear interactions log button should work', async () => {
+        const view = new Components.LiveMetricsView.LiveMetricsView();
+        renderElementIntoDOM(view);
+        await coordinator.done();
+        assert.isNull(getClearInteractionsButton(view));
+        assert.lengthOf(getInteractions(view), 0);
+        LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.STATUS */, {
+            inp: { value: 50 },
+            interactions: [
+                { duration: 50, interactionType: 'keyboard' },
+                { duration: 500, interactionType: 'pointer' },
+            ],
+        });
+        await coordinator.done();
+        assert.lengthOf(getInteractions(view), 2);
+        const interactionsButton = getClearInteractionsButton(view);
+        interactionsButton.click();
+        await coordinator.done();
+        assert.isNull(getClearInteractionsButton(view));
+        assert.lengthOf(getInteractions(view), 0);
+    });
     it('record action button should work', async () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
         renderElementIntoDOM(view);
@@ -245,9 +269,9 @@ describeWithMockConnection('LiveMetricsView', () => {
             });
             await coordinator.done();
             const throttlingRec = getThrottlingRecommendation(view);
-            assert.match(throttlingRec.innerText, /Slow 4G/);
+            assert.match(throttlingRec, /Slow 4G/);
             const deviceRec = getDeviceRecommendation(view);
-            assert.match(deviceRec.innerText, /desktop/);
+            assert.match(deviceRec, /60%.*desktop/);
             const fieldMessage = getFieldMessage(view);
             // We can't match the exact string because we format the dates based on
             // locale, so the exact format depends based on where the SWE or bots who
@@ -380,7 +404,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 renderElementIntoDOM(view);
                 await coordinator.done();
                 const throttlingRec = getThrottlingRecommendation(view);
-                assert.match(throttlingRec.innerText, /Slow 4G/);
+                assert.match(throttlingRec, /Slow 4G/);
             });
             it('should hide if no RTT data', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -400,7 +424,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 renderElementIntoDOM(view);
                 await coordinator.done();
                 const throttlingRec = getThrottlingRecommendation(view);
-                assert.match(throttlingRec.innerText, /Try disabling/);
+                assert.match(throttlingRec, /no throttling/);
             });
             it('should ignore presets that are generally too far off', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -421,7 +445,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 renderElementIntoDOM(view);
                 await coordinator.done();
                 const deviceRec = getDeviceRecommendation(view);
-                assert.match(deviceRec.innerText, /desktop/);
+                assert.match(deviceRec, /60%.*desktop/);
             });
             it('should recommend mobile if it is the majority', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -434,7 +458,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 renderElementIntoDOM(view);
                 await coordinator.done();
                 const deviceRec = getDeviceRecommendation(view);
-                assert.match(deviceRec.innerText, /mobile/);
+                assert.match(deviceRec, /80%.*mobile/);
             });
             it('should recommend nothing if there is no majority', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();

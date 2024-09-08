@@ -28,7 +28,41 @@ export class CLSCulprits extends BaseInsight {
         // TODO: create overlays
         return [];
     }
-    #render() {
+    /**
+     * getTopCulprits gets the top 3 shift root causes based on clusters.
+     */
+    getTopCulprits(clusters, culpritsByShift) {
+        if (!culpritsByShift) {
+            return [];
+        }
+        const MAX_TOP_CULPRITS = 3;
+        const causes = [];
+        for (const cluster of clusters) {
+            if (causes.length === MAX_TOP_CULPRITS) {
+                break;
+            }
+            const shifts = cluster.events;
+            for (const shift of shifts) {
+                if (causes.length === MAX_TOP_CULPRITS) {
+                    break;
+                }
+                const culprits = culpritsByShift.get(shift);
+                if (!culprits) {
+                    continue;
+                }
+                const fontReq = culprits.fontRequests;
+                const iframes = culprits.iframes;
+                for (let i = 0; i < fontReq.length && causes.length < MAX_TOP_CULPRITS; i++) {
+                    causes.push('Font request');
+                }
+                for (let i = 0; i < iframes.length && causes.length < MAX_TOP_CULPRITS; i++) {
+                    causes.push('Injected iframe');
+                }
+            }
+        }
+        return causes.slice(0, MAX_TOP_CULPRITS);
+    }
+    #render(culprits) {
         // clang-format off
         return LitHtml.html `
         <div class="insights">
@@ -38,9 +72,19 @@ export class CLSCulprits extends BaseInsight {
         }}
             @insighttoggleclick=${this.onSidebarClick}>
                 <div slot="insight-description" class="insight-description">
-                    <p>Layout shifts happen when existing elements unexpectedly move.
+                    Layout shifts happen when existing elements unexpectedly move.
                          Shifts are caused by nodes changing size or newly added. Investigate
-                         and fix these culprits.</p>
+                         and fix these culprits.
+                </div>
+                <div slot="insight-content" style="insight-content">
+                  <p>
+                    Top layout shift culprits:
+                    ${culprits.map(culprit => {
+            return LitHtml.html `
+                        <li>${culprit}</li>
+                      `;
+        })}
+                  <p>
                 </div>
             </${SidebarInsight.SidebarInsight}>
         </div>`;
@@ -48,12 +92,15 @@ export class CLSCulprits extends BaseInsight {
     }
     render() {
         const clsInsight = getCLSInsight(this.data.insights, this.data.navigationId);
-        const hasShifts = clsInsight?.shifts && clsInsight.shifts.size > 0;
+        const culpritsByShift = clsInsight?.shifts;
+        const clusters = clsInsight?.clusters ?? [];
+        const causes = this.getTopCulprits(clusters, culpritsByShift);
+        const hasCulprits = causes.length > 0;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,
         });
-        const output = hasShifts && matchesCategory ? this.#render() : LitHtml.nothing;
+        const output = hasCulprits && matchesCategory ? this.#render(causes) : LitHtml.nothing;
         LitHtml.render(output, this.shadow, { host: this });
     }
 }

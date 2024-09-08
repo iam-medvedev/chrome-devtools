@@ -20,8 +20,8 @@ export declare class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrap
     private onKeyDown;
 }
 export declare const enum Events {
-    WillShowPopover = "WillShowPopover"
+    WILL_SHOW_POPOVER = "WillShowPopover"
 }
 export type EventTypes = {
-    [Events.WillShowPopover]: void;
+    [Events.WILL_SHOW_POPOVER]: void;
 };

@@ -126,13 +126,13 @@ let JSONEditor = class JSONEditor extends LitElement {
                 return;
             }
             switch (parameter.type) {
-                case "number" /* ParameterType.Number */: {
+                case "number" /* ParameterType.NUMBER */: {
                     return Number(parameter.value);
                 }
-                case "boolean" /* ParameterType.Boolean */: {
+                case "boolean" /* ParameterType.BOOLEAN */: {
                     return Boolean(parameter.value);
                 }
-                case "object" /* ParameterType.Object */: {
+                case "object" /* ParameterType.OBJECT */: {
                     const nestedParameters = {};
                     for (const subParameter of parameter.value) {
                         const formattedValue = formatParameterValue(subParameter);
@@ -145,7 +145,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                     }
                     return nestedParameters;
                 }
-                case "array" /* ParameterType.Array */: {
+                case "array" /* ParameterType.ARRAY */: {
                     const nestedArrayParameters = [];
                     for (const subParameter of parameter.value) {
                         nestedArrayParameters.push(formatParameterValue(subParameter));
@@ -162,7 +162,7 @@ let JSONEditor = class JSONEditor extends LitElement {
             formattedParameters[parameter.name] = formatParameterValue(parameter);
         }
         return formatParameterValue({
-            type: "object" /* ParameterType.Object */,
+            type: "object" /* ParameterType.OBJECT */,
             name: DUMMY_DATA,
             optional: true,
             value: this.parameters,
@@ -179,12 +179,12 @@ let JSONEditor = class JSONEditor extends LitElement {
         }
         this.populateParametersForCommandWithDefaultValues();
         const displayedParameters = this.#convertObjectToParameterSchema('', parameters, {
-            'typeRef': DUMMY_DATA,
-            'type': "object" /* ParameterType.Object */,
-            'name': '',
-            'description': '',
-            'optional': true,
-            'value': [],
+            typeRef: DUMMY_DATA,
+            type: "object" /* ParameterType.OBJECT */,
+            name: '',
+            description: '',
+            optional: true,
+            value: [],
         }, schema.parameters)
             .value;
         const valueByName = new Map(this.parameters.map(param => [param.name, param]));
@@ -201,13 +201,13 @@ let JSONEditor = class JSONEditor extends LitElement {
         const description = schema?.description ?? '';
         const optional = schema?.optional ?? true;
         switch (type) {
-            case "string" /* ParameterType.String */:
-            case "boolean" /* ParameterType.Boolean */:
-            case "number" /* ParameterType.Number */:
+            case "string" /* ParameterType.STRING */:
+            case "boolean" /* ParameterType.BOOLEAN */:
+            case "number" /* ParameterType.NUMBER */:
                 return this.#convertPrimitiveParameter(key, value, schema);
-            case "object" /* ParameterType.Object */:
+            case "object" /* ParameterType.OBJECT */:
                 return this.#convertObjectParameter(key, value, schema, initialSchema);
-            case "array" /* ParameterType.Array */:
+            case "array" /* ParameterType.ARRAY */:
                 return this.#convertArrayParameter(key, value, schema);
         }
         return {
@@ -252,7 +252,7 @@ let JSONEditor = class JSONEditor extends LitElement {
             objectValues.push(this.#convertObjectToParameterSchema(objectKey, value[objectKey], objectType));
         }
         return {
-            type: "object" /* ParameterType.Object */,
+            type: "object" /* ParameterType.OBJECT */,
             name: key,
             optional: schema.optional,
             typeRef: schema.typeRef,
@@ -273,7 +273,7 @@ let JSONEditor = class JSONEditor extends LitElement {
         }
         const nestedType = this.#isTypePrimitive(typeRef) ? undefined : {
             optional: true,
-            type: "object" /* ParameterType.Object */,
+            type: "object" /* ParameterType.OBJECT */,
             value: [],
             typeRef,
             description: '',
@@ -285,9 +285,9 @@ let JSONEditor = class JSONEditor extends LitElement {
             objectValues.push(temp);
         }
         return {
-            type: "array" /* ParameterType.Array */,
+            type: "array" /* ParameterType.ARRAY */,
             name: key,
-            optional: optional,
+            optional,
             typeRef: schema?.typeRef,
             value: objectValues,
             description,
@@ -318,9 +318,9 @@ let JSONEditor = class JSONEditor extends LitElement {
             box: hintElement.boxInWindow(),
             show: async (popover) => {
                 const popupElement = new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView({
-                    'getMessage': () => `<code><span>${head}</span></code>`,
-                    'getPossibleFixMessage': () => popupContent,
-                    'getLearnMoreLink': () => `https://chromedevtools.github.io/devtools-protocol/tot/${this.command.split('.')[0]}/`,
+                    getMessage: () => `<code><span>${head}</span></code>`,
+                    getPossibleFixMessage: () => popupContent,
+                    getLearnMoreLink: () => `https://chromedevtools.github.io/devtools-protocol/tot/${this.command.split('.')[0]}/`,
                 });
                 popover.contentElement.appendChild(popupElement);
                 return true;
@@ -372,7 +372,7 @@ let JSONEditor = class JSONEditor extends LitElement {
         });
     }
     #populateParameterDefaults(parameter) {
-        if (parameter.type === "object" /* ParameterType.Object */) {
+        if (parameter.type === "object" /* ParameterType.OBJECT */) {
             let typeRef = parameter.typeRef;
             if (!typeRef) {
                 typeRef = DUMMY_DATA;
@@ -389,7 +389,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                 isCorrectType: true,
             };
         }
-        if (parameter.type === "array" /* ParameterType.Array */) {
+        if (parameter.type === "array" /* ParameterType.ARRAY */) {
             return {
                 ...parameter,
                 value: parameter?.optional ? undefined :
@@ -412,7 +412,7 @@ let JSONEditor = class JSONEditor extends LitElement {
             if (i === pathArray.length - 1) {
                 return { parameter, parentParameter };
             }
-            if (parameter?.type === "array" /* ParameterType.Array */ || parameter?.type === "object" /* ParameterType.Object */) {
+            if (parameter?.type === "array" /* ParameterType.ARRAY */ || parameter?.type === "object" /* ParameterType.OBJECT */) {
                 if (parameter.value) {
                     parameters = parameter.value;
                 }
@@ -425,7 +425,7 @@ let JSONEditor = class JSONEditor extends LitElement {
         throw new Error('Not found');
     }
     #isValueOfCorrectType(parameter, value) {
-        if (parameter.type === "number" /* ParameterType.Number */ && isNaN(Number(value))) {
+        if (parameter.type === "number" /* ParameterType.NUMBER */ && isNaN(Number(value))) {
             return false;
         }
         // For boolean or array parameters, this will create an array of the values the user can enter
@@ -516,13 +516,13 @@ let JSONEditor = class JSONEditor extends LitElement {
         return `${target.name()} (${target.inspectedURL()})`;
     }
     #isTypePrimitive(type) {
-        if (type === "string" /* ParameterType.String */ || type === "boolean" /* ParameterType.Boolean */ || type === "number" /* ParameterType.Number */) {
+        if (type === "string" /* ParameterType.STRING */ || type === "boolean" /* ParameterType.BOOLEAN */ || type === "number" /* ParameterType.NUMBER */) {
             return true;
         }
         return false;
     }
     #createNestedParameter(type, name) {
-        if (type.type === "object" /* ParameterType.Object */) {
+        if (type.type === "object" /* ParameterType.OBJECT */) {
             let typeRef = type.typeRef;
             if (!typeRef) {
                 typeRef = DUMMY_DATA;
@@ -530,10 +530,10 @@ let JSONEditor = class JSONEditor extends LitElement {
             const nestedTypes = this.typesByName.get(typeRef) ?? [];
             const nestedValue = nestedTypes.map(nestedType => this.#createNestedParameter(nestedType, nestedType.name));
             return {
-                type: "object" /* ParameterType.Object */,
-                name: name,
+                type: "object" /* ParameterType.OBJECT */,
+                name,
                 optional: type.optional,
-                typeRef: typeRef,
+                typeRef,
                 value: nestedValue,
                 isCorrectType: true,
                 description: type.description,
@@ -541,7 +541,7 @@ let JSONEditor = class JSONEditor extends LitElement {
         }
         return {
             type: type.type,
-            name: name,
+            name,
             optional: type.optional,
             isCorrectType: true,
             typeRef: type.typeRef,
@@ -556,18 +556,18 @@ let JSONEditor = class JSONEditor extends LitElement {
             return;
         }
         switch (parameter.type) {
-            case "array" /* ParameterType.Array */: {
+            case "array" /* ParameterType.ARRAY */: {
                 const typeRef = parameter.typeRef;
                 if (!typeRef) {
                     throw Error('Every array parameter must have a typeRef');
                 }
                 const nestedType = this.typesByName.get(typeRef) ?? [];
                 const nestedValue = nestedType.map(type => this.#createNestedParameter(type, type.name));
-                let type = this.#isTypePrimitive(typeRef) ? typeRef : "object" /* ParameterType.Object */;
+                let type = this.#isTypePrimitive(typeRef) ? typeRef : "object" /* ParameterType.OBJECT */;
                 // If the typeRef is actually a ref to an enum type, the type of the nested param should be a string
                 if (nestedType.length === 0) {
                     if (this.enumsByName.get(typeRef)) {
-                        type = "string" /* ParameterType.String */;
+                        type = "string" /* ParameterType.STRING */;
                     }
                 }
                 // In case the parameter is an optional array, its value will be undefined so before pushing new value inside,
@@ -576,17 +576,17 @@ let JSONEditor = class JSONEditor extends LitElement {
                     parameter.value = [];
                 }
                 parameter.value.push({
-                    type: type,
+                    type,
                     name: String(parameter.value.length),
                     optional: true,
-                    typeRef: typeRef,
+                    typeRef,
                     value: nestedValue.length !== 0 ? nestedValue : '',
                     description: '',
                     isCorrectType: true,
                 });
                 break;
             }
-            case "object" /* ParameterType.Object */: {
+            case "object" /* ParameterType.OBJECT */: {
                 let typeRef = parameter.typeRef;
                 if (!typeRef) {
                     typeRef = DUMMY_DATA;
@@ -596,7 +596,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                 }
                 if (!this.typesByName.get(typeRef)) {
                     parameter.value.push({
-                        type: "string" /* ParameterType.String */,
+                        type: "string" /* ParameterType.STRING */,
                         name: '',
                         optional: true,
                         value: '',
@@ -613,10 +613,10 @@ let JSONEditor = class JSONEditor extends LitElement {
                 });
                 if (parentParameter) {
                     parameter.value.push({
-                        type: "object" /* ParameterType.Object */,
+                        type: "object" /* ParameterType.OBJECT */,
                         name: '',
                         optional: true,
-                        typeRef: typeRef,
+                        typeRef,
                         value: nestedValue,
                         isCorrectType: true,
                         description: '',
@@ -639,7 +639,7 @@ let JSONEditor = class JSONEditor extends LitElement {
             return;
         }
         switch (parameter.type) {
-            case "object" /* ParameterType.Object */:
+            case "object" /* ParameterType.OBJECT */:
                 if (parameter.optional && !isParentArray) {
                     parameter.value = undefined;
                     break;
@@ -651,7 +651,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                     parameter.value.forEach(param => this.#handleClearParameter(param, isParentArray));
                 }
                 break;
-            case "array" /* ParameterType.Array */:
+            case "array" /* ParameterType.ARRAY */:
                 parameter.value = parameter.optional ? undefined : [];
                 break;
             default:
@@ -669,7 +669,7 @@ let JSONEditor = class JSONEditor extends LitElement {
             return;
         }
         parentParameter.value.splice(parentParameter.value.findIndex(p => p === parameter), 1);
-        if (parentParameter.type === "array" /* ParameterType.Array */) {
+        if (parentParameter.type === "array" /* ParameterType.ARRAY */) {
             for (let i = 0; i < parentParameter.value.length; i++) {
                 parentParameter.value[i].name = String(i);
             }
@@ -714,11 +714,11 @@ let JSONEditor = class JSONEditor extends LitElement {
     }
     #computeDropdownValues(parameter) {
         // The suggestion box should only be shown for parameters of type string and boolean
-        if (parameter.type === "string" /* ParameterType.String */) {
+        if (parameter.type === "string" /* ParameterType.STRING */) {
             const enums = this.enumsByName.get(`${parameter.typeRef}`) ?? {};
             return Object.values(enums);
         }
-        if (parameter.type === "boolean" /* ParameterType.Boolean */) {
+        if (parameter.type === "boolean" /* ParameterType.BOOLEAN */) {
             return ['true', 'false'];
         }
         return [];
@@ -760,7 +760,7 @@ let JSONEditor = class JSONEditor extends LitElement {
       <ul>
         ${repeat(parameters, parameter => {
             const parameterId = parentParameter ? `${parentParameterId}` + '.' + `${parameter.name}` : parameter.name;
-            const subparameters = parameter.type === "array" /* ParameterType.Array */ || parameter.type === "object" /* ParameterType.Object */ ? (parameter.value ?? []) : [];
+            const subparameters = parameter.type === "array" /* ParameterType.ARRAY */ || parameter.type === "object" /* ParameterType.OBJECT */ ? (parameter.value ?? []) : [];
             const handleInputOnBlur = (event) => {
                 this.#saveParameterValue(event);
             };
@@ -774,10 +774,10 @@ let JSONEditor = class JSONEditor extends LitElement {
                 this.#saveNestedObjectParameterKey(event);
             };
             const isPrimitive = this.#isTypePrimitive(parameter.type);
-            const isArray = parameter.type === "array" /* ParameterType.Array */;
-            const isParentArray = parentParameter && parentParameter.type === "array" /* ParameterType.Array */;
-            const isParentObject = parentParameter && parentParameter.type === "object" /* ParameterType.Object */;
-            const isObject = parameter.type === "object" /* ParameterType.Object */;
+            const isArray = parameter.type === "array" /* ParameterType.ARRAY */;
+            const isParentArray = parentParameter && parentParameter.type === "array" /* ParameterType.ARRAY */;
+            const isParentObject = parentParameter && parentParameter.type === "object" /* ParameterType.OBJECT */;
+            const isObject = parameter.type === "object" /* ParameterType.OBJECT */;
             const isParamValueUndefined = parameter.value === undefined;
             const isParamOptional = parameter.optional;
             const hasTypeRef = isObject && parameter.typeRef && this.typesByName.get(parameter.typeRef) !== undefined;
@@ -785,11 +785,11 @@ let JSONEditor = class JSONEditor extends LitElement {
             // that no keys defined inside the CDP documentation.
             const hasNoKeys = parameter.isKeyEditable;
             const isCustomEditorDisplayed = isObject && !hasTypeRef;
-            const hasOptions = parameter.type === "string" /* ParameterType.String */ || parameter.type === "boolean" /* ParameterType.Boolean */;
+            const hasOptions = parameter.type === "string" /* ParameterType.STRING */ || parameter.type === "boolean" /* ParameterType.BOOLEAN */;
             const canClearParameter = (isArray && !isParamValueUndefined && parameter.value?.length !== 0) || (isObject && !isParamValueUndefined);
             const parametersClasses = {
                 'optional-parameter': parameter.optional,
-                'parameter': true,
+                parameter: true,
                 'undefined-parameter': parameter.value === undefined && parameter.optional,
             };
             const inputClasses = {

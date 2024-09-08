@@ -8,12 +8,12 @@ export interface UsedPreloadingViewData {
     currentAttempts: SDK.PreloadingModel.PreloadingAttempt[];
 }
 export declare const enum UsedKind {
-    DowngradedPrerenderToPrefetchAndUsed = "DowngradedPrerenderToPrefetchAndUsed",
-    PrefetchUsed = "PrefetchUsed",
-    PrerenderUsed = "PrerenderUsed",
-    PrefetchFailed = "PrefetchFailed",
-    PrerenderFailed = "PrerenderFailed",
-    NoPreloads = "NoPreloads"
+    DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED = "DowngradedPrerenderToPrefetchAndUsed",
+    PREFETCH_USED = "PrefetchUsed",
+    PRERENDER_USED = "PrerenderUsed",
+    PREFETCH_FAILED = "PrefetchFailed",
+    PRERENDER_FAILED = "PrerenderFailed",
+    NO_PRELOADS = "NoPreloads"
 }
 export declare class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;

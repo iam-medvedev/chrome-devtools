@@ -1,15 +1,15 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import type * as Protocol from '../../generated/protocol.js';
 import type * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 declare const PaintProfilerView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.WindowChanged>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.WindowChanged): boolean;
-    dispatchEventToListeners<T extends Events.WindowChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.WINDOW_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.WINDOW_CHANGED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.WINDOW_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.WINDOW_CHANGED): boolean;
+    dispatchEventToListeners<T extends Events.WINDOW_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.HBox;
 export declare class PaintProfilerView extends PaintProfilerView_base {
     private canvasContainer;
@@ -56,10 +56,10 @@ export declare class PaintProfilerView extends PaintProfilerView_base {
     wasShown(): void;
 }
 export declare const enum Events {
-    WindowChanged = "WindowChanged"
+    WINDOW_CHANGED = "WindowChanged"
 }
 export type EventTypes = {
-    [Events.WindowChanged]: void;
+    [Events.WINDOW_CHANGED]: void;
 };
 export declare class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {
     private readonly treeOutline;

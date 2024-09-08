@@ -39,8 +39,8 @@ export interface InfobarAction {
     jslogContext?: string;
 }
 export declare const enum Type {
-    Warning = "warning",
-    Info = "info",
-    Issue = "issue",
-    Error = "error"
+    WARNING = "warning",
+    INFO = "info",
+    ISSUE = "issue",
+    ERROR = "error"
 }

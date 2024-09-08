@@ -137,7 +137,7 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
         }
         const opts = {
             additionalOnClickAction() {
-                Host.userMetrics.issuesPanelResourceOpened("AttributionReporting" /* IssuesManager.Issue.IssueCategory.ATTRIBUTION_REPORTING */, "Request" /* AffectedItem.Request */);
+                Host.userMetrics.issuesPanelResourceOpened("AttributionReporting" /* IssuesManager.Issue.IssueCategory.ATTRIBUTION_REPORTING */, "Request" /* AffectedItem.REQUEST */);
             },
         };
         parent.appendChild(this.createRequestCell(request, opts));

@@ -39,6 +39,15 @@ export function traceEventKeyToValues(key) {
                 type: parts[0],
                 rawIndex: parseInt(parts[1], 10),
             };
+        case "l" /* EventKeyType.LEGACY_TIMELINE_FRAME */: {
+            if (parts.length !== 2 || Number.isNaN(parseInt(parts[1], 10))) {
+                throw new Error(`Invalid LegacyTimelineFrame Key: ${key}`);
+            }
+            return {
+                type,
+                rawIndex: parseInt(parts[1], 10),
+            };
+        }
         default:
             throw new Error(`Unknown trace event key: ${key}`);
     }

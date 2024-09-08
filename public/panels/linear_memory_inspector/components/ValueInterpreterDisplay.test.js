@@ -7,10 +7,10 @@ import * as LinearMemoryInspectorComponents from './components.js';
 export const DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR = '[data-jump]';
 describeWithLocale('ValueInterpreterDisplay', () => {
     const combinationsForNumbers = [
-        { endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */, signed: true },
-        { endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */, signed: false },
-        { endianness: "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Big */, signed: false },
-        { endianness: "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Big */, signed: true },
+        { endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */, signed: true },
+        { endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */, signed: false },
+        { endianness: "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */, signed: false },
+        { endianness: "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */, signed: true },
     ];
     function testNumberFormatCombinations(baseData, combinations) {
         const expectedIntValue = 20;
@@ -18,39 +18,39 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         for (let i = 0; i < combinations.length; ++i) {
             const { endianness, signed } = combinations[i];
             let expectedValue;
-            const isLittleEndian = endianness === "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */;
+            const isLittleEndian = endianness === "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */;
             const view = new DataView(baseData.buffer);
             switch (baseData.type) {
-                case "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int8 */:
+                case "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */:
                     expectedValue = signed ? -expectedIntValue : expectedIntValue;
                     signed ? view.setInt8(0, expectedValue) : view.setInt8(0, expectedValue);
                     break;
-                case "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */:
+                case "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */:
                     expectedValue = signed ? -expectedIntValue : expectedIntValue;
                     signed ? view.setInt16(0, expectedValue, isLittleEndian) : view.setUint16(0, expectedValue, isLittleEndian);
                     break;
-                case "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int32 */:
+                case "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */:
                     expectedValue = signed ? -expectedIntValue : expectedIntValue;
                     signed ? view.setInt32(0, expectedValue, isLittleEndian) : view.setUint32(0, expectedValue, isLittleEndian);
                     break;
-                case "Integer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int64 */:
+                case "Integer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT64 */:
                     expectedValue = signed ? -expectedIntValue : expectedIntValue;
                     signed ? view.setBigInt64(0, BigInt(expectedValue), isLittleEndian) :
                         view.setBigUint64(0, BigInt(expectedValue), isLittleEndian);
                     break;
-                case "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */:
+                case "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */:
                     expectedValue = expectedFloatValue;
                     view.setFloat32(0, expectedValue, isLittleEndian);
                     break;
-                case "Float 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float64 */:
+                case "Float 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT64 */:
                     expectedValue = expectedFloatValue;
                     view.setFloat64(0, expectedValue, isLittleEndian);
                     break;
-                case "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */:
+                case "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */:
                     expectedValue = '0x' + expectedIntValue.toString(16);
                     view.setInt32(0, expectedIntValue, isLittleEndian);
                     break;
-                case "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer64 */:
+                case "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */:
                     expectedValue = '0x' + expectedIntValue.toString(16);
                     view.setBigUint64(0, BigInt(expectedIntValue), isLittleEndian);
                     break;
@@ -64,100 +64,100 @@ describeWithLocale('ValueInterpreterDisplay', () => {
     it('correctly formats signed/unsigned and endianness for Integer 8-bit (decimal)', () => {
         const formatData = {
             buffer: new ArrayBuffer(1),
-            type: "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int8 */,
-            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+            type: "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats signed/unsigned and endianness for Integer 16-bit (decimal)', () => {
         const formatData = {
             buffer: new ArrayBuffer(2),
-            type: "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */,
-            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+            type: "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats signed/unsigned and endianness for Integer 32-bit (decimal)', () => {
         const formatData = {
             buffer: new ArrayBuffer(4),
-            type: "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int32 */,
-            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+            type: "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats signed/unsigned and endianness for Integer 64-bit (decimal)', () => {
         const formatData = {
             buffer: new ArrayBuffer(8),
-            type: "Integer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int64 */,
-            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+            type: "Integer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT64 */,
+            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats endianness for Float 32-bit (decimal)', () => {
         const formatData = {
             buffer: new ArrayBuffer(4),
-            type: "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */,
-            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+            type: "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
+            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats endianness for Float 64-bit (decimal)', () => {
         const formatData = {
             buffer: new ArrayBuffer(8),
-            type: "Float 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float64 */,
-            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+            type: "Float 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT64 */,
+            mode: "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats endianness for Pointer 32-bit', () => {
         const formatData = {
             buffer: new ArrayBuffer(4),
-            type: "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */,
-            mode: "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */,
+            type: "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
+            mode: "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats endianness for Pointer 64-bit', () => {
         const formatData = {
             buffer: new ArrayBuffer(8),
-            type: "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer64 */,
-            mode: "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */,
+            type: "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
+            mode: "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */,
         };
         testNumberFormatCombinations(formatData, combinationsForNumbers);
     });
     it('correctly formats floats in decimal mode', () => {
         const expectedFloat = 341.34;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatFloat(expectedFloat, "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatFloat(expectedFloat, "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */);
         assert.strictEqual(actualValue, '341.34');
     });
     it('correctly formats floats in scientific mode', () => {
         const expectedFloat = 341.34;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatFloat(expectedFloat, "sci" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Scientific */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatFloat(expectedFloat, "sci" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.SCIENTIFIC */);
         assert.strictEqual(actualValue, '3.41e+2');
     });
     it('correctly formats integers in decimal mode', () => {
         const expectedInteger = 120;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */);
         assert.strictEqual(actualValue, '120');
     });
     it('correctly formats integers in hexadecimal mode', () => {
         const expectedInteger = 16;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */);
         assert.strictEqual(actualValue, '0x10');
     });
     it('returns N/A for negative hex numbers', () => {
         const negativeInteger = -16;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(negativeInteger, "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(negativeInteger, "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */);
         assert.strictEqual(actualValue, 'N/A');
     });
     it('correctly formats integers in octal mode', () => {
         const expectedInteger = 16;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Octal */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */);
         assert.strictEqual(actualValue, '20');
     });
     it('returns N/A for negative octal numbers', () => {
         const expectedInteger = -16;
-        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Octal */);
+        const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */);
         assert.strictEqual(actualValue, 'N/A');
     });
     it('renders pointer values in LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypes', () => {
@@ -165,10 +165,10 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const array = [1, 132, 172, 71, 43, 12, 12, 66];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */,
-                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer64 */,
+                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
+                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
             ]),
             memoryLength: array.length,
         };
@@ -184,10 +184,10 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const array = [1, 132, 172, 71];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */,
-                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */,
+                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
             ]),
             memoryLength: array.length,
         };
@@ -203,24 +203,24 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const array = [0xC8, 0xC9, 0xCA, 0XCB];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int8 */,
-                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */,
-                "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int32 */,
+                "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+                "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
             ]),
             valueTypeModes: new Map([
                 [
-                    "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int8 */,
-                    "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Octal */,
+                    "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+                    "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */,
                 ],
                 [
-                    "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */,
-                    "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */,
+                    "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+                    "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */,
                 ],
                 [
-                    "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int32 */,
-                    "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */,
+                    "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+                    "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
                 ],
             ]),
             memoryLength: array.length,
@@ -235,15 +235,15 @@ describeWithLocale('ValueInterpreterDisplay', () => {
     it('triggers a value changed event on selecting a new mode', async () => {
         const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
         const array = [1, 132, 172, 71];
-        const oldMode = "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal */;
-        const newMode = "sci" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Scientific */;
+        const oldMode = "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */;
+        const newMode = "sci" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.SCIENTIFIC */;
         const mapping = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.getDefaultValueTypeMapping();
-        mapping.set("Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */, oldMode);
+        mapping.set("Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */, oldMode);
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */,
+                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
             ]),
             valueTypeModes: mapping,
             memoryLength: array.length,
@@ -255,16 +255,16 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const changeEvent = new Event('change');
         input.dispatchEvent(changeEvent);
         const event = await eventPromise;
-        assert.deepEqual(event.data, { type: "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */, mode: newMode });
+        assert.deepEqual(event.data, { type: "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */, mode: newMode });
     });
     it('triggers an event on jumping to an address from a 32-bit pointer', async () => {
         const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
         const array = [1, 0, 0, 0];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */,
+                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
             ]),
             memoryLength: array.length,
         };
@@ -280,9 +280,9 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const array = [1, 0, 0, 0, 0, 0, 0, 0];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer64 */,
+                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
             ]),
             memoryLength: array.length,
         };
@@ -298,10 +298,10 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const array = [8, 0, 0, 0, 0, 0, 0, 0];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */,
-                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer64 */,
+                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
+                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
             ]),
             memoryLength: array.length,
         };
@@ -319,12 +319,12 @@ describeWithLocale('ValueInterpreterDisplay', () => {
         const array = [1, 132, 172, 71];
         component.data = {
             buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set([
-                "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int8 */,
-                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */,
-                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Float32 */,
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */,
+                "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
+                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
             ]),
             memoryLength: array.length,
         };

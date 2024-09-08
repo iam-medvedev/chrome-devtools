@@ -110,10 +110,10 @@ export class DOMStorageItemsView extends StorageItemsView {
             this.setStorageKey(domStorage.storageKey);
         }
         this.eventListeners = [
-            this.domStorage.addEventListener("DOMStorageItemsCleared" /* DOMStorage.Events.DOMStorageItemsCleared */, this.domStorageItemsCleared, this),
-            this.domStorage.addEventListener("DOMStorageItemRemoved" /* DOMStorage.Events.DOMStorageItemRemoved */, this.domStorageItemRemoved, this),
-            this.domStorage.addEventListener("DOMStorageItemAdded" /* DOMStorage.Events.DOMStorageItemAdded */, this.domStorageItemAdded, this),
-            this.domStorage.addEventListener("DOMStorageItemUpdated" /* DOMStorage.Events.DOMStorageItemUpdated */, this.domStorageItemUpdated, this),
+            this.domStorage.addEventListener("DOMStorageItemsCleared" /* DOMStorage.Events.DOM_STORAGE_ITEMS_CLEARED */, this.domStorageItemsCleared, this),
+            this.domStorage.addEventListener("DOMStorageItemRemoved" /* DOMStorage.Events.DOM_STORAGE_ITEM_REMOVED */, this.domStorageItemRemoved, this),
+            this.domStorage.addEventListener("DOMStorageItemAdded" /* DOMStorage.Events.DOM_STORAGE_ITEM_ADDED */, this.domStorageItemAdded, this),
+            this.domStorage.addEventListener("DOMStorageItemUpdated" /* DOMStorage.Events.DOM_STORAGE_ITEM_UPDATED */, this.domStorageItemUpdated, this),
         ];
         this.refreshItems();
     }

@@ -79,7 +79,7 @@ export class SuggestBox {
         this.element.addEventListener('click', this.onClick.bind(this), false);
         this.element.setAttribute('jslog', `${VisualLogging.menu().parent('mapped').track({ resize: true, keydown: 'ArrowUp|ArrowDown|PageUp|PageDown' })}`);
         this.glassPane = new GlassPane();
-        this.glassPane.setAnchorBehavior("PreferBottom" /* AnchorBehavior.PreferBottom */);
+        this.glassPane.setAnchorBehavior("PreferBottom" /* AnchorBehavior.PREFER_BOTTOM */);
         this.glassPane.setOutsideClickCallback(this.hide.bind(this));
         const shadowRoot = createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: suggestBoxStyles, delegatesFocus: undefined });
         shadowRoot.appendChild(this.element);

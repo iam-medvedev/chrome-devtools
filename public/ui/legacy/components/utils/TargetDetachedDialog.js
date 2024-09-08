@@ -43,7 +43,7 @@ export class TargetDetachedDialog extends SDK.SDKModel.SDKModel {
             return;
         }
         const dialog = new UI.Dialog.Dialog('target-crashed');
-        dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
+        dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
         dialog.addCloseButton();
         dialog.setDimmed(true);
         TargetDetachedDialog.hideCrashedDialog = dialog.hide.bind(dialog);

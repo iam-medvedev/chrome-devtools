@@ -188,7 +188,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 const outerColorMix = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-mix-swatch');
                 assert.exists(outerColorMix);
                 const handler = sinon.fake();
-                outerColorMix.addEventListener("colorChanged" /* InlineEditor.ColorMixSwatch.Events.ColorChanged */, handler);
+                outerColorMix.addEventListener("colorChanged" /* InlineEditor.ColorMixSwatch.Events.COLOR_CHANGED */, handler);
                 const innerColorMix = outerColorMix.querySelector('devtools-color-mix-swatch');
                 assert.exists(innerColorMix);
                 assert.strictEqual(outerColorMix.getText(), 'color-mix(in srgb, color-mix(in oklch, red, green), blue)');
@@ -576,7 +576,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             colorSwatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, eventHandler);
             const angleSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-angle');
             assert.exists(angleSwatch);
-            angleSwatch.updateAngle({ value: 130, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.Deg */ });
+            angleSwatch.updateAngle({ value: 130, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
             assert.strictEqual(colorSwatch.getColor()?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(130deg 50% 25%)');
             assert.isTrue(eventHandler.calledOnce);
             assert.strictEqual(eventHandler.args[0][0].data.color, colorSwatch.getColor());
@@ -884,13 +884,13 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                     value: blur,
                     source: variable,
                     expansionContext,
-                    propertyType: "blur" /* Elements.StylePropertyTreeElement.ShadowPropertyType.Blur */,
+                    propertyType: "blur" /* Elements.StylePropertyTreeElement.ShadowPropertyType.BLUR */,
                 },
                 {
                     value: spread,
                     source: variable,
                     expansionContext,
-                    propertyType: "spread" /* Elements.StylePropertyTreeElement.ShadowPropertyType.Spread */,
+                    propertyType: "spread" /* Elements.StylePropertyTreeElement.ShadowPropertyType.SPREAD */,
                 },
             ];
             sinon.stub(Elements.PropertyRenderer.Renderer, 'render').callsFake((nodeOrNodes, context) => {
@@ -919,7 +919,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                     cssControls: new Map(),
                 };
             });
-            const model = new Elements.StylePropertyTreeElement.ShadowModel("boxShadow" /* Elements.PropertyMatchers.ShadowType.BoxShadow */, properties, renderingContext);
+            const model = new Elements.StylePropertyTreeElement.ShadowModel("boxShadow" /* Elements.PropertyMatchers.ShadowType.BOX_SHADOW */, properties, renderingContext);
             const container = document.createElement('div');
             model.renderContents(container);
             assert.strictEqual(container.textContent, '10px y var()');

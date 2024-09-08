@@ -76,7 +76,7 @@ export class ColorSwatch extends HTMLElement {
         this.color = color;
         const colorSwatchClasses = LitHtml.Directives.classMap({
             'color-swatch': true,
-            'readonly': this.readonly,
+            readonly: this.readonly,
         });
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off

@@ -291,12 +291,12 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
         const corsErrorStatus = details.corsErrorStatus;
         const corsError = details.corsErrorStatus.corsError;
         const highlightHeader = {
-            section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */,
+            section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */,
             name: CorsIssueDetailsView.getHeaderFromError(corsError),
         };
         const opts = {
             additionalOnClickAction() {
-                Host.userMetrics.issuesPanelResourceOpened("Cors" /* IssuesManager.Issue.IssueCategory.CORS */, "Request" /* AffectedItem.Request */);
+                Host.userMetrics.issuesPanelResourceOpened("Cors" /* IssuesManager.Issue.IssueCategory.CORS */, "Request" /* AffectedItem.REQUEST */);
             },
         };
         switch (issueCode) {
@@ -328,7 +328,7 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
                 this.#appendStatus(element, details.isWarning);
                 const specialHighlightHeader = corsError === "PreflightInvalidStatus" /* Protocol.Network.CorsError.PreflightInvalidStatus */ ?
                     {
-                        section: "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.General */,
+                        section: "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.GENERAL */,
                         name: 'Status-Code',
                     } :
                     highlightHeader;
@@ -385,7 +385,7 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
                 element.appendChild(this.createRequestCell(details.request, {
                     ...opts,
                     highlightHeader: {
-                        section: "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.Request */,
+                        section: "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.REQUEST */,
                         name: corsErrorStatus.failedParameter,
                     },
                 }));
@@ -394,7 +394,7 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
                     ...opts,
                     linkToPreflight: true,
                     highlightHeader: {
-                        section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */,
+                        section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */,
                         name: 'Access-Control-Allow-Headers',
                     },
                 }));
@@ -404,7 +404,7 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
                 element.appendChild(this.createRequestCell(details.request, {
                     ...opts,
                     highlightHeader: {
-                        section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */,
+                        section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */,
                         name: CorsIssueDetailsView.getHeaderFromError(corsError),
                     },
                 }));
@@ -420,7 +420,7 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
                 element.appendChild(this.createRequestCell(details.request, {
                     ...opts,
                     highlightHeader: {
-                        section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */,
+                        section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */,
                         name: CorsIssueDetailsView.getHeaderFromError(corsError),
                     },
                 }));

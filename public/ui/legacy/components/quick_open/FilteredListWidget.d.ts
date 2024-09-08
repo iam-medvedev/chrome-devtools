@@ -3,11 +3,11 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as UI from '../../legacy.js';
 declare const FilteredListWidget_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.Hidden>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.Hidden>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.Hidden>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.Hidden): boolean;
-    dispatchEventToListeners<T extends Events.Hidden>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends Events.HIDDEN>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.HIDDEN>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.HIDDEN>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.HIDDEN): boolean;
+    dispatchEventToListeners<T extends Events.HIDDEN>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class FilteredListWidget extends FilteredListWidget_base implements UI.ListControl.ListDelegate<number> {
     private promptHistory;
@@ -70,10 +70,10 @@ export declare class FilteredListWidget extends FilteredListWidget_base implemen
     private selectItem;
 }
 export declare const enum Events {
-    Hidden = "hidden"
+    HIDDEN = "hidden"
 }
 export type EventTypes = {
-    [Events.Hidden]: void;
+    [Events.HIDDEN]: void;
 };
 export declare class Provider {
     private refreshCallback;

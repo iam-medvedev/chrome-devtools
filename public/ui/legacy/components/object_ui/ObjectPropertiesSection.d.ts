@@ -11,7 +11,6 @@ export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineI
     constructor(object: SDK.RemoteObject.RemoteObject, title?: string | Element | null, linkifier?: Components.Linkifier.Linkifier, showOverflow?: boolean);
     static defaultObjectPresentation(object: SDK.RemoteObject.RemoteObject, linkifier?: Components.Linkifier.Linkifier, skipProto?: boolean, readOnly?: boolean): Element;
     static defaultObjectPropertiesSection(object: SDK.RemoteObject.RemoteObject, linkifier?: Components.Linkifier.Linkifier, skipProto?: boolean, readOnly?: boolean): ObjectPropertiesSection;
-    static assignWebIDLMetadata(value: SDK.RemoteObject.RemoteObject | null, properties: SDK.RemoteObject.RemoteObjectProperty[]): void;
     static getPropertyValuesByNames(properties: SDK.RemoteObject.RemoteObjectProperty[]): Map<string, SDK.RemoteObject.RemoteObject | undefined>;
     static compareProperties(propertyA: SDK.RemoteObject.RemoteObjectProperty, propertyB: SDK.RemoteObject.RemoteObjectProperty): number;
     static createNameElement(name: string | null, isPrivate?: boolean): Element;
@@ -36,8 +35,8 @@ export declare class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.
     constructor(options?: TreeOutlineOptions | null);
 }
 export declare const enum ObjectPropertiesMode {
-    All = 0,// All properties, including prototype properties
-    OwnAndInternalAndInherited = 1
+    ALL = 0,// All properties, including prototype properties
+    OWN_AND_INTERNAL_AND_INHERITED = 1
 }
 export declare class RootElement extends UI.TreeOutline.TreeElement {
     private readonly object;

@@ -306,7 +306,11 @@ const resolveScope = async (script, scopeChain) => {
 };
 export const resolveScopeChain = async function (callFrame) {
     const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-    const scopeChain = await pluginManager.resolveScopeChain(callFrame);
+    let scopeChain = await pluginManager.resolveScopeChain(callFrame);
+    if (scopeChain) {
+        return scopeChain;
+    }
+    scopeChain = callFrame.script.sourceMap()?.resolveScopeChain(callFrame);
     if (scopeChain) {
         return scopeChain;
     }

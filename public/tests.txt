@@ -78,6 +78,7 @@ core/sdk/ServiceWorkerCacheModel.test.js
 core/sdk/ServiceWorkerManager.test.js
 core/sdk/SourceMap.test.js
 core/sdk/SourceMapManager.test.js
+core/sdk/SourceMapScopeChainEntry.test.js
 core/sdk/SourceMapScopes.test.js
 core/sdk/SourceMapScopesInfo.test.js
 core/sdk/StorageBucketsModel.test.js
@@ -204,6 +205,7 @@ models/trace/insights/DocumentLatency.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js
+models/trace/insights/ThirdPartyWeb.test.js
 models/trace/insights/Viewport.test.js
 models/trace/lantern/core/NetworkAnalyzer.test.js
 models/trace/lantern/graph/BaseNode.test.js
@@ -213,6 +215,7 @@ models/trace/lantern/simulation/DNSCache.test.js
 models/trace/lantern/simulation/Simulator.test.js
 models/trace/lantern/simulation/TCPConnection.test.js
 models/trace/root-causes/LayoutShift.test.js
+models/trace/types/File.test.js
 models/trace/types/TraceEvents.test.js
 models/workspace/SearchConfig.test.js
 models/workspace/UISourceCode.test.js
@@ -434,6 +437,7 @@ panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/CPUThrottlingSelector.test.js
+panels/timeline/components/EntryName.test.js
 panels/timeline/components/FieldSettingsDialog.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js

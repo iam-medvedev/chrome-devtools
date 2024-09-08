@@ -68,11 +68,11 @@ export declare class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper<
     keyForIssue(issue: IssuesManager.Issue.Issue<string>): AggregationKey;
 }
 export declare const enum Events {
-    AggregatedIssueUpdated = "AggregatedIssueUpdated",
-    FullUpdateRequired = "FullUpdateRequired"
+    AGGREGATED_ISSUE_UPDATED = "AggregatedIssueUpdated",
+    FULL_UPDATE_REQUIRED = "FullUpdateRequired"
 }
 export type EventTypes = {
-    [Events.AggregatedIssueUpdated]: AggregatedIssue;
-    [Events.FullUpdateRequired]: void;
+    [Events.AGGREGATED_ISSUE_UPDATED]: AggregatedIssue;
+    [Events.FULL_UPDATE_REQUIRED]: void;
 };
 export {};

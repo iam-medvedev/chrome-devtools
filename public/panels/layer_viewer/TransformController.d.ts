@@ -42,12 +42,12 @@ export declare class TransformController extends Common.ObjectWrapper.ObjectWrap
     private onDragEnd;
 }
 export declare const enum Events {
-    TransformChanged = "TransformChanged"
+    TRANSFORM_CHANGED = "TransformChanged"
 }
 export type EventTypes = {
-    [Events.TransformChanged]: void;
+    [Events.TRANSFORM_CHANGED]: void;
 };
 export declare const enum Modes {
-    Pan = "Pan",
-    Rotate = "Rotate"
+    PAN = "Pan",
+    ROTATE = "Rotate"
 }

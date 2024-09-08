@@ -145,6 +145,7 @@
       <include file="Images/gears.svg" name="IMAGES_GEARS_SVG" resource_path="Images/gears.svg" type="BINDATA" compress="false"/>
       <include file="Images/google.svg" name="IMAGES_GOOGLE_SVG" resource_path="Images/google.svg" type="BINDATA" compress="false"/>
       <include file="Images/goto-filled.svg" name="IMAGES_GOTO_FILLED_SVG" resource_path="Images/goto-filled.svg" type="BINDATA" compress="false"/>
+      <include file="Images/group.svg" name="IMAGES_GROUP_SVG" resource_path="Images/group.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshot.svg" name="IMAGES_HEAP_SNAPSHOT_SVG" resource_path="Images/heap-snapshot.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshots.svg" name="IMAGES_HEAP_SNAPSHOTS_SVG" resource_path="Images/heap-snapshots.svg" type="BINDATA" compress="false"/>
       <include file="Images/help.svg" name="IMAGES_HELP_SVG" resource_path="Images/help.svg" type="BINDATA" compress="false"/>
@@ -196,6 +197,9 @@
       <include file="Images/open-externally.svg" name="IMAGES_OPEN_EXTERNALLY_SVG" resource_path="Images/open-externally.svg" type="BINDATA" compress="false"/>
       <include file="Images/pause.svg" name="IMAGES_PAUSE_SVG" resource_path="Images/pause.svg" type="BINDATA" compress="false"/>
       <include file="Images/pen-spark.svg" name="IMAGES_PEN_SPARK_SVG" resource_path="Images/pen-spark.svg" type="BINDATA" compress="false"/>
+      <include file="Images/performance-panel-diagram.svg" name="IMAGES_PERFORMANCE_PANEL_DIAGRAM_SVG" resource_path="Images/performance-panel-diagram.svg" type="BINDATA" compress="false"/>
+      <include file="Images/performance-panel-entry-label.svg" name="IMAGES_PERFORMANCE_PANEL_ENTRY_LABEL_SVG" resource_path="Images/performance-panel-entry-label.svg" type="BINDATA" compress="false"/>
+      <include file="Images/performance-panel-time-range.svg" name="IMAGES_PERFORMANCE_PANEL_TIME_RANGE_SVG" resource_path="Images/performance-panel-time-range.svg" type="BINDATA" compress="false"/>
       <include file="Images/performance.svg" name="IMAGES_PERFORMANCE_SVG" resource_path="Images/performance.svg" type="BINDATA" compress="false"/>
       <include file="Images/person.svg" name="IMAGES_PERSON_SVG" resource_path="Images/person.svg" type="BINDATA" compress="false"/>
       <include file="Images/play.svg" name="IMAGES_PLAY_SVG" resource_path="Images/play.svg" type="BINDATA" compress="false"/>
@@ -845,6 +849,7 @@
       <include file="core/sdk/ServiceWorkerManager.js" name="CORE_SDK_SERVICEWORKERMANAGER_JS" resource_path="core/sdk/ServiceWorkerManager.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/SourceMap.js" name="CORE_SDK_SOURCEMAP_JS" resource_path="core/sdk/SourceMap.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/SourceMapManager.js" name="CORE_SDK_SOURCEMAPMANAGER_JS" resource_path="core/sdk/SourceMapManager.js" type="BINDATA" compress="false"/>
+      <include file="core/sdk/SourceMapScopeChainEntry.js" name="CORE_SDK_SOURCEMAPSCOPECHAINENTRY_JS" resource_path="core/sdk/SourceMapScopeChainEntry.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/SourceMapScopes.js" name="CORE_SDK_SOURCEMAPSCOPES_JS" resource_path="core/sdk/SourceMapScopes.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/SourceMapScopesInfo.js" name="CORE_SDK_SOURCEMAPSCOPESINFO_JS" resource_path="core/sdk/SourceMapScopesInfo.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/StorageBucketsModel.js" name="CORE_SDK_STORAGEBUCKETSMODEL_JS" resource_path="core/sdk/StorageBucketsModel.js" type="BINDATA" compress="false"/>
@@ -959,7 +964,6 @@
       <include file="models/issues_manager/SharedDictionaryIssue.js" name="MODELS_ISSUES_MANAGER_SHAREDDICTIONARYISSUE_JS" resource_path="models/issues_manager/SharedDictionaryIssue.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/SourceFrameIssuesManager.js" name="MODELS_ISSUES_MANAGER_SOURCEFRAMEISSUESMANAGER_JS" resource_path="models/issues_manager/SourceFrameIssuesManager.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/StylesheetLoadingIssue.js" name="MODELS_ISSUES_MANAGER_STYLESHEETLOADINGISSUE_JS" resource_path="models/issues_manager/StylesheetLoadingIssue.js" type="BINDATA" compress="false"/>
-      <include file="models/javascript_metadata/DOMPinnedProperties.js" name="MODELS_JAVASCRIPT_METADATA_DOMPINNEDPROPERTIES_JS" resource_path="models/javascript_metadata/DOMPinnedProperties.js" type="BINDATA" compress="false"/>
       <include file="models/javascript_metadata/JavaScriptMetadata.js" name="MODELS_JAVASCRIPT_METADATA_JAVASCRIPTMETADATA_JS" resource_path="models/javascript_metadata/JavaScriptMetadata.js" type="BINDATA" compress="false"/>
       <include file="models/javascript_metadata/NativeFunctions.js" name="MODELS_JAVASCRIPT_METADATA_NATIVEFUNCTIONS_JS" resource_path="models/javascript_metadata/NativeFunctions.js" type="BINDATA" compress="false"/>
       <include file="models/live-metrics/LiveMetrics.js" name="MODELS_LIVE_METRICS_LIVEMETRICS_JS" resource_path="models/live-metrics/LiveMetrics.js" type="BINDATA" compress="false"/>
@@ -1051,6 +1055,7 @@
       <include file="models/trace/insights/InteractionToNextPaint.js" name="MODELS_TRACE_INSIGHTS_INTERACTIONTONEXTPAINT_JS" resource_path="models/trace/insights/InteractionToNextPaint.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/LargestContentfulPaint.js" name="MODELS_TRACE_INSIGHTS_LARGESTCONTENTFULPAINT_JS" resource_path="models/trace/insights/LargestContentfulPaint.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/RenderBlocking.js" name="MODELS_TRACE_INSIGHTS_RENDERBLOCKING_JS" resource_path="models/trace/insights/RenderBlocking.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/ThirdPartyWeb.js" name="MODELS_TRACE_INSIGHTS_THIRDPARTYWEB_JS" resource_path="models/trace/insights/ThirdPartyWeb.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/Viewport.js" name="MODELS_TRACE_INSIGHTS_VIEWPORT_JS" resource_path="models/trace/insights/Viewport.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/types.js" name="MODELS_TRACE_INSIGHTS_TYPES_JS" resource_path="models/trace/insights/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace/lantern/core/LanternError.js" name="MODELS_TRACE_LANTERN_CORE_LANTERNERROR_JS" resource_path="models/trace/lantern/core/LanternError.js" type="BINDATA" compress="false"/>
@@ -1715,7 +1720,6 @@
       <include file="panels/timeline/CountersGraph.js" name="PANELS_TIMELINE_COUNTERSGRAPH_JS" resource_path="panels/timeline/CountersGraph.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EasterEgg.js" name="PANELS_TIMELINE_EASTEREGG_JS" resource_path="panels/timeline/EasterEgg.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EntriesFilter.js" name="PANELS_TIMELINE_ENTRIESFILTER_JS" resource_path="panels/timeline/EntriesFilter.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/EventUICategory.js" name="PANELS_TIMELINE_EVENTUICATEGORY_JS" resource_path="panels/timeline/EventUICategory.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EventsSerializer.js" name="PANELS_TIMELINE_EVENTSSERIALIZER_JS" resource_path="panels/timeline/EventsSerializer.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EventsTimelineTreeView.js" name="PANELS_TIMELINE_EVENTSTIMELINETREEVIEW_JS" resource_path="panels/timeline/EventsTimelineTreeView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ExtensionDataGatherer.js" name="PANELS_TIMELINE_EXTENSIONDATAGATHERER_JS" resource_path="panels/timeline/ExtensionDataGatherer.js" type="BINDATA" compress="false"/>
@@ -1758,6 +1762,8 @@
       <include file="panels/timeline/components/BreadcrumbsUI.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_JS" resource_path="panels/timeline/components/BreadcrumbsUI.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/CPUThrottlingSelector.js" name="PANELS_TIMELINE_COMPONENTS_CPUTHROTTLINGSELECTOR_JS" resource_path="panels/timeline/components/CPUThrottlingSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/DetailsView.js" name="PANELS_TIMELINE_COMPONENTS_DETAILSVIEW_JS" resource_path="panels/timeline/components/DetailsView.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/EntryName.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYNAME_JS" resource_path="panels/timeline/components/EntryName.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/EntryStyles.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYSTYLES_JS" resource_path="panels/timeline/components/EntryStyles.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/FieldSettingsDialog.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_JS" resource_path="panels/timeline/components/FieldSettingsDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/InteractionBreakdown.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_JS" resource_path="panels/timeline/components/InteractionBreakdown.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/LiveMetricsView.js" name="PANELS_TIMELINE_COMPONENTS_LIVEMETRICSVIEW_JS" resource_path="panels/timeline/components/LiveMetricsView.js" type="BINDATA" compress="false"/>
@@ -1772,6 +1778,7 @@
       <include file="panels/timeline/components/SidebarSingleNavigation.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARSINGLENAVIGATION_JS" resource_path="panels/timeline/components/SidebarSingleNavigation.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Utils.js" name="PANELS_TIMELINE_COMPONENTS_UTILS_JS" resource_path="panels/timeline/components/Utils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/cpuThrottlingSelector.css.js" name="PANELS_TIMELINE_COMPONENTS_CPUTHROTTLINGSELECTOR_CSS_JS" resource_path="panels/timeline/components/cpuThrottlingSelector.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/fieldSettingsDialog.css.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_CSS_JS" resource_path="panels/timeline/components/fieldSettingsDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/CLSCulprits.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_CLSCULPRITS_JS" resource_path="panels/timeline/components/insights/CLSCulprits.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/DocumentLatency.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DOCUMENTLATENCY_JS" resource_path="panels/timeline/components/insights/DocumentLatency.js" type="BINDATA" compress="false"/>
@@ -1781,6 +1788,7 @@
       <include file="panels/timeline/components/insights/NodeLink.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_NODELINK_JS" resource_path="panels/timeline/components/insights/NodeLink.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/RenderBlocking.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_RENDERBLOCKING_JS" resource_path="panels/timeline/components/insights/RenderBlocking.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/SidebarInsight.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_SIDEBARINSIGHT_JS" resource_path="panels/timeline/components/insights/SidebarInsight.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/ThirdParties.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_THIRDPARTIES_JS" resource_path="panels/timeline/components/insights/ThirdParties.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Viewport.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_VIEWPORT_JS" resource_path="panels/timeline/components/insights/Viewport.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/lcpDiscovery.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_LCPDISCOVERY_CSS_JS" resource_path="panels/timeline/components/insights/lcpDiscovery.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/sidebarInsight.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_SIDEBARINSIGHT_CSS_JS" resource_path="panels/timeline/components/insights/sidebarInsight.css.js" type="BINDATA" compress="false"/>
@@ -1791,6 +1799,7 @@
       <include file="panels/timeline/components/metricValueStyles.css.js" name="PANELS_TIMELINE_COMPONENTS_METRICVALUESTYLES_CSS_JS" resource_path="panels/timeline/components/metricValueStyles.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/networkRequestDetails.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTDETAILS_CSS_JS" resource_path="panels/timeline/components/networkRequestDetails.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/networkRequestTooltip.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTTOOLTIP_CSS_JS" resource_path="panels/timeline/components/networkRequestTooltip.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/networkThrottlingSelector.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKTHROTTLINGSELECTOR_CSS_JS" resource_path="panels/timeline/components/networkThrottlingSelector.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarAnnotationsTab.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_CSS_JS" resource_path="panels/timeline/components/sidebarAnnotationsTab.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarInsightsTab.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHTSTAB_CSS_JS" resource_path="panels/timeline/components/sidebarInsightsTab.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarSingleNavigation.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARSINGLENAVIGATION_CSS_JS" resource_path="panels/timeline/components/sidebarSingleNavigation.css.js" type="BINDATA" compress="false"/>

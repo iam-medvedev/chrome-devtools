@@ -35,8 +35,8 @@ export declare class PerformanceMonitorImpl extends UI.Widget.HBox implements SD
     private recalcChartHeight;
 }
 export declare const enum Format {
-    Percent = "Percent",
-    Bytes = "Bytes"
+    PERCENT = "Percent",
+    BYTES = "Bytes"
 }
 export declare class ControlPane extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     element: Element;
@@ -52,10 +52,10 @@ export declare class ControlPane extends Common.ObjectWrapper.ObjectWrapper<Even
     updateMetrics(metrics: Map<string, number>): void;
 }
 declare const enum Events {
-    MetricChanged = "MetricChanged"
+    METRIC_CHANGED = "MetricChanged"
 }
 type EventTypes = {
-    [Events.MetricChanged]: void;
+    [Events.METRIC_CHANGED]: void;
 };
 export declare class MetricIndicator {
     private info;

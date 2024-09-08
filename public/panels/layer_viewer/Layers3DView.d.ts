@@ -95,17 +95,17 @@ export declare enum OutlineType {
     Selected = "selected"
 }
 export declare const enum Events {
-    PaintProfilerRequested = "PaintProfilerRequested",
-    ScaleChanged = "ScaleChanged"
+    PAINT_PROFILER_REQUESTED = "PaintProfilerRequested",
+    SCALE_CHANGED = "ScaleChanged"
 }
 export type EventTypes = {
-    [Events.PaintProfilerRequested]: Selection;
-    [Events.ScaleChanged]: number;
+    [Events.PAINT_PROFILER_REQUESTED]: Selection;
+    [Events.SCALE_CHANGED]: number;
 };
 export declare const enum ChromeTexture {
-    Left = 0,
-    Middle = 1,
-    Right = 2
+    LEFT = 0,
+    MIDDLE = 1,
+    RIGHT = 2
 }
 export declare const FragmentShader: string;
 export declare const VertexShader: string;

@@ -58,7 +58,7 @@ export class PerformanceMetricsModel extends SDKModel {
             }
             metrics.set(metric.name, value);
         }
-        return { metrics: metrics, timestamp: timestamp };
+        return { metrics, timestamp };
     }
 }
 SDKModel.register(PerformanceMetricsModel, { capabilities: 2 /* Capability.DOM */, autostart: false });

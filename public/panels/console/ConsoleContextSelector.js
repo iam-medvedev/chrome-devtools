@@ -35,7 +35,7 @@ export class ConsoleContextSelector {
         this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
         this.toolbarItemInternal.setEnabled(false);
         this.toolbarItemInternal.setTitle(i18nString(UIStrings.javascriptContextNotSelected));
-        this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ItemsReplaced */, () => this.toolbarItemInternal.setEnabled(Boolean(this.items.length)));
+        this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, () => this.toolbarItemInternal.setEnabled(Boolean(this.items.length)));
         this.toolbarItemInternal.element.classList.add('toolbar-has-dropdown');
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextChanged, this.onExecutionContextChanged, this, { scoped: true });

@@ -20,11 +20,14 @@ export declare class TimelineFrameModel {
     framesById(): Readonly<Record<number, TimelineFrame | undefined>>;
     frames(): TimelineFrame[];
 }
-export interface FrameLayerTreeData {
-    entry: Types.TraceEvents.TraceEventLayerTreeHostImplSnapshot;
-    paints: LayerPaintEvent[];
-}
-export declare class TimelineFrame {
+export declare class TimelineFrame implements Types.TraceEvents.LegacyTimelineFrame {
+    cat: string;
+    name: string;
+    ph: Types.TraceEvents.Phase;
+    ts: Types.Timing.MicroSeconds;
+    pid: Types.TraceEvents.ProcessID;
+    tid: Types.TraceEvents.ThreadID;
+    index: number;
     startTime: Types.Timing.MicroSeconds;
     startTimeOffset: Types.Timing.MicroSeconds;
     endTime: Types.Timing.MicroSeconds;
@@ -32,24 +35,21 @@ export declare class TimelineFrame {
     idle: boolean;
     dropped: boolean;
     isPartial: boolean;
-    layerTree: FrameLayerTreeData | null;
+    layerTree: Types.TraceEvents.LegacyFrameLayerTreeData | null;
     paints: LayerPaintEvent[];
     mainFrameId: number | undefined;
     readonly seqId: number;
     constructor(seqId: number, startTime: Types.Timing.MicroSeconds, startTimeOffset: Types.Timing.MicroSeconds);
+    setIndex(i: number): void;
     setEndTime(endTime: Types.Timing.MicroSeconds): void;
-    setLayerTree(layerTree: FrameLayerTreeData | null): void;
+    setLayerTree(layerTree: Types.TraceEvents.LegacyFrameLayerTreeData | null): void;
 }
-export interface LayerPaintEventPicture {
-    rect: Array<number>;
-    serializedPicture: string;
-}
-export declare class LayerPaintEvent {
+export declare class LayerPaintEvent implements Types.TraceEvents.LegacyLayerPaintEvent {
     #private;
     constructor(event: Types.TraceEvents.TraceEventPaint, snapshot: Types.TraceEvents.TraceEventDisplayItemListSnapshot);
     layerId(): number;
     event(): Types.TraceEvents.TraceEventPaint;
-    picture(): LayerPaintEventPicture | null;
+    picture(): Types.TraceEvents.LegacyLayerPaintEventPicture | null;
 }
 export declare class PendingFrame {
     paints: LayerPaintEvent[];

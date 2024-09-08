@@ -198,10 +198,10 @@ export class TimingsTrackAppender {
             title = '';
         }
         return {
-            title: title,
+            title,
             dashStyle: tallMarkerDashStyle,
             lineWidth: 0.5,
-            color: color,
+            color,
             tall: true,
             lowPriority: false,
         };
@@ -211,10 +211,10 @@ export class TimingsTrackAppender {
         const title = markerEvent.name;
         const color = Extensions.ExtensionUI.extensionEntryColor(markerEvent);
         return {
-            title: title,
+            title,
             dashStyle: tallMarkerDashStyle,
             lineWidth: 0.5,
-            color: color,
+            color,
             tall: true,
             lowPriority: false,
         };

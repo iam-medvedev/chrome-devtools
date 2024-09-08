@@ -202,9 +202,9 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         if (!this.selection) {
             return;
         }
-        const snapshotSelection = this.selection.type() === "Snapshot" /* Type.Snapshot */ ? this.selection : this.layerSnapshotMap.get(this.selection.layer());
+        const snapshotSelection = this.selection.type() === "Snapshot" /* Type.SNAPSHOT */ ? this.selection : this.layerSnapshotMap.get(this.selection.layer());
         if (snapshotSelection) {
-            this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PaintProfilerRequested */, snapshotSelection);
+            this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PAINT_PROFILER_REQUESTED */, snapshotSelection);
         }
     }
     createScrollRectElement(scrollRect, index) {
@@ -282,7 +282,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.scrollRectsCell.removeChildren();
         layer.scrollRects().forEach(this.createScrollRectElement.bind(this));
         this.populateStickyPositionConstraintCell(layer.stickyPositionConstraint());
-        const snapshot = this.selection && this.selection.type() === "Snapshot" /* Type.Snapshot */ ?
+        const snapshot = this.selection && this.selection.type() === "Snapshot" /* Type.SNAPSHOT */ ?
             this.selection.snapshot() :
             null;
         this.paintProfilerLink.classList.toggle('hidden', !(this.layerSnapshotMap.has(layer) || snapshot));

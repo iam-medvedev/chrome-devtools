@@ -80,7 +80,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         this.#emptyElement.textContent = i18nString(UIStrings.noBreakpoints);
         this.#breakpointElements = new Map();
         this.#addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addXhrfetchBreakpoint), 'plus', undefined, 'sources.add-xhr-fetch-breakpoint');
-        this.#addButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.#addButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             void this.addButtonClicked();
         });
         this.#emptyElement.addEventListener('contextmenu', this.emptyElementContextMenu.bind(this), true);

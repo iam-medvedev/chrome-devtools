@@ -133,11 +133,11 @@ export class CoverageView extends UI.Widget.VBox {
         const coverageTypes = [
             {
                 label: i18nString(UIStrings.perFunction),
-                value: 2 /* CoverageType.JavaScript */ | 4 /* CoverageType.JavaScriptPerFunction */,
+                value: 2 /* CoverageType.JAVA_SCRIPT */ | 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */,
             },
             {
                 label: i18nString(UIStrings.perBlock),
-                value: 2 /* CoverageType.JavaScript */,
+                value: 2 /* CoverageType.JAVA_SCRIPT */,
             },
         ];
         for (const type of coverageTypes) {
@@ -171,7 +171,7 @@ export class CoverageView extends UI.Widget.VBox {
         toolbar.appendSeparator();
         this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByUrl), 0.4, 1);
         this.filterInput.setEnabled(false);
-        this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
+        this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(this.filterInput);
         toolbar.appendSeparator();
         this.typeFilterValue = null;
@@ -187,7 +187,7 @@ export class CoverageView extends UI.Widget.VBox {
             },
             {
                 label: i18nString(UIStrings.javascript),
-                value: 2 /* CoverageType.JavaScript */ | 4 /* CoverageType.JavaScriptPerFunction */,
+                value: 2 /* CoverageType.JAVA_SCRIPT */ | 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */,
             },
         ];
         for (const option of options) {
@@ -285,7 +285,7 @@ export class CoverageView extends UI.Widget.VBox {
         const option = this.coverageTypeComboBox.selectedOption();
         const coverageType = Number(option ? option.value : Number.NaN);
         // Check that Coverage.CoverageType.JavaScriptPerFunction is not present.
-        return coverageType === 2 /* CoverageType.JavaScript */;
+        return coverageType === 2 /* CoverageType.JAVA_SCRIPT */;
     }
     selectCoverageType(jsCoveragePerBlock) {
         const selectedIndex = jsCoveragePerBlock ? 1 : 0;

@@ -4,10 +4,10 @@ import { type ArgumentHintsTooltip } from './cursor_tooltip.js';
 export declare function completion(): CodeMirror.Extension;
 export declare function completeInContext(textBefore: string, query: string, force?: boolean): Promise<UI.SuggestBox.Suggestions>;
 export declare const enum QueryType {
-    Expression = 0,
-    PropertyName = 1,
-    PropertyExpression = 2,
-    PotentiallyRetrievingFromMap = 3
+    EXPRESSION = 0,
+    PROPERTY_NAME = 1,
+    PROPERTY_EXPRESSION = 2,
+    POTENTIALLY_RETRIEVING_FROM_MAP = 3
 }
 export declare function getQueryType(tree: CodeMirror.Tree, pos: number, doc: CodeMirror.Text): {
     type: QueryType;

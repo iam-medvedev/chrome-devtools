@@ -232,7 +232,7 @@ describeWithEnvironment('RequestLinkIcon', () => {
             const { button } = extractElements(shadowRoot);
             button.click();
             assert.isTrue(revealOverride.called);
-            assert.isTrue(revealOverride.calledOnceWith(sinon.match({ tab: "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */ })));
+            assert.isTrue(revealOverride.calledOnceWith(sinon.match({ tab: "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */ })));
         });
     });
 });

@@ -1,26 +1,26 @@
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as TextUtils from '../../../models/text_utils/text_utils.js';
 export declare const enum UIHeaderSection {
-    General = "General",
-    Request = "Request",
-    Response = "Response",
-    EarlyHints = "EarlyHints"
+    GENERAL = "General",
+    REQUEST = "Request",
+    RESPONSE = "Response",
+    EARLY_HINTS = "EarlyHints"
 }
 interface UIHeaderLocation {
     section: UIHeaderSection;
     header: SDK.NetworkRequest.NameValue | null;
 }
 export declare const enum UIRequestTabs {
-    Cookies = "cookies",
-    EventSource = "eventSource",
-    HeadersComponent = "headers-component",
-    Payload = "payload",
-    Initiator = "initiator",
-    Preview = "preview",
-    Response = "response",
-    Timing = "timing",
-    TrustTokens = "trust-tokens",
-    WsFrames = "web-socket-frames"
+    COOKIES = "cookies",
+    EVENT_SOURCE = "eventSource",
+    HEADERS_COMPONENT = "headers-component",
+    PAYLOAD = "payload",
+    INITIATOR = "initiator",
+    PREVIEW = "preview",
+    RESPONSE = "response",
+    TIMING = "timing",
+    TRUST_TOKENS = "trust-tokens",
+    WS_FRAMES = "web-socket-frames"
 }
 export interface FilterOptions {
     clearFilter: boolean;

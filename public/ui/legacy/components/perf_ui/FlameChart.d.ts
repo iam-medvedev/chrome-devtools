@@ -214,8 +214,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * 2. Inside a track header -> Select and Expand/Collapse a track
      * 3. Inside a track -> Select a track
      * 3.1 shift + click -> Select the time range of clicked event
-     * 3.2 cmd or ctrl + click -> Create entry label annotation on the clicked entry
-     * 3.3 click -> update highlight (handle in other functions)
+     * 3.2 click -> update highlight (handle in other functions)
      */
     private onClick;
     private deselectAllGroups;
@@ -555,10 +554,10 @@ export interface FlameChartDataProvider {
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
     hasTrackConfigurationMode(): boolean;
     eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
-    indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Types.TraceEvents.LegacyTimelineFrame): number | null;
     buildFlowForInitiator?(index: number): unknown;
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    search?(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
+    search?(visibleWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
@@ -573,7 +572,7 @@ export declare const enum Events {
     /**
      * Emitted when the <canvas> element of the FlameChart is focused by the user.
      **/
-    CanvasFocused = "CanvasFocused",
+    CANVAS_FOCUSED = "CanvasFocused",
     /**
      * Emitted when an event is selected by either mouse click, or hitting
      * <enter> on the keyboard - e.g. the same actions that would invoke a
@@ -583,9 +582,9 @@ export declare const enum Events {
      * been selected, or -1 if no entry is selected (e.g the user has clicked
      * away from any events)
      */
-    EntryInvoked = "EntryInvoked",
-    EntryLabelAnnotationAdded = "EntryLabelAnnotationAdded",
-    EntriesLinkAnnotationCreated = "EntriesLinkAnnotationCreated",
+    ENTRY_INVOKED = "EntryInvoked",
+    ENTRY_LABEL_ANNOTATION_ADDED = "EntryLabelAnnotationAdded",
+    ENTRIES_LINK_ANNOTATION_CREATED = "EntriesLinkAnnotationCreated",
     /**
      * Emitted when an event is selected via keyboard navigation using the arrow
      * keys.
@@ -593,7 +592,7 @@ export declare const enum Events {
      * Will be emitted with a number which is the index of the entry that has
      * been selected, or -1 if no entry is selected.
      */
-    EntrySelected = "EntrySelected",
+    ENTRY_SELECTED = "EntrySelected",
     /**
      * Emitted when an event is hovered over with the mouse.
      *
@@ -601,22 +600,22 @@ export declare const enum Events {
      * been hovered on, or -1 if no entry is selected (the user has moved their
      * mouse off the event)
      */
-    EntryHovered = "EntryHovered",
-    ChartPlayableStateChange = "ChartPlayableStateChange",
-    LatestDrawDimensions = "LatestDrawDimensions",
-    MouseMove = "MouseMove"
+    ENTRY_HOVERED = "EntryHovered",
+    CHART_PLAYABLE_STATE_CHANGED = "ChartPlayableStateChange",
+    LATEST_DRAW_DIMENSIONS = "LatestDrawDimensions",
+    MOUSE_MOVE = "MouseMove"
 }
 export type EventTypes = {
-    [Events.EntryLabelAnnotationAdded]: number;
-    [Events.EntriesLinkAnnotationCreated]: {
+    [Events.ENTRY_LABEL_ANNOTATION_ADDED]: number;
+    [Events.ENTRIES_LINK_ANNOTATION_CREATED]: {
         entryFromIndex: number;
     };
-    [Events.CanvasFocused]: number | void;
-    [Events.EntryInvoked]: number;
-    [Events.EntrySelected]: number;
-    [Events.EntryHovered]: number;
-    [Events.ChartPlayableStateChange]: boolean;
-    [Events.LatestDrawDimensions]: {
+    [Events.CANVAS_FOCUSED]: number | void;
+    [Events.ENTRY_INVOKED]: number;
+    [Events.ENTRY_SELECTED]: number;
+    [Events.ENTRY_HOVERED]: number;
+    [Events.CHART_PLAYABLE_STATE_CHANGED]: boolean;
+    [Events.LATEST_DRAW_DIMENSIONS]: {
         chart: {
             widthPixels: number;
             heightPixels: number;
@@ -625,7 +624,7 @@ export type EventTypes = {
         };
         traceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
     };
-    [Events.MouseMove]: {
+    [Events.MOUSE_MOVE]: {
         mouseEvent: MouseEvent;
         timeInMicroSeconds: TraceEngine.Types.Timing.MicroSeconds;
     };

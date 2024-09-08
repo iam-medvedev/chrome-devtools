@@ -19,13 +19,13 @@ import { StorageBucketsTreeParentElement } from './StorageBucketsTreeElement.js'
 import { TrustTokensTreeElement } from './TrustTokensTreeElement.js';
 export declare namespace SharedStorageTreeElementDispatcher {
     const enum Events {
-        SharedStorageTreeElementAdded = "SharedStorageTreeElementAdded"
+        SHARED_STORAGE_TREE_ELEMENT_ADDED = "SharedStorageTreeElementAdded"
     }
     interface SharedStorageTreeElementAddedEvent {
         origin: string;
     }
     type EventTypes = {
-        [Events.SharedStorageTreeElementAdded]: SharedStorageTreeElementAddedEvent;
+        [Events.SHARED_STORAGE_TREE_ELEMENT_ADDED]: SharedStorageTreeElementAddedEvent;
     };
 }
 export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.TargetManager.Observer {

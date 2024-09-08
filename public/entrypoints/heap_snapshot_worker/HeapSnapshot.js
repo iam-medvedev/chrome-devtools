@@ -1048,7 +1048,7 @@ export class HeapSnapshot {
                 ids[i] = node.id();
                 selfSizes[i] = node.selfSize();
             }
-            result[className] = { indexes: indexes, ids: ids, selfSizes: selfSizes };
+            result[className] = { indexes, ids, selfSizes };
         }
         this.#aggregatesForDiffInternal = { interfaceDefinitions, aggregates: result };
         return result;
@@ -1163,7 +1163,7 @@ export class HeapSnapshot {
                 const nameMatters = nodeType === 'object' || nodeType === 'native';
                 const value = {
                     count: 1,
-                    distance: distance,
+                    distance,
                     self: selfSize,
                     maxRet: 0,
                     type: nodeType,
@@ -1194,7 +1194,7 @@ export class HeapSnapshot {
             }
             classIndexValues.idxs = classIndexValues.idxs.slice();
         }
-        return { aggregatesByClassName: aggregatesByClassName, aggregatesByClassIndex: aggregates };
+        return { aggregatesByClassName, aggregatesByClassIndex: aggregates };
     }
     calculateClassesRetainedSize(aggregates, filter) {
         const rootNodeIndex = this.rootNodeIndexInternal;
@@ -1420,8 +1420,8 @@ export class HeapSnapshot {
             console.warn(errors.toString());
         }
         return {
-            postOrderIndex2NodeOrdinal: postOrderIndex2NodeOrdinal,
-            nodeOrdinal2PostOrderIndex: nodeOrdinal2PostOrderIndex,
+            postOrderIndex2NodeOrdinal,
+            nodeOrdinal2PostOrderIndex,
         };
     }
     hasOnlyWeakRetainers(nodeOrdinal) {

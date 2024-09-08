@@ -21,7 +21,7 @@ export function fromTraceData(traceData, customZeroTime) {
         }
         const frame = {
             index: frames.length,
-            screenshotEvent: screenshotEvent,
+            screenshotEvent,
         };
         frames.push(frame);
     }

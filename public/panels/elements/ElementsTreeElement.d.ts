@@ -134,6 +134,8 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     pushFlexAdorner(context: OpeningTagContext): void;
     pushContainerAdorner(context: OpeningTagContext): void;
     pushMediaAdorner(context: OpeningTagContext): void;
+    updateScrollAdorner(): void;
+    pushScrollAdorner(): void;
 }
 export declare const InitialChildrenLimit = 500;
 export declare const ForbiddenClosingTagElements: Set<string>;

@@ -109,7 +109,7 @@ export function data() {
         throw new Error('Server Timing handler is not finalized');
     }
     return {
-        serverTimings: serverTimings,
+        serverTimings,
     };
 }
 export function deps() {

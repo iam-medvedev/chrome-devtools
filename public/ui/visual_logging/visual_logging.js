@@ -5,7 +5,7 @@ import * as LoggingConfig from './LoggingConfig.js';
 import * as LoggingDriver from './LoggingDriver.js';
 import * as LoggingEvents from './LoggingEvents.js';
 import * as NonDomState from './NonDomState.js';
-export { setVeDebugLoggingEnabled, DebugLoggingFormat } from './Debugging.js';
+export { setVeDebugLoggingEnabled } from './Debugging.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions } from './LoggingEvents.js';
 export const logClick = (l, e) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(l, e);

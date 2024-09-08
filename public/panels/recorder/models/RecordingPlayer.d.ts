@@ -2,14 +2,14 @@ import * as Common from '../../../core/common/common.js';
 import type * as puppeteer from '../../../third_party/puppeteer/puppeteer.js';
 import { type Step, type UserFlow } from './Schema.js';
 export declare const enum PlayRecordingSpeed {
-    Normal = "normal",
-    Slow = "slow",
-    VerySlow = "very_slow",
-    ExtremelySlow = "extremely_slow"
+    NORMAL = "normal",
+    SLOW = "slow",
+    VERY_SLOW = "very_slow",
+    EXTREMELY_SLOW = "extremely_slow"
 }
 export declare const enum ReplayResult {
-    Failure = "Failure",
-    Success = "Success"
+    FAILURE = "Failure",
+    SUCCESS = "Success"
 }
 export declare const defaultTimeout = 5000;
 export declare class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
@@ -39,22 +39,22 @@ export declare class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper<
     play(): Promise<void>;
 }
 export declare const enum Events {
-    Abort = "Abort",
-    Done = "Done",
-    Step = "Step",
-    Stop = "Stop",
-    Error = "Error",
-    Continue = "Continue"
+    ABORT = "Abort",
+    DONE = "Done",
+    STEP = "Step",
+    STOP = "Stop",
+    ERROR = "Error",
+    CONTINUE = "Continue"
 }
 type EventTypes = {
-    [Events.Abort]: void;
-    [Events.Done]: void;
-    [Events.Step]: {
+    [Events.ABORT]: void;
+    [Events.DONE]: void;
+    [Events.STEP]: {
         step: Step;
         resolve: () => void;
     };
-    [Events.Stop]: void;
-    [Events.Continue]: void;
-    [Events.Error]: Error;
+    [Events.STOP]: void;
+    [Events.CONTINUE]: void;
+    [Events.ERROR]: Error;
 };
 export {};

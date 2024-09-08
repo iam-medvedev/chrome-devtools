@@ -15,7 +15,7 @@ export declare class SharedStorageForOrigin extends Common.ObjectWrapper.ObjectW
 }
 export declare namespace SharedStorageForOrigin {
     const enum Events {
-        SharedStorageChanged = "SharedStorageChanged"
+        SHARED_STORAGE_CHANGED = "SharedStorageChanged"
     }
     interface SharedStorageChangedEvent {
         accessTime: Protocol.Network.TimeSinceEpoch;
@@ -24,7 +24,7 @@ export declare namespace SharedStorageForOrigin {
         params: Protocol.Storage.SharedStorageAccessParams;
     }
     type EventTypes = {
-        [Events.SharedStorageChanged]: SharedStorageChangedEvent;
+        [Events.SHARED_STORAGE_CHANGED]: SharedStorageChangedEvent;
     };
 }
 export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes> implements ProtocolProxyApi.StorageDispatcher {
@@ -52,12 +52,12 @@ export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
 }
 export declare const enum Events {
-    SharedStorageAccess = "SharedStorageAccess",
-    SharedStorageAdded = "SharedStorageAdded",
-    SharedStorageRemoved = "SharedStorageRemoved"
+    SHARED_STORAGE_ACCESS = "SharedStorageAccess",
+    SHARED_STORAGE_ADDED = "SharedStorageAdded",
+    SHARED_STORAGE_REMOVED = "SharedStorageRemoved"
 }
 export type EventTypes = {
-    [Events.SharedStorageAccess]: Protocol.Storage.SharedStorageAccessedEvent;
-    [Events.SharedStorageAdded]: SharedStorageForOrigin;
-    [Events.SharedStorageRemoved]: SharedStorageForOrigin;
+    [Events.SHARED_STORAGE_ACCESS]: Protocol.Storage.SharedStorageAccessedEvent;
+    [Events.SHARED_STORAGE_ADDED]: SharedStorageForOrigin;
+    [Events.SHARED_STORAGE_REMOVED]: SharedStorageForOrigin;
 };

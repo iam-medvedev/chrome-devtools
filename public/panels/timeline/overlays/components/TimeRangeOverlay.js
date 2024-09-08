@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
+import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './timeRangeOverlay.css.js';
 export class TimeRangeLabelChangeEvent extends Event {
@@ -37,7 +38,7 @@ export class TimeRangeOverlay extends HTMLElement {
     constructor(initialLabel) {
         super();
         this.#render();
-        this.#rangeContainer = this.#shadow.querySelector('.label');
+        this.#rangeContainer = this.#shadow.querySelector('.range-container');
         this.#labelBox = this.#rangeContainer?.querySelector('.label-text') ?? null;
         this.#label = initialLabel;
         if (!this.#labelBox) {
@@ -191,7 +192,14 @@ export class TimeRangeOverlay extends HTMLElement {
         // clang-format off
         LitHtml.render(LitHtml.html `
           <span
-            class="label">
+            class="range-container">
+            <${IconButton.Icon.Icon.litTagName} class="user-created-icon" .data=${{
+            iconName: 'profile',
+            color: 'var(--ref-palette-pink55)',
+            width: '16px',
+            height: '17px',
+        }}>
+              </${IconButton.Icon.Icon.litTagName}>
             <span
              class="label-text"
              @focusout=${() => this.#setLabelEditability(false)}

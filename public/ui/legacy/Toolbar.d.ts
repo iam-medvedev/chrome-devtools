@@ -62,10 +62,10 @@ export declare class ToolbarItem<T = any> extends Common.ObjectWrapper.ObjectWra
     setCompactLayout(_enable: boolean): void;
 }
 export declare const enum ToolbarItemWithCompactLayoutEvents {
-    CompactLayoutUpdated = "CompactLayoutUpdated"
+    COMPACT_LAYOUT_UPDATED = "CompactLayoutUpdated"
 }
 type ToolbarItemWithCompactLayoutEventTypes = {
-    [ToolbarItemWithCompactLayoutEvents.CompactLayoutUpdated]: boolean;
+    [ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED]: boolean;
 };
 export declare class ToolbarItemWithCompactLayout extends ToolbarItem<ToolbarItemWithCompactLayoutEventTypes> {
     constructor(element: Element);
@@ -117,12 +117,12 @@ export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventType
 }
 export declare namespace ToolbarButton {
     const enum Events {
-        Click = "Click",
-        MouseDown = "MouseDown"
+        CLICK = "Click",
+        MOUSE_DOWN = "MouseDown"
     }
     type EventTypes = {
-        [Events.Click]: Event;
-        [Events.MouseDown]: MouseEvent;
+        [Events.CLICK]: Event;
+        [Events.MOUSE_DOWN]: MouseEvent;
     };
 }
 export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
@@ -144,12 +144,12 @@ export declare class ToolbarFilter extends ToolbarInput {
 }
 export declare namespace ToolbarInput {
     const enum Event {
-        TextChanged = "TextChanged",
-        EnterPressed = "EnterPressed"
+        TEXT_CHANGED = "TextChanged",
+        ENTER_PRESSED = "EnterPressed"
     }
     interface EventTypes {
-        [Event.TextChanged]: string;
-        [Event.EnterPressed]: string;
+        [Event.TEXT_CHANGED]: string;
+        [Event.ENTER_PRESSED]: string;
     }
 }
 export declare class ToolbarToggle extends ToolbarButton {

@@ -73,7 +73,7 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         const args = {
             bufferUsageReportingInterval: bufferUsageReportingIntervalMs,
             categories: categoryFilter,
-            options: options,
+            options,
             transferMode: "ReportEvents" /* Protocol.Tracing.StartRequestTransferMode.ReportEvents */,
         };
         const response = await this.#tracingAgent.invoke_start(args);

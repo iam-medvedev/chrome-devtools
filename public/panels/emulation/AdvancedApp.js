@@ -16,7 +16,7 @@ export class AdvancedApp {
     changingDockSide;
     toolboxDocument;
     constructor() {
-        UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BeforeDockSideChanged */, this.openToolboxWindow, this);
+        UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BEFORE_DOCK_SIDE_CHANGED */, this.openToolboxWindow, this);
     }
     /**
      * Note: it's used by toolbox.ts without real type checks.
@@ -36,12 +36,12 @@ export class AdvancedApp {
         this.rootSplitWidget.setDefaultFocusedChild(UI.InspectorView.InspectorView.instance());
         UI.InspectorView.InspectorView.instance().setOwnerSplit(this.rootSplitWidget);
         this.inspectedPagePlaceholder = InspectedPagePlaceholder.instance();
-        this.inspectedPagePlaceholder.addEventListener("Update" /* Events.Update */, this.onSetInspectedPageBounds.bind(this), this);
+        this.inspectedPagePlaceholder.addEventListener("Update" /* Events.UPDATE */, this.onSetInspectedPageBounds.bind(this), this);
         this.deviceModeView =
             DeviceModeWrapper.instance({ inspectedPagePlaceholder: this.inspectedPagePlaceholder, forceNew: false });
-        UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BeforeDockSideChanged */, this.onBeforeDockSideChange, this);
-        UI.DockController.DockController.instance().addEventListener("DockSideChanged" /* UI.DockController.Events.DockSideChanged */, this.onDockSideChange, this);
-        UI.DockController.DockController.instance().addEventListener("AfterDockSideChanged" /* UI.DockController.Events.AfterDockSideChanged */, this.onAfterDockSideChange, this);
+        UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BEFORE_DOCK_SIDE_CHANGED */, this.onBeforeDockSideChange, this);
+        UI.DockController.DockController.instance().addEventListener("DockSideChanged" /* UI.DockController.Events.DOCK_SIDE_CHANGED */, this.onDockSideChange, this);
+        UI.DockController.DockController.instance().addEventListener("AfterDockSideChanged" /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */, this.onAfterDockSideChange, this);
         this.onDockSideChange();
         console.timeStamp('AdvancedApp.attachToBody');
         rootView.attachToDocument(document);

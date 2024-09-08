@@ -43,7 +43,7 @@ export class CoveragePlugin extends Plugin {
         this.#transformer = transformer;
         this.infoInToolbar = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clickToShowCoveragePanel), undefined, undefined, 'debugger.show-coverage');
         this.infoInToolbar.setSecondary();
-        this.infoInToolbar.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.infoInToolbar.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             void UI.ViewManager.ViewManager.instance().showView('coverage');
         });
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -112,7 +112,8 @@ export class CoveragePlugin extends Plugin {
     }
     startDecoUpdate(editor) {
         const manager = this.getCoverageManager();
-        void (manager ? manager.usageByLine(this.uiSourceCode, this.#editorLines(editor)) : Promise.resolve([])).then(usageByLine => {
+        void (manager ? manager.usageByLine(this.uiSourceCode, this.#editorLines(editor)) : Promise.resolve([]))
+            .then(usageByLine => {
             const enabled = Boolean(editor.state.field(coverageState, false));
             if (!usageByLine.length) {
                 if (enabled) {

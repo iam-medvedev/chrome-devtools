@@ -22,11 +22,11 @@ export declare class RecordingSession extends Common.ObjectWrapper.ObjectWrapper
     stop(): Promise<void>;
 }
 export declare const enum Events {
-    RecordingUpdated = "recordingupdated",
-    RecordingStopped = "recordingstopped"
+    RECORDING_UPDATED = "recordingupdated",
+    RECORDING_STOPPED = "recordingstopped"
 }
 type EventTypes = {
-    [Events.RecordingUpdated]: UserFlow;
-    [Events.RecordingStopped]: UserFlow;
+    [Events.RECORDING_UPDATED]: UserFlow;
+    [Events.RECORDING_STOPPED]: UserFlow;
 };
 export {};

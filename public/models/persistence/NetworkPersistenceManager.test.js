@@ -19,7 +19,7 @@ const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, url, resourceType);
     project.uiSourceCodes = () => [uiSourceCode];
     workspace.addProject(project);
-    return { workspace, project: project, uiSourceCode, networkPersistenceManager };
+    return { workspace, project, uiSourceCode, networkPersistenceManager };
 };
 describeWithMockConnection('NetworkPersistenceManager', () => {
     beforeEach(async () => {
@@ -690,8 +690,8 @@ describe('NetworkPersistenceManager', () => {
                 value: '0',
             }];
         const overrideHeaders = [{
-                'name': 'accept-ranges',
-                'value': 'bytes',
+                name: 'accept-ranges',
+                value: 'bytes',
             }];
         const merged = [
             { name: 'accept-ranges', value: 'bytes' },

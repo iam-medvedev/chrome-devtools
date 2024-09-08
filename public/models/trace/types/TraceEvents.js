@@ -529,4 +529,7 @@ export const Categories = {
     UserTiming: 'blink.user_timing',
     Loading: 'loading',
 };
+export function isLegacyTimelineFrame(data) {
+    return 'idle' in data && typeof data.idle === 'boolean';
+}
 //# sourceMappingURL=TraceEvents.js.map

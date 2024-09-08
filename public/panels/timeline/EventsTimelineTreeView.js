@@ -7,7 +7,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { getCategoryStyles } from './EventUICategory.js';
+import * as Components from './components/components.js';
 import { Category, IsLong } from './TimelineFilters.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
@@ -41,7 +41,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         super();
         this.element.setAttribute('jslog', `${VisualLogging.pane('event-log').track({ resize: true })}`);
         this.filtersControl = new Filters();
-        this.filtersControl.addEventListener("FilterChanged" /* Events.FilterChanged */, this.onFilterChanged, this);
+        this.filtersControl.addEventListener("FilterChanged" /* Events.FILTER_CHANGED */, this.onFilterChanged, this);
         this.init();
         this.delegate = delegate;
         this.dataGrid.markColumnAsSortedBy('start-time', DataGrid.DataGrid.Order.Ascending);
@@ -155,7 +155,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         }
         toolbar.appendToolbarItem(durationFilterUI);
         const categoryFiltersUI = new Map();
-        const categories = getCategoryStyles();
+        const categories = Components.EntryStyles.getCategoryStyles();
         for (const categoryName in categories) {
             const category = categories[categoryName];
             if (!category.visible) {
@@ -174,14 +174,14 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
             this.notifyFiltersChanged();
         }
         function categoriesFilterChanged(name) {
-            const categories = getCategoryStyles();
+            const categories = Components.EntryStyles.getCategoryStyles();
             const checkBox = categoryFiltersUI.get(name);
             categories[name].hidden = !checkBox || !checkBox.checked();
             this.notifyFiltersChanged();
         }
     }
     notifyFiltersChanged() {
-        this.dispatchEventToListeners("FilterChanged" /* Events.FilterChanged */);
+        this.dispatchEventToListeners("FilterChanged" /* Events.FILTER_CHANGED */);
     }
     static durationFilterPresetsMs = [0, 1, 15];
 }

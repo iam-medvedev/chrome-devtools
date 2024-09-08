@@ -81,29 +81,29 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     static buildRequestTimeRangeStyle() {
         const styleMap = new Map();
-        styleMap.set("connecting" /* RequestTimeRangeNames.Connecting */, { fillStyle: RequestTimeRangeNameToColor["connecting" /* RequestTimeRangeNames.Connecting */] });
+        styleMap.set("connecting" /* RequestTimeRangeNames.CONNECTING */, { fillStyle: RequestTimeRangeNameToColor["connecting" /* RequestTimeRangeNames.CONNECTING */] });
         styleMap.set("ssl" /* RequestTimeRangeNames.SSL */, { fillStyle: RequestTimeRangeNameToColor["ssl" /* RequestTimeRangeNames.SSL */] });
         styleMap.set("dns" /* RequestTimeRangeNames.DNS */, { fillStyle: RequestTimeRangeNameToColor["dns" /* RequestTimeRangeNames.DNS */] });
-        styleMap.set("proxy" /* RequestTimeRangeNames.Proxy */, { fillStyle: RequestTimeRangeNameToColor["proxy" /* RequestTimeRangeNames.Proxy */] });
-        styleMap.set("blocking" /* RequestTimeRangeNames.Blocking */, { fillStyle: RequestTimeRangeNameToColor["blocking" /* RequestTimeRangeNames.Blocking */] });
-        styleMap.set("push" /* RequestTimeRangeNames.Push */, { fillStyle: RequestTimeRangeNameToColor["push" /* RequestTimeRangeNames.Push */] });
-        styleMap.set("queueing" /* RequestTimeRangeNames.Queueing */, {
-            fillStyle: RequestTimeRangeNameToColor["queueing" /* RequestTimeRangeNames.Queueing */],
+        styleMap.set("proxy" /* RequestTimeRangeNames.PROXY */, { fillStyle: RequestTimeRangeNameToColor["proxy" /* RequestTimeRangeNames.PROXY */] });
+        styleMap.set("blocking" /* RequestTimeRangeNames.BLOCKING */, { fillStyle: RequestTimeRangeNameToColor["blocking" /* RequestTimeRangeNames.BLOCKING */] });
+        styleMap.set("push" /* RequestTimeRangeNames.PUSH */, { fillStyle: RequestTimeRangeNameToColor["push" /* RequestTimeRangeNames.PUSH */] });
+        styleMap.set("queueing" /* RequestTimeRangeNames.QUEUEING */, {
+            fillStyle: RequestTimeRangeNameToColor["queueing" /* RequestTimeRangeNames.QUEUEING */],
             lineWidth: 2,
             borderColor: 'lightgrey',
         });
         // This ensures we always show at least 2 px for a request.
-        styleMap.set("receiving" /* RequestTimeRangeNames.Receiving */, {
-            fillStyle: RequestTimeRangeNameToColor["receiving" /* RequestTimeRangeNames.Receiving */],
+        styleMap.set("receiving" /* RequestTimeRangeNames.RECEIVING */, {
+            fillStyle: RequestTimeRangeNameToColor["receiving" /* RequestTimeRangeNames.RECEIVING */],
             lineWidth: 2,
             borderColor: '#03A9F4',
         });
-        styleMap.set("waiting" /* RequestTimeRangeNames.Waiting */, { fillStyle: RequestTimeRangeNameToColor["waiting" /* RequestTimeRangeNames.Waiting */] });
-        styleMap.set("receiving-push" /* RequestTimeRangeNames.ReceivingPush */, { fillStyle: RequestTimeRangeNameToColor["receiving-push" /* RequestTimeRangeNames.ReceivingPush */] });
-        styleMap.set("serviceworker" /* RequestTimeRangeNames.ServiceWorker */, { fillStyle: RequestTimeRangeNameToColor["serviceworker" /* RequestTimeRangeNames.ServiceWorker */] });
-        styleMap.set("serviceworker-preparation" /* RequestTimeRangeNames.ServiceWorkerPreparation */, { fillStyle: RequestTimeRangeNameToColor["serviceworker-preparation" /* RequestTimeRangeNames.ServiceWorkerPreparation */] });
-        styleMap.set("serviceworker-respondwith" /* RequestTimeRangeNames.ServiceWorkerRespondWith */, {
-            fillStyle: RequestTimeRangeNameToColor["serviceworker-respondwith" /* RequestTimeRangeNames.ServiceWorkerRespondWith */],
+        styleMap.set("waiting" /* RequestTimeRangeNames.WAITING */, { fillStyle: RequestTimeRangeNameToColor["waiting" /* RequestTimeRangeNames.WAITING */] });
+        styleMap.set("receiving-push" /* RequestTimeRangeNames.RECEIVING_PUSH */, { fillStyle: RequestTimeRangeNameToColor["receiving-push" /* RequestTimeRangeNames.RECEIVING_PUSH */] });
+        styleMap.set("serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */, { fillStyle: RequestTimeRangeNameToColor["serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */] });
+        styleMap.set("serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */, { fillStyle: RequestTimeRangeNameToColor["serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */] });
+        styleMap.set("serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */, {
+            fillStyle: RequestTimeRangeNameToColor["serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */],
         });
         return styleMap;
     }
@@ -132,10 +132,10 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
             waitingStyleMap.set(
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
             // @ts-expect-error
-            resourceType, { fillStyle: toWaitingColor(color), lineWidth: 1, borderColor: borderColor });
+            resourceType, { fillStyle: toWaitingColor(color), lineWidth: 1, borderColor });
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
             // @ts-expect-error
-            downloadingStyleMap.set(resourceType, { fillStyle: color, lineWidth: 1, borderColor: borderColor });
+            downloadingStyleMap.set(resourceType, { fillStyle: color, lineWidth: 1, borderColor });
         }
         return [waitingStyleMap, downloadingStyleMap];
         function toBorderColor(color) {
@@ -197,7 +197,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         let end;
         if (useTimingBars) {
             range = RequestTimingView.calculateRequestTimeRanges(request, 0)
-                .find(data => data.name === "total" /* RequestTimeRangeNames.Total */);
+                .find(data => data.name === "total" /* RequestTimeRangeNames.TOTAL */);
             start = this.timeToPosition(range.start);
             end = this.timeToPosition(range.end);
         }
@@ -415,13 +415,13 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     getBarHeight(type) {
         switch (type) {
-            case "connecting" /* RequestTimeRangeNames.Connecting */:
+            case "connecting" /* RequestTimeRangeNames.CONNECTING */:
             case "ssl" /* RequestTimeRangeNames.SSL */:
             case "dns" /* RequestTimeRangeNames.DNS */:
-            case "proxy" /* RequestTimeRangeNames.Proxy */:
-            case "blocking" /* RequestTimeRangeNames.Blocking */:
-            case "push" /* RequestTimeRangeNames.Push */:
-            case "queueing" /* RequestTimeRangeNames.Queueing */:
+            case "proxy" /* RequestTimeRangeNames.PROXY */:
+            case "blocking" /* RequestTimeRangeNames.BLOCKING */:
+            case "push" /* RequestTimeRangeNames.PUSH */:
+            case "queueing" /* RequestTimeRangeNames.QUEUEING */:
                 return 7;
             default:
                 return 13;
@@ -486,7 +486,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         }
         if (!this.calculator.startAtZero) {
             const queueingRange = RequestTimingView.calculateRequestTimeRanges(request, 0)
-                .find(data => data.name === "total" /* RequestTimeRangeNames.Total */);
+                .find(data => data.name === "total" /* RequestTimeRangeNames.TOTAL */);
             const leftLabelWidth = labels ? context.measureText(labels.left).width : 0;
             const leftTextPlacedInBar = leftLabelWidth < ranges.mid - ranges.start;
             const wiskerTextPadding = 13;
@@ -511,7 +511,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         const ranges = RequestTimingView.calculateRequestTimeRanges(request, 0);
         let index = 0;
         for (const range of ranges) {
-            if (range.name === "total" /* RequestTimeRangeNames.Total */ || range.name === "sending" /* RequestTimeRangeNames.Sending */ ||
+            if (range.name === "total" /* RequestTimeRangeNames.TOTAL */ || range.name === "sending" /* RequestTimeRangeNames.SENDING */ ||
                 range.end - range.start === 0) {
                 continue;
             }

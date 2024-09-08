@@ -7,6 +7,14 @@ type MatchingPairableAsyncEvents = {
     end: Types.TraceEvents.TraceEventPairableAsyncEnd | null;
     instant?: Types.TraceEvents.TraceEventPairableAsyncInstant[];
 };
+/**
+ * Extracts the raw stack trace of known trace events. Most likely than
+ * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
+ * the stack with zero based numbering. Since some trace events are
+ * one based this function can yield unexpected results when used
+ * indiscriminately.
+ */
+export declare function stackTraceForEvent(event: Types.TraceEvents.TraceEventData): Types.TraceEvents.TraceEventCallFrame[] | null;
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.TraceEvents.TraceEventData> = Map<Types.TraceEvents.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.TraceEvents.TraceEventData>(event: T, eventsInProcessThread: Map<Types.TraceEvents.ProcessID, EventsInThread<T>>): void;

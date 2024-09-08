@@ -37,18 +37,18 @@ export const generateEdgePortIdsByData = (data, type) => {
     const destinationPortId = getDestinationPortId(data, type);
     return {
         edgeId: `${sourcePortId}->${destinationPortId}`,
-        sourcePortId: sourcePortId,
-        destinationPortId: destinationPortId,
+        sourcePortId,
+        destinationPortId,
     };
     /**
      * Get the destination portId based on connection type.
      */
     function getDestinationPortId(data, type) {
-        if (type === "NodeToNode" /* EdgeTypes.NodeToNode */) {
+        if (type === "NodeToNode" /* EdgeTypes.NODE_TO_NODE */) {
             const portData = data;
             return generateInputPortId(data.destinationId, portData.destinationInputIndex);
         }
-        if (type === "NodeToParam" /* EdgeTypes.NodeToParam */) {
+        if (type === "NodeToParam" /* EdgeTypes.NODE_TO_PARAM */) {
             const portData = data;
             return generateParamPortId(data.destinationId, portData.destinationParamId);
         }

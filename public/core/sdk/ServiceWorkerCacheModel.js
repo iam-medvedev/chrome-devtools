@@ -173,10 +173,10 @@ export class ServiceWorkerCacheModel extends SDKModel {
         this.removeStorageBucket(bucket);
     }
     cacheAdded(cache) {
-        this.dispatchEventToListeners("CacheAdded" /* Events.CACHE_ADDED */, { model: this, cache: cache });
+        this.dispatchEventToListeners("CacheAdded" /* Events.CACHE_ADDED */, { model: this, cache });
     }
     cacheRemoved(cache) {
-        this.dispatchEventToListeners("CacheRemoved" /* Events.CACHE_REMOVED */, { model: this, cache: cache });
+        this.dispatchEventToListeners("CacheRemoved" /* Events.CACHE_REMOVED */, { model: this, cache });
     }
     async requestEntries(cache, skipCount, pageSize, pathFilter, callback) {
         const response = await this.cacheAgent.invoke_requestEntries({ cacheId: cache.cacheId, skipCount, pageSize, pathFilter });

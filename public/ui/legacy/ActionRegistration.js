@@ -127,7 +127,7 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.enabledInternal = enabled;
-        this.dispatchEventToListeners("Enabled" /* Events.Enabled */, enabled);
+        this.dispatchEventToListeners("Enabled" /* Events.ENABLED */, enabled);
     }
     enabled() {
         return this.enabledInternal;
@@ -169,7 +169,7 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.toggledInternal = toggled;
-        this.dispatchEventToListeners("Toggled" /* Events.Toggled */, toggled);
+        this.dispatchEventToListeners("Toggled" /* Events.TOGGLED */, toggled);
     }
     options() {
         return this.actionRegistration.options;

@@ -11,8 +11,11 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     get clsValue(): CLSValue | undefined;
     get inpValue(): INPValue | undefined;
     get interactions(): InteractionValue[];
-    targetAdded(target: SDK.Target.Target): void;
-    targetRemoved(target: SDK.Target.Target): void;
+    clearInteractions(): void;
+    targetAdded(target: SDK.Target.Target): Promise<void>;
+    targetRemoved(target: SDK.Target.Target): Promise<void>;
+    enable(): Promise<void>;
+    disable(): Promise<void>;
 }
 export declare const enum Events {
     STATUS = "status"

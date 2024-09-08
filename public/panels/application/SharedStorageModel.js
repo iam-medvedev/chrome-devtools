@@ -97,7 +97,7 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
         }
         const storage = new SharedStorageForOrigin(this, securityOrigin);
         this.#storages.set(securityOrigin, storage);
-        this.dispatchEventToListeners("SharedStorageAdded" /* Events.SharedStorageAdded */, storage);
+        this.dispatchEventToListeners("SharedStorageAdded" /* Events.SHARED_STORAGE_ADDED */, storage);
     }
     #securityOriginRemoved(event) {
         this.#removeOrigin(event.data);
@@ -108,7 +108,7 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
             return;
         }
         this.#storages.delete(securityOrigin);
-        this.dispatchEventToListeners("SharedStorageRemoved" /* Events.SharedStorageRemoved */, storage);
+        this.dispatchEventToListeners("SharedStorageRemoved" /* Events.SHARED_STORAGE_REMOVED */, storage);
     }
     storages() {
         return this.#storages.values();
@@ -137,13 +137,13 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
             if (sharedStorage) {
                 const eventData = { accessTime: event.accessTime, type: event.type, mainFrameId: event.mainFrameId, params: event.params };
                 // Forward events that may have changed `sharedStorage` to listeners for `sharedStorage`.
-                sharedStorage.dispatchEventToListeners("SharedStorageChanged" /* SharedStorageForOrigin.Events.SharedStorageChanged */, eventData);
+                sharedStorage.dispatchEventToListeners("SharedStorageChanged" /* SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, eventData);
             }
             else {
                 void this.#maybeAddOrigin(event.ownerOrigin);
             }
         }
-        this.dispatchEventToListeners("SharedStorageAccess" /* Events.SharedStorageAccess */, event);
+        this.dispatchEventToListeners("SharedStorageAccess" /* Events.SHARED_STORAGE_ACCESS */, event);
     }
     attributionReportingTriggerRegistered(_event) {
     }

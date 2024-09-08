@@ -215,36 +215,6 @@ export declare const overrideFilter: {
     headers: string;
 };
 export type Filter = (request: SDK.NetworkRequest.NetworkRequest) => boolean;
-export declare class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper<UI.FilterBar.FilterUIEventTypes> implements UI.FilterBar.FilterUI {
-    private readonly filterElement;
-    private readonly dropDownButton;
-    private displayedTypes;
-    private readonly setting;
-    private readonly items;
-    private contextMenu?;
-    private selectedTypesCount;
-    private typesCountAdorner;
-    private hasChanged;
-    constructor(items: UI.FilterBar.Item[], setting: Common.Settings.Setting<{
-        [key: string]: boolean;
-    }>);
-    discard(): void;
-    emitUMA(): void;
-    showContextMenu(event: Common.EventTarget.EventTargetEvent<Event>): void;
-    private addRequestType;
-    private toggleTypeFilter;
-    private filterChanged;
-    private settingChanged;
-    private update;
-    updateSelectedTypesCount(): void;
-    updateLabel(): void;
-    updateTooltip(): void;
-    isActive(): boolean;
-    element(): HTMLDivElement;
-    reset(): void;
-    accept(typeName: string): boolean;
-    static readonly ALL_TYPES = "all";
-}
 export declare class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper<UI.FilterBar.FilterUIEventTypes> implements UI.FilterBar.FilterUI {
     #private;
     private readonly filterElement;

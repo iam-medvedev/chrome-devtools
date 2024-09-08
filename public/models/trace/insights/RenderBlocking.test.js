@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 export async function processTrace(testContext, traceFile) {
     const { traceData, insights } = await TraceLoader.traceEngine(testContext, traceFile);
@@ -20,7 +21,7 @@ function getInsight(insights, navigationId) {
     }
     return insight;
 }
-describe('RenderBlockingRequests', function () {
+describeWithEnvironment('RenderBlockingRequests', function () {
     it('finds render blocking requests', async () => {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.strictEqual(insights.size, 1);

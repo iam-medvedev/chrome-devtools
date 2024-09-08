@@ -15,6 +15,7 @@ import { getEventOfType, getMainThread, makeCompleteEvent, makeMockSamplesHandle
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import * as TimelineComponents from './components/components.js';
 import * as Timeline from './timeline.js';
 describeWithMockConnection('TimelineUIUtils', function () {
     let target;
@@ -115,14 +116,14 @@ describeWithMockConnection('TimelineUIUtils', function () {
         beforeEach(async () => {
             // Register mock script and source map.
             const sourceMapContent = JSON.stringify({
-                'version': 3,
-                'names': ['unminified', 'par1', 'par2', 'console', 'log'],
-                'sources': [
+                version: 3,
+                names: ['unminified', 'par1', 'par2', 'console', 'log'],
+                sources: [
                     '/original-script.ts',
                 ],
-                'file': '/test.js',
-                'sourcesContent': ['function unminified(par1, par2) {\n  console.log(par1, par2);\n}\n'],
-                'mappings': 'AAAA,SAASA,EAAWC,EAAMC,GACxBC,QAAQC,IAAIH,EAAMC',
+                file: '/test.js',
+                sourcesContent: ['function unminified(par1, par2) {\n  console.log(par1, par2);\n}\n'],
+                mappings: 'AAAA,SAASA,EAAWC,EAAMC,GACxBC,QAAQC,IAAIH,EAAMC',
             });
             setupPageResourceLoaderForSourceMap(sourceMapContent);
             target.setInspectedURL('https://google.com');
@@ -188,11 +189,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const columnNumber = 51;
             const profileCall = makeProfileCall('function', 10, 100, TraceEngine.Types.TraceEvents.ProcessID(1), TraceEngine.Types.TraceEvents.ThreadID(1));
             profileCall.callFrame = {
-                'columnNumber': columnNumber,
-                'functionName': 'minified',
-                'lineNumber': 0,
-                'scriptId': script.scriptId,
-                'url': 'file://gen.js',
+                columnNumber,
+                functionName: 'minified',
+                lineNumber: 0,
+                scriptId: script.scriptId,
+                url: 'file://gen.js',
             };
             const workersData = {
                 workerSessionIdEvents: [],
@@ -338,11 +339,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('should return the correct rgb value for a corresponding CSS variable', function () {
-            const parsedColor = Timeline.EventUICategory.getCategoryStyles().scripting.getComputedColorValue();
+            const parsedColor = TimelineComponents.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
             assert.strictEqual('rgb(2 2 2)', parsedColor);
         });
         it('should return the color as a CSS variable', function () {
-            const cssVariable = Timeline.EventUICategory.getCategoryStyles().scripting.getCSSValue();
+            const cssVariable = TimelineComponents.EntryStyles.getCategoryStyles().scripting.getCSSValue();
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
@@ -624,7 +625,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     value: 'This is a child task',
                 },
                 { title: 'Tip', value: 'Do something about it' },
-                { 'title': undefined, 'value': 'appendACorgi @ localhost:3000/static/js/bundle.js:274:19' },
+                { title: undefined, value: 'appendACorgi @ localhost:3000/static/js/bundle.js:274:19' },
             ]);
         });
         it('renders the details for an extension marker properly', async function () {
@@ -640,7 +641,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     title: 'Description',
                     value: 'This marks the start of a task',
                 },
-                { 'title': undefined, 'value': 'mockChangeDetection @ localhost:3000/static/js/bundle.js:295:17' },
+                { title: undefined, value: 'mockChangeDetection @ localhost:3000/static/js/bundle.js:295:17' },
             ]);
         });
         it('renders the details for a profile call properly', async function () {
@@ -779,7 +780,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 { title: 'URL', value: 'wss://socketsbay.com/wss/v2/1/demo/' },
                 // The 'First Invalidated' Stack trace
                 { title: undefined, value: 'connect @ socketsbay.com/test-websockets:314:25' },
-                { title: 'Initiated by', 'value': 'Create WebSocket' },
+                { title: 'Initiated by', value: 'Create WebSocket' },
                 { title: 'Pending for', value: '72.0 ms' },
             ];
             assert.deepEqual(rowData, expectedRowData);
@@ -798,7 +799,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 // The initiator stack trace
                 { title: undefined, value: 'connect @ socketsbay.com/test-websockets:314:25' },
                 // The 2 entries under "Initiator for" are displayed as seperate links and in the UI it is obvious they are seperate
-                { title: 'Initiator for', 'value': 'Send WebSocket Handshake Receive WebSocket Handshake' },
+                { title: 'Initiator for', value: 'Send WebSocket Handshake Receive WebSocket Handshake' },
             ];
             assert.deepEqual(rowData, expectedRowData);
         });
@@ -908,7 +909,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'TracingStartedInBrowser',
                     ph: "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */,
-                    pid: pid,
+                    pid,
                     tid: mainThread,
                     ts: microsec(100),
                     args: {
@@ -923,7 +924,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'SetLayerTreeId',
                     ph: "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */,
-                    pid: pid,
+                    pid,
                     tid: mainThread,
                     ts: microsec(101),
                     args: { data: { frame: 'frame1', layerTreeId: 17 } },
@@ -935,7 +936,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(100000),
                     dur: microsec(3000),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {},
                 },
                 {
@@ -945,7 +946,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(100500),
                     dur: microsec(1500),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {},
                 },
                 {
@@ -955,7 +956,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(101000),
                     dur: microsec(1000),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {
                         beginData: {
                             frame: 'FAKE_FRAME_ID',
@@ -973,7 +974,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(104000),
                     dur: microsec(4000),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {},
                 },
                 {
@@ -983,7 +984,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(104000),
                     dur: microsec(1000),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {},
                 },
                 {
@@ -993,7 +994,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(105000),
                     dur: microsec(1000),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {},
                 },
                 {
@@ -1003,7 +1004,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ts: microsec(107000),
                     dur: microsec(1000),
                     tid: mainThread,
-                    pid: pid,
+                    pid,
                     args: {
                         beginData: {
                             frame: 'FAKE_FRAME_ID',

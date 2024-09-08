@@ -85,7 +85,7 @@ export class AffectedDirectivesView extends AffectedResourcesView {
             const onElementRevealIconClick = () => {
                 const target = model.getTargetIfNotDisposed();
                 if (target) {
-                    Host.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Element" /* AffectedItem.Element */);
+                    Host.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Element" /* AffectedItem.ELEMENT */);
                     const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, violatingNodeId);
                     void Common.Revealer.reveal(deferredDOMNode);
                 }

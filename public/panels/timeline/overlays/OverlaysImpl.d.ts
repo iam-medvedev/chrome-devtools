@@ -17,7 +17,7 @@ export type EntryChartLocation = 'main' | 'network';
  * support TimelineFrame instances (which themselves will be removed from the
  * codebase.)
  */
-export type OverlayEntry = TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame;
+export type OverlayEntry = TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Types.TraceEvents.LegacyTimelineFrame;
 /**
  * Represents when a user has selected an entry in the timeline
  */
@@ -31,7 +31,7 @@ export interface EntrySelected {
 export interface EntryOutline {
     type: 'ENTRY_OUTLINE';
     entry: OverlayEntry;
-    outlineReason: 'ERROR';
+    outlineReason: 'ERROR' | 'INFO';
 }
 /**
  * Represents an object created when a user creates a label for an entry in the timeline.

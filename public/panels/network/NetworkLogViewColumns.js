@@ -181,8 +181,8 @@ export class NetworkLogViewColumns {
         this.waterfallScrollerWidthIsStale = true;
         this.popupLinkifier = new Components.Linkifier.Linkifier();
         this.calculatorsMap = new Map();
-        this.calculatorsMap.set("Time" /* CalculatorTypes.Time */, timeCalculator);
-        this.calculatorsMap.set("Duration" /* CalculatorTypes.Duration */, durationCalculator);
+        this.calculatorsMap.set("Time" /* CalculatorTypes.TIME */, timeCalculator);
+        this.calculatorsMap.set("Duration" /* CalculatorTypes.DURATION */, durationCalculator);
         this.lastWheelTime = 0;
         this.setupDataGrid();
         this.setupWaterfall();
@@ -249,7 +249,7 @@ export class NetworkLogViewColumns {
         }, true);
         this.dataGridScroller = this.dataGridInternal.scrollContainer;
         this.updateColumns();
-        this.dataGridInternal.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortHandler, this);
+        this.dataGridInternal.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortHandler, this);
         this.dataGridInternal.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
         this.activeWaterfallSortId = WaterfallSortIds.StartTime;
         this.dataGridInternal.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid.DataGrid.Order.Ascending);
@@ -273,11 +273,11 @@ export class NetworkLogViewColumns {
             this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-v-scroll');
         this.waterfallScrollerContent =
             this.waterfallScroller.createChild('div', 'network-waterfall-v-scroll-content');
-        this.dataGridInternal.addEventListener("PaddingChanged" /* DataGrid.DataGrid.Events.PaddingChanged */, () => {
+        this.dataGridInternal.addEventListener("PaddingChanged" /* DataGrid.DataGrid.Events.PADDING_CHANGED */, () => {
             this.waterfallScrollerWidthIsStale = true;
             this.syncScrollers();
         });
-        this.dataGridInternal.addEventListener("ViewportCalculated" /* DataGrid.ViewportDataGrid.Events.ViewportCalculated */, this.redrawWaterfallColumn.bind(this));
+        this.dataGridInternal.addEventListener("ViewportCalculated" /* DataGrid.ViewportDataGrid.Events.VIEWPORT_CALCULATED */, this.redrawWaterfallColumn.bind(this));
         this.createWaterfallHeader();
         this.waterfallColumn.contentElement.classList.add('network-waterfall-view');
         this.waterfallColumn.setMinimumSize(100, 0);
@@ -591,10 +591,10 @@ export class NetworkLogViewColumns {
         waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), { checked: this.activeWaterfallSortId === waterfallSortIds.Duration, jslogContext: 'total-duration' });
         waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), { checked: this.activeWaterfallSortId === waterfallSortIds.Latency, jslogContext: 'latency' });
         function setWaterfallMode(sortId) {
-            let calculator = this.calculatorsMap.get("Time" /* CalculatorTypes.Time */);
+            let calculator = this.calculatorsMap.get("Time" /* CalculatorTypes.TIME */);
             const waterfallSortIds = WaterfallSortIds;
             if (sortId === waterfallSortIds.Duration || sortId === waterfallSortIds.Latency) {
-                calculator = this.calculatorsMap.get("Duration" /* CalculatorTypes.Duration */);
+                calculator = this.calculatorsMap.get("Duration" /* CalculatorTypes.DURATION */);
             }
             this.networkLogView.setCalculator(calculator);
             this.activeWaterfallSortId = sortId;
@@ -613,7 +613,7 @@ export class NetworkLogViewColumns {
         const manageCustomHeaders = new NetworkManageCustomHeadersView(customHeaders, headerTitle => Boolean(this.addCustomHeader(headerTitle)), this.changeCustomHeader.bind(this), this.removeCustomHeader.bind(this));
         const dialog = new UI.Dialog.Dialog('manage-custom-headers');
         manageCustomHeaders.show(dialog.contentElement);
-        dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
+        dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
         dialog.show(this.networkLogView.element);
     }
     removeCustomHeader(headerId) {
@@ -692,8 +692,8 @@ export class NetworkLogViewColumns {
         return {
             box: anchor.boxInWindow(),
             show: async (popover) => {
-                this.popupLinkifier.addEventListener("liveLocationUpdated" /* Components.Linkifier.Events.LiveLocationUpdated */, () => {
-                    popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
+                this.popupLinkifier.addEventListener("liveLocationUpdated" /* Components.Linkifier.Events.LIVE_LOCATION_UPDATED */, () => {
+                    popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
                 });
                 const content = RequestInitiatorView.createStackTracePreview(request, this.popupLinkifier, false);
                 if (!content) {
@@ -808,7 +808,7 @@ const DEFAULT_COLUMNS = [
         id: 'remote-address',
         title: i18nLazyString(UIStrings.remoteAddress),
         weight: 10,
-        align: "right" /* DataGrid.DataGrid.Align.Right */,
+        align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
         sortingFunction: NetworkRequestNode.RemoteAddressComparator,
     },
     {
@@ -841,13 +841,13 @@ const DEFAULT_COLUMNS = [
     {
         id: 'cookies',
         title: i18nLazyString(UIStrings.cookies),
-        align: "right" /* DataGrid.DataGrid.Align.Right */,
+        align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
         sortingFunction: NetworkRequestNode.RequestCookiesCountComparator,
     },
     {
         id: 'set-cookies',
         title: i18nLazyString(UIStrings.setCookies),
-        align: "right" /* DataGrid.DataGrid.Align.Right */,
+        align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
         sortingFunction: NetworkRequestNode.ResponseCookiesCountComparator,
     },
     {
@@ -855,7 +855,7 @@ const DEFAULT_COLUMNS = [
         title: i18nLazyString(UIStrings.size),
         visible: true,
         subtitle: i18nLazyString(UIStrings.content),
-        align: "right" /* DataGrid.DataGrid.Align.Right */,
+        align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
         sortingFunction: NetworkRequestNode.SizeComparator,
     },
     {
@@ -863,7 +863,7 @@ const DEFAULT_COLUMNS = [
         title: i18nLazyString(UIStrings.time),
         visible: true,
         subtitle: i18nLazyString(UIStrings.latency),
-        align: "right" /* DataGrid.DataGrid.Align.Right */,
+        align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
         sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'duration'),
     },
     { id: 'priority', title: i18nLazyString(UIStrings.priority), sortingFunction: NetworkRequestNode.PriorityComparator },
@@ -894,7 +894,7 @@ const DEFAULT_COLUMNS = [
         id: 'content-length',
         isResponseHeader: true,
         title: i18n.i18n.lockedLazyString('Content-Length'),
-        align: "right" /* DataGrid.DataGrid.Align.Right */,
+        align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
         sortingFunction: NetworkRequestNode.ResponseHeaderNumberComparator.bind(null, 'content-length'),
     },
     {
@@ -942,10 +942,12 @@ const DEFAULT_COLUMNS = [
 const FILM_STRIP_DIVIDER_COLOR = '#fccc49';
 var WaterfallSortIds;
 (function (WaterfallSortIds) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     WaterfallSortIds["StartTime"] = "startTime";
     WaterfallSortIds["ResponseTime"] = "responseReceivedTime";
     WaterfallSortIds["EndTime"] = "endTime";
     WaterfallSortIds["Duration"] = "duration";
     WaterfallSortIds["Latency"] = "latency";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(WaterfallSortIds || (WaterfallSortIds = {}));
 //# sourceMappingURL=NetworkLogViewColumns.js.map

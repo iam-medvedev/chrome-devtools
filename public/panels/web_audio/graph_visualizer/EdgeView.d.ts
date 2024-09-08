@@ -20,6 +20,6 @@ export declare const generateEdgePortIdsByData: (data: NodesConnectionData | Nod
  * Supported edge types.
  */
 export declare const enum EdgeTypes {
-    NodeToNode = "NodeToNode",
-    NodeToParam = "NodeToParam"
+    NODE_TO_NODE = "NodeToNode",
+    NODE_TO_PARAM = "NodeToParam"
 }

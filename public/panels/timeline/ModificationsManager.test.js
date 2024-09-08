@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TraceEngine from '../../models/trace/trace.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
-describe('ModificationsManager', () => {
+describeWithEnvironment('ModificationsManager', () => {
     it('applies modifications when present in a trace file', async function () {
         await TraceLoader.traceEngine(null, 'web-dev-modifications.json.gz');
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
@@ -15,8 +16,8 @@ describe('ModificationsManager', () => {
         assert.strictEqual(entriesFilter.expandableEntries().length, 1);
         assert.strictEqual(entriesFilter.invisibleEntries().length, 108);
         assert.deepEqual(modificationsManager.getTimelineBreadcrumbs().initialBreadcrumb, {
-            'window': { 'min': 1020034823047, 'max': 1020036087961, 'range': 1264914 },
-            'child': { 'window': { 'min': 1020034823047, 'max': 1020035228006.5569, 'range': 404959.5568847656 }, 'child': null },
+            window: { min: 1020034823047, max: 1020036087961, range: 1264914 },
+            child: { window: { min: 1020034823047, max: 1020035228006.5569, range: 404959.5568847656 }, child: null },
         });
         // Make sure the saved Label Annotation is applied
         const labelAnnotation = modificationsManager.getAnnotations()[0];
@@ -41,8 +42,8 @@ describe('ModificationsManager', () => {
         assert.strictEqual(modifications.entriesModifications.expandableEntries.length, 1);
         assert.strictEqual(modifications.entriesModifications.hiddenEntries.length, 108);
         assert.deepEqual(modifications.initialBreadcrumb, {
-            'window': { 'min': 1020034823047, 'max': 1020036087961, 'range': 1264914 },
-            'child': { 'window': { 'min': 1020034823047, 'max': 1020035228006.5569, 'range': 404959.5568847656 }, 'child': null },
+            window: { min: 1020034823047, max: 1020036087961, range: 1264914 },
+            child: { window: { min: 1020034823047, max: 1020035228006.5569, range: 404959.5568847656 }, child: null },
         });
         assert.deepEqual(modifications.annotations.entryLabels, [
             { entry: 'p-73704-775-2151-457', label: 'Initialize App' },

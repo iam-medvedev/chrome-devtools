@@ -161,7 +161,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.formattedMap = null;
         this.prettyToggle =
             new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.prettyPrint), 'brackets', undefined, 'pretty-print');
-        this.prettyToggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.prettyToggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             void this.setPretty(this.prettyToggle.isToggled());
         });
         this.shouldAutoPrettyPrint = false;
@@ -224,7 +224,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
     }
     editorConfiguration(doc) {
         return [
-            CodeMirror.EditorView.updateListener.of(update => this.dispatchEventToListeners("EditorUpdate" /* Events.EditorUpdate */, update)),
+            CodeMirror.EditorView.updateListener.of(update => this.dispatchEventToListeners("EditorUpdate" /* Events.EDITOR_UPDATE */, update)),
             TextEditor.Config.baseConfiguration(doc),
             TextEditor.Config.closeBrackets.instance(),
             TextEditor.Config.autocompletion.instance(),
@@ -237,7 +237,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
                 focus: () => this.onFocus(),
                 blur: () => this.onBlur(),
                 paste: () => this.onPaste(),
-                scroll: () => this.dispatchEventToListeners("EditorScroll" /* Events.EditorScroll */),
+                scroll: () => this.dispatchEventToListeners("EditorScroll" /* Events.EDITOR_SCROLL */),
                 contextmenu: event => this.onContextMenu(event),
             }),
             CodeMirror.lineNumbers({
@@ -899,7 +899,7 @@ export class SelfXssWarningDialog {
     static async show() {
         const dialog = new UI.Dialog.Dialog('self-xss-warning');
         dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
-        dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight */);
+        dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);
         const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: selfXssDialogStyles, delegatesFocus: undefined });
         const content = shadowRoot.createChild('div', 'widget');

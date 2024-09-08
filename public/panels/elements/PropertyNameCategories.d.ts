@@ -1,14 +1,14 @@
 export declare const enum Category {
-    Layout = "Layout",
-    Text = "Text",
-    Appearance = "Appearance",
-    Animation = "Animation",
-    Grid = "Grid",
-    Flex = "Flex",
-    Table = "Table",
-    CSSVariables = "CSS Variables",
-    GeneratedContent = "Generated Content",
-    Other = "Other"
+    LAYOUT = "Layout",
+    TEXT = "Text",
+    APPEARANCE = "Appearance",
+    ANIMATION = "Animation",
+    GRID = "Grid",
+    FLEX = "Flex",
+    TABLE = "Table",
+    CSS_VARIABLES = "CSS Variables",
+    GENERATED_CONTENT = "Generated Content",
+    OTHER = "Other"
 }
 export declare const DefaultCategoryOrder: Category[];
 /**

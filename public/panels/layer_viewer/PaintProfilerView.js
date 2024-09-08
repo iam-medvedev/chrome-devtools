@@ -31,8 +31,8 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import paintProfilerStyles from './paintProfiler.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import paintProfilerStyles from './paintProfiler.css.js';
 const UIStrings = {
     /**
      *@description Text to indicate the progress of a profile
@@ -101,7 +101,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         this.canvas = this.canvasContainer.createChild('canvas', 'fill');
         this.context = this.canvas.getContext('2d');
         this.selectionWindowInternal = new PerfUI.OverviewGrid.Window(this.canvasContainer);
-        this.selectionWindowInternal.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WindowChanged */, this.onWindowChanged, this);
+        this.selectionWindowInternal.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED */, this.onWindowChanged, this);
         this.innerBarWidth = 4 * window.devicePixelRatio;
         this.minBarHeight = window.devicePixelRatio;
         this.barPaddingWidth = 2 * window.devicePixelRatio;
@@ -275,7 +275,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         }
     }
     onWindowChanged() {
-        this.dispatchEventToListeners("WindowChanged" /* Events.WindowChanged */);
+        this.dispatchEventToListeners("WindowChanged" /* Events.WINDOW_CHANGED */);
         this.updatePieChart();
         if (this.updateImageTimer) {
             return;
@@ -456,8 +456,7 @@ export class LogTreeElement extends UI.TreeOutline.TreeElement {
         let keyCount = 0;
         for (const key in param) {
             const paramKey = param[key];
-            if (++keyCount > 4 || paramKey === 'object' ||
-                (paramKey === 'string' && paramKey.length > 100)) {
+            if (++keyCount > 4 || paramKey === 'object' || (paramKey === 'string' && paramKey.length > 100)) {
                 return name;
             }
             if (str) {
@@ -490,7 +489,7 @@ export class LogPropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.property = property;
     }
     static appendLogPropertyItem(element, name, value) {
-        const treeElement = new LogPropertyTreeElement({ name: name, value: value });
+        const treeElement = new LogPropertyTreeElement({ name, value });
         element.appendChild(treeElement);
         if (value && typeof value === 'object') {
             for (const property in value) {

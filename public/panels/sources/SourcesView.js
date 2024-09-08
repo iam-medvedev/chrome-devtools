@@ -68,8 +68,8 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.sourceViewByUISourceCode = new Map();
         this.editorContainer = new TabbedEditorContainer(this, Common.Settings.Settings.instance().createLocalSetting('previously-viewed-files', []), this.placeholderElement(), this.focusedPlaceholderElement);
         this.editorContainer.show(this.searchableViewInternal.element);
-        this.editorContainer.addEventListener("EditorSelected" /* TabbedEditorContainerEvents.EditorSelected */, this.editorSelected, this);
-        this.editorContainer.addEventListener("EditorClosed" /* TabbedEditorContainerEvents.EditorClosed */, this.editorClosed, this);
+        this.editorContainer.addEventListener("EditorSelected" /* TabbedEditorContainerEvents.EDITOR_SELECTED */, this.editorSelected, this);
+        this.editorContainer.addEventListener("EditorClosed" /* TabbedEditorContainerEvents.EDITOR_CLOSED */, this.editorClosed, this);
         this.historyManager = new EditingLocationHistoryManager(this);
         this.toolbarContainerElementInternal = this.element.createChild('div', 'sources-toolbar');
         this.toolbarContainerElementInternal.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
@@ -321,28 +321,28 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     }
     #sourceViewTypeForWidget(widget) {
         if (widget instanceof SourceFrame.ImageView.ImageView) {
-            return "ImageView" /* SourceViewType.ImageView */;
+            return "ImageView" /* SourceViewType.IMAGE_VIEW */;
         }
         if (widget instanceof SourceFrame.FontView.FontView) {
-            return "FontView" /* SourceViewType.FontView */;
+            return "FontView" /* SourceViewType.FONT_VIEW */;
         }
         if (widget instanceof Components.HeadersView.HeadersView) {
-            return "HeadersView" /* SourceViewType.HeadersView */;
+            return "HeadersView" /* SourceViewType.HEADERS_VIEW */;
         }
-        return "SourceView" /* SourceViewType.SourceView */;
+        return "SourceView" /* SourceViewType.SOURCE_VIEW */;
     }
     #sourceViewTypeForUISourceCode(uiSourceCode) {
         if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-            return "HeadersView" /* SourceViewType.HeadersView */;
+            return "HeadersView" /* SourceViewType.HEADERS_VIEW */;
         }
         const contentType = uiSourceCode.contentType();
         switch (contentType) {
             case Common.ResourceType.resourceTypes.Image:
-                return "ImageView" /* SourceViewType.ImageView */;
+                return "ImageView" /* SourceViewType.IMAGE_VIEW */;
             case Common.ResourceType.resourceTypes.Font:
-                return "FontView" /* SourceViewType.FontView */;
+                return "FontView" /* SourceViewType.FONT_VIEW */;
             default:
-                return "SourceView" /* SourceViewType.SourceView */;
+                return "SourceView" /* SourceViewType.SOURCE_VIEW */;
         }
     }
     #uiSourceCodeTitleChanged(event) {
@@ -392,10 +392,10 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.updateScriptViewToolbarItems();
         this.searchableViewInternal.resetSearch();
         const data = {
-            uiSourceCode: uiSourceCode,
-            wasSelected: wasSelected,
+            uiSourceCode,
+            wasSelected,
         };
-        this.dispatchEventToListeners("EditorClosed" /* Events.EditorClosed */, data);
+        this.dispatchEventToListeners("EditorClosed" /* Events.EDITOR_CLOSED */, data);
     }
     editorSelected(event) {
         const previousSourceFrame = event.data.previousView instanceof UISourceCodeFrame ? event.data.previousView : null;
@@ -412,7 +412,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.updateScriptViewToolbarItems();
         const currentFile = this.editorContainer.currentFile();
         if (currentFile) {
-            this.dispatchEventToListeners("EditorSelected" /* Events.EditorSelected */, currentFile);
+            this.dispatchEventToListeners("EditorSelected" /* Events.EDITOR_SELECTED */, currentFile);
         }
     }
     removeToolbarChangedListener() {
@@ -427,7 +427,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (!sourceFrame) {
             return;
         }
-        this.toolbarChangedListener = sourceFrame.addEventListener("ToolbarItemsChanged" /* UISourceCodeFrameEvents.ToolbarItemsChanged */, this.updateScriptViewToolbarItems, this);
+        this.toolbarChangedListener = sourceFrame.addEventListener("ToolbarItemsChanged" /* UISourceCodeFrameEvents.TOOLBAR_ITEMS_CHANGED */, this.updateScriptViewToolbarItems, this);
     }
     onSearchCanceled() {
         if (this.searchView) {

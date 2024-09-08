@@ -29,7 +29,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/models/javascript_metadata/DOMPinnedProperties.ts",
     "../../../../../../front_end/models/javascript_metadata/JavaScriptMetadata.ts",
     "../../../../../../front_end/models/javascript_metadata/NativeFunctions.js",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

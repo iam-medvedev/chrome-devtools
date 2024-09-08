@@ -16,12 +16,12 @@ export declare class ZoomManager extends Common.ObjectWrapper.ObjectWrapper<Even
     private onWindowResize;
 }
 export declare const enum Events {
-    ZoomChanged = "ZoomChanged"
+    ZOOM_CHANGED = "ZoomChanged"
 }
 export interface ZoomChangedEvent {
     from: number;
     to: number;
 }
 export type EventTypes = {
-    [Events.ZoomChanged]: ZoomChangedEvent;
+    [Events.ZOOM_CHANGED]: ZoomChangedEvent;
 };

@@ -76,7 +76,7 @@ styles.replaceSync(
 }
 
 .wrapper {
-  padding: 16px;
+  padding: var(--sys-size-6) var(--sys-size-8);
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 16px;
   /* stylelint-disable-next-line property-no-unknown */
@@ -100,7 +100,8 @@ header {
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
-  height: 14px;
+  margin-bottom: var(--sys-size-6);
+  align-items: center;
 }
 
 header:focus-visible {
@@ -111,10 +112,25 @@ header > .filler {
   flex: 1;
 }
 
+.reminder-container {
+  border-radius: var(--sys-size-5);
+  background-color: var(--sys-color-surface4);
+  padding: var(--sys-size-8);
+  font-weight: var(--ref-typeface-weight-medium);
+}
+
+.reminder-items {
+  display: grid;
+  grid-template-columns: var(--sys-size-8) auto;
+  gap: var(--sys-size-5) var(--sys-size-6);
+  margin-top: var(--sys-size-6);
+  line-height: var(--sys-size-8);
+  font-weight: var(--ref-typeface-weight-regular);
+}
+
 main {
   --override-markdown-view-message-color: var(--sys-color-on-surface);
 
-  margin: 12px 0 0;
   color: var(--sys-color-on-surface);
   font-size: 12px;
   font-style: normal;
@@ -158,6 +174,11 @@ main {
       margin-top: 0.3em;
     }
   }
+}
+
+.opt-in-teaser {
+  display: flex;
+  gap: var(--sys-size-5);
 }
 
 devtools-markdown-view {
@@ -283,9 +304,10 @@ details[open] {
 
 h2 {
   display: block;
-  font-size: inherit;
+  font-size: var(--sys-size-7);
   margin: 0;
-  font-weight: inherit;
+  font-weight: var(--ref-typeface-weight-medium);
+  line-height: var(--sys-size-9);
 }
 
 h2:focus-visible {
@@ -304,6 +326,30 @@ devtools-icon[name="spark"] {
 devtools-icon[name="dog-paw"] {
   width: 16px;
   height: 16px;
+}
+
+.badge {
+  background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
+  border-radius: var(--sys-size-3);
+  height: var(--sys-size-9);
+
+  devtools-icon {
+    margin: var(--sys-size-2);
+  }
+}
+
+.header-icon-container {
+  background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
+  border-radius: var(--sys-size-4);
+  height: 36px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button {
+  align-self: flex-start;
 }
 
 /*# sourceURL=./components/consoleInsight.css */

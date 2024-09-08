@@ -27,7 +27,7 @@ export class UnitChangedEvent extends Event {
 }
 const DefaultAngle = {
     value: 0,
-    unit: "rad" /* AngleUnit.Rad */,
+    unit: "rad" /* AngleUnit.RAD */,
 };
 export class CSSAngle extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-css-angle`;

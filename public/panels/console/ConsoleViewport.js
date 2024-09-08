@@ -308,7 +308,7 @@ export class ConsoleViewport {
         return range.collapsed;
     }
     createSelectionModel(itemIndex, node, offset) {
-        return { item: itemIndex, node: node, offset: offset };
+        return { item: itemIndex, node, offset };
     }
     updateSelectionModel(selection) {
         const range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;

@@ -199,7 +199,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         this.#resultsContainer = new UI.Widget.VBox();
         this.#elementContainer = new DetailsView();
         // If closing the last tab, collapse the sidebar.
-        this.#elementContainer.addEventListener("TabClosed" /* Events.TabClosed */, evt => {
+        this.#elementContainer.addEventListener("TabClosed" /* Events.TAB_CLOSED */, evt => {
             if (evt.data === 0) {
                 this.#mainContainer.setSidebarMinimized(true);
             }
@@ -222,10 +222,10 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         this.#sideBar.addItem(i18nString(UIStrings.unusedDeclarations), 'unused-declarations');
         this.#sideBar.addItem(i18nString(UIStrings.mediaQueries), 'media-queries');
         this.#sideBar.select('summary', false);
-        this.#sideBar.addEventListener("ItemSelected" /* SidebarEvents.ItemSelected */, this.#sideBarItemSelected, this);
-        this.#sideBar.addEventListener("Reset" /* SidebarEvents.Reset */, this.#sideBarReset, this);
-        this.#controller.addEventListener("Reset" /* CSSOverViewControllerEvents.Reset */, this.#reset, this);
-        this.#controller.addEventListener("PopulateNodes" /* CSSOverViewControllerEvents.PopulateNodes */, this.#createElementsView, this);
+        this.#sideBar.addEventListener("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, this.#sideBarItemSelected, this);
+        this.#sideBar.addEventListener("Reset" /* SidebarEvents.RESET */, this.#sideBarReset, this);
+        this.#controller.addEventListener("Reset" /* CSSOverViewControllerEvents.RESET */, this.#reset, this);
+        this.#controller.addEventListener("PopulateNodes" /* CSSOverViewControllerEvents.POPULATE_NODES */, this.#createElementsView, this);
         this.#resultsContainer.element.addEventListener('click', this.#onClick.bind(this));
         this.#data = null;
     }
@@ -258,7 +258,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         }
     }
     #sideBarReset() {
-        this.#controller.dispatchEventToListeners("Reset" /* CSSOverViewControllerEvents.Reset */);
+        this.#controller.dispatchEventToListeners("Reset" /* CSSOverViewControllerEvents.RESET */);
     }
     #reset() {
         this.#resultsContainer.element.removeChildren();
@@ -374,7 +374,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 return;
         }
         evt.consume();
-        this.#controller.dispatchEventToListeners("PopulateNodes" /* CSSOverViewControllerEvents.PopulateNodes */, { payload });
+        this.#controller.dispatchEventToListeners("PopulateNodes" /* CSSOverViewControllerEvents.POPULATE_NODES */, { payload });
         this.#mainContainer.setSidebarMinimized(false);
     }
     async #render(data) {
@@ -706,7 +706,7 @@ export class DetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.#tabbedPane = new UI.TabbedPane.TabbedPane();
         this.#tabbedPane.show(this.element);
         this.#tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, () => {
-            this.dispatchEventToListeners("TabClosed" /* Events.TabClosed */, this.#tabbedPane.tabIds().length);
+            this.dispatchEventToListeners("TabClosed" /* Events.TAB_CLOSED */, this.#tabbedPane.tabIds().length);
         });
     }
     appendTab(id, tabTitle, view, jslogContext) {
@@ -816,7 +816,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
         this.#elementGrid.element.classList.add('element-grid');
         this.#elementGrid.element.addEventListener('mouseover', this.#onMouseOver.bind(this));
         this.#elementGrid.setStriped(true);
-        this.#elementGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.#sortMediaQueryDataGrid.bind(this));
+        this.#elementGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.#sortMediaQueryDataGrid.bind(this));
         this.#elementGrid.asWidget().show(this.element);
     }
     #sortMediaQueryDataGrid() {
@@ -835,7 +835,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
             return;
         }
         const backendNodeId = Number(node.dataset.backendNodeId);
-        this.#controller.dispatchEventToListeners("RequestNodeHighlight" /* CSSOverViewControllerEvents.RequestNodeHighlight */, backendNodeId);
+        this.#controller.dispatchEventToListeners("RequestNodeHighlight" /* CSSOverViewControllerEvents.REQUEST_NODE_HIGHLIGHT */, backendNodeId);
     }
     async populateNodes(data) {
         this.#elementGrid.rootNode().removeChildren();

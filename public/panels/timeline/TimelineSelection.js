@@ -12,14 +12,14 @@ export class TimelineSelection {
         this.endTime = endTime;
         this.object = object;
     }
-    static isFrameObject(object) {
-        return object instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame;
+    static isLegacyTimelineFrame(object) {
+        return typeof object !== 'symbol' && TraceEngine.Types.TraceEvents.isLegacyTimelineFrame(object);
     }
     static fromFrame(frame) {
         return new TimelineSelection(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.startTime), TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.endTime), frame);
     }
     static isSyntheticNetworkRequestDetailsEventSelection(object) {
-        if (TimelineSelection.isFrameObject(object) || TimelineSelection.isRangeSelection(object)) {
+        if (TimelineSelection.isLegacyTimelineFrame(object) || TimelineSelection.isRangeSelection(object)) {
             return false;
         }
         // At this point we know the selection is a raw trace event, so we just
@@ -27,7 +27,7 @@ export class TimelineSelection {
         return TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(object);
     }
     static isNetworkEventSelection(object) {
-        if (TimelineSelection.isFrameObject(object) || TimelineSelection.isRangeSelection(object)) {
+        if (TimelineSelection.isLegacyTimelineFrame(object) || TimelineSelection.isRangeSelection(object)) {
             return false;
         }
         // At this point we know the selection is a raw trace event, so we just
@@ -36,7 +36,7 @@ export class TimelineSelection {
     }
     static isTraceEventSelection(object) {
         // Trace events are just raw objects, so now we have to confirm it is a trace event by ruling everything else out.
-        if (TimelineSelection.isFrameObject(object) || TimelineSelection.isRangeSelection(object)) {
+        if (TimelineSelection.isLegacyTimelineFrame(object) || TimelineSelection.isRangeSelection(object)) {
             return false;
         }
         // Although Network Requests are trace events, in TimelineSelection we

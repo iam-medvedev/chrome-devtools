@@ -2016,10 +2016,53 @@
     // Use of this source code is governed by a BSD-style license that can be
     // found in the LICENSE file.
     const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
+    const INTERNAL_KILL_SWITCH = '__chromium_devtools_kill_live_metrics';
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
     const { onLCP, onCLS, onINP } = index;
     const { onEachInteraction } = OnEachInteraction;
+    const windowListeners = [];
+    const documentListeners = [];
+    const observers = [];
+    const originalWindowAddListener = Window.prototype.addEventListener;
+    Window.prototype.addEventListener = function (...args) {
+        windowListeners.push(args);
+        return originalWindowAddListener.call(this, ...args);
+    };
+    const originalDocumentAddListener = Document.prototype.addEventListener;
+    Document.prototype.addEventListener = function (...args) {
+        documentListeners.push(args);
+        return originalDocumentAddListener.call(this, ...args);
+    };
+    class InternalPerformanceObserver extends PerformanceObserver {
+        constructor(...args) {
+            super(...args);
+            observers.push(this);
+        }
+    }
+    globalThis.PerformanceObserver = InternalPerformanceObserver;
+    let killed = false;
+    /**
+     * This is a hack solution to remove any listeners that were added by web-vitals.js
+     * or additional services in this bundle. Once this function is called, the execution
+     * context should be considered dead and a new one will need to be created for live metrics
+     * to be served again.
+     */
+    window[INTERNAL_KILL_SWITCH] = () => {
+        if (killed) {
+            return;
+        }
+        for (const observer of observers) {
+            observer.disconnect();
+        }
+        for (const args of windowListeners) {
+            window.removeEventListener(...args);
+        }
+        for (const args of documentListeners) {
+            document.removeEventListener(...args);
+        }
+        killed = true;
+    };
     function sendEventToDevTools(event) {
         const payload = JSON.stringify(event);
         window[EVENT_BINDING_NAME](payload);

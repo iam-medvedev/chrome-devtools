@@ -74,6 +74,7 @@
     "../../../../../../front_end/core/sdk/ServiceWorkerManager.test.ts",
     "../../../../../../front_end/core/sdk/SourceMap.test.ts",
     "../../../../../../front_end/core/sdk/SourceMapManager.test.ts",
+    "../../../../../../front_end/core/sdk/SourceMapScopeChainEntry.test.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopes.test.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopesInfo.test.ts",
     "../../../../../../front_end/core/sdk/StorageBucketsModel.test.ts",

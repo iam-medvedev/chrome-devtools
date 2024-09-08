@@ -19,15 +19,15 @@ describeWithEnvironment('ReplaySection', () => {
         return component;
     }
     afterEach(() => {
-        settings.speed = "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */;
+        settings.speed = "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */;
     });
     it('should change the button value when another option is selected in select menu', async () => {
         const component = await createReplaySection();
         const selectButton = component.shadowRoot?.querySelector('devtools-select-button');
-        assert.strictEqual(selectButton?.value, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */);
-        selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */));
+        assert.strictEqual(selectButton?.value, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
+        selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */));
         await coordinator.done();
-        assert.strictEqual(selectButton?.value, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */);
+        assert.strictEqual(selectButton?.value, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
     });
     it('should emit startreplayevent on selectbuttonclick event', async () => {
         const component = await createReplaySection();
@@ -35,22 +35,22 @@ describeWithEnvironment('ReplaySection', () => {
             component.addEventListener('startreplay', resolve, { once: true });
         });
         const selectButton = component.shadowRoot?.querySelector('devtools-select-button');
-        selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */));
+        selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */));
         selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectButtonClickEvent());
         const event = await onceClicked;
-        assert.deepEqual(event.speed, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */);
+        assert.deepEqual(event.speed, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
     });
     it('should save the changed button when option is selected in select menu', async () => {
         const component = await createReplaySection();
         const selectButton = component.shadowRoot?.querySelector('devtools-select-button');
-        selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */));
-        assert.strictEqual(settings.speed, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */);
+        selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */));
+        assert.strictEqual(settings.speed, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
     });
     it('should load the saved button on initial render', async () => {
-        settings.speed = "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */;
+        settings.speed = "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */;
         const component = await createReplaySection();
         const selectButton = component.shadowRoot?.querySelector('devtools-select-button');
-        assert.strictEqual(selectButton?.value, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.Slow */);
+        assert.strictEqual(selectButton?.value, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
     });
 });
 //# sourceMappingURL=ReplaySection.test.js.map

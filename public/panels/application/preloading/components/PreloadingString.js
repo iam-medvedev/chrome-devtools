@@ -27,10 +27,6 @@ const UIStrings = {
      */
     PrefetchFailedNon2XX: 'The prefetch failed because of a non-2xx HTTP response status code.',
     /**
-     *@description  Description text for Prefetch status PrefetchFailedPerPageLimitExceeded.
-     */
-    PrefetchFailedPerPageLimitExceeded: 'The prefetch was not performed because the initiating page already has too many prefetches ongoing.',
-    /**
      *@description  Description text for Prefetch status PrefetchIneligibleRetryAfter.
      */
     PrefetchIneligibleRetryAfter: 'A previous prefetch to the origin got a HTTP 503 response with an Retry-After header that has not elapsed yet.',
@@ -344,31 +340,30 @@ const str_ = i18n.i18n.registerUIStrings('panels/application/preloading/componen
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const PrefetchReasonDescription = {
-    'PrefetchFailedIneligibleRedirect': { name: i18nLazyString(UIStrings.PrefetchFailedIneligibleRedirect) },
-    'PrefetchFailedInvalidRedirect': { name: i18nLazyString(UIStrings.PrefetchFailedInvalidRedirect) },
-    'PrefetchFailedMIMENotSupported': { name: i18nLazyString(UIStrings.PrefetchFailedMIMENotSupported) },
-    'PrefetchFailedNetError': { name: i18nLazyString(UIStrings.PrefetchFailedNetError) },
-    'PrefetchFailedNon2XX': { name: i18nLazyString(UIStrings.PrefetchFailedNon2XX) },
-    'PrefetchFailedPerPageLimitExceeded': { name: i18nLazyString(UIStrings.PrefetchFailedPerPageLimitExceeded) },
-    'PrefetchIneligibleRetryAfter': { name: i18nLazyString(UIStrings.PrefetchIneligibleRetryAfter) },
-    'PrefetchIsPrivacyDecoy': { name: i18nLazyString(UIStrings.PrefetchIsPrivacyDecoy) },
-    'PrefetchIsStale': { name: i18nLazyString(UIStrings.PrefetchIsStale) },
-    'PrefetchNotEligibleBrowserContextOffTheRecord': { name: i18nLazyString(UIStrings.PrefetchNotEligibleBrowserContextOffTheRecord) },
-    'PrefetchNotEligibleDataSaverEnabled': { name: i18nLazyString(UIStrings.PrefetchNotEligibleDataSaverEnabled) },
-    'PrefetchNotEligibleExistingProxy': { name: i18nLazyString(UIStrings.PrefetchNotEligibleExistingProxy) },
-    'PrefetchNotEligibleHostIsNonUnique': { name: i18nLazyString(UIStrings.PrefetchNotEligibleHostIsNonUnique) },
-    'PrefetchNotEligibleNonDefaultStoragePartition': { name: i18nLazyString(UIStrings.PrefetchNotEligibleNonDefaultStoragePartition) },
-    'PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy': { name: i18nLazyString(UIStrings.PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy) },
-    'PrefetchNotEligibleSchemeIsNotHttps': { name: i18nLazyString(UIStrings.PrefetchNotEligibleSchemeIsNotHttps) },
-    'PrefetchNotEligibleUserHasCookies': { name: i18nLazyString(UIStrings.PrefetchNotEligibleUserHasCookies) },
-    'PrefetchNotEligibleUserHasServiceWorker': { name: i18nLazyString(UIStrings.PrefetchNotEligibleUserHasServiceWorker) },
-    'PrefetchNotUsedCookiesChanged': { name: i18nLazyString(UIStrings.PrefetchNotUsedCookiesChanged) },
-    'PrefetchProxyNotAvailable': { name: i18nLazyString(UIStrings.PrefetchProxyNotAvailable) },
-    'PrefetchNotUsedProbeFailed': { name: i18nLazyString(UIStrings.PrefetchNotUsedProbeFailed) },
-    'PrefetchEvictedForNewerPrefetch': { name: i18nLazyString(UIStrings.PrefetchEvictedForNewerPrefetch) },
-    'PrefetchEvictedAfterCandidateRemoved': { name: i18nLazyString(UIStrings.PrefetchEvictedAfterCandidateRemoved) },
-    'PrefetchNotEligibleBatterySaverEnabled': { name: i18nLazyString(UIStrings.PrefetchNotEligibleBatterySaverEnabled) },
-    'PrefetchNotEligiblePreloadingDisabled': { name: i18nLazyString(UIStrings.PrefetchNotEligiblePreloadingDisabled) },
+    PrefetchFailedIneligibleRedirect: { name: i18nLazyString(UIStrings.PrefetchFailedIneligibleRedirect) },
+    PrefetchFailedInvalidRedirect: { name: i18nLazyString(UIStrings.PrefetchFailedInvalidRedirect) },
+    PrefetchFailedMIMENotSupported: { name: i18nLazyString(UIStrings.PrefetchFailedMIMENotSupported) },
+    PrefetchFailedNetError: { name: i18nLazyString(UIStrings.PrefetchFailedNetError) },
+    PrefetchFailedNon2XX: { name: i18nLazyString(UIStrings.PrefetchFailedNon2XX) },
+    PrefetchIneligibleRetryAfter: { name: i18nLazyString(UIStrings.PrefetchIneligibleRetryAfter) },
+    PrefetchIsPrivacyDecoy: { name: i18nLazyString(UIStrings.PrefetchIsPrivacyDecoy) },
+    PrefetchIsStale: { name: i18nLazyString(UIStrings.PrefetchIsStale) },
+    PrefetchNotEligibleBrowserContextOffTheRecord: { name: i18nLazyString(UIStrings.PrefetchNotEligibleBrowserContextOffTheRecord) },
+    PrefetchNotEligibleDataSaverEnabled: { name: i18nLazyString(UIStrings.PrefetchNotEligibleDataSaverEnabled) },
+    PrefetchNotEligibleExistingProxy: { name: i18nLazyString(UIStrings.PrefetchNotEligibleExistingProxy) },
+    PrefetchNotEligibleHostIsNonUnique: { name: i18nLazyString(UIStrings.PrefetchNotEligibleHostIsNonUnique) },
+    PrefetchNotEligibleNonDefaultStoragePartition: { name: i18nLazyString(UIStrings.PrefetchNotEligibleNonDefaultStoragePartition) },
+    PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy: { name: i18nLazyString(UIStrings.PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy) },
+    PrefetchNotEligibleSchemeIsNotHttps: { name: i18nLazyString(UIStrings.PrefetchNotEligibleSchemeIsNotHttps) },
+    PrefetchNotEligibleUserHasCookies: { name: i18nLazyString(UIStrings.PrefetchNotEligibleUserHasCookies) },
+    PrefetchNotEligibleUserHasServiceWorker: { name: i18nLazyString(UIStrings.PrefetchNotEligibleUserHasServiceWorker) },
+    PrefetchNotUsedCookiesChanged: { name: i18nLazyString(UIStrings.PrefetchNotUsedCookiesChanged) },
+    PrefetchProxyNotAvailable: { name: i18nLazyString(UIStrings.PrefetchProxyNotAvailable) },
+    PrefetchNotUsedProbeFailed: { name: i18nLazyString(UIStrings.PrefetchNotUsedProbeFailed) },
+    PrefetchEvictedForNewerPrefetch: { name: i18nLazyString(UIStrings.PrefetchEvictedForNewerPrefetch) },
+    PrefetchEvictedAfterCandidateRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterCandidateRemoved) },
+    PrefetchNotEligibleBatterySaverEnabled: { name: i18nLazyString(UIStrings.PrefetchNotEligibleBatterySaverEnabled) },
+    PrefetchNotEligiblePreloadingDisabled: { name: i18nLazyString(UIStrings.PrefetchNotEligiblePreloadingDisabled) },
 };
 // Decoding PrefetchFinalStatus prefetchAttempt to failure description.
 export function prefetchFailureReason({ prefetchStatus }) {
@@ -404,8 +399,6 @@ export function prefetchFailureReason({ prefetchStatus }) {
             return PrefetchReasonDescription['PrefetchFailedNetError'].name();
         case "PrefetchFailedNon2XX" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNon2XX */:
             return PrefetchReasonDescription['PrefetchFailedNon2XX'].name();
-        case "PrefetchFailedPerPageLimitExceeded" /* Protocol.Preload.PrefetchStatus.PrefetchFailedPerPageLimitExceeded */:
-            return PrefetchReasonDescription['PrefetchFailedPerPageLimitExceeded'].name();
         case "PrefetchIneligibleRetryAfter" /* Protocol.Preload.PrefetchStatus.PrefetchIneligibleRetryAfter */:
             return PrefetchReasonDescription['PrefetchIneligibleRetryAfter'].name();
         case "PrefetchEvictedForNewerPrefetch" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedForNewerPrefetch */:

@@ -32,9 +32,9 @@ export declare class Filters extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     private static readonly durationFilterPresetsMs;
 }
 declare const enum Events {
-    FilterChanged = "FilterChanged"
+    FILTER_CHANGED = "FilterChanged"
 }
 type EventTypes = {
-    [Events.FilterChanged]: void;
+    [Events.FILTER_CHANGED]: void;
 };
 export {};

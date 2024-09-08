@@ -194,8 +194,8 @@ export class EmulatedDevice {
                 throw new Error('Emulated device \'' + result.title + '\'has dual screen without spanned orientations');
             }
             const modes = parseValue(json, 'modes', 'object', [
-                { 'title': 'default', 'orientation': 'vertical' },
-                { 'title': 'default', 'orientation': 'horizontal' },
+                { title: 'default', orientation: 'vertical' },
+                { title: 'default', orientation: 'horizontal' },
             ]);
             if (!Array.isArray(modes)) {
                 throw new Error('Emulated device modes must be an array');
@@ -295,13 +295,13 @@ export class EmulatedDevice {
         json['modes'] = [];
         for (let i = 0; i < this.modes.length; ++i) {
             const mode = {
-                'title': this.modes[i].title,
-                'orientation': this.modes[i].orientation,
-                'insets': {
-                    'left': this.modes[i].insets.left,
-                    'top': this.modes[i].insets.top,
-                    'right': this.modes[i].insets.right,
-                    'bottom': this.modes[i].insets.bottom,
+                title: this.modes[i].title,
+                orientation: this.modes[i].orientation,
+                insets: {
+                    left: this.modes[i].insets.left,
+                    top: this.modes[i].insets.top,
+                    right: this.modes[i].insets.right,
+                    bottom: this.modes[i].insets.bottom,
                 },
                 image: this.modes[i].image || undefined,
             };
@@ -323,37 +323,37 @@ export class EmulatedDevice {
         if (orientation.outlineInsets) {
             json.outline = {
                 insets: {
-                    'left': orientation.outlineInsets.left,
-                    'top': orientation.outlineInsets.top,
-                    'right': orientation.outlineInsets.right,
-                    'bottom': orientation.outlineInsets.bottom,
+                    left: orientation.outlineInsets.left,
+                    top: orientation.outlineInsets.top,
+                    right: orientation.outlineInsets.right,
+                    bottom: orientation.outlineInsets.bottom,
                 },
                 image: orientation.outlineImage,
             };
         }
         if (orientation.hinge) {
             json.hinge = {
-                'width': orientation.hinge.width,
-                'height': orientation.hinge.height,
-                'x': orientation.hinge.x,
-                'y': orientation.hinge.y,
+                width: orientation.hinge.width,
+                height: orientation.hinge.height,
+                x: orientation.hinge.x,
+                y: orientation.hinge.y,
                 contentColor: undefined,
                 outlineColor: undefined,
             };
             if (orientation.hinge.contentColor) {
                 json.hinge.contentColor = {
-                    'r': orientation.hinge.contentColor.r,
-                    'g': orientation.hinge.contentColor.g,
-                    'b': orientation.hinge.contentColor.b,
-                    'a': orientation.hinge.contentColor.a,
+                    r: orientation.hinge.contentColor.r,
+                    g: orientation.hinge.contentColor.g,
+                    b: orientation.hinge.contentColor.b,
+                    a: orientation.hinge.contentColor.a,
                 };
             }
             if (orientation.hinge.outlineColor) {
                 json.hinge.outlineColor = {
-                    'r': orientation.hinge.outlineColor.r,
-                    'g': orientation.hinge.outlineColor.g,
-                    'b': orientation.hinge.outlineColor.b,
-                    'a': orientation.hinge.outlineColor.a,
+                    r: orientation.hinge.outlineColor.r,
+                    g: orientation.hinge.outlineColor.g,
+                    b: orientation.hinge.outlineColor.b,
+                    a: orientation.hinge.outlineColor.a,
                 };
             }
         }
@@ -523,6 +523,8 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
+// These props should quoted for the script to work properly
+/* eslint-disable quote-props */
 const emulatedDevices = [
     // This is used by a python script to keep this list up-to-date with
     // chromedriver native code.
@@ -1698,4 +1700,5 @@ const emulatedDevices = [
     },
     // DEVICE-LIST-END
 ];
+/* eslint-enable quote-props */
 //# sourceMappingURL=EmulatedDevices.js.map

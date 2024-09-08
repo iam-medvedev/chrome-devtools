@@ -76,7 +76,7 @@ export class Model extends EventTarget {
         // progress (if they have any updates).
         const onTraceUpdate = (event) => {
             const { data } = event;
-            this.dispatchEvent(new ModelUpdateEvent({ type: "PROGRESS_UPDATE" /* ModelUpdateType.PROGRESS_UPDATE */, data: data }));
+            this.dispatchEvent(new ModelUpdateEvent({ type: "PROGRESS_UPDATE" /* ModelUpdateType.PROGRESS_UPDATE */, data }));
         };
         this.#processor.addEventListener(TraceParseProgressEvent.eventName, onTraceUpdate);
         // Create a parsed trace file.  It will be populated with data from the processor.

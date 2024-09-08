@@ -215,7 +215,8 @@ export class TimelineFrameModel {
             (frame.startTime !== lastFrame.endTime || frame.startTime > frame.endTime)) {
             console.assert(false, `Inconsistent frame time for frame ${this.#frames.length} (${frame.startTime} - ${frame.endTime})`);
         }
-        this.#frames.push(frame);
+        const newFramesLength = this.#frames.push(frame);
+        frame.setIndex(newFramesLength - 1);
         if (typeof frame.mainFrameId === 'number') {
             this.#frameById[frame.mainFrameId] = frame;
         }
@@ -322,6 +323,17 @@ const MAIN_FRAME_MARKERS = new Set([
     "ScrollLayer" /* Types.TraceEvents.KnownEventName.SCROLL_LAYER */,
 ]);
 export class TimelineFrame {
+    // These fields exist to satisfy the base TraceEventData type which all
+    // "trace events" must implement. They aren't used, but doing this means we
+    // can pass `TimelineFrame` instances into places that expect
+    // Types.TraceEvents.TraceEventData.
+    cat = 'devtools.legacy_frame';
+    name = 'frame';
+    ph = "X" /* Types.TraceEvents.Phase.COMPLETE */;
+    ts;
+    pid = Types.TraceEvents.ProcessID(-1);
+    tid = Types.TraceEvents.ThreadID(-1);
+    index = -1;
     startTime;
     startTimeOffset;
     endTime;
@@ -336,6 +348,7 @@ export class TimelineFrame {
     constructor(seqId, startTime, startTimeOffset) {
         this.seqId = seqId;
         this.startTime = startTime;
+        this.ts = startTime;
         this.startTimeOffset = startTimeOffset;
         this.endTime = this.startTime;
         this.duration = Types.Timing.MicroSeconds(0);
@@ -345,6 +358,9 @@ export class TimelineFrame {
         this.layerTree = null;
         this.paints = [];
         this.mainFrameId = undefined;
+    }
+    setIndex(i) {
+        this.index = i;
     }
     setEndTime(endTime) {
         this.endTime = endTime;
@@ -370,7 +386,7 @@ export class LayerPaintEvent {
     picture() {
         const rect = this.#snapshot.args.snapshot.params?.layer_rect;
         const pictureData = this.#snapshot.args.snapshot.skp64;
-        return rect && pictureData ? { rect: rect, serializedPicture: pictureData } : null;
+        return rect && pictureData ? { rect, serializedPicture: pictureData } : null;
     }
 }
 export class PendingFrame {

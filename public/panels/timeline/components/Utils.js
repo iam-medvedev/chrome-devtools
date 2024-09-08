@@ -1,20 +1,23 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 export var NetworkCategory;
 (function (NetworkCategory) {
-    NetworkCategory["Doc"] = "Doc";
+    NetworkCategory["DOC"] = "Doc";
     NetworkCategory["CSS"] = "CSS";
     NetworkCategory["JS"] = "JS";
-    NetworkCategory["Font"] = "Font";
-    NetworkCategory["Img"] = "Img";
-    NetworkCategory["Media"] = "Media";
-    NetworkCategory["Wasm"] = "Wasm";
-    NetworkCategory["Other"] = "Other";
+    NetworkCategory["FONT"] = "Font";
+    NetworkCategory["IMG"] = "Img";
+    NetworkCategory["MEDIA"] = "Media";
+    NetworkCategory["WASM"] = "Wasm";
+    NetworkCategory["OTHER"] = "Other";
 })(NetworkCategory || (NetworkCategory = {}));
 function syntheticNetworkRequestCategory(request) {
     switch (request.args.data.mimeType) {
         case 'text/html':
-            return NetworkCategory.Doc;
+            return NetworkCategory.DOC;
         case 'application/javascript':
         case 'application/x-javascript':
         case 'text/javascript':
@@ -27,7 +30,7 @@ function syntheticNetworkRequestCategory(request) {
         case 'image/svg+xml':
         case 'image/webp':
         case 'image/x-icon':
-            return NetworkCategory.Img;
+            return NetworkCategory.IMG;
         case 'audio/aac':
         case 'audio/midi':
         case 'audio/x-midi':
@@ -35,22 +38,22 @@ function syntheticNetworkRequestCategory(request) {
         case 'audio/ogg':
         case 'audio/wav':
         case 'audio/webm':
-            return NetworkCategory.Media;
+            return NetworkCategory.MEDIA;
         case 'font/opentype':
         case 'font/woff2':
         case 'font/ttf':
         case 'application/font-woff':
-            return NetworkCategory.Font;
+            return NetworkCategory.FONT;
         case 'application/wasm':
-            return NetworkCategory.Wasm;
+            return NetworkCategory.WASM;
         default:
-            return NetworkCategory.Other;
+            return NetworkCategory.OTHER;
     }
 }
 export function colorForNetworkCategory(category) {
     let cssVarName = '--app-color-system';
     switch (category) {
-        case NetworkCategory.Doc:
+        case NetworkCategory.DOC:
             cssVarName = '--app-color-doc';
             break;
         case NetworkCategory.JS:
@@ -59,19 +62,19 @@ export function colorForNetworkCategory(category) {
         case NetworkCategory.CSS:
             cssVarName = '--app-color-css';
             break;
-        case NetworkCategory.Img:
+        case NetworkCategory.IMG:
             cssVarName = '--app-color-image';
             break;
-        case NetworkCategory.Media:
+        case NetworkCategory.MEDIA:
             cssVarName = '--app-color-media';
             break;
-        case NetworkCategory.Font:
+        case NetworkCategory.FONT:
             cssVarName = '--app-color-font';
             break;
-        case NetworkCategory.Wasm:
+        case NetworkCategory.WASM:
             cssVarName = '--app-color-wasm';
             break;
-        case NetworkCategory.Other:
+        case NetworkCategory.OTHER:
         default:
             cssVarName = '--app-color-system';
             break;

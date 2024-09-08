@@ -132,11 +132,11 @@ export class ProfileFlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget
         this.mainPane.setTextBaseline(4);
         this.mainPane.setTextPadding(2);
         this.mainPane.show(this.element);
-        this.mainPane.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.EntrySelected */, this.onEntrySelected, this);
-        this.mainPane.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, this.onEntryInvoked, this);
+        this.mainPane.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.ENTRY_SELECTED */, this.onEntrySelected, this);
+        this.mainPane.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.ENTRY_INVOKED */, this.onEntryInvoked, this);
         this.entrySelected = false;
-        this.mainPane.addEventListener("CanvasFocused" /* PerfUI.FlameChart.Events.CanvasFocused */, this.onEntrySelected, this);
-        this.overviewPane.addEventListener("WindowChanged" /* OverviewPaneEvents.WindowChanged */, this.onWindowChanged, this);
+        this.mainPane.addEventListener("CanvasFocused" /* PerfUI.FlameChart.Events.CANVAS_FOCUSED */, this.onEntrySelected, this);
+        this.overviewPane.addEventListener("WindowChanged" /* OverviewPaneEvents.WINDOW_CHANGED */, this.onWindowChanged, this);
         this.dataProvider = dataProvider;
         this.searchResults = [];
     }
@@ -168,7 +168,7 @@ export class ProfileFlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget
     }
     onEntryInvoked(event) {
         this.onEntrySelected(event);
-        this.dispatchEventToListeners("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, event.data);
+        this.dispatchEventToListeners("EntryInvoked" /* PerfUI.FlameChart.Events.ENTRY_INVOKED */, event.data);
     }
     update() {
         this.overviewPane.update();
@@ -272,7 +272,7 @@ export class OverviewPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
             this.overviewContainer.createChild('canvas', 'cpu-profile-flame-chart-overview-canvas');
         this.overviewContainer.appendChild(this.overviewGrid.element);
         this.dataProvider = dataProvider;
-        this.overviewGrid.addEventListener("WindowChangedWithPosition" /* PerfUI.OverviewGrid.Events.WindowChangedWithPosition */, this.onWindowChanged, this);
+        this.overviewGrid.addEventListener("WindowChangedWithPosition" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED_WITH_POSITION */, this.onWindowChanged, this);
     }
     windowChanged(windowStartTime, windowEndTime) {
         this.selectRange(windowStartTime, windowEndTime);
@@ -290,7 +290,7 @@ export class OverviewPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         const windowPosition = { windowTimeLeft: event.data.rawStartValue, windowTimeRight: event.data.rawEndValue };
         this.windowTimeLeft = windowPosition.windowTimeLeft;
         this.windowTimeRight = windowPosition.windowTimeRight;
-        this.dispatchEventToListeners("WindowChanged" /* OverviewPaneEvents.WindowChanged */, windowPosition);
+        this.dispatchEventToListeners("WindowChanged" /* OverviewPaneEvents.WINDOW_CHANGED */, windowPosition);
     }
     timelineData() {
         return this.dataProvider.timelineData();

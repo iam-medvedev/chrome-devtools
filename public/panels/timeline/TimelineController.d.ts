@@ -8,7 +8,7 @@ export declare class TimelineController implements TraceEngine.TracingManager.Tr
     readonly rootTarget: SDK.Target.Target;
     private tracingManager;
     private readonly client;
-    private tracingCompleteCallback?;
+    private tracingCompletePromise;
     /**
      * We always need to profile against the DevTools root target, which is
      * the target that DevTools is attached to.

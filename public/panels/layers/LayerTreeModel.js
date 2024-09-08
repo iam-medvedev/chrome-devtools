@@ -122,8 +122,10 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
 SDK.SDKModel.SDKModel.register(LayerTreeModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["LayerTreeChanged"] = "LayerTreeChanged";
     Events["LayerPainted"] = "LayerPainted";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class AgentLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     layerTreeModel;
@@ -312,7 +314,7 @@ export class AgentLayer {
             if (!snapshot) {
                 return null;
             }
-            return { rect: { x: 0, y: 0, width: this.width(), height: this.height() }, snapshot: snapshot };
+            return { rect: { x: 0, y: 0, width: this.width(), height: this.height() }, snapshot };
         });
         return [promise];
     }

@@ -248,7 +248,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         if (TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selectionObject)) {
             const networkRequest = selectionObject;
             const maybeTarget = targetForEvent(this.#traceEngineData, networkRequest);
-            await this.#networkRequestDetails.setData(networkRequest, maybeTarget);
+            await this.#networkRequestDetails.setData(this.#traceEngineData, networkRequest, maybeTarget);
             this.setContent(this.#networkRequestDetails);
         }
         else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
@@ -256,7 +256,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#traceEngineData, event, this.detailsLinkifier, true);
             this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
         }
-        else if (TimelineSelection.isFrameObject(selectionObject)) {
+        else if (TimelineSelection.isLegacyTimelineFrame(selectionObject)) {
             const frame = selectionObject;
             const matchedFilmStripFrame = this.#getFilmStripFrame(frame);
             this.setContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
@@ -373,6 +373,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
 }
 export var Tab;
 (function (Tab) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Tab["Details"] = "details";
     Tab["EventLog"] = "event-log";
     Tab["CallTree"] = "call-tree";
@@ -380,5 +381,6 @@ export var Tab;
     Tab["PaintProfiler"] = "paint-profiler";
     Tab["LayerViewer"] = "layer-viewer";
     Tab["SelectorStats"] = "selector-stats";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Tab || (Tab = {}));
 //# sourceMappingURL=TimelineDetailsView.js.map

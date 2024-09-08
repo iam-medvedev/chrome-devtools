@@ -2,9 +2,9 @@ import * as IssuesManager from '../../../models/issues_manager/issues_manager.js
 import type * as IconButton from '../icon_button/icon_button.js';
 export declare function getIssueKindIconData(issueKind: IssuesManager.Issue.IssueKind): IconButton.Icon.IconWithName;
 export declare const enum DisplayMode {
-    OmitEmpty = "OmitEmpty",
-    ShowAlways = "ShowAlways",
-    OnlyMostImportant = "OnlyMostImportant"
+    OMIT_EMPTY = "OmitEmpty",
+    SHOW_ALWAYS = "ShowAlways",
+    ONLY_MOST_IMPORTANT = "OnlyMostImportant"
 }
 export interface IssueCounterData {
     clickHandler?: () => void;

@@ -52,7 +52,7 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
     }
     onComputedStyleChanged(event) {
         delete this.computedStylePromise;
-        this.dispatchEventToListeners("ComputedStyleChanged" /* Events.ComputedStyleChanged */, event?.data ?? null);
+        this.dispatchEventToListeners("ComputedStyleChanged" /* Events.COMPUTED_STYLE_CHANGED */, event?.data ?? null);
     }
     onDOMModelChanged(event) {
         // Any attribute removal or modification can affect the styles of "related" nodes.

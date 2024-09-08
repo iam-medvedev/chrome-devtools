@@ -945,7 +945,8 @@ export declare namespace Audits {
         NoRegisterSourceHeader = "NoRegisterSourceHeader",
         NoRegisterTriggerHeader = "NoRegisterTriggerHeader",
         NoRegisterOsSourceHeader = "NoRegisterOsSourceHeader",
-        NoRegisterOsTriggerHeader = "NoRegisterOsTriggerHeader"
+        NoRegisterOsTriggerHeader = "NoRegisterOsTriggerHeader",
+        NavigationRegistrationUniqueScopeAlreadySet = "NavigationRegistrationUniqueScopeAlreadySet"
     }
     const enum SharedDictionaryError {
         UseErrorCrossOriginNoCorsRequest = "UseErrorCrossOriginNoCorsRequest",
@@ -3508,7 +3509,13 @@ export declare namespace DOM {
         ViewTransitionGroup = "view-transition-group",
         ViewTransitionImagePair = "view-transition-image-pair",
         ViewTransitionOld = "view-transition-old",
-        ViewTransitionNew = "view-transition-new"
+        ViewTransitionNew = "view-transition-new",
+        Placeholder = "placeholder",
+        FileSelectorButton = "file-selector-button",
+        DetailsContent = "details-content",
+        SelectFallbackButton = "select-fallback-button",
+        SelectFallbackButtonText = "select-fallback-button-text",
+        Picker = "picker"
     }
     /**
      * Shadow root type.
@@ -3677,6 +3684,7 @@ export declare namespace DOM {
         isSVG?: boolean;
         compatibilityMode?: CompatibilityMode;
         assignedSlot?: BackendNode;
+        isScrollable?: boolean;
     }
     /**
      * A structure to hold the top-level node of a detached tree and an array of its retained descendants.
@@ -4585,6 +4593,19 @@ export declare namespace DOM {
          * The added pseudo element.
          */
         pseudoElement: Node;
+    }
+    /**
+     * Fired when a node's scrollability state changes.
+     */
+    interface ScrollableFlagUpdatedEvent {
+        /**
+         * The id of the node.
+         */
+        nodeId: DOM.NodeId;
+        /**
+         * If the node is scrollable.
+         */
+        isScrollable: boolean;
     }
     /**
      * Called when a pseudo element is removed from an element.
@@ -7374,10 +7395,30 @@ export declare namespace Memory {
          */
         size: number;
     }
+    /**
+     * DOM object counter data.
+     */
+    interface DOMCounter {
+        /**
+         * Object name. Note: object names should be presumed volatile and clients should not expect
+         * the returned names to be consistent across runs.
+         */
+        name: string;
+        /**
+         * Object count.
+         */
+        count: integer;
+    }
     interface GetDOMCountersResponse extends ProtocolResponseWithError {
         documents: integer;
         nodes: integer;
         jsEventListeners: integer;
+    }
+    interface GetDOMCountersForLeakDetectionResponse extends ProtocolResponseWithError {
+        /**
+         * DOM object counters.
+         */
+        counters: DOMCounter[];
     }
     interface SetPressureNotificationsSuppressedRequest {
         /**
@@ -8326,6 +8367,7 @@ export declare namespace Network {
         UserSetting = "UserSetting",
         TPCDMetadata = "TPCDMetadata",
         TPCDDeprecationTrial = "TPCDDeprecationTrial",
+        TopLevelTPCDDeprecationTrial = "TopLevelTPCDDeprecationTrial",
         TPCDHeuristics = "TPCDHeuristics",
         EnterprisePolicy = "EnterprisePolicy",
         StorageAccess = "StorageAccess",
@@ -10704,6 +10746,7 @@ export declare namespace Page {
         ClipboardRead = "clipboard-read",
         ClipboardWrite = "clipboard-write",
         ComputePressure = "compute-pressure",
+        ControlledFrame = "controlled-frame",
         CrossOriginIsolated = "cross-origin-isolated",
         DeferredFetch = "deferred-fetch",
         DigitalCredentialsGet = "digital-credentials-get",
@@ -12361,6 +12404,16 @@ export declare namespace Page {
         reason: FrameDetachedEventReason;
     }
     /**
+     * Fired before frame subtree is detached. Emitted before any frame of the
+     * subtree is actually detached.
+     */
+    interface FrameSubtreeWillBeDetachedEvent {
+        /**
+         * Id of the frame that is the root of the subtree that will be detached.
+         */
+        frameId: FrameId;
+    }
+    /**
      * Fired once navigation of the frame has completed. Frame is now associated with the new loader.
      */
     interface FrameNavigatedEvent {
@@ -13492,6 +13545,15 @@ export declare namespace Storage {
         debugData: AttributionReportingAggregatableDebugReportingData[];
         aggregationCoordinatorOrigin?: string;
     }
+    interface AttributionScopesData {
+        values: string[];
+        /**
+         * number instead of integer because not all uint32 can be represented by
+         * int
+         */
+        limit: number;
+        maxEventStates: number;
+    }
     interface AttributionReportingSourceRegistration {
         time: Network.TimeSinceEpoch;
         /**
@@ -13515,6 +13577,7 @@ export declare namespace Storage {
         triggerDataMatching: AttributionReportingTriggerDataMatching;
         destinationLimitPriority: SignedInt64AsBase10;
         aggregatableDebugReportingConfig: AttributionReportingAggregatableDebugReportingConfig;
+        scopesData?: AttributionScopesData;
     }
     const enum AttributionReportingSourceRegistrationResult {
         Success = "success",
@@ -13529,7 +13592,9 @@ export declare namespace Storage {
         DestinationBothLimitsReached = "destinationBothLimitsReached",
         ReportingOriginsPerSiteLimitReached = "reportingOriginsPerSiteLimitReached",
         ExceedsMaxChannelCapacity = "exceedsMaxChannelCapacity",
+        ExceedsMaxScopesChannelCapacity = "exceedsMaxScopesChannelCapacity",
         ExceedsMaxTriggerStateCardinality = "exceedsMaxTriggerStateCardinality",
+        ExceedsMaxEventStatesLimit = "exceedsMaxEventStatesLimit",
         DestinationPerDayReportingLimitReached = "destinationPerDayReportingLimitReached"
     }
     const enum AttributionReportingSourceRegistrationTimeConfig {
@@ -13577,6 +13642,7 @@ export declare namespace Storage {
         sourceRegistrationTimeConfig: AttributionReportingSourceRegistrationTimeConfig;
         triggerContextId?: string;
         aggregatableDebugReportingConfig: AttributionReportingAggregatableDebugReportingConfig;
+        scopes: string[];
     }
     const enum AttributionReportingEventLevelResult {
         Success = "success",
@@ -15967,7 +16033,6 @@ export declare namespace Preload {
         PrefetchFailedMIMENotSupported = "PrefetchFailedMIMENotSupported",
         PrefetchFailedNetError = "PrefetchFailedNetError",
         PrefetchFailedNon2XX = "PrefetchFailedNon2XX",
-        PrefetchFailedPerPageLimitExceeded = "PrefetchFailedPerPageLimitExceeded",
         PrefetchEvictedAfterCandidateRemoved = "PrefetchEvictedAfterCandidateRemoved",
         PrefetchEvictedForNewerPrefetch = "PrefetchEvictedForNewerPrefetch",
         PrefetchHeldback = "PrefetchHeldback",

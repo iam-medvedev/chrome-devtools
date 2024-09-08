@@ -118,7 +118,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         }));
         const expandToolbar = new UI.Toolbar.Toolbar('expand', contrastValueRowContents);
         this.expandButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.showMore), 'chevron-down');
-        this.expandButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.expandButtonClicked.bind(this));
+        this.expandButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.expandButtonClicked.bind(this));
         UI.ARIAUtils.setExpanded(this.expandButton.element, false);
         expandToolbar.appendToolbarItem(this.expandButton);
         this.expandedDetails = this.elementInternal.createChild('div', 'expanded-details');
@@ -135,11 +135,11 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         const bgColorContainer = this.expandedDetails.createChild('div', 'background-color');
         const pickerToolbar = new UI.Toolbar.Toolbar('spectrum-eye-dropper', bgColorContainer);
         this.bgColorPickerButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleBackgroundColorPicker), 'color-picker', 'color-picker-filled');
-        this.bgColorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.toggleBackgroundColorPickerInternal.bind(this, undefined, true));
+        this.bgColorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.toggleBackgroundColorPickerInternal.bind(this, undefined, true));
         pickerToolbar.appendToolbarItem(this.bgColorPickerButton);
         this.bgColorPickedBound = this.bgColorPicked.bind(this);
         this.bgColorSwatch = new Swatch(bgColorContainer);
-        this.contrastInfo.addEventListener("ContrastInfoUpdated" /* ContrastInfoEvents.ContrastInfoUpdated */, this.update.bind(this));
+        this.contrastInfo.addEventListener("ContrastInfoUpdated" /* ContrastInfoEvents.CONTRAST_INFO_UPDATED */, this.update.bind(this));
     }
     showNoContrastInfoAvailableMessage() {
         this.noContrastInfoAvailable.classList.remove('hidden');
@@ -376,7 +376,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
             enabled = this.bgColorPickerButton.isToggled();
         }
         if (shouldTriggerEvent) {
-            this.dispatchEventToListeners("BackgroundColorPickerWillBeToggled" /* Events.BackgroundColorPickerWillBeToggled */, enabled);
+            this.dispatchEventToListeners("BackgroundColorPickerWillBeToggled" /* Events.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, enabled);
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.setEyeDropperActive(enabled);
         if (enabled) {

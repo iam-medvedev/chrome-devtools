@@ -31,6 +31,7 @@ export class DOMNode {
     #frameOwnerFrameIdInternal;
     #xmlVersion;
     #isSVGNodeInternal;
+    #isScrollableInternal;
     #creationStackTraceInternal;
     #pseudoElements;
     #distributedNodesInternal;
@@ -96,6 +97,7 @@ export class DOMNode {
         this.#frameOwnerFrameIdInternal = payload.frameId || null;
         this.#xmlVersion = payload.xmlVersion;
         this.#isSVGNodeInternal = Boolean(payload.isSVG);
+        this.#isScrollableInternal = Boolean(payload.isScrollable);
         if (payload.attributes) {
             this.setAttributesPayload(payload.attributes);
         }
@@ -178,6 +180,9 @@ export class DOMNode {
     isSVGNode() {
         return this.#isSVGNodeInternal;
     }
+    isScrollable() {
+        return this.#isScrollableInternal;
+    }
     isMediaNode() {
         return this.#nodeNameInternal === 'AUDIO' || this.#nodeNameInternal === 'VIDEO';
     }
@@ -215,6 +220,9 @@ export class DOMNode {
     }
     setChildren(children) {
         this.childrenInternal = children;
+    }
+    setIsScrollable(isScrollable) {
+        this.#isScrollableInternal = isScrollable;
     }
     hasAttributes() {
         return this.#attributesInternal.size > 0;
@@ -409,6 +417,11 @@ export class DOMNode {
         this.#attributesInternal.delete(name);
         this.#domModelInternal.markUndoableState();
     }
+    getChildNodesPromise() {
+        return new Promise(resolve => {
+            return this.getChildNodes(childNodes => resolve(childNodes));
+        });
+    }
     getChildNodes(callback) {
         if (this.childrenInternal) {
             callback(this.children());
@@ -419,7 +432,7 @@ export class DOMNode {
         });
     }
     async getSubtree(depth, pierce) {
-        const response = await this.#agent.invoke_requestChildNodes({ nodeId: this.id, depth: depth, pierce: pierce });
+        const response = await this.#agent.invoke_requestChildNodes({ nodeId: this.id, depth, pierce });
         return response.getError() ? null : this.childrenInternal;
     }
     async getOuterHTML() {
@@ -631,7 +644,7 @@ export class DOMNode {
         }
     }
     addAttribute(name, value) {
-        const attr = { name: name, value: value, _node: this };
+        const attr = { name, value, _node: this };
         this.#attributesInternal.set(name, attr);
     }
     setAttributeInternal(name, value) {
@@ -1056,7 +1069,7 @@ export class DOMModel extends SDKModel {
             return;
         }
         node.setAttributeInternal(name, value);
-        this.dispatchEventToListeners(Events.AttrModified, { node: node, name: name });
+        this.dispatchEventToListeners(Events.AttrModified, { node, name });
         this.scheduleMutationEvent(node);
     }
     attributeRemoved(nodeId, name) {
@@ -1065,7 +1078,7 @@ export class DOMModel extends SDKModel {
             return;
         }
         node.removeAttributeInternal(name);
-        this.dispatchEventToListeners(Events.AttrRemoved, { node: node, name: name });
+        this.dispatchEventToListeners(Events.AttrRemoved, { node, name });
         this.scheduleMutationEvent(node);
     }
     inlineStyleInvalidated(nodeIds) {
@@ -1087,7 +1100,7 @@ export class DOMModel extends SDKModel {
                     return;
                 }
                 if (node.setAttributesPayload(attributes)) {
-                    this.dispatchEventToListeners(Events.AttrModified, { node: node, name: 'style' });
+                    this.dispatchEventToListeners(Events.AttrModified, { node, name: 'style' });
                     this.scheduleMutationEvent(node);
                 }
             });
@@ -1184,7 +1197,7 @@ export class DOMModel extends SDKModel {
         }
         parent.removeChild(node);
         this.unbind(node);
-        this.dispatchEventToListeners(Events.NodeRemoved, { node: node, parent: parent });
+        this.dispatchEventToListeners(Events.NodeRemoved, { node, parent });
         this.scheduleMutationEvent(node);
     }
     shadowRootPushed(hostId, root) {
@@ -1238,6 +1251,14 @@ export class DOMModel extends SDKModel {
         this.dispatchEventToListeners(Events.NodeInserted, node);
         this.scheduleMutationEvent(node);
     }
+    scrollableFlagUpdated(nodeId, isScrollable) {
+        const node = this.nodeForId(nodeId);
+        if (!node || node.isScrollable() === isScrollable) {
+            return;
+        }
+        node.setIsScrollable(isScrollable);
+        this.dispatchEventToListeners(Events.ScrollableFlagUpdated, { node });
+    }
     topLayerElementsUpdated() {
         this.dispatchEventToListeners(Events.TopLayerElementsChanged);
     }
@@ -1252,7 +1273,7 @@ export class DOMModel extends SDKModel {
         }
         parent.removeChild(pseudoElement);
         this.unbind(pseudoElement);
-        this.dispatchEventToListeners(Events.NodeRemoved, { node: pseudoElement, parent: parent });
+        this.dispatchEventToListeners(Events.NodeRemoved, { node: pseudoElement, parent });
         this.scheduleMutationEvent(pseudoElement);
     }
     distributedNodesUpdated(insertionPointId, distributedNodes) {
@@ -1388,6 +1409,7 @@ export var Events;
     Events["DistributedNodesChanged"] = "DistributedNodesChanged";
     Events["MarkersChanged"] = "MarkersChanged";
     Events["TopLayerElementsChanged"] = "TopLayerElementsChanged";
+    Events["ScrollableFlagUpdated"] = "ScrollableFlagUpdated";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 class DOMDispatcher {
@@ -1439,6 +1461,9 @@ class DOMDispatcher {
     }
     topLayerElementsUpdated() {
         this.#domModel.topLayerElementsUpdated();
+    }
+    scrollableFlagUpdated({ nodeId, isScrollable }) {
+        this.#domModel.scrollableFlagUpdated(nodeId, isScrollable);
     }
 }
 let domModelUndoStackInstance = null;

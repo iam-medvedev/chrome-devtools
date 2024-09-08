@@ -23,11 +23,11 @@ const UIStrings = {
     /**
      *@description Name of column header that reports the size (in terms of bytes) used for a particular part of the heap, excluding the size of the children nodes of this part of the heap
      */
-    selfSizeBytes: 'Self Size (bytes)',
+    selfSizeBytes: 'Self size (bytes)',
     /**
      *@description Name of column header that reports the total size (in terms of bytes) used for a particular part of the heap
      */
-    totalSizeBytes: 'Total Size (bytes)',
+    totalSizeBytes: 'Total size (bytes)',
     /**
      *@description Button text to stop profiling the heap
      */
@@ -57,17 +57,9 @@ const UIStrings = {
      */
     samplingProfiles: 'Sampling profiles',
     /**
-     *@description Description (part 1) in Heap Profile View of a profiler tool
+     *@description Description in Heap Profile View of a profiler tool
      */
-    recordMemoryAllocations: 'Record memory allocations using sampling method.',
-    /**
-     *@description Description (part 2) in Heap Profile View of a profiler tool
-     */
-    thisProfileTypeHasMinimal: 'This profile type has minimal performance overhead and can be used for long running operations.',
-    /**
-     *@description Description (part 3) in Heap Profile View of a profiler tool
-     */
-    itProvidesGoodApproximation: 'It provides good approximation of allocations broken down by `JavaScript` execution stack.',
+    recordMemoryAllocations: 'Approximate memory allocations by sampling long operations with minimal overhead and get a breakdown by JavaScript execution stack',
     /**
      *@description Name of a profile
      *@example {2} PH1
@@ -139,12 +131,12 @@ export class HeapProfileView extends ProfileView {
         this.lastOrdinal = 0;
         this.timelineOverview = new HeapTimelineOverview();
         if (Root.Runtime.experiments.isEnabled('sampling-heap-profiler-timeline')) {
-            this.timelineOverview.addEventListener("IdsRangeChanged" /* Events.IdsRangeChanged */, this.onIdsRangeChanged.bind(this));
+            this.timelineOverview.addEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged.bind(this));
             this.timelineOverview.show(this.element, this.element.firstChild);
             this.timelineOverview.start();
-            this.profileType.addEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.StatsUpdate */, this.onStatsUpdate, this);
-            void this.profileType.once("profile-complete" /* ProfileEvents.ProfileComplete */).then(() => {
-                this.profileType.removeEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.StatsUpdate */, this.onStatsUpdate, this);
+            this.profileType.addEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, this.onStatsUpdate, this);
+            void this.profileType.once("profile-complete" /* ProfileEvents.PROFILE_COMPLETE */).then(() => {
+                this.profileType.removeEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, this.onStatsUpdate, this);
                 this.timelineOverview.stop();
                 this.timelineOverview.updateGrid();
             });
@@ -279,7 +271,7 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
         if (wasClearedDuringRecording) {
             return;
         }
-        this.dispatchEventToListeners("profile-complete" /* ProfileEvents.ProfileComplete */, recordedProfile);
+        this.dispatchEventToListeners("profile-complete" /* ProfileEvents.PROFILE_COMPLETE */, recordedProfile);
     }
     createProfileLoadedFromFile(title) {
         return new SamplingHeapProfileHeader(null, this, title);
@@ -315,11 +307,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
     }
     get description() {
         // TODO(l10n): Do not concatenate localized strings.
-        const formattedDescription = [
-            i18nString(UIStrings.recordMemoryAllocations),
-            i18nString(UIStrings.thisProfileTypeHasMinimal),
-            i18nString(UIStrings.itProvidesGoodApproximation),
-        ];
+        const formattedDescription = [i18nString(UIStrings.recordMemoryAllocations)];
         return formattedDescription.join('\n');
     }
     hasTemporaryView() {
@@ -348,7 +336,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
     async stopSampling() {
         window.clearTimeout(this.updateTimer);
         this.updateTimer = 0;
-        this.dispatchEventToListeners("RecordingStopped" /* SamplingHeapProfileType.Events.RecordingStopped */);
+        this.dispatchEventToListeners("RecordingStopped" /* SamplingHeapProfileType.Events.RECORDING_STOPPED */);
         const heapProfilerModel = this.obtainRecordingProfile();
         if (!heapProfilerModel) {
             throw new Error('No heap profiler model');
@@ -368,7 +356,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
         if (!this.updateTimer) {
             return;
         }
-        this.dispatchEventToListeners("StatsUpdate" /* SamplingHeapProfileType.Events.StatsUpdate */, profile);
+        this.dispatchEventToListeners("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, profile);
         this.updateTimer = window.setTimeout(() => {
             void this.updateStats();
         }, this.updateIntervalMs);
@@ -571,7 +559,7 @@ export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
         }
         const entryInfo = [];
         function pushEntryInfoRow(title, value) {
-            entryInfo.push({ title: title, value: value });
+            entryInfo.push({ title, value });
         }
         pushEntryInfoRow(i18nString(UIStrings.name), UI.UIUtils.beautifyFunctionName(node.functionName));
         pushEntryInfoRow(i18nString(UIStrings.selfSize), Platform.NumberUtilities.bytesToString(node.self));

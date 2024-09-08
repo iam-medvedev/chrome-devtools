@@ -10,7 +10,8 @@ import * as Emulation from './emulation.js';
 describeWithMockConnection('AdvancedApp', () => {
     beforeEach(async () => {
         await deinitializeGlobalVars();
-        Common.Settings.registerSettingsForTest([{
+        Common.Settings.registerSettingsForTest([
+            {
                 category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
                 settingName: 'currentDockState',
                 settingType: "enum" /* Common.Settings.SettingType.ENUM */,
@@ -41,7 +42,16 @@ describeWithMockConnection('AdvancedApp', () => {
                         raw: false,
                     },
                 ],
-            }]);
+            },
+            {
+                category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+                storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+                settingName: 'use-browser-theme-colors',
+                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                defaultValue: true,
+                reloadRequired: true,
+            },
+        ]);
         await initializeGlobalVars({ reset: false });
     });
     afterEach(async () => {

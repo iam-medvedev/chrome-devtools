@@ -17,8 +17,8 @@ export declare class CSSOverviewSidebarPanel extends CSSOverviewSidebarPanel_bas
     wasShown(): void;
 }
 export declare const enum SidebarEvents {
-    ItemSelected = "ItemSelected",
-    Reset = "Reset"
+    ITEM_SELECTED = "ItemSelected",
+    RESET = "Reset"
 }
 export interface ItemSelectedEvent {
     id: string;
@@ -26,7 +26,7 @@ export interface ItemSelectedEvent {
     key: string | undefined;
 }
 export type EventTypes = {
-    [SidebarEvents.ItemSelected]: ItemSelectedEvent;
-    [SidebarEvents.Reset]: void;
+    [SidebarEvents.ITEM_SELECTED]: ItemSelectedEvent;
+    [SidebarEvents.RESET]: void;
 };
 export {};

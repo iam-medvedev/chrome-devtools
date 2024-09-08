@@ -84,6 +84,7 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStringsTemp.showAiAssistant),
     title: i18nLazyString(UIStringsTemp.aiAssistant),
     order: 10,
+    isPreviewFeature: true,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
     hasToolbar: false,
     condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config) &&

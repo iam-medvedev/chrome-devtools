@@ -88,8 +88,8 @@ export class QueryContainer extends HTMLElement {
         const areBothAxesQueried = this.#queriedSizeDetails.queryAxis === "size" /* QueryAxis.BOTH */;
         const axisIconClasses = LitHtml.Directives.classMap({
             'axis-icon': true,
-            'hidden': areBothAxesQueried,
-            'vertical': this.#queriedSizeDetails.physicalAxis === "Vertical" /* PhysicalAxis.VERTICAL */,
+            hidden: areBothAxesQueried,
+            vertical: this.#queriedSizeDetails.physicalAxis === "Vertical" /* PhysicalAxis.VERTICAL */,
         });
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off

@@ -274,7 +274,7 @@ export class TracingLayer {
                 return null;
             }
             const rect = { x: snapshot.rect[0], y: snapshot.rect[1], width: snapshot.rect[2], height: snapshot.rect[3] };
-            return { rect: rect, snapshot: snapshot.snapshot };
+            return { rect, snapshot: snapshot.snapshot };
         });
     }
     async pictureForRect(targetRect) {
@@ -288,7 +288,7 @@ export class TracingLayer {
             const y0 = fragments.reduce((min, item) => Math.min(min, item.y), Infinity);
             // Rect is in layer content coordinates, make it relative to picture by offsetting to the top left corner.
             const rect = { x: targetRect[0] - x0, y: targetRect[1] - y0, width: targetRect[2], height: targetRect[3] };
-            return this.paintProfilerModel.loadSnapshotFromFragments(fragments).then(snapshot => snapshot ? { rect: rect, snapshot: snapshot } : null);
+            return this.paintProfilerModel.loadSnapshotFromFragments(fragments).then(snapshot => snapshot ? { rect, snapshot } : null);
         });
         function segmentsOverlap(a1, a2, b1, b2) {
             console.assert(a1 <= a2 && b1 <= b2, 'segments should be specified as ordered pairs');
@@ -300,7 +300,7 @@ export class TracingLayer {
         }
     }
     scrollRectsFromParams(params, type) {
-        return { rect: { x: params[0], y: params[1], width: params[2], height: params[3] }, type: type };
+        return { rect: { x: params[0], y: params[1], width: params[2], height: params[3] }, type };
     }
     createScrollRects(payload) {
         const nonPayloadScrollRects = [];
@@ -340,6 +340,6 @@ async function getPaintProfilerSnapshot(paintProfilerModel, paint) {
         return null;
     }
     const snapshot = await paintProfilerModel.loadSnapshot(picture.serializedPicture);
-    return snapshot ? { rect: picture.rect, snapshot: snapshot } : null;
+    return snapshot ? { rect: picture.rect, snapshot } : null;
 }
 //# sourceMappingURL=TracingLayerTree.js.map

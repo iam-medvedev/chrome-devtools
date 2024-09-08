@@ -61,7 +61,7 @@ export class IssueCounter extends HTMLElement {
     #leadingText = '';
     #throttler;
     #counts = [0, 0, 0];
-    #displayMode = "OmitEmpty" /* DisplayMode.OmitEmpty */;
+    #displayMode = "OmitEmpty" /* DisplayMode.OMIT_EMPTY */;
     #issuesManager = undefined;
     #accessibleName = undefined;
     #throttlerTimeout;
@@ -81,7 +81,7 @@ export class IssueCounter extends HTMLElement {
         this.#clickHandler = data.clickHandler;
         this.#leadingText = data.leadingText ?? '';
         this.#tooltipCallback = data.tooltipCallback;
-        this.#displayMode = data.displayMode ?? "OmitEmpty" /* DisplayMode.OmitEmpty */;
+        this.#displayMode = data.displayMode ?? "OmitEmpty" /* DisplayMode.OMIT_EMPTY */;
         this.#accessibleName = data.accessibleName;
         this.#throttlerTimeout = data.throttlerTimeout;
         this.#compact = Boolean(data.compact);
@@ -127,11 +127,11 @@ export class IssueCounter extends HTMLElement {
         const mostImportant = importance[this.#counts.findIndex(x => x > 0) ?? 2];
         const countToString = (kind, count) => {
             switch (this.#displayMode) {
-                case "OmitEmpty" /* DisplayMode.OmitEmpty */:
+                case "OmitEmpty" /* DisplayMode.OMIT_EMPTY */:
                     return count > 0 ? `${count}` : undefined;
-                case "ShowAlways" /* DisplayMode.ShowAlways */:
+                case "ShowAlways" /* DisplayMode.SHOW_ALWAYS */:
                     return `${count}`;
-                case "OnlyMostImportant" /* DisplayMode.OnlyMostImportant */:
+                case "OnlyMostImportant" /* DisplayMode.ONLY_MOST_IMPORTANT */:
                     return kind === mostImportant ? `${count}` : undefined;
             }
         };

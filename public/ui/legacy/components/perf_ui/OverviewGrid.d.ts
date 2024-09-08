@@ -81,18 +81,18 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     zoom(factor: number, reference: number): void;
 }
 export declare const enum Events {
-    WindowChanged = "WindowChanged",
-    WindowChangedWithPosition = "WindowChangedWithPosition",
-    BreadcrumbAdded = "BreadcrumbAdded"
+    WINDOW_CHANGED = "WindowChanged",
+    WINDOW_CHANGED_WITH_POSITION = "WindowChangedWithPosition",
+    BREADCRUMB_ADDED = "BreadcrumbAdded"
 }
 export interface WindowChangedWithPositionEvent {
     rawStartValue: number;
     rawEndValue: number;
 }
 export type EventTypes = {
-    [Events.WindowChanged]: void;
-    [Events.BreadcrumbAdded]: WindowChangedWithPositionEvent;
-    [Events.WindowChangedWithPosition]: WindowChangedWithPositionEvent;
+    [Events.WINDOW_CHANGED]: void;
+    [Events.BREADCRUMB_ADDED]: WindowChangedWithPositionEvent;
+    [Events.WINDOW_CHANGED_WITH_POSITION]: WindowChangedWithPositionEvent;
 };
 export declare class WindowSelector {
     private startPosition;

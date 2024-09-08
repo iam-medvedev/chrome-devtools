@@ -44,6 +44,7 @@ function decodeOriginalScope(encodedOriginalScope, names) {
                 // We are done. There might be more top-level scopes but we only allow one.
                 return { root: scope, scopeForItemIndex };
             }
+            scope.parent = scopeStack[scopeStack.length - 1];
             scopeStack[scopeStack.length - 1].children.push(scope);
         }
     }
@@ -90,7 +91,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
     const rangeStack = [{
             start: { line: 0, column: 0 },
             end: { line: 0, column: 0 },
-            isScope: false,
+            isFunctionScope: false,
             children: [],
             values: [],
         }];
@@ -100,7 +101,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
             const range = {
                 start: { line: item.line, column: item.column },
                 end: { line: item.line, column: item.column },
-                isScope: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IS_SCOPE */),
+                isFunctionScope: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IS_FUNCTION_SCOPE */),
                 values: [],
                 children: [],
             };

@@ -40,7 +40,7 @@ describeWithLocale('LinearMemoryInspector', () => {
             address: 20,
             memoryOffset: 0,
             outerMemoryLength: memory.length,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
             valueTypes: new Set(LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.getDefaultValueTypeMapping().keys()),
         };
         component.data = data;
@@ -156,19 +156,19 @@ describeWithLocale('LinearMemoryInspector', () => {
         const { component } = setUpComponent();
         const interpreter = getValueInterpreter(component);
         const select = getElementWithinComponent(interpreter, ENDIANNESS_SELECTOR, HTMLSelectElement);
-        assert.deepEqual(select.value, "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */);
-        const endianSetting = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Big */;
+        assert.deepEqual(select.value, "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */);
+        const endianSetting = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */;
         const event = new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.EndiannessChangedEvent(endianSetting);
         interpreter.dispatchEvent(event);
         assert.deepEqual(select.value, event.data);
     });
     it('updates current address if user triggers a jumptopointeraddress event', () => {
         const { component, data } = setUpComponent();
-        data.valueTypes = new Set(["Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Pointer32 */]);
+        data.valueTypes = new Set(["Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */]);
         data.memory = new Uint8Array([2, 0, 0, 0]);
         data.outerMemoryLength = data.memory.length;
         data.address = 0;
-        data.endianness = "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */;
+        data.endianness = "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */;
         component.data = data;
         const interpreter = getValueInterpreter(component);
         const display = getElementWithinComponent(interpreter, 'devtools-linear-memory-inspector-interpreter-display', LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay);
@@ -183,25 +183,25 @@ describeWithLocale('LinearMemoryInspector', () => {
     it('leaves the navigator address as inputted by user on edit event', () => {
         const { component } = setUpComponent();
         const navigator = getNavigator(component);
-        triggerAddressChangedEvent(component, '2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.Edit */);
+        triggerAddressChangedEvent(component, '2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
         assertUpdatesInNavigator(navigator, '2', 'Enter address');
     });
     it('changes navigator address (to hex) on valid user submit event', () => {
         const { component } = setUpComponent();
         const navigator = getNavigator(component);
-        triggerAddressChangedEvent(component, '2', "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.Submitted */);
+        triggerAddressChangedEvent(component, '2', "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */);
         assertUpdatesInNavigator(navigator, '0x00000002', 'Enter address');
     });
     it('leaves the navigator address as inputted by user on invalid edit event', () => {
         const { component } = setUpComponent();
         const navigator = getNavigator(component);
-        triggerAddressChangedEvent(component, '-2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.Edit */);
+        triggerAddressChangedEvent(component, '-2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
         assertUpdatesInNavigator(navigator, '-2', 'Address has to be a number between 0x00000000 and 0x000003E8');
     });
     it('leaves the navigator address as inputted by user on invalid submit event', () => {
         const { component } = setUpComponent();
         const navigator = getNavigator(component);
-        triggerAddressChangedEvent(component, '-2', "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.Submitted */);
+        triggerAddressChangedEvent(component, '-2', "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */);
         assertUpdatesInNavigator(navigator, '-2', 'Address has to be a number between 0x00000000 and 0x000003E8');
     });
     it('triggers MemoryRequestEvent on refresh', async () => {
@@ -242,7 +242,7 @@ describeWithLocale('LinearMemoryInspector', () => {
         const { component } = setUpComponent();
         const interpreter = getValueInterpreter(component);
         const eventPromise = getEventPromise(component, 'settingschanged');
-        const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */;
+        const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */;
         interpreter.dispatchEvent(new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.ValueTypeToggledEvent(valueType, false));
         const event = await eventPromise;
         assert.isTrue(event.data.valueTypes.size > 1);
@@ -252,8 +252,8 @@ describeWithLocale('LinearMemoryInspector', () => {
         const { component } = setUpComponent();
         const interpreter = getValueInterpreter(component);
         const eventPromise = getEventPromise(component, 'settingschanged');
-        const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.Int16 */;
-        const valueTypeMode = "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal */;
+        const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */;
+        const valueTypeMode = "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */;
         interpreter.dispatchEvent(new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueTypeModeChangedEvent(valueType, valueTypeMode));
         const event = await eventPromise;
         assert.isTrue(event.data.valueTypes.has(valueType));
@@ -263,7 +263,7 @@ describeWithLocale('LinearMemoryInspector', () => {
         const { component } = setUpComponent();
         const interpreter = getValueInterpreter(component);
         const eventPromise = getEventPromise(component, 'settingschanged');
-        const endianness = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Big */;
+        const endianness = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */;
         interpreter.dispatchEvent(new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.EndiannessChangedEvent(endianness));
         const event = await eventPromise;
         assert.strictEqual(event.data.endianness, endianness);

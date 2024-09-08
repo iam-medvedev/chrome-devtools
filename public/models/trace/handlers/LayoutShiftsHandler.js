@@ -34,6 +34,7 @@ const prePaintEvents = [];
 let sessionMaxScore = 0;
 let clsWindowID = -1;
 const clusters = [];
+const clustersByNavigationId = new Map();
 // The complete timeline of LS score changes in a trace.
 // Includes drops to 0 when session windows end.
 const scoreRecords = [];
@@ -57,6 +58,7 @@ export function reset() {
     sessionMaxScore = 0;
     scoreRecords.length = 0;
     clsWindowID = -1;
+    clustersByNavigationId.clear();
 }
 export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
@@ -343,6 +345,12 @@ async function buildLayoutShiftsClusters() {
             clsWindowID = windowID;
             sessionMaxScore = weightedScore;
         }
+        if (cluster.navigationId) {
+            const clustersForId = Platform.MapUtilities.getWithDefault(clustersByNavigationId, cluster.navigationId, () => {
+                return [];
+            });
+            clustersForId.push(cluster);
+        }
     }
 }
 export function data() {
@@ -351,7 +359,7 @@ export function data() {
     }
     return {
         clusters,
-        sessionMaxScore: sessionMaxScore,
+        sessionMaxScore,
         clsWindowID,
         prePaintEvents,
         layoutInvalidationEvents,
@@ -361,6 +369,7 @@ export function data() {
         scoreRecords,
         // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],
+        clustersByNavigationId: new Map(clustersByNavigationId),
     };
 }
 export function deps() {

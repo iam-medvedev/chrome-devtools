@@ -272,7 +272,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         const definedShortcutKey = toggleEyeDropperShortcut[0]?.descriptors.flatMap(descriptor => descriptor.name.split(' + '))[0];
         this.colorPickerButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleColorPicker, { PH1: definedShortcutKey || '' }), 'color-picker', 'color-picker-filled', 'color-eye-dropper');
         this.colorPickerButton.setToggled(true);
-        this.colorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.toggleColorPicker.bind(this, undefined));
+        this.colorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.toggleColorPicker.bind(this, undefined));
         toolbar.appendToolbarItem(this.colorPickerButton);
         this.colorPickerButton.element.setAttribute('jslog', `${VisualLogging.colorEyeDropper().track({ click: true })}`);
         this.swatch = new Swatch(toolsContainer);
@@ -376,7 +376,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         overlay.addEventListener('click', this.togglePalettePanel.bind(this, false));
         this.addColorToolbar = new UI.Toolbar.Toolbar('add-color-toolbar');
         const addColorButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addToPalette), 'plus', undefined, 'add-color');
-        addColorButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.onAddColorMousedown.bind(this));
+        addColorButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.onAddColorMousedown.bind(this));
         addColorButton.element.addEventListener('keydown', this.onAddColorKeydown.bind(this));
         this.addColorToolbar.appendToolbarItem(addColorButton);
         this.colorPickedBound = this.colorPicked.bind(this);
@@ -519,7 +519,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         title.textContent = i18nString(UIStrings.colorPalettes);
         const toolbar = new UI.Toolbar.Toolbar('', this.palettePanel);
         this.closeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.returnToColorPicker), 'cross');
-        this.closeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.togglePalettePanel.bind(this, false));
+        this.closeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.togglePalettePanel.bind(this, false));
         this.closeButton.element.addEventListener('keydown', this.onCloseBtnKeydown.bind(this));
         this.closeButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         toolbar.appendToolbarItem(this.closeButton);
@@ -835,7 +835,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             }
         }
         this.element.style.height = (paletteTop + paletteMargin + (paletteColorHeight + paletteMargin) * rowsNeeded) + 'px';
-        this.dispatchEventToListeners("SizeChanged" /* Events.SizeChanged */);
+        this.dispatchEventToListeners("SizeChanged" /* Events.SIZE_CHANGED */);
     }
     paletteColorSelected(colorText, colorName, matchUserFormat) {
         const color = Common.Color.parse(colorText);
@@ -999,7 +999,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             this.updateInput();
         }
         if (changeSource !== ChangeSource.Model) {
-            this.dispatchEventToListeners("ColorChanged" /* Events.ColorChanged */, this.colorString());
+            this.dispatchEventToListeners("ColorChanged" /* Events.COLOR_CHANGED */, this.colorString());
         }
     }
     colorName() {
@@ -1186,13 +1186,13 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             this.colorPickerButton.setToggled(false);
         }
         if (this.contrastDetails && this.contrastDetailsBackgroundColorPickedToggledBound) {
-            this.contrastDetails.addEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BackgroundColorPickerWillBeToggled */, this.contrastDetailsBackgroundColorPickedToggledBound);
+            this.contrastDetails.addEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickedToggledBound);
         }
     }
     willHide() {
         void this.toggleColorPicker(false);
         if (this.contrastDetails && this.contrastDetailsBackgroundColorPickedToggledBound) {
-            this.contrastDetails.removeEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BackgroundColorPickerWillBeToggled */, this.contrastDetailsBackgroundColorPickedToggledBound);
+            this.contrastDetails.removeEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickedToggledBound);
         }
     }
     async toggleColorPicker(enabled) {

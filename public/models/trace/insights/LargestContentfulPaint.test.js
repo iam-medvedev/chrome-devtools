@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Types from '../types/types.js';
 export async function processTrace(testContext, traceFile) {
@@ -21,7 +22,7 @@ function getInsight(insights, navigationId) {
     }
     return insight;
 }
-describe('LargestContentfulPaint', function () {
+describeWithEnvironment('LargestContentfulPaint', function () {
     it('calculates text lcp phases', async () => {
         const { data, insights } = await processTrace(this, 'lcp-web-font.json.gz');
         const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
@@ -53,12 +54,12 @@ describe('LargestContentfulPaint', function () {
         assert.strictEqual(shouldPreloadImage, true);
         assert.strictEqual(shouldIncreasePriorityHint, true);
     });
-    it('calculates the LCP optimal time as the main request download start time', async () => {
+    it('calculates the LCP optimal time as the document request download start time', async () => {
         const { data, insights } = await processTrace(this, 'web-dev-with-commit.json.gz');
         const firstNav = Array.from(data.Meta.navigationsByNavigationId.keys())[0];
         const insight = getInsight(insights, firstNav);
         assert.strictEqual(insight.earliestDiscoveryTimeTs, 
-        // this is the TTFB for the main request
+        // this is the TTFB for the document request
         122411004828);
     });
     describe('warnings', function () {

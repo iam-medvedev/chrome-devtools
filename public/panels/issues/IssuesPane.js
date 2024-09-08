@@ -181,8 +181,8 @@ export class IssuesPane extends UI.Widget.VBox {
         this.contentElement.appendChild(this.#noIssuesMessageDiv);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.#aggregator = new IssueAggregator(this.#issuesManager);
-        this.#aggregator.addEventListener("AggregatedIssueUpdated" /* IssueAggregatorEvents.AggregatedIssueUpdated */, this.#issueUpdated, this);
-        this.#aggregator.addEventListener("FullUpdateRequired" /* IssueAggregatorEvents.FullUpdateRequired */, this.#onFullUpdate, this);
+        this.#aggregator.addEventListener("AggregatedIssueUpdated" /* IssueAggregatorEvents.AGGREGATED_ISSUE_UPDATED */, this.#issueUpdated, this);
+        this.#aggregator.addEventListener("FullUpdateRequired" /* IssueAggregatorEvents.FULL_UPDATE_REQUIRED */, this.#onFullUpdate, this);
         this.#hiddenIssuesRow.hidden = this.#issuesManager.numberOfHiddenIssues() === 0;
         this.#onFullUpdate();
         this.#issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */, this.#updateCounts, this);
@@ -221,7 +221,7 @@ export class IssuesPane extends UI.Widget.VBox {
                 const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(IssuesManager.IssuesManager.IssuesManager.instance(), false);
                 issueCounter.title = issueEnumeration;
             },
-            displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.ShowAlways */,
+            displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.SHOW_ALWAYS */,
             issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
         };
         issueCounter.id = 'console-issues-counter';

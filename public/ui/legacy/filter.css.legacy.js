@@ -119,7 +119,7 @@ export default {
 }
 
 .filter-divider {
-  background-color: var(--sys-color-on-base-divider);
+  background-color: var(--sys-color-divider);
   width: 1px;
   margin: 5px 4px;
   height: 16px;

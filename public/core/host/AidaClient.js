@@ -28,6 +28,15 @@ export var ClientFeature;
     // Chrome freestyler.
     ClientFeature[ClientFeature["CHROME_FREESTYLER"] = 2] = "CHROME_FREESTYLER";
 })(ClientFeature || (ClientFeature = {}));
+export var UserTier;
+(function (UserTier) {
+    // Unspecified user tier.
+    UserTier[UserTier["USER_TIER_UNSPECIFIED"] = 0] = "USER_TIER_UNSPECIFIED";
+    // Users who are internal testers.
+    UserTier[UserTier["TESTERS"] = 1] = "TESTERS";
+    // Users in the general public.
+    UserTier[UserTier["PUBLIC"] = 3] = "PUBLIC";
+})(UserTier || (UserTier = {}));
 export var RecitationAction;
 (function (RecitationAction) {
     RecitationAction["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
@@ -197,5 +206,16 @@ export class AidaClient {
         }), resolve);
         return promise;
     }
+}
+export function convertToUserTierEnum(userTier) {
+    if (userTier) {
+        switch (userTier) {
+            case 'TESTERS':
+                return UserTier.TESTERS;
+            case 'PUBLIC':
+                return UserTier.PUBLIC;
+        }
+    }
+    return UserTier.TESTERS;
 }
 //# sourceMappingURL=AidaClient.js.map

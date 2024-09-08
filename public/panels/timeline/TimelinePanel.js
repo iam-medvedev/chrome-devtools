@@ -112,6 +112,14 @@ const UIStrings = {
      */
     saveProfile: 'Save profile…',
     /**
+     *@description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
+     */
+    saveTraceWithAnnotationsMenuOption: 'Save trace',
+    /**
+     *@description An option to save trace without annotations that appears in the menu of the toolbar download button
+     */
+    saveTraceWithoutAnnotationsMenuOption: 'Save trace without annotations',
+    /**
      *@description Text to take screenshots
      */
     captureScreenshots: 'Capture screenshots',
@@ -369,7 +377,7 @@ export class TimelinePanel extends UI.Panel.Panel {
       font-size: 12px;
       transform: scale(1.25);
       color: transparent;
-      background: linear-gradient(90deg, rgb(255 0 0 / 100%) 0%, rgb(255 154 0 / 100%) 10%, rgb(208 222 33 / 100%) 20%, rgb(79 220 74 / 100%) 30%, rgb(63 218 216 / 100%) 40%, rgb(47 201 226 / 100%) 50%, rgb(28 127 238 / 100%) 60%, rgb(95 21 242 / 100%) 70%, rgb(186 12 248 / 100%) 80%, rgb(251 7 217 / 100%) 90%, rgb(255 0 0 / 100%) 100%);
+      background: linear-gradient(90deg,CLICK255 0 0 / 100%) 0%, rgb(255 154 0 / 100%) 10%, rgb(208 222 33 / 100%) 20%, rgb(79 220 74 / 100%) 30%, rgb(63 218 216 / 100%) 40%, rgb(47 201 226 / 100%) 50%, rgb(28 127 238 / 100%) 60%, rgb(95 21 242 / 100%) 70%, rgb(186 12 248 / 100%) 80%, rgb(251 7 217 / 100%) 90%, rgb(255 0 0 / 100%) 100%);
       -webkit-background-clip: text;
       ">💫</div>`;
         const adorner = new Adorners.Adorner.Adorner();
@@ -379,7 +387,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             content: adornerContent,
         };
         this.brickBreakerToolbarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.fixMe), adorner);
-        this.brickBreakerToolbarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.#onBrickBreakerEasterEggClick());
+        this.brickBreakerToolbarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.#onBrickBreakerEasterEggClick());
         const config = TraceEngine.Types.Configuration.defaults();
         config.showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
         config.includeRuntimeCallStats = Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
@@ -388,7 +396,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
         this.dropTarget = new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI], i18nString(UIStrings.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
         this.recordingOptionUIControls = [];
-        this.state = "Idle" /* State.Idle */;
+        this.state = "Idle" /* State.IDLE */;
         this.recordingPageReload = false;
         this.millisecondsToRecordAfterLoadEvent = 5000;
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
@@ -430,7 +438,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
         this.flameChart = new TimelineFlameChartView(this);
         this.#onChartPlayableStateChangeBound = this.#onChartPlayableStateChange.bind(this);
-        this.flameChart.getMainFlameChart().addEventListener("ChartPlayableStateChange" /* PerfUI.FlameChart.Events.ChartPlayableStateChange */, this.#onChartPlayableStateChangeBound, this);
+        this.flameChart.getMainFlameChart().addEventListener("ChartPlayableStateChange" /* PerfUI.FlameChart.Events.CHART_PLAYABLE_STATE_CHANGED */, this.#onChartPlayableStateChangeBound, this);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this.flameChart, null);
         this.searchableViewInternal.setMinimumSize(0, 100);
         this.searchableViewInternal.element.classList.add('searchable-view');
@@ -519,7 +527,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#historyManager.cancelIfShowing();
     }
     loadFromEvents(events) {
-        if (this.state !== "Idle" /* State.Idle */) {
+        if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
         this.prepareToLoadTimeline();
@@ -691,7 +699,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     loadFromCpuProfile(profile) {
-        if (this.state !== "Idle" /* State.Idle */ || profile === null) {
+        if (this.state !== "Idle" /* State.IDLE */ || profile === null) {
             return;
         }
         this.prepareToLoadTimeline();
@@ -731,26 +739,41 @@ export class TimelinePanel extends UI.Panel.Panel {
     #removeSidebarIconFromToolbar() {
         this.panelToolbar.removeToolbarItem(this.#sidebarToggleButton);
     }
+    populateDownloadMenu(contextMenu) {
+        contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithAnnotationsMenuOption), () => {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
+            void this.saveToFile(/* isEnhancedTraces */ false, /* addModifications */ true);
+        });
+        contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithoutAnnotationsMenuOption), () => {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
+            void this.saveToFile();
+        });
+    }
     populateToolbar() {
         // Record
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
         this.clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'timeline.clear');
-        this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.onClearButton());
+        this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.onClearButton());
         this.panelToolbar.appendToolbarItem(this.clearButton);
-        // Load / Save
+        // Load / SaveCLICK
         this.loadButton =
             new UI.Toolbar.ToolbarButton(i18nString(UIStrings.loadProfile), 'import', undefined, 'timeline.load-from-file');
-        this.loadButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.loadButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
             this.selectFileToLoad();
         });
-        this.saveButton =
-            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveProfile), 'download', undefined, 'timeline.save-to-file');
-        this.saveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-            void this.saveToFile();
-        });
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
+            this.saveButton = new UI.Toolbar.ToolbarMenuButton(this.populateDownloadMenu.bind(this), true, true, 'more-options', 'download');
+            this.saveButton.setTitle(i18nString(UIStrings.saveProfile));
+        }
+        else {
+            this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveProfile), 'download', undefined, 'timeline.save-to-file');
+            this.saveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
+                void this.saveToFile();
+            });
+        }
         if (Root.Runtime.experiments.isEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */)) {
             this.saveButton.element.addEventListener('contextmenu', event => {
                 event.preventDefault();
@@ -858,8 +881,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         return toolbarItem;
     }
     prepareToLoadTimeline() {
-        console.assert(this.state === "Idle" /* State.Idle */);
-        this.setState("Loading" /* State.Loading */);
+        console.assert(this.state === "Idle" /* State.IDLE */);
+        this.setState("Loading" /* State.LOADING */);
     }
     createFileSelector() {
         if (this.fileSelectorElement) {
@@ -880,8 +903,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
-    async saveToFile(isEnhancedTraces = false) {
-        if (this.state !== "Idle" /* State.Idle */) {
+    async saveToFile(isEnhancedTraces = false, addModifications = false) {
+        if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
@@ -890,8 +913,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         const traceEvents = this.#traceEngineModel.rawTraceEvents(this.#viewMode.traceIndex);
         const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex);
         // Save modifications into the metadata if modifications experiment is on
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */) && metadata) {
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */) && metadata &&
+            addModifications) {
             metadata.modifications = ModificationsManager.activeManager()?.toJSON();
+        }
+        else if (metadata) {
+            delete metadata.modifications;
         }
         if (metadata && isEnhancedTraces) {
             metadata.enhancedTraceVersion = TraceEngine.Handlers.ModelHandlers.EnhancedTraces.EnhancedTracesVersion;
@@ -990,7 +1017,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async loadFromFile(file) {
-        if (this.state !== "Idle" /* State.Idle */) {
+        if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
         this.prepareToLoadTimeline();
@@ -998,7 +1025,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.createFileSelector();
     }
     async loadFromURL(url) {
-        if (this.state !== "Idle" /* State.Idle */) {
+        if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
         this.prepareToLoadTimeline();
@@ -1215,7 +1242,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     async startRecording() {
         console.assert(!this.statusPane, 'Status pane is already opened.');
-        this.setState("StartPending" /* State.StartPending */);
+        this.setState("StartPending" /* State.START_PENDING */);
         this.showRecordingStarted();
         if (isNode) {
             await this.#startCPUProfilingRecording();
@@ -1230,7 +1257,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.statusPane.updateStatus(i18nString(UIStrings.stoppingTimeline));
             this.statusPane.updateProgressBar(i18nString(UIStrings.received), 0);
         }
-        this.setState("StopPending" /* State.StopPending */);
+        this.setState("StopPending" /* State.STOP_PENDING */);
         if (this.controller) {
             await this.controller.stopRecording();
             this.setUIControlsEnabled(true);
@@ -1240,7 +1267,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         if (this.cpuProfiler) {
             const profile = await this.cpuProfiler.stopRecording();
-            this.setState("Idle" /* State.Idle */);
+            this.setState("Idle" /* State.IDLE */);
             this.loadFromCpuProfile(profile);
             this.setUIControlsEnabled(true);
             this.cpuProfiler = null;
@@ -1273,7 +1300,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (rawEvents) {
             this.statusPane.enableDownloadOfEvents(rawEvents);
         }
-        this.setState("RecordingFailed" /* State.RecordingFailed */);
+        this.setState("RecordingFailed" /* State.RECORDING_FAILED */);
         this.traceLoadStart = null;
         this.setUIControlsEnabled(true);
         if (this.controller) {
@@ -1291,32 +1318,32 @@ export class TimelinePanel extends UI.Panel.Panel {
         void UI.InspectorView.InspectorView.instance().showPanel('timeline');
     }
     updateTimelineControls() {
-        this.toggleRecordAction.setToggled(this.state === "Recording" /* State.Recording */);
-        this.toggleRecordAction.setEnabled(this.state === "Recording" /* State.Recording */ || this.state === "Idle" /* State.Idle */);
-        this.recordReloadAction.setEnabled(isNode ? false : this.state === "Idle" /* State.Idle */);
-        this.#historyManager.setEnabled(this.state === "Idle" /* State.Idle */);
-        this.clearButton.setEnabled(this.state === "Idle" /* State.Idle */);
-        this.panelToolbar.setEnabled(this.state !== "Loading" /* State.Loading */);
-        this.panelRightToolbar.setEnabled(this.state !== "Loading" /* State.Loading */);
-        this.dropTarget.setEnabled(this.state === "Idle" /* State.Idle */);
-        this.loadButton.setEnabled(this.state === "Idle" /* State.Idle */);
-        this.saveButton.setEnabled(this.state === "Idle" /* State.Idle */ && this.#hasActiveTrace());
+        this.toggleRecordAction.setToggled(this.state === "Recording" /* State.RECORDING */);
+        this.toggleRecordAction.setEnabled(this.state === "Recording" /* State.RECORDING */ || this.state === "Idle" /* State.IDLE */);
+        this.recordReloadAction.setEnabled(isNode ? false : this.state === "Idle" /* State.IDLE */);
+        this.#historyManager.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.clearButton.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.panelToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
+        this.panelRightToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
+        this.dropTarget.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.loadButton.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.saveButton.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
         if (this.#viewMode.mode === 'VIEWING_TRACE') {
             this.#addSidebarIconToToolbar();
         }
     }
     async toggleRecording() {
-        if (this.state === "Idle" /* State.Idle */) {
+        if (this.state === "Idle" /* State.IDLE */) {
             this.recordingPageReload = false;
             await this.startRecording();
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
         }
-        else if (this.state === "Recording" /* State.Recording */) {
+        else if (this.state === "Recording" /* State.RECORDING */) {
             await this.stopRecording();
         }
     }
     recordReload() {
-        if (this.state !== "Idle" /* State.Idle */) {
+        if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
         this.recordingPageReload = true;
@@ -1415,10 +1442,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
             this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
         });
-        // Create breadcrumbs.
-        if (this.#minimapComponent.breadcrumbsActivated) {
-            this.#minimapComponent.addInitialBreadcrumb();
-        }
         // To calculate the activity we might want to zoom in, we use the top-most main-thread track
         const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
         if (topMostMainThreadAppender) {
@@ -1525,7 +1548,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             void resourceModel.navigate(config.navigateToUrl);
         }
         this.#changeView({ mode: 'STATUS_PANE_OVERLAY' });
-        this.setState("Recording" /* State.Recording */);
+        this.setState("Recording" /* State.RECORDING */);
         this.showRecordingStarted();
         if (this.statusPane) {
             this.statusPane.enableAndFocusButton();
@@ -1616,8 +1639,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         // be StopPending. Whereas if it was an existing trace they loaded via a
         // file, it will be State.Loading. This means we can tell the recording is
         // fresh by checking the state value.
-        const recordingIsFresh = this.state === "StopPending" /* State.StopPending */;
-        this.setState("Idle" /* State.Idle */);
+        const recordingIsFresh = this.state === "StopPending" /* State.STOP_PENDING */;
+        this.setState("Idle" /* State.IDLE */);
         if (collectedEvents.length === 0) {
             // 0 collected events indicates probably an invalid file was imported.
             // If the user does not have any already-loaded traces, then we should
@@ -1728,14 +1751,14 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async loadEventFired(event) {
-        if (this.state !== "Recording" /* State.Recording */ || !this.recordingPageReload || !this.controller ||
+        if (this.state !== "Recording" /* State.RECORDING */ || !this.recordingPageReload || !this.controller ||
             this.controller.primaryPageTarget !== event.data.resourceTreeModel.target()) {
             return;
         }
         const controller = this.controller;
         await new Promise(r => window.setTimeout(r, this.millisecondsToRecordAfterLoadEvent));
         // Check if we're still in the same recording session.
-        if (controller !== this.controller || this.state !== "Recording" /* State.Recording */) {
+        if (controller !== this.controller || this.state !== "Recording" /* State.RECORDING */) {
             return;
         }
         void this.stopRecording();
@@ -1744,7 +1767,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
             return null;
         }
-        if (TimelineSelection.isFrameObject(selection.object)) {
+        if (TimelineSelection.isLegacyTimelineFrame(selection.object) &&
+            selection.object instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame) {
             return selection.object;
         }
         if (TimelineSelection.isRangeSelection(selection.object) ||
@@ -1958,7 +1982,7 @@ export class StatusPane extends UI.Widget.VBox {
     }
     startTimer() {
         this.startTime = Date.now();
-        this.timeUpdateTimer = window.setInterval(this.updateTimer.bind(this, false), 1000);
+        this.timeUpdateTimer = window.setInterval(this.updateTimer.bind(this), 1000);
         this.updateTimer();
     }
     stopTimer() {
@@ -1966,16 +1990,16 @@ export class StatusPane extends UI.Widget.VBox {
             return;
         }
         clearInterval(this.timeUpdateTimer);
-        this.updateTimer(true);
+        this.updateTimer();
         delete this.timeUpdateTimer;
     }
-    updateTimer(precise) {
+    updateTimer() {
         this.arrangeDialog(this.element.parentNode);
         if (!this.timeUpdateTimer || !this.time) {
             return;
         }
         const elapsed = (Date.now() - this.startTime) / 1000;
-        this.time.textContent = i18nString(UIStrings.ssec, { PH1: elapsed.toFixed(precise ? 1 : 0) });
+        this.time.textContent = i18nString(UIStrings.ssec, { PH1: Math.round(elapsed) });
     }
     arrangeDialog(parent) {
         const isSmallDialog = parent.clientWidth < 325;

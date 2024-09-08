@@ -72,12 +72,12 @@ export class LinearMemoryInspector extends HTMLElement {
     #outerMemoryLength = 0;
     #address = -1;
     #highlightInfo;
-    #currentNavigatorMode = "Submitted" /* Mode.Submitted */;
+    #currentNavigatorMode = "Submitted" /* Mode.SUBMITTED */;
     #currentNavigatorAddressLine = `${this.#address}`;
     #numBytesPerPage = 4;
     #valueTypeModes = getDefaultValueTypeMapping();
     #valueTypes = new Set(this.#valueTypeModes.keys());
-    #endianness = "Little Endian" /* Endianness.Little */;
+    #endianness = "Little Endian" /* Endianness.LITTLE */;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [linearMemoryInspectorStyles];
     }
@@ -108,7 +108,7 @@ export class LinearMemoryInspector extends HTMLElement {
     }
     #render() {
         const { start, end } = this.#getPageRangeForAddress(this.#address, this.#numBytesPerPage);
-        const navigatorAddressToShow = this.#currentNavigatorMode === "Submitted" /* Mode.Submitted */ ? formatAddress(this.#address) :
+        const navigatorAddressToShow = this.#currentNavigatorMode === "Submitted" /* Mode.SUBMITTED */ ? formatAddress(this.#address) :
             this.#currentNavigatorAddressLine;
         const navigatorAddressIsValid = this.#isValidAddress(navigatorAddressToShow);
         const invalidAddressMsg = i18nString(UIStrings.addressHasToBeANumberBetweenSAnd, { PH1: formatAddress(0), PH2: formatAddress(this.#outerMemoryLength) });
@@ -128,16 +128,16 @@ export class LinearMemoryInspector extends HTMLElement {
           @pagenavigation=${this.#navigatePage}
           @historynavigation=${this.#navigateHistory}></${LinearMemoryNavigator.litTagName}>
           <${LinearMemoryHighlightChipList.litTagName}
-          .data=${{ highlightInfos: highlightedMemoryAreas, focusedMemoryHighlight: focusedMemoryHighlight }}
+          .data=${{ highlightInfos: highlightedMemoryAreas, focusedMemoryHighlight }}
           @jumptohighlightedmemory=${this.#onJumpToAddress}>
           </${LinearMemoryHighlightChipList.litTagName}>
         <${LinearMemoryViewer.litTagName}
           .data=${{
             memory: this.#memory.slice(start - this.#memoryOffset, end - this.#memoryOffset),
             address: this.#address, memoryOffset: start,
-            focus: this.#currentNavigatorMode === "Submitted" /* Mode.Submitted */,
+            focus: this.#currentNavigatorMode === "Submitted" /* Mode.SUBMITTED */,
             highlightInfo: this.#highlightInfo,
-            focusedMemoryHighlight: focusedMemoryHighlight
+            focusedMemoryHighlight
         }}
           @byteselected=${this.#onByteSelected}
           @resize=${this.#resize}>
@@ -167,7 +167,7 @@ export class LinearMemoryInspector extends HTMLElement {
     #onJumpToAddress(e) {
         // Stop event from bubbling up, since no element further up needs the event.
         e.stopPropagation();
-        this.#currentNavigatorMode = "Submitted" /* Mode.Submitted */;
+        this.#currentNavigatorMode = "Submitted" /* Mode.SUBMITTED */;
         const addressInRange = Math.max(0, Math.min(e.data, this.#outerMemoryLength - 1));
         this.#jumpToAddress(addressInRange);
     }
@@ -176,7 +176,7 @@ export class LinearMemoryInspector extends HTMLElement {
         this.dispatchEvent(new MemoryRequestEvent(start, end, this.#address));
     }
     #onByteSelected(e) {
-        this.#currentNavigatorMode = "Submitted" /* Mode.Submitted */;
+        this.#currentNavigatorMode = "Submitted" /* Mode.SUBMITTED */;
         const addressInRange = Math.max(0, Math.min(e.data, this.#outerMemoryLength - 1));
         this.#jumpToAddress(addressInRange);
     }
@@ -202,11 +202,11 @@ export class LinearMemoryInspector extends HTMLElement {
             this.#jumpToAddress(newAddress);
             return;
         }
-        if (mode === "Submitted" /* Mode.Submitted */ && !isValid) {
-            this.#currentNavigatorMode = "InvalidSubmit" /* Mode.InvalidSubmit */;
+        if (mode === "Submitted" /* Mode.SUBMITTED */ && !isValid) {
+            this.#currentNavigatorMode = "InvalidSubmit" /* Mode.INVALID_SUBMIT */;
         }
         else {
-            this.#currentNavigatorMode = "Edit" /* Mode.Edit */;
+            this.#currentNavigatorMode = "Edit" /* Mode.EDIT */;
         }
         this.#render();
     }
@@ -229,10 +229,10 @@ export class LinearMemoryInspector extends HTMLElement {
         this.#render();
     }
     #navigateHistory(e) {
-        return e.data === "Forward" /* Navigation.Forward */ ? this.#history.rollover() : this.#history.rollback();
+        return e.data === "Forward" /* Navigation.FORWARD */ ? this.#history.rollover() : this.#history.rollback();
     }
     #navigatePage(e) {
-        const newAddress = e.data === "Forward" /* Navigation.Forward */ ? this.#address + this.#numBytesPerPage : this.#address - this.#numBytesPerPage;
+        const newAddress = e.data === "Forward" /* Navigation.FORWARD */ ? this.#address + this.#numBytesPerPage : this.#address - this.#numBytesPerPage;
         const addressInRange = Math.max(0, Math.min(newAddress, this.#outerMemoryLength - 1));
         this.#jumpToAddress(addressInRange);
     }

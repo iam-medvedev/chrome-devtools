@@ -99,7 +99,7 @@ export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     exposePercentages(): boolean;
     private onStackViewSelectionChanged;
     showDetailsForNode(node: TimelineModel.TimelineProfileTree.Node): boolean;
-    protected groupingFunction(groupBy: string): ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null;
+    protected groupingFunction(groupBy: AggregatedTimelineTreeView.GroupBy): ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null;
     private domainByEvent;
     private static isExtensionInternalURL;
     private static isV8NativeURL;
@@ -114,7 +114,8 @@ export declare namespace AggregatedTimelineTreeView {
         Domain = "Domain",
         Subdomain = "Subdomain",
         URL = "URL",
-        Frame = "Frame"
+        Frame = "Frame",
+        ThirdParties = "ThirdParties"
     }
 }
 export declare class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
@@ -127,11 +128,11 @@ export declare class BottomUpTimelineTreeView extends AggregatedTimelineTreeView
 }
 declare const TimelineStackView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineStackView.EventTypes>;
-    addEventListener<T extends TimelineStackView.Events.SelectionChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineStackView.EventTypes, T>;
-    once<T extends TimelineStackView.Events.SelectionChanged>(eventType: T): Promise<TimelineStackView.EventTypes[T]>;
-    removeEventListener<T extends TimelineStackView.Events.SelectionChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: TimelineStackView.Events.SelectionChanged): boolean;
-    dispatchEventToListeners<T extends TimelineStackView.Events.SelectionChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineStackView.EventTypes, T>): void;
+    addEventListener<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineStackView.EventTypes, T>;
+    once<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: T): Promise<TimelineStackView.EventTypes[T]>;
+    removeEventListener<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: TimelineStackView.Events.SELECTION_CHANGED): boolean;
+    dispatchEventToListeners<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineStackView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineStackView extends TimelineStackView_base {
     private readonly treeView;
@@ -143,10 +144,10 @@ export declare class TimelineStackView extends TimelineStackView_base {
 }
 export declare namespace TimelineStackView {
     const enum Events {
-        SelectionChanged = "SelectionChanged"
+        SELECTION_CHANGED = "SelectionChanged"
     }
     type EventTypes = {
-        [Events.SelectionChanged]: void;
+        [Events.SELECTION_CHANGED]: void;
     };
 }
 export {};

@@ -43,7 +43,7 @@ export class HeapSnapshotWorkerDispatcher {
         this.#postMessage = postMessage;
     }
     sendEvent(name, data) {
-        this.#postMessage({ eventName: name, data: data });
+        this.#postMessage({ eventName: name, data });
     }
     dispatchMessage({ data }) {
         const response = { callId: data.callId, result: null, error: undefined, errorCallStack: undefined, errorMethodName: undefined };

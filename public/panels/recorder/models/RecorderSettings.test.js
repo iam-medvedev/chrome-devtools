@@ -11,7 +11,7 @@ describeWithEnvironment('RecorderSettings', () => {
     });
     it('should have correct default values', async () => {
         assert.isTrue(recorderSettings.selectorAttribute === '');
-        assert.isTrue(recorderSettings.speed === "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.Normal */);
+        assert.isTrue(recorderSettings.speed === "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
         Object.values(Models.Schema.SelectorType).forEach(type => {
             assert.isTrue(recorderSettings.getSelectorByType(type));
         });
@@ -28,8 +28,8 @@ describeWithEnvironment('RecorderSettings', () => {
         assert.strictEqual(Common.Settings.Settings.instance().settingForTest('recorder-selector-attribute').get(), value);
     });
     it('should save speed attribute change', () => {
-        recorderSettings.speed = "extremely_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.ExtremelySlow */;
-        assert.strictEqual(Common.Settings.Settings.instance().settingForTest('recorder-panel-replay-speed').get(), "extremely_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.ExtremelySlow */);
+        recorderSettings.speed = "extremely_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.EXTREMELY_SLOW */;
+        assert.strictEqual(Common.Settings.Settings.instance().settingForTest('recorder-panel-replay-speed').get(), "extremely_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.EXTREMELY_SLOW */);
     });
     it('should save selector type change', () => {
         const selectorType = Models.Schema.SelectorType.CSS;

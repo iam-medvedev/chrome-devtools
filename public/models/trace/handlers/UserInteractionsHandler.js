@@ -253,7 +253,7 @@ export async function finalize() {
             args: {
                 data: {
                     beginEvent: interactionStartEvent,
-                    endEvent: endEvent,
+                    endEvent,
                     frame: frameId,
                     navigationId,
                 },

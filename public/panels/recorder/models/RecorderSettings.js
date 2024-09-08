@@ -19,7 +19,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/recorder/models/RecorderSetting
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RecorderSettings {
     #selectorAttribute = Common.Settings.Settings.instance().createSetting('recorder-selector-attribute', '');
-    #speed = Common.Settings.Settings.instance().createSetting('recorder-panel-replay-speed', "normal" /* PlayRecordingSpeed.Normal */);
+    #speed = Common.Settings.Settings.instance().createSetting('recorder-panel-replay-speed', "normal" /* PlayRecordingSpeed.NORMAL */);
     #replayExtension = Common.Settings.Settings.instance().createSetting('recorder-panel-replay-extension', '');
     #selectorTypes = new Map();
     #preferredCopyFormat = Common.Settings.Settings.instance().createSetting('recorder-preferred-copy-format', "json" /* ConverterIds.JSON */);

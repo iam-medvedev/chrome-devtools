@@ -256,7 +256,7 @@ export class ServiceWorkersView extends UI.Widget.VBox {
                 }
             }
         };
-        document.body.addEventListener("drawerchange" /* UI.InspectorView.Events.DrawerChange */, drawerChangeHandler);
+        document.body.addEventListener("drawerchange" /* UI.InspectorView.Events.DRAWER_CHANGE */, drawerChangeHandler);
     }
     modelAdded(serviceWorkerManager) {
         if (serviceWorkerManager.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -684,7 +684,7 @@ export class Section {
         void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
             {
                 filterType: NetworkForward.UIFilter.FilterType.Is,
-                filterValue: "service-worker-intercepted" /* NetworkForward.UIFilter.IsFilterType.ServiceWorkerIntercepted */,
+                filterValue: "service-worker-intercepted" /* NetworkForward.UIFilter.IsFilterType.SERVICE_WORKER_INTERCEPTED */,
             },
         ]));
         const requests = Logs.NetworkLog.NetworkLog.instance().requests();
@@ -701,7 +701,7 @@ export class Section {
             }
         }
         if (lastRequest) {
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(lastRequest, "timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.Timing */, { clearFilter: false });
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(lastRequest, "timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.TIMING */, { clearFilter: false });
             void Common.Revealer.reveal(requestLocation);
         }
         this.manager.serviceWorkerNetworkRequestsPanelStatus = {

@@ -370,7 +370,7 @@ export class DebuggerPlugin extends Plugin {
         function unIgnoreList() {
             Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
         }
-        const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
+        const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.WARNING */, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
             {
                 text: i18nString(UIStrings.removeFromIgnoreList),
                 highlight: false,
@@ -1270,7 +1270,7 @@ export class DebuggerPlugin extends Plugin {
             return;
         }
         this.missingDebugInfoBar =
-            UI.Infobar.Infobar.create("error" /* UI.Infobar.Type.Error */, warning.details, [], undefined, 'missing-debug-info');
+            UI.Infobar.Infobar.create("error" /* UI.Infobar.Type.ERROR */, warning.details, [], undefined, 'missing-debug-info');
         if (!this.missingDebugInfoBar) {
             return;
         }
@@ -1337,7 +1337,7 @@ export class DebuggerPlugin extends Plugin {
             return;
         }
         if (!resource) {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapSkipped), [], Common.Settings.Settings.instance().createSetting('source-map-skipped-infobar-disabled', false), 'source-map-skipped');
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.INFO */, i18nString(UIStrings.sourceMapSkipped), [], Common.Settings.Settings.instance().createSetting('source-map-skipped-infobar-disabled', false), 'source-map-skipped');
             if (!this.sourceMapInfobar) {
                 return;
             }
@@ -1345,7 +1345,7 @@ export class DebuggerPlugin extends Plugin {
             this.sourceMapInfobar.createDetailsRowMessage(i18nString(UIStrings.reloadForSourceMap));
         }
         else if (resource.success) {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapLoaded), [], Common.Settings.Settings.instance().createSetting('source-map-infobar-disabled', false), 'source-map-loaded');
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.INFO */, i18nString(UIStrings.sourceMapLoaded), [], Common.Settings.Settings.instance().createSetting('source-map-infobar-disabled', false), 'source-map-loaded');
             if (!this.sourceMapInfobar) {
                 return;
             }
@@ -1355,7 +1355,7 @@ export class DebuggerPlugin extends Plugin {
             }));
         }
         else {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.sourceMapFailed), [], undefined, 'source-map-failed');
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("warning" /* UI.Infobar.Type.WARNING */, i18nString(UIStrings.sourceMapFailed), [], undefined, 'source-map-failed');
             if (!this.sourceMapInfobar) {
                 return;
             }

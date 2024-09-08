@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
 import * as Types from '../types/types.js';
@@ -22,7 +23,7 @@ function getInsight(insights, navigationId) {
     }
     return insight;
 }
-describe('DocumentLatency', function () {
+describeWithEnvironment('DocumentLatency', function () {
     it('reports savings for main document with redirects', async () => {
         const { data, insights } = await processTrace(this, 'lantern/redirect/trace.json.gz');
         const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
@@ -53,9 +54,11 @@ describe('DocumentLatency', function () {
         if (!data) {
             throw new Error('missing traceParsedData');
         }
+        const [navigationId, navigation] = data.Meta.navigationsByNavigationId.entries().next().value;
         const context = {
             frameId: data.Meta.mainFrameId,
-            navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
+            navigation,
+            navigationId,
         };
         const insight = TraceModel.Insights.InsightRunners.DocumentLatency.generateInsight(data, context);
         assert.strictEqual(insight.serverResponseTime, 1043);
@@ -82,9 +85,11 @@ describe('DocumentLatency', function () {
         if (!data) {
             throw new Error('missing traceParsedData');
         }
+        const [navigationId, navigation] = data.Meta.navigationsByNavigationId.entries().next().value;
         const context = {
             frameId: data.Meta.mainFrameId,
-            navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
+            navigation,
+            navigationId,
         };
         const insight = TraceModel.Insights.InsightRunners.DocumentLatency.generateInsight(data, context);
         assert.strictEqual(insight.uncompressedResponseBytes, 39799);

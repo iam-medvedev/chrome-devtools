@@ -24,6 +24,7 @@ const breadcrumb = {
     child: breadcrumb2,
 };
 breadcrumbsUI.data = {
-    breadcrumb: breadcrumb,
+    initialBreadcrumb: breadcrumb,
+    activeBreadcrumb: breadcrumb,
 };
 //# sourceMappingURL=nested-breadcrumbs-perf.js.map

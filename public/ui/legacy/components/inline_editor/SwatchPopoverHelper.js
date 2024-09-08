@@ -20,8 +20,8 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     constructor() {
         super();
         this.popover = new UI.GlassPane.GlassPane();
-        this.popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
-        this.popover.setMarginBehavior("Arrow" /* UI.GlassPane.MarginBehavior.Arrow */);
+        this.popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
+        this.popover.setMarginBehavior("Arrow" /* UI.GlassPane.MarginBehavior.ARROW */);
         this.popover.element.addEventListener('mousedown', e => e.consume(), false);
         this.hideProxy = this.hide.bind(this, true);
         this.boundOnKeyDown = this.onKeyDown.bind(this);
@@ -52,7 +52,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
         }
         VisualLogging.setMappedParent(view.contentElement, anchorElement);
         this.popover.registerCSSFiles([swatchPopoverStyles]);
-        this.dispatchEventToListeners("WillShowPopover" /* Events.WillShowPopover */);
+        this.dispatchEventToListeners("WillShowPopover" /* Events.WILL_SHOW_POPOVER */);
         this.isHidden = false;
         this.anchorElement = anchorElement;
         this.view = view;

@@ -41,11 +41,11 @@ function createToolbar(target, { onClearClick }) {
     const leftToolbar = new UI.Toolbar.Toolbar('', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('freestyler-right-toolbar', toolbarContainer);
     const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStringsTemp.clearMessages), 'clear', undefined, 'freestyler.clear');
-    clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, onClearClick);
+    clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, onClearClick);
     leftToolbar.appendToolbarItem(clearButton);
     rightToolbar.appendSeparator();
     const helpButton = new UI.Toolbar.ToolbarButton(i18nString(UIStringsTemp.sendFeedback), 'help', undefined, 'freestyler.feedback');
-    helpButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+    helpButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(DOGFOOD_INFO);
     });
     rightToolbar.appendToolbarItem(helpButton);
@@ -106,7 +106,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 accountImage: syncInfo.accountImage,
             },
         };
-        this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.Toggled */, ev => {
+        this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, ev => {
             this.#viewProps.inspectElementToggled = ev.data;
             this.doUpdate();
         });
@@ -169,11 +169,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
     handleAction(actionId) {
         switch (actionId) {
             case 'freestyler.element-panel-context': {
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanel);
                 this.doUpdate();
                 break;
             }
             case 'freestyler.style-tab-context': {
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromStylesTab);
                 this.doUpdate();
                 break;
@@ -216,7 +218,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.#viewProps.isLoading = false;
         });
         let step = { isLoading: true };
-        for await (const data of this.#agent.run(text, { signal, isFixQuery })) {
+        for await (const data of this.#agent.run(text, { signal, selectedElement: this.#viewProps.selectedElement, isFixQuery })) {
             step.sideEffect = undefined;
             switch (data.type) {
                 case ResponseType.QUERYING: {
@@ -237,8 +239,8 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 }
                 case ResponseType.SIDE_EFFECT: {
                     step.isLoading = false;
+                    step.code = data.code;
                     step.sideEffect = {
-                        code: data.code,
                         onAnswer: data.confirm,
                     };
                     if (systemMessage.steps.at(-1) !== step) {
@@ -256,10 +258,14 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     break;
                 }
                 case ResponseType.ANSWER: {
-                    step.isLoading = false;
                     systemMessage.suggestingFix = data.fixable;
                     systemMessage.answer = data.text;
                     systemMessage.rpcId = data.rpcId;
+                    // When there is an answer without any thinking steps, we don't want to show the thinking step.
+                    if (systemMessage.steps.length === 1 && systemMessage.steps[0].isLoading) {
+                        systemMessage.steps.pop();
+                    }
+                    step.isLoading = false;
                     this.#viewProps.isLoading = false;
                     break;
                 }
@@ -298,11 +304,15 @@ function setFreestylerServerSideLoggingEnabled(enabled) {
         localStorage.setItem('freestyler_enableServerSideLogging', 'true');
     }
     else {
-        localStorage.removeItem('freestyler_enableServerSideLogging');
+        localStorage.setItem('freestyler_enableServerSideLogging', 'false');
     }
 }
 function isFreestylerServerSideLoggingEnabled() {
-    return localStorage.getItem('freestyler_enableServerSideLogging') === 'true';
+    const config = Common.Settings.Settings.instance().getHostConfig();
+    if (config.aidaAvailability?.disallowLogging) {
+        return false;
+    }
+    return localStorage.getItem('freestyler_enableServerSideLogging') !== 'false';
 }
 // @ts-ignore
 globalThis.setFreestylerServerSideLoggingEnabled = setFreestylerServerSideLoggingEnabled;

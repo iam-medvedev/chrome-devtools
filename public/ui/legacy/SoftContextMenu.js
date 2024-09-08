@@ -97,12 +97,12 @@ export class SoftContextMenu {
         }
         this.document = document;
         this.glassPane = new GlassPane();
-        this.glassPane.setPointerEventsBehavior(this.parentMenu ? "PierceGlassPane" /* PointerEventsBehavior.PierceGlassPane */ : "BlockedByGlassPane" /* PointerEventsBehavior.BlockedByGlassPane */);
+        this.glassPane.setPointerEventsBehavior(this.parentMenu ? "PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */ : "BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
         this.glassPane.registerRequiredCSS(softContextMenuStyles);
         this.glassPane.setContentAnchorBox(anchorBox);
-        this.glassPane.setSizeBehavior("MeasureContent" /* SizeBehavior.MeasureContent */);
-        this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NoMargin */);
-        this.glassPane.setAnchorBehavior(this.parentMenu ? "PreferRight" /* AnchorBehavior.PreferRight */ : "PreferBottom" /* AnchorBehavior.PreferBottom */);
+        this.glassPane.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
+        this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NO_MARGIN */);
+        this.glassPane.setAnchorBehavior(this.parentMenu ? "PreferRight" /* AnchorBehavior.PREFER_RIGHT */ : "PreferBottom" /* AnchorBehavior.PREFER_BOTTOM */);
         this.contextMenuElement = this.glassPane.contentElement.createChild('div', 'soft-context-menu');
         this.contextMenuElement.setAttribute('jslog', `${VisualLogging.menu().track({ resize: true }).parent('mapped').track({
             keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space|Escape',

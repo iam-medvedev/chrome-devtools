@@ -1,4 +1,5 @@
 import * as Host from '../../core/host/host.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { ChangeManager } from './ChangeManager.js';
 export declare const FIX_THIS_ISSUE_PROMPT = "Fix this issue using JavaScript code execution";
 export declare enum ResponseType {
@@ -88,8 +89,10 @@ export declare class FreestylerAgent {
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;
     get chatHistoryForTesting(): Array<HistoryChunk>;
-    run(query: string, options?: {
+    static describeElement(element: SDK.DOMModel.DOMNode): Promise<string>;
+    run(query: string, options: {
         signal?: AbortSignal;
+        selectedElement: SDK.DOMModel.DOMNode | null;
         isFixQuery: boolean;
     }): AsyncGenerator<ResponseData, void, void>;
 }

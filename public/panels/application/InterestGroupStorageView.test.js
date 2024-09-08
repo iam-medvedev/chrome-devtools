@@ -25,7 +25,7 @@ class InterestGroupDetailsGetter {
     async getInterestGroupDetails(owner, name) {
         return {
             ownerOrigin: owner,
-            name: name,
+            name,
             expirationTime: 2,
             joiningOrigin: 'https://joiner.com',
             trustedBiddingSignalsKeys: [],

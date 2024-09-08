@@ -43,7 +43,7 @@ export class WarningErrorCounter {
         const countersWrapper = document.createElement('div');
         this.toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(countersWrapper);
         this.toolbarItem.setVisible(false);
-        this.toolbarItem.addEventListener("CompactLayoutUpdated" /* UI.Toolbar.ToolbarItemWithCompactLayoutEvents.CompactLayoutUpdated */, this.onSetCompactLayout, this);
+        this.toolbarItem.addEventListener("CompactLayoutUpdated" /* UI.Toolbar.ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED */, this.onSetCompactLayout, this);
         this.consoleCounter = new IconButton.IconButton.IconButton();
         this.consoleCounter.setAttribute('jslog', `${VisualLogging.counter('console').track({ click: true })}`);
         countersWrapper.appendChild(this.consoleCounter);
@@ -65,7 +65,7 @@ export class WarningErrorCounter {
                 void UI.ViewManager.ViewManager.instance().showView('issues-pane');
             },
             issuesManager,
-            displayMode: "OnlyMostImportant" /* IssueCounter.IssueCounter.DisplayMode.OnlyMostImportant */,
+            displayMode: "OnlyMostImportant" /* IssueCounter.IssueCounter.DisplayMode.ONLY_MOST_IMPORTANT */,
         };
         this.throttler = new Common.Throttler.Throttler(100);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.ConsoleCleared, this.update, this);

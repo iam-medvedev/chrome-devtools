@@ -64,7 +64,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
-    actionId: "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */,
+    actionId: "chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */,
     title: i18nLazyString(UIStrings.createRecording),
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -73,10 +73,10 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
-    actionId: "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */,
+    actionId: "chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */,
     title: i18nLazyString(UIStrings.startStopRecording),
     contextTypes() {
-        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */);
+        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */);
     },
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -85,17 +85,17 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+E',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
-        { shortcut: 'Meta+E', platform: "mac" /* UI.ActionRegistration.Platforms.Mac */ },
+        { shortcut: 'Meta+E', platform: "mac" /* UI.ActionRegistration.Platforms.MAC */ },
     ],
 });
 UI.ActionRegistration.registerActionExtension({
     category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
-    actionId: "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */,
+    actionId: "chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */,
     title: i18nLazyString(UIStrings.replayRecording),
     contextTypes() {
-        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */);
+        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */);
     },
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -104,17 +104,17 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+Enter',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
-        { shortcut: 'Meta+Enter', platform: "mac" /* UI.ActionRegistration.Platforms.Mac */ },
+        { shortcut: 'Meta+Enter', platform: "mac" /* UI.ActionRegistration.Platforms.MAC */ },
     ],
 });
 UI.ActionRegistration.registerActionExtension({
     category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
-    actionId: "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */,
+    actionId: "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */,
     title: i18nLazyString(UIStrings.toggleCode),
     contextTypes() {
-        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */);
+        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */);
     },
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -123,9 +123,9 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+B',
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WindowsLinux */,
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
         },
-        { shortcut: 'Meta+B', platform: "mac" /* UI.ActionRegistration.Platforms.Mac */ },
+        { shortcut: 'Meta+B', platform: "mac" /* UI.ActionRegistration.Platforms.MAC */ },
     ],
 });
 //# sourceMappingURL=recorder-meta.js.map

@@ -101,7 +101,7 @@ export class Toolbar {
         const mainButtonClone = Toolbar.createActionButton(action);
         let longClickController = null;
         let longClickButtons = null;
-        action.addEventListener("Toggled" /* ActionEvents.Toggled */, updateOptions);
+        action.addEventListener("Toggled" /* ActionEvents.TOGGLED */, updateOptions);
         updateOptions();
         return button;
         function updateOptions() {
@@ -128,7 +128,7 @@ export class Toolbar {
             const document = button.element.ownerDocument;
             document.documentElement.addEventListener('mouseup', mouseUp, false);
             const optionsGlassPane = new GlassPane();
-            optionsGlassPane.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BlockedByGlassPane */);
+            optionsGlassPane.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
             optionsGlassPane.show(document);
             const optionsBar = new Toolbar('fill', optionsGlassPane.contentElement);
             optionsBar.contentElement.classList.add('floating');
@@ -202,8 +202,8 @@ export class Toolbar {
                 void action.execute();
             };
         }
-        button.addEventListener("Click" /* ToolbarButton.Events.Click */, handler, action);
-        action.addEventListener("Enabled" /* ActionEvents.Enabled */, enabledChanged);
+        button.addEventListener("Click" /* ToolbarButton.Events.CLICK */, handler, action);
+        action.addEventListener("Enabled" /* ActionEvents.ENABLED */, enabledChanged);
         button.setEnabled(action.enabled());
         return button;
         function makeButton() {
@@ -218,7 +218,7 @@ export class Toolbar {
             if (action.toggleWithRedColor()) {
                 toggleButton.enableToggleWithRedColor();
             }
-            action.addEventListener("Toggled" /* ActionEvents.Toggled */, toggled);
+            action.addEventListener("Toggled" /* ActionEvents.TOGGLED */, toggled);
             toggled();
             return toggleButton;
             function toggled() {
@@ -450,7 +450,7 @@ export class ToolbarItemWithCompactLayout extends ToolbarItem {
         super(element);
     }
     setCompactLayout(enable) {
-        this.dispatchEventToListeners("CompactLayoutUpdated" /* ToolbarItemWithCompactLayoutEvents.CompactLayoutUpdated */, enable);
+        this.dispatchEventToListeners("CompactLayoutUpdated" /* ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED */, enable);
     }
 }
 export class ToolbarText extends ToolbarItem {
@@ -536,6 +536,7 @@ export class ToolbarButton extends ToolbarItem {
         }
         this.button.textContent = text;
         this.button.variant = "text" /* Buttons.Button.Variant.TEXT */;
+        this.button.reducedFocusRing = true;
         this.text = text;
     }
     setAdorner(adorner) {
@@ -575,14 +576,14 @@ export class ToolbarButton extends ToolbarItem {
         if (!this.enabled) {
             return;
         }
-        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.Click */, event);
+        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.CLICK */, event);
         event.consume();
     }
     mouseDown(event) {
         if (!this.enabled) {
             return;
         }
-        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MouseDown */, event);
+        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MOUSE_DOWN */, event);
     }
 }
 export class ToolbarCombobox extends ToolbarItem {
@@ -654,14 +655,14 @@ export class ToolbarCombobox extends ToolbarItem {
         if (!this.enabled) {
             return;
         }
-        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.Click */, event);
+        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.CLICK */, event);
         event.consume();
     }
     mouseDown(event) {
         if (!this.enabled) {
             return;
         }
-        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MouseDown */, event);
+        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MOUSE_DOWN */, event);
     }
 }
 export class ToolbarInput extends ToolbarItem {
@@ -685,7 +686,7 @@ export class ToolbarInput extends ToolbarItem {
             this.prompt.setTitle(tooltip);
         }
         this.prompt.setPlaceholder(placeholder, accessiblePlaceholder);
-        this.prompt.addEventListener("TextChanged" /* TextPromptEvents.TextChanged */, this.onChangeCallback.bind(this));
+        this.prompt.addEventListener("TextChanged" /* TextPromptEvents.TEXT_CHANGED */, this.onChangeCallback.bind(this));
         if (growFactor) {
             this.element.style.flexGrow = String(growFactor);
         }
@@ -746,7 +747,7 @@ export class ToolbarInput extends ToolbarItem {
     }
     onKeydownCallback(event) {
         if (event.key === 'Enter' && this.prompt.text()) {
-            this.dispatchEventToListeners("EnterPressed" /* ToolbarInput.Event.EnterPressed */, this.prompt.text());
+            this.dispatchEventToListeners("EnterPressed" /* ToolbarInput.Event.ENTER_PRESSED */, this.prompt.text());
         }
         if (!Platform.KeyboardUtilities.isEscKey(event) || !this.prompt.text()) {
             return;
@@ -756,7 +757,7 @@ export class ToolbarInput extends ToolbarItem {
     }
     onChangeCallback() {
         this.updateEmptyStyles();
-        this.dispatchEventToListeners("TextChanged" /* ToolbarInput.Event.TextChanged */, this.prompt.text());
+        this.dispatchEventToListeners("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, this.prompt.text());
     }
     updateEmptyStyles() {
         this.element.classList.toggle('toolbar-input-empty', !this.prompt.text());

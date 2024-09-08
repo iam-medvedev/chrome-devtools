@@ -43,11 +43,13 @@ import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSe
 const nodeToParentTreeElementMap = new WeakMap();
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["ElementAttached"] = "ElementAttached";
     Events["ElementsDetached"] = "ElementsDetached";
     Events["ElementExpanded"] = "ElementExpanded";
     Events["ElementCollapsed"] = "ElementCollapsed";
     Events["ElementSelected"] = "ElementSelected";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
     rootElementInternal;
@@ -342,7 +344,7 @@ export class TreeOutlineInShadow extends TreeOutline {
     shadowRoot;
     disclosureElement;
     renderSelection;
-    constructor() {
+    constructor(variant = "Other" /* TreeVariant.OTHER */) {
         super();
         this.contentElement.classList.add('tree-outline');
         this.element = document.createElement('div');
@@ -351,6 +353,9 @@ export class TreeOutlineInShadow extends TreeOutline {
         this.disclosureElement = this.shadowRoot.createChild('div', 'tree-outline-disclosure');
         this.disclosureElement.appendChild(this.contentElement);
         this.renderSelection = true;
+        if (variant === "NavigationTree" /* TreeVariant.NAVIGATION_TREE */) {
+            this.contentElement.classList.add('tree-variant-navigation');
+        }
     }
     registerRequiredCSS(cssFile) {
         ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot, cssFile);

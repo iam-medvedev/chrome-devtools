@@ -29,7 +29,7 @@ export class TimelineJSProfileProcessor {
     static createFakeTraceFromCpuProfile(profile, tid) {
         const events = [];
         const threadName = i18nString(UIStrings.threadS, { PH1: tid });
-        appendEvent('TracingStartedInPage', { data: { 'sessionId': '1' } }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */);
+        appendEvent('TracingStartedInPage', { data: { sessionId: '1' } }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */);
         appendEvent("thread_name" /* TraceEngine.Types.TraceEvents.KnownEventName.THREAD_NAME */, { name: threadName }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */, '__metadata');
         if (!profile) {
             return events;
@@ -40,7 +40,7 @@ export class TimelineJSProfileProcessor {
         // TODO(crbug.com/341234884): consider removing this or clarify why it's required.
         appendEvent('JSRoot', {}, profile.startTime, profile.endTime - profile.startTime, "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */, 'toplevel');
         // TODO: create a `Profile` event instead, as `cpuProfile` is legacy
-        appendEvent('CpuProfile', { data: { 'cpuProfile': profile } }, profile.endTime, 0, "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */);
+        appendEvent('CpuProfile', { data: { cpuProfile: profile } }, profile.endTime, 0, "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */);
         return events;
         function appendEvent(name, args, ts, dur, ph, cat) {
             const event = {

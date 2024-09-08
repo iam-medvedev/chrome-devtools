@@ -119,10 +119,10 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         this.refreshThrottler = new Common.Throttler.Throttler(300);
         this.refreshButton =
             new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refresh), 'refresh', undefined, 'cache-storage.refresh');
-        this.refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.refreshButtonClicked, this);
+        this.refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.refreshButtonClicked, this);
         editorToolbar.appendToolbarItem(this.refreshButton);
         this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'cross', undefined, 'cache-storage.delete-selected');
-        this.deleteSelectedButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
+        this.deleteSelectedButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
             void this.deleteButtonClicked(null);
         });
         editorToolbar.appendToolbarItem(this.deleteSelectedButton);
@@ -130,7 +130,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         editorToolbar.appendToolbarItem(entryPathFilterBox);
         const entryPathFilterThrottler = new Common.Throttler.Throttler(300);
         this.entryPathFilter = '';
-        entryPathFilterBox.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, () => {
+        entryPathFilterBox.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, () => {
             void entryPathFilterThrottler.schedule(() => {
                 this.entryPathFilter = entryPathFilterBox.value();
                 return this.updateData(true);
@@ -179,7 +179,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
                 id: 'response-type',
                 title: i18n.i18n.lockedString('Response-Type'),
                 weight: 1,
-                align: "right" /* DataGrid.DataGrid.Align.Right */,
+                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
                 sortable: true,
             },
             { id: 'content-type', title: i18n.i18n.lockedString('Content-Type'), weight: 1, sortable: true },
@@ -187,7 +187,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
                 id: 'content-length',
                 title: i18n.i18n.lockedString('Content-Length'),
                 weight: 1,
-                align: "right" /* DataGrid.DataGrid.Align.Right */,
+                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
                 sortable: true,
             },
             {
@@ -195,7 +195,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
                 title: i18nString(UIStrings.timeCached),
                 width: '12em',
                 weight: 1,
-                align: "right" /* DataGrid.DataGrid.Align.Right */,
+                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
                 sortable: true,
             },
             { id: 'vary-header', title: i18n.i18n.lockedString('Vary Header'), weight: 1, sortable: true },
@@ -207,8 +207,8 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
             refreshCallback: this.updateData.bind(this, true),
             editCallback: undefined,
         });
-        dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
-        dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, event => {
+        dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
+        dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, event => {
             void this.previewCachedResponse(event.data.data);
         }, this);
         dataGrid.setStriped(true);

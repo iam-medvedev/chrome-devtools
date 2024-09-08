@@ -1,7 +1,7 @@
 export declare const enum ConverterIds {
     JSON = "json",
-    Puppeteer = "puppeteer",
-    PuppeteerFirefox = "puppeteer-firefox",
-    Replay = "@puppeteer/replay",
-    Lighthouse = "lighthouse"
+    PUPPETEER = "puppeteer",
+    PUPPETEER_FIREFOX = "puppeteer-firefox",
+    REPLAY = "@puppeteer/replay",
+    LIGHTHOUSE = "lighthouse"
 }

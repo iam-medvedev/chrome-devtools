@@ -174,9 +174,11 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["AnimationGroupStarted"] = "AnimationGroupStarted";
     Events["AnimationGroupUpdated"] = "AnimationGroupUpdated";
     Events["ModelReset"] = "ModelReset";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class AnimationImpl {
     #animationModel;
@@ -670,7 +672,7 @@ export class ScreenshotCapture {
     captureScreenshots(duration, screenshots) {
         const screencastDuration = Math.min(duration / this.#animationModel.playbackRate, 3000);
         const endTime = screencastDuration + window.performance.now();
-        this.#requests.push({ endTime: endTime, screenshots: screenshots });
+        this.#requests.push({ endTime, screenshots });
         if (!this.#endTime || endTime > this.#endTime) {
             clearTimeout(this.#stopTimer);
             this.#stopTimer = window.setTimeout(this.stopScreencast.bind(this), screencastDuration);

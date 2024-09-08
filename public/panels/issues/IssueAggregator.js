@@ -222,12 +222,12 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
         for (const issue of this.issuesManager.issues()) {
             this.#aggregateIssue(issue);
         }
-        this.dispatchEventToListeners("FullUpdateRequired" /* Events.FullUpdateRequired */);
+        this.dispatchEventToListeners("FullUpdateRequired" /* Events.FULL_UPDATE_REQUIRED */);
     }
     #aggregateIssue(issue) {
         const map = issue.isHidden() ? this.#hiddenAggregatedIssuesByKey : this.#aggregatedIssuesByKey;
         const aggregatedIssue = this.#aggregateIssueByStatus(map, issue);
-        this.dispatchEventToListeners("AggregatedIssueUpdated" /* Events.AggregatedIssueUpdated */, aggregatedIssue);
+        this.dispatchEventToListeners("AggregatedIssueUpdated" /* Events.AGGREGATED_ISSUE_UPDATED */, aggregatedIssue);
         return aggregatedIssue;
     }
     #aggregateIssueByStatus(aggregatedIssuesMap, issue) {

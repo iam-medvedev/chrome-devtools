@@ -18,10 +18,10 @@ export declare class DOMStorage extends Common.ObjectWrapper.ObjectWrapper<DOMSt
 }
 export declare namespace DOMStorage {
     const enum Events {
-        DOMStorageItemsCleared = "DOMStorageItemsCleared",
-        DOMStorageItemRemoved = "DOMStorageItemRemoved",
-        DOMStorageItemAdded = "DOMStorageItemAdded",
-        DOMStorageItemUpdated = "DOMStorageItemUpdated"
+        DOM_STORAGE_ITEMS_CLEARED = "DOMStorageItemsCleared",
+        DOM_STORAGE_ITEM_REMOVED = "DOMStorageItemRemoved",
+        DOM_STORAGE_ITEM_ADDED = "DOMStorageItemAdded",
+        DOM_STORAGE_ITEM_UPDATED = "DOMStorageItemUpdated"
     }
     interface DOMStorageItemRemovedEvent {
         key: string;
@@ -36,10 +36,10 @@ export declare namespace DOMStorage {
         value: string;
     }
     type EventTypes = {
-        [Events.DOMStorageItemsCleared]: void;
-        [Events.DOMStorageItemRemoved]: DOMStorageItemRemovedEvent;
-        [Events.DOMStorageItemAdded]: DOMStorageItemAddedEvent;
-        [Events.DOMStorageItemUpdated]: DOMStorageItemUpdatedEvent;
+        [Events.DOM_STORAGE_ITEMS_CLEARED]: void;
+        [Events.DOM_STORAGE_ITEM_REMOVED]: DOMStorageItemRemovedEvent;
+        [Events.DOM_STORAGE_ITEM_ADDED]: DOMStorageItemAddedEvent;
+        [Events.DOM_STORAGE_ITEM_UPDATED]: DOMStorageItemUpdatedEvent;
     };
 }
 export declare class DOMStorageModel extends SDK.SDKModel.SDKModel<EventTypes> {
@@ -64,12 +64,12 @@ export declare class DOMStorageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     storages(): DOMStorage[];
 }
 export declare const enum Events {
-    DOMStorageAdded = "DOMStorageAdded",
-    DOMStorageRemoved = "DOMStorageRemoved"
+    DOM_STORAGE_ADDED = "DOMStorageAdded",
+    DOM_STORAGE_REMOVED = "DOMStorageRemoved"
 }
 export type EventTypes = {
-    [Events.DOMStorageAdded]: DOMStorage;
-    [Events.DOMStorageRemoved]: DOMStorage;
+    [Events.DOM_STORAGE_ADDED]: DOMStorage;
+    [Events.DOM_STORAGE_REMOVED]: DOMStorage;
 };
 export declare class DOMStorageDispatcher implements ProtocolProxyApi.DOMStorageDispatcher {
     private readonly model;

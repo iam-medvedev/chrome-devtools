@@ -39,7 +39,7 @@ Node.prototype.traverseNextTextNode = function (stayWithin) {
     if (!node) {
         return null;
     }
-    const nonTextTags = { 'STYLE': 1, 'SCRIPT': 1, '#document-fragment': 1 };
+    const nonTextTags = { STYLE: 1, SCRIPT: 1, '#document-fragment': 1 };
     while (node && (node.nodeType !== Node.TEXT_NODE || nonTextTags[node.parentNode ? node.parentNode.nodeName : ''])) {
         node = node.traverseNextNode(stayWithin);
     }
@@ -219,7 +219,7 @@ Node.prototype.deepTextContent = function () {
 Node.prototype.childTextNodes = function () {
     let node = this.traverseNextTextNode(this);
     const result = [];
-    const nonTextTags = { 'STYLE': 1, 'SCRIPT': 1, '#document-fragment': 1 };
+    const nonTextTags = { STYLE: 1, SCRIPT: 1, '#document-fragment': 1 };
     while (node) {
         if (!nonTextTags[node.parentNode ? node.parentNode.nodeName : '']) {
             result.push(node);

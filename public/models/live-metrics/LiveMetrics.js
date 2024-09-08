@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
 const LIVE_METRICS_WORLD_NAME = 'DevTools Performance Metrics';
@@ -19,6 +20,7 @@ class InjectedScript {
     }
 }
 export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
+    #enabled = false;
     #target;
     #scriptIdentifier;
     #lastResetContextId;
@@ -205,34 +207,67 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             await this.#handleWebVitalsEvent(webVitalsEvent, data.executionContextId);
         });
     }
-    targetAdded(target) {
+    async #killAllLiveMetricContexts() {
+        const target = this.#target;
+        if (!target) {
+            return;
+        }
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        if (!runtimeModel) {
+            return;
+        }
+        const killPromises = runtimeModel.executionContexts()
+            .filter(e => e.name === LIVE_METRICS_WORLD_NAME && !e.isDefault)
+            .map(e => target.runtimeAgent().invoke_evaluate({
+            // On the off chance something else creates execution contexts with the exact same name
+            // this expression should just be a noop.
+            expression: `window?.${Spec.INTERNAL_KILL_SWITCH}?.()`,
+            contextId: e.id,
+        }));
+        await Promise.all(killPromises);
+    }
+    clearInteractions() {
+        this.#interactions = [];
+        this.dispatchEventToListeners("status" /* Events.STATUS */, {
+            lcp: this.#lcpValue,
+            cls: this.#clsValue,
+            inp: this.#inpValue,
+            interactions: this.#interactions,
+        });
+    }
+    async targetAdded(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
             return;
         }
-        void this.#enable(target);
+        this.#target = target;
+        await this.enable();
     }
-    targetRemoved(target) {
-        if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
+    async targetRemoved(target) {
+        if (target !== this.#target) {
             return;
         }
-        void this.#disable();
+        await this.disable();
+        this.#target = undefined;
     }
-    async #enable(target) {
+    async enable() {
+        if (!Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
+            return;
+        }
         if (Host.InspectorFrontendHost.isUnderTest()) {
             // Enabling this impacts a lot of layout tests; we will work on fixing
             // them but for now it is easier to not run this page in layout tests.
             // b/360064852
             return;
         }
-        if (this.#target) {
+        if (!this.#target || this.#enabled) {
             return;
         }
-        const domModel = target.model(SDK.DOMModel.DOMModel);
+        const domModel = this.#target.model(SDK.DOMModel.DOMModel);
         if (!domModel) {
             return;
         }
         domModel.addEventListener(SDK.DOMModel.Events.DocumentUpdated, this.#onDocumentUpdate, this);
-        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        const runtimeModel = this.#target.model(SDK.RuntimeModel.RuntimeModel);
         if (!runtimeModel) {
             return;
         }
@@ -241,19 +276,24 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             name: Spec.EVENT_BINDING_NAME,
             executionContextName: LIVE_METRICS_WORLD_NAME,
         });
+        // If DevTools is closed and reopened, the live metrics context from the previous
+        // session will persist. We should ensure any old live metrics contexts are killed
+        // before starting a new one.
+        await this.#killAllLiveMetricContexts();
         const source = await InjectedScript.get();
-        this.#target = target;
-        const { identifier } = await target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
+        const { identifier } = await this.#target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
             source,
             worldName: LIVE_METRICS_WORLD_NAME,
             runImmediately: true,
         });
         this.#scriptIdentifier = identifier;
+        this.#enabled = true;
     }
-    async #disable() {
-        if (!this.#target) {
+    async disable() {
+        if (!this.#target || !this.#enabled) {
             return;
         }
+        await this.#killAllLiveMetricContexts();
         const runtimeModel = this.#target.model(SDK.RuntimeModel.RuntimeModel);
         if (runtimeModel) {
             await runtimeModel.removeBinding({
@@ -270,7 +310,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 identifier: this.#scriptIdentifier,
             });
         }
-        this.#target = undefined;
+        this.#enabled = false;
     }
 }
 //# sourceMappingURL=LiveMetrics.js.map

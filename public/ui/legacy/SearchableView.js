@@ -126,7 +126,7 @@ function createClearButton(jslogContext) {
     button.data = {
         variant: "icon" /* Buttons.Button.Variant.ICON */,
         size: "SMALL" /* Buttons.Button.Size.SMALL */,
-        jslogContext: jslogContext,
+        jslogContext,
         title: i18nString(UIStrings.clearInput),
         iconName: 'cross-circle-filled',
     };
@@ -175,7 +175,7 @@ export class SearchableView extends VBox {
         this.replaceToggleButton =
             new ToolbarToggle(i18nString(UIStrings.enableFindAndReplace), 'replace', undefined, 'replace');
         ARIAUtils.setLabel(this.replaceToggleButton.element, i18nString(UIStrings.enableFindAndReplace));
-        this.replaceToggleButton.addEventListener("Click" /* ToolbarButton.Events.Click */, this.toggleReplace, this);
+        this.replaceToggleButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, this.toggleReplace, this);
         replaceToggleToolbar.appendToolbarItem(this.replaceToggleButton);
         // Elements within `searchInputElements` are added according to their expected tab order.
         const searchInputElements = this.footerElement.createChild('div', 'search-inputs');
@@ -254,12 +254,12 @@ export class SearchableView extends VBox {
         const toolbar = new Toolbar('toolbar-search-options', firstRowButtons);
         this.searchNavigationPrevElement =
             new ToolbarButton(i18nString(UIStrings.searchPrevious), 'chevron-up', undefined, 'select-previous');
-        this.searchNavigationPrevElement.addEventListener("Click" /* ToolbarButton.Events.Click */, () => this.onPrevButtonSearch());
+        this.searchNavigationPrevElement.addEventListener("Click" /* ToolbarButton.Events.CLICK */, () => this.onPrevButtonSearch());
         toolbar.appendToolbarItem(this.searchNavigationPrevElement);
         ARIAUtils.setLabel(this.searchNavigationPrevElement.element, i18nString(UIStrings.searchPrevious));
         this.searchNavigationNextElement =
             new ToolbarButton(i18nString(UIStrings.searchNext), 'chevron-down', undefined, 'select-next');
-        this.searchNavigationNextElement.addEventListener("Click" /* ToolbarButton.Events.Click */, () => this.onNextButtonSearch());
+        this.searchNavigationNextElement.addEventListener("Click" /* ToolbarButton.Events.CLICK */, () => this.onNextButtonSearch());
         ARIAUtils.setLabel(this.searchNavigationNextElement.element, i18nString(UIStrings.searchNext));
         toolbar.appendToolbarItem(this.searchNavigationNextElement);
         const matchesText = new ToolbarText();

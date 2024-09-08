@@ -7,12 +7,13 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as ThirdPartyWeb from '../../third_party/third-party-web/third-party-web.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ActiveFilters } from './ActiveFilters.js';
-import { getCategoryStyles, stringIsEventCategory } from './EventUICategory.js';
+import * as TimelineComponents from './components/components.js';
 import * as Extensions from './extensions/extensions.js';
 import { Tracker } from './FreshRecording.js';
 import { targetForEvent } from './TargetForEvent.js';
@@ -95,6 +96,10 @@ const UIStrings = {
      *@description Text in Timeline Tree View of the Performance panel
      */
     groupByUrl: 'Group by URL',
+    /**
+     *@description Text in Timeline Tree View of the Performance panel
+     */
+    groupByThirdParties: 'Group by Third Parties',
     /**
      *@description Aria-label for grouping combo box in Timeline Details View
      */
@@ -211,19 +216,19 @@ export class TimelineTreeView extends UI.Widget.VBox {
             editCallback: undefined,
             deleteCallback: undefined,
         });
-        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
         this.dataGrid.element.addEventListener('mousemove', this.onMouseMove.bind(this), true);
-        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
+        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
         this.dataGrid.asWidget().show(mainView.element);
-        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.updateDetailsForSelection, this);
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.updateDetailsForSelection, this);
         this.detailsView = new UI.Widget.VBox();
         this.detailsView.element.classList.add('timeline-details-view', 'timeline-details-view-body');
         this.splitWidget.setMainWidget(mainView);
         this.splitWidget.setSidebarWidget(this.detailsView);
         this.splitWidget.hideSidebar();
         this.splitWidget.show(this.element);
-        this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.ShowModeChanged */, this.onShowModeChanged, this);
+        this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.SHOW_MODE_CHANGED */, this.onShowModeChanged, this);
         this.lastSelectedNodeInternal;
     }
     lastSelectedNode() {
@@ -252,23 +257,23 @@ export class TimelineTreeView extends UI.Widget.VBox {
     populateToolbar(toolbar) {
         this.caseSensitiveButton =
             new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchCase), 'match-case', undefined, 'match-case');
-        this.caseSensitiveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.caseSensitiveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.caseSensitiveButton);
         this.regexButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.useRegularExpression), 'regular-expression', undefined, 'regular-expression');
-        this.regexButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.regexButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.regexButton);
         this.matchWholeWord = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchWholeWord), 'match-whole-word', undefined, 'match-whole-word');
-        this.matchWholeWord.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
+        this.matchWholeWord.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.matchWholeWord);
         const textFilterUI = new UI.Toolbar.ToolbarFilter();
         this.textFilterUI = textFilterUI;
-        textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.#filterChanged, this);
+        textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.#filterChanged, this);
         toolbar.appendToolbarItem(textFilterUI);
     }
     selectedEvents() {
@@ -419,7 +424,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.refreshTree();
     }
     onShowModeChanged() {
-        if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */) {
+        if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */) {
             return;
         }
         this.lastSelectedNodeInternal = undefined;
@@ -431,7 +436,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
             return;
         }
         this.lastSelectedNodeInternal = selectedNode;
-        if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */) {
+        if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */) {
             return;
         }
         this.detailsView.detachChildWidgets();
@@ -649,7 +654,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         this.groupBySetting.addChangeListener(this.refreshTree.bind(this));
         this.init();
         this.stackView = new TimelineStackView(this);
-        this.stackView.addEventListener("SelectionChanged" /* TimelineStackView.Events.SelectionChanged */, this.onStackViewSelectionChanged, this);
+        this.stackView.addEventListener("SelectionChanged" /* TimelineStackView.Events.SELECTION_CHANGED */, this.onStackViewSelectionChanged, this);
     }
     setGroupBySettingForTests(groupBy) {
         this.groupBySetting.set(groupBy);
@@ -683,20 +688,21 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         return name;
     }
     displayInfoForGroupNode(node) {
-        const categories = getCategoryStyles();
+        const categories = TimelineComponents.EntryStyles.getCategoryStyles();
         const color = node.id && node.event ? TimelineUIUtils.eventColor(node.event) : categories['other'].color;
         const unattributed = i18nString(UIStrings.unattributed);
         const id = typeof node.id === 'symbol' ? undefined : node.id;
         switch (this.groupBySetting.get()) {
             case AggregatedTimelineTreeView.GroupBy.Category: {
-                const idIsValid = id && stringIsEventCategory(id);
+                const idIsValid = id && TimelineComponents.EntryStyles.stringIsEventCategory(id);
                 const category = idIsValid ? categories[id] || categories['other'] : { title: unattributed, color: unattributed };
                 return { name: category.title, color: category.color, icon: undefined };
             }
             case AggregatedTimelineTreeView.GroupBy.Domain:
-            case AggregatedTimelineTreeView.GroupBy.Subdomain: {
+            case AggregatedTimelineTreeView.GroupBy.Subdomain:
+            case AggregatedTimelineTreeView.GroupBy.ThirdParties: {
                 const domainName = id ? this.beautifyDomainName(id) : undefined;
-                return { name: domainName || unattributed, color: color, icon: undefined };
+                return { name: domainName || unattributed, color, icon: undefined };
             }
             case AggregatedTimelineTreeView.GroupBy.EventName: {
                 if (!node.event) {
@@ -704,7 +710,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
                 }
                 const name = TimelineUIUtils.eventTitle(node.event);
                 return {
-                    name: name,
+                    name,
                     color,
                     icon: undefined,
                 };
@@ -714,12 +720,12 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case AggregatedTimelineTreeView.GroupBy.Frame: {
                 const frame = id ? this.traceParseData()?.PageFrames.frames.get(id) : undefined;
                 const frameName = frame ? TimelineUIUtils.displayNameForFrame(frame) : i18nString(UIStrings.page);
-                return { name: frameName, color: color, icon: undefined };
+                return { name: frameName, color, icon: undefined };
             }
             default:
                 console.assert(false, 'Unexpected grouping type');
         }
-        return { name: id || unattributed, color: color, icon: undefined };
+        return { name: id || unattributed, color, icon: undefined };
     }
     populateToolbar(toolbar) {
         super.populateToolbar(toolbar);
@@ -732,6 +738,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             { label: i18nString(UIStrings.groupByFrame), value: groupBy.Frame },
             { label: i18nString(UIStrings.groupBySubdomain), value: groupBy.Subdomain },
             { label: i18nString(UIStrings.groupByUrl), value: groupBy.URL },
+            { label: i18nString(UIStrings.groupByThirdParties), value: groupBy.ThirdParties },
         ];
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingComboBox(options, this.groupBySetting, i18nString(UIStrings.groupBy)));
         toolbar.appendSpacer();
@@ -777,9 +784,9 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case GroupBy.Category:
                 return (event) => TimelineUIUtils.eventStyle(event).category.name;
             case GroupBy.Subdomain:
-                return this.domainByEvent.bind(this, false);
             case GroupBy.Domain:
-                return this.domainByEvent.bind(this, true);
+            case GroupBy.ThirdParties:
+                return this.domainByEvent.bind(this, groupBy);
             case GroupBy.URL:
                 return (event) => {
                     const traceParsedData = this.traceParseData();
@@ -795,7 +802,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
                 return null;
         }
     }
-    domainByEvent(groupSubdomains, event) {
+    domainByEvent(groupBy, event) {
         const traceParsedData = this.traceParseData();
         if (!traceParsedData) {
             return '';
@@ -817,7 +824,14 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         if (parsedURL.scheme === 'chrome-extension') {
             return parsedURL.scheme + '://' + parsedURL.host;
         }
-        if (!groupSubdomains) {
+        if (groupBy === AggregatedTimelineTreeView.GroupBy.ThirdParties) {
+            const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url);
+            if (!entity) {
+                return parsedURL.host;
+            }
+            return entity.name;
+        }
+        if (groupBy === AggregatedTimelineTreeView.GroupBy.Subdomain) {
             return parsedURL.host;
         }
         if (/^[.0-9]+$/.test(parsedURL.host)) {
@@ -838,6 +852,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
 (function (AggregatedTimelineTreeView) {
     let GroupBy;
     (function (GroupBy) {
+        /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
         GroupBy["None"] = "None";
         GroupBy["EventName"] = "EventName";
         GroupBy["Category"] = "Category";
@@ -845,6 +860,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         GroupBy["Subdomain"] = "Subdomain";
         GroupBy["URL"] = "URL";
         GroupBy["Frame"] = "Frame";
+        GroupBy["ThirdParties"] = "ThirdParties";
+        /* eslint-enable @typescript-eslint/naming-convention */
     })(GroupBy = AggregatedTimelineTreeView.GroupBy || (AggregatedTimelineTreeView.GroupBy = {}));
 })(AggregatedTimelineTreeView || (AggregatedTimelineTreeView = {}));
 export class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
@@ -887,8 +904,8 @@ export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget
             editCallback: undefined,
             refreshCallback: undefined,
         });
-        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
-        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.onSelectionChanged, this);
+        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.onSelectionChanged, this);
         this.dataGrid.asWidget().show(this.element);
     }
     setStack(stack, selectedNode) {
@@ -912,7 +929,7 @@ export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget
         return selectedNode && selectedNode.profileNode;
     }
     onSelectionChanged() {
-        this.dispatchEventToListeners("SelectionChanged" /* TimelineStackView.Events.SelectionChanged */);
+        this.dispatchEventToListeners("SelectionChanged" /* TimelineStackView.Events.SELECTION_CHANGED */);
     }
 }
 //# sourceMappingURL=TimelineTreeView.js.map

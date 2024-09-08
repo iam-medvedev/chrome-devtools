@@ -23,7 +23,7 @@ describeWithEnvironment('RecorderController', () => {
     }
     async function setupController(recording) {
         const controller = new RecorderController.RecorderController();
-        controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RecordingPage */);
+        controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
         controller.setCurrentRecordingForTesting(recording);
         controller.connectedCallback();
         await coordinator.done();
@@ -31,10 +31,10 @@ describeWithEnvironment('RecorderController', () => {
     }
     describe('Navigation', () => {
         it('should return back to the previous page on recordingcancelled event', async () => {
-            const previousPage = "AllRecordingsPage" /* RecorderController.Pages.AllRecordingsPage */;
+            const previousPage = "AllRecordingsPage" /* RecorderController.Pages.ALL_RECORDINGS_PAGE */;
             const controller = new RecorderController.RecorderController();
             controller.setCurrentPageForTesting(previousPage);
-            controller.setCurrentPageForTesting("CreateRecordingPage" /* RecorderController.Pages.CreateRecordingPage */);
+            controller.setCurrentPageForTesting("CreateRecordingPage" /* RecorderController.Pages.CREATE_RECORDING_PAGE */);
             controller.connectedCallback();
             await coordinator.done();
             const createRecordingView = controller.shadowRoot?.querySelector('devtools-create-recording-view');
@@ -191,15 +191,15 @@ describeWithEnvironment('RecorderController', () => {
         it('should execute action', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            await controller.handleActions("chrome-recorder.create-recording" /* RecorderActions.CreateRecording */);
-            assert.strictEqual(controller.getCurrentPageForTesting(), "CreateRecordingPage" /* RecorderController.Pages.CreateRecordingPage */);
+            await controller.handleActions("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */);
+            assert.strictEqual(controller.getCurrentPageForTesting(), "CreateRecordingPage" /* RecorderController.Pages.CREATE_RECORDING_PAGE */);
         });
         it('should not execute action while recording', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
             controller.setIsRecordingStateForTesting(true);
-            await controller.handleActions("chrome-recorder.create-recording" /* RecorderActions.CreateRecording */);
-            assert.strictEqual(controller.getCurrentPageForTesting(), "RecordingPage" /* RecorderController.Pages.RecordingPage */);
+            await controller.handleActions("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */);
+            assert.strictEqual(controller.getCurrentPageForTesting(), "RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
         });
         it('should not execute action while replaying', async () => {
             const recording = makeRecording();
@@ -208,15 +208,15 @@ describeWithEnvironment('RecorderController', () => {
                 isPlaying: true,
                 isPausedOnBreakpoint: false,
             });
-            await controller.handleActions("chrome-recorder.create-recording" /* RecorderActions.CreateRecording */);
-            assert.strictEqual(controller.getCurrentPageForTesting(), "RecordingPage" /* RecorderController.Pages.RecordingPage */);
+            await controller.handleActions("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */);
+            assert.strictEqual(controller.getCurrentPageForTesting(), "RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
         });
     });
     describe('Action is possible', () => {
         it('should return true for create action when not replaying or recording', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            assert.isTrue(controller.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CreateRecording */));
+            assert.isTrue(controller.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */));
         });
         it('should return false for create action when recording', async () => {
             const recording = makeRecording();
@@ -225,61 +225,61 @@ describeWithEnvironment('RecorderController', () => {
                 isPlaying: true,
                 isPausedOnBreakpoint: false,
             });
-            assert.isFalse(controller.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CreateRecording */));
+            assert.isFalse(controller.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */));
         });
         it('should return false for create action when replaying', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
             controller.setIsRecordingStateForTesting(true);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CreateRecording */));
+            assert.isFalse(controller.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */));
         });
         it('should return correct value for start/stop action', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            assert.isTrue(controller.isActionPossible("chrome-recorder.start-recording" /* RecorderActions.StartRecording */));
+            assert.isTrue(controller.isActionPossible("chrome-recorder.start-recording" /* RecorderActions.START_RECORDING */));
             controller.setRecordingStateForTesting({
                 isPlaying: true,
                 isPausedOnBreakpoint: false,
             });
-            assert.isFalse(controller.isActionPossible("chrome-recorder.start-recording" /* RecorderActions.StartRecording */));
+            assert.isFalse(controller.isActionPossible("chrome-recorder.start-recording" /* RecorderActions.START_RECORDING */));
         });
         it('should return true for replay action when on the recording page', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RecordingPage */);
-            assert.isTrue(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.ReplayRecording */));
+            controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
+            assert.isTrue(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
         });
         it('should return false for replay action when not on the recording page', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            controller.setCurrentPageForTesting("AllRecordingsPage" /* RecorderController.Pages.AllRecordingsPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.ReplayRecording */));
-            controller.setCurrentPageForTesting("CreateRecordingPage" /* RecorderController.Pages.CreateRecordingPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.ReplayRecording */));
-            controller.setCurrentPageForTesting("StartPage" /* RecorderController.Pages.StartPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.ReplayRecording */));
+            controller.setCurrentPageForTesting("AllRecordingsPage" /* RecorderController.Pages.ALL_RECORDINGS_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+            controller.setCurrentPageForTesting("CreateRecordingPage" /* RecorderController.Pages.CREATE_RECORDING_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+            controller.setCurrentPageForTesting("StartPage" /* RecorderController.Pages.START_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
             controller.setRecordingStateForTesting({
                 isPlaying: true,
                 isPausedOnBreakpoint: false,
             });
-            controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RecordingPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.ReplayRecording */));
+            controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
         });
         it('should true for toggle when on the recording page', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RecordingPage */);
-            assert.isTrue(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.ToggleCodeView */));
+            controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
+            assert.isTrue(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
         });
         it('should false for toggle when on the recording page', async () => {
             const recording = makeRecording();
             const controller = await setupController(recording);
-            controller.setCurrentPageForTesting("AllRecordingsPage" /* RecorderController.Pages.AllRecordingsPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.ToggleCodeView */));
-            controller.setCurrentPageForTesting("StartPage" /* RecorderController.Pages.StartPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.ToggleCodeView */));
-            controller.setCurrentPageForTesting("AllRecordingsPage" /* RecorderController.Pages.AllRecordingsPage */);
-            assert.isFalse(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.ToggleCodeView */));
+            controller.setCurrentPageForTesting("AllRecordingsPage" /* RecorderController.Pages.ALL_RECORDINGS_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+            controller.setCurrentPageForTesting("StartPage" /* RecorderController.Pages.START_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+            controller.setCurrentPageForTesting("AllRecordingsPage" /* RecorderController.Pages.ALL_RECORDINGS_PAGE */);
+            assert.isFalse(controller.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
         });
     });
 });

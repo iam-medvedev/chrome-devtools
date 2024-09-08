@@ -132,7 +132,7 @@ export class CookiesTable extends UI.Widget.VBox {
                 sort: DataGrid.DataGrid.Order.Ascending,
                 longText: true,
                 weight: 24,
-                editable: editable,
+                editable,
             },
             {
                 id: "value" /* SDK.Cookie.Attribute.VALUE */,
@@ -140,52 +140,52 @@ export class CookiesTable extends UI.Widget.VBox {
                 sortable: true,
                 longText: true,
                 weight: 34,
-                editable: editable,
+                editable,
             },
             {
                 id: "domain" /* SDK.Cookie.Attribute.DOMAIN */,
                 title: 'Domain',
                 sortable: true,
                 weight: 7,
-                editable: editable,
+                editable,
             },
             {
                 id: "path" /* SDK.Cookie.Attribute.PATH */,
                 title: 'Path',
                 sortable: true,
                 weight: 7,
-                editable: editable,
+                editable,
             },
             {
                 id: "expires" /* SDK.Cookie.Attribute.EXPIRES */,
                 title: 'Expires / Max-Age',
                 sortable: true,
                 weight: 7,
-                editable: editable,
+                editable,
             },
             {
                 id: "size" /* SDK.Cookie.Attribute.SIZE */,
                 title: i18nString(UIStrings.size),
                 sortable: true,
-                align: "right" /* DataGrid.DataGrid.Align.Right */,
+                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
                 weight: 7,
             },
             {
                 id: "http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */,
                 title: 'HttpOnly',
                 sortable: true,
-                align: "center" /* DataGrid.DataGrid.Align.Center */,
+                align: "center" /* DataGrid.DataGrid.Align.CENTER */,
                 weight: 7,
-                dataType: "Boolean" /* DataGrid.DataGrid.DataType.Boolean */,
+                dataType: "Boolean" /* DataGrid.DataGrid.DataType.BOOLEAN */,
                 editable,
             },
             {
                 id: "secure" /* SDK.Cookie.Attribute.SECURE */,
                 title: 'Secure',
                 sortable: true,
-                align: "center" /* DataGrid.DataGrid.Align.Center */,
+                align: "center" /* DataGrid.DataGrid.Align.CENTER */,
                 weight: 7,
-                dataType: "Boolean" /* DataGrid.DataGrid.DataType.Boolean */,
+                dataType: "Boolean" /* DataGrid.DataGrid.DataType.BOOLEAN */,
                 editable,
             },
             {
@@ -193,22 +193,22 @@ export class CookiesTable extends UI.Widget.VBox {
                 title: 'SameSite',
                 sortable: true,
                 weight: 7,
-                editable: editable,
+                editable,
             },
             {
                 id: "partition-key-site" /* SDK.Cookie.Attribute.PARTITION_KEY_SITE */,
                 title: 'Partition Key Site',
                 sortable: true,
                 weight: 7,
-                editable: editable,
+                editable,
             },
             {
                 id: "has-cross-site-ancestor" /* SDK.Cookie.Attribute.HAS_CROSS_SITE_ANCESTOR */,
                 title: 'Cross Site',
                 sortable: true,
-                align: "center" /* DataGrid.DataGrid.Align.Center */,
+                align: "center" /* DataGrid.DataGrid.Align.CENTER */,
                 weight: 7,
-                dataType: "Boolean" /* DataGrid.DataGrid.DataType.Boolean */,
+                dataType: "Boolean" /* DataGrid.DataGrid.DataType.BOOLEAN */,
                 editable,
             },
             {
@@ -216,7 +216,7 @@ export class CookiesTable extends UI.Widget.VBox {
                 title: 'Priority',
                 sortable: true,
                 weight: 7,
-                editable: editable,
+                editable,
             },
         ];
         if (Root.Runtime.experiments.isEnabled('experimental-cookie-features')) {
@@ -225,17 +225,17 @@ export class CookiesTable extends UI.Widget.VBox {
                     id: "source-scheme" /* SDK.Cookie.Attribute.SOURCE_SCHEME */,
                     title: 'SourceScheme',
                     sortable: true,
-                    align: "center" /* DataGrid.DataGrid.Align.Center */,
+                    align: "center" /* DataGrid.DataGrid.Align.CENTER */,
                     weight: 7,
-                    editable: editable,
+                    editable,
                 },
                 {
                     id: "source-port" /* SDK.Cookie.Attribute.SOURCE_PORT */,
                     title: 'SourcePort',
                     sortable: true,
-                    align: "center" /* DataGrid.DataGrid.Align.Center */,
+                    align: "center" /* DataGrid.DataGrid.Align.CENTER */,
                     weight: 7,
-                    editable: editable,
+                    editable,
                 },
             ];
             columns.push(...additionalColumns);
@@ -260,13 +260,13 @@ export class CookiesTable extends UI.Widget.VBox {
         }
         this.dataGrid.setStriped(true);
         this.dataGrid.setName('cookies-table');
-        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.rebuildTable, this);
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.rebuildTable, this);
         this.dataGrid.setRowContextMenuCallback(this.populateContextMenu.bind(this));
         if (renderInline) {
             this.dataGrid.renderInline();
         }
         if (selectedCallback) {
-            this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, selectedCallback, this);
+            this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, selectedCallback, this);
         }
         this.lastEditedColumnId = null;
         this.dataGrid.asWidget().show(this.element);
@@ -279,7 +279,7 @@ export class CookiesTable extends UI.Widget.VBox {
         this.registerCSSFiles([cookiesTableStyles]);
     }
     setCookies(cookies, cookieToBlockedReasons, cookieToExemptionReason) {
-        this.setCookieFolders([{ cookies: cookies, folderName: null }], cookieToBlockedReasons, cookieToExemptionReason);
+        this.setCookieFolders([{ cookies, folderName: null }], cookieToBlockedReasons, cookieToExemptionReason);
     }
     setCookieFolders(cookieFolders, cookieToBlockedReasons, cookieToExemptionReason) {
         this.data = cookieFolders;

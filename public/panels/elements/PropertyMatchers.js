@@ -234,31 +234,31 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
     // clang-format on
     static isLinkableNameProperty(propertyName) {
         const names = [
-            "animation" /* LinkableNameProperties.Animation */,
-            "animation-name" /* LinkableNameProperties.AnimationName */,
-            "font-palette" /* LinkableNameProperties.FontPalette */,
-            "position-try-fallbacks" /* LinkableNameProperties.PositionTryFallbacks */,
-            "position-try" /* LinkableNameProperties.PositionTry */,
+            "animation" /* LinkableNameProperties.ANIMATION */,
+            "animation-name" /* LinkableNameProperties.ANIMATION_NAME */,
+            "font-palette" /* LinkableNameProperties.FONT_PALETTE */,
+            "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */,
+            "position-try" /* LinkableNameProperties.POSITION_TRY */,
         ];
         return names.includes(propertyName);
     }
     static identifierAnimationLonghandMap = new Map(Object.entries({
-        'normal': "direction" /* AnimationLonghandPart.Direction */,
-        'alternate': "direction" /* AnimationLonghandPart.Direction */,
-        'reverse': "direction" /* AnimationLonghandPart.Direction */,
-        'alternate-reverse': "direction" /* AnimationLonghandPart.Direction */,
-        'none': "fill-mode" /* AnimationLonghandPart.FillMode */,
-        'forwards': "fill-mode" /* AnimationLonghandPart.FillMode */,
-        'backwards': "fill-mode" /* AnimationLonghandPart.FillMode */,
-        'both': "fill-mode" /* AnimationLonghandPart.FillMode */,
-        'running': "play-state" /* AnimationLonghandPart.PlayState */,
-        'paused': "play-state" /* AnimationLonghandPart.PlayState */,
-        'infinite': "iteration-count" /* AnimationLonghandPart.IterationCount */,
-        'linear': "easing-function" /* AnimationLonghandPart.EasingFunction */,
-        'ease': "easing-function" /* AnimationLonghandPart.EasingFunction */,
-        'ease-in': "easing-function" /* AnimationLonghandPart.EasingFunction */,
-        'ease-out': "easing-function" /* AnimationLonghandPart.EasingFunction */,
-        'ease-in-out': "easing-function" /* AnimationLonghandPart.EasingFunction */,
+        normal: "direction" /* AnimationLonghandPart.DIRECTION */,
+        alternate: "direction" /* AnimationLonghandPart.DIRECTION */,
+        reverse: "direction" /* AnimationLonghandPart.DIRECTION */,
+        'alternate-reverse': "direction" /* AnimationLonghandPart.DIRECTION */,
+        none: "fill-mode" /* AnimationLonghandPart.FILL_MODE */,
+        forwards: "fill-mode" /* AnimationLonghandPart.FILL_MODE */,
+        backwards: "fill-mode" /* AnimationLonghandPart.FILL_MODE */,
+        both: "fill-mode" /* AnimationLonghandPart.FILL_MODE */,
+        running: "play-state" /* AnimationLonghandPart.PLAY_STATE */,
+        paused: "play-state" /* AnimationLonghandPart.PLAY_STATE */,
+        infinite: "iteration-count" /* AnimationLonghandPart.ITERATION_COUNT */,
+        linear: "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        ease: "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        'ease-in': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        'ease-out': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        'ease-in-out': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
     }));
     matchAnimationNameInShorthand(node, matching) {
         // Order is important within each animation definition for distinguishing <keyframes-name> values from other keywords.
@@ -268,7 +268,7 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
         const text = matching.ast.text(node);
         // This is not a known identifier, so return it as `animation-name`.
         if (!LinkableNameMatcher.identifierAnimationLonghandMap.has(text)) {
-            return new LinkableNameMatch(text, node, "animation" /* LinkableNameProperties.Animation */);
+            return new LinkableNameMatch(text, node, "animation" /* LinkableNameProperties.ANIMATION */);
         }
         // There can be multiple `animation` declarations splitted by a comma.
         // So, we find the declaration nodes that are related to the node argument.
@@ -293,7 +293,7 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
             if (itNode.name === 'ValueName') {
                 const categoryValue = LinkableNameMatcher.identifierAnimationLonghandMap.get(tokenized.text(itNode));
                 if (categoryValue && categoryValue === identifierCategory) {
-                    return new LinkableNameMatch(text, node, "animation" /* LinkableNameProperties.Animation */);
+                    return new LinkableNameMatch(text, node, "animation" /* LinkableNameProperties.ANIMATION */);
                 }
             }
         }
@@ -314,8 +314,8 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
             matching.ast.text(parentNode.prevSibling) === 'var';
         const isAParentDeclarationOrVarCall = isParentADeclaration || isInsideVarCall;
         // `position-try-fallbacks` and `position-try` only accept names with dashed ident.
-        const shouldMatchOnlyVariableName = propertyName === "position-try" /* LinkableNameProperties.PositionTry */ ||
-            propertyName === "position-try-fallbacks" /* LinkableNameProperties.PositionTryFallbacks */;
+        const shouldMatchOnlyVariableName = propertyName === "position-try" /* LinkableNameProperties.POSITION_TRY */ ||
+            propertyName === "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */;
         // We only mark top level nodes or nodes that are inside `var()` expressions as linkable names.
         if (!propertyName || (node.name !== 'ValueName' && node.name !== 'VariableName') ||
             !isAParentDeclarationOrVarCall || (node.name === 'ValueName' && shouldMatchOnlyVariableName)) {
@@ -394,7 +394,7 @@ export class ShadowMatcher extends matcherBase(ShadowMatch) {
         }
         const valueNodes = ASTUtils.siblings(ASTUtils.declValue(node));
         const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
-        return new ShadowMatch(valueText, node, matching.ast.propertyName === 'text-shadow' ? "textShadow" /* ShadowType.TextShadow */ : "boxShadow" /* ShadowType.BoxShadow */);
+        return new ShadowMatch(valueText, node, matching.ast.propertyName === 'text-shadow' ? "textShadow" /* ShadowType.TEXT_SHADOW */ : "boxShadow" /* ShadowType.BOX_SHADOW */);
     }
 }
 export class FontMatch {

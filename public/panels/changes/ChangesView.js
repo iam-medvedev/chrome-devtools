@@ -68,7 +68,7 @@ export class ChangesView extends UI.Widget.VBox {
         this.emptyWidget.show(mainWidget.element);
         this.workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
         this.changesSidebar = new ChangesSidebar(this.workspaceDiff);
-        this.changesSidebar.addEventListener("SelectedUISourceCodeChanged" /* Events.SelectedUISourceCodeChanged */, this.selectedUISourceCodeChanged, this);
+        this.changesSidebar.addEventListener("SelectedUISourceCodeChanged" /* Events.SELECTED_UI_SOURCE_CODE_CHANGED */, this.selectedUISourceCodeChanged, this);
         splitWidget.setSidebarWidget(this.changesSidebar);
         this.selectedUISourceCode = null;
         this.diffContainer = mainWidget.element.createChild('div', 'diff-container');

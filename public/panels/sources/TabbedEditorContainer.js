@@ -196,15 +196,15 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.currentView || !(this.currentView instanceof SourceFrame.SourceFrame.SourceFrameImpl)) {
             return;
         }
-        this.currentView.addEventListener("EditorUpdate" /* SourceFrame.SourceFrame.Events.EditorUpdate */, this.onEditorUpdate, this);
-        this.currentView.addEventListener("EditorScroll" /* SourceFrame.SourceFrame.Events.EditorScroll */, this.onScrollChanged, this);
+        this.currentView.addEventListener("EditorUpdate" /* SourceFrame.SourceFrame.Events.EDITOR_UPDATE */, this.onEditorUpdate, this);
+        this.currentView.addEventListener("EditorScroll" /* SourceFrame.SourceFrame.Events.EDITOR_SCROLL */, this.onScrollChanged, this);
     }
     removeViewListeners() {
         if (!this.currentView || !(this.currentView instanceof SourceFrame.SourceFrame.SourceFrameImpl)) {
             return;
         }
-        this.currentView.removeEventListener("EditorUpdate" /* SourceFrame.SourceFrame.Events.EditorUpdate */, this.onEditorUpdate, this);
-        this.currentView.removeEventListener("EditorScroll" /* SourceFrame.SourceFrame.Events.EditorScroll */, this.onScrollChanged, this);
+        this.currentView.removeEventListener("EditorUpdate" /* SourceFrame.SourceFrame.Events.EDITOR_UPDATE */, this.onEditorUpdate, this);
+        this.currentView.removeEventListener("EditorScroll" /* SourceFrame.SourceFrame.Events.EDITOR_SCROLL */, this.onScrollChanged, this);
     }
     onScrollChanged() {
         if (this.currentView instanceof SourceFrame.SourceFrame.SourceFrameImpl) {
@@ -275,10 +275,10 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         const eventData = {
             currentFile: this.currentFileInternal,
             currentView: this.currentView,
-            previousView: previousView,
-            userGesture: userGesture,
+            previousView,
+            userGesture,
         };
-        this.dispatchEventToListeners("EditorSelected" /* Events.EditorSelected */, eventData);
+        this.dispatchEventToListeners("EditorSelected" /* Events.EDITOR_SELECTED */, eventData);
     }
     titleForFile(uiSourceCode) {
         const maxDisplayNameLength = 30;
@@ -486,7 +486,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         this.files.delete(tabId);
         if (uiSourceCode) {
             this.removeUISourceCodeListeners(uiSourceCode);
-            this.dispatchEventToListeners("EditorClosed" /* Events.EditorClosed */, uiSourceCode);
+            this.dispatchEventToListeners("EditorClosed" /* Events.EDITOR_CLOSED */, uiSourceCode);
             if (isUserGesture) {
                 this.editorClosedByUserAction(uiSourceCode);
             }

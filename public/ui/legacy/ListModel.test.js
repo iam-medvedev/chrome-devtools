@@ -51,7 +51,7 @@ describe('ListModel', () => {
     it('fires an event when elements are replaced', () => {
         const model = new UI.ListModel.ListModel([0, 1, 2]);
         let eventData;
-        model.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ItemsReplaced */, (event) => {
+        model.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, (event) => {
             eventData = event.data;
         });
         model.replaceRange(0, 1, [5, 6, 7]);

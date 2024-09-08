@@ -9,6 +9,9 @@ export class EventsSerializer {
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             return `${"p" /* TraceEngine.Types.File.EventKeyType.PROFILE_CALL */}-${event.pid}-${event.tid}-${TraceEngine.Types.TraceEvents.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
         }
+        if (TraceEngine.Types.TraceEvents.isLegacyTimelineFrame(event)) {
+            return `${"l" /* TraceEngine.Types.File.EventKeyType.LEGACY_TIMELINE_FRAME */}-${event.index}`;
+        }
         const rawEvents = TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
         const key = TraceEngine.Types.TraceEvents.isSyntheticBasedEvent(event) ?
             `${"s" /* TraceEngine.Types.File.EventKeyType.SYNTHETIC_EVENT */}-${rawEvents.indexOf(event.rawSourceEvent)}` :
@@ -22,6 +25,13 @@ export class EventsSerializer {
         const eventValues = TraceEngine.Types.File.traceEventKeyToValues(key);
         if (EventsSerializer.isProfileCallKey(eventValues)) {
             return this.#getModifiedProfileCallByKeyValues(eventValues, traceParsedData);
+        }
+        if (EventsSerializer.isLegacyTimelineFrameKey(eventValues)) {
+            const event = traceParsedData.Frames.frames.at(eventValues.rawIndex);
+            if (!event) {
+                throw new Error(`Could not find frame with index ${eventValues.rawIndex}`);
+            }
+            return event;
         }
         if (EventsSerializer.isSyntheticEventKey(eventValues)) {
             const syntheticEvents = TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraceEvents();
@@ -39,6 +49,9 @@ export class EventsSerializer {
     }
     static isProfileCallKey(key) {
         return key.type === "p" /* TraceEngine.Types.File.EventKeyType.PROFILE_CALL */;
+    }
+    static isLegacyTimelineFrameKey(key) {
+        return key.type === "l" /* TraceEngine.Types.File.EventKeyType.LEGACY_TIMELINE_FRAME */;
     }
     static isRawEventKey(key) {
         return key.type === "r" /* TraceEngine.Types.File.EventKeyType.RAW_EVENT */;

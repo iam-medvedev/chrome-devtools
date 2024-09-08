@@ -68,10 +68,10 @@ export interface LinkDecorator extends Common.EventTarget.EventTarget<LinkDecora
 }
 export declare namespace LinkDecorator {
     const enum Events {
-        LinkIconChanged = "LinkIconChanged"
+        LINK_ICON_CHANGED = "LinkIconChanged"
     }
     type EventTypes = {
-        [Events.LinkIconChanged]: Workspace.UISourceCode.UISourceCode;
+        [Events.LINK_ICON_CHANGED]: Workspace.UISourceCode.UISourceCode;
     };
 }
 export declare class LinkContextMenuProvider implements UI.ContextMenu.Provider<Node> {
@@ -134,9 +134,9 @@ export interface LinkifyOptions {
 }
 export type LinkHandler = (arg0: TextUtils.ContentProvider.ContentProvider, arg1: number) => void;
 export declare const enum Events {
-    LiveLocationUpdated = "liveLocationUpdated"
+    LIVE_LOCATION_UPDATED = "liveLocationUpdated"
 }
 export type EventTypes = {
-    [Events.LiveLocationUpdated]: Bindings.LiveLocation.LiveLocation;
+    [Events.LIVE_LOCATION_UPDATED]: Bindings.LiveLocation.LiveLocation;
 };
 export {};

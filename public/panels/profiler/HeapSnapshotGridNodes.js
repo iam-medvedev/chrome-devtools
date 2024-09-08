@@ -443,7 +443,9 @@ export class HeapSnapshotGridNode extends Common.ObjectWrapper.eventMixin(HeapSn
 (function (HeapSnapshotGridNode) {
     let Events;
     (function (Events) {
+        /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
         Events["PopulateComplete"] = "PopulateComplete";
+        /* eslint-enable @typescript-eslint/naming-convention */
     })(Events = HeapSnapshotGridNode.Events || (HeapSnapshotGridNode.Events = {}));
 })(HeapSnapshotGridNode || (HeapSnapshotGridNode = {}));
 export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
@@ -488,9 +490,9 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         const shallowSizePercent = this.shallowSize / snapshot.totalSize * 100.0;
         const retainedSizePercent = this.retainedSize / snapshot.totalSize * 100.0;
         this.data = {
-            'distance': this.toUIDistance(this.distance),
-            'shallowSize': Platform.NumberUtilities.withThousandsSeparator(this.shallowSize),
-            'retainedSize': Platform.NumberUtilities.withThousandsSeparator(this.retainedSize),
+            distance: this.toUIDistance(this.distance),
+            shallowSize: Platform.NumberUtilities.withThousandsSeparator(this.shallowSize),
+            retainedSize: Platform.NumberUtilities.withThousandsSeparator(this.retainedSize),
             'shallowSize-percent': this.toPercentString(shallowSizePercent),
             'retainedSize-percent': this.toPercentString(retainedSizePercent),
         };
@@ -938,11 +940,11 @@ export class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
         const retainedSizePercent = this.retainedSize / snapshot.totalSize * 100.0;
         const shallowSizePercent = this.shallowSize / snapshot.totalSize * 100.0;
         this.data = {
-            'object': className,
-            'count': Platform.NumberUtilities.withThousandsSeparator(this.count),
-            'distance': this.toUIDistance(this.distance),
-            'shallowSize': Platform.NumberUtilities.withThousandsSeparator(this.shallowSize),
-            'retainedSize': Platform.NumberUtilities.withThousandsSeparator(this.retainedSize),
+            object: className,
+            count: Platform.NumberUtilities.withThousandsSeparator(this.count),
+            distance: this.toUIDistance(this.distance),
+            shallowSize: Platform.NumberUtilities.withThousandsSeparator(this.shallowSize),
+            retainedSize: Platform.NumberUtilities.withThousandsSeparator(this.retainedSize),
             'shallowSize-percent': this.toPercentString(shallowSizePercent),
             'retainedSize-percent': this.toPercentString(retainedSizePercent),
         };
@@ -1072,14 +1074,14 @@ export class HeapSnapshotDiffNode extends HeapSnapshotGridNode {
         this.sizeDelta = diffForClass.sizeDelta;
         this.deletedIndexes = diffForClass.deletedIndexes;
         this.data = {
-            'object': className,
-            'addedCount': Platform.NumberUtilities.withThousandsSeparator(this.addedCount),
-            'removedCount': Platform.NumberUtilities.withThousandsSeparator(this.removedCount),
-            'countDelta': this.signForDelta(this.countDelta) +
+            object: className,
+            addedCount: Platform.NumberUtilities.withThousandsSeparator(this.addedCount),
+            removedCount: Platform.NumberUtilities.withThousandsSeparator(this.removedCount),
+            countDelta: this.signForDelta(this.countDelta) +
                 Platform.NumberUtilities.withThousandsSeparator(Math.abs(this.countDelta)),
-            'addedSize': Platform.NumberUtilities.withThousandsSeparator(this.addedSize),
-            'removedSize': Platform.NumberUtilities.withThousandsSeparator(this.removedSize),
-            'sizeDelta': this.signForDelta(this.sizeDelta) + Platform.NumberUtilities.withThousandsSeparator(Math.abs(this.sizeDelta)),
+            addedSize: Platform.NumberUtilities.withThousandsSeparator(this.addedSize),
+            removedSize: Platform.NumberUtilities.withThousandsSeparator(this.removedSize),
+            sizeDelta: this.signForDelta(this.sizeDelta) + Platform.NumberUtilities.withThousandsSeparator(Math.abs(this.sizeDelta)),
         };
     }
     get name() {
@@ -1160,11 +1162,11 @@ export class AllocationGridNode extends HeapSnapshotGridNode {
         this.populated = false;
         this.allocationNode = data;
         this.data = {
-            'liveCount': Platform.NumberUtilities.withThousandsSeparator(data.liveCount),
-            'count': Platform.NumberUtilities.withThousandsSeparator(data.count),
-            'liveSize': Platform.NumberUtilities.withThousandsSeparator(data.liveSize),
-            'size': Platform.NumberUtilities.withThousandsSeparator(data.size),
-            'name': data.name,
+            liveCount: Platform.NumberUtilities.withThousandsSeparator(data.liveCount),
+            count: Platform.NumberUtilities.withThousandsSeparator(data.count),
+            liveSize: Platform.NumberUtilities.withThousandsSeparator(data.liveSize),
+            size: Platform.NumberUtilities.withThousandsSeparator(data.size),
+            name: data.name,
         };
     }
     populate() {

@@ -232,8 +232,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     constructor(panel) {
         super();
         this.panel = panel;
-        this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
+        this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.sidebarTree.element.classList.add('resources-sidebar');
+        this.sidebarTree.hideOverflow();
         this.sidebarTree.element.classList.add('filter-all');
         // Listener needs to have been set up before the elements are added
         this.sidebarTree.addEventListener(UI.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);
@@ -374,7 +375,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.target = target;
         const interestGroupModel = target.model(InterestGroupStorageModel);
         if (interestGroupModel) {
-            interestGroupModel.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.InterestGroupAccess */, this.interestGroupAccess, this);
+            interestGroupModel.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
         }
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         if (!resourceTreeModel) {
@@ -398,7 +399,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         }
         const interestGroupModel = target.model(InterestGroupStorageModel);
         if (interestGroupModel) {
-            interestGroupModel.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.InterestGroupAccess */, this.interestGroupAccess, this);
+            interestGroupModel.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
         }
         this.resetWithFrames();
     }
@@ -432,13 +433,13 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     domStorageModelAdded(model) {
         model.enable();
         model.storages().forEach(this.addDOMStorage.bind(this));
-        model.addEventListener("DOMStorageAdded" /* DOMStorageModelEvents.DOMStorageAdded */, this.domStorageAdded, this);
-        model.addEventListener("DOMStorageRemoved" /* DOMStorageModelEvents.DOMStorageRemoved */, this.domStorageRemoved, this);
+        model.addEventListener("DOMStorageAdded" /* DOMStorageModelEvents.DOM_STORAGE_ADDED */, this.domStorageAdded, this);
+        model.addEventListener("DOMStorageRemoved" /* DOMStorageModelEvents.DOM_STORAGE_REMOVED */, this.domStorageRemoved, this);
     }
     domStorageModelRemoved(model) {
         model.storages().forEach(this.removeDOMStorage.bind(this));
-        model.removeEventListener("DOMStorageAdded" /* DOMStorageModelEvents.DOMStorageAdded */, this.domStorageAdded, this);
-        model.removeEventListener("DOMStorageRemoved" /* DOMStorageModelEvents.DOMStorageRemoved */, this.domStorageRemoved, this);
+        model.removeEventListener("DOMStorageAdded" /* DOMStorageModelEvents.DOM_STORAGE_ADDED */, this.domStorageAdded, this);
+        model.removeEventListener("DOMStorageRemoved" /* DOMStorageModelEvents.DOM_STORAGE_REMOVED */, this.domStorageRemoved, this);
     }
     indexedDBModelAdded(model) {
         model.enable();
@@ -449,29 +450,29 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     }
     interestGroupModelAdded(model) {
         model.enable();
-        model.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.InterestGroupAccess */, this.interestGroupAccess, this);
+        model.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
     }
     interestGroupModelRemoved(model) {
         model.disable();
-        model.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.InterestGroupAccess */, this.interestGroupAccess, this);
+        model.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
     }
     async sharedStorageModelAdded(model) {
         await model.enable();
         for (const storage of model.storages()) {
             await this.addSharedStorage(storage);
         }
-        model.addEventListener("SharedStorageAdded" /* SharedStorageModelEvents.SharedStorageAdded */, this.sharedStorageAdded, this);
-        model.addEventListener("SharedStorageRemoved" /* SharedStorageModelEvents.SharedStorageRemoved */, this.sharedStorageRemoved, this);
-        model.addEventListener("SharedStorageAccess" /* SharedStorageModelEvents.SharedStorageAccess */, this.sharedStorageAccess, this);
+        model.addEventListener("SharedStorageAdded" /* SharedStorageModelEvents.SHARED_STORAGE_ADDED */, this.sharedStorageAdded, this);
+        model.addEventListener("SharedStorageRemoved" /* SharedStorageModelEvents.SHARED_STORAGE_REMOVED */, this.sharedStorageRemoved, this);
+        model.addEventListener("SharedStorageAccess" /* SharedStorageModelEvents.SHARED_STORAGE_ACCESS */, this.sharedStorageAccess, this);
     }
     sharedStorageModelRemoved(model) {
         model.disable();
         for (const storage of model.storages()) {
             this.removeSharedStorage(storage);
         }
-        model.removeEventListener("SharedStorageAdded" /* SharedStorageModelEvents.SharedStorageAdded */, this.sharedStorageAdded, this);
-        model.removeEventListener("SharedStorageRemoved" /* SharedStorageModelEvents.SharedStorageRemoved */, this.sharedStorageRemoved, this);
-        model.removeEventListener("SharedStorageAccess" /* SharedStorageModelEvents.SharedStorageAccess */, this.sharedStorageAccess, this);
+        model.removeEventListener("SharedStorageAdded" /* SharedStorageModelEvents.SHARED_STORAGE_ADDED */, this.sharedStorageAdded, this);
+        model.removeEventListener("SharedStorageRemoved" /* SharedStorageModelEvents.SHARED_STORAGE_REMOVED */, this.sharedStorageRemoved, this);
+        model.removeEventListener("SharedStorageAccess" /* SharedStorageModelEvents.SHARED_STORAGE_ACCESS */, this.sharedStorageAccess, this);
     }
     storageBucketsModelAdded(model) {
         model.enable();
@@ -595,7 +596,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         }
         this.sharedStorageTreeElements.set(sharedStorage.securityOrigin, sharedStorageTreeElement);
         this.sharedStorageListTreeElement.appendChild(sharedStorageTreeElement);
-        this.sharedStorageTreeElementDispatcher.dispatchEventToListeners("SharedStorageTreeElementAdded" /* SharedStorageTreeElementDispatcher.Events.SharedStorageTreeElementAdded */, { origin: sharedStorage.securityOrigin });
+        this.sharedStorageTreeElementDispatcher.dispatchEventToListeners("SharedStorageTreeElementAdded" /* SharedStorageTreeElementDispatcher.Events.SHARED_STORAGE_TREE_ELEMENT_ADDED */, { origin: sharedStorage.securityOrigin });
     }
     sharedStorageRemoved(event) {
         this.removeSharedStorage(event.data);
@@ -774,7 +775,7 @@ export class AppManifestTreeElement extends ApplicationPanelTreeElement {
         const handleExpansion = (hasManifest) => {
             this.setExpandable(hasManifest);
         };
-        this.view.addEventListener("ManifestDetected" /* AppManifestViewEvents.ManifestDetected */, event => handleExpansion(event.data));
+        this.view.addEventListener("ManifestDetected" /* AppManifestViewEvents.MANIFEST_DETECTED */, event => handleExpansion(event.data));
     }
     get itemURL() {
         return 'manifest://';

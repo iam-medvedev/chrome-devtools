@@ -359,7 +359,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             return;
         }
         void node.copyNode();
-        this.setClipboardData({ node: node, isCut: isCut });
+        this.setClipboardData({ node, isCut });
     }
     canPaste(targetNode) {
         if (targetNode.isShadowRoot() || targetNode.ancestorUserAgentShadowRoot()) {
@@ -511,7 +511,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         }
     }
     selectedNodeChanged(focus) {
-        this.dispatchEventToListeners(ElementsTreeOutline.Events.SelectedNodeChanged, { node: this.selectedDOMNodeInternal, focus: focus });
+        this.dispatchEventToListeners(ElementsTreeOutline.Events.SelectedNodeChanged, { node: this.selectedDOMNodeInternal, focus });
     }
     fireElementsTreeUpdated(nodes) {
         this.dispatchEventToListeners(ElementsTreeOutline.Events.ElementsTreeUpdated, nodes);
@@ -960,6 +960,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         domModel.addEventListener(SDK.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
         domModel.addEventListener(SDK.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
         domModel.addEventListener(SDK.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
+        domModel.addEventListener(SDK.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
     }
     unwireFromDOMModel(domModel) {
         domModel.removeEventListener(SDK.DOMModel.Events.MarkersChanged, this.markersChanged, this);
@@ -972,6 +973,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         domModel.removeEventListener(SDK.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
         domModel.removeEventListener(SDK.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
         domModel.removeEventListener(SDK.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
+        domModel.removeEventListener(SDK.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
         elementsTreeOutlineByDOMModel.delete(domModel);
     }
     addUpdateRecord(node) {
@@ -1353,13 +1355,29 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             container.hidden = container.currentTopLayerDOMNodes.size === 0;
         }
     }
+    scrollableFlagUpdated(event) {
+        let { node } = event.data;
+        if (node.nodeName() === '#document') {
+            // We show the scroll badge of the document on the <html> element.
+            if (!node.ownerDocument?.documentElement) {
+                return;
+            }
+            node = node.ownerDocument.documentElement;
+        }
+        const treeElement = this.treeElementByNode.get(node);
+        if (treeElement) {
+            treeElement.updateScrollAdorner();
+        }
+    }
     static treeOutlineSymbol = Symbol('treeOutline');
 }
 (function (ElementsTreeOutline) {
     let Events;
     (function (Events) {
+        /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
         Events["SelectedNodeChanged"] = "SelectedNodeChanged";
         Events["ElementsTreeUpdated"] = "ElementsTreeUpdated";
+        /* eslint-enable @typescript-eslint/naming-convention */
     })(Events = ElementsTreeOutline.Events || (ElementsTreeOutline.Events = {}));
 })(ElementsTreeOutline || (ElementsTreeOutline = {}));
 // clang-format off

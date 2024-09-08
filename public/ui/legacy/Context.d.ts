@@ -19,10 +19,10 @@ export declare class Context {
     flavors(): Set<ConstructorFn<unknown>>;
 }
 declare const enum Events {
-    FlavorChanged = "FlavorChanged"
+    FLAVOR_CHANGED = "FlavorChanged"
 }
 export type EventTypes = {
-    [Events.FlavorChanged]: any;
+    [Events.FLAVOR_CHANGED]: any;
 };
 export declare function registerListener(registration: ContextFlavorListenerRegistration): void;
 export interface ContextFlavorListenerRegistration {

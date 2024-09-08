@@ -37,14 +37,14 @@ export declare class DetachedElementsProfileType extends DetachedElementsProfile
 }
 export declare namespace DetachedElementsProfileType {
     const enum Events {
-        RecordingStopped = "RecordingStopped",
-        StatsUpdate = "StatsUpdate",
-        DetachedElementsObtained = "DetachedElementsObtained"
+        RECORDING_STOPPED = "RecordingStopped",
+        STATS_UPDATE = "StatsUpdate",
+        DETACHED_ELEMENTS_OBTAINED = "DetachedElementsObtained"
     }
     type EventTypes = {
-        [Events.RecordingStopped]: void;
-        [Events.StatsUpdate]: Protocol.HeapProfiler.SamplingHeapProfile | null;
-        [Events.DetachedElementsObtained]: Protocol.DOM.DetachedElementInfo[] | null;
+        [Events.RECORDING_STOPPED]: void;
+        [Events.STATS_UPDATE]: Protocol.HeapProfiler.SamplingHeapProfile | null;
+        [Events.DETACHED_ELEMENTS_OBTAINED]: Protocol.DOM.DetachedElementInfo[] | null;
     };
 }
 export declare class DetachedElementsProfileHeader extends WritableProfileHeader {

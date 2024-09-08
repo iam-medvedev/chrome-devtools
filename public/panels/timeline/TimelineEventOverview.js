@@ -34,7 +34,7 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { EventCategory, getCategoryStyles, getEventStyle, getTimelineMainEventCategories, } from './EventUICategory.js';
+import * as Components from './components/components.js';
 const UIStrings = {
     /**
      *@description Short for Network. Label for the network requests section of the Performance panel.
@@ -154,10 +154,10 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         // Scripting Category, but if they represent idle time, we do not want
         // that.
         if (TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === '(idle)') {
-            return EventCategory.IDLE;
+            return Components.EntryStyles.EventCategory.IDLE;
         }
-        const eventStyle = getEventStyle(entry.name)?.category ||
-            getCategoryStyles().other;
+        const eventStyle = Components.EntryStyles.getEventStyle(entry.name)?.category ||
+            Components.EntryStyles.getCategoryStyles().other;
         const categoryName = eventStyle.name;
         return categoryName;
     }
@@ -175,11 +175,11 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         const timeRange = this.#end - this.#start;
         const scale = width / timeRange;
         const quantTime = quantSizePx / scale;
-        const categories = getCategoryStyles();
-        const categoryOrder = getTimelineMainEventCategories();
-        const otherIndex = categoryOrder.indexOf(EventCategory.OTHER);
+        const categories = Components.EntryStyles.getCategoryStyles();
+        const categoryOrder = Components.EntryStyles.getTimelineMainEventCategories();
+        const otherIndex = categoryOrder.indexOf(Components.EntryStyles.EventCategory.OTHER);
         const idleIndex = 0;
-        console.assert(idleIndex === categoryOrder.indexOf(EventCategory.IDLE));
+        console.assert(idleIndex === categoryOrder.indexOf(Components.EntryStyles.EventCategory.IDLE));
         for (let i = 0; i < categoryOrder.length; ++i) {
             categoryToIndex.set(categories[categoryOrder[i]], i);
         }

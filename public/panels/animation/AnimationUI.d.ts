@@ -30,10 +30,10 @@ export declare class AnimationUI {
     private onContextMenu;
 }
 export declare const enum Events {
-    AnimationDrag = "AnimationDrag",
-    KeyframeMove = "KeyframeMove",
-    StartEndpointMove = "StartEndpointMove",
-    FinishEndpointMove = "FinishEndpointMove"
+    ANIMATION_DRAG = "AnimationDrag",
+    KEYFRAME_MOVE = "KeyframeMove",
+    START_ENDPOINT_MOVE = "StartEndpointMove",
+    FINISH_ENDPOINT_MOVE = "FinishEndpointMove"
 }
 export declare const Options: {
     AnimationHeight: number;

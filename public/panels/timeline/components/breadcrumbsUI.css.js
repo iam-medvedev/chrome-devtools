@@ -38,7 +38,7 @@ styles.replaceSync(
   white-space: nowrap;
 }
 
-.last-breadcrumb {
+.active-breadcrumb {
   font-weight: bold;
   color: var(--app-color-active-breadcrumb);
 }

@@ -77,7 +77,7 @@ describe('StylesSidebarPane', () => {
                     fontPaletteName: { text: '--palette' },
                     origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
                     style: {
-                        cssProperties: [{ name: 'font-family', value: 'Bixa' }, { 'name': 'override-colors', value: '0 red' }],
+                        cssProperties: [{ name: 'font-family', value: 'Bixa' }, { name: 'override-colors', value: '0 red' }],
                         shorthandEntries: [],
                     },
                 },

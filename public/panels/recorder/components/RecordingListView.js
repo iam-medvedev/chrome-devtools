@@ -118,7 +118,7 @@ export class RecordingListView extends HTMLElement {
             <${Buttons.Button.Button.litTagName}
               .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
               @click=${this.#onCreateClick}
-              title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */)}
+              title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */)}
               .jslogContext=${'create-recording'}
             >
               ${i18nString(UIStrings.createRecording)}

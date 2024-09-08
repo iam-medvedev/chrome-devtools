@@ -18,7 +18,7 @@ const memory = new Uint8Array(array);
 const memoryInspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
 document.getElementById('container')?.appendChild(memoryInspector);
 memoryInspector.data = {
-    memory: memory,
+    memory,
     address: 0,
     memoryOffset: 0,
     outerMemoryLength: memory.length,

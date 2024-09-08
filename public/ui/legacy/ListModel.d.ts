@@ -22,7 +22,7 @@ export declare class ListModel<T> extends Common.ObjectWrapper.ObjectWrapper<Eve
     private replaced;
 }
 export declare const enum Events {
-    ItemsReplaced = "ItemsReplaced"
+    ITEMS_REPLACED = "ItemsReplaced"
 }
 export interface ItemsReplacedEvent<T> {
     index: number;
@@ -31,5 +31,5 @@ export interface ItemsReplacedEvent<T> {
     keepSelectedIndex?: boolean;
 }
 export type EventTypes<T> = {
-    [Events.ItemsReplaced]: ItemsReplacedEvent<T>;
+    [Events.ITEMS_REPLACED]: ItemsReplacedEvent<T>;
 };

@@ -19,23 +19,23 @@ export declare class RequestTimingView extends UI.Widget.VBox {
     private boundaryChanged;
 }
 export declare const enum RequestTimeRangeNames {
-    Push = "push",
-    Queueing = "queueing",
-    Blocking = "blocking",
-    Connecting = "connecting",
+    PUSH = "push",
+    QUEUEING = "queueing",
+    BLOCKING = "blocking",
+    CONNECTING = "connecting",
     DNS = "dns",
-    Proxy = "proxy",
-    Receiving = "receiving",
-    ReceivingPush = "receiving-push",
-    Sending = "sending",
-    ServiceWorker = "serviceworker",
-    ServiceWorkerPreparation = "serviceworker-preparation",
-    ServiceWorkerRespondWith = "serviceworker-respondwith",
-    ServiceWorkerRouterEvaluation = "serviceworker-routerevaluation",
-    ServiceWorkerCacheLookup = "serviceworker-cachelookup",
+    PROXY = "proxy",
+    RECEIVING = "receiving",
+    RECEIVING_PUSH = "receiving-push",
+    SENDING = "sending",
+    SERVICE_WORKER = "serviceworker",
+    SERVICE_WORKER_PREPARATION = "serviceworker-preparation",
+    SERVICE_WORKER_RESPOND_WITH = "serviceworker-respondwith",
+    SERVICE_WORKER_ROUTER_EVALUATION = "serviceworker-routerevaluation",
+    SERVICE_WORKER_CACHE_LOOKUP = "serviceworker-cachelookup",
     SSL = "ssl",
-    Total = "total",
-    Waiting = "waiting"
+    TOTAL = "total",
+    WAITING = "waiting"
 }
 export declare const ServiceWorkerRangeNames: Set<RequestTimeRangeNames>;
 export declare const ConnectionSetupRangeNames: Set<RequestTimeRangeNames>;
