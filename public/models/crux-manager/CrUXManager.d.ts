@@ -62,7 +62,8 @@ export interface OriginMapping {
 }
 export interface ConfigSetting {
     enabled: boolean;
-    override: string;
+    override?: string;
+    overrideEnabled?: boolean;
     originMappings?: OriginMapping[];
 }
 export declare const DEVICE_SCOPE_LIST: DeviceScope[];

@@ -37,6 +37,7 @@
     "../../../../../../../front_end/panels/timeline/components/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/components/FieldSettingsDialog.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
+    "../../../../../../../front_end/panels/timeline/components/LayoutShiftDetails.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.ts",
     "../../../../../../../front_end/panels/timeline/components/MetricCard.ts",
     "../../../../../../../front_end/panels/timeline/components/MetricCompareStrings.ts",

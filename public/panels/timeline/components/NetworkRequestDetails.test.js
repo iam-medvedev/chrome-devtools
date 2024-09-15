@@ -32,12 +32,12 @@ describeWithMockConnection('NetworkRequestDetails', () => {
             'Waiting on main thread4.29 ms';
         assert.deepEqual(rowData, [
             { title: 'URL', value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },
-            { title: 'Request Method', value: 'GET' },
-            { title: 'Initial Priority', value: 'Highest' },
+            { title: 'Request method', value: 'GET' },
+            { title: 'Initial priority', value: 'Highest' },
             { title: 'Priority', value: 'Highest' },
-            { title: 'Mime Type', value: 'text/css' },
-            { title: 'Encoded Data', value: ' (from cache)' },
-            { title: 'Decoded Body', value: '96 B' },
+            { title: 'MIME type', value: 'text/css' },
+            { title: 'Encoded data', value: ' (from cache)' },
+            { title: 'Decoded body', value: '96 B' },
             {
                 title: 'Initiated by',
                 value: 'chromedevtools.github.io/performance-stories/lcp-web-font/index.html',

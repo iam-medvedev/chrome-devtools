@@ -16,9 +16,13 @@ export interface AnswerResponse {
     rpcId?: number;
     fixable: boolean;
 }
+export declare const enum ErrorType {
+    UNKNOWN = "unknown",
+    MAX_STEPS = "max-steps"
+}
 export interface ErrorResponse {
     type: ResponseType.ERROR;
-    error: string;
+    error: ErrorType;
     rpcId?: number;
 }
 export interface ThoughtResponse {
@@ -37,6 +41,7 @@ export interface ActionResponse {
     type: ResponseType.ACTION;
     code: string;
     output: string;
+    canceled: boolean;
     rpcId?: number;
 }
 export interface QueryResponse {

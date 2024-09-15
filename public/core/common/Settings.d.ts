@@ -2,7 +2,7 @@ import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { type EventDescriptor, type EventTargetEvent, type GenericEvents } from './EventTarget.js';
 import { ObjectWrapper } from './Object.js';
-import { getLocalizedSettingsCategory, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType } from './SettingRegistration.js';
+import { getLocalizedSettingsCategory, type LearnMore, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType } from './SettingRegistration.js';
 export declare class Settings {
     #private;
     readonly syncedStorage: SettingsStorage;
@@ -84,6 +84,7 @@ export declare class Setting<V> {
     disabledReason(): string | undefined;
     setDisabled(disabled: boolean): void;
     get(): V;
+    getIfNotDisabled(): V | undefined;
     forceGet(): Promise<V>;
     set(value: V): void;
     setRegistration(registration: SettingRegistration): void;
@@ -93,6 +94,7 @@ export declare class Setting<V> {
     category(): SettingCategory | null;
     tags(): string | null;
     order(): number | null;
+    learnMore(): LearnMore | null;
     get deprecation(): Deprecation | null;
     private printSettingsSavingError;
 }

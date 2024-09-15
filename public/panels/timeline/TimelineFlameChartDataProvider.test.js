@@ -66,23 +66,38 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             'Frames',
             'Timings',
             'Interactions',
-            'A track group — Custom Track',
+            'A track group — Custom track',
             'Another Extension Track',
-            'An Extension Track — Custom Track',
+            'An Extension Track — Custom track',
             'Main — http://localhost:3000/',
-            'Thread Pool',
-            'Thread Pool Worker 1',
-            'Thread Pool Worker 2',
-            'Thread Pool Worker 3',
+            'Thread pool',
+            'Thread pool worker 1',
+            'Thread pool worker 2',
+            'Thread pool worker 3',
             'StackSamplingProfiler',
             'GPU',
         ]);
+    });
+    it('can return the FlameChart group for a given event', async function () {
+        setupIgnoreListManagerEnvironment();
+        const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
+        const { traceData } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
+        dataProvider.setModel(traceData);
+        // Force the track appenders to run and populate the chart data.
+        dataProvider.timelineData();
+        const longest = traceData.UserInteractions.longestInteractionEvent;
+        assert.isOk(longest);
+        const index = dataProvider.indexForEvent(longest);
+        assert.isNotNull(index);
+        const group = dataProvider.groupForEvent(index);
+        assert.strictEqual(group?.name, 'Interactions');
     });
     it('adds candy stripe and triangle decorations to long tasks in the main thread', async function () {
         setupIgnoreListManagerEnvironment();
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const { traceData } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         dataProvider.setModel(traceData);
+        dataProvider.timelineData();
         const { entryDecorations } = dataProvider.timelineData();
         const stripingTitles = [];
         const triangleTitles = [];
@@ -163,7 +178,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         dataProvider.setModel(traceData);
         const bounds = traceData.Meta.traceBounds;
-        const filter = new Timeline.TimelineFilters.TimelineRegExp(/Evaluate Script/);
+        const filter = new Timeline.TimelineFilters.TimelineRegExp(/Evaluate script/);
         const results = dataProvider.search(bounds, filter);
         assert.lengthOf(results, 12);
         assert.deepEqual(results[0], { index: 154, startTimeMilli: 122411041.395, provider: 'main' });

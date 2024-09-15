@@ -11,15 +11,15 @@
 import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 class SimulatorTimingMap {
-    _nodeTimings;
+    nodeTimings;
     constructor() {
-        this._nodeTimings = new Map();
+        this.nodeTimings = new Map();
     }
     getNodes() {
-        return Array.from(this._nodeTimings.keys());
+        return Array.from(this.nodeTimings.keys());
     }
     setReadyToStart(node, values) {
-        this._nodeTimings.set(node, values);
+        this.nodeTimings.set(node, values);
     }
     setInProgress(node, values) {
         const nodeTiming = {
@@ -27,7 +27,7 @@ class SimulatorTimingMap {
             startTime: values.startTime,
             timeElapsed: 0,
         };
-        this._nodeTimings.set(node, node.type === Graph.BaseNode.types.NETWORK ? { ...nodeTiming, timeElapsedOvershoot: 0, bytesDownloaded: 0 } :
+        this.nodeTimings.set(node, node.type === Graph.BaseNode.types.NETWORK ? { ...nodeTiming, timeElapsedOvershoot: 0, bytesDownloaded: 0 } :
             nodeTiming);
     }
     setCompleted(node, values) {
@@ -36,21 +36,21 @@ class SimulatorTimingMap {
             endTime: values.endTime,
             connectionTiming: values.connectionTiming,
         };
-        this._nodeTimings.set(node, nodeTiming);
+        this.nodeTimings.set(node, nodeTiming);
     }
     setCpu(node, values) {
         const nodeTiming = {
             ...this.getCpuStarted(node),
             timeElapsed: values.timeElapsed,
         };
-        this._nodeTimings.set(node, nodeTiming);
+        this.nodeTimings.set(node, nodeTiming);
     }
     setCpuEstimated(node, values) {
         const nodeTiming = {
             ...this.getCpuStarted(node),
             estimatedTimeElapsed: values.estimatedTimeElapsed,
         };
-        this._nodeTimings.set(node, nodeTiming);
+        this.nodeTimings.set(node, nodeTiming);
     }
     setNetwork(node, values) {
         const nodeTiming = {
@@ -59,24 +59,24 @@ class SimulatorTimingMap {
             timeElapsedOvershoot: values.timeElapsedOvershoot,
             bytesDownloaded: values.bytesDownloaded,
         };
-        this._nodeTimings.set(node, nodeTiming);
+        this.nodeTimings.set(node, nodeTiming);
     }
     setNetworkEstimated(node, values) {
         const nodeTiming = {
             ...this.getNetworkStarted(node),
             estimatedTimeElapsed: values.estimatedTimeElapsed,
         };
-        this._nodeTimings.set(node, nodeTiming);
+        this.nodeTimings.set(node, nodeTiming);
     }
     getQueued(node) {
-        const timing = this._nodeTimings.get(node);
+        const timing = this.nodeTimings.get(node);
         if (!timing) {
             throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
         return timing;
     }
     getCpuStarted(node) {
-        const timing = this._nodeTimings.get(node);
+        const timing = this.nodeTimings.get(node);
         if (!timing) {
             throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
@@ -89,7 +89,7 @@ class SimulatorTimingMap {
         return timing;
     }
     getNetworkStarted(node) {
-        const timing = this._nodeTimings.get(node);
+        const timing = this.nodeTimings.get(node);
         if (!timing) {
             throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
@@ -102,7 +102,7 @@ class SimulatorTimingMap {
         return timing;
     }
     getInProgress(node) {
-        const timing = this._nodeTimings.get(node);
+        const timing = this.nodeTimings.get(node);
         if (!timing) {
             throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
@@ -115,7 +115,7 @@ class SimulatorTimingMap {
         return timing;
     }
     getCompleted(node) {
-        const timing = this._nodeTimings.get(node);
+        const timing = this.nodeTimings.get(node);
         if (!timing) {
             throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }

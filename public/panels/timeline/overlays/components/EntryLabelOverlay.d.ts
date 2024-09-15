@@ -15,6 +15,7 @@ export declare class EntryLabelOverlay extends HTMLElement {
     static readonly LABEL_PADDING = 4;
     static readonly LABEL_AND_CONNECTOR_HEIGHT: number;
     static readonly MAX_LABEL_LENGTH = 100;
+    static readonly USER_CREATED_ICON_WIDTH = 16;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     constructor(label: string, entryIsInMainChart: boolean, shouldDrawBelowEntry?: boolean);
     connectedCallback(): void;

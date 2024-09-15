@@ -37,9 +37,17 @@ p {
 
 .disabled-reason {
   box-sizing: border-box;
-  margin-left: 3px;
-  width: 16px;
-  height: 16px;
+  margin-left: var(--sys-size-2);
+  width: var(--sys-size-9);
+  height: var(--sys-size-9);
+}
+
+.learn-more {
+  position: relative;
+  margin-left: var(--sys-size-2);
+  top: var(--sys-size-2);
+  width: var(--sys-size-9);
+  height: var(--sys-size-9);
 }
 
 /*# sourceURL=settingCheckbox.css */

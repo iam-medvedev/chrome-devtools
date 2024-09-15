@@ -331,6 +331,9 @@ export class InspectorFrontendHostStub {
                 enabled: true,
                 testing: false,
             },
+            devToolsPrivacyUI: {
+                enabled: false,
+            },
             isOffTheRecord: false,
         };
         if ('hostConfigForTesting' in globalThis) {

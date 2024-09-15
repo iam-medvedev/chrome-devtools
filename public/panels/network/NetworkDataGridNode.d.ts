@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as HAR from '../../models/har/har.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -42,7 +43,7 @@ export interface NetworkLogViewInterface extends Common.EventTarget.EventTarget<
     rowHeight(): number;
     switchViewMode(gridMode: boolean): void;
     handleContextMenuForRequest(contextMenu: UI.ContextMenu.ContextMenu, request: SDK.NetworkRequest.NetworkRequest): void;
-    exportAll(): Promise<void>;
+    exportAll(options: HAR.Log.BuildOptions): Promise<void>;
     revealAndHighlightRequest(request: SDK.NetworkRequest.NetworkRequest): void;
     selectRequest(request: SDK.NetworkRequest.NetworkRequest): void;
     removeAllNodeHighlights(): void;

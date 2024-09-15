@@ -5,7 +5,7 @@
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as TraceModel from '../../trace.js';
 import * as Lantern from '../lantern.js';
-import { loadTrace, runTraceEngine } from '../testing/testing.js';
+import { runTraceEngine, toLanternTrace } from '../testing/testing.js';
 const { NetworkNode, CPUNode } = Lantern.Graph;
 const { Simulator, DNSCache } = Lantern.Simulation;
 let nextRequestId = 1;
@@ -44,7 +44,7 @@ describe('DependencyGraph/Simulator', () => {
     let originalDNSMultiplier;
     let trace;
     before(async function () {
-        trace = await loadTrace(this, 'lantern/progressive-app/trace.json.gz');
+        trace = toLanternTrace(await TraceLoader.rawEvents(this, 'lantern/progressive-app/trace.json.gz'));
         originalDNSMultiplier = DNSCache.rttMultiplier;
         DNSCache.rttMultiplier = 1;
     });

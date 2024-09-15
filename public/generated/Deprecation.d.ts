@@ -56,10 +56,6 @@ export declare const UIStrings: {
      */
     DataUrlInSvgUse: string;
     /**
-     * @description This warning occurs when a script modifies `document.domain` without having set on `Origin-Agent-Cluster` http header. In other words, when a script relies on the default behaviour of `Origin-Agent-Cluster` when setting document.domain.
-     */
-    DocumentDomainSettingWithoutOriginAgentClusterHeader: string;
-    /**
      * @description Warning displayed to developers when non-standard Mutation Events are used. These are deprecated and will be removed.
      */
     DOMMutationEvents: string;
@@ -219,6 +215,10 @@ export declare const UIStrings: {
      * @description A deprecation warning shown in the DevTools Issues tab. It's shown when a listener for the `unload` event is added.
      */
     UnloadHandler: string;
+    /**
+     * @description This warning occurs when the website attempts to invoke the deprecated GPUAdapter `requestAdapterInfo()` method.
+     */
+    V8GPUAdapter_RequestAdapterInfo_Method: string;
     /**
      * @description A deprecation warning shown in the DevTools Issues tab. The placeholder is always the noun 'SharedArrayBuffer' which refers to a JavaScript construct. 'Extensions' refers to Chrome extensions. The warning is shown when Chrome Extensions attempt to use 'SharedArrayBuffer's under insecure circumstances.
      */

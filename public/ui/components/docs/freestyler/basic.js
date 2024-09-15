@@ -16,6 +16,7 @@ const messages = [
     {
         entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
         suggestingFix: true,
+        aborted: false,
         steps: [
             {
                 isLoading: false,
@@ -41,6 +42,8 @@ const component = new Freestyler.FreestylerChatUi({
     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
     messages,
     selectedElement: {},
+    selectedNetworkRequest: {},
+    agentType: "freestyler" /* Freestyler.AgentType.FREESTYLER */,
     isLoading: false,
     canShowFeedbackForm: false,
     userInfo: {},

@@ -193,6 +193,7 @@ export interface ConfirmDialogOptions {
     jslogContext?: string;
 }
 export declare function injectCoreStyles(root: Element | ShadowRoot): void;
+export declare function injectTextButtonStyles(root: Element | ShadowRoot): void;
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
     cssFile?: CSSStyleSheet[] | {
         cssContent: string;

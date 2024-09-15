@@ -20,6 +20,8 @@ const component = new Freestyler.FreestylerChatUi({
     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
     messages: [],
     selectedElement: {},
+    selectedNetworkRequest: {},
+    agentType: "freestyler" /* Freestyler.AgentType.FREESTYLER */,
     isLoading: false,
     canShowFeedbackForm: false,
     userInfo: {},

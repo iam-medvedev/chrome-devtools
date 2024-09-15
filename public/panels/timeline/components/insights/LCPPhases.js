@@ -6,6 +6,7 @@ import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
+import { Table } from './Table.js';
 import { InsightsCategories } from './types.js';
 const UIStrings = {
     /**
@@ -127,6 +128,7 @@ export class LCPPhases extends BaseInsight {
             }];
     }
     #renderLCPPhases(phaseData) {
+        const rows = phaseData.map(({ phase, percent }) => [phase, percent]);
         // clang-format off
         return LitHtml.html `
     <div class="insights">
@@ -141,15 +143,13 @@ export class LCPPhases extends BaseInsight {
           <x-link class="link" href="https://web.dev/articles/optimize-lcp#lcp-breakdown">phase has specific recommendations to improve.</x-link>
           In an ideal load, the two delay phases should be quite short.
         </div>
-        <div slot="insight-content" class="table-container">
-          <dl>
-            <dt class="dl-title">Phase</dt>
-            <dd class="dl-title">% of LCP</dd>
-            ${phaseData?.map(phase => LitHtml.html `
-              <dt>${phase.phase}</dt>
-              <dd class="dl-value">${phase.percent}</dd>
-            `)}
-          </dl>
+        <div slot="insight-content">
+          ${LitHtml.html `<${Table.litTagName}
+            .data=${{
+            headers: ['Phase', '% of LCP'],
+            rows,
+        }}>
+          </${Table.litTagName}>`}
         </div>
       </${SidebarInsight}>
     </div>`;

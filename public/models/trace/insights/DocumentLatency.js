@@ -88,6 +88,7 @@ export function generateInsight(traceParsedData, context) {
     if (serverResponseTime === null) {
         throw new Error('missing document request timing');
     }
+    const serverResponseTooSlow = serverResponseTime > TOO_SLOW_THRESHOLD_MS;
     let overallSavingsMs = 0;
     if (serverResponseTime > TOO_SLOW_THRESHOLD_MS) {
         overallSavingsMs = Math.max(serverResponseTime - TARGET_MS, 0);
@@ -100,6 +101,7 @@ export function generateInsight(traceParsedData, context) {
     };
     return {
         serverResponseTime,
+        serverResponseTooSlow,
         redirectDuration: Types.Timing.MilliSeconds(redirectDuration),
         uncompressedResponseBytes: getCompressionSavings(documentRequest),
         documentRequest,

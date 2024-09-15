@@ -62,6 +62,9 @@
       "path": "../../ui/components/markdown_view/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/spinners/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

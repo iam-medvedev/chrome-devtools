@@ -11,6 +11,14 @@ import * as Timeline from '../timeline.js';
 import * as Components from './components/components.js';
 import * as Overlays from './overlays.js';
 const coordinator = RenderCoordinator.RenderCoordinator.RenderCoordinator.instance();
+const FAKE_OVERLAY_ENTRY_QUERIES = {
+    isEntryCollapsedByUser() {
+        return false;
+    },
+    firstVisibleParentForEntry() {
+        return null;
+    },
+};
 /**
  * The Overlays expects to be provided with both the main and network charts
  * and data providers. This function creates all of those and optionally sets
@@ -53,6 +61,7 @@ describeWithEnvironment('Overlays', () => {
                 network: networkFlameChartsContainer,
             },
             charts: createCharts(),
+            entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
         });
         // Set up the dimensions so it is 100px wide
         overlays.updateChartDimensions('main', {
@@ -90,6 +99,7 @@ describeWithEnvironment('Overlays', () => {
                 network: networkFlameChartsContainer,
             },
             charts,
+            entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
         });
         overlays.updateChartDimensions('main', {
             widthPixels: 1000,
@@ -129,6 +139,7 @@ describeWithEnvironment('Overlays', () => {
                 network: networkFlameChartsContainer,
             },
             charts,
+            entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
         });
         overlays.updateChartDimensions('main', {
             widthPixels: 1000,
@@ -169,6 +180,7 @@ describeWithEnvironment('Overlays', () => {
                 network: networkFlameChartsContainer,
             },
             charts,
+            entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
         });
         overlays.updateChartDimensions('main', {
             widthPixels: 1000,
@@ -210,6 +222,7 @@ describeWithEnvironment('Overlays', () => {
                     network: networkFlameChartsContainer,
                 },
                 charts,
+                entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
             });
             const currManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
             // The Annotations Overlays are added through the ModificationsManager listener
@@ -350,8 +363,11 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(component?.shadowRoot);
             const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
             assert.isOk(elementsWrapper);
-            const label = elementsWrapper.querySelector('.label-box');
-            assert.strictEqual(label?.innerText, 'entry label');
+            const labelBox = elementsWrapper.querySelector('.label-box');
+            assert.isOk(labelBox);
+            const inputField = labelBox.querySelector('.input-field');
+            assert.isOk(inputField);
+            assert.strictEqual(inputField?.innerText, 'entry label');
         });
         it('Inputting `Enter`into label overlay makes it non-editable', async function () {
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -376,14 +392,16 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(elementsWrapper);
             const label = elementsWrapper.querySelector('.label-box');
             assert.isOk(label);
+            const inputField = label.querySelector('.input-field');
+            assert.isOk(inputField);
             // Double click on the label box to make it editable and focus on it
-            label.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            inputField.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
             // Ensure the label content is editable
-            assert.isTrue(label.isContentEditable);
+            assert.isTrue(inputField.isContentEditable);
             // Press `Enter` to make the lable not editable
-            label.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
+            inputField.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
             // Ensure the label content is not editable
-            assert.isFalse(label.isContentEditable);
+            assert.isFalse(inputField.isContentEditable);
         });
         it('Inputting `Enter` into time range label field when the label is empty removes the overlay', async function () {
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -490,13 +508,15 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(elementsWrapper);
             const label = elementsWrapper.querySelector('.label-box');
             assert.isOk(label);
+            const inputField = elementsWrapper.querySelector('.input-field');
+            assert.isOk(inputField);
             // Double click on the label box to make it editable and focus on it
-            label.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            inputField.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
             // Ensure that the entry has 1 overlay
             assert.strictEqual(overlays.overlaysForEntry(event).length, 1);
             // Change the content to not editable by changing the element blur like when clicking outside of it.
             // The label is empty since no initial value was passed into it and no characters were entered.
-            label.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+            inputField.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
             // Ensure that the entry overlay has been removed because it was saved empty
             assert.strictEqual(overlays.overlaysForEntry(event).length, 0);
         });
@@ -697,8 +717,10 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(component?.shadowRoot);
             const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
             const labelBox = elementsWrapper?.querySelector('.label-box');
+            const inputField = labelBox.querySelector('.input-field');
+            assert.isOk(inputField);
             // The label input box should be editable after it is created and before anything else happened
-            assert.isTrue(labelBox.isContentEditable);
+            assert.isTrue(inputField.isContentEditable);
         });
         it('the label entry field is in focus after being double clicked on', async function () {
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -720,15 +742,42 @@ describeWithEnvironment('Overlays', () => {
             const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
             assert.isOk(elementsWrapper);
             const labelBox = elementsWrapper.querySelector('.label-box');
+            const inputField = labelBox.querySelector('.input-field');
+            assert.isOk(inputField);
             // The label input box should be editable after it is created and before anything else happened
-            assert.isTrue(labelBox.isContentEditable);
+            assert.isTrue(inputField.isContentEditable);
             // Make the content to editable by changing the element blur like when clicking outside of it.
             // When that happens, the content should be set to not editable.
-            labelBox.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
-            assert.isFalse(labelBox.isContentEditable);
+            inputField.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+            assert.isFalse(inputField.isContentEditable);
             // Double click on the label to make it editable again
-            labelBox.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
-            assert.isTrue(labelBox.isContentEditable);
+            inputField.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            assert.isTrue(inputField.isContentEditable);
+        });
+    });
+    describe('traceWindowContainingOverlays', () => {
+        it('calculates the smallest window that fits the overlay inside', () => {
+            const FAKE_EVENT_1 = {
+                ts: 0,
+                dur: 10,
+            };
+            const FAKE_EVENT_2 = {
+                ts: 5,
+                dur: 100,
+            };
+            const overlay1 = {
+                entry: FAKE_EVENT_1,
+                type: 'ENTRY_OUTLINE',
+                outlineReason: 'INFO',
+            };
+            const overlay2 = {
+                entry: FAKE_EVENT_2,
+                type: 'ENTRY_OUTLINE',
+                outlineReason: 'INFO',
+            };
+            const traceWindow = Overlays.Overlays.traceWindowContainingOverlays([overlay1, overlay2]);
+            assert.strictEqual(traceWindow.min, 0);
+            assert.strictEqual(traceWindow.max, 105);
         });
     });
 });

@@ -15,7 +15,7 @@ const UIStrings = {
      * @description The name of a track, which is a horizontal division of the timeline, synonym with "swimlane".
      * @example {A track name} PH1
      */
-    customTrackName: '{PH1} — Custom Track',
+    customTrackName: '{PH1} — Custom track',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/ExtensionTrackAppender.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

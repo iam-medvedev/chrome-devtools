@@ -101,7 +101,6 @@ const REGISTERED_EXPERIMENTS = [
     "use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */,
     'font-editor',
     "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
-    "sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */,
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
     "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */,
     "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */,
@@ -112,6 +111,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */,
+    "timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -207,7 +207,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'freestyler-dogfood-consent-onboarding-finished', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'freestyler-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
-        createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'use-browser-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.
@@ -407,6 +407,10 @@ export function getGetHostConfigStub(config) {
         devToolsVeLogging: {
             enabled: true,
             testing: false,
+        },
+        devToolsPrivacyUI: {
+            enabled: false,
+            ...config.devToolsPrivacyUI,
         },
         isOffTheRecord: false,
     });

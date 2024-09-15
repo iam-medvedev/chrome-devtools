@@ -193,6 +193,7 @@ style.setProperty('--image-file-mop', 'url(\"' + new URL('./src/mop.svg', import
 style.setProperty('--image-file-mouse', 'url(\"' + new URL('./src/mouse.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-network-settings', 'url(\"' + new URL('./src/network-settings.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-open-externally', 'url(\"' + new URL('./src/open-externally.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-pause-circle', 'url(\"' + new URL('./src/pause-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL('./src/pause.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pen-spark', 'url(\"' + new URL('./src/pen-spark.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance-panel-diagram', 'url(\"' + new URL('./src/performance-panel-diagram.svg', import.meta.url).toString() + '\")');
@@ -229,6 +230,7 @@ style.setProperty('--image-file-select-element', 'url(\"' + new URL('./src/selec
 style.setProperty('--image-file-send', 'url(\"' + new URL('./src/send.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-shadow', 'url(\"' + new URL('./src/shadow.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-small-status-dot', 'url(\"' + new URL('./src/small-status-dot.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-smart-assistant', 'url(\"' + new URL('./src/smart-assistant.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-snippet', 'url(\"' + new URL('./src/snippet.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-spark-info', 'url(\"' + new URL('./src/spark-info.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-spark', 'url(\"' + new URL('./src/spark.svg', import.meta.url).toString() + '\")');

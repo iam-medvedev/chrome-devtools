@@ -34,7 +34,7 @@ declare class NetworkAnalyzer {
     static groupByOrigin(records: Lantern.NetworkRequest[]): Map<string, Lantern.NetworkRequest[]>;
     static getSummary(values: number[]): Summary;
     static summarize(values: Map<string, number[]>): Map<string, Summary>;
-    static _estimateValueByOrigin(requests: Lantern.NetworkRequest[], iteratee: (e: RequestInfo) => number | number[] | undefined): Map<string, number[]>;
+    static estimateValueByOrigin(requests: Lantern.NetworkRequest[], iteratee: (e: RequestInfo) => number | number[] | undefined): Map<string, number[]>;
     /**
      * Estimates the observed RTT to each origin based on how long the connection setup.
      * For h1 and h2, this could includes two estimates - one for the TCP handshake, another for
@@ -43,31 +43,31 @@ declare class NetworkAnalyzer {
      * single handshake.
      * This is the most accurate and preferred method of measurement when the data is available.
      */
-    static _estimateRTTViaConnectionTiming(info: RequestInfo): number[] | number | undefined;
+    static estimateRTTViaConnectionTiming(info: RequestInfo): number[] | number | undefined;
     /**
      * Estimates the observed RTT to each origin based on how long a download took on a fresh connection.
      * NOTE: this will tend to overestimate the actual RTT quite significantly as the download can be
      * slow for other reasons as well such as bandwidth constraints.
      */
-    static _estimateRTTViaDownloadTiming(info: RequestInfo): number | undefined;
+    static estimateRTTViaDownloadTiming(info: RequestInfo): number | undefined;
     /**
      * Estimates the observed RTT to each origin based on how long it took until Chrome could
      * start sending the actual request when a new connection was required.
      * NOTE: this will tend to overestimate the actual RTT as the request can be delayed for other
      * reasons as well such as more SSL handshakes if TLS False Start is not enabled.
      */
-    static _estimateRTTViaSendStartTiming(info: RequestInfo): number | undefined;
+    static estimateRTTViaSendStartTiming(info: RequestInfo): number | undefined;
     /**
      * Estimates the observed RTT to each origin based on how long it took until Chrome received the
      * headers of the response (~TTFB).
      * NOTE: this is the most inaccurate way to estimate the RTT, but in some environments it's all
      * we have access to :(
      */
-    static _estimateRTTViaHeadersEndTiming(info: RequestInfo): number | undefined;
+    static estimateRTTViaHeadersEndTiming(info: RequestInfo): number | undefined;
     /**
      * Given the RTT to each origin, estimates the observed server response times.
      */
-    static _estimateResponseTimeByOrigin(records: Lantern.NetworkRequest[], rttByOrigin: Map<string, number>): Map<string, number[]>;
+    static estimateResponseTimeByOrigin(records: Lantern.NetworkRequest[], rttByOrigin: Map<string, number>): Map<string, number[]>;
     static canTrustConnectionInformation(requests: Lantern.NetworkRequest[]): boolean;
     /**
      * Returns a map of requestId -> connectionReused, estimating the information if the information

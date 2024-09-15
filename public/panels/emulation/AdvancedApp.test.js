@@ -46,7 +46,7 @@ describeWithMockConnection('AdvancedApp', () => {
             {
                 category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
                 storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-                settingName: 'use-browser-theme-colors',
+                settingName: 'chrome-theme-colors',
                 settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
                 defaultValue: true,
                 reloadRequired: true,

@@ -48,21 +48,21 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('models/har/Writer.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class Writer {
-    static async write(stream, requests, progress) {
+    static async write(stream, requests, options, progress) {
         const compositeProgress = new Common.Progress.CompositeProgress(progress);
-        const content = await Writer.harStringForRequests(requests, compositeProgress);
+        const content = await Writer.harStringForRequests(requests, options, compositeProgress);
         if (progress.isCanceled()) {
             return;
         }
         await Writer.writeToStream(stream, compositeProgress, content);
     }
-    static async harStringForRequests(requests, compositeProgress) {
+    static async harStringForRequests(requests, options, compositeProgress) {
         const progress = compositeProgress.createSubProgress();
         progress.setTitle(i18nString(UIStrings.collectingContent));
         progress.setTotalWork(requests.length);
         // Sort by issueTime because this is recorded as startedDateTime in HAR logs.
         requests.sort((reqA, reqB) => reqA.issueTime() - reqB.issueTime());
-        const harLog = await Log.build(requests);
+        const harLog = await Log.build(requests, options);
         const promises = [];
         for (let i = 0; i < requests.length; i++) {
             const promise = requests[i].requestContentData();

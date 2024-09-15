@@ -44,6 +44,10 @@ export const preciseMillisToString = function (ms, precision) {
 export function formatMicroSecondsTime(time) {
     return millisToString(Platform.Timing.microSecondsToMilliSeconds(time), true);
 }
+export function formatMicroSecondsAsMillisFixed(time, fractionDigits = 0) {
+    const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
+    return i18nString(UIStrings.fms, { PH1: milliseconds.toFixed(fractionDigits) });
+}
 export function formatMicroSecondsAsSeconds(time) {
     const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
     const seconds = Platform.Timing.milliSecondsToSeconds(milliseconds);
@@ -52,9 +56,6 @@ export function formatMicroSecondsAsSeconds(time) {
 export const millisToString = function (ms, higherResolution) {
     if (!isFinite(ms)) {
         return '-';
-    }
-    if (ms === 0) {
-        return '0';
     }
     if (higherResolution && ms < 0.1) {
         return i18nString(UIStrings.fmms, { PH1: (ms * 1000).toFixed(0) });

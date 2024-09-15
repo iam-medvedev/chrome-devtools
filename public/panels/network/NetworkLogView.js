@@ -358,20 +358,32 @@ const UIStrings = {
     copyAllListedAsCurl: 'Copy all listed as `cURL`',
     /**
      * @description Text in Network Log View of the Network panel. An action that copies data to the
-     * clipboard. It will copy the data in the HAR (not translatable) format. 'all' refers to every
-     * network request that is currently shown.
+     * clipboard. It will copy the data in the HAR (not translatable) format and scrub all potentially
+     * sensitive data from the network requests. 'all' refers to every network request that is currently
+     * shown.
      */
-    copyAllAsHar: 'Copy all as `HAR`',
+    copyAllAsHarSanitized: 'Copy all as `HAR` (sanitized)',
     /**
      * @description Text in Network Log View of the Network panel. An action that copies data to the
-     * clipboard. It will copy the data in the HAR (not translatable) format. 'all' refers to every
-     * network request that is currently shown (after applying the Network filter).
+     * clipboard. It will copy the data in the HAR (not translatable) format and include potentially
+     * sensitive data from the network requests. 'all' refers to every network request that is currently
+     * shown.
      */
-    copyAllListedAsHar: 'Copy all listed as `HAR`',
+    copyAllAsHarWithSensitiveData: 'Copy all as `HAR` (with sensitive data)',
     /**
-     *@description A context menu item in the Network Log View of the Network panel
+     * @description Text in Network Log View of the Network panel. An action that copies data to the
+     * clipboard. It will copy the data in the HAR (not translatable) format and scrub all potentially
+     * sensitive data from the network requests. 'all' refers to every network request that is currently
+     * shown (after applying the Network filter).
      */
-    saveAllAsHarWithContent: 'Save all as `HAR` with content',
+    copyAllListedAsHarSanitized: 'Copy all listed as `HAR` (sanitized)',
+    /**
+     * @description Text in Network Log View of the Network panel. An action that copies data to the
+     * clipboard. It will copy the data in the HAR (not translatable) format and include potentially
+     * sensitive data from the network requests. 'all' refers to every network request that is currently
+     * shown (after applying the Network filter).
+     */
+    copyAllListedAsHarWithSensitiveData: 'Copy all listed as `HAR` (with sensitive data)',
     /**
      *@description A context menu item in the Network Log View of the Network panel
      */
@@ -430,6 +442,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     networkOnlyBlockedRequestsSetting;
     networkOnlyThirdPartySetting;
     networkResourceTypeFiltersSetting;
+    networkShowOptionsToGenerateHarWithSensitiveData;
     rawRowHeight;
     progressBarContainer;
     networkLogLargeRowsSetting;
@@ -484,6 +497,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             Common.Settings.Settings.instance().createSetting('network-only-third-party-setting', false);
         this.networkResourceTypeFiltersSetting =
             Common.Settings.Settings.instance().createSetting('network-resource-type-filters', {});
+        this.networkShowOptionsToGenerateHarWithSensitiveData = Common.Settings.Settings.instance().createSetting('network.show-options-to-generate-har-with-sensitive-data', false);
         this.rawRowHeight = 0;
         this.progressBarContainer = progressBarContainer;
         this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
@@ -1445,6 +1459,10 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const filtered = this.filterBar.hasActiveFilter();
         const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(i18nString(UIStrings.copy), false, 'copy');
         if (request) {
+            if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.network-panel-context')) {
+                UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, request);
+                contextMenu.headerSection().appendAction('drjones.network-panel-context');
+            }
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyURL), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: 'copy-url' });
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedURLs) : i18nString(UIStrings.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: 'copy-all-urls' });
             if (request.requestHeadersText()) {
@@ -1493,8 +1511,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsFetch) : i18nString(UIStrings.copyAllAsFetch), this.copyAllFetchCall.bind(this, 0 /* FetchStyle.BROWSER */), { jslogContext: 'copy-all-as-fetch' });
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsNodejsFetch) : i18nString(UIStrings.copyAllAsNodejsFetch), this.copyAllFetchCall.bind(this, 1 /* FetchStyle.NODE_JS */), { jslogContext: 'copy-all-as-nodejs-fetch' });
         }
-        copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsHar) : i18nString(UIStrings.copyAllAsHar), this.copyAllAsHAR.bind(this), { jslogContext: 'copy-all-as-har' });
-        contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAllAsHarWithContent), this.exportAll.bind(this), { jslogContext: 'save-all-as-har-with-content' });
+        copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsHarSanitized) : i18nString(UIStrings.copyAllAsHarSanitized), this.copyAllAsHAR.bind(this, { sanitize: true }), { jslogContext: 'copy-all-as-har' });
+        if (this.networkShowOptionsToGenerateHarWithSensitiveData) {
+            copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsHarWithSensitiveData) :
+                i18nString(UIStrings.copyAllAsHarWithSensitiveData), this.copyAllAsHAR.bind(this, { sanitize: false }), { jslogContext: 'copy-all-as-har-with-sensitive-data' });
+        }
         contextMenu.overrideSection().appendItem(i18nString(UIStrings.overrideHeaders), this.#handleCreateResponseHeaderOverrideClick.bind(this, request), {
             disabled: Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(request.url()),
             jslogContext: 'override-headers',
@@ -1544,8 +1565,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime);
         });
     }
-    async copyAllAsHAR() {
-        const harArchive = { log: await HAR.Log.Log.build(this.harRequests()) };
+    async copyAllAsHAR(options) {
+        const harArchive = { log: await HAR.Log.Log.build(this.harRequests(), options) };
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(JSON.stringify(harArchive, null, 2));
     }
     copyAllURLs() {
@@ -1581,7 +1602,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const commands = await this.generateAllPowerShellCommand(requests);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
     }
-    async exportAll() {
+    async exportAll(options) {
         const mainTarget = SDK.TargetManager.TargetManager.instance().scopeTarget();
         if (!mainTarget) {
             return;
@@ -1595,7 +1616,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
         this.progressBarContainer.appendChild(progressIndicator.element);
-        await HAR.Writer.Writer.write(stream, this.harRequests(), progressIndicator);
+        await HAR.Writer.Writer.write(stream, this.harRequests(), options, progressIndicator);
         progressIndicator.done();
         void stream.close();
     }
@@ -1944,7 +1965,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         // The |Accept-Encoding| header is ignored to prevent decompression errors. crbug.com/1015321
         const ignoredHeaders = new Set(['accept-encoding', 'host', 'method', 'path', 'scheme', 'version', 'authority', 'protocol']);
         function escapeStringWin(str) {
-            /* Only escape the " characters when necessary.
+            /* Always escape the " characters so that we can use caret escaping.
       
                Because cmd.exe parser and MS Crt arguments parsers use some of the
                same escape characters, they can interact with each other in
@@ -1970,11 +1991,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                new line is there to enact the escape command the second is the character
                to escape (in this case new line).
               */
-            const encapsChars = /[\r\n]|[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`&]/.test(str) ? '^"' : '"';
+            const encapsChars = '^"';
             return encapsChars +
                 str.replace(/\\/g, '\\\\')
                     .replace(/"/g, '\\"')
-                    .replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`&]/g, '^$&')
+                    .replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`]/g, '^$&')
                     .replace(/%(?=[a-zA-Z0-9_])/g, '%^')
                     .replace(/\r?\n/g, '^\n\n') +
                 encapsChars;

@@ -55,7 +55,7 @@ export class SidebarSingleNavigation extends HTMLElement {
      * as if there are no navigations, we do not want to show the user the INP
      * score.
      */
-    #calculateINPScore(traceParsedData, navigationId) {
+    #calculateINP(traceParsedData, navigationId) {
         const eventsForNavigation = traceParsedData.UserInteractions.interactionEventsWithNoNesting.filter(e => {
             return e.args.data.navigationId === navigationId;
         });
@@ -87,13 +87,13 @@ export class SidebarSingleNavigation extends HTMLElement {
         const forNavigation = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(traceParsedData.Meta.mainFrameId)?.get(navigationId);
         const lcpMetric = forNavigation?.get("LCP" /* TraceEngine.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
         const { maxScore: clsScore, worstShfitEvent } = this.#calculateCLSScore(traceParsedData, navigationId);
-        const inpScore = this.#calculateINPScore(traceParsedData, navigationId);
+        const inp = this.#calculateINP(traceParsedData, navigationId);
         return LitHtml.html `
     <div class="metrics-row">
     ${lcpMetric ? this.#renderMetricValue('LCP', i18n.TimeUtilities.formatMicroSecondsAsSeconds(lcpMetric.timing), lcpMetric.classification, lcpMetric.event ?? null) :
             LitHtml.nothing}
     ${this.#renderMetricValue('CLS', clsScore.toFixed(2), TraceEngine.Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(clsScore), worstShfitEvent)}
-    ${inpScore ? this.#renderMetricValue('INP', i18n.TimeUtilities.formatMicroSecondsTime(inpScore), TraceEngine.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inpScore), null) :
+    ${inp ? this.#renderMetricValue('INP', i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(inp), TraceEngine.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp), null) :
             LitHtml.nothing}
     </div>
     `;
@@ -110,6 +110,14 @@ export class SidebarSingleNavigation extends HTMLElement {
       </${Insights.LCPPhases.LCPPhases}>
     </div>
     <div>
+      <${Insights.InteractionToNextPaint.InteractionToNextPaint.litTagName}
+        .insights=${insights}
+        .navigationId=${navigationId}
+        .activeInsight=${this.#data.activeInsight}
+        .activeCategory=${this.#data.activeCategory}
+      </${Insights.InteractionToNextPaint.InteractionToNextPaint}>
+    </div>
+    <div>
       <${Insights.LCPDiscovery.LCPDiscovery.litTagName}
         .insights=${insights}
         .navigationId=${navigationId}
@@ -124,6 +132,14 @@ export class SidebarSingleNavigation extends HTMLElement {
         .activeInsight=${this.#data.activeInsight}
         .activeCategory=${this.#data.activeCategory}
       </${Insights.RenderBlocking.RenderBlockingRequests}>
+    </div>
+    <div>
+      <${Insights.SlowCSSSelector.SlowCSSSelector.litTagName}
+        .insights=${insights}
+        .navigationId=${navigationId}
+        .activeInsight=${this.#data.activeInsight}
+        .activeCategory=${this.#data.activeCategory}
+      </${Insights.SlowCSSSelector.SlowCSSSelector}>
     </div>
     <div>
       <${Insights.CLSCulprits.CLSCulprits.litTagName}

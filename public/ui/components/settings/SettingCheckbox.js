@@ -1,9 +1,10 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../../core/host/host.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import * as IconButton from '../icon_button/icon_button.js';
+import * as Buttons from '../buttons/buttons.js';
 import * as Input from '../input/input.js';
 import settingCheckboxStyles from './settingCheckbox.css.js';
 import { SettingDeprecationWarning } from './SettingDeprecationWarning.js';
@@ -30,20 +31,30 @@ export class SettingCheckbox extends HTMLElement {
         });
         this.#render();
     }
-    #deprecationIcon() {
-        if (!this.#setting?.deprecation) {
+    icon() {
+        if (!this.#setting) {
             return undefined;
         }
-        return LitHtml.html `<${SettingDeprecationWarning.litTagName} .data=${this.#setting.deprecation}></${SettingDeprecationWarning.litTagName}>`;
+        if (this.#setting.deprecation) {
+            return LitHtml.html `<${SettingDeprecationWarning.litTagName} .data=${this.#setting.deprecation}></${SettingDeprecationWarning.litTagName}>`;
+        }
+        const learnMore = this.#setting.learnMore();
+        if (learnMore) {
+            const jslog = VisualLogging.link()
+                .track({ click: true, keydown: 'Enter|Space' })
+                .context(this.#setting.name + '-documentation');
+            return LitHtml.html `<${Buttons.Button.Button.litTagName} .iconName=${'help'} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .title=${learnMore.tooltip()} jslog=${jslog} @click=${() => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(learnMore.url)} class="learn-more"></${Buttons.Button.Button.litTagName}>`;
+        }
+        return undefined;
     }
     #render() {
         if (!this.#setting) {
             throw new Error('No "Setting" object provided for rendering');
         }
-        const icon = this.#deprecationIcon();
+        const icon = this.icon();
         const reason = this.#setting.disabledReason() ?
             LitHtml.html `
-      <${IconButton.Icon.Icon.litTagName} class="disabled-reason" name="info" title=${this.#setting.disabledReason()} @click=${onclick}></${IconButton.Icon.Icon.litTagName}>
+      <${Buttons.Button.Button.litTagName} class="disabled-reason" .iconName=${'info'} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} title=${this.#setting.disabledReason()} @click=${onclick}></${Buttons.Button.Button.litTagName}>
     ` :
             LitHtml.nothing;
         LitHtml.render(LitHtml.html `
@@ -57,8 +68,9 @@ export class SettingCheckbox extends HTMLElement {
             jslog=${VisualLogging.toggle().track({ click: true }).context(this.#setting.name)}
             aria-label=${this.#setting.title()}
           />
-          ${this.#textOverride || this.#setting.title()}${reason}${icon}
+          ${this.#textOverride || this.#setting.title()}${reason}
         </label>
+        ${icon}
       </p>`, this.#shadow, { host: this });
     }
     #checkboxChanged(e) {

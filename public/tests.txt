@@ -205,11 +205,17 @@ models/trace/insights/DocumentLatency.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js
+models/trace/insights/SlowCSSSelector.test.js
 models/trace/insights/ThirdPartyWeb.test.js
 models/trace/insights/Viewport.test.js
 models/trace/lantern/core/NetworkAnalyzer.test.js
 models/trace/lantern/graph/BaseNode.test.js
 models/trace/lantern/graph/PageDependencyGraph.test.js
+models/trace/lantern/metrics/FirstContentfulPaint.test.js
+models/trace/lantern/metrics/Interactive.test.js
+models/trace/lantern/metrics/LargestContentfulPaint.test.js
+models/trace/lantern/metrics/SpeedIndex.test.js
+models/trace/lantern/metrics/TBTUtils.test.js
 models/trace/lantern/simulation/ConnectionPool.test.js
 models/trace/lantern/simulation/DNSCache.test.js
 models/trace/lantern/simulation/Simulator.test.js
@@ -441,6 +447,7 @@ panels/timeline/components/EntryName.test.js
 panels/timeline/components/FieldSettingsDialog.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
+panels/timeline/components/LayoutShiftDetails.test.js
 panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js

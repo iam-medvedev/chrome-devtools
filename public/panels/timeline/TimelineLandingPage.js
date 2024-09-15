@@ -4,7 +4,6 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Components from './components/components.js';
 const UIStrings = {
@@ -42,19 +41,20 @@ export class TimelineLandingPage extends UI.Widget.VBox {
     constructor(toggleRecordAction, options) {
         super();
         this.toggleRecordAction = toggleRecordAction;
+        const isNode = options?.isNode === true;
         this.contentElement.classList.add('timeline-landing-page', 'fill');
-        if (Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
+        if (Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */) && !isNode) {
             this.renderLandingPage();
         }
         else {
-            this.renderLegacyLandingPage(options);
+            this.renderLegacyLandingPage();
         }
     }
     renderLandingPage() {
         const liveMetricsWidget = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new Components.LiveMetricsView.LiveMetricsView());
         liveMetricsWidget.show(this.contentElement);
     }
-    renderLegacyLandingPage(options) {
+    renderLegacyLandingPage() {
         function encloseWithTag(tagName, contents) {
             const e = document.createElement(tagName);
             e.textContent = contents;
@@ -71,20 +71,6 @@ export class TimelineLandingPage extends UI.Widget.VBox {
         centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheRecordButtonSOrHitSTo, { PH1: recordButton, PH2: recordKey }));
         centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheReloadButtonSOrHitSTo, { PH1: reloadButton, PH2: reloadKey }));
         centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.afterRecordingSelectAnAreaOf, { PH1: navigateNode, PH2: learnMoreNode }));
-        if (options?.isNode) {
-            const previewSection = new PanelFeedback.PanelFeedback.PanelFeedback();
-            previewSection.data = {
-                feedbackUrl: 'https://crbug.com/1354548',
-                quickStartUrl: 'https://goo.gle/js-profiler-deprecation',
-                quickStartLinkText: i18nString(UIStrings.learnmore),
-            };
-            centered.appendChild(previewSection);
-            const feedbackButton = new PanelFeedback.FeedbackButton.FeedbackButton();
-            feedbackButton.data = {
-                feedbackUrl: 'https://crbug.com/1354548',
-            };
-            centered.appendChild(feedbackButton);
-        }
     }
 }
 //# sourceMappingURL=TimelineLandingPage.js.map

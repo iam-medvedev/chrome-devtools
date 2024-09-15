@@ -18,7 +18,7 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     constructor(delegate: TimelineModeViewDelegate);
     private selectorStatsView;
     getDetailsContentElementForTest(): HTMLElement;
-    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null): Promise<void>;
+    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null, traceInsightsData: TraceEngine.Insights.Types.TraceInsightData | null): Promise<void>;
     private setContent;
     private updateContents;
     private appendTab;

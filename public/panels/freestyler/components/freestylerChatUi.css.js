@@ -11,6 +11,7 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+/* stylelint-disable no-descending-specificity */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -44,6 +45,16 @@ styles.replaceSync(
     font: var(--sys-typescale-body4-size);
     border: var(--sys-size-1) solid var(--sys-color-divider);
     border-radius: var(--sys-shape-corner-extra-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: var(--sys-size-32);
+
+    devtools-icon[name="file-script"] {
+      color: var(--icon-file-script);
+      vertical-align: top;
+      margin-right: var(--sys-size-1);
+    }
   }
 
   .resource-link.not-selected {
@@ -69,7 +80,10 @@ styles.replaceSync(
 }
 
 .chat-input {
-  --right-padding: calc(var(--sys-size-5) + 26px + var(--sys-size-4)); /* Gap between the button and the edge + icon's width + gap between icon and the textarea */
+  --right-padding:
+    calc(
+      var(--sys-size-5) + 26px + var(--sys-size-4)
+    ); /* Gap between the button and the edge + icon's width + gap between icon and the textarea */
 
   field-sizing: content; /* stylelint-disable-line property-no-unknown */
   resize: none;
@@ -80,7 +94,9 @@ styles.replaceSync(
   font: var(--sys-typescale-body4-regular);
   line-height: 18px;
   min-height: var(--sys-size-11);
-  padding: var(--sys-size-3) var(--right-padding) var(--sys-size-3) var(--sys-size-5);
+  padding:
+    var(--sys-size-3) var(--right-padding) var(--sys-size-3)
+    var(--sys-size-5);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
 
@@ -121,8 +137,9 @@ styles.replaceSync(
 }
 
 .messages-scroll-container {
-  overflow: overlay;
+  overflow: auto;
   flex-grow: 1;
+  scrollbar-gutter: stable;
 }
 
 .messages-container {
@@ -147,6 +164,14 @@ styles.replaceSync(
     border-bottom: 0;
   }
 
+  &.query {
+    .message-content {
+      line-height: 18px;
+      white-space: pre;
+      text-wrap: wrap;
+    }
+  }
+
   .message-info {
     display: flex;
     align-items: center;
@@ -163,11 +188,15 @@ styles.replaceSync(
     }
   }
 
-  & .actions {
+  .actions {
     display: flex;
     gap: var(--sys-size-8);
     justify-content: space-between;
     align-items: flex-end;
+  }
+
+  .aborted {
+    color: var(--sys-color-state-disabled);
   }
 }
 
@@ -175,9 +204,47 @@ styles.replaceSync(
   width: fit-content;
   background-color: var(--sys-color-surface3);
   border-radius: var(--sys-size-6);
+  position: relative;
 
-  &:not(&[open]):hover {
+  &.empty {
+    pointer-events: none;
+
+    .arrow {
+      display: none;
+    }
+  }
+
+  &:not(&[open]):hover::after {
+    content: "";
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
     background-color: var(--sys-color-state-hover-on-subtle);
+  }
+
+  &.paused {
+    .indicator {
+      color: var(--sys-color-on-surface-subtle);
+    }
+  }
+
+  &.canceled {
+    .summary {
+      color: var(--sys-color-state-disabled);
+      text-decoration: line-through;
+    }
+
+    .indicator {
+      color: var(--sys-color-state-disabled);
+    }
+  }
+
+  devtools-markdown-view {
+    --code-background-color: var(--sys-color-surface1);
   }
 
   devtools-icon {
@@ -186,14 +253,12 @@ styles.replaceSync(
 
   .indicator {
     color: var(--sys-color-green-bright);
+  }
 
-    &.loading {
-      color: var(--sys-color-blue-bright);
-    }
-
-    &.paused {
-      color: var(--sys-color-on-surface);
-    }
+  devtools-spinner {
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
+    padding: var(--sys-size-2);
   }
 
   .summary {
@@ -201,11 +266,20 @@ styles.replaceSync(
     grid-template-columns: auto 1fr auto;
     padding: var(--sys-size-3);
     line-height: var(--sys-size-9);
+    cursor: default;
+    gap: var(--sys-size-3);
+    justify-content: center;
+    align-items: center;
 
     .title {
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
+      font: var(--sys-typescale-body4-regular);
+
+      .paused {
+        font: var(--sys-typescale-body4-bold);
+      }
     }
   }
 
@@ -262,30 +336,55 @@ styles.replaceSync(
 .empty-state-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 16px;
-  opacity: 70%;
+  font: var(--sys-typescale-headline4);
+  gap: var(--sys-size-11);
+  height: 100%;
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sys-size-5);
+
+    .icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: var(--sys-size-14);
+      width: var(--sys-size-14);
+      border-radius: var(--sys-shape-corner-small);
+      background:
+        linear-gradient(
+          135deg,
+          var(--sys-color-gradient-primary),
+          var(--sys-color-gradient-tertiary)
+        );
+    }
+  }
+
+  .suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-5);
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .action-result {
-  margin: 8px 0;
+  /* devtools-code-block adds \\'margin-top: 8px\\' however we want the margin between \\'.action-result\\' and \\'.js-code-output\\' to be 2px
+  that's why we use -6px here. */
+  margin-bottom: -6px;
 }
 
 .js-code-output {
-  margin-top: -8px;
-  white-space: pre;
-  max-width: 100%;
-  overflow: auto;
-  scrollbar-width: none;
-  padding: 4px 6px;
-  background-color: var(--sys-color-surface3);
-  color: var(--sys-color-on-surface);
-  font-size: 10px;
-  font-family: var(--source-code-font-family);
+  devtools-code-block {
+    --max-code-height: 50px;
+  }
 }
 
 .error-step {
@@ -321,6 +420,8 @@ styles.replaceSync(
     font-weight: 500;
   }
 }
+
+/* stylelint-enable no-descending-specificity */
 
 /*# sourceURL=./components/freestylerChatUi.css */
 `);

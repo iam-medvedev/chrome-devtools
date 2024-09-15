@@ -6,6 +6,7 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, md, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
+import { Table } from './Table.js';
 import { InsightsCategories } from './types.js';
 const UIStrings = {
     /** Title of a diagnostic audit that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
@@ -68,7 +69,7 @@ export class ThirdParties extends BaseInsight {
         return overlays;
     }
     #render(data) {
-        const entries = [...data.summaryByEntity.entries()];
+        const entries = [...data.summaryByEntity.entries()].filter(kv => kv[0] !== data.firstPartyEntity);
         // clang-format off
         const rows1 = entries
             .sort((a, b) => b[1].transferSize - a[1].transferSize)
@@ -95,26 +96,18 @@ export class ThirdParties extends BaseInsight {
                   ${md(i18nString(UIStrings.description))}
                 </div>
                 <div slot="insight-content">
-                  <div class="table-container">
-                    <dl>
-                      <dt class="dl-title">${i18nString(UIStrings.columnThirdParty)}</dt>
-                      <dd class="dl-title">${i18nString(UIStrings.columnTransferSize)}</dd>
-                        ${rows1.map(([entity, transferSize]) => LitHtml.html `
-                          <dt>${entity}</dt>
-                          <dd class="dl-value">${transferSize}</dd>
-                        `)}
-                    </dl>
-                  </div>
-                  <div class="table-container">
-                    <dl>
-                      <dt class="dl-title">${i18nString(UIStrings.columnThirdParty)}</dt>
-                      <dd class="dl-title">${i18nString(UIStrings.columnBlockingTime)}</dd>
-                        ${rows2.map(([entity, mainThreadTime]) => LitHtml.html `
-                          <dt>${entity}</dt>
-                          <dd class="dl-value">${mainThreadTime}</dd>
-                        `)}
-                    </dl>
-                  </div>
+                  ${LitHtml.html `<${Table.litTagName}
+                    .data=${{
+            headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnTransferSize)],
+            rows: rows1,
+        }}>
+                  </${Table.litTagName}>`}
+                  ${LitHtml.html `<${Table.litTagName}
+                    .data=${{
+            headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnBlockingTime)],
+            rows: rows2,
+        }}>
+                  </${Table.litTagName}>`}
                 </div>
             </${SidebarInsight.SidebarInsight}>
         </div>`;

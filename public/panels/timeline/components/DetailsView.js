@@ -51,7 +51,7 @@ const UIStrings = {
     /**
      *@description Text in Timeline UIUtils of the Performance panel
      */
-    websocketProtocol: 'WebSocket Protocol',
+    websocketProtocol: 'WebSocket protocol',
     /**
      * @description Details text indicating how many bytes were received in a WebSocket message
      * @example {1024} PH1
@@ -60,7 +60,7 @@ const UIStrings = {
     /**
      * @description Details text indicating how many bytes were sent in a WebSocket message
      */
-    webSocketDataLength: 'Data Length',
+    webSocketDataLength: 'Data length',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/DetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

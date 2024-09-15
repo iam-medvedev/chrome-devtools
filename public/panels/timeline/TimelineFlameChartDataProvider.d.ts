@@ -84,8 +84,14 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private appendHeader;
     createSelection(entryIndex: number): TimelineSelection | null;
     formatValue(value: number, precision?: number): string;
+    groupForEvent(entryIndex: number): PerfUI.FlameChart.Group | null;
     canJumpToEntry(_entryIndex: number): boolean;
     entryIndexForSelection(selection: TimelineSelection | null): number;
+    /**
+     * Return the index for the given entry. Note that this method assumes that
+     * timelineData() has been generated. If it hasn't, this method will return
+     * null.
+     */
     indexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
     /**
      * Build the data for initiators and initiated entries.

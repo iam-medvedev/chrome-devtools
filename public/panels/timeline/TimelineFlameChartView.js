@@ -168,6 +168,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
                 networkChart: this.networkFlameChart,
                 networkProvider: this.networkDataProvider,
             },
+            entryQueries: {
+                isEntryCollapsedByUser: (entry) => {
+                    return ModificationsManager.activeManager()?.getEntriesFilter().entryIsInvisible(entry) ?? false;
+                },
+                firstVisibleParentForEntry(entry) {
+                    return ModificationsManager.activeManager()?.getEntriesFilter().firstVisibleParentEntryForEntry(entry) ??
+                        null;
+                },
+            },
         });
         this.#overlays.addEventListener(Overlays.Overlays.AnnotationOverlayActionEvent.eventName, event => {
             const { overlay, action } = event;
@@ -245,11 +254,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     setActiveInsight(insight) {
         this.#activeInsight = insight;
-        const minimapBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.minimapTraceBounds;
+        const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
         for (const overlay of this.#currentInsightOverlays) {
             this.removeOverlay(overlay);
         }
-        if (!this.#activeInsight || !minimapBounds) {
+        if (!this.#activeInsight || !traceBounds) {
             return;
         }
         if (insight) {
@@ -261,54 +270,47 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             const entries = [];
             for (const overlay of this.#currentInsightOverlays) {
                 this.addOverlay(overlay);
-                if ('entry' in overlay) {
-                    const entry = overlay.entry;
-                    if (entry) {
-                        entries.push(entry);
-                    }
-                }
+                entries.push(...Overlays.Overlays.entriesForOverlay(overlay));
             }
-            if (entries.length === 0) {
-                return;
+            for (const entry of entries) {
+                // Ensure that the track for the entries are open.
+                this.#expandEntryTrack(entry);
             }
-            const earliestEntry = entries.reduce((earliest, current) => (earliest.ts < current.ts ? earliest : current), entries[0]);
-            // Reveal the earliest event found from the overlays.
-            this.revealEvent(earliestEntry);
-            const overlaysBounds = this.#calculateOverlaysTraceWindow(this.#currentInsightOverlays);
+            const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(this.#currentInsightOverlays);
             // Trace window covering all overlays expanded by 100% so that the overlays cover 50% of the visible window.
-            const expandedBounds = TraceEngine.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, minimapBounds, 100);
-            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds);
+            const expandedBounds = TraceEngine.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, traceBounds, 100);
+            // Set the timeline visible window and ignore the minimap bounds. This
+            // allows us to pick a visible window even if the overlays are outside of
+            // the current breadcrumb. If this happens, the event listener for
+            // BoundsManager changes in TimelineMiniMap will detect it and activate
+            // the correct breadcrumb for us.
+            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+            // Reveal entry if we have one.
+            if (entries.length !== 0) {
+                const earliestEntry = entries.reduce((earliest, current) => (earliest.ts < current.ts ? earliest : current), entries[0]);
+                this.revealEventVertically(earliestEntry);
+            }
         }
     }
-    // Returns a trace windows that covers all provided overlays.
-    #calculateOverlaysTraceWindow(overlays) {
-        const allOverlayBounds = [];
-        for (const overlay of overlays) {
-            switch (overlay.type) {
-                case 'ENTRY_OUTLINE': {
-                    const { startTime, endTime } = this.#overlays.timingsForOverlayEntry(overlay.entry);
-                    allOverlayBounds.push(startTime, endTime);
-                    break;
-                }
-                case 'CANDY_STRIPED_TIME_RANGE':
-                    allOverlayBounds.push(overlay.bounds.min, overlay.bounds.max);
-                    break;
-                case 'TIMESPAN_BREAKDOWN':
-                    if (overlay.type === 'TIMESPAN_BREAKDOWN') {
-                        for (const section of overlay.sections) {
-                            allOverlayBounds.push(section.bounds.min, section.bounds.max);
-                        }
-                    }
-                    break;
-            }
+    /**
+     * Expands the track / group that the given entry is in.
+     */
+    #expandEntryTrack(entry) {
+        const chartName = Overlays.Overlays.chartForEntry(entry);
+        const provider = chartName === 'main' ? this.mainDataProvider : this.networkDataProvider;
+        const entryChart = chartName === 'main' ? this.mainFlameChart : this.networkFlameChart;
+        const entryIndex = provider.indexForEvent?.(entry) ?? null;
+        if (entryIndex === null) {
+            return;
         }
-        const min = Math.min(...allOverlayBounds);
-        const max = Math.max(...allOverlayBounds);
-        return {
-            min: TraceEngine.Types.Timing.MicroSeconds(min),
-            max: TraceEngine.Types.Timing.MicroSeconds(max),
-            range: TraceEngine.Types.Timing.MicroSeconds(max - min),
-        };
+        const group = provider.groupForEvent?.(entryIndex) ?? null;
+        if (!group) {
+            return;
+        }
+        const groupIndex = provider.timelineData().groups.indexOf(group);
+        if (!group.expanded && groupIndex > -1) {
+            entryChart.toggleGroupExpand(groupIndex);
+        }
     }
     #processFlameChartMouseMoveEvent(data) {
         const { mouseEvent, timeInMicroSeconds } = data;
@@ -491,7 +493,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     #updateDetailViews() {
         this.countersView.setModel(this.#traceEngineData, this.#selectedEvents);
-        void this.detailsView.setModel(this.#traceEngineData, this.#selectedEvents);
+        void this.detailsView.setModel(this.#traceEngineData, this.#selectedEvents, this.#traceInsightsData);
     }
     #updateFlameCharts() {
         this.mainFlameChart.scheduleUpdate();
@@ -586,6 +588,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
         else if (networkIndex) {
             this.networkFlameChart.revealEntry(networkIndex);
+        }
+    }
+    // Given an event, it reveals its position vertically
+    revealEventVertically(event) {
+        const mainIndex = this.mainDataProvider.indexForEvent(event);
+        const networkIndex = this.networkDataProvider.indexForEvent(event);
+        if (mainIndex) {
+            this.mainFlameChart.revealEntryVertically(mainIndex);
+        }
+        else if (networkIndex) {
+            this.networkFlameChart.revealEntryVertically(networkIndex);
         }
     }
     setSelectionAndReveal(selection) {

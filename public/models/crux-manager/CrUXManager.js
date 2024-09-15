@@ -40,7 +40,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         const hostConfig = Common.Settings.Settings.instance().getHostConfig();
         const useSessionStorage = !hostConfig || hostConfig.isOffTheRecord === true;
         const storageTypeForConsent = useSessionStorage ? "Session" /* Common.Settings.SettingStorageType.SESSION */ : "Global" /* Common.Settings.SettingStorageType.GLOBAL */;
-        this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '', originMappings: [] }, storageTypeForConsent);
+        this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '', originMappings: [], overrideEnabled: false }, storageTypeForConsent);
         this.#configSetting.addChangeListener(() => {
             void this.#automaticRefresh();
         });
@@ -116,7 +116,8 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
      * the main document URL cannot be found.
      */
     async getFieldDataForCurrentPage() {
-        const pageUrl = this.#configSetting.get().override ||
+        const pageUrl = this.#configSetting.get().overrideEnabled ?
+            this.#configSetting.get().override || '' :
             this.#getMappedUrl(this.#mainDocumentUrl || await this.#getInspectedURL());
         return this.getFieldDataForPage(pageUrl);
     }

@@ -55,11 +55,11 @@ export interface TrackAppender {
     /**
      * Returns the title an event is shown with in the timeline.
      */
-    titleForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    titleForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
     /**
      * Returns the info shown when an event in the timeline is hovered.
      */
-    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
+    highlightedEntryInfo?(event: TraceEngine.Types.TraceEvents.TraceEventData): Partial<HighlightedEntryInfo>;
 }
 export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet", "Extension", "ServerTimings"];
 export type TrackAppenderName = typeof TrackNames[number] | 'Network';
@@ -153,6 +153,7 @@ export declare class CompatibilityTracksAppender {
      * style, title, etc.) is needed.
      */
     registerTrackForLevel(level: number, appender: TrackAppender): void;
+    groupForLevel(level: number): PerfUI.FlameChart.Group | null;
     /**
      * Adds an event to the flame chart data at a defined level.
      * @param event the event to be appended,

@@ -1204,9 +1204,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         toolbar.appendToolbarItem(filterInput);
         void toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
         this.toolbar = toolbar;
-        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('freestyler.style-tab-context')) {
-            toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('freestyler.style-tab-context'));
-        }
         const toolbarPaneContainer = container.createChild('div', 'styles-sidebar-toolbar-pane-container');
         const toolbarPaneContent = toolbarPaneContainer.createChild('div', 'styles-sidebar-toolbar-pane');
         return toolbarPaneContent;

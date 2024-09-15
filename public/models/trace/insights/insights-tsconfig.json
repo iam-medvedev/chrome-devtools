@@ -36,6 +36,7 @@
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.ts",
     "../../../../../../../front_end/models/trace/insights/LargestContentfulPaint.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.ts",
+    "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.ts",
     "../../../../../../../front_end/models/trace/insights/ThirdPartyWeb.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.ts",
     "../../../../../../../front_end/models/trace/insights/types.ts",

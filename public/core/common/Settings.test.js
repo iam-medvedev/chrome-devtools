@@ -162,6 +162,21 @@ describe('Settings instance', () => {
             assert.strictEqual(await testSetting.forceGet(), 'new');
         });
     });
+    it('getIfNotDisabled returns the setting\'s value only if the setting is not disabled', async () => {
+        const registeredSettings = new Set();
+        const mockBackingStore = {
+            ...Common.Settings.NOOP_STORAGE,
+            register: (name) => registeredSettings.add(name),
+        };
+        const storage = new SettingsStorage({}, mockBackingStore, '__prefix__.');
+        const settings = Common.Settings.Settings.instance({ forceNew: true, syncedStorage: storage, globalStorage: storage, localStorage: storage });
+        const testSetting = settings.createSetting('test-setting', 'some value');
+        assert.strictEqual(testSetting.getIfNotDisabled(), 'some value');
+        testSetting.setDisabled(true);
+        assert.isUndefined(testSetting.getIfNotDisabled());
+        testSetting.setDisabled(false);
+        assert.strictEqual(testSetting.getIfNotDisabled(), 'some value');
+    });
 });
 describe('VersionController', () => {
     let settings;

@@ -25,6 +25,7 @@ const layoutInvalidationEvents = [];
 const scheduleStyleInvalidationEvents = [];
 const styleRecalcInvalidationEvents = [];
 const renderFrameImplCreateChildFrameEvents = [];
+const domLoadingEvents = [];
 const backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
 // We determine if a LayoutInvalidation event is a potential root cause of a layout
@@ -53,6 +54,7 @@ export function reset() {
     styleRecalcInvalidationEvents.length = 0;
     prePaintEvents.length = 0;
     renderFrameImplCreateChildFrameEvents.length = 0;
+    domLoadingEvents.length = 0;
     backendNodeIds.clear();
     clusters.length = 0;
     sessionMaxScore = 0;
@@ -84,6 +86,9 @@ export function handleEvent(event) {
     }
     if (Types.TraceEvents.isTraceEventRenderFrameImplCreateChildFrame(event)) {
         renderFrameImplCreateChildFrameEvents.push(event);
+    }
+    if (Types.TraceEvents.isTraceEventDomLoading(event)) {
+        domLoadingEvents.push(event);
     }
 }
 function traceWindowFromTime(time) {
@@ -151,6 +156,7 @@ export async function finalize() {
     prePaintEvents.sort((a, b) => a.ts - b.ts);
     layoutInvalidationEvents.sort((a, b) => a.ts - b.ts);
     renderFrameImplCreateChildFrameEvents.sort((a, b) => a.ts - b.ts);
+    domLoadingEvents.sort((a, b) => a.ts - b.ts);
     // Each function transforms the data used by the next, as such the invoke order
     // is important.
     await buildLayoutShiftsClusters();
@@ -209,7 +215,7 @@ async function buildLayoutShiftsClusters() {
             // navigation.
             const navigationId = currentShiftNavigation === null ? undefined : navigations[currentShiftNavigation].args.data?.navigationId;
             clusters.push({
-                name: 'LayoutShiftCluster',
+                name: 'SyntheticLayoutShiftCluster',
                 events: [],
                 clusterWindow: traceWindowFromTime(clusterStartTime),
                 clusterCumulativeScore: 0,
@@ -217,6 +223,12 @@ async function buildLayoutShiftsClusters() {
                     good: traceWindowFromTime(clusterStartTime),
                 },
                 navigationId,
+                // Set default TraceEventData so that this event is treated accordingly for the track appender.
+                ts: event.ts,
+                pid: event.pid,
+                tid: event.tid,
+                ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+                cat: '',
             });
             firstShiftTime = clusterStartTime;
         }
@@ -366,6 +378,7 @@ export function data() {
         scheduleStyleInvalidationEvents,
         styleRecalcInvalidationEvents: [],
         renderFrameImplCreateChildFrameEvents,
+        domLoadingEvents,
         scoreRecords,
         // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],

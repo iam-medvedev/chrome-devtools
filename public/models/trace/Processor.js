@@ -14,6 +14,13 @@ export class TraceParseProgressEvent extends Event {
         this.data = data;
     }
 }
+function calculateProgress(value, phase) {
+    // Finalize values should be [0.2...0.8]
+    if (phase === 0.8 /* ProgressPhase.FINALIZE */) {
+        return (value * (0.8 /* ProgressPhase.FINALIZE */ - 0.2 /* ProgressPhase.HANDLE_EVENT */)) + 0.2 /* ProgressPhase.HANDLE_EVENT */;
+    }
+    return value * phase;
+}
 export class TraceProcessor extends EventTarget {
     // We force the Meta handler to be enabled, so the TraceHandlers type here is
     // the model handlers the user passes in and the Meta handler.
@@ -149,7 +156,8 @@ export class TraceProcessor extends EventTarget {
             // Every so often we take a break just to render.
             if (i % eventsPerChunk === 0 && i) {
                 // Take the opportunity to provide status update events.
-                this.dispatchEvent(new TraceParseProgressEvent({ index: i, total: traceEvents.length }));
+                const percent = calculateProgress(i / traceEvents.length, 0.2 /* ProgressPhase.HANDLE_EVENT */);
+                this.dispatchEvent(new TraceParseProgressEvent({ percent }));
                 // TODO(paulirish): consider using `scheduler.yield()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
                 await new Promise(resolve => setTimeout(resolve, 0));
             }
@@ -159,13 +167,15 @@ export class TraceProcessor extends EventTarget {
             }
         }
         // Finalize.
-        for (const handler of sortedHandlers) {
+        for (const [i, handler] of sortedHandlers.entries()) {
             if (handler.finalize) {
                 // Yield to the UI because finalize() calls can be expensive
                 // TODO(jacktfranklin): consider using `scheduler.yield()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
                 await new Promise(resolve => setTimeout(resolve, 0));
                 await handler.finalize();
             }
+            const percent = calculateProgress(i / sortedHandlers.length, 0.8 /* ProgressPhase.FINALIZE */);
+            this.dispatchEvent(new TraceParseProgressEvent({ percent }));
         }
         // Handlers that depend on other handlers do so via .data(), which used to always
         // return a shallow clone of its internal data structures. However, that pattern
@@ -197,6 +207,7 @@ export class TraceProcessor extends EventTarget {
             const data = shallowClone(handler.data());
             Object.assign(traceParsedData, { [name]: data });
         }
+        this.dispatchEvent(new TraceParseProgressEvent({ percent: 1 /* ProgressPhase.CLONE */ }));
         this.#data = traceParsedData;
     }
     get traceParsedData() {

@@ -93,9 +93,12 @@ styles.replaceSync(
 
 .conditions-edit-row input {
   &[type="checkbox"] {
-    display: block;
     margin: auto;
     top: 6px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &:not([type="checkbox"]) {

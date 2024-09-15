@@ -108,7 +108,9 @@ export class ProvideFeedback extends HTMLElement {
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'thumb-up',
-            active: this.#currentRating === "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */,
+            toggledIconName: 'thumb-up',
+            toggled: this.#currentRating === "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */,
+            toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             title: i18nString(UIStringsTemp.thumbsUp),
             jslogContext: 'thumbs-up',
         }}
@@ -119,7 +121,9 @@ export class ProvideFeedback extends HTMLElement {
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'thumb-down',
-            active: this.#currentRating === "NEGATIVE" /* Host.AidaClient.Rating.NEGATIVE */,
+            toggledIconName: 'thumb-down',
+            toggled: this.#currentRating === "NEGATIVE" /* Host.AidaClient.Rating.NEGATIVE */,
+            toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             title: i18nString(UIStringsTemp.thumbsDown),
             jslogContext: 'thumbs-down',
         }}

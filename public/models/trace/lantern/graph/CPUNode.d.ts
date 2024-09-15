@@ -3,7 +3,7 @@ import type * as Lantern from '../types/types.js';
 declare class CPUNode<T = Lantern.AnyNetworkObject> extends BaseNode<T> {
     _event: Lantern.TraceEvent;
     _childEvents: Lantern.TraceEvent[];
-    _correctedEndTs: number | undefined;
+    correctedEndTs: number | undefined;
     constructor(parentEvent: Lantern.TraceEvent, childEvents?: Lantern.TraceEvent[], correctedEndTs?: number);
     get type(): 'cpu';
     get startTime(): number;

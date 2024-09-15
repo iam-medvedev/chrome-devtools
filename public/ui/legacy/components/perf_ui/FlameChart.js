@@ -433,6 +433,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         return this.rawTimelineData || null;
     }
+    revealEntryVertically(entryIndex) {
+        const timelineData = this.timelineData();
+        if (!timelineData) {
+            return;
+        }
+        const level = timelineData.entryLevels[entryIndex];
+        this.chartViewport.setScrollOffset(this.levelToOffset(level), this.levelHeight(level), true);
+    }
     revealEntry(entryIndex) {
         const timelineData = this.timelineData();
         if (!timelineData) {
@@ -800,6 +808,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const scrollHeight = Math.min(nextOffset - scrollTop, this.chartViewport.chartHeight());
         this.chartViewport.setScrollOffset(scrollTop, scrollHeight);
     }
+    /**
+     * Toggle a group's expanded state.
+     * @param groupIndex - the index of this group in the timelineData.groups
+     * array. Note that this is the array index, and not the startLevel of the
+     * group.
+     */
     toggleGroupExpand(groupIndex) {
         if (groupIndex < 0 || !this.isGroupCollapsible(groupIndex)) {
             return;

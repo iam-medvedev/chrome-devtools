@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
+import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './entryLabelOverlay.css.js';
 export class EmptyEntryLabelRemoveEvent extends Event {
@@ -29,6 +30,8 @@ export class EntryLabelOverlay extends HTMLElement {
     static LABEL_AND_CONNECTOR_HEIGHT = EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
     // Set the max label length to avoid labels that could signicantly increase the file size.
     static MAX_LABEL_LENGTH = 100;
+    // Width of the icon next to the label input field
+    static USER_CREATED_ICON_WIDTH = 16;
     static litTagName = LitHtml.literal `devtools-entry-label-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
@@ -37,6 +40,7 @@ export class EntryLabelOverlay extends HTMLElement {
     #isLabelEditable = true;
     #entryLabelParams = null;
     #labelPartsWrapper = null;
+    #inputField = null;
     #labelBox = null;
     #entryHighlightWrapper = null;
     #connectorLineContainer = null;
@@ -68,6 +72,7 @@ export class EntryLabelOverlay extends HTMLElement {
         this.#shouldDrawBelowEntry = shouldDrawBelowEntry;
         this.#labelPartsWrapper = this.#shadow.querySelector('.label-parts-wrapper');
         this.#labelBox = this.#labelPartsWrapper?.querySelector('.label-box') ?? null;
+        this.#inputField = this.#labelPartsWrapper?.querySelector('.input-field') ?? null;
         this.#connectorLineContainer = this.#labelPartsWrapper?.querySelector('.connectorContainer') ?? null;
         this.#entryHighlightWrapper =
             this.#labelPartsWrapper?.querySelector('.entry-highlight-wrapper') ?? null;
@@ -86,14 +91,14 @@ export class EntryLabelOverlay extends HTMLElement {
     }
     #handleLabelInputKeyUp() {
         // If the label changed on key up, dispatch label changed event
-        const labelBoxTextContent = this.#labelBox?.textContent ?? '';
+        const labelBoxTextContent = this.#inputField?.textContent ?? '';
         if (labelBoxTextContent !== this.#label) {
             this.#label = labelBoxTextContent;
             this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
         }
     }
     #handleLabelInputKeyDown(event) {
-        if (!this.#labelBox) {
+        if (!this.#inputField) {
             return false;
         }
         const allowedKeysAfterReachingLenLimit = [
@@ -106,12 +111,16 @@ export class EntryLabelOverlay extends HTMLElement {
         // Therefore, if the new key is `Enter` key, treat it
         // as the end of the label input and blur the input field.
         if (event.key === 'Enter' || event.key === 'Escape') {
-            this.#labelBox.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+            // In DevTools, the `Escape` button will by default toggle the console
+            // drawer, which we don't want here, so we need to call
+            // `stopPropagation()`.
+            event.stopPropagation();
+            this.#inputField.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
             return false;
         }
         // If the max limit is not reached, return true
-        if (this.#labelBox.textContent !== null &&
-            this.#labelBox.textContent.length <= EntryLabelOverlay.MAX_LABEL_LENGTH) {
+        if (this.#inputField.textContent !== null &&
+            this.#inputField.textContent.length <= EntryLabelOverlay.MAX_LABEL_LENGTH) {
             return true;
         }
         if (allowedKeysAfterReachingLenLimit.includes(event.key)) {
@@ -126,17 +135,17 @@ export class EntryLabelOverlay extends HTMLElement {
     #handleLabelInputPaste(event) {
         event.preventDefault();
         const clipboardData = event.clipboardData;
-        if (!clipboardData || !this.#labelBox) {
+        if (!clipboardData || !this.#inputField) {
             return;
         }
         const pastedText = clipboardData.getData('text');
-        const newText = this.#labelBox.textContent + pastedText;
+        const newText = this.#inputField.textContent + pastedText;
         const trimmedText = newText.slice(0, EntryLabelOverlay.MAX_LABEL_LENGTH + 1);
-        this.#labelBox.textContent = trimmedText;
+        this.#inputField.textContent = trimmedText;
         // Reset the selection to the end
         const selection = window.getSelection();
         const range = document.createRange();
-        range.selectNodeContents(this.#labelBox);
+        range.selectNodeContents(this.#inputField);
         range.collapse(false);
         selection?.removeAllRanges();
         selection?.addRange(range);
@@ -192,24 +201,25 @@ export class EntryLabelOverlay extends HTMLElement {
         circle.setAttribute('fill', 'black');
     }
     #drawLabel(initialLabel) {
-        if (!this.#labelBox) {
-            console.error('`labelBox` element is missing.');
+        if (!this.#inputField || !this.#labelBox) {
+            console.error('`labelBox` or `labelBox` element is missing.');
             return;
         }
         if (typeof initialLabel === 'string') {
-            this.#labelBox.innerText = initialLabel;
+            this.#inputField.innerText = initialLabel;
         }
         let xTranslation = null;
         let yTranslation = null;
         // PART 1: draw the label box
         if (this.#shouldDrawBelowEntry) {
             // Label is drawn below and slightly to the right.
-            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH - EntryLabelOverlay.USER_CREATED_ICON_WIDTH / 2;
         }
         else {
             // If the label is drawn above, the connector goes up and to the left, so
             // we pull the label back slightly to align it nicely.
-            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
+            xTranslation =
+                EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1 - EntryLabelOverlay.USER_CREATED_ICON_WIDTH / 2;
         }
         if (this.#shouldDrawBelowEntry && this.#entryLabelParams) {
             // Move the label down from above the entry to below it. The label is positioned by default quite far above the entry, hence why we add:
@@ -233,7 +243,7 @@ export class EntryLabelOverlay extends HTMLElement {
         }
     }
     #drawEntryHighlightWrapper() {
-        if (!this.#entryHighlightWrapper || !this.#entryLabelParams || !this.#labelBox || !this.#connectorLineContainer) {
+        if (!this.#entryHighlightWrapper || !this.#entryLabelParams || !this.#inputField || !this.#connectorLineContainer) {
             console.error('Some elements required to draw `entryHighlightWrapper` are missing.');
             return;
         }
@@ -258,11 +268,11 @@ export class EntryLabelOverlay extends HTMLElement {
         }
     }
     #focusInputBox() {
-        if (!this.#labelBox) {
+        if (!this.#inputField) {
             console.error('`labelBox` element is missing.');
             return;
         }
-        this.#labelBox.focus();
+        this.#inputField.focus();
     }
     #setLabelEditabilityAndRemoveEmptyLabel(editable) {
         this.#isLabelEditable = editable;
@@ -272,7 +282,7 @@ export class EntryLabelOverlay extends HTMLElement {
             this.#focusInputBox();
         }
         // If the label is empty when it is being navigated away from, dispatch an event to remove this entry overlay
-        if (!editable && this.#labelBox?.innerText.length === 0) {
+        if (!editable && this.#inputField?.innerText.length === 0) {
             this.dispatchEvent(new EmptyEntryLabelRemoveEvent());
         }
     }
@@ -280,15 +290,24 @@ export class EntryLabelOverlay extends HTMLElement {
         // clang-format off
         LitHtml.render(LitHtml.html `
         <span class="label-parts-wrapper">
-          <span
-            class="label-box"
-            @dblclick=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(true)}
-            @blur=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(false)}
-            @keydown=${this.#handleLabelInputKeyDown}
-            @paste=${this.#handleLabelInputPaste}
-            @keyup=${this.#handleLabelInputKeyUp}
-            contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
-          </span>
+          <div class="label-box">
+            <${IconButton.Icon.Icon.litTagName} class="user-created-icon" .data=${{
+            iconName: 'profile',
+            color: 'var(--sys-color-token-variable)',
+            width: EntryLabelOverlay.USER_CREATED_ICON_WIDTH + 'px',
+            height: '16px',
+        }}>
+              </${IconButton.Icon.Icon.litTagName}>
+            <span
+              class="input-field"
+              @dblclick=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(true)}
+              @blur=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(false)}
+              @keydown=${this.#handleLabelInputKeyDown}
+              @paste=${this.#handleLabelInputPaste}
+              @keyup=${this.#handleLabelInputKeyUp}
+              contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
+            </span>
+          </div>
           <svg class="connectorContainer">
             <line/>
             <circle/>

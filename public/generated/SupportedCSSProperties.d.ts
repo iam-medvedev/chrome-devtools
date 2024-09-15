@@ -53,6 +53,9 @@ export const generatedPropertyValues: {
     "-webkit-line-break": {
         values: string[];
     };
+    "-webkit-line-clamp": {
+        values: string[];
+    };
     "-webkit-print-color-adjust": {
         values: string[];
     };
@@ -528,6 +531,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "mask-type": {
+        values: string[];
+    };
+    "masonry-slack": {
         values: string[];
     };
     "masonry-track-end": {

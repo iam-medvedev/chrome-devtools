@@ -69,6 +69,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;
     revealEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): void;
+    revealEventVertically(event: TraceEngine.Types.TraceEvents.TraceEventData): void;
     setSelectionAndReveal(selection: TimelineSelection | null): void;
     addOverlay<T extends Overlays.Overlays.TimelineOverlay>(newOverlay: T): T;
     removeOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;

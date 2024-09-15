@@ -19,7 +19,7 @@ const UIStrings = {
     /**
      * @description Label for the 75th percentile of a metric according to data collected from real users in the field.
      */
-    field75thPercentile: 'Field 75th Percentile',
+    field75thPercentile: 'Field 75th percentile',
     /**
      * @description Text label for values that are classified as "good".
      */
@@ -152,15 +152,16 @@ export class MetricCard extends HTMLElement {
         document.body.removeEventListener('keydown', this.#hideTooltipOnEsc);
         tooltipEl.style.removeProperty('left');
         tooltipEl.style.removeProperty('visibility');
+        tooltipEl.style.removeProperty('display');
         tooltipEl.style.removeProperty('transition-delay');
     }
     #showTooltip(delayMs = 0) {
         const tooltipEl = this.#tooltipEl;
-        if (!tooltipEl || tooltipEl.style.visibility === 'visible') {
+        if (!tooltipEl || tooltipEl.style.visibility || tooltipEl.style.display) {
             return;
         }
         document.body.addEventListener('keydown', this.#hideTooltipOnEsc);
-        tooltipEl.style.visibility = 'visible';
+        tooltipEl.style.display = 'block';
         tooltipEl.style.transitionDelay = `${Math.round(delayMs)}ms`;
         const container = this.#data.tooltipContainer;
         if (!container) {
@@ -180,6 +181,7 @@ export class MetricCard extends HTMLElement {
                 offset = Math.round(rightDiff);
             }
             tooltipEl.style.left = `calc(50% - ${offset}px)`;
+            tooltipEl.style.visibility = 'visible';
         });
     }
     #getCompareThreshold() {

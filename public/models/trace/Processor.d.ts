@@ -1,14 +1,11 @@
 import * as Handlers from './handlers/handlers.js';
 import * as Insights from './insights/insights.js';
+import type * as Model from './ModelImpl.js';
 import * as Types from './types/types.js';
-export type TraceParseEventProgressData = {
-    index: number;
-    total: number;
-};
 export declare class TraceParseProgressEvent extends Event {
-    data: TraceParseEventProgressData;
+    data: Model.TraceParseEventProgressData;
     static readonly eventName = "traceparseprogress";
-    constructor(data: TraceParseEventProgressData, init?: EventInit);
+    constructor(data: Model.TraceParseEventProgressData, init?: EventInit);
 }
 declare global {
     interface HTMLElementEventMap {

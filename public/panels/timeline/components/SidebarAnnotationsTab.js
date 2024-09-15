@@ -24,7 +24,7 @@ const UIStrings = {
     /**
      * @description Text for how to create an entry label.
      */
-    entryLabelDescription: 'Double click on an entry to create  an entry label.',
+    entryLabelDescription: 'Double click on an entry to create an entry label. Press Esc or Enter to complete.',
     /**
      * @description  Title for diagram.
      */
@@ -40,7 +40,7 @@ const UIStrings = {
     /**
      * @description Text for how to create a time range selection and add note.
      */
-    timeRangeDescription: 'Shift and drag on the canvas to create a time range.',
+    timeRangeDescription: 'Shift and drag on the canvas to create a time range and add a label. Press Esc or Enter to complete.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/SidebarAnnotationsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -169,12 +169,17 @@ export class SidebarAnnotationsTab extends HTMLElement {
                 };
             }
         }
-        const currentMinimapWindow = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.minimapTraceBounds;
-        if (annotationWindow && currentMinimapWindow) {
-            // Expand the bounds by 20% to make the new window 40% bigger than the annotation so it is not taking the whole visible window. Pass the minimap window to make
-            // sure we do not set a window outside of the current bounds.
-            const newVisibleWindow = TraceEngine.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(annotationWindow, currentMinimapWindow, 40);
-            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(newVisibleWindow, { shouldAnimate: true });
+        const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
+        if (annotationWindow && traceBounds) {
+            // Expand the bounds by 20% to make the new window 40% bigger than the annotation so it is not taking the whole visible window.
+            // Pass the trace bounds window to make sure we do not set a window outside of the trace bounds.
+            const newVisibleWindow = TraceEngine.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(annotationWindow, traceBounds, 40);
+            // Set the timeline visible window and ignore the minimap bounds. This
+            // allows us to pick a visible window even if the overlays are outside of
+            // the current breadcrumb. If this happens, the event listener for
+            // BoundsManager changes in TimelineMiniMap will detect it and activate
+            // the correct breadcrumb for us.
+            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(newVisibleWindow, { ignoreMiniMapBounds: true, shouldAnimate: true });
         }
         else {
             console.error('Could not calculate zoom in window for ', annotation);

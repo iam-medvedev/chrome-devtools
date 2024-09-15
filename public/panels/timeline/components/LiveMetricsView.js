@@ -202,6 +202,10 @@ const UIStrings = {
      * @description Tooltip for a button that will remove everything from a log that lists user interactions that happened on the page.
      */
     clearInteractionsLog: 'Clear interactions log',
+    /**
+     * @description Title for an expandable section that contains more information about real user environments. This message is meant to prompt the user to understand the conditions experienced by real users.
+     */
+    considerRealUser: 'Consider real user environments',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LiveMetricsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -437,37 +441,29 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         return null;
     }
     #renderRecordingSettings() {
-        const networkRec = this.#getNetworkRec();
-        const deviceRec = this.#getDeviceRec();
+        const envRecs = [
+            this.#getDeviceRec(),
+            this.#getNetworkRec(),
+        ].filter(rec => rec !== null);
         const deviceLinkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/device-mode', i18nString(UIStrings.simulateDifferentDevices));
         const deviceMessage = i18n.i18n.getFormatLocalizedString(str_, UIStrings.useDeviceToolbar, { PH1: deviceLinkEl });
         // clang-format off
         return html `
       <h3 class="card-title">${i18nString(UIStrings.environmentSettings)}</h3>
-      <div class="device-toolbar-description">
-        ${deviceMessage}
-        ${deviceRec ? html `
-          <${IconButton.Icon.Icon.litTagName}
-            id="device-recommendation"
-            class="field-data-hint"
-            name="group"
-            title=${deviceRec}
-          ></${IconButton.Icon.Icon.litTagName}>
-        ` : nothing}
-      </div>
+      <div class="device-toolbar-description">${deviceMessage}</div>
+      ${envRecs.length > 0 ? html `
+        <details class="environment-recs">
+          <summary>${i18nString(UIStrings.considerRealUser)}</summary>
+          <ul class="environment-recs-list">
+            ${envRecs.map(rec => html `<li>${rec}</li>`)}
+          </ul>
+        </details>
+      ` : nothing}
       <div class="environment-option">
         <${CPUThrottlingSelector.litTagName}></${CPUThrottlingSelector.litTagName}>
       </div>
       <div class="environment-option">
         <${NetworkThrottlingSelector.litTagName}></${NetworkThrottlingSelector.litTagName}>
-        ${networkRec ? html `
-          <${IconButton.Icon.Icon.litTagName}
-            id="network-recommendation"
-            class="field-data-hint"
-            name="group"
-            title=${networkRec}
-          ></${IconButton.Icon.Icon.litTagName}>
-        ` : nothing}
       </div>
       <div class="environment-option">
         <${Settings.SettingCheckbox.SettingCheckbox.litTagName}
@@ -478,7 +474,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         }}
         ></${Settings.SettingCheckbox.SettingCheckbox.litTagName}>
         <${IconButton.Icon.Icon.litTagName}
-          class="field-data-hint"
+          class="setting-hint"
           name="help"
           title=${i18nString(UIStrings.networkCacheExplanation)}
         ></${IconButton.Icon.Icon.litTagName}>

@@ -21,13 +21,13 @@ class BaseNode {
     };
     _id;
     _isMainDocument;
-    _dependents;
-    _dependencies;
+    dependents;
+    dependencies;
     constructor(id) {
         this._id = id;
         this._isMainDocument = false;
-        this._dependents = [];
-        this._dependencies = [];
+        this.dependents = [];
+        this.dependencies = [];
     }
     get id() {
         return this._id;
@@ -54,21 +54,21 @@ class BaseNode {
         return this._isMainDocument;
     }
     getDependents() {
-        return this._dependents.slice();
+        return this.dependents.slice();
     }
     getNumberOfDependents() {
-        return this._dependents.length;
+        return this.dependents.length;
     }
     getDependencies() {
-        return this._dependencies.slice();
+        return this.dependencies.slice();
     }
     getNumberOfDependencies() {
-        return this._dependencies.length;
+        return this.dependencies.length;
     }
     getRootNode() {
         let rootNode = this;
-        while (rootNode._dependencies.length) {
-            rootNode = rootNode._dependencies[0];
+        while (rootNode.dependencies.length) {
+            rootNode = rootNode.dependencies[0];
         }
         return rootNode;
     }
@@ -80,25 +80,25 @@ class BaseNode {
         if (node === this) {
             throw new Core.LanternError('Cannot add dependency on itself');
         }
-        if (this._dependencies.includes(node)) {
+        if (this.dependencies.includes(node)) {
             return;
         }
-        node._dependents.push(this);
-        this._dependencies.push(node);
+        node.dependents.push(this);
+        this.dependencies.push(node);
     }
     removeDependent(node) {
         node.removeDependency(this);
     }
     removeDependency(node) {
-        if (!this._dependencies.includes(node)) {
+        if (!this.dependencies.includes(node)) {
             return;
         }
-        const thisIndex = node._dependents.indexOf(this);
-        node._dependents.splice(thisIndex, 1);
-        this._dependencies.splice(this._dependencies.indexOf(node), 1);
+        const thisIndex = node.dependents.indexOf(this);
+        node.dependents.splice(thisIndex, 1);
+        this.dependencies.splice(this.dependencies.indexOf(node), 1);
     }
     removeAllDependencies() {
-        for (const node of this._dependencies.slice()) {
+        for (const node of this.dependencies.slice()) {
             this.removeDependency(node);
         }
     }
@@ -158,7 +158,7 @@ class BaseNode {
                 // Node included, so walk back up dependencies, cloning nodes from here back to the root.
                 node.traverse(node => idsToIncludedClones.set(node.id, node.cloneWithoutRelationships()), 
                 // Dependencies already cloned have already cloned ancestors, so no need to visit again.
-                node => node._dependencies.filter(parent => !idsToIncludedClones.has(parent.id)));
+                node => node.dependencies.filter(parent => !idsToIncludedClones.has(parent.id)));
             }
         });
         // Copy dependencies between nodes.
@@ -167,7 +167,7 @@ class BaseNode {
             if (!clonedNode) {
                 return;
             }
-            for (const dependency of originalNode._dependencies) {
+            for (const dependency of originalNode.dependencies) {
                 const clonedDependency = idsToIncludedClones.get(dependency.id);
                 if (!clonedDependency) {
                     throw new Core.LanternError('Dependency somehow not cloned');
@@ -254,7 +254,7 @@ class BaseNode {
             visited.add(currentNode);
             currentPath.push(currentNode);
             // Add all of its dependents to our toVisit stack
-            const nodesToExplore = direction === 'dependents' ? currentNode._dependents : currentNode._dependencies;
+            const nodesToExplore = direction === 'dependents' ? currentNode.dependents : currentNode.dependencies;
             for (const nextNode of nodesToExplore) {
                 if (toVisit.includes(nextNode)) {
                     continue;

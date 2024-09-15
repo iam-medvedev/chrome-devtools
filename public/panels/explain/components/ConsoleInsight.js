@@ -11,6 +11,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
+import * as Spinners from '../../../ui/components/spinners/spinners.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -56,12 +57,12 @@ const UIStrings = {
      * @description The title of the button that allows submitting positive
      * feedback about the console insight.
      */
-    thumbsUp: 'Thumbs up',
+    goodResponse: 'Good response',
     /**
      * @description The title of the button that allows submitting negative
      * feedback about the console insight.
      */
-    thumbsDown: 'Thumbs down',
+    badResponse: 'Bad response',
     /**
      * @description The title of the button that opens a page to report a legal
      * issue with the console insight.
@@ -145,6 +146,15 @@ const UIStrings = {
      * available and a page reload might populate it.
      */
     reloadRecommendation: 'Reload the page to capture related network request data for this message in order to create a better insight.',
+    /**
+     * @description Shown to the user when they need to enable the console insights feature in settings in order to use it.
+     * @example {Console insights in Settings} PH1
+     */
+    turnOnInSettings: 'Turn on {PH1} to receive AI assistance for understanding and addressing console warnings and errors.',
+    /**
+     * @description Text for a link to Chrome DevTools Settings.
+     */
+    settingsLink: 'Console insights in Settings',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/components/ConsoleInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -196,6 +206,13 @@ export class ConsoleInsight extends HTMLElement {
         switch (aidaAvailability) {
             case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */:
                 if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
+                    if (this.#consoleInsightsEnabledSetting?.disabled()) {
+                        this.#state = {
+                            type: "consent-onboarding" /* State.CONSENT_ONBOARDING */,
+                            page: "private" /* ConsentOnboardingPage.PAGE1 */,
+                        };
+                        break;
+                    }
                     // Allows skipping the consent reminder if the user enabled the feature via settings in the current session
                     const skipReminder = Common.Settings.Settings.instance()
                         .createSetting('console-insights-skip-reminder', false, "Session" /* Common.Settings.SettingStorageType.SESSION */)
@@ -203,7 +220,7 @@ export class ConsoleInsight extends HTMLElement {
                     this.#state = {
                         type: "loading" /* State.LOADING */,
                         consentReminderConfirmed: this.#getOnboardingCompletedSetting().get() || skipReminder,
-                        consentOnboardingFinished: this.#consoleInsightsEnabledSetting?.get() === true,
+                        consentOnboardingFinished: this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true,
                     };
                 }
                 else {
@@ -246,11 +263,6 @@ export class ConsoleInsight extends HTMLElement {
             e.stopPropagation();
         });
         this.focus();
-        // Measure the height of the element after an animation. `--actual-height` can
-        // be used as the `from` value for the subsequent animation.
-        this.addEventListener('animationend', () => {
-            this.style.setProperty('--actual-height', `${this.offsetHeight}px`);
-        });
     }
     // The 'console-insights-enabled'-setting controls different things, depending on the 'gen-ai-settings-panel' experiment.
     // experiment off:
@@ -281,6 +293,10 @@ export class ConsoleInsight extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [styles, Input.checkboxStyles];
         this.classList.add('opening');
         this.#consoleInsightsEnabledSetting?.addChangeListener(this.#onConsoleInsightsSettingChanged, this);
+        if (this.#state.type === "loading" /* State.LOADING */ && this.#state.consentOnboardingFinished &&
+            this.#state.consentReminderConfirmed) {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.GeneratingInsightWithoutDisclaimer);
+        }
         void this.#generateInsightIfNeeded();
     }
     disconnectedCallback() {
@@ -288,23 +304,27 @@ export class ConsoleInsight extends HTMLElement {
     }
     #onConsoleInsightsSettingChanged() {
         if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
-            if (this.#consoleInsightsEnabledSetting?.get() === true) {
+            if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true) {
                 this.#getOnboardingCompletedSetting().set(true);
             }
-            if (this.#state.type === "consent-onboarding" /* State.CONSENT_ONBOARDING */ && this.#consoleInsightsEnabledSetting?.get() === true) {
+            if (this.#state.type === "consent-onboarding" /* State.CONSENT_ONBOARDING */ &&
+                this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true) {
                 this.#transitionTo({
                     type: "loading" /* State.LOADING */,
                     consentReminderConfirmed: true,
                     consentOnboardingFinished: true,
                 });
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOptInTeaserConfirmedInSettings);
                 void this.#generateInsightIfNeeded();
             }
-            if (this.#state.type === "consent-reminder" /* State.CONSENT_REMINDER */ && this.#consoleInsightsEnabledSetting?.get() === false) {
+            if (this.#state.type === "consent-reminder" /* State.CONSENT_REMINDER */ &&
+                this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === false) {
                 this.#transitionTo({
                     type: "loading" /* State.LOADING */,
                     consentReminderConfirmed: false,
                     consentOnboardingFinished: false,
                 });
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserAbortedInSettings);
                 void this.#generateInsightIfNeeded();
             }
         }
@@ -312,9 +332,6 @@ export class ConsoleInsight extends HTMLElement {
     #transitionTo(newState) {
         const previousState = this.#state;
         this.#state = newState;
-        if (newState.type !== previousState.type && previousState.type === "loading" /* State.LOADING */) {
-            this.classList.add('loaded');
-        }
         this.#render();
         if (newState.type !== previousState.type) {
             this.#focusHeader();
@@ -329,7 +346,12 @@ export class ConsoleInsight extends HTMLElement {
                 type: "consent-onboarding" /* State.CONSENT_ONBOARDING */,
                 page: "private" /* ConsentOnboardingPage.PAGE1 */,
             });
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingShown);
+            if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOptInTeaserShown);
+            }
+            else {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingShown);
+            }
             return;
         }
         if (!this.#state.consentReminderConfirmed) {
@@ -339,14 +361,24 @@ export class ConsoleInsight extends HTMLElement {
                 sources,
                 isPageReloadRecommended,
             });
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderShown);
+            if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserShown);
+            }
+            else {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderShown);
+            }
             return;
         }
         await this.#generateInsight();
     }
     #onClose() {
         if (this.#state.type === "consent-reminder" /* State.CONSENT_REMINDER */) {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderCanceled);
+            if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserCanceled);
+            }
+            else {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderCanceled);
+            }
         }
         else if (this.#state.type === "consent-onboarding" /* State.CONSENT_ONBOARDING */) {
             if (this.#state.page === "private" /* ConsentOnboardingPage.PAGE1 */) {
@@ -356,7 +388,9 @@ export class ConsoleInsight extends HTMLElement {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingCanceledOnPage2);
             }
         }
-        this.dispatchEvent(new CloseEvent());
+        this.shadowRoot?.addEventListener('animationend', () => {
+            this.dispatchEvent(new CloseEvent());
+        }, { once: true });
         this.classList.add('closing');
     }
     #onRating(event) {
@@ -403,15 +437,17 @@ export class ConsoleInsight extends HTMLElement {
             consentReminderConfirmed: true,
             consentOnboardingFinished: true,
         });
-        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderConfirmed);
+        if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserConfirmed);
+        }
+        else {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderConfirmed);
+        }
         await this.#generateInsight();
-    }
-    #onGoToAISettings() {
-        void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
     }
     async #generateInsight() {
         try {
-            for await (const { sources, isPageReloadRecommended, explanation, metadata } of this.#getInsight()) {
+            for await (const { sources, isPageReloadRecommended, explanation, metadata, completed } of this.#getInsight()) {
                 const tokens = this.#validateMarkdown(explanation);
                 const valid = tokens !== false;
                 this.#transitionTo({
@@ -422,6 +458,7 @@ export class ConsoleInsight extends HTMLElement {
                     sources,
                     metadata,
                     isPageReloadRecommended,
+                    completed,
                 });
             }
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightGenerated);
@@ -508,7 +545,9 @@ export class ConsoleInsight extends HTMLElement {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingNextPage);
     }
     #focusHeader() {
-        this.#shadow.querySelector('header h2')?.focus();
+        this.addEventListener('animationend', () => {
+            this.#shadow.querySelector('header h2')?.focus();
+        }, { once: true });
     }
     #termsChecked() {
         const checkbox = this.#shadow.querySelector('.terms');
@@ -638,7 +677,7 @@ export class ConsoleInsight extends HTMLElement {
         switch (this.#state.type) {
             case "loading" /* State.LOADING */:
                 return html `<main jslog=${jslog}>
-            <div role="presentation" class="loader" style="clip-path: url('#clipPath');">
+            <div role="presentation" aria-label="Loading" class="loader" style="clip-path: url('#clipPath');">
               <svg width="100%" height="64">
                 <clipPath id="clipPath">
                   <rect x="0" y="0" width="100%" height="16" rx="8"></rect>
@@ -672,7 +711,7 @@ export class ConsoleInsight extends HTMLElement {
                 if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
                     return html `
           <main class="reminder-container" jslog=${jslog}>
-            <div>Things to consider</div>
+            <h3>Things to consider</h3>
             <div class="reminder-items">
               <div>
                 <${IconButton.Icon.Icon.litTagName} .data=${{
@@ -732,8 +771,17 @@ export class ConsoleInsight extends HTMLElement {
             </${ConsoleInsightSourcesList.litTagName}>
           </main>
         `;
-            case "consent-onboarding" /* State.CONSENT_ONBOARDING */:
+            case "consent-onboarding" /* State.CONSENT_ONBOARDING */: {
                 if (Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
+                    const settingsLink = document.createElement('button');
+                    settingsLink.textContent = i18nString(UIStrings.settingsLink);
+                    settingsLink.classList.add('link');
+                    UI.ARIAUtils.markAsLink(settingsLink);
+                    settingsLink.addEventListener('click', () => {
+                        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOptInTeaserSettingsLinkClicked);
+                        void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
+                    });
+                    settingsLink.setAttribute('jslog', `${VisualLogging.action('open-ai-settings').track({ click: true })}`);
                     return html `<main class="opt-in-teaser" jslog=${jslog}>
             <div class="badge">
               <${IconButton.Icon.Icon.litTagName} .data=${{
@@ -744,16 +792,7 @@ export class ConsoleInsight extends HTMLElement {
               </${IconButton.Icon.Icon.litTagName}>
             </div>
             <div>
-              Turn on
-              <button
-                class="link"
-                role="link"
-                @click=${this.#onGoToAISettings}
-                jslog=${VisualLogging.action('open-ai-settings').track({ click: true })}
-              >
-                Console insights in Settings
-              </button>
-              to receive AI assistance for understanding and addressing console warnings and errors.
+              ${i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnInSettings, { PH1: settingsLink })}
               ${this.#renderLearnMoreAboutInsights()}
             </div>
           </main>`;
@@ -787,6 +826,7 @@ export class ConsoleInsight extends HTMLElement {
             </p>
             </main>`;
                 }
+            }
             case "not-logged-in" /* State.NOT_LOGGED_IN */:
                 return html `
           <main jslog=${jslog}>
@@ -859,10 +899,14 @@ export class ConsoleInsight extends HTMLElement {
             <div class="filler"></div>
             <div class="buttons">
               <${Buttons.Button.Button.litTagName}
-                @click=${this.#onGoToAISettings}
+                @click=${() => {
+                        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserSettingsLinkClicked);
+                        void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
+                    }}
                 .data=${{
                         variant: "tonal" /* Buttons.Button.Variant.TONAL */,
                         jslogContext: 'settings',
+                        title: 'Settings',
                     }}
               >
                 Settings
@@ -873,6 +917,7 @@ export class ConsoleInsight extends HTMLElement {
                 .data=${{
                         variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                         jslogContext: 'lets-go',
+                        title: 'Let\'s go',
                     }}
                >
                 Let's go
@@ -935,7 +980,7 @@ export class ConsoleInsight extends HTMLElement {
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-up',
                     active: this.#selectedRating !== undefined && this.#selectedRating,
-                    title: i18nString(UIStrings.thumbsUp),
+                    title: i18nString(UIStrings.goodResponse),
                     jslogContext: 'thumbs-up',
                 }}
               @click=${this.#onRating}
@@ -947,7 +992,7 @@ export class ConsoleInsight extends HTMLElement {
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-down',
                     active: this.#selectedRating !== undefined && !this.#selectedRating,
-                    title: i18nString(UIStrings.thumbsDown),
+                    title: i18nString(UIStrings.badResponse),
                     jslogContext: 'thumbs-down',
                 }}
               @click=${this.#onRating}
@@ -997,6 +1042,14 @@ export class ConsoleInsight extends HTMLElement {
                 }
         }
     }
+    #renderSpinner() {
+        // clang-format off
+        if (this.#state.type === "insight" /* State.INSIGHT */ && !this.#state.completed) {
+            return html `<${Spinners.Spinner.Spinner.litTagName}></${Spinners.Spinner.Spinner.litTagName}>`;
+        }
+        return LitHtml.nothing;
+        // clang-format on
+    }
     #renderHeader() {
         if (this.#state.type === "consent-onboarding" /* State.CONSENT_ONBOARDING */ &&
             Root.Runtime.experiments.isEnabled("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */)) {
@@ -1021,6 +1074,7 @@ export class ConsoleInsight extends HTMLElement {
           <h2 tabindex="-1">
             ${this.#getHeader()}
           </h2>
+          ${this.#renderSpinner()}
         </div>
         <div class="close-button">
           <${Buttons.Button.Button.litTagName}
@@ -1042,9 +1096,11 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format off
         render(html `
       <div class="wrapper" jslog=${VisualLogging.pane('console-insights').track({ resize: true })}>
-        ${this.#renderHeader()}
-        ${this.#renderMain()}
-        ${this.#renderFooter()}
+        <div class="animation-wrapper">
+          ${this.#renderHeader()}
+          ${this.#renderMain()}
+          ${this.#renderFooter()}
+        </div>
       </div>
     `, this.#shadow, {
             host: this,

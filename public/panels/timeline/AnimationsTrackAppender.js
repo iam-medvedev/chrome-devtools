@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -36,13 +36,6 @@ export class AnimationsTrackAppender {
     }
     colorForEvent() {
         return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
-    }
-    titleForEvent(event) {
-        return event.name;
-    }
-    highlightedEntryInfo(event) {
-        const title = this.titleForEvent(event);
-        return { title, formattedTime: getFormattedTime(event.dur) };
     }
 }
 //# sourceMappingURL=AnimationsTrackAppender.js.map

@@ -369,6 +369,15 @@ export class Setting {
         }
         return this.#value;
     }
+    // Prefer this getter for settings which are "disableable". The plain getter returns `this.#value`,
+    // even if the setting is disabled, which means the callsite has to explicitly call the `disabled()`
+    // getter and add its own logic for the disabled state.
+    getIfNotDisabled() {
+        if (this.disabled()) {
+            return;
+        }
+        return this.get();
+    }
     async forceGet() {
         const name = this.name;
         const oldValue = this.storage.get(name);
@@ -461,6 +470,9 @@ export class Setting {
             return this.#registration.order || null;
         }
         return null;
+    }
+    learnMore() {
+        return this.#registration?.learnMore ?? null;
     }
     get deprecation() {
         if (!this.#registration || !this.#registration.deprecationNotice) {

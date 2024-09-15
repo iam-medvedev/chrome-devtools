@@ -13,17 +13,17 @@ interface DownloadResults {
     connectionTiming: ConnectionTiming;
 }
 declare class TCPConnection {
-    _warmed: boolean;
-    _ssl: boolean;
-    _h2: boolean;
-    _rtt: number;
-    _throughput: number;
-    _serverLatency: number;
+    warmed: boolean;
+    ssl: boolean;
+    h2: boolean;
+    rtt: number;
+    throughput: number;
+    serverLatency: number;
     _congestionWindow: number;
-    _h2OverflowBytesDownloaded: number;
+    h2OverflowBytesDownloaded: number;
     constructor(rtt: number, throughput: number, serverLatency?: number, ssl?: boolean, h2?: boolean);
     static maximumSaturatedConnections(rtt: number, availableThroughput: number): number;
-    _computeMaximumCongestionWindowInSegments(): number;
+    computeMaximumCongestionWindowInSegments(): number;
     setThroughput(throughput: number): void;
     setCongestionWindow(congestion: number): void;
     setWarmed(warmed: boolean): void;

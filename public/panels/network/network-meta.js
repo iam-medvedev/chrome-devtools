@@ -118,6 +118,21 @@ const UIStrings = {
      *@description Title of an action in the Network request blocking panel to clear all URL patterns.
      */
     removeAllNetworkRequestBlockingPatterns: 'Remove all network request blocking patterns',
+    /**
+     * @description Title of an action in the Network panel (and title of a setting in the Network category)
+     *              that enables options in the UI to copy or export HAR (not translatable) with sensitive data.
+     */
+    allowToGenerateHarWithSensitiveData: 'Allow to generate `HAR` (with sensitive data)',
+    /**
+     * @description Title of an action in the Network panel that disables options in the UI to copy or export
+     *              HAR (not translatable) with sensitive data.
+     */
+    dontAllowToGenerateHarWithSensitiveData: 'Don\'t allow to generate `HAR` (with sensitive data)',
+    /**
+     * @description Tooltip shown as documentation when hovering the (?) icon next to the "Allow to generate
+     *              HAR (with sensitive data)" option in the Settings panel.
+     */
+    allowToGenerateHarWithSensitiveDataDocumentation: 'By default generated HAR logs are sanitized and don\'t include `Cookie`, `Set-Cookie`, or `Authorization` HTTP headers. When this setting is enabled, options to export/copy HAR with sensitive data are provided.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/network-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -315,6 +330,31 @@ UI.ActionRegistration.registerActionExtension({
     async loadActionDelegate() {
         const Network = await loadNetworkModule();
         return new Network.BlockedURLsPane.ActionDelegate();
+    },
+});
+Common.Settings.registerSettingExtension({
+    category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData),
+    settingName: 'network.show-options-to-generate-har-with-sensitive-data',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    tags: [
+        i18n.i18n.lockedLazyString('HAR'),
+    ],
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.dontAllowToGenerateHarWithSensitiveData),
+        },
+    ],
+    learnMore: {
+        url: 'https://goo.gle/devtools-export-hars',
+        tooltip: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveDataDocumentation),
     },
 });
 Common.Settings.registerSettingExtension({

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // @ts-nocheck TODO(crbug.com/348449529)
+import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as TraceModel from '../../trace.js';
 import * as Lantern from '../lantern.js';
-import { loadTrace, runTraceEngine } from '../testing/testing.js';
+import { runTraceEngine, toLanternTrace } from '../testing/testing.js';
 const { NetworkAnalyzer } = Lantern.Core;
 async function createRequests(trace) {
     const traceEngineData = await runTraceEngine(trace);
@@ -14,8 +15,8 @@ describe('NetworkAnalyzer', () => {
     let trace;
     let traceWithRedirect;
     before(async function () {
-        trace = await loadTrace(this, 'lantern/paul/trace.json.gz');
-        traceWithRedirect = await loadTrace(this, 'lantern/redirect/trace.json.gz');
+        trace = toLanternTrace(await TraceLoader.rawEvents(this, 'lantern/paul/trace.json.gz'));
+        traceWithRedirect = toLanternTrace(await TraceLoader.rawEvents(this, 'lantern/redirect/trace.json.gz'));
     });
     let recordId;
     function createRecord(opts) {

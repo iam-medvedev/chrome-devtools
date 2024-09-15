@@ -458,7 +458,16 @@ export var Action;
     Action[Action["InsightsOnboardingNextPage"] = 157] = "InsightsOnboardingNextPage";
     Action[Action["InsightsOnboardingPrevPage"] = 158] = "InsightsOnboardingPrevPage";
     Action[Action["InsightsOnboardingFeatureDisabled"] = 159] = "InsightsOnboardingFeatureDisabled";
-    Action[Action["MAX_VALUE"] = 160] = "MAX_VALUE";
+    Action[Action["InsightsOptInTeaserShown"] = 160] = "InsightsOptInTeaserShown";
+    Action[Action["InsightsOptInTeaserSettingsLinkClicked"] = 161] = "InsightsOptInTeaserSettingsLinkClicked";
+    Action[Action["InsightsOptInTeaserConfirmedInSettings"] = 162] = "InsightsOptInTeaserConfirmedInSettings";
+    Action[Action["InsightsReminderTeaserShown"] = 163] = "InsightsReminderTeaserShown";
+    Action[Action["InsightsReminderTeaserConfirmed"] = 164] = "InsightsReminderTeaserConfirmed";
+    Action[Action["InsightsReminderTeaserCanceled"] = 165] = "InsightsReminderTeaserCanceled";
+    Action[Action["InsightsReminderTeaserSettingsLinkClicked"] = 166] = "InsightsReminderTeaserSettingsLinkClicked";
+    Action[Action["InsightsReminderTeaserAbortedInSettings"] = 167] = "InsightsReminderTeaserAbortedInSettings";
+    Action[Action["GeneratingInsightWithoutDisclaimer"] = 168] = "GeneratingInsightWithoutDisclaimer";
+    Action[Action["MAX_VALUE"] = 169] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -883,13 +892,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
     DevtoolsExperiments[DevtoolsExperiments["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
     DevtoolsExperiments[DevtoolsExperiments["just-my-code"] = 65] = "just-my-code";
-    DevtoolsExperiments[DevtoolsExperiments["preloading-status-panel"] = 68] = "preloading-status-panel";
-    DevtoolsExperiments[DevtoolsExperiments["outermost-target-selector"] = 71] = "outermost-target-selector";
     DevtoolsExperiments[DevtoolsExperiments["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["network-panel-filter-bar-redesign"] = 79] = "network-panel-filter-bar-redesign";
     DevtoolsExperiments[DevtoolsExperiments["autofill-view"] = 82] = "autofill-view";
-    DevtoolsExperiments[DevtoolsExperiments["sources-frame-indentation-markers-temporarily-disable"] = 83] = "sources-frame-indentation-markers-temporarily-disable";
     DevtoolsExperiments[DevtoolsExperiments["css-type-component-length-deprecate"] = 85] = "css-type-component-length-deprecate";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
@@ -900,9 +906,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
     DevtoolsExperiments[DevtoolsExperiments["gen-ai-settings-panel"] = 97] = "gen-ai-settings-panel";
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-layout-shift-details"] = 99] = "timeline-layout-shift-details";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 99] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 100] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

@@ -32,7 +32,7 @@ export declare class EntriesFilter {
      * Both arrays are set together because if there is one, the other must be present too.
      */
     setHiddenAndExpandableEntries(invisibleEntries: TraceEngine.Types.TraceEvents.TraceEventData[], expandableEntries: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
-    inEntryInvisible(entry: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+    entryIsInvisible(entry: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     /**
      * Returns the array of entries that have a sign indicating that entries below are hidden,
      * and so that they can be "expanded" to reveal their hidden children.
@@ -43,6 +43,7 @@ export declare class EntriesFilter {
      * from hidden entries array depending on the action.
      */
     applyFilterAction(action: PerfUI.FlameChart.UserFilterAction): TraceEngine.Types.TraceEvents.TraceEventData[];
+    firstVisibleParentEntryForEntry(entry: TraceEngine.Types.TraceEvents.TraceEventData): TraceEngine.Types.TraceEvents.TraceEventData | null;
     /**
      * If an entry was selected from a link instead of clicking on it,
      * it might be in the invisible entries array.

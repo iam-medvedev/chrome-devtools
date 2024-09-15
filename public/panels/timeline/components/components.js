@@ -9,6 +9,7 @@ import * as EntryName from './EntryName.js';
 import * as EntryStyles from './EntryStyles.js';
 import * as FieldSettingsDialog from './FieldSettingsDialog.js';
 import * as InteractionBreakdown from './InteractionBreakdown.js';
+import * as LayoutShiftDetails from './LayoutShiftDetails.js';
 import * as LiveMetricsView from './LiveMetricsView.js';
 import * as MetricCard from './MetricCard.js';
 import * as NetworkRequestDetails from './NetworkRequestDetails.js';
@@ -17,5 +18,5 @@ import * as NetworkThrottlingSelector from './NetworkThrottlingSelector.js';
 import * as Sidebar from './Sidebar.js';
 import * as SidebarAnnotationsTab from './SidebarAnnotationsTab.js';
 import * as Utils from './Utils.js';
-export { Breadcrumbs, BreadcrumbsUI, CPUThrottlingSelector, DetailsView, EntryName, EntryStyles, FieldSettingsDialog, InteractionBreakdown, LiveMetricsView, MetricCard, NetworkRequestDetails, NetworkRequestTooltip, NetworkThrottlingSelector, Sidebar, SidebarAnnotationsTab, Utils, };
+export { Breadcrumbs, BreadcrumbsUI, CPUThrottlingSelector, DetailsView, EntryName, EntryStyles, FieldSettingsDialog, InteractionBreakdown, LayoutShiftDetails, LiveMetricsView, MetricCard, NetworkRequestDetails, NetworkRequestTooltip, NetworkThrottlingSelector, Sidebar, SidebarAnnotationsTab, Utils, };
 //# sourceMappingURL=components.js.map

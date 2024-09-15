@@ -1,13 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Why can other tests import this directly but we get yelled at here?
-// eslint-disable-next-line rulesdir/es_modules_import
-import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as TraceModel from '../../trace.js';
 import * as Lantern from '../lantern.js';
-async function loadTrace(context, name) {
-    const traceEvents = await TraceLoader.rawEvents(context, name);
+function toLanternTrace(traceEvents) {
     return {
         traceEvents: traceEvents,
     };
@@ -39,5 +35,5 @@ async function getComputationDataFromFixture({ trace, settings, url }) {
         processedNavigation: TraceModel.LanternComputationData.createProcessedNavigation(traceEngineData, frameId, navigationId),
     };
 }
-export { loadTrace, runTraceEngine, getComputationDataFromFixture, };
+export { toLanternTrace, runTraceEngine, getComputationDataFromFixture, };
 //# sourceMappingURL=MetricTestUtils.js.map

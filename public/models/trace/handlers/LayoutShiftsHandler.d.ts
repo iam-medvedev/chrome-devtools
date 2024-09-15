@@ -12,6 +12,7 @@ interface LayoutShifts {
     scheduleStyleInvalidationEvents: readonly Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking[];
     styleRecalcInvalidationEvents: readonly Types.TraceEvents.TraceEventStyleRecalcInvalidationTracking[];
     renderFrameImplCreateChildFrameEvents: readonly Types.TraceEvents.TraceEventRenderFrameImplCreateChildFrame[];
+    domLoadingEvents: readonly Types.TraceEvents.TraceEventDomLoading[];
     scoreRecords: readonly ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];
 }

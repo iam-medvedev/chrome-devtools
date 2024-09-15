@@ -39,7 +39,7 @@ export class Breadcrumbs {
         // To add a new Breadcrumb to the Breadcrumbs Linked List, set the child of active breadcrumb
         // to the new breadcrumb and update the active Breadcrumb to the newly added one
         this.activeBreadcrumb.child = newBreadcrumb;
-        this.setActiveBreadcrumb(newBreadcrumb);
+        this.setActiveBreadcrumb(newBreadcrumb, { removeChildBreadcrumbs: false, updateVisibleWindow: true });
         return newBreadcrumb;
     }
     // Breadcumb should be within the bounds of the parent and can not have both start and end be equal to the parent
@@ -55,20 +55,32 @@ export class Breadcrumbs {
         while (lastBreadcrumb.child !== null) {
             lastBreadcrumb = lastBreadcrumb.child;
         }
-        this.setActiveBreadcrumb(lastBreadcrumb);
+        this.setActiveBreadcrumb(lastBreadcrumb, { removeChildBreadcrumbs: false, updateVisibleWindow: true });
     }
-    setActiveBreadcrumb(activeBreadcrumb, removeChildBreadcrumbs) {
+    /**
+     * Sets a breadcrumb to be active.
+     * Doing this will update the minimap bounds and optionally based on the
+     * `updateVisibleWindow` parameter, it will also update the active window.
+     * The reason `updateVisibleWindow` is configurable is because if we are
+     * changing which breadcrumb is active because we want to reveal something to
+     * the user, we may have already updated the visible timeline window, but we
+     * are activating the breadcrumb to show the user that they are now within
+     * this breadcrumb. This is used when revealing insights and annotations.
+     */
+    setActiveBreadcrumb(activeBreadcrumb, options) {
         // If the children of the activated breadcrumb need to be removed, set the child on the
         // activated breadcrumb to null. Since breadcrumbs are a linked list, this will remove all
         // of the following children.
-        if (removeChildBreadcrumbs) {
+        if (options.removeChildBreadcrumbs) {
             activeBreadcrumb.child = null;
         }
         // When we assign a new active breadcrumb, both the minimap bounds and the visible
         // window get set to that breadcrumb's window.
         this.activeBreadcrumb = activeBreadcrumb;
         TraceBounds.TraceBounds.BoundsManager.instance().setMiniMapBounds(activeBreadcrumb.window);
-        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(activeBreadcrumb.window);
+        if (options.updateVisibleWindow) {
+            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(activeBreadcrumb.window);
+        }
     }
 }
 //# sourceMappingURL=Breadcrumbs.js.map

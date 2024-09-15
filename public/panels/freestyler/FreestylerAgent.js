@@ -296,7 +296,7 @@ export class FreestylerAgent {
         }
         return { response, rpcId };
     }
-    async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, execJsDeniedMessage: denyErrorMessage, }) {
+    async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, }) {
         const actionExpression = `{
       const scope = {$0, $1, getEventListeners};
       with (scope) {
@@ -307,7 +307,11 @@ export class FreestylerAgent {
         try {
             const runConfirmed = await confirm ?? Promise.resolve(true);
             if (!runConfirmed) {
-                throw new Error(denyErrorMessage ?? 'Code execution is not allowed');
+                return {
+                    observation: 'Error: User denied code execution with side effects.',
+                    sideEffect: false,
+                    canceled: true,
+                };
             }
             const result = await this.#execJs(actionExpression, { throwOnSideEffect });
             const byteCount = Platform.StringUtilities.countWtf8Bytes(result);
@@ -317,6 +321,7 @@ export class FreestylerAgent {
             return {
                 observation: result,
                 sideEffect: false,
+                canceled: false,
             };
         }
         catch (error) {
@@ -324,11 +329,13 @@ export class FreestylerAgent {
                 return {
                     observation: error.message,
                     sideEffect: true,
+                    canceled: false,
                 };
             }
             return {
                 observation: `Error: ${error.message}`,
                 sideEffect: false,
+                canceled: false,
             };
         }
     }
@@ -400,7 +407,6 @@ export class FreestylerAgent {
     }
     #runId = 0;
     async *run(query, options) {
-        const genericErrorMessage = 'Sorry, I could not help you with this query.';
         const structuredLog = [];
         query = `${options.selectedElement ?
             `# Inspected element\n${await FreestylerAgent.describeElement(options.selectedElement)}\n\n# User request\n\n` :
@@ -434,7 +440,7 @@ export class FreestylerAgent {
                 }
                 yield {
                     type: ResponseType.ERROR,
-                    error: genericErrorMessage,
+                    error: "unknown" /* ErrorType.UNKNOWN */,
                     rpcId,
                 };
                 break;
@@ -505,13 +511,13 @@ STOP`);
                         result = await this.#generateObservation(action, {
                             throwOnSideEffect: false,
                             confirmExecJs: sideEffectConfirmationPromiseWithResolvers.promise,
-                            execJsDeniedMessage: result.observation,
                         });
                     }
                     yield {
                         type: ResponseType.ACTION,
                         code: action,
                         output: result.observation,
+                        canceled: result.canceled,
                         rpcId,
                     };
                     query = `OBSERVATION: ${result.observation}`;
@@ -534,7 +540,7 @@ STOP`);
                 addToHistory(response);
                 yield {
                     type: ResponseType.ERROR,
-                    error: genericErrorMessage,
+                    error: "unknown" /* ErrorType.UNKNOWN */,
                     rpcId,
                 };
                 break;
@@ -542,7 +548,7 @@ STOP`);
             if (i === MAX_STEPS - 1) {
                 yield {
                     type: ResponseType.ERROR,
-                    error: 'Max steps reached, please try again.',
+                    error: "max-steps" /* ErrorType.MAX_STEPS */,
                 };
                 break;
             }

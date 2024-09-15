@@ -41,6 +41,13 @@ describeWithEnvironment('TimelineFlameChartNetworkDataProvider', function () {
         // The max level here is 3, so `clamp(this.#maxLevel + 1, 7, 8.5)` = 7
         assert.strictEqual(dataProvider.preferredHeight(), 17 * 7);
     });
+    it('can return the group for a given entryIndex', async function () {
+        const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+        const { traceData } = await TraceLoader.traceEngine(this, 'load-simple.json.gz');
+        dataProvider.setModel(traceData);
+        dataProvider.timelineData();
+        assert.strictEqual(dataProvider.groupForEvent(0)?.name, 'Network');
+    });
     it('filters navigations to only return those that happen on the main frame', async function () {
         const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
         const { traceData } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');

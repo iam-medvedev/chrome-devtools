@@ -126,9 +126,10 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         const results = await getAllResults(provider);
         assert.deepStrictEqual(results, [
-            { explanation: 'hello ', metadata: { rpcGlobalId: 123 } },
-            { explanation: 'hello brave ', metadata: { rpcGlobalId: 123 } },
-            { explanation: 'hello brave new world!', metadata: { rpcGlobalId: 123 } },
+            { explanation: 'hello ', metadata: { rpcGlobalId: 123 }, completed: false },
+            { explanation: 'hello brave ', metadata: { rpcGlobalId: 123 }, completed: false },
+            { explanation: 'hello brave new world!', metadata: { rpcGlobalId: 123 }, completed: false },
+            { explanation: 'hello brave new world!', metadata: { rpcGlobalId: 123 }, completed: true },
         ]);
     });
     it('handles single square bracket as a chunk', async () => {
@@ -144,7 +145,8 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         const results = await getAllResults(provider);
         assert.deepStrictEqual(results, [
-            { explanation: 'hello world', metadata: { rpcGlobalId: 123 } },
+            { explanation: 'hello world', metadata: { rpcGlobalId: 123 }, completed: false },
+            { explanation: 'hello world', metadata: { rpcGlobalId: 123 }, completed: true },
         ]);
     });
     it('handles chunked response with multiple objects per chunk', async () => {
@@ -178,6 +180,7 @@ describeWithEnvironment('AidaClient', () => {
                 explanation: 'Friends, Romans, countrymen, lend me your ears;\n' +
                     'I come to bury Caesar, not to praise him.\n',
                 metadata: { rpcGlobalId: 123 },
+                completed: false,
             },
             {
                 explanation: 'Friends, Romans, countrymen, lend me your ears;\n' +
@@ -186,6 +189,7 @@ describeWithEnvironment('AidaClient', () => {
                     'The good is oft interred with their bones;\n' +
                     'So let it be with Caesar. The noble Brutus\n',
                 metadata: { rpcGlobalId: 123 },
+                completed: false,
             },
             {
                 explanation: 'Friends, Romans, countrymen, lend me your ears;\n' +
@@ -195,6 +199,7 @@ describeWithEnvironment('AidaClient', () => {
                     'So let it be with Caesar. The noble Brutus\n' +
                     'Hath told you Caesar was ambitious:\n',
                 metadata: { rpcGlobalId: 123 },
+                completed: false,
             },
             {
                 explanation: 'Friends, Romans, countrymen, lend me your ears;\n' +
@@ -206,6 +211,19 @@ describeWithEnvironment('AidaClient', () => {
                     'If it were so, it was a grievous fault,\n' +
                     'And grievously hath Caesar answer’d it.\n',
                 metadata: { rpcGlobalId: 123 },
+                completed: false,
+            },
+            {
+                explanation: 'Friends, Romans, countrymen, lend me your ears;\n' +
+                    'I come to bury Caesar, not to praise him.\n' +
+                    'The evil that men do lives after them;\n' +
+                    'The good is oft interred with their bones;\n' +
+                    'So let it be with Caesar. The noble Brutus\n' +
+                    'Hath told you Caesar was ambitious:\n' +
+                    'If it were so, it was a grievous fault,\n' +
+                    'And grievously hath Caesar answer’d it.\n',
+                metadata: { rpcGlobalId: 123 },
+                completed: true,
             },
         ]);
     });
@@ -247,6 +265,22 @@ describeWithEnvironment('AidaClient', () => {
                         },
                     ],
                 },
+                completed: false,
+            },
+            {
+                explanation: 'Chunk1\n' +
+                    'Chunk2\n',
+                metadata: {
+                    rpcGlobalId: 123,
+                    attributionMetadata: [
+                        { attributionAction: Host.AidaClient.RecitationAction.BLOCK, citations: [] },
+                        {
+                            attributionAction: Host.AidaClient.RecitationAction.CITE,
+                            citations: [{ startIndex: 0, endIndex: 1, url: 'https://example.com' }],
+                        },
+                    ],
+                },
+                completed: true,
             },
         ]);
     });
@@ -266,7 +300,12 @@ describeWithEnvironment('AidaClient', () => {
         });
         const provider = new Host.AidaClient.AidaClient();
         const results = (await getAllResults(provider)).map(r => r.explanation);
-        assert.deepStrictEqual(results, ['hello ', 'hello \n`````\nbrave \n`````\n', 'hello \n`````\nbrave new World()\n`````\n']);
+        assert.deepStrictEqual(results, [
+            'hello ',
+            'hello \n`````\nbrave \n`````\n',
+            'hello \n`````\nbrave new World()\n`````\n',
+            'hello \n`````\nbrave new World()\n`````\n',
+        ]);
     });
     it('throws a readable error on 403', async () => {
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'doAidaConversation').callsArgWith(2, {

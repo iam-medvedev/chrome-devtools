@@ -23,7 +23,7 @@ styles.replaceSync(
   align-items: center;
 }
 
-.label-box {
+.input-field {
   pointer-events: auto;
   background-color: var(--sys-color-token-variable);
   border-radius: var(--sys-shape-corner-extra-small);
@@ -34,7 +34,7 @@ styles.replaceSync(
   font-weight: var(--ref-typeface-weight-medium);
 }
 
-.label-box:focus {
+.input-field:focus {
   background-color: var(--color-selected-option);
   color: var(--sys-color-token-variable);
 }
@@ -46,6 +46,16 @@ styles.replaceSync(
 .entry-highlight-wrapper {
   box-sizing: border-box;
   border: 2px solid var(--sys-color-on-surface);
+}
+
+.label-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.user-created-icon {
+  margin: var(--sys-size-3);
 }
 
 /*# sourceURL=entryLabelOverlay.css */

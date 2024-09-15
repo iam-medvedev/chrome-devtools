@@ -22,7 +22,7 @@ const UIStringsTemp = {
      * @description The setting title to enable the freestyler via
      * the settings tab.
      */
-    enableFreestyler: 'Enable Freestyler',
+    enableFreestyler: 'Enable AI assistant',
     /**
      *@description Text of a tooltip to redirect to the AI assistant panel with
      *the current element as context
@@ -77,6 +77,10 @@ async function loadFreestylerModule() {
 }
 function isFeatureAvailable(config) {
     return (config?.aidaAvailability?.enabled && config?.devToolsFreestylerDogfood?.enabled) === true;
+}
+function isDrJonesFeatureAvailable(config) {
+    return (config?.aidaAvailability?.enabled && config?.devToolsFreestylerDogfood?.enabled &&
+        config?.devToolsExplainThisResourceDogfood?.enabled) === true;
 }
 UI.ViewManager.registerViewExtension({
     location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,
@@ -133,18 +137,17 @@ UI.ActionRegistration.registerActionExtension({
     condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'freestyler.style-tab-context',
+    actionId: 'drjones.network-panel-context',
     contextTypes() {
         return [];
     },
     setting,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStringsTemp.askAiAssistant),
-    iconClass: "spark" /* UI.ActionRegistration.IconClass.SPARK */,
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
     },
-    condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config),
+    condition: config => isDrJonesFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 //# sourceMappingURL=freestyler-meta.js.map
