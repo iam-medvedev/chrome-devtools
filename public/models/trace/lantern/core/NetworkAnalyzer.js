@@ -93,7 +93,7 @@ class NetworkAnalyzer {
         summaryByKey.set(NetworkAnalyzer.summary, NetworkAnalyzer.getSummary(allEstimates));
         return summaryByKey;
     }
-    static _estimateValueByOrigin(requests, iteratee) {
+    static estimateValueByOrigin(requests, iteratee) {
         const connectionWasReused = NetworkAnalyzer.estimateIfConnectionWasReused(requests);
         const groupedByOrigin = NetworkAnalyzer.groupByOrigin(requests);
         const estimates = new Map();
@@ -128,7 +128,7 @@ class NetworkAnalyzer {
      * single handshake.
      * This is the most accurate and preferred method of measurement when the data is available.
      */
-    static _estimateRTTViaConnectionTiming(info) {
+    static estimateRTTViaConnectionTiming(info) {
         const { timing, connectionReused, request } = info;
         if (connectionReused) {
             return;
@@ -152,7 +152,7 @@ class NetworkAnalyzer {
      * NOTE: this will tend to overestimate the actual RTT quite significantly as the download can be
      * slow for other reasons as well such as bandwidth constraints.
      */
-    static _estimateRTTViaDownloadTiming(info) {
+    static estimateRTTViaDownloadTiming(info) {
         const { timing, connectionReused, request } = info;
         if (connectionReused) {
             return;
@@ -181,7 +181,7 @@ class NetworkAnalyzer {
      * NOTE: this will tend to overestimate the actual RTT as the request can be delayed for other
      * reasons as well such as more SSL handshakes if TLS False Start is not enabled.
      */
-    static _estimateRTTViaSendStartTiming(info) {
+    static estimateRTTViaSendStartTiming(info) {
         const { timing, connectionReused, request } = info;
         if (connectionReused) {
             return;
@@ -207,7 +207,7 @@ class NetworkAnalyzer {
      * NOTE: this is the most inaccurate way to estimate the RTT, but in some environments it's all
      * we have access to :(
      */
-    static _estimateRTTViaHeadersEndTiming(info) {
+    static estimateRTTViaHeadersEndTiming(info) {
         const { timing, connectionReused, request } = info;
         if (!Number.isFinite(timing.receiveHeadersEnd) || timing.receiveHeadersEnd < 0) {
             return;
@@ -237,8 +237,8 @@ class NetworkAnalyzer {
     /**
      * Given the RTT to each origin, estimates the observed server response times.
      */
-    static _estimateResponseTimeByOrigin(records, rttByOrigin) {
-        return NetworkAnalyzer._estimateValueByOrigin(records, ({ request, timing }) => {
+    static estimateResponseTimeByOrigin(records, rttByOrigin) {
+        return NetworkAnalyzer.estimateValueByOrigin(records, ({ request, timing }) => {
             if (request.serverResponseTime !== undefined) {
                 return request.serverResponseTime;
             }
@@ -334,7 +334,7 @@ class NetworkAnalyzer {
                 }
             }
             if (!forceCoarseEstimates) {
-                collectEstimates(this._estimateRTTViaConnectionTiming);
+                collectEstimates(this.estimateRTTViaConnectionTiming);
             }
             // Connection timing can be missing for a few reasons:
             // - Origin was preconnected, which we don't have instrumentation for.
@@ -343,13 +343,13 @@ class NetworkAnalyzer {
             // - Not provided in LR netstack.
             if (!originEstimates.length) {
                 if (useDownloadEstimates) {
-                    collectEstimates(this._estimateRTTViaDownloadTiming, coarseEstimateMultiplier);
+                    collectEstimates(this.estimateRTTViaDownloadTiming, coarseEstimateMultiplier);
                 }
                 if (useSendStartEstimates) {
-                    collectEstimates(this._estimateRTTViaSendStartTiming, coarseEstimateMultiplier);
+                    collectEstimates(this.estimateRTTViaSendStartTiming, coarseEstimateMultiplier);
                 }
                 if (useHeadersEndEstimates) {
-                    collectEstimates(this._estimateRTTViaHeadersEndTiming, coarseEstimateMultiplier);
+                    collectEstimates(this.estimateRTTViaHeadersEndTiming, coarseEstimateMultiplier);
                 }
             }
             if (originEstimates.length) {
@@ -374,7 +374,7 @@ class NetworkAnalyzer {
                 rttByOrigin.set(origin, summary.min);
             }
         }
-        const estimatesByOrigin = NetworkAnalyzer._estimateResponseTimeByOrigin(records, rttByOrigin);
+        const estimatesByOrigin = NetworkAnalyzer.estimateResponseTimeByOrigin(records, rttByOrigin);
         return NetworkAnalyzer.summarize(estimatesByOrigin);
     }
     /**

@@ -45,6 +45,10 @@ export class CodeBlock extends HTMLElement {
      * Whether to display the toolbar on the top.
      */
     #displayToolbar = true;
+    /**
+     * Details of the `heading` of the codeblock right after toolbar.
+     */
+    #heading;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
@@ -81,6 +85,10 @@ export class CodeBlock extends HTMLElement {
         this.#displayToolbar = value;
         this.#render();
     }
+    set heading(heading) {
+        this.#heading = heading;
+        this.#render();
+    }
     #onCopy() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.#code);
         this.#copied = true;
@@ -91,43 +99,72 @@ export class CodeBlock extends HTMLElement {
             this.#render();
         }, this.#copyTimeout);
     }
-    #render() {
+    #renderCopyButton({ noText = false } = {}) {
         const copyButtonClasses = LitHtml.Directives.classMap({
             copied: this.#copied,
             'copy-button': true,
         });
         // clang-format off
-        LitHtml.render(LitHtml.html `<div class="codeblock" jslog=${VisualLogging.section('code')}>
-      ${this.#displayToolbar ? LitHtml.html `<div class="toolbar" jslog=${VisualLogging.toolbar()}>
-        <div class="lang">${this.#codeLang}</div>
-        <div class="copy">
-          <button class=${copyButtonClasses}
-            title=${i18nString(UIStrings.copy)}
-            jslog=${VisualLogging.action('copy').track({ click: true })}
-            @click=${this.#onCopy}>
-            <${IconButton.Icon.Icon.litTagName}
-              .data=${{
-            iconName: 'copy',
-            width: '16px',
-            height: '16px',
-            color: 'var(--copy-icon-color, var(--icon-default))',
-        }}
-            >
-            </${IconButton.Icon.Icon.litTagName}>
-            <span>${this.#copied ?
+        return LitHtml.html `
+      <button class=${copyButtonClasses}
+        title=${i18nString(UIStrings.copy)}
+        jslog=${VisualLogging.action('copy').track({ click: true })}
+        @click=${this.#onCopy}>
+        <${IconButton.Icon.Icon.litTagName} name="copy"></${IconButton.Icon.Icon.litTagName}>
+        ${(!noText || this.#copied) ? LitHtml.html `<span>${this.#copied ?
             i18nString(UIStrings.copied) :
-            i18nString(UIStrings.copy)}</span>
-          </button>
-        </div>
-      </div>` : ''}
-      <div class="editor-wrapper">
-        <${TextEditor.TextEditor.TextEditor.litTagName} .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
-        ${this.#displayNotice ? LitHtml.html `<p class="notice">
-          <x-link class="link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({ click: true })}>
-            ${i18nString(UIStrings.disclaimer)}
-         </x-link>
-        </p>` : LitHtml.nothing}
+            i18nString(UIStrings.copy)}</span>` : LitHtml.nothing}
+      </button>
+    `;
+        // clang-format on
+    }
+    #renderToolbar() {
+        // clang-format off
+        return LitHtml.html `<div class="toolbar" jslog=${VisualLogging.toolbar()}>
+      <div class="lang">${this.#codeLang}</div>
+      <div class="copy">
+        ${this.#renderCopyButton()}
       </div>
+    </div>`;
+        // clang-format on
+    }
+    #renderNotice() {
+        // clang-format off
+        return LitHtml.html `<p class="notice">
+      <x-link class="link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({
+            click: true,
+        })}>
+        ${i18nString(UIStrings.disclaimer)}
+      </x-link>
+    </p>`;
+        // clang-format on
+    }
+    #renderHeading() {
+        if (!this.#heading) {
+            return LitHtml.nothing;
+        }
+        // clang-format off
+        return LitHtml.html `
+      <div class="heading">
+        <h4 class="heading-text">${this.#heading.text}</h4>
+        ${this.#heading.showCopyButton ? LitHtml.html `<div class="copy-button">
+          ${this.#renderCopyButton({ noText: true })}
+        </div>` : LitHtml.nothing}
+      </div>
+    `;
+        // clang-format on
+    }
+    #render() {
+        // clang-format off
+        LitHtml.render(LitHtml.html `<div class='codeblock' jslog=${VisualLogging.section('code')}>
+      ${this.#displayToolbar ? this.#renderToolbar() : LitHtml.nothing}
+      <div class="editor-wrapper">
+        ${this.#heading ? this.#renderHeading() : LitHtml.nothing}
+        <div class="code">
+          <${TextEditor.TextEditor.TextEditor.litTagName} .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
+        </div>
+      </div>
+      ${this.#displayNotice ? this.#renderNotice() : LitHtml.nothing}
     </div>`, this.#shadow, {
             host: this,
         });

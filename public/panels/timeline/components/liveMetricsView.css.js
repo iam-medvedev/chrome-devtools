@@ -184,7 +184,6 @@ styles.replaceSync(
 .interaction-info {
   width: var(--sys-typescale-body4-line-height);
   height: var(--sys-typescale-body4-line-height);
-  cursor: help;
   margin-right: 6px;
 }
 
@@ -242,12 +241,25 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   margin-top: 8px;
 }
 
-.field-data-hint {
+.setting-hint {
   margin-left: 6px;
   vertical-align: bottom;
-  cursor: help;
   height: 18px;
   width: 18px;
+}
+
+.environment-recs {
+  margin: 12px 0;
+}
+
+.environment-recs > summary {
+  font-weight: var(--ref-typeface-weight-medium);
+  margin-bottom: 4px;
+}
+
+.environment-recs-list {
+  margin: 0;
+  padding-left: 20px;
 }
 
 /*# sourceURL=liveMetricsView.css */

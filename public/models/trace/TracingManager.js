@@ -5,7 +5,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 export class TracingManager extends SDK.SDKModel.SDKModel {
     #tracingAgent;
     #activeClient;
-    #eventBufferSize;
     #eventsRetrieved;
     #finishing;
     constructor(target) {
@@ -13,11 +12,9 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         this.#tracingAgent = target.tracingAgent();
         target.registerTracingDispatcher(new TracingDispatcher(this));
         this.#activeClient = null;
-        this.#eventBufferSize = 0;
         this.#eventsRetrieved = 0;
     }
     bufferUsage(usage, eventCount, percentFull) {
-        this.#eventBufferSize = eventCount === undefined ? null : eventCount;
         if (this.#activeClient) {
             this.#activeClient.tracingBufferUsage(usage || percentFull || 0);
         }
@@ -28,17 +25,13 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         }
         this.#activeClient.traceEventsCollected(events);
         this.#eventsRetrieved += events.length;
-        if (!this.#eventBufferSize) {
-            this.#activeClient.eventsRetrievalProgress(0);
-            return;
-        }
-        if (this.#eventsRetrieved > this.#eventBufferSize) {
-            this.#eventsRetrieved = this.#eventBufferSize;
-        }
-        this.#activeClient.eventsRetrievalProgress(this.#eventsRetrieved / this.#eventBufferSize);
+        // CDP no longer provides an approximate_event_count AKA eventCount. It's always 0.
+        // To give some idea of progress we'll compare to a large (900k event) trace.
+        // And we'll clamp both sides so the user sees some progress, and never maxed at 99%
+        const progress = Math.min((this.#eventsRetrieved / 900_000) + 0.15, 0.90);
+        this.#activeClient.eventsRetrievalProgress(progress);
     }
     tracingComplete() {
-        this.#eventBufferSize = 0;
         this.#eventsRetrieved = 0;
         if (this.#activeClient) {
             this.#activeClient.tracingComplete();
@@ -57,7 +50,6 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         if (this.#activeClient) {
             await this.#tracingAgent.invoke_end();
         }
-        this.#eventBufferSize = 0;
         this.#eventsRetrieved = 0;
         this.#activeClient = null;
         this.#finishing = false;
@@ -98,6 +90,7 @@ class TracingDispatcher {
     constructor(tracingManager) {
         this.#tracingManager = tracingManager;
     }
+    // `eventCount` will always be 0 as perfetto no longer calculates `approximate_event_count`
     bufferUsage({ value, eventCount, percentFull }) {
         this.#tracingManager.bufferUsage(value, eventCount, percentFull);
     }

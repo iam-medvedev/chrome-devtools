@@ -192,6 +192,7 @@ style.setProperty('--image-file-mop', 'url(\"' + new URL(new URL('mop.svg', impo
 style.setProperty('--image-file-mouse', 'url(\"' + new URL(new URL('mouse.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-network-settings', 'url(\"' + new URL(new URL('network-settings.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-open-externally', 'url(\"' + new URL(new URL('open-externally.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-pause-circle', 'url(\"' + new URL(new URL('pause-circle.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL(new URL('pause.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pen-spark', 'url(\"' + new URL(new URL('pen-spark.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance-panel-diagram', 'url(\"' + new URL(new URL('performance-panel-diagram.svg', import.meta.url).href, import.meta.url).toString() + '\")');
@@ -228,6 +229,7 @@ style.setProperty('--image-file-select-element', 'url(\"' + new URL(new URL('sel
 style.setProperty('--image-file-send', 'url(\"' + new URL(new URL('send.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-shadow', 'url(\"' + new URL(new URL('shadow.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-small-status-dot', 'url(\"' + new URL(new URL('small-status-dot.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-smart-assistant', 'url(\"' + new URL(new URL('smart-assistant.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-snippet', 'url(\"' + new URL(new URL('snippet.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-spark-info', 'url(\"' + new URL(new URL('spark-info.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-spark', 'url(\"' + new URL(new URL('spark.svg', import.meta.url).href, import.meta.url).toString() + '\")');

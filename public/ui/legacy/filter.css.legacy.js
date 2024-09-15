@@ -160,6 +160,10 @@ export default {
   display: flex;
   background-color: transparent;
   color: var(--sys-color-on-surface-subtle);
+
+  .toolbar-dropdown-arrow {
+    top: 1px;
+  }
 }
 
 button.toolbar-item:focus-visible {

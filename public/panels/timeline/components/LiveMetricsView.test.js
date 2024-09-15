@@ -17,11 +17,8 @@ function getFieldMetricValue(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
     return card.shadowRoot.querySelector('#field-value .metric-value');
 }
-function getThrottlingRecommendation(view) {
-    return view.shadowRoot.querySelector('#network-recommendation')?.title ?? null;
-}
-function getDeviceRecommendation(view) {
-    return view.shadowRoot.querySelector('#device-recommendation')?.title ?? null;
+function getEnvironmentRecs(view) {
+    return Array.from(view.shadowRoot.querySelectorAll('.environment-recs li'));
 }
 function getInteractions(view) {
     const interactionsListEl = view.shadowRoot.querySelector('.interactions-list');
@@ -245,10 +242,8 @@ describeWithMockConnection('LiveMetricsView', () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const throttlingRec = getThrottlingRecommendation(view);
-            assert.isNull(throttlingRec);
-            const deviceRec = getDeviceRecommendation(view);
-            assert.isNull(deviceRec);
+            const envRecs = getEnvironmentRecs(view);
+            assert.lengthOf(envRecs, 0);
             const fieldMessage = getFieldMessage(view);
             assert.match(fieldMessage.innerText, /See how your local metrics compare/);
             const dataDescriptions = getDataDescriptions(view);
@@ -268,10 +263,10 @@ describeWithMockConnection('LiveMetricsView', () => {
                 isPrimaryFrame: () => true,
             });
             await coordinator.done();
-            const throttlingRec = getThrottlingRecommendation(view);
-            assert.match(throttlingRec, /Slow 4G/);
-            const deviceRec = getDeviceRecommendation(view);
-            assert.match(deviceRec, /60%.*desktop/);
+            const envRecs = getEnvironmentRecs(view);
+            assert.lengthOf(envRecs, 2);
+            assert.match(envRecs[0].textContent, /60%.*desktop/);
+            assert.match(envRecs[1].textContent, /Slow 4G/);
             const fieldMessage = getFieldMessage(view);
             // We can't match the exact string because we format the dates based on
             // locale, so the exact format depends based on where the SWE or bots who
@@ -294,10 +289,8 @@ describeWithMockConnection('LiveMetricsView', () => {
                 isPrimaryFrame: () => true,
             });
             await coordinator.done();
-            const throttlingRec = getThrottlingRecommendation(view);
-            assert.isNull(throttlingRec);
-            const deviceRec = getDeviceRecommendation(view);
-            assert.isNull(deviceRec);
+            const envRecs = getEnvironmentRecs(view);
+            assert.lengthOf(envRecs, 0);
             const fieldMessage = getFieldMessage(view);
             assert.isNull(fieldMessage);
             const dataDescriptions = getDataDescriptions(view);
@@ -403,8 +396,10 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const throttlingRec = getThrottlingRecommendation(view);
-                assert.match(throttlingRec, /Slow 4G/);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 2);
+                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.match(envRecs[1].textContent, /Slow 4G/);
             });
             it('should hide if no RTT data', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -412,8 +407,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const throttlingRec = getThrottlingRecommendation(view);
-                assert.isNull(throttlingRec);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 1);
+                assert.match(envRecs[0].textContent, /60%.*desktop/);
             });
             it('should suggest no throttling for very low latency', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -423,8 +419,10 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const throttlingRec = getThrottlingRecommendation(view);
-                assert.match(throttlingRec, /no throttling/);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 2);
+                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.match(envRecs[1].textContent, /no throttling/);
             });
             it('should ignore presets that are generally too far off', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -434,8 +432,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const throttlingRec = getThrottlingRecommendation(view);
-                assert.isNull(throttlingRec);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 1);
+                assert.match(envRecs[0].textContent, /60%.*desktop/);
             });
         });
         describe('form factor recommendation', () => {
@@ -444,8 +443,10 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const deviceRec = getDeviceRecommendation(view);
-                assert.match(deviceRec, /60%.*desktop/);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 2);
+                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.match(envRecs[1].textContent, /Slow 4G/);
             });
             it('should recommend mobile if it is the majority', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -457,8 +458,10 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const deviceRec = getDeviceRecommendation(view);
-                assert.match(deviceRec, /80%.*mobile/);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 2);
+                assert.match(envRecs[0].textContent, /80%.*mobile/);
+                assert.match(envRecs[1].textContent, /Slow 4G/);
             });
             it('should recommend nothing if there is no majority', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -470,8 +473,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = new Components.LiveMetricsView.LiveMetricsView();
                 renderElementIntoDOM(view);
                 await coordinator.done();
-                const deviceRec = getDeviceRecommendation(view);
-                assert.isNull(deviceRec);
+                const envRecs = getEnvironmentRecs(view);
+                assert.lengthOf(envRecs, 1);
+                assert.match(envRecs[0].textContent, /Slow 4G/);
             });
         });
     });

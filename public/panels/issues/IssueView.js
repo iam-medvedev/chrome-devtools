@@ -204,7 +204,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         this.#throttle = new Common.Throttler.Throttler(250);
         this.toggleOnClick = true;
         this.listItemElement.classList.add('issue');
-        this.childrenListElement.classList.add('body');
+        this.childrenListElement.classList.add('issue-body');
         this.childrenListElement.classList.add(IssueView.getBodyCSSClass(this.#issue.getKind()));
         this.affectedResources = this.#createAffectedResources();
         this.#affectedResourceViews = [

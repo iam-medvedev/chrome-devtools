@@ -24,6 +24,8 @@ export declare class EntriesLinkOverlay extends HTMLElement {
         length?: number;
         height?: number;
     });
+    set fromEntryIsSource(x: boolean);
+    set toEntryIsSource(x: boolean);
 }
 declare global {
     interface HTMLElementTagNameMap {

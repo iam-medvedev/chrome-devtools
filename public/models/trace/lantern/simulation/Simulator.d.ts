@@ -10,52 +10,52 @@ export interface Result<T = Lantern.AnyNetworkObject> {
 }
 declare class Simulator<T = Lantern.AnyNetworkObject> {
     static createSimulator(settings: Lantern.Simulation.Settings): Simulator;
-    _options: Required<Lantern.Simulation.Options>;
+    options: Required<Lantern.Simulation.Options>;
     _rtt: number;
-    _throughput: number;
-    _maximumConcurrentRequests: number;
-    _cpuSlowdownMultiplier: number;
-    _layoutTaskMultiplier: number;
-    _cachedNodeListByStartPosition: Graph.Node[];
-    _nodeTimings: SimulatorTimingMap;
-    _numberInProgressByType: Map<string, number>;
-    _nodes: Record<number, Set<Graph.Node>>;
-    _dns: DNSCache;
-    _connectionPool: ConnectionPool;
+    throughput: number;
+    maximumConcurrentRequests: number;
+    cpuSlowdownMultiplier: number;
+    layoutTaskMultiplier: number;
+    cachedNodeListByStartPosition: Graph.Node[];
+    nodeTimings: SimulatorTimingMap;
+    numberInProgressByType: Map<string, number>;
+    nodes: Record<number, Set<Graph.Node>>;
+    dns: DNSCache;
+    connectionPool: ConnectionPool;
     constructor(options?: Lantern.Simulation.Options);
     get rtt(): number;
-    _initializeConnectionPool(graph: Graph.Node): void;
+    initializeConnectionPool(graph: Graph.Node): void;
     /**
      * Initializes the various state data structures such _nodeTimings and the _node Sets by state.
      */
-    _initializeAuxiliaryData(): void;
-    _numberInProgress(type: string): number;
-    _markNodeAsReadyToStart(node: Graph.Node, queuedTime: number): void;
-    _markNodeAsInProgress(node: Graph.Node, startTime: number): void;
-    _markNodeAsComplete(node: Graph.Node, endTime: number, connectionTiming?: ConnectionTiming): void;
-    _acquireConnection(request: Lantern.NetworkRequest): TCPConnection | null;
-    _getNodesSortedByStartPosition(): Graph.Node[];
-    _startNodeIfPossible(node: Graph.Node, totalElapsedTime: number): void;
+    initializeAuxiliaryData(): void;
+    numberInProgress(type: string): number;
+    markNodeAsReadyToStart(node: Graph.Node, queuedTime: number): void;
+    markNodeAsInProgress(node: Graph.Node, startTime: number): void;
+    markNodeAsComplete(node: Graph.Node, endTime: number, connectionTiming?: ConnectionTiming): void;
+    acquireConnection(request: Lantern.NetworkRequest): TCPConnection | null;
+    getNodesSortedByStartPosition(): Graph.Node[];
+    startNodeIfPossible(node: Graph.Node, totalElapsedTime: number): void;
     /**
      * Updates each connection in use with the available throughput based on the number of network requests
      * currently in flight.
      */
-    _updateNetworkCapacity(): void;
+    updateNetworkCapacity(): void;
     /**
      * Estimates the number of milliseconds remaining given current condidtions before the node is complete.
      */
-    _estimateTimeRemaining(node: Graph.Node): number;
-    _estimateCPUTimeRemaining(cpuNode: Graph.CPUNode): number;
-    _estimateNetworkTimeRemaining(networkNode: Graph.NetworkNode): number;
+    estimateTimeRemaining(node: Graph.Node): number;
+    estimateCPUTimeRemaining(cpuNode: Graph.CPUNode): number;
+    estimateNetworkTimeRemaining(networkNode: Graph.NetworkNode): number;
     /**
      * Computes and returns the minimum estimated completion time of the nodes currently in progress.
      */
-    _findNextNodeCompletionTime(): number;
+    findNextNodeCompletionTime(): number;
     /**
      * Given a time period, computes the progress toward completion that the node made durin that time.
      */
-    _updateProgressMadeInTimePeriod(node: Graph.Node, timePeriodLength: number, totalElapsedTime: number): void;
-    _computeFinalNodeTimings(): {
+    updateProgressMadeInTimePeriod(node: Graph.Node, timePeriodLength: number, totalElapsedTime: number): void;
+    computeFinalNodeTimings(): {
         nodeTimings: Map<Graph.Node, Lantern.Simulation.NodeTiming>;
         completeNodeTimings: Map<Graph.Node, CompleteNodeTiming>;
     };
@@ -79,6 +79,6 @@ declare class Simulator<T = Lantern.AnyNetworkObject> {
      * When simulating, just because a low priority image started 5ms before a high priority image doesn't mean
      * it would have happened like that when the network was slower.
      */
-    static _computeNodeStartPosition(node: Graph.Node): number;
+    static computeNodeStartPosition(node: Graph.Node): number;
 }
 export { Simulator };

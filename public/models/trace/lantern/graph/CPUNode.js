@@ -5,13 +5,13 @@ import { BaseNode } from './BaseNode.js';
 class CPUNode extends BaseNode {
     _event;
     _childEvents;
-    _correctedEndTs;
+    correctedEndTs;
     constructor(parentEvent, childEvents = [], correctedEndTs) {
         const nodeId = `${parentEvent.tid}.${parentEvent.ts}`;
         super(nodeId);
         this._event = parentEvent;
         this._childEvents = childEvents;
-        this._correctedEndTs = correctedEndTs;
+        this.correctedEndTs = correctedEndTs;
     }
     get type() {
         return BaseNode.types.CPU;
@@ -20,8 +20,8 @@ class CPUNode extends BaseNode {
         return this._event.ts;
     }
     get endTime() {
-        if (this._correctedEndTs) {
-            return this._correctedEndTs;
+        if (this.correctedEndTs) {
+            return this.correctedEndTs;
         }
         return this._event.ts + this._event.dur;
     }
@@ -57,7 +57,7 @@ class CPUNode extends BaseNode {
         return urls;
     }
     cloneWithoutRelationships() {
-        return new CPUNode(this._event, this._childEvents, this._correctedEndTs);
+        return new CPUNode(this._event, this._childEvents, this.correctedEndTs);
     }
 }
 export { CPUNode };

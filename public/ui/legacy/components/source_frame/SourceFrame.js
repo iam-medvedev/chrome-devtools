@@ -257,22 +257,19 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             this.wasmDisassemblyInternal ? markNonBreakableLines(this.wasmDisassemblyInternal) : nonBreakableLines,
             this.options.lineWrapping ? CodeMirror.EditorView.lineWrapping : [],
             this.options.lineNumbers !== false ? CodeMirror.lineNumbers() : [],
-            Root.Runtime.experiments.isEnabled("sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */) ?
-                [] :
-                CodeMirror.indentationMarkers({
-                    colors: {
-                        light: 'var(--sys-color-divider)',
-                        activeLight: 'var(--sys-color-divider-prominent)',
-                        dark: 'var(--sys-color-divider)',
-                        activeDark: 'var(--sys-color-divider-prominent)',
-                    },
-                }),
+            CodeMirror.indentationMarkers({
+                colors: {
+                    light: 'var(--sys-color-divider)',
+                    activeLight: 'var(--sys-color-divider-prominent)',
+                    dark: 'var(--sys-color-divider)',
+                    activeDark: 'var(--sys-color-divider-prominent)',
+                },
+            }),
         ];
     }
     onBlur() {
     }
     onFocus() {
-        this.resetCurrentSearchResultIndex();
     }
     onPaste() {
         if (Root.Runtime.Runtime.queryParam('isChromeForTesting') ||

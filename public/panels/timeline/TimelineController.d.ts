@@ -45,7 +45,6 @@ export declare class TimelineController implements TraceEngine.TracingManager.Tr
     traceEventsCollected(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
     tracingComplete(): void;
     private allSourcesFinished;
-    private finalizeTrace;
     tracingBufferUsage(usage: number): void;
     eventsRetrievalProgress(progress: number): void;
 }

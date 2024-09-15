@@ -43,7 +43,7 @@ input {
 }
 
 .text-prompt-input .suggestion {
-  color: var(--sys-color-state-disabled);
+  color: var(--sys-color-on-surface-subtle);
   position: absolute;
   left: 0;
   z-index: 1;

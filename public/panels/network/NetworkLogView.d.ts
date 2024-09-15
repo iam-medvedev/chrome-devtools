@@ -2,6 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
+import * as HAR from '../../models/har/har.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -25,6 +26,7 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private readonly networkOnlyBlockedRequestsSetting;
     private readonly networkOnlyThirdPartySetting;
     private readonly networkResourceTypeFiltersSetting;
+    private readonly networkShowOptionsToGenerateHarWithSensitiveData;
     private rawRowHeight;
     private readonly progressBarContainer;
     private readonly networkLogLargeRowsSetting;
@@ -171,7 +173,7 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private copyAllFetchCall;
     private copyPowerShellCommand;
     private copyAllPowerShellCommand;
-    exportAll(): Promise<void>;
+    exportAll(options: HAR.Log.BuildOptions): Promise<void>;
     private clearBrowserCache;
     private clearBrowserCookies;
     private applyFilter;

@@ -42,9 +42,11 @@ css
             onFixThisIssueClick: noop,
             inspectElementToggled: false,
             state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
+            agentType: "freestyler" /* Freestyler.AgentType.FREESTYLER */,
             aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             messages,
             selectedElement: {},
+            selectedNetworkRequest: {},
             isLoading: false,
             canShowFeedbackForm: false,
             userInfo: {},
@@ -58,6 +60,7 @@ css
                     {
                         entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                         suggestingFix: false,
+                        aborted: false,
                         steps: [
                             {
                                 isLoading: false,

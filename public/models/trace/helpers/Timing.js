@@ -122,4 +122,7 @@ export function eventIsInBounds(event, bounds) {
 export function timestampIsInBounds(bounds, timestamp) {
     return timestamp >= bounds.min && timestamp <= bounds.max;
 }
+export function windowFitsInsideBounds(data) {
+    return data.window.min >= data.bounds.min && data.window.max <= data.bounds.max;
+}
 //# sourceMappingURL=Timing.js.map

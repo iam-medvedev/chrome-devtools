@@ -192,6 +192,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private dragging;
     private endDragging;
     timelineData(rebuid?: boolean): FlameChartTimelineData | null;
+    revealEntryVertically(entryIndex: number): void;
     revealEntry(entryIndex: number): void;
     setWindowTimes(startTime: number, endTime: number, animate?: boolean): void;
     /**
@@ -221,7 +222,13 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private deselectAllEntries;
     private isGroupFocused;
     private scrollGroupIntoView;
-    private toggleGroupExpand;
+    /**
+     * Toggle a group's expanded state.
+     * @param groupIndex - the index of this group in the timelineData.groups
+     * array. Note that this is the array index, and not the startLevel of the
+     * group.
+     */
+    toggleGroupExpand(groupIndex: number): void;
     private expandGroup;
     moveGroupUp(groupIndex: number): void;
     moveGroupDown(groupIndex: number): void;
@@ -561,6 +568,7 @@ export interface FlameChartDataProvider {
     modifyTree?(action: FilterAction, entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
+    groupForEvent?(entryIndex: number): Group | null;
 }
 export interface FlameChartMarker {
     startTime(): number;

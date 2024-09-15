@@ -25,7 +25,7 @@ const UIStrings = {
      *@example {example.com #3} PH1
      *@example {Show recent timeline sessions} PH2
      */
-    currentSessionSS: 'Current Session: {PH1}. {PH2}',
+    currentSessionSS: 'Current session: {PH1}. {PH2}',
     /**
      *@description the title shown when the user is viewing the landing page which is showing live performance metrics that are updated automatically.
      */
@@ -64,7 +64,7 @@ const UIStrings = {
     /**
      *@description Accessible label for the timeline session selection menu
      */
-    selectTimelineSession: 'Select Timeline Session',
+    selectTimelineSession: 'Select timeline session',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineHistoryManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

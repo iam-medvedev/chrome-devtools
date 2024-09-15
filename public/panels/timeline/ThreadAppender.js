@@ -49,10 +49,6 @@ const UIStrings = {
      */
     dedicatedWorker: 'Dedicated `Worker`',
     /**
-     *@description Text for the name of anonymous functions
-     */
-    anonymous: '(anonymous)',
-    /**
      *@description A generic name given for a thread running in the browser (sequence of programmed instructions).
      * The placeholder is an enumeration given to the thread.
      *@example {1} PH1
@@ -65,17 +61,17 @@ const UIStrings = {
     /**
      *@description Threads used for background tasks.
      */
-    threadPool: 'Thread Pool',
+    threadPool: 'Thread pool',
     /**
      *@description Name for a thread that rasterizes graphics in a website.
      *@example {2} PH1
      */
-    rasterizerThreadS: 'Rasterizer Thread {PH1}',
+    rasterizerThreadS: 'Rasterizer thread {PH1}',
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
      *@example {2} PH1
      */
-    threadPoolThreadS: 'Thread Pool Worker {PH1}',
+    threadPoolThreadS: 'Thread pool worker {PH1}',
     /**
      *@description Title of a bidder auction worklet with known URL in the timeline flame chart of the Performance panel
      *@example {https://google.com} PH1
@@ -96,7 +92,7 @@ const UIStrings = {
     /**
      *@description Title of control thread of a service process for an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
      */
-    workletService: 'Auction Worklet Service',
+    workletService: 'Auction Worklet service',
     /**
      *@description Title of a seller auction worklet with known URL in the timeline flame chart of the Performance panel
      *@example {https://google.com} PH1
@@ -111,12 +107,7 @@ const UIStrings = {
      *@description Title of control thread of a service process for an auction worklet with known URL in the timeline flame chart of the Performance panel
      * @example {https://google.com} PH1
      */
-    workletServiceS: 'Auction Worklet Service — {PH1}',
-    /**
-     *@description Text used to show an EventDispatch event which has a type associated with it
-     *@example {click} PH1
-     */
-    eventDispatchS: 'Event: {PH1}',
+    workletServiceS: 'Auction Worklet service — {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/ThreadAppender.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -525,30 +516,7 @@ export class ThreadAppender {
         if (this.isIgnoreListedEntry(entry)) {
             return i18nString(UIStrings.onIgnoreList);
         }
-        // If the event is a profile call, we need to look up its name based on its
-        // ProfileNode in the CPUProfile for the trace we are working with.
-        if (TraceEngine.Types.TraceEvents.isProfileCall(entry)) {
-            // In the future traceParsedData.Samples will always be defined, but this
-            // is not the case until the sync tracks migration is fully shipped,
-            // hence this extra check.
-            if (this.#traceParsedData.Samples) {
-                const potentialCallName = TraceEngine.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(this.#traceParsedData.Samples, entry);
-                // We need this extra check because the call name could be the empty
-                // string. If it is, we want to fallback to the "(anonymous)" text.
-                if (potentialCallName) {
-                    return potentialCallName;
-                }
-            }
-            return entry.callFrame.functionName || i18nString(UIStrings.anonymous);
-        }
-        if (TraceEngine.Types.TraceEvents.isTraceEventDispatch(entry)) {
-            // EventDispatch represent user actions such as clicks, so in this case
-            // rather than show the event title (which is always just "Event"), we
-            // add the type ("click") to help the user understand the event.
-            return i18nString(UIStrings.eventDispatchS, { PH1: entry.args.data.type });
-        }
-        const defaultName = Components.EntryStyles.getEventStyle(entry.name)?.title;
-        return defaultName || entry.name;
+        return Components.EntryName.nameForEntry(entry, this.#traceParsedData);
     }
     /**
      * Returns the info shown when an event added by this appender

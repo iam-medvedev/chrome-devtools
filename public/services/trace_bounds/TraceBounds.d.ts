@@ -53,7 +53,16 @@ export declare class BoundsManager extends EventTarget {
     resetWithNewBounds(initialBounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds): this;
     state(): Readonly<State> | null;
     setMiniMapBounds(newBounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds): void;
+    /**
+     * Updates the visible part of the trace that the user can see.
+     * @param options.ignoreMiniMapBounds - by default the visible window will be
+     * bound by the minimap bounds. If you set this to `true` then the timeline
+     * visible window will not be constrained by the minimap bounds. Be careful
+     * with this! Unless you deal with this situation, the UI of the performance
+     * panel will break.
+     */
     setTimelineVisibleWindow(newWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, options?: {
-        shouldAnimate: boolean;
+        shouldAnimate?: boolean;
+        ignoreMiniMapBounds?: boolean;
     }): void;
 }

@@ -166,6 +166,16 @@ export function isTraceEventDecodeLazyPixelRef(event) {
 export function isTraceEventDecodeImage(event) {
     return event.name === "Decode Image" /* KnownEventName.DECODE_IMAGE */;
 }
+export var SelectorTimingsKey;
+(function (SelectorTimingsKey) {
+    SelectorTimingsKey["Elapsed"] = "elapsed (us)";
+    SelectorTimingsKey["RejectPercentage"] = "reject_percentage";
+    SelectorTimingsKey["FastRejectCount"] = "fast_reject_count";
+    SelectorTimingsKey["MatchAttempts"] = "match_attempts";
+    SelectorTimingsKey["MatchCount"] = "match_count";
+    SelectorTimingsKey["Selector"] = "selector";
+    SelectorTimingsKey["StyleSheetId"] = "style_sheet_id";
+})(SelectorTimingsKey || (SelectorTimingsKey = {}));
 export function isTraceEventSelectorStats(event) {
     return event.name === "SelectorStats" /* KnownEventName.SELECTOR_STATS */;
 }
@@ -386,6 +396,9 @@ export function isSyntheticConsoleTiming(traceEventData) {
 export function isTraceEventUserTiming(traceEventData) {
     return traceEventData.cat === 'blink.user_timing';
 }
+export function isTraceEventDomLoading(traceEventData) {
+    return traceEventData.name === "domLoading" /* KnownEventName.DOM_LOADING */;
+}
 export function isTraceEventPerformanceMeasure(traceEventData) {
     return isTraceEventUserTiming(traceEventData) && isTraceEventAsyncPhase(traceEventData);
 }
@@ -419,6 +432,9 @@ export function isSyntheticLayoutShift(traceEventData) {
         return false;
     }
     return 'rawEvent' in traceEventData.args.data;
+}
+export function isSyntheticLayoutShiftCluster(traceEventData) {
+    return traceEventData.name === "SyntheticLayoutShiftCluster" /* KnownEventName.SYNTHETIC_LAYOUT_SHIFT_CLUSTER */;
 }
 export function isProfileCall(event) {
     return 'callFrame' in event;

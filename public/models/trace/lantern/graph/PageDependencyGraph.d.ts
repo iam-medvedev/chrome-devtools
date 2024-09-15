@@ -24,7 +24,7 @@ declare class PageDependencyGraph {
      * Removes the given node from the graph, but retains all paths between its dependencies and
      * dependents.
      */
-    static _pruneNode(node: Node): void;
+    static pruneNode(node: Node): void;
     /**
      * TODO: remove when CDT backend in Lighthouse is gone. Until then, this is a useful debugging tool
      * to find delta between using CDP or the trace to create the network requests.
@@ -36,7 +36,7 @@ declare class PageDependencyGraph {
      *
      * When using for a unit test, make sure to do `.only` so you are getting what you expect.
      */
-    static _debugNormalizeRequests(lanternRequests: Lantern.NetworkRequest[]): void;
+    static debugNormalizeRequests(lanternRequests: Lantern.NetworkRequest[]): void;
     static createGraph(mainThreadEvents: Lantern.TraceEvent[], networkRequests: Lantern.NetworkRequest[], url: Lantern.Simulation.URL): Node;
     static printGraph(rootNode: Node, widthInCharacters?: number): void;
 }

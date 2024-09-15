@@ -5,6 +5,7 @@
     },
     "files": [
         "lcpDiscovery.css.js",
-        "sidebarInsight.css.js"
+        "sidebarInsight.css.js",
+        "table.css.js"
     ]
 }

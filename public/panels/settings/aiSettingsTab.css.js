@@ -15,6 +15,12 @@ styles.replaceSync(
   box-sizing: border-box;
 }
 
+header > h1 {
+  font-size: 18px;
+  font-weight: normal;
+  margin: 0;
+}
+
 .shared-disclaimer {
   background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
   border-radius: var(--sys-size-5);
@@ -30,6 +36,7 @@ styles.replaceSync(
 
 .disclaimer-list-header {
   font: var(--sys-typescale-body5-medium);
+  margin: 0;
 }
 
 .disclaimer-list {
@@ -49,6 +56,7 @@ styles.replaceSync(
   line-height: var(--sys-typescale-body5-line-height);
   min-width: var(--sys-size-28);
   max-width: var(--sys-size-35);
+  background-color: var(--app-color-card-background);
 }
 
 .accordion-header {
@@ -87,6 +95,8 @@ styles.replaceSync(
   font-weight: var(--ref-typeface-weight-medium);
   color: var(--sys-color-on-surface);
   padding-top: var(--sys-size-4);
+  margin: 0;
+  font-size: inherit;
 }
 
 .setting-description {
@@ -100,6 +110,11 @@ styles.replaceSync(
 
 .setting-card {
   padding: var(--sys-size-6) 0;
+
+  h2 {
+    margin: 0;
+    font: inherit;
+  }
 }
 
 .divider {
@@ -154,7 +169,12 @@ styles.replaceSync(
   border-top: 1px solid var(--sys-color-divider);
   display: flex;
   flex-direction: column;
-  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .settings-container-wrapper {
+    align-items: center;
+  }
 }
 
 header {

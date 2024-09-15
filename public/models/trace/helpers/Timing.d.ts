@@ -38,3 +38,8 @@ export declare function boundsIncludeTimeRange(data: BoundsIncludeTimeRange): bo
 /** Checks to see if the event is within or overlaps the bounds */
 export declare function eventIsInBounds(event: Types.TraceEvents.TraceEventData, bounds: Types.Timing.TraceWindowMicroSeconds): boolean;
 export declare function timestampIsInBounds(bounds: Types.Timing.TraceWindowMicroSeconds, timestamp: Types.Timing.MicroSeconds): boolean;
+export interface WindowFitsInsideBounds {
+    window: Types.Timing.TraceWindowMicroSeconds;
+    bounds: Types.Timing.TraceWindowMicroSeconds;
+}
+export declare function windowFitsInsideBounds(data: WindowFitsInsideBounds): boolean;

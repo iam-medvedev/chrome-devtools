@@ -79,6 +79,7 @@ export interface AidaResponseMetadata {
 export interface AidaResponse {
     explanation: string;
     metadata: AidaResponseMetadata;
+    completed: boolean;
 }
 export declare const enum AidaAccessPreconditions {
     AVAILABLE = "available",

@@ -6,7 +6,7 @@ import * as Root from '../../core/root/root.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
-import { getEventLevel } from './AppenderUtils.js';
+import { getEventLevel, getFormattedTime } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
 import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
@@ -332,6 +332,13 @@ export class CompatibilityTracksAppender {
         // TODO(crbug.com/1442454) Figure out how to avoid the circular calls.
         this.#trackForLevel.set(level, appender);
     }
+    groupForLevel(level) {
+        const appenderForLevel = this.#trackForLevel.get(level);
+        if (!appenderForLevel) {
+            return null;
+        }
+        return this.groupForAppender(appenderForLevel);
+    }
     /**
      * Adds an event to the flame chart data at a defined level.
      * @param event the event to be appended,
@@ -432,7 +439,15 @@ export class CompatibilityTracksAppender {
         if (!track) {
             throw new Error('Track not found for level');
         }
-        return track.titleForEvent(event);
+        // Historically all tracks would have a titleForEvent() method.
+        // However, we are working on migrating all event title logic into one place (components/EntryName)
+        // TODO(crbug.com/365047728):
+        // Once this migration is complete, no tracks will have a custom
+        // titleForEvent method and we can remove titleForEvent entirely.
+        if (track.titleForEvent) {
+            return track.titleForEvent(event);
+        }
+        return TimelineComponents.EntryName.nameForEntry(event, this.#traceParsedData);
     }
     /**
      * Returns the info shown when an event in the timeline is hovered.
@@ -447,11 +462,25 @@ export class CompatibilityTracksAppender {
         // added to the WarningsHandler are automatically used and added
         // to the tooltip.
         const warningElements = TimelineComponents.DetailsView.buildWarningElementsForEvent(event, this.#traceParsedData);
-        const { title, formattedTime, warningElements: extraWarningElements } = track.highlightedEntryInfo(event);
+        let title = this.titleForEvent(event, level);
+        let formattedTime = getFormattedTime(event.dur);
+        // If the track defines a custom highlight, call it and use its values.
+        if (track.highlightedEntryInfo) {
+            const { title: customTitle, formattedTime: customFormattedTime, warningElements: extraWarningElements } = track.highlightedEntryInfo(event);
+            if (customTitle) {
+                title = customTitle;
+            }
+            if (customFormattedTime) {
+                formattedTime = customFormattedTime;
+            }
+            if (extraWarningElements) {
+                warningElements.push(...extraWarningElements);
+            }
+        }
         return {
             title,
             formattedTime,
-            warningElements: warningElements.concat(extraWarningElements || []),
+            warningElements,
         };
     }
 }

@@ -26,7 +26,7 @@ function getRowDataForNetworkDetailsElement(details) {
 describeWithEnvironment('TimelineDetailsView', function () {
     const mockViewDelegate = new MockViewDelegate();
     it('displays the details of a network request event correctly', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+        const { traceData, insights } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsView(mockViewDelegate);
         const networkRequests = traceData.NetworkRequests.byTime;
         const cssRequest = networkRequests.find(request => {
@@ -36,7 +36,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
             throw new Error('Could not find expected network request.');
         }
         const selection = Timeline.TimelineSelection.TimelineSelection.fromTraceEvent(cssRequest);
-        await detailsView.setModel(traceData, null);
+        await detailsView.setModel(traceData, null, insights);
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         assert.strictEqual(detailsContentElement.childNodes.length, 1);
@@ -52,12 +52,12 @@ describeWithEnvironment('TimelineDetailsView', function () {
             'Waiting on main thread4.29 ms';
         assert.deepEqual(rowData, [
             { title: 'URL', value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },
-            { title: 'Request Method', value: 'GET' },
-            { title: 'Initial Priority', value: 'Highest' },
+            { title: 'Request method', value: 'GET' },
+            { title: 'Initial priority', value: 'Highest' },
             { title: 'Priority', value: 'Highest' },
-            { title: 'Mime Type', value: 'text/css' },
-            { title: 'Encoded Data', value: ' (from cache)' },
-            { title: 'Decoded Body', value: '96 B' },
+            { title: 'MIME type', value: 'text/css' },
+            { title: 'Encoded data', value: ' (from cache)' },
+            { title: 'Decoded body', value: '96 B' },
             {
                 title: 'Initiated by',
                 value: 'chromedevtools.github.io/performance-stories/lcp-web-font/index.html',

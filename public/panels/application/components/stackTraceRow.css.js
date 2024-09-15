@@ -46,6 +46,14 @@ styles.replaceSync(
   outline-offset: 2px;
   border: none;
   background: none;
+  font-family: inherit;
+  font-size: var(--sys-size-6);
+
+  &:focus-visible {
+    outline: 2px solid var(--sys-color-state-focus-ring);
+    outline-offset: 0;
+    border-radius: var(--sys-shape-corner-extra-small);
+  }
 }
 
 /*# sourceURL=stackTraceRow.css */

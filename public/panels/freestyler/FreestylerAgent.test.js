@@ -411,12 +411,14 @@ c`;
               $0.style.backgroundColor = 'red'
               STOP`,
                             metadata: {},
+                            completed: true,
                         };
                     }
                     else {
                         yield {
                             explanation: 'ANSWER: This is the answer',
                             metadata: {},
+                            completed: true,
                         };
                     }
                     count++;
@@ -443,12 +445,14 @@ c`;
               $0.style.backgroundColor = 'red'
               STOP`,
                             metadata: {},
+                            completed: true,
                         };
                     }
                     else {
                         yield {
                             explanation: 'ANSWER: This is the answer',
                             metadata: {},
+                            completed: true,
                         };
                     }
                     count++;
@@ -478,12 +482,14 @@ c`;
               $0.style.backgroundColor = 'red'
               STOP`,
                             metadata: {},
+                            completed: true,
                         };
                     }
                     else {
                         yield {
                             explanation: 'ANSWER: This is the answer',
                             metadata: {},
+                            completed: true,
                         };
                     }
                     count++;
@@ -499,7 +505,7 @@ c`;
                 promise.resolve(false);
                 const responses = await Array.fromAsync(agent.run('test', { selectedElement: element, isFixQuery: false }));
                 const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
-                assert.strictEqual(actionStep.output, 'Error: EvalError: Possible side-effect in debug-evaluate');
+                assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
                 assert.strictEqual(execJs.getCalls().length, 1);
             });
             it('calls execJs with allowing side effects when the query includes "Fix this issue" prompt', async () => {
@@ -511,12 +517,14 @@ c`;
               $0.style.backgroundColor = 'red'
               STOP`,
                             metadata: {},
+                            completed: true,
                         };
                     }
                     else {
                         yield {
                             explanation: 'ANSWER: This is the answer',
                             metadata: {},
+                            completed: true,
                         };
                     }
                     count++;
@@ -542,12 +550,14 @@ c`;
               $0.style.backgroundColor = 'red'
               STOP`,
                             metadata: {},
+                            completed: true,
                         };
                     }
                     else {
                         yield {
                             explanation: 'ANSWER: This is the answer',
                             metadata: {},
+                            completed: true,
                         };
                     }
                     count++;
@@ -572,6 +582,7 @@ c`;
                 yield {
                     explanation: 'ANSWER: this is the answer',
                     metadata: {},
+                    completed: true,
                 };
             }
             const execJs = sinon.spy();
@@ -610,6 +621,7 @@ c`;
                     metadata: {
                         rpcGlobalId: 123,
                     },
+                    completed: true,
                 };
             }
             const agent = new FreestylerAgent({
@@ -640,6 +652,7 @@ c`;
                                 citations: [],
                             }],
                     },
+                    completed: true,
                 };
             }
             const agent = new FreestylerAgent({
@@ -654,7 +667,7 @@ c`;
                 {
                     rpcId: undefined,
                     type: Freestyler.ResponseType.ERROR,
-                    error: 'Sorry, I could not help you with this query.',
+                    error: "unknown" /* Freestyler.ErrorType.UNKNOWN */,
                 },
             ]);
         });
@@ -669,6 +682,7 @@ c`;
                                 citations: [],
                             }],
                     },
+                    completed: true,
                 };
             }
             const agent = new FreestylerAgent({
@@ -693,6 +707,7 @@ c`;
                 yield {
                     explanation: '',
                     metadata: {},
+                    completed: true,
                 };
             }
             const execJs = sinon.spy();
@@ -707,7 +722,7 @@ c`;
                 },
                 {
                     type: Freestyler.ResponseType.ERROR,
-                    error: 'Sorry, I could not help you with this query.',
+                    error: "unknown" /* Freestyler.ErrorType.UNKNOWN */,
                     rpcId: undefined,
                 },
             ]);
@@ -730,6 +745,7 @@ c`;
                     yield {
                         explanation: 'ANSWER: this is the actual answer',
                         metadata: {},
+                        completed: true,
                     };
                     return;
                 }
@@ -742,6 +758,7 @@ STOP
 
 ANSWER: this is the answer`,
                     metadata: {},
+                    completed: false,
                 };
                 i++;
             }
@@ -767,6 +784,7 @@ ANSWER: this is the answer`,
                     type: Freestyler.ResponseType.ACTION,
                     code: 'console.log(\'hello\');',
                     output: 'hello',
+                    canceled: false,
                     rpcId: undefined,
                 },
                 {
@@ -788,6 +806,7 @@ ANSWER: this is the answer`,
                     yield {
                         explanation: 'ANSWER: this is the answer',
                         metadata: {},
+                        completed: true,
                     };
                     return;
                 }
@@ -795,6 +814,7 @@ ANSWER: this is the answer`,
                 yield {
                     explanation: `THOUGHT: thought ${count}\nTITLE:test\nACTION\nconsole.log('test')\nSTOP\n`,
                     metadata: {},
+                    completed: false,
                 };
             }
             const execJs = sinon.spy(async () => 'undefined');
@@ -846,6 +866,7 @@ ANSWER: this is the answer`,
                     yield {
                         explanation: 'ANSWER: this is the answer',
                         metadata: {},
+                        completed: true,
                     };
                     return;
                 }
@@ -853,6 +874,7 @@ ANSWER: this is the answer`,
                 yield {
                     explanation: `THOUGHT: thought ${count}\nACTION\nconsole.log('test')\nSTOP\n`,
                     metadata: {},
+                    completed: false,
                 };
             }
             const execJs = sinon.spy();

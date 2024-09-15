@@ -34,6 +34,10 @@ styles.replaceSync(
   margin-bottom: 8px;
 }
 
+.metric-values-section:focus-visible {
+  outline: 2px solid -webkit-focus-ring-color;
+}
+
 .metric-source-block {
   flex: 1;
 }
@@ -127,6 +131,7 @@ styles.replaceSync(
 }
 
 .tooltip {
+  display: none;
   visibility: hidden;
   transition-property: visibility;
   width: min(var(--tooltip-container-width, 350px), 350px);

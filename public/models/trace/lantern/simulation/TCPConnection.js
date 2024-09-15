@@ -4,23 +4,23 @@
 const INITIAL_CONGESTION_WINDOW = 10;
 const TCP_SEGMENT_SIZE = 1460;
 class TCPConnection {
-    _warmed;
-    _ssl;
-    _h2;
-    _rtt;
-    _throughput;
-    _serverLatency;
+    warmed;
+    ssl;
+    h2;
+    rtt;
+    throughput;
+    serverLatency;
     _congestionWindow;
-    _h2OverflowBytesDownloaded;
+    h2OverflowBytesDownloaded;
     constructor(rtt, throughput, serverLatency = 0, ssl = true, h2 = false) {
-        this._warmed = false;
-        this._ssl = ssl;
-        this._h2 = h2;
-        this._rtt = rtt;
-        this._throughput = throughput;
-        this._serverLatency = serverLatency;
+        this.warmed = false;
+        this.ssl = ssl;
+        this.h2 = h2;
+        this.rtt = rtt;
+        this.throughput = throughput;
+        this.serverLatency = serverLatency;
         this._congestionWindow = INITIAL_CONGESTION_WINDOW;
-        this._h2OverflowBytesDownloaded = 0;
+        this.h2OverflowBytesDownloaded = 0;
     }
     static maximumSaturatedConnections(rtt, availableThroughput) {
         const roundTripsPerSecond = 1000 / rtt;
@@ -29,26 +29,26 @@ class TCPConnection {
         const minimumThroughputRequiredPerRequest = bytesPerSecond * 8;
         return Math.floor(availableThroughput / minimumThroughputRequiredPerRequest);
     }
-    _computeMaximumCongestionWindowInSegments() {
-        const bytesPerSecond = this._throughput / 8;
-        const secondsPerRoundTrip = this._rtt / 1000;
+    computeMaximumCongestionWindowInSegments() {
+        const bytesPerSecond = this.throughput / 8;
+        const secondsPerRoundTrip = this.rtt / 1000;
         const bytesPerRoundTrip = bytesPerSecond * secondsPerRoundTrip;
         return Math.floor(bytesPerRoundTrip / TCP_SEGMENT_SIZE);
     }
     setThroughput(throughput) {
-        this._throughput = throughput;
+        this.throughput = throughput;
     }
     setCongestionWindow(congestion) {
         this._congestionWindow = congestion;
     }
     setWarmed(warmed) {
-        this._warmed = warmed;
+        this.warmed = warmed;
     }
     isWarm() {
-        return this._warmed;
+        return this.warmed;
     }
     isH2() {
-        return this._h2;
+        return this.h2;
     }
     get congestionWindow() {
         return this._congestionWindow;
@@ -58,13 +58,13 @@ class TCPConnection {
      * applies to H2 connections.
      */
     setH2OverflowBytesDownloaded(bytes) {
-        if (!this._h2) {
+        if (!this.h2) {
             return;
         }
-        this._h2OverflowBytesDownloaded = bytes;
+        this.h2OverflowBytesDownloaded = bytes;
     }
     clone() {
-        return Object.assign(new TCPConnection(this._rtt, this._throughput), this);
+        return Object.assign(new TCPConnection(this.rtt, this.throughput), this);
     }
     /**
      * Simulates a network download of a particular number of bytes over an optional maximum amount of time
@@ -75,14 +75,14 @@ class TCPConnection {
      */
     simulateDownloadUntil(bytesToDownload, options) {
         const { timeAlreadyElapsed = 0, maximumTimeToElapse = Infinity, dnsResolutionTime = 0 } = options || {};
-        if (this._warmed && this._h2) {
-            bytesToDownload -= this._h2OverflowBytesDownloaded;
+        if (this.warmed && this.h2) {
+            bytesToDownload -= this.h2OverflowBytesDownloaded;
         }
-        const twoWayLatency = this._rtt;
+        const twoWayLatency = this.rtt;
         const oneWayLatency = twoWayLatency / 2;
-        const maximumCongestionWindow = this._computeMaximumCongestionWindowInSegments();
+        const maximumCongestionWindow = this.computeMaximumCongestionWindowInSegments();
         let handshakeAndRequest = oneWayLatency;
-        if (!this._warmed) {
+        if (!this.warmed) {
             handshakeAndRequest =
                 // DNS lookup
                 dnsResolutionTime +
@@ -93,11 +93,11 @@ class TCPConnection {
                     // ACK + initial request
                     oneWayLatency +
                     // ClientHello/ServerHello assuming TLS False Start is enabled (https://istlsfastyet.com/#server-performance).
-                    (this._ssl ? twoWayLatency : 0);
+                    (this.ssl ? twoWayLatency : 0);
         }
         let roundTrips = Math.ceil(handshakeAndRequest / twoWayLatency);
-        let timeToFirstByte = handshakeAndRequest + this._serverLatency + oneWayLatency;
-        if (this._warmed && this._h2) {
+        let timeToFirstByte = handshakeAndRequest + this.serverLatency + oneWayLatency;
+        if (this.warmed && this.h2) {
             timeToFirstByte = 0;
         }
         const timeElapsedForTTFB = Math.max(timeToFirstByte - timeAlreadyElapsed, 0);
@@ -121,18 +121,18 @@ class TCPConnection {
             bytesRemaining -= bytesDownloadedInWindow;
         }
         const timeElapsed = timeElapsedForTTFB + downloadTimeElapsed;
-        const extraBytesDownloaded = this._h2 ? Math.max(totalBytesDownloaded - bytesToDownload, 0) : 0;
+        const extraBytesDownloaded = this.h2 ? Math.max(totalBytesDownloaded - bytesToDownload, 0) : 0;
         const bytesDownloaded = Math.max(Math.min(totalBytesDownloaded, bytesToDownload), 0);
         let connectionTiming;
-        if (!this._warmed) {
+        if (!this.warmed) {
             connectionTiming = {
                 dnsResolutionTime,
                 connectionTime: handshakeAndRequest - dnsResolutionTime,
-                sslTime: this._ssl ? twoWayLatency : undefined,
+                sslTime: this.ssl ? twoWayLatency : undefined,
                 timeToFirstByte,
             };
         }
-        else if (this._h2) {
+        else if (this.h2) {
             // TODO: timing information currently difficult to model for warm h2 connections.
             connectionTiming = {
                 timeToFirstByte,

@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
@@ -136,5 +137,14 @@ UI.ActionRegistration.registerActionExtension({
             shortcut: 'Meta+Shift+E',
         },
     ],
+});
+// IMPORTANT: if you are updating this, you should also update the setting in
+// timeline-meta.
+Common.Settings.registerSettingExtension({
+    category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    settingName: 'annotations-hidden',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
 });
 //# sourceMappingURL=js_timeline-meta.js.map

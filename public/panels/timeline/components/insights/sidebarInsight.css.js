@@ -71,21 +71,6 @@ styles.replaceSync(
   margin-block: 3px;
 }
 
-.table-container dl {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-}
-
-.table-container dt {
-  padding: 3px;
-}
-
-.table-container dd {
-  display: grid;
-  justify-items: end;
-  margin-inline-start: auto;
-}
-
 .insight-description {
   border-bottom: 1px solid var(--sys-color-divider);
   padding-bottom: 10px;

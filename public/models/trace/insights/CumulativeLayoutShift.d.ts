@@ -30,7 +30,7 @@ export interface NoncompositedAnimationFailure {
     unsupportedProperties?: Types.TraceEvents.TraceEventAnimation['args']['data']['unsupportedProperties'];
 }
 export interface LayoutShiftRootCausesData {
-    iframes: Types.TraceEvents.TraceEventRenderFrameImplCreateChildFrame[];
+    iframeIds: string[];
     fontRequests: Types.TraceEvents.SyntheticNetworkRequest[];
 }
 export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): CLSInsightResult;

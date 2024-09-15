@@ -26,7 +26,7 @@ export interface ConnectionTiming {
     timeToFirstByte: number;
 }
 declare class SimulatorTimingMap {
-    _nodeTimings: Map<Graph.Node, NodeTimingData>;
+    nodeTimings: Map<Graph.Node, NodeTimingData>;
     constructor();
     getNodes(): Graph.Node[];
     setReadyToStart(node: Graph.Node, values: {

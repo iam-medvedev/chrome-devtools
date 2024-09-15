@@ -326,7 +326,7 @@ class PageDependencyGraph {
             // here replaces O(M + N) edges with (M * N) edges, which is fine if either  M or N is at
             // most 1.
             if (node.getNumberOfDependencies() === 1 || node.getNumberOfDependents() <= 1) {
-                PageDependencyGraph._pruneNode(node);
+                PageDependencyGraph.pruneNode(node);
             }
         }
     }
@@ -334,7 +334,7 @@ class PageDependencyGraph {
      * Removes the given node from the graph, but retains all paths between its dependencies and
      * dependents.
      */
-    static _pruneNode(node) {
+    static pruneNode(node) {
         const dependencies = node.getDependencies();
         const dependents = node.getDependents();
         for (const dependency of dependencies) {
@@ -358,7 +358,7 @@ class PageDependencyGraph {
      *
      * When using for a unit test, make sure to do `.only` so you are getting what you expect.
      */
-    static _debugNormalizeRequests(lanternRequests) {
+    static debugNormalizeRequests(lanternRequests) {
         for (const request of lanternRequests) {
             request.rendererStartTime = Math.round(request.rendererStartTime * 1000) / 1000;
             request.networkRequestTime = Math.round(request.networkRequestTime * 1000) / 1000;
@@ -449,7 +449,7 @@ class PageDependencyGraph {
     }
     static createGraph(mainThreadEvents, networkRequests, url) {
         // This is for debugging trace/devtoolslog network records.
-        // const debug = PageDependencyGraph._debugNormalizeRequests(networkRequests);
+        // const debug = PageDependencyGraph.debugNormalizeRequests(networkRequests);
         const networkNodeOutput = PageDependencyGraph.getNetworkNodeOutput(networkRequests);
         const cpuNodes = PageDependencyGraph.getCPUNodes(mainThreadEvents);
         const { requestedUrl, mainDocumentUrl } = url;

@@ -220,7 +220,16 @@ export declare enum Action {
     InsightsOnboardingNextPage = 157,
     InsightsOnboardingPrevPage = 158,
     InsightsOnboardingFeatureDisabled = 159,
-    MAX_VALUE = 160
+    InsightsOptInTeaserShown = 160,
+    InsightsOptInTeaserSettingsLinkClicked = 161,
+    InsightsOptInTeaserConfirmedInSettings = 162,
+    InsightsReminderTeaserShown = 163,
+    InsightsReminderTeaserConfirmed = 164,
+    InsightsReminderTeaserCanceled = 165,
+    InsightsReminderTeaserSettingsLinkClicked = 166,
+    InsightsReminderTeaserAbortedInSettings = 167,
+    GeneratingInsightWithoutDisclaimer = 168,
+    MAX_VALUE = 169
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -633,13 +642,10 @@ export declare enum DevtoolsExperiments {
     'instrumentation-breakpoints' = 61,
     'authored-deployed-grouping' = 63,
     'just-my-code' = 65,
-    'preloading-status-panel' = 68,
-    'outermost-target-selector' = 71,
     'highlight-errors-elements-panel' = 73,
     'use-source-map-scopes' = 76,
     'network-panel-filter-bar-redesign' = 79,
     'autofill-view' = 82,
-    'sources-frame-indentation-markers-temporarily-disable' = 83,
     'css-type-component-length-deprecate' = 85,
     'timeline-show-postmessage-events' = 86,
     'timeline-enhanced-traces' = 90,
@@ -650,7 +656,8 @@ export declare enum DevtoolsExperiments {
     'timeline-observations' = 96,
     'gen-ai-settings-panel' = 97,
     'timeline-server-timings' = 98,
-    MAX_VALUE = 99
+    'timeline-layout-shift-details' = 99,
+    MAX_VALUE = 100
 }
 export declare const enum ColorPickerOpenedFrom {
     SOURCES_PANEL = 0,

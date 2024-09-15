@@ -20,6 +20,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     indexForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
     eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent | null;
     entryIndexForSelection(selection: TimelineSelection | null): number;
+    groupForEvent(_entryIndex: number): PerfUI.FlameChart.Group | null;
     entryColor(index: number): string;
     textColor(_index: number): string;
     entryTitle(index: number): string | null;

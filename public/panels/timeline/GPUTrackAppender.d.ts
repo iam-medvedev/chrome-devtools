@@ -1,5 +1,5 @@
 import * as TraceEngine from '../../models/trace/trace.js';
-import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import { type CompatibilityTracksAppender, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare class GPUTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
@@ -18,13 +18,4 @@ export declare class GPUTrackAppender implements TrackAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
-    /**
-     * Gets the title an event added by this appender should be rendered with.
-     */
-    titleForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
 }

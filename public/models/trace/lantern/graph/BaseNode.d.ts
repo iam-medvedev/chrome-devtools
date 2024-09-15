@@ -25,8 +25,8 @@ declare class BaseNode<T = Lantern.AnyNetworkObject> {
     };
     _id: string;
     _isMainDocument: boolean;
-    _dependents: Node[];
-    _dependencies: Node[];
+    dependents: Node[];
+    dependencies: Node[];
     constructor(id: string);
     get id(): string;
     get type(): 'network' | 'cpu';

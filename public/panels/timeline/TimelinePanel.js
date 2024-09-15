@@ -194,6 +194,10 @@ const UIStrings = {
      */
     received: 'Received',
     /**
+     *@description Text in Timeline Panel of the Performance panel
+     */
+    processed: 'Processed',
+    /**
      *@description Text to close something
      */
     close: 'Close',
@@ -251,12 +255,12 @@ const UIStrings = {
      *
      * @description Text for exporting basic traces
      */
-    exportNormalTraces: 'Basic Performance Traces',
+    exportNormalTraces: 'Basic performance traces',
     /**
      *
      * @description Text for exporting enhanced traces
      */
-    exportEnhancedTraces: 'Enhanced Performance Traces',
+    exportEnhancedTraces: 'Enhanced performance traces',
     /**
      *@description Tooltip description for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
      */
@@ -393,6 +397,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         config.includeRuntimeCallStats = Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
         config.debugMode = Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */);
         this.#traceEngineModel = TraceEngine.TraceModel.Model.createWithAllHandlers(config);
+        this.#listenForProcessingProgress();
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
         this.dropTarget = new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI], i18nString(UIStrings.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
         this.recordingOptionUIControls = [];
@@ -622,9 +627,9 @@ export class TimelinePanel extends UI.Panel.Panel {
                 return;
             }
             case 'VIEWING_TRACE': {
-                this.#removeStatusPane();
                 this.#hideLandingPage();
                 this.#setModelForActiveTrace();
+                this.#removeStatusPane();
                 this.#showSidebarIfRequired();
                 return;
             }
@@ -1405,6 +1410,14 @@ export class TimelinePanel extends UI.Panel.Panel {
         // Order is important: the bounds must be set before we initiate any UI
         // rendering.
         TraceBounds.TraceBounds.BoundsManager.instance().resetWithNewBounds(traceParsedData.Meta.traceBounds);
+        // Set up the modifications manager for the newly active trace.
+        // The order is important: this needs to happen before we trigger a flame chart redraw by setting the model.
+        // (it could happen after, but then we would need to trigger a fresh redraw so let's not do that)
+        const currentManager = ModificationsManager.initAndActivateModificationsManager(this.#traceEngineModel, traceIndex);
+        if (!currentManager) {
+            console.error('ModificationsManager could not be created or activated.');
+        }
+        this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 70);
         const isCpuProfile = this.#traceEngineModel.metadata(traceIndex)?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPU_PROFILE */;
         this.flameChart.setModel(traceParsedData, isCpuProfile);
         this.flameChart.resizeToPreferredHeights();
@@ -1414,11 +1427,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.searchableViewInternal.showWidget();
         const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
         this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);
-        // Set up the modifications manager for the newly active trace.
-        const currentManager = ModificationsManager.initAndActivateModificationsManager(this.#traceEngineModel, traceIndex);
-        if (!currentManager) {
-            console.error('ModificationsManager could not be created or activated.');
-        }
         // Add ModificationsManager listeners for annotations change to update the Annotation Overlays.
         currentManager?.addEventListener(AnnotationModifiedEvent.eventName, event => {
             const { overlay, action } = event;
@@ -1476,7 +1484,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#sourceMapsResolver = new SourceMapsResolver(traceParsedData);
         this.#sourceMapsResolver.addEventListener(NodeNamesUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
         void this.#sourceMapsResolver.install();
+        this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 80);
         this.updateMiniMap();
+        this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 90);
         this.updateTimelineControls();
         this.#setActiveInsight(null);
         const traceInsightsData = this.#traceEngineModel.traceInsights(traceIndex);
@@ -1616,9 +1626,22 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async processingStarted() {
-        if (this.statusPane) {
-            this.statusPane.updateStatus(i18nString(UIStrings.processingProfile));
-        }
+        this.statusPane?.updateStatus(i18nString(UIStrings.processingProfile));
+    }
+    #listenForProcessingProgress() {
+        this.#traceEngineModel.addEventListener(TraceEngine.TraceModel.ModelUpdateEvent.eventName, e => {
+            const updateEvent = e;
+            const str = i18nString(UIStrings.processed);
+            // TraceEngine will report progress from [0...1] but we still have more work to do. So, scale them down a bit.
+            const traceParseMaxProgress = 0.7;
+            if (updateEvent.data.type === "COMPLETE" /* TraceEngine.TraceModel.ModelUpdateType.COMPLETE */) {
+                this.statusPane?.updateProgressBar(str, 100 * traceParseMaxProgress);
+            }
+            else if (updateEvent.data.type === "PROGRESS_UPDATE" /* TraceEngine.TraceModel.ModelUpdateType.PROGRESS_UPDATE */) {
+                const data = updateEvent.data.data;
+                this.statusPane?.updateProgressBar(str, data.percent * 100 * traceParseMaxProgress);
+            }
+        });
     }
     #onSourceMapsNodeNamesResolved() {
         this.flameChart.refreshMainFlameChart();

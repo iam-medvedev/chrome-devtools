@@ -50,7 +50,11 @@ export declare class ChartViewport extends UI.Widget.VBox {
     reset(): void;
     private updateContentElementSize;
     setContentHeight(totalHeight: number): void;
-    setScrollOffset(offset: number, height?: number): void;
+    /**
+     * @param centered - If true, scrolls offset to where it is centered on the chart,
+     * based on current the this.offsetHeight value.
+     */
+    setScrollOffset(offset: number, height?: number, centered?: boolean): void;
     scrollOffset(): number;
     chartHeight(): number;
     setBoundaries(zeroTime: number, totalTime: number): void;

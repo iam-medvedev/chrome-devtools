@@ -9,31 +9,31 @@ const TLS_SCHEMES = ['https', 'wss'];
 // https://cs.chromium.org/chromium/src/net/socket/client_socket_pool_manager.cc?type=cs&q="int+g_max_sockets_per_group"
 const CONNECTIONS_PER_ORIGIN = 6;
 export class ConnectionPool {
-    _options;
-    _records;
-    _connectionsByOrigin;
-    _connectionsByRequest;
+    options;
+    records;
+    connectionsByOrigin;
+    connectionsByRequest;
     _connectionsInUse;
-    _connectionReusedByRequestId;
+    connectionReusedByRequestId;
     constructor(records, options) {
-        this._options = options;
-        this._records = records;
-        this._connectionsByOrigin = new Map();
-        this._connectionsByRequest = new Map();
+        this.options = options;
+        this.records = records;
+        this.connectionsByOrigin = new Map();
+        this.connectionsByRequest = new Map();
         this._connectionsInUse = new Set();
-        this._connectionReusedByRequestId = Core.NetworkAnalyzer.estimateIfConnectionWasReused(records, {
+        this.connectionReusedByRequestId = Core.NetworkAnalyzer.estimateIfConnectionWasReused(records, {
             forceCoarseEstimates: true,
         });
-        this._initializeConnections();
+        this.initializeConnections();
     }
     connectionsInUse() {
         return Array.from(this._connectionsInUse);
     }
-    _initializeConnections() {
-        const connectionReused = this._connectionReusedByRequestId;
-        const additionalRttByOrigin = this._options.additionalRttByOrigin;
-        const serverResponseTimeByOrigin = this._options.serverResponseTimeByOrigin;
-        const recordsByOrigin = Core.NetworkAnalyzer.groupByOrigin(this._records);
+    initializeConnections() {
+        const connectionReused = this.connectionReusedByRequestId;
+        const additionalRttByOrigin = this.options.additionalRttByOrigin;
+        const serverResponseTimeByOrigin = this.options.serverResponseTimeByOrigin;
+        const recordsByOrigin = Core.NetworkAnalyzer.groupByOrigin(this.records);
         for (const [origin, requests] of recordsByOrigin.entries()) {
             const connections = [];
             const additionalRtt = additionalRttByOrigin.get(origin) || 0;
@@ -44,7 +44,7 @@ export class ConnectionPool {
                 }
                 const isTLS = TLS_SCHEMES.includes(request.parsedURL.scheme);
                 const isH2 = request.protocol === 'h2';
-                const connection = new TCPConnection(this._options.rtt + additionalRtt, this._options.throughput, responseTime, isTLS, isH2);
+                const connection = new TCPConnection(this.options.rtt + additionalRtt, this.options.throughput, responseTime, isTLS, isH2);
                 connections.push(connection);
             }
             if (!connections.length) {
@@ -56,10 +56,10 @@ export class ConnectionPool {
             while (connections.length < minConnections) {
                 connections.push(connections[0].clone());
             }
-            this._connectionsByOrigin.set(origin, connections);
+            this.connectionsByOrigin.set(origin, connections);
         }
     }
-    _findAvailableConnectionWithLargestCongestionWindow(connections) {
+    findAvailableConnectionWithLargestCongestionWindow(connections) {
         let maxConnection = null;
         for (let i = 0; i < connections.length; i++) {
             const connection = connections[i];
@@ -81,17 +81,17 @@ export class ConnectionPool {
      * records until release is called.
      */
     acquire(request) {
-        if (this._connectionsByRequest.has(request)) {
+        if (this.connectionsByRequest.has(request)) {
             throw new Core.LanternError('Record already has a connection');
         }
         const origin = request.parsedURL.securityOrigin;
-        const connections = this._connectionsByOrigin.get(origin) || [];
-        const connectionToUse = this._findAvailableConnectionWithLargestCongestionWindow(connections);
+        const connections = this.connectionsByOrigin.get(origin) || [];
+        const connectionToUse = this.findAvailableConnectionWithLargestCongestionWindow(connections);
         if (!connectionToUse) {
             return null;
         }
         this._connectionsInUse.add(connectionToUse);
-        this._connectionsByRequest.set(request, connectionToUse);
+        this.connectionsByRequest.set(request, connectionToUse);
         return connectionToUse;
     }
     /**
@@ -99,15 +99,15 @@ export class ConnectionPool {
      * currently being used for this request, an error will be thrown.
      */
     acquireActiveConnectionFromRequest(request) {
-        const activeConnection = this._connectionsByRequest.get(request);
+        const activeConnection = this.connectionsByRequest.get(request);
         if (!activeConnection) {
             throw new Core.LanternError('Could not find an active connection for request');
         }
         return activeConnection;
     }
     release(request) {
-        const connection = this._connectionsByRequest.get(request);
-        this._connectionsByRequest.delete(request);
+        const connection = this.connectionsByRequest.get(request);
+        this.connectionsByRequest.delete(request);
         if (connection) {
             this._connectionsInUse.delete(connection);
         }

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import frameworkIgnoreListSettingsTabStyles from './frameworkIgnoreListSettingsTab.css.js';
@@ -99,13 +100,16 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         ignoreListContentScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListContentScripts), Common.Settings.Settings.instance().moduleSetting('skip-content-scripts'), true));
         const automaticallyIgnoreList = generalExclusionGroup.createChild('div', 'ignore-list-option');
         automaticallyIgnoreList.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.automaticallyIgnoreListKnownThirdPartyScripts), Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts'), true));
-        const automaticallyIgnoreLink = UI.XLink.XLink.create('http://goo.gle/skip-third-party', undefined, undefined, undefined, 'learn-more');
-        automaticallyIgnoreLink.textContent = '';
-        automaticallyIgnoreLink.setAttribute('aria-label', i18nString(UIStrings.learnMore));
-        const automaticallyIgnoreLinkIcon = new IconButton.Icon.Icon();
-        automaticallyIgnoreLinkIcon.data = { iconName: 'help', color: 'var(--icon-default)', width: '16px', height: '16px' };
-        automaticallyIgnoreLink.prepend(automaticallyIgnoreLinkIcon);
-        automaticallyIgnoreList.appendChild(automaticallyIgnoreLink);
+        const automaticallyIgnoreLinkButton = new Buttons.Button.Button();
+        automaticallyIgnoreLinkButton.data = {
+            iconName: 'help',
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            jslogContext: 'learn-more',
+            title: i18nString(UIStrings.learnMore),
+        };
+        automaticallyIgnoreLinkButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('http://goo.gle/skip-third-party'));
+        automaticallyIgnoreList.appendChild(automaticallyIgnoreLinkButton);
         const customExclusionGroup = this.createSettingGroup(i18nString(UIStrings.customExclusionRules));
         ignoreListOptions.appendChild(customExclusionGroup);
         this.list = new UI.ListWidget.ListWidget(this);

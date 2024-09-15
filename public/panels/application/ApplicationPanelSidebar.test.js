@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
@@ -86,7 +85,6 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
-        Root.Runtime.experiments.register("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, '', false);
         sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves(); // Silence console error
         setMockConnectionResponseHandler('Storage.getSharedStorageEntries', () => ({}));
         setMockConnectionResponseHandler('Storage.setSharedStorageTracking', () => ({}));
@@ -213,7 +211,6 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
 describeWithMockConnection('IDBDatabaseTreeElement', () => {
     beforeEach(() => {
         stubNoopSettings();
-        Root.Runtime.experiments.register("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, '', false);
     });
     it('only becomes selectable after database is updated', () => {
         const target = createTarget();
@@ -232,7 +229,6 @@ describeWithMockConnection('ResourcesSection', () => {
         let target;
         beforeEach(() => {
             stubNoopSettings();
-            Root.Runtime.experiments.register("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, '', false);
             SDK.FrameManager.FrameManager.instance({ forceNew: true });
             target = createTarget();
         });

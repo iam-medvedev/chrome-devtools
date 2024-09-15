@@ -381,6 +381,11 @@ export default {
   --app-color-performance-sidebar-entry-label: var(--ref-palette-purple80);
   --app-color-performance-sidebar-time-range: var(--ref-palette-pink60);
   --app-color-performance-sidebar-time-range-text: rgb(255 255 255);
+
+  /**
+   * Colors for cards.
+   */
+  --app-color-card-background: var(--sys-color-base-container-elevated);
 }
 
 :root.baseline-default {
@@ -745,6 +750,11 @@ export default {
    */
   --app-color-navigation-drawer-label-selected: var(--sys-color-surface);
   --app-color-navigation-drawer-background-selected: var(--ref-palette-primary70);
+
+  /**
+   * Colors for cards.
+   */
+  --app-color-card-background: var(--sys-color-surface2);
 }
 
 /*# sourceURL=themeColors.css */

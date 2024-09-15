@@ -18,6 +18,7 @@ export declare class ModificationsManager extends EventTarget {
      * throws.
      */
     static activeManager(): ModificationsManager | null;
+    static reset(): void;
     /**
      * Initializes a ModificationsManager instance for a parsed trace or changes the active manager for an existing one.
      * This needs to be called if and a trace has been parsed or switched to.

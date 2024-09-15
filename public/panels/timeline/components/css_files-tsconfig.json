@@ -8,6 +8,7 @@
         "cpuThrottlingSelector.css.js",
         "fieldSettingsDialog.css.js",
         "interactionBreakdown.css.js",
+        "layoutShiftDetails.css.js",
         "liveMetricsView.css.js",
         "metricCard.css.js",
         "metricValueStyles.css.js",

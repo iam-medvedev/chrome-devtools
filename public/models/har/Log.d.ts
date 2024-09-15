@@ -1,9 +1,12 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
+export type BuildOptions = {
+    sanitize: boolean;
+};
 export declare class Log {
     static pseudoWallTime(request: SDK.NetworkRequest.NetworkRequest, monotonicTime: number): Date;
-    static build(requests: SDK.NetworkRequest.NetworkRequest[]): Promise<LogDTO>;
+    static build(requests: SDK.NetworkRequest.NetworkRequest[], options: BuildOptions): Promise<LogDTO>;
     private creator;
     private buildPages;
     private convertPage;
@@ -13,7 +16,7 @@ export declare class Entry {
     private request;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     static toMilliseconds(time: number): number;
-    static build(request: SDK.NetworkRequest.NetworkRequest): Promise<EntryDTO>;
+    static build(request: SDK.NetworkRequest.NetworkRequest, options: BuildOptions): Promise<EntryDTO>;
     private buildRequest;
     private buildResponse;
     private buildContent;
@@ -57,7 +60,11 @@ export interface Request {
     method: string;
     url: Platform.DevToolsPath.UrlString;
     httpVersion: string;
-    headers: Object;
+    headers: {
+        name: string;
+        value: string;
+        comment?: string;
+    }[];
     queryString: Parameter[];
     cookies: CookieDTO[];
     headersSize: number;
@@ -68,7 +75,11 @@ export interface Response {
     status: number;
     statusText: string;
     httpVersion: string;
-    headers: Object;
+    headers: {
+        name: string;
+        value: string;
+        comment?: string;
+    }[];
     cookies: CookieDTO[];
     content: Content;
     redirectURL: string;

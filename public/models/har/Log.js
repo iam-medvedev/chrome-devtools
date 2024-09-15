@@ -37,11 +37,11 @@ export class Log {
     static pseudoWallTime(request, monotonicTime) {
         return new Date(request.pseudoWallTime(monotonicTime) * 1000);
     }
-    static async build(requests) {
+    static async build(requests, options) {
         const log = new Log();
         const entryPromises = [];
         for (const request of requests) {
-            entryPromises.push(Entry.build(request));
+            entryPromises.push(Entry.build(request, options));
         }
         const entries = await Promise.all(entryPromises);
         return { version: '1.2', creator: log.creator(), pages: log.buildPages(requests), entries };
@@ -91,7 +91,7 @@ export class Entry {
     static toMilliseconds(time) {
         return time === -1 ? -1 : time * 1000;
     }
-    static async build(request) {
+    static async build(request, options) {
         const harEntry = new Entry(request);
         let ipAddress = harEntry.request.remoteAddress();
         const portPositionInString = ipAddress.lastIndexOf(':');
@@ -140,6 +140,15 @@ export class Entry {
             time,
             timings,
         };
+        // Sanitize HAR to remove sensitive data.
+        if (options.sanitize) {
+            entry.response.cookies = [];
+            entry.response.headers =
+                entry.response.headers.filter(({ name }) => !['set-cookie'].includes(name.toLocaleLowerCase()));
+            entry.request.cookies = [];
+            entry.request.headers =
+                entry.request.headers.filter(({ name }) => !['authorization', 'cookie'].includes(name.toLocaleLowerCase()));
+        }
         // Chrome specific.
         if (harEntry.request.cached()) {
             entry._fromCache = harEntry.request.cachedInMemory() ? 'memory' : 'disk';

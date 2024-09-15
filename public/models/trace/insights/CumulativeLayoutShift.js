@@ -121,7 +121,7 @@ function getNextPrePaintEvent(prePaintEvents, targetEvent) {
  * An Iframe is considered a root cause if the iframe event occurs before a prePaint event
  * and within this prePaint event a layout shift(s) occurs.
  */
-function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift) {
+function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents) {
     for (const iframeEvent of iframeCreatedEvents) {
         const nextPrePaint = getNextPrePaintEvent(prePaintEvents, iframeEvent);
         // If no following prePaint, this is not a root cause.
@@ -136,11 +136,19 @@ function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePai
         for (const shift of shifts) {
             const rootCausesForShift = Platform.MapUtilities.getWithDefault(rootCausesByShift, shift, () => {
                 return {
-                    iframes: [],
+                    iframeIds: [],
                     fontRequests: [],
                 };
             });
-            rootCausesForShift.iframes.push(iframeEvent);
+            // Look for the first dom event that occurs within the bounds of the iframe event.
+            // This contains the frame id.
+            const domEvent = domLoadingEvents.find(e => {
+                const maxIframe = Types.Timing.MicroSeconds(iframeEvent.ts + (iframeEvent.dur ?? 0));
+                return e.ts >= iframeEvent.ts && e.ts <= maxIframe;
+            });
+            if (domEvent && domEvent.args.frame) {
+                rootCausesForShift.iframeIds.push(domEvent.args.frame);
+            }
         }
     }
     return rootCausesByShift;
@@ -171,7 +179,7 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
         for (const shift of shifts) {
             const rootCausesForShift = Platform.MapUtilities.getWithDefault(rootCausesByShift, shift, () => {
                 return {
-                    iframes: [],
+                    iframeIds: [],
                     fontRequests: [],
                 };
             });
@@ -189,6 +197,7 @@ export function generateInsight(traceParsedData, context) {
     const animationFailures = getNonCompositedAnimations(compositeAnimationEvents);
     const iframeEvents = traceParsedData.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinSameNavigation);
     const networkRequests = traceParsedData.NetworkRequests.byTime.filter(isWithinSameNavigation);
+    const domLoadingEvents = traceParsedData.LayoutShifts.domLoadingEvents.filter(isWithinSameNavigation);
     // Sort by cumulative score, since for insights we interpret these for their "bad" scores.
     const clusters = traceParsedData.LayoutShifts.clustersByNavigationId.get(context.navigationId)
         ?.sort((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ??
@@ -199,9 +208,9 @@ export function generateInsight(traceParsedData, context) {
     const rootCausesByShift = new Map();
     const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
     for (const shift of layoutShifts) {
-        rootCausesByShift.set(shift, { iframes: [], fontRequests: [] });
+        rootCausesByShift.set(shift, { iframeIds: [], fontRequests: [] });
     }
-    getIframeRootCauses(iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
+    getIframeRootCauses(iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
     getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
     return {
         animationFailures,

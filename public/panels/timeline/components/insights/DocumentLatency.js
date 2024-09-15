@@ -11,15 +11,27 @@ const UIStrings = {
     /**
      * @description Text to tell the user that the document request does not have redirects.
      */
-    redirects: 'Avoids multiple page redirects',
+    passingRedirects: 'Avoids redirects',
+    /**
+     * @description Text to tell the user that the document request had redirects.
+     */
+    failedRedirects: 'Had redirects',
     /**
      * @description Text to tell the user that the time starting the document request to when the server started responding is acceptable.
      */
-    serverResponseTime: 'Initial server response time was short',
+    passingServerResponseTime: 'Server responds quickly',
+    /**
+     * @description Text to tell the user that the time starting the document request to when the server started responding is not acceptable.
+     */
+    failedServerResponseTime: 'Server responded slowly',
     /**
      * @description Text to tell the user that text compression (like gzip) was applied.
      */
-    textCompression: 'Text compression applied',
+    passingTextCompression: 'Applies text compression',
+    /**
+     * @description Text to tell the user that text compression (like gzip) was not applied.
+     */
+    failedTextCompression: 'No compression applied',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/DocumentLatency.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -42,18 +54,26 @@ export class DocumentLatency extends BaseInsight {
     insightCategory = InsightsCategories.OTHER;
     internalName = 'document-latency';
     userVisibleTitle = 'Document request latency';
-    #adviceIcon(didPass) {
+    #check(didPass, good, bad) {
         const icon = didPass ? 'check-circle' : 'clear';
         return LitHtml.html `
       <${IconButton.Icon.Icon.litTagName}
-      name=${icon}
-      class=${didPass ? 'metric-value-good' : 'metric-value-bad'}
+        name=${icon}
+        class=${didPass ? 'metric-value-good' : 'metric-value-bad'}
       ></${IconButton.Icon.Icon.litTagName}>
+      <span>${didPass ? good : bad}</span>
     `;
     }
     createOverlays() {
-        // TODO: create overlays
-        return [];
+        const insight = getDocumentLatencyInsight(this.data.insights, this.data.navigationId);
+        if (!insight?.documentRequest) {
+            return [];
+        }
+        // TODO(crbug.com/352244434) add breakdown for server response time, queing, redirects, etc...
+        return [{
+                type: 'ENTRY_SELECTED',
+                entry: insight.documentRequest,
+            }];
     }
     #renderInsight(insight) {
         // clang-format off
@@ -69,20 +89,15 @@ export class DocumentLatency extends BaseInsight {
         <div slot="insight-description" class="insight-description">
           <ul class="insight-results insight-icon-results">
               <li class="insight-entry">
-                ${this.#adviceIcon(insight.redirectDuration === 0)}
-                <span>${i18nString(UIStrings.redirects)}</span>
+                ${this.#check(insight.redirectDuration === 0, i18nString(UIStrings.passingRedirects), i18nString(UIStrings.failedRedirects))}
               </li>
               <li class="insight-entry">
-                ${this.#adviceIcon(insight.serverResponseTime === 0)}
-                <span>${i18nString(UIStrings.serverResponseTime)}</span>
+                ${this.#check(!insight.serverResponseTooSlow, i18nString(UIStrings.passingServerResponseTime), i18nString(UIStrings.failedServerResponseTime))}
               </li>
               <li class="insight-entry">
-                ${this.#adviceIcon(insight.uncompressedResponseBytes === 0)}
-                <span>${i18nString(UIStrings.textCompression)}</span>
+                ${this.#check(insight.uncompressedResponseBytes === 0, i18nString(UIStrings.passingTextCompression), i18nString(UIStrings.failedTextCompression))}
               </li>
             </ul>
-        </div>
-        <div slot="insight-content" class="table-container">
         </div>
       </${SidebarInsight.SidebarInsight}>
     </div>`;

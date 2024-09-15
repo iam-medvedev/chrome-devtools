@@ -93,8 +93,7 @@ export type ModelUpdateEventProgress = {
     data: TraceParseEventProgressData;
 };
 export type TraceParseEventProgressData = {
-    index: number;
-    total: number;
+    percent: number;
 };
 export declare class ModelUpdateEvent extends Event {
     data: ModelUpdateEventData;

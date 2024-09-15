@@ -1,7 +1,8 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
+import * as Components from './components/components.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -103,7 +104,7 @@ export class InteractionsTrackAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event) {
-        let idForColorGeneration = this.titleForEvent(event);
+        let idForColorGeneration = Components.EntryName.nameForEntry(event, this.#traceParsedData);
         if (TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(event)) {
             // Append the ID so that we vary the colours, ensuring that two events of
             // the same type are coloured differently.
@@ -111,42 +112,5 @@ export class InteractionsTrackAppender {
         }
         return this.#colorGenerator.colorForID(idForColorGeneration);
     }
-    /**
-     * Gets the title an event added by this appender should be rendered with.
-     */
-    titleForEvent(event) {
-        if (TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(event)) {
-            return titleForInteractionEvent(event);
-        }
-        return event.name;
-    }
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event) {
-        const title = this.titleForEvent(event);
-        return { title, formattedTime: getFormattedTime(event.dur) };
-    }
-}
-/**
- * Return the title to use for a given interaction event.
- * Exported so the title in the DetailsView can re-use the same logic
- **/
-export function titleForInteractionEvent(event) {
-    const category = TraceEngine.Handlers.ModelHandlers.UserInteractions.categoryOfInteraction(event);
-    // Because we hide nested interactions, we do not want to show the
-    // specific type of the interaction that was not hidden, so instead we
-    // show just the category of that interaction.
-    if (category === 'OTHER') {
-        return 'Other';
-    }
-    if (category === 'KEYBOARD') {
-        return 'Keyboard';
-    }
-    if (category === 'POINTER') {
-        return 'Pointer';
-    }
-    return event.type;
 }
 //# sourceMappingURL=InteractionsTrackAppender.js.map

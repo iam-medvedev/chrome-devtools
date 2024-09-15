@@ -49,7 +49,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         });
         this.#breadcrumbsUI.addEventListener(TimelineComponents.BreadcrumbsUI.BreadcrumbActivatedEvent.eventName, event => {
             const { breadcrumb, childBreadcrumbsRemoved } = event;
-            this.#activateBreadcrumb(breadcrumb, childBreadcrumbsRemoved);
+            this.#activateBreadcrumb(breadcrumb, { removeChildBreadcrumbs: Boolean(childBreadcrumbsRemoved), updateVisibleWindow: true });
         });
         this.#overviewComponent.enableCreateBreadcrumbsButton();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
@@ -72,24 +72,68 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     #onTraceBoundsChange(event) {
         if (event.updateType === 'RESET' || event.updateType === 'VISIBLE_WINDOW') {
             this.#overviewComponent.setWindowTimes(event.state.milli.timelineTraceWindow.min, event.state.milli.timelineTraceWindow.max);
+            // If the visible window has changed because we are revealing a certain
+            // time period to the user, we need to ensure that this new time
+            // period fits within the current minimap bounds. If it doesn't, we
+            // do some work to update the minimap bounds. Note that this only
+            // applies if the user has created breadcrumbs, which scope the
+            // minimap. If they have not, the entire trace is the minimap, and
+            // therefore there is no work to be done.
+            const newWindowFitsBounds = TraceEngine.Helpers.Timing.windowFitsInsideBounds({
+                window: event.state.micro.timelineTraceWindow,
+                bounds: event.state.micro.minimapTraceBounds,
+            });
+            if (!newWindowFitsBounds) {
+                this.#updateMiniMapBoundsToFitNewWindow(event.state.micro.timelineTraceWindow);
+            }
         }
         if (event.updateType === 'RESET' || event.updateType === 'MINIMAP_BOUNDS') {
             this.#overviewComponent.setBounds(event.state.milli.minimapTraceBounds.min, event.state.milli.minimapTraceBounds.max);
         }
+    }
+    #updateMiniMapBoundsToFitNewWindow(newWindow) {
+        if (!this.breadcrumbs) {
+            return;
+        }
+        // Find the smallest breadcrumb that fits this window.
+        // Breadcrumbs are a linked list from largest to smallest so we have to
+        // walk through until we find one that does not fit, and pick the last
+        // before that.
+        let currentBreadcrumb = this.breadcrumbs.initialBreadcrumb;
+        let lastBreadcrumbThatFits = this.breadcrumbs.initialBreadcrumb;
+        while (currentBreadcrumb) {
+            const fits = TraceEngine.Helpers.Timing.windowFitsInsideBounds({
+                window: newWindow,
+                bounds: currentBreadcrumb.window,
+            });
+            if (fits) {
+                lastBreadcrumbThatFits = currentBreadcrumb;
+            }
+            else {
+                // If this breadcrumb does not fit, none of its children (which are all
+                // smaller by definition) will, so we can exit the loop early.
+                break;
+            }
+            currentBreadcrumb = currentBreadcrumb.child;
+        }
+        // Activate the breadcrumb that fits the visible window. We do not update
+        // the visible window here as we are doing this work as a reaction to
+        // something else triggering a change in the window visibility.
+        this.#activateBreadcrumb(lastBreadcrumbThatFits, { removeChildBreadcrumbs: false, updateVisibleWindow: false });
     }
     addBreadcrumb({ startTime, endTime }) {
         if (!this.breadcrumbs) {
             console.warn('ModificationsManager has not been created, therefore Breadcrumbs can not be added');
             return;
         }
-        // The OverviewPane can emit 0 and Infinity as numbers for the range; in
-        // this case we change them to be the min and max values of the minimap
-        // bounds.
         const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
         if (!traceBoundsState) {
             return;
         }
         const bounds = traceBoundsState.milli.minimapTraceBounds;
+        // The OverviewPane can emit 0 and Infinity as numbers for the range; in
+        // this case we change them to be the min and max values of the minimap
+        // bounds.
         const breadcrumbTimes = {
             startTime: TraceEngine.Types.Timing.MilliSeconds(Math.max(startTime, bounds.min)),
             endTime: TraceEngine.Types.Timing.MilliSeconds(Math.min(endTime, bounds.max)),
@@ -101,11 +145,16 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             activeBreadcrumb: addedBreadcrumb,
         };
     }
-    #activateBreadcrumb(breadcrumb, removeChildBreadcrumbs) {
+    /**
+     * Activates a given breadcrumb.
+     * @param options.removeChildBreadcrumbs - if true, any child breadcrumbs will be removed.
+     * @param options.updateVisibleWindow - if true, the visible window will be updated to match the bounds of the breadcrumb
+     */
+    #activateBreadcrumb(breadcrumb, options) {
         if (!this.breadcrumbs) {
             return;
         }
-        this.breadcrumbs.setActiveBreadcrumb(breadcrumb, removeChildBreadcrumbs);
+        this.breadcrumbs.setActiveBreadcrumb(breadcrumb, options);
         // Only the initial breadcrumb is passed in because breadcrumbs are stored in a linked list and breadcrumbsUI component iterates through them
         this.#breadcrumbsUI.data = {
             initialBreadcrumb: this.breadcrumbs.initialBreadcrumb,

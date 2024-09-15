@@ -1,7 +1,6 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TraceEngine from '../../models/trace/trace.js';
@@ -149,6 +148,12 @@ export class TimelineFlameChartNetworkDataProvider {
         }
         return index;
     }
+    groupForEvent(_entryIndex) {
+        // Because the network track only contains one group, we don't actually
+        // need to do any lookups here.
+        const group = this.#networkTrackAppender?.group() ?? null;
+        return group;
+    }
     entryColor(index) {
         if (!this.#networkTrackAppender) {
             throw new Error('networkTrackAppender should not be empty');
@@ -160,12 +165,7 @@ export class TimelineFlameChartNetworkDataProvider {
     }
     entryTitle(index) {
         const event = this.#events[index];
-        if (TraceEngine.Types.TraceEvents.isWebSocketTraceEvent(event) ||
-            TraceEngine.Types.TraceEvents.isSyntheticWebSocketConnectionEvent(event)) {
-            return this.#networkTrackAppender?.titleForWebSocketEvent(event) || '';
-        }
-        const parsedURL = new Common.ParsedURL.ParsedURL(event.args.data.url);
-        return parsedURL.isValid ? `${parsedURL.displayName} (${parsedURL.host})` : event.args.data.url || null;
+        return TimelineComponents.EntryName.nameForEntry(event);
     }
     entryFont(_index) {
         return this.#networkTrackAppender?.font() || null;

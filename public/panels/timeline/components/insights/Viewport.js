@@ -34,7 +34,7 @@ export class Viewport extends BaseInsight {
     static litTagName = LitHtml.literal `devtools-performance-viewport`;
     insightCategory = InsightsCategories.INP;
     internalName = 'viewport';
-    userVisibleTitle = 'Mobile-Optimized Viewport';
+    userVisibleTitle = 'Mobile-optimized viewport';
     createOverlays() {
         // TODO(b/351757418): create overlay for synthetic input delay events
         return [];

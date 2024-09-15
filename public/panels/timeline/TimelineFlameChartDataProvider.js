@@ -52,15 +52,15 @@ const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
      */
-    idleFrame: 'Idle Frame',
+    idleFrame: 'Idle frame',
     /**
      *@description Text in Timeline Frame Chart Data Provider of the Performance panel
      */
-    droppedFrame: 'Dropped Frame',
+    droppedFrame: 'Dropped frame',
     /**
      *@description Text in Timeline Frame Chart Data Provider of the Performance panel
      */
-    partiallyPresentedFrame: 'Partially Presented Frame',
+    partiallyPresentedFrame: 'Partially-presented frame',
     /**
      *@description Text for a rendering frame
      */
@@ -115,7 +115,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     staticHeader;
     framesHeader;
     screenshotsHeader;
-    entryData;
+    // Contains all the entries that are DRAWN onto the track. Entries that have
+    // been hidden - either by a user action, or because they aren't visible at
+    // all - will not appear in this array and it will change per-render. For
+    // example, if a user collapses an icicle in the flamechart, those entries
+    // that are now hidden will no longer be in this array.
+    entryData = [];
     entryTypeByLevel;
     screenshotImageCache;
     entryIndexToTitle;
@@ -958,6 +963,20 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     formatValue(value, precision) {
         return i18n.TimeUtilities.preciseMillisToString(value, precision);
     }
+    groupForEvent(entryIndex) {
+        if (!this.compatibilityTracksAppender) {
+            return null;
+        }
+        const level = this.timelineDataInternal?.entryLevels[entryIndex] ?? null;
+        if (level === null) {
+            return null;
+        }
+        const groupForLevel = this.compatibilityTracksAppender.groupForLevel(level);
+        if (!groupForLevel) {
+            return null;
+        }
+        return groupForLevel;
+    }
     canJumpToEntry(_entryIndex) {
         return false;
     }
@@ -984,6 +1003,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         return index;
     }
+    /**
+     * Return the index for the given entry. Note that this method assumes that
+     * timelineData() has been generated. If it hasn't, this method will return
+     * null.
+     */
     indexForEvent(targetEvent) {
         // Gets the index for the given event by walking through the array of entryData.
         // This may seem inefficient - but we have seen that by building up large
@@ -992,7 +1016,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Therefore, we strike a middle ground: look up the event the first time,
         // but then cache the result.
         const fromCache = this.#eventIndexByEvent.get(targetEvent);
-        if (fromCache) {
+        if (typeof fromCache === 'number') {
             return fromCache;
         }
         const index = this.entryData.indexOf(targetEvent);

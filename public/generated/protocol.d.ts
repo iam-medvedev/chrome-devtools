@@ -3486,6 +3486,7 @@ export declare namespace DOM {
         After = "after",
         Marker = "marker",
         Backdrop = "backdrop",
+        Column = "column",
         Selection = "selection",
         SearchText = "search-text",
         TargetText = "target-text",
@@ -8372,7 +8373,6 @@ export declare namespace Network {
         EnterprisePolicy = "EnterprisePolicy",
         StorageAccess = "StorageAccess",
         TopLevelStorageAccess = "TopLevelStorageAccess",
-        CorsOptIn = "CorsOptIn",
         Scheme = "Scheme"
     }
     /**

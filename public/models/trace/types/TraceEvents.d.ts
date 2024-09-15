@@ -675,7 +675,7 @@ export interface SyntheticLayoutShift extends TraceEventLayoutShift, SyntheticBa
  * of this as a trace event.
  */
 export interface SyntheticLayoutShiftCluster {
-    name: 'LayoutShiftCluster';
+    name: 'SyntheticLayoutShiftCluster';
     clusterWindow: TraceWindowMicroSeconds;
     clusterCumulativeScore: number;
     events: SyntheticLayoutShift[];
@@ -686,8 +686,12 @@ export interface SyntheticLayoutShiftCluster {
     };
     navigationId?: string;
     worstShiftEvent?: TraceEventData;
-    ts?: MicroSeconds;
+    ts: MicroSeconds;
     dur?: MicroSeconds;
+    cat: '';
+    ph: Phase.COMPLETE;
+    pid: ProcessID;
+    tid: ThreadID;
 }
 export type FetchPriorityHint = 'low' | 'high' | 'auto';
 export type RenderBlocking = 'blocking' | 'non_blocking' | 'in_body_parser_blocking' | 'potentially_blocking';
@@ -948,6 +952,12 @@ export interface TraceEventUserTiming extends TraceEventData {
     };
     id?: string;
     cat: 'blink.user_timing';
+}
+export interface TraceEventDomLoading extends TraceEventUserTiming {
+    name: KnownEventName.DOM_LOADING;
+    args: TraceEventArgs & {
+        frame?: string;
+    };
 }
 export type TraceEventPairableUserTiming = TraceEventUserTiming & TraceEventPairableAsync;
 export interface TraceEventPerformanceMeasureBegin extends TraceEventPairableUserTiming {
@@ -1342,6 +1352,15 @@ export interface SelectorTiming {
     'style_sheet_id': string;
     'match_count': number;
 }
+export declare enum SelectorTimingsKey {
+    Elapsed = "elapsed (us)",
+    RejectPercentage = "reject_percentage",
+    FastRejectCount = "fast_reject_count",
+    MatchAttempts = "match_attempts",
+    MatchCount = "match_count",
+    Selector = "selector",
+    StyleSheetId = "style_sheet_id"
+}
 export interface SelectorStats {
     selector_timings: SelectorTiming[];
 }
@@ -1472,6 +1491,7 @@ export declare function isTraceEventMainFrameViewport(traceEventData: TraceEvent
 export declare function isSyntheticUserTiming(traceEventData: TraceEventData): traceEventData is SyntheticUserTimingPair;
 export declare function isSyntheticConsoleTiming(traceEventData: TraceEventData): traceEventData is SyntheticConsoleTimingPair;
 export declare function isTraceEventUserTiming(traceEventData: TraceEventData): traceEventData is TraceEventUserTiming;
+export declare function isTraceEventDomLoading(traceEventData: TraceEventData): traceEventData is TraceEventDomLoading;
 export declare function isTraceEventPerformanceMeasure(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMeasure;
 export declare function isTraceEventPerformanceMark(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMark;
 export declare function isTraceEventConsoleTime(traceEventData: TraceEventData): traceEventData is TraceEventConsoleTime;
@@ -1482,6 +1502,7 @@ export interface TraceEventAsync extends TraceEventData {
 }
 export declare function isTraceEventAsyncPhase(traceEventData: TraceEventData): boolean;
 export declare function isSyntheticLayoutShift(traceEventData: TraceEventData): traceEventData is SyntheticLayoutShift;
+export declare function isSyntheticLayoutShiftCluster(traceEventData: TraceEventData): traceEventData is SyntheticLayoutShiftCluster;
 export declare function isProfileCall(event: TraceEventData): event is SyntheticProfileCall;
 export interface TraceEventPaint extends TraceEventComplete {
     name: KnownEventName.PAINT;
@@ -1874,6 +1895,7 @@ export declare const enum KnownEventName {
     PRE_PAINT = "PrePaint",
     LAYERIZE = "Layerize",
     LAYOUT_SHIFT = "LayoutShift",
+    SYNTHETIC_LAYOUT_SHIFT_CLUSTER = "SyntheticLayoutShiftCluster",
     UPDATE_LAYER_TREE = "UpdateLayerTree",
     SCHEDULE_STYLE_INVALIDATION_TRACKING = "ScheduleStyleInvalidationTracking",
     STYLE_RECALC_INVALIDATION_TRACKING = "StyleRecalcInvalidationTracking",
@@ -1958,7 +1980,8 @@ export declare const enum KnownEventName {
     IMPL_SIDE_FLING = "InputHandlerProxy::HandleGestureFling::started",
     SCHEDULE_POST_MESSAGE = "SchedulePostMessage",
     HANDLE_POST_MESSAGE = "HandlePostMessage",
-    RENDER_FRAME_IMPL_CREATE_CHILD_FRAME = "RenderFrameImpl::createChildFrame"
+    RENDER_FRAME_IMPL_CREATE_CHILD_FRAME = "RenderFrameImpl::createChildFrame",
+    DOM_LOADING = "domLoading"
 }
 export declare const Categories: {
     readonly Console: "blink.console";

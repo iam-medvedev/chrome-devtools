@@ -34,7 +34,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -306,11 +305,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.periodicBackgroundSyncTreeElement =
             new BackgroundServiceTreeElement(panel, "periodicBackgroundSync" /* Protocol.BackgroundService.ServiceName.PeriodicBackgroundSync */);
         backgroundServiceTreeElement.appendChild(this.periodicBackgroundSyncTreeElement);
-        if (Root.Runtime.experiments.isEnabled("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */)) {
-            this.preloadingSummaryTreeElement = new PreloadingSummaryTreeElement(panel);
-            backgroundServiceTreeElement.appendChild(this.preloadingSummaryTreeElement);
-            this.preloadingSummaryTreeElement.constructChildren(panel);
-        }
+        this.preloadingSummaryTreeElement = new PreloadingSummaryTreeElement(panel);
+        backgroundServiceTreeElement.appendChild(this.preloadingSummaryTreeElement);
+        this.preloadingSummaryTreeElement.constructChildren(panel);
         this.pushMessagingTreeElement =
             new BackgroundServiceTreeElement(panel, "pushMessaging" /* Protocol.BackgroundService.ServiceName.PushMessaging */);
         backgroundServiceTreeElement.appendChild(this.pushMessagingTreeElement);
@@ -423,11 +420,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.periodicBackgroundSyncTreeElement.initialize(backgroundServiceModel);
         this.pushMessagingTreeElement.initialize(backgroundServiceModel);
         this.storageBucketsTreeElement?.initialize();
-        if (Root.Runtime.experiments.isEnabled("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */)) {
-            const preloadingModel = this.target?.model(SDK.PreloadingModel.PreloadingModel);
-            if (preloadingModel) {
-                this.preloadingSummaryTreeElement?.initialize(preloadingModel);
-            }
+        const preloadingModel = this.target?.model(SDK.PreloadingModel.PreloadingModel);
+        if (preloadingModel) {
+            this.preloadingSummaryTreeElement?.initialize(preloadingModel);
         }
     }
     domStorageModelAdded(model) {

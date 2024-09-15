@@ -70,13 +70,10 @@ export declare const enum ExperimentName {
     INSTRUMENTATION_BREAKPOINTS = "instrumentation-breakpoints",
     AUTHORED_DEPLOYED_GROUPING = "authored-deployed-grouping",
     JUST_MY_CODE = "just-my-code",
-    PRELOADING_STATUS_PANEL = "preloading-status-panel",
-    OUTERMOST_TARGET_SELECTOR = "outermost-target-selector",
     HIGHLIGHT_ERRORS_ELEMENTS_PANEL = "highlight-errors-elements-panel",
     USE_SOURCE_MAP_SCOPES = "use-source-map-scopes",
     NETWORK_PANEL_FILTER_BAR_REDESIGN = "network-panel-filter-bar-redesign",
     AUTOFILL_VIEW = "autofill-view",
-    INDENTATION_MARKERS_TEMP_DISABLE = "sources-frame-indentation-markers-temporarily-disable",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     TIMELINE_ANNOTATIONS = "perf-panel-annotations",
     TIMELINE_INSIGHTS = "timeline-rpp-sidebar",
@@ -84,7 +81,8 @@ export declare const enum ExperimentName {
     TIMELINE_OBSERVATIONS = "timeline-observations",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     GEN_AI_SETTINGS_PANEL = "gen-ai-settings-panel",
-    TIMELINE_SERVER_TIMINGS = "timeline-server-timings"
+    TIMELINE_SERVER_TIMINGS = "timeline-server-timings",
+    TIMELINE_LAYOUT_SHIFT_DETAILS = "timeline-layout-shift-details"
 }
 export interface AidaAvailability {
     enabled: boolean;
@@ -113,12 +111,16 @@ export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
 }
+export interface HostConfigPrivacyUI {
+    enabled: boolean;
+}
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
     devToolsExplainThisResourceDogfood: HostConfigExplainThisResourceDogfood;
     devToolsVeLogging: HostConfigVeLogging;
+    devToolsPrivacyUI: HostConfigPrivacyUI;
     /**
      * OffTheRecord here indicates that the user's profile is either incognito,
      * or guest mode, rather than a "normal" profile.

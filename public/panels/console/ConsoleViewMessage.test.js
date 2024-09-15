@@ -75,7 +75,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, 'got here');
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement(); // Trigger rendering.
-            const button = messageElement.querySelector('[aria-label=\'Understand this error\']');
+            const button = messageElement.querySelector('[aria-label=\'Understand this error. Powered by AI.\']');
             assert.strictEqual(button?.textContent, 'Understand this errorAI');
         });
         it('does not show a hover button if the console message text is empty', () => {
@@ -87,7 +87,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, '');
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement(); // Trigger rendering.
-            const button = messageElement.querySelector('[aria-label=\'Understand this error\']');
+            const button = messageElement.querySelector('[aria-label=\'Understand this error. Powered by AI.\']');
             assert.isNull(button);
         });
         it('does not show a hover button for the self-XSS warning message', () => {
@@ -99,7 +99,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.SELF_XSS, "warning" /* Protocol.Log.LogEntryLevel.Warning */, 'Don’t paste code...');
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement(); // Trigger rendering.
-            const button = messageElement.querySelector('[aria-label=\'Understand this warning\']');
+            const button = messageElement.querySelector('[aria-label=\'Understand this warning. Powered by AI.\']');
             assert.isNull(button);
         });
     });

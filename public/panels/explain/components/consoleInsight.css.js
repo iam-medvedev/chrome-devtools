@@ -18,61 +18,9 @@ styles.replaceSync(
 }
 
 :host {
-  --max-height: 2000px;
-  --loading-max-height: 140px;
-
   font-family: var(--default-font-family);
   font-size: inherit;
   display: block;
-  overflow: hidden;
-  max-height: 0;
-}
-
-:host-context(.opening) {
-  animation: expand-to-loading var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized);
-  animation-fill-mode: forwards;
-}
-
-:host-context(.loaded) {
-  animation: expand-to-full var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized);
-  animation-fill-mode: forwards;
-}
-
-:host-context(.closing) {
-  animation: collapse var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized);
-  animation-fill-mode: forwards;
-}
-
-@keyframes expand-to-loading {
-  from {
-    max-height: 0;
-  }
-
-  to {
-    max-height: var(--loading-max-height);
-  }
-}
-
-@keyframes expand-to-full {
-  from {
-    max-height: var(--actual-height, var(--loading-max-height));
-  }
-
-  to {
-    max-height: var(--max-height);
-  }
-}
-
-@keyframes collapse {
-  from {
-    max-height: var(--actual-height, var(--max-height));
-  }
-
-  to {
-    max-height: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-  }
 }
 
 .wrapper {
@@ -81,6 +29,38 @@ styles.replaceSync(
   border-radius: 16px;
   /* stylelint-disable-next-line property-no-unknown */
   container-type: inline-size;
+  display: grid;
+  animation: expand var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized) forwards;
+}
+
+:host-context(.closing) .wrapper {
+  animation: collapse var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized) forwards;
+}
+
+@keyframes expand {
+  from {
+    grid-template-rows: 0fr;
+  }
+
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+@keyframes collapse {
+  from {
+    grid-template-rows: 1fr;
+  }
+
+  to {
+    grid-template-rows: 0fr;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.animation-wrapper {
+  overflow: hidden;
 }
 
 .wrapper.top {
@@ -109,6 +89,10 @@ header:focus-visible {
 }
 
 header > .filler {
+  display: flex;
+  flex-direction: row;
+  gap: var(--sys-size-5);
+  align-items: center;
   flex: 1;
 }
 
@@ -117,6 +101,10 @@ header > .filler {
   background-color: var(--sys-color-surface4);
   padding: var(--sys-size-8);
   font-weight: var(--ref-typeface-weight-medium);
+
+  h3 {
+    font: inherit;
+  }
 }
 
 .reminder-items {

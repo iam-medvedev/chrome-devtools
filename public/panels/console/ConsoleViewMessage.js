@@ -163,6 +163,18 @@ const UIStrings = {
      *@description Message to offer insights for a console message
      */
     explainThisMessage: 'Understand this message',
+    /**
+     *@description Message to offer insights for a console error message
+     */
+    explainThisErrorWithAI: 'Understand this error. Powered by AI.',
+    /**
+     *@description Message to offer insights for a console warning message
+     */
+    explainThisWarningWithAI: 'Understand this warning. Powered by AI.',
+    /**
+     *@description Message to offer insights for a console message
+     */
+    explainThisMessageWithAI: 'Understand this message. Powered by AI',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/console/ConsoleViewMessage.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -270,11 +282,7 @@ export class ConsoleViewMessage {
         insight.addEventListener('close', () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightClosed);
             this.elementInternal?.classList.toggle('has-insight', false);
-            insight.addEventListener('animationend', () => {
-                this.elementInternal?.removeChild(insight);
-            }, {
-                once: true,
-            });
+            this.elementInternal?.removeChild(insight);
         }, { once: true });
     }
     element() {
@@ -1191,6 +1199,15 @@ export class ConsoleViewMessage {
         }
         return i18nString(UIStrings.explainThisMessage);
     }
+    #getExplainAriaLabel() {
+        if (this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */) {
+            return i18nString(UIStrings.explainThisErrorWithAI);
+        }
+        if (this.message.level === "warning" /* Protocol.Log.LogEntryLevel.Warning */) {
+            return i18nString(UIStrings.explainThisWarningWithAI);
+        }
+        return i18nString(UIStrings.explainThisMessageWithAI);
+    }
     getExplainActionId() {
         if (this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */) {
             return EXPLAIN_CONTEXT_ERROR_ACTION_ID;
@@ -1227,7 +1244,7 @@ export class ConsoleViewMessage {
         label.append(badge);
         button.append(label);
         button.classList.add('hover-button');
-        button.ariaLabel = this.getExplainLabel();
+        button.ariaLabel = this.#getExplainAriaLabel();
         button.tabIndex = 0;
         button.setAttribute('jslog', `${VisualLogging.action(EXPLAIN_HOVER_ACTION_ID).track({ click: true })}`);
         hoverButtonObserver.observe(button);

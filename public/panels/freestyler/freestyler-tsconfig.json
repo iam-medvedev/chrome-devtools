@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/freestyler/ChangeManager.ts",
+    "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.ts",
     "../../../../../../front_end/panels/freestyler/ExtensionScope.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerAgent.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerEvaluateAction.ts",
@@ -58,6 +59,9 @@
     },
     {
       "path": "../../ui/components/markdown_view/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/spinners/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

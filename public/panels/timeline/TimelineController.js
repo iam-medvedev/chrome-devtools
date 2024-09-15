@@ -180,12 +180,10 @@ export class TimelineController {
         this.tracingCompletePromise = null;
     }
     async allSourcesFinished() {
-        this.client.processingStarted();
-        await this.finalizeTrace();
-    }
-    async finalizeTrace() {
+        // TODO(crbug.com/366072294): Report the progress of this resumption, as it can be lengthy on heavy pages.
         await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         Extensions.ExtensionServer.ExtensionServer.instance().profilingStopped();
+        this.client.processingStarted();
         await this.client.loadingComplete(this.#collectedEvents, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime, 
         /* metadata= */ null);
         this.client.loadingCompleteForTest();

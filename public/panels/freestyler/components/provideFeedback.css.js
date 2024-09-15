@@ -24,8 +24,22 @@ styles.replaceSync(
 .feedback-form {
   display: flex;
   flex-direction: column;
-  gap: var(--sys-size-4);
+  gap: var(--sys-size-5);
   margin-top: var(--sys-size-4);
+  background-color: var(--sys-color-surface3);
+  padding: var(--sys-size-6);
+  border-radius: var(--sys-shape-corner-medium-small);
+
+  .feedback-input {
+    height: var(--sys-size-11);
+    padding: 0 var(--sys-size-5);
+    background-color: var(--sys-color-surface3);
+  }
+
+  .feedback-input::placeholder {
+    color: var(--sys-color-on-surface-subtle);
+    font: var(--sys-typescale-body4-regular);
+  }
 }
 
 .feedback-header {
@@ -36,6 +50,7 @@ styles.replaceSync(
 
 .feedback-title {
   margin: 0;
+  font: var(--sys-typescale-body3-medium);
 }
 
 .feedback-disclaimer {

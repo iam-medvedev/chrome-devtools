@@ -59,6 +59,16 @@ export interface TimeRangeLabel {
     label: string;
     showDuration: boolean;
 }
+/**
+ * Given a list of overlays, this method will calculate the smallest possible
+ * trace window that will contain all of the overlays.
+ */
+export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+/**
+ * Get a list of entries for a given overlay.
+ */
+export declare function entriesForOverlay(overlay: TimelineOverlay): readonly OverlayEntry[];
+export declare function chartForEntry(entry: OverlayEntry): EntryChartLocation;
 export declare function isTimeRangeLabel(annotation: TimelineOverlay): annotation is TimeRangeLabel;
 export declare function isEntriesLink(annotation: TimelineOverlay): annotation is EntriesLink;
 /**
@@ -113,6 +123,10 @@ export interface TimelineCharts {
     networkChart: PerfUI.FlameChart.FlameChart;
     networkProvider: PerfUI.FlameChart.FlameChartDataProvider;
 }
+export interface OverlayEntryQueries {
+    isEntryCollapsedByUser: (entry: TraceEngine.Types.TraceEvents.TraceEventData) => boolean;
+    firstVisibleParentForEntry: (entry: TraceEngine.Types.TraceEvents.TraceEventData) => TraceEngine.Types.TraceEvents.TraceEventData | null;
+}
 export type UpdateAction = 'Remove' | 'Update';
 export declare class AnnotationOverlayActionEvent extends Event {
     overlay: TimelineOverlay;
@@ -136,13 +150,8 @@ export declare class Overlays extends EventTarget {
             network: HTMLElement;
         };
         charts: TimelineCharts;
+        entryQueries: OverlayEntryQueries;
     });
-    /**
-     * Because entries can be a TimelineFrame, which is not a trace event, this
-     * helper exists to return a consistent set of timings regardless of the type
-     * of entry.
-     */
-    timingsForOverlayEntry(entry: OverlayEntry): TraceEngine.Helpers.Timing.EventTimingsData<TraceEngine.Types.Timing.MicroSeconds>;
     /**
      * Add a new overlay to the view.
      */
@@ -244,4 +253,10 @@ export declare class Overlays extends EventTarget {
      */
     networkChartOffsetHeight(): number;
 }
+/**
+ * Because entries can be a TimelineFrame, which is not a trace event, this
+ * helper exists to return a consistent set of timings regardless of the type
+ * of entry.
+ */
+export declare function timingsForOverlayEntry(entry: OverlayEntry): TraceEngine.Helpers.Timing.EventTimingsData<TraceEngine.Types.Timing.MicroSeconds>;
 export {};

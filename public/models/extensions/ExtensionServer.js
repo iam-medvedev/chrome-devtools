@@ -779,7 +779,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_BADARG('command', `expected ${"getHAR" /* PrivateAPI.Commands.GetHAR */}`);
         }
         const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(r => this.extensionAllowedOnURL(r.url(), port));
-        const harLog = await HAR.Log.Log.build(requests);
+        const harLog = await HAR.Log.Log.build(requests, { sanitize: false });
         for (let i = 0; i < harLog.entries.length; ++i) {
             // @ts-ignore
             harLog.entries[i]._requestId = this.requestId(requests[i]);
@@ -947,7 +947,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     }
     async notifyRequestFinished(event) {
         const request = event.data;
-        const entry = await HAR.Log.Entry.build(request);
+        const entry = await HAR.Log.Entry.build(request, { sanitize: false });
         this.postNotification("network-request-finished" /* PrivateAPI.Events.NetworkRequestFinished */, this.requestId(request), entry);
     }
     notifyElementsSelectionChanged() {
