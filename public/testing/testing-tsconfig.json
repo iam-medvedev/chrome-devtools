@@ -47,6 +47,7 @@
     "../../../../../front_end/testing/ExpectStubCall.ts",
     "../../../../../front_end/testing/ExtensionHelpers.ts",
     "../../../../../front_end/testing/FileManagerHelpers.ts",
+    "../../../../../front_end/testing/InsightHelpers.ts",
     "../../../../../front_end/testing/LanguagePluginHelpers.ts",
     "../../../../../front_end/testing/MockConnection.ts",
     "../../../../../front_end/testing/MockExecutionContext.ts",

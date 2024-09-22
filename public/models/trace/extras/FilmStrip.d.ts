@@ -6,7 +6,7 @@ export interface Data {
     frames: readonly Frame[];
 }
 export interface Frame {
-    screenshotEvent: Types.TraceEvents.SyntheticScreenshot;
+    screenshotEvent: Types.Events.SyntheticScreenshot;
     index: number;
 }
 export type HandlersWithFilmStrip = Handlers.Types.HandlersWithMeta<{
@@ -15,5 +15,5 @@ export type HandlersWithFilmStrip = Handlers.Types.HandlersWithMeta<{
 export type HandlerDataWithScreenshots = Handlers.Types.EnabledHandlerDataWithMeta<{
     Screenshots: typeof Handlers.ModelHandlers.Screenshots;
 }>;
-export declare function fromTraceData(traceData: HandlerDataWithScreenshots, customZeroTime?: Types.Timing.MicroSeconds): Data;
+export declare function fromParsedTrace(parsedTrace: HandlerDataWithScreenshots, customZeroTime?: Types.Timing.MicroSeconds): Data;
 export declare function frameClosestToTimestamp(filmStrip: Data, searchTimestamp: Types.Timing.MicroSeconds): Frame | null;

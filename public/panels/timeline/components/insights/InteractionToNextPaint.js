@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, md, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
@@ -13,7 +13,7 @@ const UIStrings = {
     /**
      * @description Text to tell the user about the longest user interaction.
      */
-    description: 'Improve user responsiveness by improving the Interaction to Next Paint metric. Learn how to [Optimize INP](https://web.dev/articles/optimize-inp).',
+    description: 'Optimize user responsiveness by [improving the Interaction to Next Paint metric](https://web.dev/articles/optimize-inp).',
     /**
      * @description Title for the performance insight "INP by phase", which shows a breakdown of INP by phases / sections.
      */
@@ -54,7 +54,7 @@ export function getINPInsight(insights, navigationId) {
     if (!insightsByNavigation) {
         return null;
     }
-    const insight = insightsByNavigation.InteractionToNextPaint;
+    const insight = insightsByNavigation.data.InteractionToNextPaint;
     if (insight instanceof Error) {
         return null;
     }
@@ -82,9 +82,9 @@ export class InteractionToNextPaint extends BaseInsight {
         if (!event) {
             return [];
         }
-        const p1 = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, (event.ts + event.inputDelay));
-        const p2 = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(p1.max, (p1.max + event.mainThreadHandling));
-        const p3 = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(p2.max, (p2.max + event.presentationDelay));
+        const p1 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, (event.ts + event.inputDelay));
+        const p2 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(p1.max, (p1.max + event.mainThreadHandling));
+        const p3 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(p2.max, (p2.max + event.presentationDelay));
         const sections = [
             { bounds: p1, label: i18nString(UIStrings.inputDelay), showDuration: true },
             { bounds: p2, label: i18nString(UIStrings.processingDuration), showDuration: true },

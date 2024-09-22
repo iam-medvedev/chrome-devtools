@@ -20,13 +20,13 @@ export function stackTraceForEvent(event) {
     if (event.args?.stackTrace) {
         return event.args.stackTrace;
     }
-    if (Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+    if (Types.Events.isUpdateLayoutTree(event)) {
         return event.args.beginData?.stackTrace || null;
     }
     if (Types.Extensions.isSyntheticExtensionEntry(event)) {
         return stackTraceForEvent(event.rawSourceEvent);
     }
-    if (Types.TraceEvents.isSyntheticUserTiming(event)) {
+    if (Types.Events.isSyntheticUserTiming(event)) {
         return stackTraceForEvent(event.rawSourceEvent);
     }
     return null;
@@ -164,7 +164,7 @@ export function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
         name: 'ProfileCall',
         nodeId: node.id,
         args: {},
-        ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+        ph: "X" /* Types.Events.Phase.COMPLETE */,
         pid,
         tid,
         ts,
@@ -175,7 +175,7 @@ export function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
     };
 }
 /**
- * Matches beginning events with TraceEventPairableAsyncEnd and TraceEventPairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
+ * Matches beginning events with PairableAsyncEnd and PairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
  * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
  * account for that.
  *
@@ -196,9 +196,9 @@ export function matchEvents(unpairedEvents) {
         const otherEventsWithID = Platform.MapUtilities.getWithDefault(matchedPairs, syntheticId, () => {
             return { begin: null, end: null, instant: [] };
         });
-        const isStartEvent = event.ph === "b" /* Types.TraceEvents.Phase.ASYNC_NESTABLE_START */;
-        const isEndEvent = event.ph === "e" /* Types.TraceEvents.Phase.ASYNC_NESTABLE_END */;
-        const isInstantEvent = event.ph === "n" /* Types.TraceEvents.Phase.ASYNC_NESTABLE_INSTANT */;
+        const isStartEvent = event.ph === "b" /* Types.Events.Phase.ASYNC_NESTABLE_START */;
+        const isEndEvent = event.ph === "e" /* Types.Events.Phase.ASYNC_NESTABLE_END */;
+        const isInstantEvent = event.ph === "n" /* Types.Events.Phase.ASYNC_NESTABLE_INSTANT */;
         if (isStartEvent) {
             otherEventsWithID.begin = event;
         }
@@ -245,7 +245,7 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
             continue;
         }
         const targetEvent = endEvent || beginEvent;
-        const event = SyntheticEventsManager.registerSyntheticBasedEvent({
+        const event = SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: beginEvent,
             cat: targetEvent.cat,
             ph: targetEvent.ph,
@@ -294,10 +294,10 @@ export function getZeroIndexedLineAndColumnForEvent(event) {
     switch (event.name) {
         // All these events have line/column numbers which are 1 indexed; so we
         // subtract to make them 0 indexed.
-        case "FunctionCall" /* Types.TraceEvents.KnownEventName.FUNCTION_CALL */:
-        case "EvaluateScript" /* Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */:
-        case "v8.compile" /* Types.TraceEvents.KnownEventName.COMPILE */:
-        case "v8.produceCache" /* Types.TraceEvents.KnownEventName.CACHE_SCRIPT */: {
+        case "FunctionCall" /* Types.Events.Name.FUNCTION_CALL */:
+        case "EvaluateScript" /* Types.Events.Name.EVALUATE_SCRIPT */:
+        case "v8.compile" /* Types.Events.Name.COMPILE */:
+        case "v8.produceCache" /* Types.Events.Name.CACHE_SCRIPT */: {
             return {
                 lineNumber: typeof lineNumber === 'number' ? lineNumber - 1 : undefined,
                 columnNumber: typeof columnNumber === 'number' ? columnNumber - 1 : undefined,
@@ -321,13 +321,13 @@ export function getZeroIndexedStackTraceForEvent(event) {
     }
     return stack.map(callFrame => {
         switch (event.name) {
-            case "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.SCHEDULE_STYLE_RECALCULATION */:
-            case "InvalidateLayout" /* Types.TraceEvents.KnownEventName.INVALIDATE_LAYOUT */:
-            case "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UPDATE_LAYOUT_TREE */: {
+            case "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */:
+            case "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */:
+            case "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */: {
                 return makeZeroBasedCallFrame(callFrame);
             }
             default: {
-                if (Types.TraceEvents.isTraceEventUserTiming(event) || Types.Extensions.isSyntheticExtensionEntry(event)) {
+                if (Types.Events.isUserTiming(event) || Types.Extensions.isSyntheticExtensionEntry(event)) {
                     return makeZeroBasedCallFrame(callFrame);
                 }
             }
@@ -398,7 +398,7 @@ export function isTopLevelEvent(event) {
         // TODO(crbug.com/341234884): do we need this?
         return true;
     }
-    return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */;
+    return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.Events.Name.RUN_TASK */;
 }
 function topLevelEventIndexEndingAfter(events, time) {
     let index = Platform.ArrayUtilities.upperBound(events, time, (time, event) => time - event.ts) - 1;
@@ -412,7 +412,7 @@ export function findUpdateLayoutTreeEvents(events, startTime, endTime) {
     const startEventIndex = topLevelEventIndexEndingAfter(events, startTime);
     for (let i = startEventIndex; i < events.length; i++) {
         const event = events[i];
-        if (!Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+        if (!Types.Events.isUpdateLayoutTree(event)) {
             continue;
         }
         if (event.ts >= (endTime || Infinity)) {
@@ -467,8 +467,8 @@ export function forEachEvent(events, config) {
         if (currentEventTimings.startTime > globalEndTime) {
             break;
         }
-        const isIgnoredAsyncEvent = ignoreAsyncEvents && Types.TraceEvents.isAsyncPhase(currentEvent.ph);
-        if (isIgnoredAsyncEvent || Types.TraceEvents.isFlowPhase(currentEvent.ph)) {
+        const isIgnoredAsyncEvent = ignoreAsyncEvents && Types.Events.isPhaseAsync(currentEvent.ph);
+        if (isIgnoredAsyncEvent || Types.Events.isFlowPhase(currentEvent.ph)) {
             continue;
         }
         // If we have now reached an event that is after a bunch of events, we need

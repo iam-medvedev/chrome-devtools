@@ -42,32 +42,31 @@ export function extractExtensionEntries(timings) {
         }
         const extensionSyntheticEntry = {
             name: timing.name,
-            ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
-            pid: Types.TraceEvents.ProcessID(0),
-            tid: Types.TraceEvents.ThreadID(0),
+            ph: "X" /* Types.Events.Phase.COMPLETE */,
+            pid: Types.Events.ProcessID(0),
+            tid: Types.Events.ThreadID(0),
             ts: timing.ts,
             dur: timing.dur,
             cat: 'devtools.extension',
             args: extensionPayload,
-            rawSourceEvent: Types.TraceEvents.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing,
+            rawSourceEvent: Types.Events.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing,
         };
         if (Types.Extensions.isExtensionPayloadMarker(extensionPayload)) {
             const extensionMarker = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
-                .registerSyntheticBasedEvent(extensionSyntheticEntry);
+                .registerSyntheticEvent(extensionSyntheticEntry);
             extensionMarkers.push(extensionMarker);
             continue;
         }
         if (Types.Extensions.isExtensionPayloadTrackEntry(extensionSyntheticEntry.args)) {
             const extensionTrackEntry = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
-                .registerSyntheticBasedEvent(extensionSyntheticEntry);
+                .registerSyntheticEvent(extensionSyntheticEntry);
             extensionFlameChartEntries.push(extensionTrackEntry);
             continue;
         }
     }
 }
 export function extensionDataInTiming(timing) {
-    const timingDetail = Types.TraceEvents.isTraceEventPerformanceMark(timing) ? timing.args.data?.detail :
-        timing.args.data.beginEvent.args.detail;
+    const timingDetail = Types.Events.isPerformanceMark(timing) ? timing.args.data?.detail : timing.args.data.beginEvent.args.detail;
     if (!timingDetail) {
         return null;
     }

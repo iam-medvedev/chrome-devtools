@@ -1,10 +1,20 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
+import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './entryLabelOverlay.css.js';
+const UIStrings = {
+    /**
+     *@description Accessible label used to explain to a user that they are viewing an entry label.
+     */
+    entryLabel: 'Entry label',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/EntryLabelOverlay.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EmptyEntryLabelRemoveEvent extends Event {
     static eventName = 'emptyentrylabelremoveevent';
     constructor() {
@@ -30,7 +40,7 @@ export class EntryLabelOverlay extends HTMLElement {
     static LABEL_AND_CONNECTOR_HEIGHT = EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
     // Set the max label length to avoid labels that could signicantly increase the file size.
     static MAX_LABEL_LENGTH = 100;
-    // Width of the icon next to the label input field
+    // Width of the icon next to the label input field. This is same as the width in CSS.
     static USER_CREATED_ICON_WIDTH = 16;
     static litTagName = LitHtml.literal `devtools-entry-label-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -47,25 +57,25 @@ export class EntryLabelOverlay extends HTMLElement {
     #label;
     #entryIsInMainChart;
     #shouldDrawBelowEntry;
-    /*
-  The entry label overlay consists of 3 parts - the label part with the label string inside,
-  the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.
-  ________
-  |_label__|                <-- label part with the label string inside
-      \
-       \                   <-- line connecting the label to the entry with a circle at the end
-        \
-  _______◯_________
-  |_____entry______|         <--- box around an entry
-  
-  `drawLabel` method below draws the first part.
-  `drawConnector` method below draws the second part - the connector line with a circle and the svg container for them.
-  `drawEntryHighlightWrapper` draws the third part.
-  We only rerender the first part if the label changes and the third part if the size of the entry changes.
-  The connector and circle shapes never change so we only draw the second part when the component is created.
-  
-  Otherwise, the entry label overlay object only gets repositioned.
-  */
+    /**
+     * The entry label overlay consists of 3 parts - the label part with the label string inside,
+     * the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.
+     * ________
+     * |_label__|                <-- label part with the label string inside
+     *     \
+     *      \                   <-- line connecting the label to the entry with a circle at the end
+     *       \
+     * _______◯_________
+     * |_____entry______|         <--- box around an entry
+     *
+     * `drawLabel` method below draws the first part.
+     * `drawConnector` method below draws the second part - the connector line with a circle and the svg container for them.
+     * `drawEntryHighlightWrapper` draws the third part.
+     * We only rerender the first part if the label changes and the third part if the size of the entry changes.
+     * The connector and circle shapes never change so we only draw the second part when the component is created.
+     *
+     * Otherwise, the entry label overlay object only gets repositioned.
+     */
     constructor(label, entryIsInMainChart, shouldDrawBelowEntry = false) {
         super();
         this.#render();
@@ -82,7 +92,8 @@ export class EntryLabelOverlay extends HTMLElement {
         // If the label is not empty, it was loaded from the trace file.
         // In that case, do not auto-focus it as if the user were creating it for the first time
         if (label !== '') {
-            this.#setLabelEditabilityAndRemoveEmptyLabel(false);
+            this.setLabelEditabilityAndRemoveEmptyLabel(false);
+            this.#inputField?.setAttribute('aria-label', this.#label);
         }
         this.#drawConnector();
     }
@@ -96,6 +107,7 @@ export class EntryLabelOverlay extends HTMLElement {
             this.#label = labelBoxTextContent;
             this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
         }
+        this.#inputField?.setAttribute('aria-label', labelBoxTextContent);
     }
     #handleLabelInputKeyDown(event) {
         if (!this.#inputField) {
@@ -154,6 +166,8 @@ export class EntryLabelOverlay extends HTMLElement {
         if (entryLabelParams.height === this.#entryLabelParams?.height &&
             entryLabelParams.width === this.#entryLabelParams?.width &&
             entryLabelParams.cutOffEntryHeight === this.#entryLabelParams?.cutOffEntryHeight) {
+            // Even the position is not changed, the theme color might change, so we need to redraw the connector here.
+            this.#drawConnector();
             return;
         }
         this.#entryLabelParams = entryLabelParams;
@@ -192,13 +206,14 @@ export class EntryLabelOverlay extends HTMLElement {
         // Finish drawing in middle of the connector container.
         connector.setAttribute('x2', EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
         connector.setAttribute('y2', EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
-        connector.setAttribute('stroke', 'black');
+        const connectorColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
+        connector.setAttribute('stroke', connectorColor);
         connector.setAttribute('stroke-width', '2');
         // Draw the circle at the bottom of the connector
         circle.setAttribute('cx', EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
         circle.setAttribute('cy', EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
         circle.setAttribute('r', '3');
-        circle.setAttribute('fill', 'black');
+        circle.setAttribute('fill', connectorColor);
     }
     #drawLabel(initialLabel) {
         if (!this.#inputField || !this.#labelBox) {
@@ -274,7 +289,7 @@ export class EntryLabelOverlay extends HTMLElement {
         }
         this.#inputField.focus();
     }
-    #setLabelEditabilityAndRemoveEmptyLabel(editable) {
+    setLabelEditabilityAndRemoveEmptyLabel(editable) {
         this.#isLabelEditable = editable;
         this.#render();
         // If the label is editable, focus cursor on it
@@ -289,19 +304,15 @@ export class EntryLabelOverlay extends HTMLElement {
     #render() {
         // clang-format off
         LitHtml.render(LitHtml.html `
-        <span class="label-parts-wrapper">
+        <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}>
           <div class="label-box">
-            <${IconButton.Icon.Icon.litTagName} class="user-created-icon" .data=${{
-            iconName: 'profile',
-            color: 'var(--sys-color-token-variable)',
-            width: EntryLabelOverlay.USER_CREATED_ICON_WIDTH + 'px',
-            height: '16px',
-        }}>
-              </${IconButton.Icon.Icon.litTagName}>
+            <${IconButton.Icon.Icon.litTagName} class='user-created-icon' name='profile'>
+            </${IconButton.Icon.Icon.litTagName}>
             <span
               class="input-field"
-              @dblclick=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(true)}
-              @blur=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(false)}
+              role="textbox"
+              @dblclick=${() => this.setLabelEditabilityAndRemoveEmptyLabel(true)}
+              @blur=${() => this.setLabelEditabilityAndRemoveEmptyLabel(false)}
               @keydown=${this.#handleLabelInputKeyDown}
               @paste=${this.#handleLabelInputPaste}
               @keyup=${this.#handleLabelInputKeyUp}

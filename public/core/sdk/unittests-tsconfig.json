@@ -56,6 +56,7 @@
     "../../../../../../front_end/core/sdk/DOMModel.test.ts",
     "../../../../../../front_end/core/sdk/DebuggerModel.test.ts",
     "../../../../../../front_end/core/sdk/EmulationModel.test.ts",
+    "../../../../../../front_end/core/sdk/EnhancedTracesParser.test.ts",
     "../../../../../../front_end/core/sdk/FrameManager.test.ts",
     "../../../../../../front_end/core/sdk/NetworkManager.test.ts",
     "../../../../../../front_end/core/sdk/NetworkRequest.test.ts",

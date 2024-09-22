@@ -1,10 +1,10 @@
 import type * as Common from '../../core/common/common.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import { type CompatibilityTracksAppender, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare class InteractionsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, colorGenerator: Common.Color.Generator);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace, colorGenerator: Common.Color.Generator);
     /**
      * Appends into the flame chart data the data corresponding to the
      * interactions track.
@@ -18,5 +18,5 @@ export declare class InteractionsTrackAppender implements TrackAppender {
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
-    colorForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    colorForEvent(event: Trace.Types.Events.Event): string;
 }

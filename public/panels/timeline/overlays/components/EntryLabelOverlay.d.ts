@@ -17,6 +17,25 @@ export declare class EntryLabelOverlay extends HTMLElement {
     static readonly MAX_LABEL_LENGTH = 100;
     static readonly USER_CREATED_ICON_WIDTH = 16;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
+    /**
+     * The entry label overlay consists of 3 parts - the label part with the label string inside,
+     * the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.
+     * ________
+     * |_label__|                <-- label part with the label string inside
+     *     \
+     *      \                   <-- line connecting the label to the entry with a circle at the end
+     *       \
+     * _______◯_________
+     * |_____entry______|         <--- box around an entry
+     *
+     * `drawLabel` method below draws the first part.
+     * `drawConnector` method below draws the second part - the connector line with a circle and the svg container for them.
+     * `drawEntryHighlightWrapper` draws the third part.
+     * We only rerender the first part if the label changes and the third part if the size of the entry changes.
+     * The connector and circle shapes never change so we only draw the second part when the component is created.
+     *
+     * Otherwise, the entry label overlay object only gets repositioned.
+     */
     constructor(label: string, entryIsInMainChart: boolean, shouldDrawBelowEntry?: boolean);
     connectedCallback(): void;
     set entryLabelParams(entryLabelParams: {
@@ -25,6 +44,7 @@ export declare class EntryLabelOverlay extends HTMLElement {
         cutOffEntryHeight: number;
         chart: string;
     });
+    setLabelEditabilityAndRemoveEmptyLabel(editable: boolean): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

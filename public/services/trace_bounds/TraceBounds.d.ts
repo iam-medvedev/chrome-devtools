@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 export declare class StateChangedEvent extends Event {
     state: Readonly<State>;
     updateType: 'RESET' | 'MINIMAP_BOUNDS' | 'VISIBLE_WINDOW';
@@ -13,15 +13,15 @@ export declare class StateChangedEvent extends Event {
 export declare function onChange(cb: (event: StateChangedEvent) => void): void;
 export declare function removeListener(cb: (event: StateChangedEvent) => void): void;
 export interface State {
-    readonly micro: Readonly<TraceWindows<TraceEngine.Types.Timing.MicroSeconds>>;
-    readonly milli: Readonly<TraceWindows<TraceEngine.Types.Timing.MilliSeconds>>;
+    readonly micro: Readonly<TraceWindows<Trace.Types.Timing.MicroSeconds>>;
+    readonly milli: Readonly<TraceWindows<Trace.Types.Timing.MilliSeconds>>;
 }
-export interface TraceWindows<TimeFormat extends TraceEngine.Types.Timing.MicroSeconds | TraceEngine.Types.Timing.MilliSeconds> {
+export interface TraceWindows<TimeFormat extends Trace.Types.Timing.MicroSeconds | Trace.Types.Timing.MilliSeconds> {
     /**
      * This is the bounds of the entire trace. Once a trace is imported/recorded
      * and this is set, it cannot be changed.
      */
-    readonly entireTraceBounds: TraceEngine.Types.Timing.TraceWindow<TimeFormat>;
+    readonly entireTraceBounds: Trace.Types.Timing.TraceWindow<TimeFormat>;
     /**
      * This is the bounds of the minimap and represents the left and right bound
      * being shown by the minimap. It can be changed by a user action: for
@@ -31,7 +31,7 @@ export interface TraceWindows<TimeFormat extends TraceEngine.Types.Timing.MicroS
      * Note that this is NOT the active time window that the user has dragged
      * the minimap handles to; this is the min/max being shown by the minimap.
      */
-    minimapTraceBounds: TraceEngine.Types.Timing.TraceWindow<TimeFormat>;
+    minimapTraceBounds: Trace.Types.Timing.TraceWindow<TimeFormat>;
     /**
      * This represents the trace window that is being shown on the main timeline.
      * The reason this is called a "Window" rather than "Bounds" is because the
@@ -41,7 +41,7 @@ export interface TraceWindows<TimeFormat extends TraceEngine.Types.Timing.MicroS
      * min/max of this value is what is represented by the two drag handles on
      * the TimelineMiniMap that the user can drag to change their current window.
      */
-    timelineTraceWindow: TraceEngine.Types.Timing.TraceWindow<TimeFormat>;
+    timelineTraceWindow: Trace.Types.Timing.TraceWindow<TimeFormat>;
 }
 export declare class BoundsManager extends EventTarget {
     #private;
@@ -50,9 +50,9 @@ export declare class BoundsManager extends EventTarget {
     }): BoundsManager;
     static removeInstance(): void;
     private constructor();
-    resetWithNewBounds(initialBounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds): this;
+    resetWithNewBounds(initialBounds: Trace.Types.Timing.TraceWindowMicroSeconds): this;
     state(): Readonly<State> | null;
-    setMiniMapBounds(newBounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds): void;
+    setMiniMapBounds(newBounds: Trace.Types.Timing.TraceWindowMicroSeconds): void;
     /**
      * Updates the visible part of the trace that the user can see.
      * @param options.ignoreMiniMapBounds - by default the visible window will be
@@ -61,7 +61,7 @@ export declare class BoundsManager extends EventTarget {
      * with this! Unless you deal with this situation, the UI of the performance
      * panel will break.
      */
-    setTimelineVisibleWindow(newWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, options?: {
+    setTimelineVisibleWindow(newWindow: Trace.Types.Timing.TraceWindowMicroSeconds, options?: {
         shouldAnimate?: boolean;
         ignoreMiniMapBounds?: boolean;
     }): void;

@@ -16,10 +16,10 @@ styles.replaceSync(
   position: relative;
   width: auto;
   height: auto;
-  margin: 10px 0;
+  margin: var(--sys-size-6) 0;
   border-radius: var(--sys-shape-corner-extra-small);
   overflow: hidden;
-  border: 1px solid var(--sys-color-divider);
+  border: var(--sys-size-1) solid var(--sys-color-divider);
   background-color: var(--sys-color-base);
 
   &.closed {
@@ -28,7 +28,7 @@ styles.replaceSync(
   }
 
   header {
-    padding: 10px;
+    padding: var(--sys-size-5) var(--sys-size-6);
 
     h3 {
       font: var(--sys-typescale-body4-medium);
@@ -38,8 +38,8 @@ styles.replaceSync(
 
 .insight-hover-icon {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: var(--sys-size-5);
+  right: var(--sys-size-5);
   border: none;
   width: var(--sys-size-9);
   height: var(--sys-size-9);
@@ -63,7 +63,7 @@ styles.replaceSync(
 }
 
 .insight-body {
-  padding: 0 10px;
+  padding: var(--sys-size-5) var(--sys-size-6);
 }
 
 .insight-title {
@@ -72,8 +72,7 @@ styles.replaceSync(
 }
 
 .insight-description {
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding-bottom: 10px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .link {
@@ -102,7 +101,7 @@ dd.dl-title {
 
 .insight-entry {
   font: var(--sys-typescale-body4-medium);
-  padding-block: 2px;
+  padding-block: var(--sys-size-3);
   display: flex;
   align-items: center;
 }
@@ -111,7 +110,7 @@ dd.dl-title {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding-block: 10px;
+  padding: var(--sys-size-5) var(--sys-size-6);
 }
 
 .element-img {
@@ -143,13 +142,34 @@ ul.insight-icon-results {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    gap: 4px;
+    gap: var(--sys-size-3);
 
     span {
       /* push the text down to align slightly better with the icons */
       padding-top: 2px;
     }
   }
+}
+
+ul.url-list {
+  list-style-position: inside;
+  padding: 0;
+
+  li {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.devtools-link {
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--sys-color-primary);
+}
+
+.devtools-link.invalid-link {
+  color: var(--sys-color-state-disabled);
 }
 
 /*# sourceURL=sidebarInsight.css */

@@ -2,16 +2,16 @@ import type * as Helpers from '../helpers/helpers.js';
 import type * as Types from '../types/types.js';
 import { type AuctionWorkletsData } from './AuctionWorkletsHandler.js';
 import type * as Renderer from './RendererHandler.js';
-import { type TraceParseData } from './types.js';
+import { type ParsedTrace } from './types.js';
 export interface ThreadData {
-    pid: Types.TraceEvents.ProcessID;
-    tid: Types.TraceEvents.ThreadID;
-    entries: readonly Types.TraceEvents.TraceEventData[];
+    pid: Types.Events.ProcessID;
+    tid: Types.Events.ThreadID;
+    entries: readonly Types.Events.Event[];
     processIsOnMainFrame: boolean;
     tree: Helpers.TreeHelpers.TraceEntryTree;
     type: ThreadType;
     name: string | null;
-    entryToNode: Map<Types.TraceEvents.TraceEventData, Helpers.TreeHelpers.TraceEntryNode>;
+    entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
 }
 export declare const enum ThreadType {
     MAIN_THREAD = "MAIN_THREAD",
@@ -30,4 +30,4 @@ export declare function threadsInRenderer(rendererData: Renderer.RendererHandler
  * can use this helper to iterate over threads in confidence that it will work
  * for both trace types.
  */
-export declare function threadsInTrace(traceParseData: TraceParseData): readonly ThreadData[];
+export declare function threadsInTrace(parsedTrace: ParsedTrace): readonly ThreadData[];

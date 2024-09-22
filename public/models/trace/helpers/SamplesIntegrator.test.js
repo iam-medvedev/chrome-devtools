@@ -5,14 +5,14 @@ import * as CPUProfile from '../../../models/cpu_profile/cpu_profile.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { makeCompleteEvent } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-import * as TraceModel from '../trace.js';
+import * as Trace from '../trace.js';
 describeWithEnvironment('SamplesIntegrator', function () {
     const scriptId = 'Peperoni';
     const url = '';
     const lineNumber = -1;
     const columnNumber = -1;
-    const pid = TraceModel.Types.TraceEvents.ProcessID(0);
-    const tid = TraceModel.Types.TraceEvents.ThreadID(0);
+    const pid = Trace.Types.Events.ProcessID(0);
+    const tid = Trace.Types.Events.ThreadID(0);
     // Profile contains the following samples:
     // |a||a||a||a|
     //       |b||b|
@@ -33,10 +33,10 @@ describeWithEnvironment('SamplesIntegrator', function () {
         timeDeltas: new Array(4).fill(100),
     };
     const parsedBasicProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(basicCDPProfile);
-    const PROFILE_ID = TraceModel.Types.TraceEvents.ProfileID('fake-profile-id');
+    const PROFILE_ID = Trace.Types.Events.ProfileID('fake-profile-id');
     describe('callsFromProfileSamples', () => {
         it('generates empty profile calls from a profile with samples', () => {
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
             const calls = integrator.callsFromProfileSamples();
             assert.strictEqual(calls.length, basicCDPProfile.samples?.length);
             let currentTimestamp = 0;
@@ -56,11 +56,11 @@ describeWithEnvironment('SamplesIntegrator', function () {
         });
         it('generates JSSamples from samples under debug mode', () => {
             const config = {
-                ...TraceModel.Types.Configuration.defaults(),
+                ...Trace.Types.Configuration.defaults(),
             };
             config.debugMode = true;
-            assert.strictEqual(TraceModel.Types.Configuration.defaults().debugMode, false, 'Default config should not be mutable');
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid, config);
+            assert.strictEqual(Trace.Types.Configuration.defaults().debugMode, false, 'Default config should not be mutable');
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid, config);
             integrator.callsFromProfileSamples();
             const jsSampleEvents = integrator.jsSampleEvents;
             assert.strictEqual(jsSampleEvents[0].ts, 100);
@@ -79,14 +79,14 @@ describeWithEnvironment('SamplesIntegrator', function () {
     });
     describe('buildProfileCalls', () => {
         it('generates profile calls using trace events and JS samples from a trace file', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz');
-            const samplesData = traceData.Samples;
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz');
+            const samplesData = parsedTrace.Samples;
             assert.strictEqual(samplesData.profilesInProcess.size, 1);
             const [[pid, profileByThread]] = samplesData.profilesInProcess.entries();
             const [[tid, cpuProfileData]] = profileByThread.entries();
             const parsedProfile = cpuProfileData.parsedProfile;
-            const samplesIntegrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
-            const traceEvents = traceData.Renderer.allTraceEntries.filter(event => event.pid === pid && event.tid === tid);
+            const samplesIntegrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
+            const traceEvents = parsedTrace.Renderer.allTraceEntries.filter(event => event.pid === pid && event.tid === tid);
             if (!traceEvents) {
                 throw new Error('Trace events were unexpectedly not found.');
             }
@@ -99,8 +99,8 @@ describeWithEnvironment('SamplesIntegrator', function () {
             // |----Trace Event----|
             //           |----a----|
             //                 |-b-|
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
-            const callEvent = makeCompleteEvent("FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FUNCTION_CALL */, 0, 500);
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
+            const callEvent = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 0, 500);
             const traceEvents = [callEvent];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.strictEqual(constructedCalls.length, 2);
@@ -112,7 +112,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             assert.strictEqual(constructedCalls[1].dur, 200);
         });
         it('creates JS frame events without a top-level V8 invocation', () => {
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
             const traceEvents = [];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.strictEqual(constructedCalls.length, 2);
@@ -147,8 +147,8 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //  |----a----| |--Trace Event--|
             //              |-------b-------|
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
-            const callEvent = makeCompleteEvent("FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FUNCTION_CALL */, 250, 250);
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
+            const callEvent = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 250, 250);
             const traceEvents = [callEvent];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.strictEqual(constructedCalls.length, 2);
@@ -186,8 +186,8 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //       |-----------------v8.run--------------------|
             //        |--V8.ParseFuntion--||---a---||-----b------|
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
-            const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */, 0, 500);
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
+            const evaluateScript = makeCompleteEvent("EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */, 0, 500);
             const v8Run = makeCompleteEvent('v8.run', 10, 490);
             const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
             const traceEvents = [evaluateScript, v8Run, parseFunction];
@@ -227,12 +227,12 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //              |--------a-------||------RunMicroTasks------|
             //                                |-----------a------------|
             //                                |-----------b------------|
-            const runTask = makeCompleteEvent("RunTask" /* TraceModel.Types.TraceEvents.KnownEventName.RUN_TASK */, 0, 100);
-            const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */, 0, 100);
-            const runMicroTasks = makeCompleteEvent("RunMicrotasks" /* TraceModel.Types.TraceEvents.KnownEventName.RUN_MICROTASKS */, 50, 100);
+            const runTask = makeCompleteEvent("RunTask" /* Trace.Types.Events.Name.RUN_TASK */, 0, 100);
+            const evaluateScript = makeCompleteEvent("EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */, 0, 100);
+            const runMicroTasks = makeCompleteEvent("RunMicrotasks" /* Trace.Types.Events.Name.RUN_MICROTASKS */, 50, 100);
             const traceEvents = [runTask, evaluateScript, runMicroTasks];
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
-            const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
+            const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.strictEqual(constructedCalls.length, 3);
             const framesForFunctionA = constructedCalls.filter(c => c.callFrame.functionName === 'a');
@@ -247,14 +247,14 @@ describeWithEnvironment('SamplesIntegrator', function () {
             assert.strictEqual(framesForFunctionA[1].dur, runMicroTasks.ts + (runMicroTasks.dur || 0) - expectedBTimestamp);
         });
         it('skips samples from (program), (idle), (root) and (garbage collector) nodes', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz');
-            const samplesData = traceData.Samples;
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz');
+            const samplesData = parsedTrace.Samples;
             assert.strictEqual(samplesData.profilesInProcess.size, 1);
             const [[pid, profileByThread]] = samplesData.profilesInProcess.entries();
             const [[tid, cpuProfileData]] = profileByThread.entries();
             const parsedProfile = cpuProfileData.parsedProfile;
-            const samplesIntegrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
-            const traceEvents = traceData.Renderer.allTraceEntries.filter(event => event.pid === pid && event.tid === tid);
+            const samplesIntegrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
+            const traceEvents = parsedTrace.Renderer.allTraceEntries.filter(event => event.pid === pid && event.tid === tid);
             if (!traceEvents) {
                 throw new Error('Trace events were unexpectedly not found.');
             }

@@ -34,6 +34,22 @@ export class InsightDeactivated extends Event {
         super(InsightDeactivated.eventName, { bubbles: true, composed: true });
     }
 }
+export class NavigationBoundsHovered extends Event {
+    bounds;
+    static eventName = 'navigationhovered';
+    constructor(bounds) {
+        super(NavigationBoundsHovered.eventName, { bubbles: true, composed: true });
+        this.bounds = bounds;
+    }
+}
+export class InsightOverlayOverride extends Event {
+    overlays;
+    static eventName = 'insightoverlayoverride';
+    constructor(overlays) {
+        super(InsightOverlayOverride.eventName, { bubbles: true, composed: true });
+        this.overlays = overlays;
+    }
+}
 export class SidebarInsight extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-insight`;
     #shadow = this.attachShadow({ mode: 'open' });

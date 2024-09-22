@@ -56,18 +56,18 @@ export function threadsInRenderer(rendererData, auctionWorkletsData) {
  * can use this helper to iterate over threads in confidence that it will work
  * for both trace types.
  */
-export function threadsInTrace(traceParseData) {
+export function threadsInTrace(parsedTrace) {
     // If we have Renderer threads, we prefer to use those. In the event that a
     // trace is a CPU Profile trace, we will never have Renderer threads, so we
     // know if there are no Renderer threads that we can fallback to using the
     // data from the SamplesHandler.
-    const threadsFromRenderer = threadsInRenderer(traceParseData.Renderer, traceParseData.AuctionWorklets);
+    const threadsFromRenderer = threadsInRenderer(parsedTrace.Renderer, parsedTrace.AuctionWorklets);
     if (threadsFromRenderer.length) {
         return threadsFromRenderer;
     }
     const foundThreads = [];
-    if (traceParseData.Samples.profilesInProcess.size) {
-        for (const [pid, process] of traceParseData.Samples.profilesInProcess) {
+    if (parsedTrace.Samples.profilesInProcess.size) {
+        for (const [pid, process] of parsedTrace.Samples.profilesInProcess) {
             for (const [tid, thread] of process) {
                 if (!thread.profileTree) {
                     // Drop threads where we could not create the tree; this indicates
@@ -85,7 +85,7 @@ export function threadsInTrace(traceParseData) {
                     processIsOnMainFrame: false,
                     tree: thread.profileTree,
                     type: "CPU_PROFILE" /* ThreadType.CPU_PROFILE */,
-                    entryToNode: traceParseData.Samples.entryToNode,
+                    entryToNode: parsedTrace.Samples.entryToNode,
                 });
             }
         }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 export class TimelineOverviewCalculator {
-    #minimumBoundary = TraceEngine.Types.Timing.MilliSeconds(0);
-    #maximumBoundary = TraceEngine.Types.Timing.MilliSeconds(100);
+    #minimumBoundary = Trace.Types.Timing.MilliSeconds(0);
+    #maximumBoundary = Trace.Types.Timing.MilliSeconds(100);
     workingArea;
     navStartTimes;
     computePosition(time) {
@@ -25,7 +25,7 @@ export class TimelineOverviewCalculator {
         this.workingArea = clientWidth;
     }
     reset() {
-        this.setBounds(TraceEngine.Types.Timing.MilliSeconds(0), TraceEngine.Types.Timing.MilliSeconds(100));
+        this.setBounds(Trace.Types.Timing.MilliSeconds(0), Trace.Types.Timing.MilliSeconds(100));
     }
     formatValue(value, precision) {
         // If there are nav start times the value needs to be remapped.
@@ -33,7 +33,7 @@ export class TimelineOverviewCalculator {
             // Find the latest possible nav start time which is considered earlier
             // than the value passed through.
             for (let i = this.navStartTimes.length - 1; i >= 0; i--) {
-                const startTimeMilliseconds = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(this.navStartTimes[i].ts);
+                const startTimeMilliseconds = Trace.Helpers.Timing.microSecondsToMilliseconds(this.navStartTimes[i].ts);
                 if (value > startTimeMilliseconds) {
                     value -= (startTimeMilliseconds - this.zeroTime());
                     break;
@@ -52,7 +52,7 @@ export class TimelineOverviewCalculator {
         return this.#minimumBoundary;
     }
     boundarySpan() {
-        return TraceEngine.Types.Timing.MilliSeconds(this.#maximumBoundary - this.#minimumBoundary);
+        return Trace.Types.Timing.MilliSeconds(this.#maximumBoundary - this.#minimumBoundary);
     }
 }
 //# sourceMappingURL=TimelineOverviewCalculator.js.map

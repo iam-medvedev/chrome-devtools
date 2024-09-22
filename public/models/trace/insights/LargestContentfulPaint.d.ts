@@ -1,5 +1,5 @@
 import * as Types from '../types/types.js';
-import { type InsightResult, type NavigationInsightContext, type RequiredData } from './types.js';
+import { type InsightResult, type InsightSetContext, type RequiredData } from './types.js';
 export declare function deps(): ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
 interface LCPPhases {
     /**
@@ -30,8 +30,8 @@ export type LCPInsightResult = InsightResult<{
     shouldIncreasePriorityHint?: boolean;
     shouldPreloadImage?: boolean;
     /** The network request for the LCP image, if there was one. */
-    lcpRequest?: Types.TraceEvents.SyntheticNetworkRequest;
+    lcpRequest?: Types.Events.SyntheticNetworkRequest;
     earliestDiscoveryTimeTs?: Types.Timing.MicroSeconds;
 }>;
-export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): LCPInsightResult;
+export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): LCPInsightResult;
 export {};

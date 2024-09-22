@@ -12,7 +12,7 @@ export function reset() {
     textPaintByDOMNodeId.clear();
 }
 export function handleEvent(event) {
-    if (!Types.TraceEvents.isTraceEventLargestTextPaintCandidate(event)) {
+    if (!Types.Events.isLargestTextPaintCandidate(event)) {
         return;
     }
     if (!event.args.data) {

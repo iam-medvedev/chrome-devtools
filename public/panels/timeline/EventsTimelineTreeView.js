@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -52,7 +52,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
     }
     updateContents(selection) {
         super.updateContents(selection);
-        if (TimelineSelection.isTraceEventSelection(selection.object)) {
+        if (TimelineSelection.isSelection(selection.object)) {
             this.selectEvent(selection.object, true);
         }
     }
@@ -69,7 +69,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         }
     }
     findNodeWithEvent(event) {
-        if (event.name === "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RUN_TASK */) {
+        if (event.name === "RunTask" /* Trace.Types.Events.Name.RUN_TASK */) {
             // No node is ever created for the top level RunTask event, so
             // bail out preemptively
             return null;
@@ -119,15 +119,15 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         this.filtersControl.populateToolbar(toolbar);
     }
     showDetailsForNode(node) {
-        const traceParseData = this.traceParseData();
-        if (!traceParseData) {
+        const parsedTrace = this.parsedTrace();
+        if (!parsedTrace) {
             return false;
         }
         const traceEvent = node.event;
         if (!traceEvent) {
             return false;
         }
-        void TimelineUIUtils.buildTraceEventDetails(traceParseData, traceEvent, this.linkifier, false)
+        void TimelineUIUtils.buildTraceEventDetails(parsedTrace, traceEvent, this.linkifier, false)
             .then(fragment => this.detailsView.element.appendChild(fragment));
         return true;
     }
@@ -170,7 +170,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         function durationFilterChanged() {
             const duration = durationFilterUI.selectedOption().value;
             const minimumRecordDuration = parseInt(duration, 10);
-            this.durationFilter.setMinimumRecordDuration(TraceEngine.Types.Timing.MilliSeconds(minimumRecordDuration));
+            this.durationFilter.setMinimumRecordDuration(Trace.Types.Timing.MilliSeconds(minimumRecordDuration));
             this.notifyFiltersChanged();
         }
         function categoriesFilterChanged(name) {

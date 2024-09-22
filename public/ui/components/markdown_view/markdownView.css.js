@@ -30,7 +30,7 @@ styles.replaceSync(
 
 .message ul {
   list-style-type: none;
-  padding-inline-start: 1em;
+  padding-inline-start: var(--sys-size-8);
 }
 
 .message ul ul {

@@ -6,6 +6,14 @@ import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js'
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './timeRangeOverlay.css.js';
+const UIStrings = {
+    /**
+     *@description Accessible label used to explain to a user that they are viewing an entry label.
+     */
+    timeRange: 'Time range',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/TimeRangeOverlay.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimeRangeLabelChangeEvent extends Event {
     newLabel;
     static eventName = 'timerangelabelchange';
@@ -46,8 +54,21 @@ export class TimeRangeOverlay extends HTMLElement {
             return;
         }
         this.#labelBox.innerText = initialLabel;
+        if (initialLabel) {
+            this.#labelBox?.setAttribute('aria-label', initialLabel);
+            // To construct a time range with a predefined label, it must have been
+            // loaded from the trace file. In this case we do not want it to default
+            // to editable.
+            this.#setLabelEditability(false);
+        }
     }
     set canvasRect(rect) {
+        if (rect === null) {
+            return;
+        }
+        if (this.#canvasRect && this.#canvasRect.width === rect.width && this.#canvasRect.height === rect.height) {
+            return;
+        }
         this.#canvasRect = rect;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
@@ -81,7 +102,7 @@ export class TimeRangeOverlay extends HTMLElement {
      * If the label is off to the left or right, we fix it to that corner and
      * align the text so the label is visible as long as possible.
      */
-    afterOverlayUpdate() {
+    updateLabelPositioning() {
         if (!this.#rangeContainer) {
             return;
         }
@@ -171,6 +192,7 @@ export class TimeRangeOverlay extends HTMLElement {
         if (labelBoxTextContent !== this.#label) {
             this.#label = labelBoxTextContent;
             this.dispatchEvent(new TimeRangeLabelChangeEvent(this.#label));
+            this.#labelBox?.setAttribute('aria-label', labelBoxTextContent);
         }
     }
     #handleLabelInputKeyDown(event) {
@@ -195,28 +217,26 @@ export class TimeRangeOverlay extends HTMLElement {
         const durationText = this.#duration ? i18n.TimeUtilities.formatMicroSecondsTime(this.#duration) : '';
         // clang-format off
         LitHtml.render(LitHtml.html `
-          <span
-            class="range-container">
-            <${IconButton.Icon.Icon.litTagName} class="user-created-icon" .data=${{
-            iconName: 'profile',
-            color: 'var(--ref-palette-pink55)',
-            width: '16px',
-            height: '17px',
-        }}>
-              </${IconButton.Icon.Icon.litTagName}>
+          <span class="range-container" role="region" aria-label=${i18nString(UIStrings.timeRange)}>
+            <${IconButton.Icon.Icon.litTagName} class="user-created-icon" name='profile'}>
+            </${IconButton.Icon.Icon.litTagName}>
             <span
              class="label-text"
+             role="textbox"
              @focusout=${() => this.#setLabelEditability(false)}
              @dblclick=${() => this.#setLabelEditability(true)}
              @keydown=${this.#handleLabelInputKeyDown}
              @keyup=${this.#handleLabelInputKeyUp}
-             contenteditable=${this.#isLabelEditable}>
+             contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
             </span>
             <span
             class="duration">${durationText}</span>
           </span>
           `, this.#shadow, { host: this });
         // clang-format on
+        // Now we have rendered, we need to re-run the code to tweak the margin &
+        // positioning of the label.
+        this.updateLabelPositioning();
     }
 }
 customElements.define('devtools-time-range-overlay', TimeRangeOverlay);

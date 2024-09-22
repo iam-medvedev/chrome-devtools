@@ -40,6 +40,7 @@ css
             onAcceptConsentClick: noop,
             onCancelClick: noop,
             onFixThisIssueClick: noop,
+            onSelectedNetworkRequestClick: noop,
             inspectElementToggled: false,
             state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
             agentType: "freestyler" /* Freestyler.AgentType.FREESTYLER */,
@@ -60,7 +61,6 @@ css
                     {
                         entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                         suggestingFix: false,
-                        aborted: false,
                         steps: [
                             {
                                 isLoading: false,

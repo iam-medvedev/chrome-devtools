@@ -1,11 +1,11 @@
 import * as Common from '../../core/common/common.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { CompatibilityTracksAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import { CompatibilityTracksAppender, type DrawOverride, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 import { TimelineSelection } from './TimelineSelection.js';
-export type TimelineFlameChartEntry = TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData;
+export type TimelineFlameChartEntry = Trace.Handlers.ModelHandlers.Frames.TimelineFrame | Trace.Types.Events.Event;
 export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     private droppedFramePatternCanvas;
@@ -13,7 +13,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private timelineDataInternal;
     private currentLevel;
     private compatibilityTracksAppender;
-    private traceEngineData;
+    private parsedTrace;
     private isCpuProfile;
     private minimumBoundaryInternal;
     private timeSpan;
@@ -37,7 +37,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
-    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, isCpuProfile?: boolean): void;
     /**
      * Instances and caches a CompatibilityTracksAppender using the
      * internal flame chart data and the trace parsed data coming from the
@@ -53,8 +53,8 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
         filterThreadsByName?: string;
         expandedTracks?: Set<TrackAppenderName>;
     }): void;
-    groupTreeEvents(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | null;
-    mainFrameNavigationStartEvents(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
+    groupTreeEvents(group: PerfUI.FlameChart.Group): Trace.Types.Events.Event[] | null;
+    mainFrameNavigationStartEvents(): readonly Trace.Types.Events.NavigationStart[];
     entryTitle(entryIndex: number): string | null;
     textColor(index: number): string;
     entryFont(_index: number): string | null;
@@ -68,13 +68,14 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is TraceEngine.Types.TraceEvents.TraceEventData;
-    search(visibleWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
-    isIgnoreListedEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+    static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is Trace.Types.Events.Event;
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    isIgnoreListedEvent(event: Trace.Types.Events.Event): boolean;
     private isIgnoreListedURL;
     getEntryTypeForLevel(level: number): EntryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;
+    getDrawOverride(entryIndex: number): DrawOverride | undefined;
     entryColor(entryIndex: number): string;
     private preparePatternCanvas;
     private drawFrame;
@@ -92,16 +93,16 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      * timelineData() has been generated. If it hasn't, this method will return
      * null.
      */
-    indexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    indexForEvent(targetEvent: Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
     /**
      * Build the data for initiators and initiated entries.
      * @param entryIndex
      * @returns if we should re-render the flame chart (canvas)
      */
     buildFlowForInitiator(entryIndex: number): boolean;
-    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
+    eventByIndex(entryIndex: number): Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame | null;
 }
-export declare const InstantEventVisibleDurationMs: TraceEngine.Types.Timing.MilliSeconds;
+export declare const InstantEventVisibleDurationMs: Trace.Types.Timing.MilliSeconds;
 export declare const enum Events {
     DATA_CHANGED = "DataChanged"
 }

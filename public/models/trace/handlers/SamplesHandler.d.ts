@@ -1,11 +1,11 @@
 import * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-declare const profilesInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, ProfileData>>;
-declare const entryToNode: Map<Types.TraceEvents.TraceEventData, Helpers.TreeHelpers.TraceEntryNode>;
+declare const profilesInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, ProfileData>>;
+declare const entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
 export declare function reset(): void;
 export declare function initialize(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export declare function data(): SamplesHandlerData;
 export interface SamplesHandlerData {
@@ -13,7 +13,7 @@ export interface SamplesHandlerData {
     entryToNode: typeof entryToNode;
 }
 export type ProfileData = {
-    profileId: Types.TraceEvents.ProfileID;
+    profileId: Types.Events.ProfileID;
     rawProfile: CPUProfile.CPUProfileDataModel.ExtendedProfile;
     parsedProfile: CPUProfile.CPUProfileDataModel.CPUProfileDataModel;
     /**
@@ -26,7 +26,7 @@ export type ProfileData = {
      * If you need the profile calls from a CPU profile obtained from a
      * web trace, use the data exported by the RendererHandler instead.
      */
-    profileCalls: Types.TraceEvents.SyntheticProfileCall[];
+    profileCalls: Types.Events.SyntheticProfileCall[];
     /**
      * Contains the call tree built from the CPU profile samples.
      * Similar to the profileCalls field, this tree does not contain nor
@@ -43,5 +43,5 @@ export type ProfileData = {
  * we fall back to the function name that was in the callframe that we got
  * when parsing the profile's trace data.
  */
-export declare function getProfileCallFunctionName(data: SamplesHandlerData, entry: Types.TraceEvents.SyntheticProfileCall): string;
+export declare function getProfileCallFunctionName(data: SamplesHandlerData, entry: Types.Events.SyntheticProfileCall): string;
 export {};

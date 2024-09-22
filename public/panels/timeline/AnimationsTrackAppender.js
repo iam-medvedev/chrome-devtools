@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -15,13 +15,13 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class AnimationsTrackAppender {
     appenderName = 'Animations';
     #compatibilityBuilder;
-    #traceParsedData;
-    constructor(compatibilityBuilder, traceParsedData) {
+    #parsedTrace;
+    constructor(compatibilityBuilder, parsedTrace) {
         this.#compatibilityBuilder = compatibilityBuilder;
-        this.#traceParsedData = traceParsedData;
+        this.#parsedTrace = parsedTrace;
     }
     appendTrackAtLevel(trackStartLevel, expanded) {
-        const animations = this.#traceParsedData.Animations.animations;
+        const animations = this.#parsedTrace.Animations.animations;
         if (animations.length === 0) {
             return trackStartLevel;
         }
@@ -36,6 +36,14 @@ export class AnimationsTrackAppender {
     }
     colorForEvent() {
         return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
+    }
+    titleForEvent(event) {
+        const { displayName } = event.args.data.beginEvent.args.data;
+        return displayName || event.name;
+    }
+    highlightedEntryInfo(event) {
+        const title = this.titleForEvent(event);
+        return { title, formattedTime: getFormattedTime(event.dur) };
     }
 }
 //# sourceMappingURL=AnimationsTrackAppender.js.map

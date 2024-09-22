@@ -1,9 +1,9 @@
 import { needsLogging } from './LoggingConfig.js';
 const state = new WeakMap();
 function nextVeId() {
-    const result = new Int32Array(1);
+    const result = new BigInt64Array(1);
     crypto.getRandomValues(result);
-    return result[0];
+    return Number(result[0] >> (64n - 53n));
 }
 export function getOrCreateLoggingState(loggable, config, parent) {
     if (config.parent && parentProviders.has(config.parent) && loggable instanceof Element) {

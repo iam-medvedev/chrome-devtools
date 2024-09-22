@@ -5,7 +5,7 @@ let extensionDataGathererInstance;
  * single access point to the performance panel for extension data.
  */
 export class ExtensionDataGatherer {
-    #traceParsedData = null;
+    #parsedTrace = null;
     #extensionDataByModel = new Map();
     static instance() {
         if (extensionDataGathererInstance) {
@@ -22,32 +22,32 @@ export class ExtensionDataGatherer {
      */
     getExtensionData() {
         const extensionDataEnabled = TimelinePanel.extensionDataVisibilitySetting().get();
-        if (!extensionDataEnabled || !this.#traceParsedData || !this.#traceParsedData.ExtensionTraceData) {
+        if (!extensionDataEnabled || !this.#parsedTrace || !this.#parsedTrace.ExtensionTraceData) {
             return { extensionMarkers: [], extensionTrackData: [], entryToNode: new Map() };
         }
-        const maybeCachedData = this.#extensionDataByModel.get(this.#traceParsedData);
+        const maybeCachedData = this.#extensionDataByModel.get(this.#parsedTrace);
         if (maybeCachedData) {
             return maybeCachedData;
         }
-        return this.#traceParsedData.ExtensionTraceData;
+        return this.#parsedTrace.ExtensionTraceData;
     }
     saveCurrentModelData() {
-        if (this.#traceParsedData && !this.#extensionDataByModel.has(this.#traceParsedData)) {
-            this.#extensionDataByModel.set(this.#traceParsedData, this.getExtensionData());
+        if (this.#parsedTrace && !this.#extensionDataByModel.has(this.#parsedTrace)) {
+            this.#extensionDataByModel.set(this.#parsedTrace, this.getExtensionData());
         }
     }
-    modelChanged(traceParsedData) {
-        if (traceParsedData === this.#traceParsedData) {
+    modelChanged(parsedTrace) {
+        if (parsedTrace === this.#parsedTrace) {
             return;
         }
-        if (this.#traceParsedData !== null) {
+        if (this.#parsedTrace !== null) {
             // DevTools extension data is assumed to be useful only for the current
             // trace data (model). As such, if the model changes, we cache the devtools
             // extension data we have collected for the previous model and listen
             // for new data that applies to the new model.
             this.saveCurrentModelData();
         }
-        this.#traceParsedData = traceParsedData;
+        this.#parsedTrace = parsedTrace;
     }
 }
 //# sourceMappingURL=ExtensionDataGatherer.js.map

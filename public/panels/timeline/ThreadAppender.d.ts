@@ -1,13 +1,13 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare class ThreadAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    readonly threadType: TraceEngine.Handlers.Threads.ThreadType;
+    readonly threadType: Trace.Handlers.Threads.ThreadType;
     readonly isOnMainFrame: boolean;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, processId: TraceEngine.Types.TraceEvents.ProcessID, threadId: TraceEngine.Types.TraceEvents.ThreadID, threadName: string | null, type: TraceEngine.Handlers.Threads.ThreadType);
-    processId(): TraceEngine.Types.TraceEvents.ProcessID;
-    threadId(): TraceEngine.Types.TraceEvents.ThreadID;
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace, processId: Trace.Types.Events.ProcessID, threadId: Trace.Types.Events.ThreadID, threadName: string | null, type: Trace.Handlers.Threads.ThreadType);
+    processId(): Trace.Types.Events.ProcessID;
+    threadId(): Trace.Types.Events.ThreadID;
     /**
      * Appends into the flame chart data the data corresponding to the
      * this thread.
@@ -23,20 +23,20 @@ export declare class ThreadAppender implements TrackAppender {
     headerAppended(): boolean;
     trackName(): string;
     getUrl(): string;
-    getEntries(): TraceEngine.Types.TraceEvents.TraceEventData[];
-    isIgnoreListedEntry(entry: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+    getEntries(): Trace.Types.Events.Event[];
+    isIgnoreListedEntry(entry: Trace.Types.Events.Event): boolean;
     private isIgnoreListedURL;
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
-    colorForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    colorForEvent(event: Trace.Types.Events.Event): string;
     /**
      * Gets the title an event added by this appender should be rendered with.
      */
-    titleForEvent(entry: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    titleForEvent(entry: Trace.Types.Events.Event): string;
     /**
      * Returns the info shown when an event added by this appender
      * is hovered in the timeline.
      */
-    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
+    highlightedEntryInfo(event: Trace.Types.Events.Event): HighlightedEntryInfo;
 }

@@ -38,7 +38,6 @@ function toIconGroup({ iconName, color, width, height }, sizeOverride) {
     }
     return { iconName, iconColor: color, iconWidth: width, iconHeight: height };
 }
-// @ts-ignore Remove this comment once Intl.ListFormat is in type defs.
 const listFormat = new Intl.ListFormat(navigator.language, { type: 'unit', style: 'short' });
 export function getIssueCountsEnumeration(issuesManager, omitEmpty = true) {
     const counts = [

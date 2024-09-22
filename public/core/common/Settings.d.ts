@@ -25,6 +25,14 @@ export declare class Settings {
     getHostConfig(): Root.Runtime.HostConfig;
     private registerModuleSetting;
     static normalizeSettingName(name: string): string;
+    /**
+     * Prefer a module setting if this setting is one that you might not want to
+     * surface to the user to control themselves. Examples of these are settings
+     * to store UI state such as how a user choses to position a split widget or
+     * which panel they last opened.
+     * If you are creating a setting that you expect the user to control, and
+     * sync, prefer {@see createSetting}
+     */
     moduleSetting<T = any>(settingName: string): Setting<T>;
     settingForTest(settingName: string): Setting<unknown>;
     /**
@@ -112,7 +120,7 @@ export declare class VersionController {
     static readonly GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
     static readonly SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
     static readonly LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-    static readonly CURRENT_VERSION = 37;
+    static readonly CURRENT_VERSION = 38;
     constructor();
     /**
      * Force re-sets all version number settings to the current version without
@@ -165,6 +173,7 @@ export declare class VersionController {
     updateVersionFrom34To35(): void;
     updateVersionFrom35To36(): void;
     updateVersionFrom36To37(): void;
+    updateVersionFrom37To38(): void;
     private migrateSettingsFromLocalStorage;
     private clearBreakpointsWhenTooMany;
 }

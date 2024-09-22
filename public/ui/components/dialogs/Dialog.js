@@ -15,6 +15,7 @@ const IS_DIALOG_SUPPORTED = 'HTMLDialogElement' in globalThis;
 // (the visible height is only half of the diamond).
 export const CONNECTOR_HEIGHT = 10;
 const CONNECTOR_WIDTH = 2 * CONNECTOR_HEIGHT;
+// The offset used by the dialog's animation as it slides in when opened.
 const DIALOG_ANIMATION_OFFSET = 20;
 export const DIALOG_SIDE_PADDING = 5;
 export const DIALOG_VERTICAL_PADDING = 3;
@@ -203,9 +204,13 @@ export class Dialog extends HTMLElement {
     }
     #mouseEventWasInDialogContent(evt) {
         const dialogBounds = this.#dialogClientRect;
-        const animationOffSetValue = this.bestVerticalPosition === "bottom" /* DialogVerticalPosition.BOTTOM */ ?
+        let animationOffSetValue = this.bestVerticalPosition === "bottom" /* DialogVerticalPosition.BOTTOM */ ?
             DIALOG_ANIMATION_OFFSET :
             -1 * DIALOG_ANIMATION_OFFSET;
+        if (this.#props.origin === MODAL) {
+            // When shown as a modal, the dialog is not animated
+            animationOffSetValue = 0;
+        }
         const eventWasDialogContentX = evt.pageX >= dialogBounds.left && evt.pageX <= dialogBounds.left + dialogBounds.width;
         const eventWasDialogContentY = evt.pageY >= dialogBounds.top + animationOffSetValue &&
             evt.pageY <= dialogBounds.top + dialogBounds.height + animationOffSetValue;

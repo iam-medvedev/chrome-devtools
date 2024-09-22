@@ -1,13 +1,13 @@
 import * as Types from '../types/types.js';
 export declare const makeTraceEntryNodeId: () => TraceEntryNodeId;
 export declare const makeEmptyTraceEntryTree: () => TraceEntryTree;
-export declare const makeEmptyTraceEntryNode: (entry: Types.TraceEvents.TraceEventData, id: TraceEntryNodeId) => TraceEntryNode;
+export declare const makeEmptyTraceEntryNode: (entry: Types.Events.Event, id: TraceEntryNodeId) => TraceEntryNode;
 export interface TraceEntryTree {
     roots: Set<TraceEntryNode>;
     maxDepth: number;
 }
 export interface TraceEntryNode {
-    entry: Types.TraceEvents.TraceEventData;
+    entry: Types.Events.Event;
     depth: number;
     selfTime?: Types.Timing.MicroSeconds;
     id: TraceEntryNodeId;
@@ -34,13 +34,13 @@ export type TraceEntryNodeId = number & TraceEntryNodeIdTag;
  *
  * Complexity: O(n), where n = number of events
  */
-export declare function treify(entries: Types.TraceEvents.TraceEventData[], options?: {
+export declare function treify(entries: Types.Events.Event[], options?: {
     filter: {
-        has: (name: Types.TraceEvents.KnownEventName) => boolean;
+        has: (name: Types.Events.Name) => boolean;
     };
 }): {
     tree: TraceEntryTree;
-    entryToNode: Map<Types.TraceEvents.TraceEventData, TraceEntryNode>;
+    entryToNode: Map<Types.Events.Event, TraceEntryNode>;
 };
 /**
  * Iterates events in a tree hierarchically, from top to bottom,
@@ -63,7 +63,7 @@ export declare function treify(entries: Types.TraceEvents.TraceEventData[], opti
  * 9. End A
  *
  */
-export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.TraceEventData, TraceEntryNode>, rootEntry: Types.TraceEvents.TraceEventData, onEntryStart: (entry: Types.TraceEvents.TraceEventData) => void, onEntryEnd: (entry: Types.TraceEvents.TraceEventData) => void): void;
+export declare function walkTreeFromEntry(entryToNode: Map<Types.Events.Event, TraceEntryNode>, rootEntry: Types.Events.Event, onEntryStart: (entry: Types.Events.Event) => void, onEntryEnd: (entry: Types.Events.Event) => void): void;
 /**
  * Given a Helpers.TreeHelpers.RendererTree, this will iterates events in hierarchically, visiting
  * each root node and working from top to bottom, calling back on every event's
@@ -87,7 +87,7 @@ export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.Tra
  * 11. End E
  *
  */
-export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.TraceEventData, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.TraceEvents.TraceEventData) => void, onEntryEnd: (entry: Types.TraceEvents.TraceEventData) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
+export declare function walkEntireTree(entryToNode: Map<Types.Events.Event, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.Events.Event) => void, onEntryEnd: (entry: Types.Events.Event) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
 /**
  * Determines if the given events, which are assumed to be ordered can
  * be organized into tree structures.
@@ -107,5 +107,5 @@ export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.TraceE
  * Note that this will also return true if multiple trees can be
  * built, for example if none of the events overlap with each other.
  */
-export declare function canBuildTreesFromEvents(events: readonly Types.TraceEvents.TraceEventData[]): boolean;
+export declare function canBuildTreesFromEvents(events: readonly Types.Events.Event[]): boolean;
 export {};

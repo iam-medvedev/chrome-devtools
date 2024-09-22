@@ -219,14 +219,14 @@ export class Button extends HTMLElement {
             'text-with-icon': hasIcon && !isEmpty,
             'only-icon': hasIcon && isEmpty,
             micro: this.#props.size === "MICRO" /* Size.MICRO */,
-            small: Boolean(this.#props.size === "SMALL" /* Size.SMALL */),
+            small: this.#props.size === "SMALL" /* Size.SMALL */,
             'reduced-focus-ring': Boolean(this.#props.reducedFocusRing),
             active: this.#props.active,
         };
         const spinnerClasses = {
             primary: this.#props.variant === "primary" /* Variant.PRIMARY */,
             outlined: this.#props.variant === "outlined" /* Variant.OUTLINED */,
-            disabled: Boolean(this.#props.disabled),
+            disabled: this.#props.disabled,
             spinner: true,
         };
         const jslog = this.#props.jslogContext && VisualLogging.action().track({ click: true }).context(this.#props.jslogContext);

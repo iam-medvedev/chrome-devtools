@@ -23,7 +23,7 @@ import * as Types from '../types/types.js';
  * Similarly, it is also possible to see a DoneWithProcess event without a
  * RunningInProcess event, if the user started recording after the auction
  * worklets started. Therefore we are happy to create
- * SyntheticAuctionWorkletEvents as long as we see just one of these events.
+ * SyntheticAuctionWorklets as long as we see just one of these events.
  *
  * If we do get two events and need to pair them, we can use the
  * args.data.target property, which is a string ID shared by both
@@ -50,15 +50,15 @@ export function reset() {
     v8HelperThreads.clear();
 }
 export function handleEvent(event) {
-    if (Types.TraceEvents.isTraceEventAuctionWorkletRunningInProcess(event)) {
+    if (Types.Events.isAuctionWorkletRunningInProcess(event)) {
         runningInProcessEvents.set(event.args.data.pid, event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventAuctionWorkletDoneWithProcess(event)) {
+    if (Types.Events.isAuctionWorkletDoneWithProcess(event)) {
         doneWithProcessEvents.set(event.args.data.pid, event);
         return;
     }
-    if (Types.TraceEvents.isThreadName(event)) {
+    if (Types.Events.isThreadName(event)) {
         if (event.args.name === 'auction_worklet.CrUtilityMain') {
             utilityThreads.set(event.pid, event);
             return;
@@ -71,11 +71,11 @@ export function handleEvent(event) {
 function workletType(input) {
     switch (input) {
         case 'seller':
-            return "seller" /* Types.TraceEvents.AuctionWorkletType.SELLER */;
+            return "seller" /* Types.Events.AuctionWorkletType.SELLER */;
         case 'bidder':
-            return "bidder" /* Types.TraceEvents.AuctionWorkletType.BIDDER */;
+            return "bidder" /* Types.Events.AuctionWorkletType.BIDDER */;
         default:
-            return "unknown" /* Types.TraceEvents.AuctionWorkletType.UNKNOWN */;
+            return "unknown" /* Types.Events.AuctionWorkletType.UNKNOWN */;
     }
 }
 /**
@@ -85,14 +85,14 @@ function workletType(input) {
  */
 function makeSyntheticEventBase(event) {
     return Helpers.SyntheticEvents.SyntheticEventsManager
-        .registerSyntheticBasedEvent({
+        .registerSyntheticEvent({
         rawSourceEvent: event,
-        name: 'SyntheticAuctionWorkletEvent',
-        s: "t" /* Types.TraceEvents.TraceEventScope.THREAD */,
+        name: 'SyntheticAuctionWorklet',
+        s: "t" /* Types.Events.Scope.THREAD */,
         cat: event.cat,
         tid: event.tid,
         ts: event.ts,
-        ph: "I" /* Types.TraceEvents.Phase.INSTANT */,
+        ph: "I" /* Types.Events.Phase.INSTANT */,
         pid: event.args.data.pid,
         host: event.args.data.host,
         target: event.args.data.target,

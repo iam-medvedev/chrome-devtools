@@ -303,11 +303,13 @@ export class MainImpl {
         Root.Runtime.experiments.register("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */, 'Dedicated panel for generative AI settings');
         Root.Runtime.experiments.register("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */, 'Performance panel: enable server timings in the timeline');
         Root.Runtime.experiments.register("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */, 'Performance panel: enable new summary details view for layout shift events', true);
+        Root.Runtime.experiments.register("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */, 'Extension storage in Application panel');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
             "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
             "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
+            "gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();

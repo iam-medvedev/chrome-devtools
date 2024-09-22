@@ -82,7 +82,8 @@ export declare const enum ExperimentName {
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     GEN_AI_SETTINGS_PANEL = "gen-ai-settings-panel",
     TIMELINE_SERVER_TIMINGS = "timeline-server-timings",
-    TIMELINE_LAYOUT_SHIFT_DETAILS = "timeline-layout-shift-details"
+    TIMELINE_LAYOUT_SHIFT_DETAILS = "timeline-layout-shift-details",
+    EXTENSION_STORAGE_VIEWER = "extension-storage-viewer"
 }
 export interface AidaAvailability {
     enabled: boolean;

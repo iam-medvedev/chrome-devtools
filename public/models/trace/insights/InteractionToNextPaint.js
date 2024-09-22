@@ -1,12 +1,13 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Helpers from '../helpers/helpers.js';
 export function deps() {
     return ['UserInteractions'];
 }
-export function generateInsight(traceParsedData, context) {
-    const interactionEvents = traceParsedData.UserInteractions.interactionEvents.filter(event => {
-        return event.args.data.navigationId === context.navigationId;
+export function generateInsight(parsedTrace, context) {
+    const interactionEvents = parsedTrace.UserInteractions.interactionEvents.filter(event => {
+        return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
     if (!interactionEvents.length) {
         // A valid result, when there is no user interaction.

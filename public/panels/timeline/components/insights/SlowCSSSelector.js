@@ -21,7 +21,7 @@ export class SlowCSSSelector extends BaseInsight {
         if (!insightsByNavigation) {
             return null;
         }
-        const slowCSSSelector = insightsByNavigation.SlowCSSSelector;
+        const slowCSSSelector = insightsByNavigation.data.SlowCSSSelector;
         if (slowCSSSelector instanceof Error) {
             return null;
         }
@@ -36,7 +36,7 @@ export class SlowCSSSelector extends BaseInsight {
         if (!insightsByNavigation) {
             return [];
         }
-        const scsInsight = insightsByNavigation.SlowCSSSelector;
+        const scsInsight = insightsByNavigation.data.SlowCSSSelector;
         if (scsInsight instanceof Error) {
             return [];
         }

@@ -214,8 +214,13 @@ textarea {
 
 .buttons {
   display: flex;
-  flex-wrap: wrap;
   gap: 5px;
+}
+
+@media (max-width: 500px) {
+  .buttons {
+    flex-wrap: wrap;
+  }
 }
 
 main .buttons {
@@ -229,7 +234,6 @@ main .buttons {
   font-size: 11px;
   align-items: flex-start;
   flex-direction: column;
-  max-width: 360px;
 }
 
 .link {

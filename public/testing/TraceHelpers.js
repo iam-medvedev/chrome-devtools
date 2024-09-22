@@ -4,7 +4,7 @@
 import * as SDK from '../core/sdk/sdk.js';
 import * as Bindings from '../models/bindings/bindings.js';
 import * as CPUProfile from '../models/cpu_profile/cpu_profile.js';
-import * as TraceEngine from '../models/trace/trace.js';
+import * as Trace from '../models/trace/trace.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
@@ -38,18 +38,18 @@ export class MockFlameChartDelegate {
 export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNames, expanded, trackName) {
     await initializeGlobalVars();
     // This function is used to load a component example.
-    const { traceData } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
+    const { parsedTrace } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
     const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
     // The data provider still needs a reference to the legacy model to
     // work properly.
-    dataProvider.setModel(traceData);
+    dataProvider.setModel(parsedTrace);
     const tracksAppender = dataProvider.compatibilityTracksAppenderInstance();
     tracksAppender.setVisibleTracks(trackAppenderNames);
     dataProvider.buildFromTrackAppenders({ filterThreadsByName: trackName, expandedTracks: expanded ? trackAppenderNames : undefined });
     const delegate = new MockFlameChartDelegate();
     const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
-    const minTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-    const maxTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+    const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+    const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
     flameChart.setWindowTimes(minTime, maxTime);
     flameChart.markAsRoot();
     flameChart.update();
@@ -65,11 +65,11 @@ export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNa
  */
 export async function getNetworkFlameChart(traceFileName, expanded) {
     await initializeGlobalVars();
-    const { traceData } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
-    const minTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-    const maxTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+    const { parsedTrace } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
+    const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+    const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
     const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
-    dataProvider.setModel(traceData);
+    dataProvider.setModel(parsedTrace);
     dataProvider.setWindowTimes(minTime, maxTime);
     dataProvider.timelineData().groups.forEach(group => {
         group.expanded = expanded;
@@ -85,11 +85,11 @@ export async function getNetworkFlameChart(traceFileName, expanded) {
 // test will import this default event and copy-override properties at will.
 export const defaultTraceEvent = {
     name: 'process_name',
-    tid: TraceEngine.Types.TraceEvents.ThreadID(0),
-    pid: TraceEngine.Types.TraceEvents.ProcessID(0),
-    ts: TraceEngine.Types.Timing.MicroSeconds(0),
+    tid: Trace.Types.Events.ThreadID(0),
+    pid: Trace.Types.Events.ProcessID(0),
+    ts: Trace.Types.Timing.MicroSeconds(0),
     cat: 'test',
-    ph: "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */,
+    ph: "M" /* Trace.Types.Events.Phase.METADATA */,
 };
 /**
  * Gets the tree in a thread.
@@ -138,7 +138,7 @@ export function getNodeFor(thread, nodeId) {
     function findNode(nodes, nodeId) {
         for (const node of nodes) {
             const event = node.entry;
-            if (TraceEngine.Types.TraceEvents.isProfileCall(event) && event.nodeId === nodeId) {
+            if (Trace.Types.Events.isProfileCall(event) && event.nodeId === nodeId) {
                 return node;
             }
             return findNode(node.children, nodeId);
@@ -173,10 +173,8 @@ export function prettyPrint(tree, predicate = () => true, indentation = 2, delim
             }
             skipped = false;
             const spacing = new Array(node.depth * indentation).fill(delimiter).join('');
-            const eventType = TraceEngine.Types.TraceEvents.isTraceEventDispatch(event) ? `(${event.args.data?.type})` : false;
-            const jsFunctionName = TraceEngine.Types.TraceEvents.isProfileCall(event) ?
-                `(${event.callFrame.functionName || 'anonymous'})` :
-                false;
+            const eventType = Trace.Types.Events.isDispatch(event) ? `(${event.args.data?.type})` : false;
+            const jsFunctionName = Trace.Types.Events.isProfileCall(event) ? `(${event.callFrame.functionName || 'anonymous'})` : false;
             const duration = `[${(event.dur || 0) / 1000}ms]`;
             const info = [jsFunctionName, eventType, duration].filter(Boolean);
             out += `${newline}${spacing}${prefix}${event.name} ${info.join(' ')}`;
@@ -186,18 +184,18 @@ export function prettyPrint(tree, predicate = () => true, indentation = 2, delim
     }
 }
 /**
- * Builds a mock TraceEventComplete.
+ * Builds a mock Complete.
  */
 export function makeCompleteEvent(name, ts, dur, cat = '*', pid = 0, tid = 0) {
     return {
         args: {},
         cat,
         name,
-        ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
-        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
-        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
-        dur: TraceEngine.Types.Timing.MicroSeconds(dur),
+        ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(ts),
+        dur: Trace.Types.Timing.MicroSeconds(dur),
     };
 }
 export function makeAsyncStartEvent(name, ts, pid = 0, tid = 0) {
@@ -205,10 +203,10 @@ export function makeAsyncStartEvent(name, ts, pid = 0, tid = 0) {
         args: {},
         cat: '*',
         name,
-        ph: "b" /* TraceEngine.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
-        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
-        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+        ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(ts),
     };
 }
 export function makeAsyncEndEvent(name, ts, pid = 0, tid = 0) {
@@ -216,70 +214,70 @@ export function makeAsyncEndEvent(name, ts, pid = 0, tid = 0) {
         args: {},
         cat: '*',
         name,
-        ph: "e" /* TraceEngine.Types.TraceEvents.Phase.ASYNC_NESTABLE_END */,
-        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
-        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+        ph: "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(ts),
     };
 }
 export function makeCompleteEventInMilliseconds(name, tsMillis, durMillis, cat = '*', pid = 0, tid = 0) {
-    return makeCompleteEvent(name, TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(tsMillis)), TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(durMillis)), cat, pid, tid);
+    return makeCompleteEvent(name, Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(tsMillis)), Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(durMillis)), cat, pid, tid);
 }
 /**
- * Builds a mock TraceEventInstant.
+ * Builds a mock Instant.
  */
-export function makeInstantEvent(name, tsMicroseconds, cat = '', pid = 0, tid = 0, s = "t" /* TraceEngine.Types.TraceEvents.TraceEventScope.THREAD */) {
+export function makeInstantEvent(name, tsMicroseconds, cat = '', pid = 0, tid = 0, s = "t" /* Trace.Types.Events.Scope.THREAD */) {
     return {
         args: {},
         cat,
         name,
-        ph: "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */,
-        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
-        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(tsMicroseconds),
+        ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(tsMicroseconds),
         s,
     };
 }
 /**
- * Builds a mock TraceEventBegin.
+ * Builds a mock Begin.
  */
 export function makeBeginEvent(name, ts, cat = '*', pid = 0, tid = 0) {
     return {
         args: {},
         cat,
         name,
-        ph: "B" /* TraceEngine.Types.TraceEvents.Phase.BEGIN */,
-        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
-        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+        ph: "B" /* Trace.Types.Events.Phase.BEGIN */,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(ts),
     };
 }
 /**
- * Builds a mock TraceEventEnd.
+ * Builds a mock End.
  */
 export function makeEndEvent(name, ts, cat = '*', pid = 0, tid = 0) {
     return {
         args: {},
         cat,
         name,
-        ph: "E" /* TraceEngine.Types.TraceEvents.Phase.END */,
-        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
-        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+        ph: "E" /* Trace.Types.Events.Phase.END */,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(ts),
     };
 }
-export function makeProfileCall(functionName, tsMs, durMs, pid = TraceEngine.Types.TraceEvents.ProcessID(0), tid = TraceEngine.Types.TraceEvents.ThreadID(0), nodeId = 0, url = '') {
+export function makeProfileCall(functionName, tsMs, durMs, pid = Trace.Types.Events.ProcessID(0), tid = Trace.Types.Events.ThreadID(0), nodeId = 0, url = '') {
     return {
         cat: '',
         name: 'ProfileCall',
         nodeId,
         sampleIndex: 0,
-        profileId: TraceEngine.Types.TraceEvents.ProfileID('fake-profile-id'),
-        ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
+        profileId: Trace.Types.Events.ProfileID('fake-profile-id'),
+        ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
         pid,
         tid,
-        ts: TraceEngine.Types.Timing.MicroSeconds(tsMs),
-        dur: TraceEngine.Types.Timing.MicroSeconds(durMs),
+        ts: Trace.Types.Timing.MicroSeconds(tsMs),
+        dur: Trace.Types.Timing.MicroSeconds(durMs),
         callFrame: {
             functionName,
             scriptId: '',
@@ -296,12 +294,12 @@ export const DevToolsTimelineCategory = 'disabled-by-default-devtools.timeline';
  * RendererHandler using only an array of ordered entries.
  */
 export function makeMockRendererHandlerData(entries) {
-    const { tree, entryToNode } = TraceEngine.Helpers.TreeHelpers.treify(entries, { filter: { has: () => true } });
+    const { tree, entryToNode } = Trace.Helpers.TreeHelpers.treify(entries, { filter: { has: () => true } });
     const mockThread = {
         tree,
         name: 'thread',
         entries,
-        profileCalls: entries.filter(TraceEngine.Types.TraceEvents.isProfileCall),
+        profileCalls: entries.filter(Trace.Types.Events.isProfileCall),
     };
     const mockProcess = {
         url: 'url',
@@ -310,7 +308,7 @@ export function makeMockRendererHandlerData(entries) {
     };
     const renderereEvents = [];
     for (const entry of entries) {
-        if (TraceEngine.Types.TraceEvents.isTraceEventRendererEvent(entry)) {
+        if (Trace.Types.Events.isRendererEvent(entry)) {
             renderereEvents.push(entry);
         }
     }
@@ -326,11 +324,11 @@ export function makeMockRendererHandlerData(entries) {
  * SamplesHandler using only an array of ordered profile calls.
  */
 export function makeMockSamplesHandlerData(profileCalls) {
-    const { tree, entryToNode } = TraceEngine.Helpers.TreeHelpers.treify(profileCalls, { filter: { has: () => true } });
+    const { tree, entryToNode } = Trace.Helpers.TreeHelpers.treify(profileCalls, { filter: { has: () => true } });
     const profile = {
         nodes: [],
-        startTime: profileCalls.at(0)?.ts || TraceEngine.Types.Timing.MicroSeconds(0),
-        endTime: profileCalls.at(-1)?.ts || TraceEngine.Types.Timing.MicroSeconds(10e5),
+        startTime: profileCalls.at(0)?.ts || Trace.Types.Timing.MicroSeconds(0),
+        endTime: profileCalls.at(-1)?.ts || Trace.Types.Timing.MicroSeconds(10e5),
         samples: [],
         timeDeltas: [],
     };
@@ -355,7 +353,7 @@ export function makeMockSamplesHandlerData(profileCalls) {
         parsedProfile: new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(profile),
         profileCalls,
         profileTree: tree,
-        profileId: TraceEngine.Types.TraceEvents.ProfileID('fake-profile-id'),
+        profileId: Trace.Types.Events.ProfileID('fake-profile-id'),
     };
     const profilesInThread = new Map([[1, profileData]]);
     return {
@@ -446,14 +444,14 @@ export function getBaseTraceParseModelData(overrides = {}) {
         },
         Meta: {
             traceBounds: {
-                min: TraceEngine.Types.Timing.MicroSeconds(0),
-                max: TraceEngine.Types.Timing.MicroSeconds(100),
-                range: TraceEngine.Types.Timing.MicroSeconds(100),
+                min: Trace.Types.Timing.MicroSeconds(0),
+                max: Trace.Types.Timing.MicroSeconds(100),
+                range: Trace.Types.Timing.MicroSeconds(100),
             },
-            browserProcessId: TraceEngine.Types.TraceEvents.ProcessID(-1),
-            browserThreadId: TraceEngine.Types.TraceEvents.ThreadID(-1),
-            gpuProcessId: TraceEngine.Types.TraceEvents.ProcessID(-1),
-            gpuThreadId: TraceEngine.Types.TraceEvents.ThreadID(-1),
+            browserProcessId: Trace.Types.Events.ProcessID(-1),
+            browserThreadId: Trace.Types.Events.ThreadID(-1),
+            gpuProcessId: Trace.Types.Events.ProcessID(-1),
+            gpuThreadId: Trace.Types.Events.ThreadID(-1),
             threadsInProcess: new Map(),
             navigationsByFrameId: new Map(),
             navigationsByNavigationId: new Map(),

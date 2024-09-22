@@ -159,6 +159,7 @@ export declare class TargetBase {
     domstorageAgent(): ProtocolProxyApi.DOMStorageApi;
     emulationAgent(): ProtocolProxyApi.EmulationApi;
     eventBreakpointsAgent(): ProtocolProxyApi.EventBreakpointsApi;
+    extensionsAgent(): ProtocolProxyApi.ExtensionsApi;
     fetchAgent(): ProtocolProxyApi.FetchApi;
     heapProfilerAgent(): ProtocolProxyApi.HeapProfilerApi;
     indexedDBAgent(): ProtocolProxyApi.IndexedDBApi;

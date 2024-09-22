@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
 import * as Linkifier from '../../ui/components/linkifier/linkifier.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -72,11 +72,11 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineSelectorStatsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const SelectorTimingsKey = TraceEngine.Types.TraceEvents.SelectorTimingsKey;
+const SelectorTimingsKey = Trace.Types.Events.SelectorTimingsKey;
 export class TimelineSelectorStatsView extends UI.Widget.VBox {
     #datagrid;
     #selectorLocations;
-    #traceParsedData = null;
+    #parsedTrace = null;
     /**
      * We store the last event (or array of events) that we renderered. We do
      * this because as the user zooms around the panel this view is updated,
@@ -86,12 +86,12 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
      * If it's null, that means we have not rendered yet.
      */
     #lastStatsSourceEventOrEvents = null;
-    constructor(traceParsedData) {
+    constructor(parsedTrace) {
         super();
         this.#datagrid = new DataGrid.DataGridController.DataGridController();
         this.element.setAttribute('jslog', `${VisualLogging.pane('selector-stats').track({ resize: true })}`);
         this.#selectorLocations = new Map();
-        this.#traceParsedData = traceParsedData;
+        this.#parsedTrace = parsedTrace;
         this.#datagrid.data = {
             label: i18nString(UIStrings.selectorStats),
             showScrollbar: true,
@@ -201,7 +201,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         this.contentElement.appendChild(this.#datagrid);
     }
     setEvent(event) {
-        if (!this.#traceParsedData) {
+        if (!this.#parsedTrace) {
             return false;
         }
         if (this.#lastStatsSourceEventOrEvents === event) {
@@ -210,7 +210,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             return false;
         }
         this.#lastStatsSourceEventOrEvents = event;
-        const selectorStats = this.#traceParsedData.SelectorStats.dataForUpdateLayoutEvent.get(event);
+        const selectorStats = this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event);
         if (!selectorStats) {
             this.#datagrid.data = { ...this.#datagrid.data, rows: [] };
             return false;
@@ -224,7 +224,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
     setAggregatedEvents(events) {
         const timings = [];
         const selectorMap = new Map();
-        if (!this.#traceParsedData) {
+        if (!this.#parsedTrace) {
             return;
         }
         const sums = {
@@ -252,7 +252,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         this.#lastStatsSourceEventOrEvents = events;
         for (let i = 0; i < events.length; i++) {
             const event = events[i];
-            const selectorStats = event ? this.#traceParsedData.SelectorStats.dataForUpdateLayoutEvent.get(event) : undefined;
+            const selectorStats = event ? this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event) : undefined;
             if (!selectorStats) {
                 continue;
             }

@@ -15,10 +15,10 @@ async function renderDetails() {
     if (!container) {
         throw new Error('No container');
     }
-    const { traceData, insights } = await TraceLoader.TraceLoader.traceEngine(/* mocha context */ null, 'shift-attribution.json.gz');
-    const shiftEventIframe = traceData.LayoutShifts.clusters[0].worstShiftEvent;
+    const { parsedTrace, insights } = await TraceLoader.TraceLoader.traceEngine(/* mocha context */ null, 'shift-attribution.json.gz');
+    const shiftEventIframe = parsedTrace.LayoutShifts.clusters[0].worstShiftEvent;
     const details = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
-    details.setData(shiftEventIframe, insights, traceData, false);
+    details.setData(shiftEventIframe, insights, parsedTrace, false);
     container.appendChild(details);
 }
 await renderDetails();

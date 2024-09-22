@@ -1,4 +1,4 @@
-import type * as TraceEngine from '../../../../models/trace/trace.js';
+import type * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { type ActiveInsight, InsightsCategories } from './types.js';
@@ -12,7 +12,7 @@ export declare function insightIsActive(options: {
     insightNavigationId: string | null;
 }): boolean;
 export interface BaseInsightData {
-    insights: TraceEngine.Insights.Types.TraceInsightData | null;
+    insights: Trace.Insights.Types.TraceInsightSets | null;
     navigationId: string | null;
     activeInsight: ActiveInsight | null;
     activeCategory: InsightsCategories;
@@ -26,11 +26,12 @@ export declare abstract class BaseInsight extends HTMLElement {
     protected data: BaseInsightData;
     protected scheduleRender(): void;
     connectedCallback(): void;
-    set insights(insights: TraceEngine.Insights.Types.TraceInsightData | null);
+    set insights(insights: Trace.Insights.Types.TraceInsightSets | null);
     set navigationId(navigationId: string | null);
-    set activeInsight(activeInsight: ActiveInsight);
+    set activeInsight(activeInsight: ActiveInsight | null);
     set activeCategory(activeCategory: InsightsCategories);
     protected onSidebarClick(): void;
+    protected onOverlayOverride(overlays: Overlays.Overlays.TimelineOverlay[] | null): void;
     abstract createOverlays(): Overlays.Overlays.TimelineOverlay[];
     abstract render(): void;
     protected isActive(): boolean;

@@ -1,10 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as PerfUI from './perf_ui.js';
-const { MilliSeconds } = TraceEngine.Types.Timing;
+const { MilliSeconds } = Trace.Types.Timing;
 describeWithLocale('TimelineOverviewCalculator', () => {
     it('can calculate pixels for a given time', async () => {
         const calculator = new PerfUI.TimelineOverviewCalculator.TimelineOverviewCalculator();
@@ -37,7 +37,7 @@ describeWithLocale('TimelineOverviewCalculator', () => {
         calculator.setDisplayWidth(200);
         calculator.setBounds(MilliSeconds(0), MilliSeconds(100));
         const fakeNavStart = {
-            // TraceEngine events are in microseconds
+            // Trace Engine events are in microseconds
             ts: 100_000,
         };
         calculator.setNavStartTimes([fakeNavStart]);

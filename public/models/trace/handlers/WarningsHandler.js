@@ -40,14 +40,14 @@ function storeWarning(event, warning) {
 }
 export function handleEvent(event) {
     processForcedReflowWarning(event);
-    if (event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */) {
+    if (event.name === "RunTask" /* Types.Events.Name.RUN_TASK */) {
         const { duration } = Helpers.Timing.eventTimingsMicroSeconds(event);
         if (duration > LONG_MAIN_THREAD_TASK_THRESHOLD) {
             storeWarning(event, 'LONG_TASK');
         }
         return;
     }
-    if (Types.TraceEvents.isTraceEventFireIdleCallback(event)) {
+    if (Types.Events.isFireIdleCallback(event)) {
         const { duration } = Helpers.Timing.eventTimingsMilliSeconds(event);
         if (duration > event.args.data.allottedMilliseconds) {
             storeWarning(event, 'IDLE_CALLBACK_OVER_TIME');
@@ -65,11 +65,10 @@ export function handleEvent(event) {
 function processForcedReflowWarning(event) {
     // Update the event and the JS invocation stacks.
     accomodateEventInStack(event, allEventsStack);
-    accomodateEventInStack(event, jsInvokeStack, /* pushEventToStack */ Types.TraceEvents.isJSInvocationEvent(event));
+    accomodateEventInStack(event, jsInvokeStack, /* pushEventToStack */ Types.Events.isJSInvocationEvent(event));
     if (jsInvokeStack.length) {
         // Current event falls inside a JS call.
-        if (event.name === "Layout" /* Types.TraceEvents.KnownEventName.LAYOUT */ ||
-            event.name === "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UPDATE_LAYOUT_TREE */) {
+        if (event.name === "Layout" /* Types.Events.Name.LAYOUT */ || event.name === "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */) {
             // A forced reflow happened. However we need to check if
             // the threshold is surpassed to add a warning. Accumulate the
             // event to check for this after the current Task is over.

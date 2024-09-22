@@ -1,24 +1,24 @@
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     constructor();
-    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null): void;
-    setEvents(traceEngineData: TraceEngine.Handlers.Types.TraceParseData): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
+    setEvents(parsedTrace: Trace.Handlers.Types.ParsedTrace): void;
     isEmpty(): boolean;
     maxStackDepth(): number;
     hasTrackConfigurationMode(): boolean;
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    setWindowTimes(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): void;
+    setWindowTimes(startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): void;
     createSelection(index: number): TimelineSelection | null;
     customizedContextMenu(event: MouseEvent, eventIndex: number, _groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    indexForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
-    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent | null;
+    indexForEvent(event: Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    eventByIndex(entryIndex: number): Trace.Types.Events.SyntheticNetworkRequest | Trace.Types.Events.WebSocketEvent | null;
     entryIndexForSelection(selection: TimelineSelection | null): number;
     groupForEvent(_entryIndex: number): PerfUI.FlameChart.Group | null;
     entryColor(index: number): string;
@@ -38,7 +38,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * @param timeToPixelRatio
      * @returns the pixels to draw waiting time and left and right whiskers and url text
      */
-    getDecorationPixels(event: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, unclippedBarX: number, timeToPixelRatio: number): {
+    getDecorationPixels(event: Trace.Types.Events.SyntheticNetworkRequest, unclippedBarX: number, timeToPixelRatio: number): {
         sendStart: number;
         headersEnd: number;
         finish: number;
@@ -78,12 +78,12 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * searches entries within the specified time and returns a list of entry
      * indexes
      */
-    search(visibleWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     /**
      * Returns a map of navigations that happened in the main frame, ignoring any
      * that happened in other frames.
      * The map's key is the frame ID.
      **/
-    mainFrameNavigationStartEvents(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
+    mainFrameNavigationStartEvents(): readonly Trace.Types.Events.NavigationStart[];
     buildFlowForInitiator(entryIndex: number): boolean;
 }

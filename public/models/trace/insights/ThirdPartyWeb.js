@@ -69,13 +69,9 @@ function makeUpEntity(entityCache, url) {
     entityCache.set(rootDomain, unrecognizedEntity);
     return unrecognizedEntity;
 }
-function getSelfTimeByUrl(traceData, context) {
-    const startTime = Types.Timing.MicroSeconds(context.navigation.ts);
-    // TODO: we should also pass a time window for this navigation to each insight. Use infinity for now.
-    const endTime = Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
-    const bounds = Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
+function getSelfTimeByUrl(parsedTrace, context) {
     const selfTimeByUrl = new Map();
-    for (const process of traceData.Renderer.processes.values()) {
+    for (const process of parsedTrace.Renderer.processes.values()) {
         if (!process.isOnMainFrame) {
             continue;
         }
@@ -85,14 +81,14 @@ function getSelfTimeByUrl(traceData, context) {
                     break;
                 }
                 for (const event of thread.entries) {
-                    if (!Helpers.Timing.eventIsInBounds(event, bounds)) {
+                    if (!Helpers.Timing.eventIsInBounds(event, context.bounds)) {
                         continue;
                     }
-                    const node = traceData.Renderer.entryToNode.get(event);
+                    const node = parsedTrace.Renderer.entryToNode.get(event);
                     if (!node || !node.selfTime) {
                         continue;
                     }
-                    const url = Extras.URLForEntry.get(traceData, event);
+                    const url = Extras.URLForEntry.get(parsedTrace, event);
                     if (!url) {
                         continue;
                     }
@@ -133,13 +129,17 @@ function getSummaries(requests, entityByRequest, selfTimeByUrl) {
     }
     return { byEntity, byRequest, requestsByEntity };
 }
-export function generateInsight(traceData, context) {
+export function generateInsight(parsedTrace, context) {
     const networkRequests = [];
-    for (const req of traceData.NetworkRequests.byTime) {
+    for (const req of parsedTrace.NetworkRequests.byTime) {
+        if (!context.navigation) {
+            break;
+        }
         if (req.args.data.frame !== context.frameId) {
             continue;
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceData.Meta.navigationsByFrameId);
+        // TODO(crbug.com/366049346): use context.bounds instead
+        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, parsedTrace.Meta.navigationsByFrameId);
         if (navigation === context.navigation) {
             networkRequests.push(req);
         }
@@ -153,9 +153,10 @@ export function generateInsight(traceData, context) {
             entityByRequest.set(request, entity);
         }
     }
-    const selfTimeByUrl = getSelfTimeByUrl(traceData, context);
+    const selfTimeByUrl = getSelfTimeByUrl(parsedTrace, context);
+    // TODO(crbug.com/352244718): re-work to still collect main thread activity if no request is present
     const summaries = getSummaries(networkRequests, entityByRequest, selfTimeByUrl);
-    const firstPartyUrl = context.navigation.args.data?.url ?? traceData.Meta.mainFrameURL;
+    const firstPartyUrl = context.navigation?.args.data?.url ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) || makeUpEntity(madeUpEntityCache, firstPartyUrl);
     return {
         entityByRequest,

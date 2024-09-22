@@ -6,7 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Loader of the Performance panel
@@ -74,7 +74,7 @@ export class TimelineLoader {
         const loader = new TimelineLoader(client);
         loader.#traceIsCPUProfile = true;
         try {
-            const events = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, TraceEngine.Types.TraceEvents.ThreadID(1));
+            const events = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
             window.setTimeout(async () => {
                 void loader.addEvents(events);
             });
@@ -218,7 +218,7 @@ export class TimelineLoader {
         return this.#traceFinalizedPromiseForTest;
     }
     #parseCPUProfileFormatFromFile(parsedTrace) {
-        const traceEvents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, TraceEngine.Types.TraceEvents.ThreadID(1));
+        const traceEvents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, Trace.Types.Events.ThreadID(1));
         this.#collectEvents(traceEvents);
     }
     #collectEvents(events) {

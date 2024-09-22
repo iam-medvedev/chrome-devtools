@@ -36,19 +36,19 @@ export declare class SamplesIntegrator {
      * Keeps track of the individual samples from the CPU Profile.
      * Only used with Debug Mode experiment enabled.
      */
-    jsSampleEvents: Types.TraceEvents.SyntheticJSSample[];
-    constructor(profileModel: CPUProfile.CPUProfileDataModel.CPUProfileDataModel, profileId: Types.TraceEvents.ProfileID, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID, configuration?: Types.Configuration.Configuration);
-    buildProfileCalls(traceEvents: Types.TraceEvents.TraceEventData[]): Types.TraceEvents.SyntheticProfileCall[];
+    jsSampleEvents: Types.Events.SyntheticJSSample[];
+    constructor(profileModel: CPUProfile.CPUProfileDataModel.CPUProfileDataModel, profileId: Types.Events.ProfileID, pid: Types.Events.ProcessID, tid: Types.Events.ThreadID, configuration?: Types.Configuration.Configuration);
+    buildProfileCalls(traceEvents: Types.Events.Event[]): Types.Events.SyntheticProfileCall[];
     /**
      * Builds the initial calls with no duration from samples. Their
      * purpose is to be merged with the trace event array being parsed so
      * that they can be traversed in order with them and their duration
      * can be updated as the SampleIntegrator callbacks are invoked.
      */
-    callsFromProfileSamples(): Types.TraceEvents.SyntheticProfileCall[];
+    callsFromProfileSamples(): Types.Events.SyntheticProfileCall[];
     static framesAreEqual(frame1: Protocol.Runtime.CallFrame, frame2: Protocol.Runtime.CallFrame): boolean;
     static showNativeName(name: string, runtimeCallStatsEnabled: boolean): boolean;
     static nativeGroup(nativeName: string): 'Parse' | 'Compile' | null;
     static isNativeRuntimeFrame(frame: Protocol.Runtime.CallFrame): boolean;
-    static filterStackFrames(stack: Types.TraceEvents.SyntheticProfileCall[], engineConfig: Types.Configuration.Configuration): void;
+    static filterStackFrames(stack: Types.Events.SyntheticProfileCall[], engineConfig: Types.Configuration.Configuration): void;
 }

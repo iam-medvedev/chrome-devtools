@@ -13,10 +13,21 @@ export declare class SourceMapScopesInfo {
      * @returns a list with inlined functions. Every entry in the list has a callsite in the orignal code,
      * except the last function (since the last function didn't get inlined).
      */
-    findInlinedFunctions(generatedLine: number, generatedColumn: number): {
-        name: string;
-        callsite?: OriginalPosition;
-    }[];
+    findInlinedFunctions(generatedLine: number, generatedColumn: number): InlineInfo;
+    /**
+     * Takes a V8 provided call frame and expands any inlined frames into virtual call frames.
+     *
+     * For call frames where nothing was inlined, the result contains only a single element,
+     * the provided frame but with the original name.
+     *
+     * For call frames where we are paused in inlined code, this function returns a list of
+     * call frames from "inner to outer". This is the call frame at index 0
+     * signifies the top of this stack trace fragment.
+     *
+     * The rest are "virtual" call frames and will have an "inlineFrameIndex" set in ascending
+     * order, so the condition `result[index] === result[index].inlineFrameIndex` always holds.
+     */
+    expandCallFrame(callFrame: CallFrame): CallFrame[];
     /**
      * @returns true if we have enough info (i.e. variable and binding expressions) to build
      * a scope view.
@@ -46,5 +57,21 @@ export declare class SourceMapScopesInfo {
      *      values.
      */
     resolveMappedScopeChain(callFrame: CallFrame): ScopeChainEntry[] | null;
+}
+/**
+ * Represents the inlining information for a given generated position.
+ *
+ * It contains a list of all the inlined original functions at the generated position
+ * as well as the original function name of the generated position's surrounding
+ * function.
+ *
+ * The inlined functions are sorted from inner to outer (or top to bottom on the stack).
+ */
+export interface InlineInfo {
+    inlinedFunctions: {
+        name: string;
+        callsite: OriginalPosition;
+    }[];
+    originalFunctionName: string;
 }
 export declare function contains(range: Pick<GeneratedRange, 'start' | 'end'>, line: number, column: number): boolean;

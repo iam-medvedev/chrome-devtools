@@ -22,7 +22,7 @@ export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Workers Handler is not initialized');
     }
-    if (Types.TraceEvents.isTraceEventTracingSessionIdForWorker(event)) {
+    if (Types.Events.isTracingSessionIdForWorker(event)) {
         sessionIdEvents.push(event);
     }
 }

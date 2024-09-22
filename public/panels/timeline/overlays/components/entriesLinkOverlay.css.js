@@ -17,6 +17,21 @@ styles.replaceSync(
   height: 100%;
 }
 
+.entry-highlight-wrapper {
+  box-sizing: border-box;
+  border: 2px solid var(--sys-color-on-surface);
+  position: absolute;
+}
+
+.create-link-icon {
+  pointer-events: auto;
+  cursor: pointer;
+  color: var(--sys-color-on-surface);
+  width: 16px;
+  height: 16px;
+  position: absolute;
+}
+
 /*# sourceURL=entriesLinkOverlay.css */
 `);
 

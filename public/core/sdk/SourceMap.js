@@ -156,8 +156,8 @@ export class SourceMap {
         if (inlineFrameIndex && this.#scopesInfo !== null) {
             // For inlineFrameIndex != 0 we use the callsite info for the corresponding inlining site.
             // Note that the callsite for "inlineFrameIndex" is actually in the previous frame.
-            const functions = this.#scopesInfo.findInlinedFunctions(lineNumber, columnNumber);
-            const { callsite } = functions[inlineFrameIndex - 1];
+            const { inlinedFunctions } = this.#scopesInfo.findInlinedFunctions(lineNumber, columnNumber);
+            const { callsite } = inlinedFunctions[inlineFrameIndex - 1];
             if (!callsite) {
                 console.error('Malformed source map. Expected to have a callsite info for index', inlineFrameIndex);
                 return null;
@@ -659,12 +659,7 @@ export class SourceMap {
         if (this.#scopesInfo === null) {
             return [frame];
         }
-        const functionNames = this.#scopesInfo.findInlinedFunctions(frame.location().lineNumber, frame.location().columnNumber);
-        const result = [];
-        for (const [index, fn] of functionNames.entries()) {
-            result.push(frame.createVirtualCallFrame(index, fn.name));
-        }
-        return result;
+        return this.#scopesInfo.expandCallFrame(frame);
     }
     resolveScopeChain(frame) {
         this.#ensureMappingsProcessed();

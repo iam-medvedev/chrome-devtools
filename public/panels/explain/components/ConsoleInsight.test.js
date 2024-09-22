@@ -98,7 +98,7 @@ describeWithEnvironment('ConsoleInsight', () => {
             await drainMicroTasks();
             assert.isNotNull(component.shadowRoot);
             assert.strictEqual(component.shadowRoot.querySelector('h2')?.innerText, 'Understand console messages with Chrome AI');
-            dispatchClickEvent(component.shadowRoot.querySelector('.lets-go-button'), {
+            dispatchClickEvent(component.shadowRoot.querySelector('.continue-button'), {
                 bubbles: true,
                 composed: true,
             });

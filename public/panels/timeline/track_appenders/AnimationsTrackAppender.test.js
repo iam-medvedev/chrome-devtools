@@ -1,25 +1,25 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
+function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.animationsTrackAppender();
 }
 describeWithEnvironment('AnimationsTrackAppender', function () {
-    let traceData;
+    let parsedTrace;
     let animationsTrackAppender;
     let entryData = [];
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        ({ traceData } = await TraceLoader.traceEngine(this, 'animation.json.gz'));
-        animationsTrackAppender = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
+        ({ parsedTrace } = await TraceLoader.traceEngine(this, 'animation.json.gz'));
+        animationsTrackAppender = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         animationsTrackAppender.appendTrackAtLevel(0);
     });
     afterEach(() => {
@@ -33,22 +33,22 @@ describeWithEnvironment('AnimationsTrackAppender', function () {
             assert.strictEqual(flameChartData.groups[0].name, 'Animations');
         });
         it('adds start times correctly', function () {
-            const animationsRequests = traceData.Animations.animations;
+            const animationsRequests = parsedTrace.Animations.animations;
             for (let i = 0; i < animationsRequests.length; ++i) {
                 const event = animationsRequests[i];
-                assert.strictEqual(flameChartData.entryStartTimes[i], TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts));
+                assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
             }
         });
         it('adds total times correctly', function () {
-            const animationsRequests = traceData.Animations.animations;
+            const animationsRequests = parsedTrace.Animations.animations;
             for (let i = 0; i < animationsRequests.length; i++) {
                 const event = animationsRequests[i];
-                if (TraceEngine.Types.TraceEvents.isTraceEventMarkerEvent(event)) {
+                if (Trace.Types.Events.isMarkerEvent(event)) {
                     assert.isNaN(flameChartData.entryTotalTimes[i]);
                     continue;
                 }
                 const expectedTotalTimeForEvent = event.dur ?
-                    TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
+                    Trace.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
                     Timeline.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
                 assert.strictEqual(flameChartData.entryTotalTimes[i], expectedTotalTimeForEvent);
             }

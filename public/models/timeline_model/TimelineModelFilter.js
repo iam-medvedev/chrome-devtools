@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 export class TimelineModelFilter {
 }
 export class TimelineVisibleEventsFilter extends TimelineModelFilter {
@@ -11,19 +11,19 @@ export class TimelineVisibleEventsFilter extends TimelineModelFilter {
         this.visibleTypes = new Set(visibleTypes);
     }
     accept(event) {
-        if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
+        if (Trace.Types.Extensions.isSyntheticExtensionEntry(event)) {
             return true;
         }
         return this.visibleTypes.has(TimelineVisibleEventsFilter.eventType(event));
     }
     static eventType(event) {
         // Any blink.console category events are treated as ConsoleTime events
-        if (TraceEngine.Helpers.Trace.eventHasCategory(event, 'blink.console')) {
-            return "ConsoleTime" /* TraceEngine.Types.TraceEvents.KnownEventName.CONSOLE_TIME */;
+        if (Trace.Helpers.Trace.eventHasCategory(event, 'blink.console')) {
+            return "ConsoleTime" /* Trace.Types.Events.Name.CONSOLE_TIME */;
         }
         // Any blink.user_timing egory events are treated as UserTiming events
-        if (TraceEngine.Helpers.Trace.eventHasCategory(event, 'blink.user_timing')) {
-            return "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.USER_TIMING */;
+        if (Trace.Helpers.Trace.eventHasCategory(event, 'blink.user_timing')) {
+            return "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */;
         }
         return event.name;
     }

@@ -14,6 +14,14 @@ export class RemoveAnnotation extends Event {
         this.removedAnnotation = removedAnnotation;
     }
 }
+export class RevealAnnotation extends Event {
+    annotation;
+    static eventName = 'revealannotation';
+    constructor(annotation) {
+        super(RevealAnnotation.eventName, { bubbles: true, composed: true });
+        this.annotation = annotation;
+    }
+}
 export class EventReferenceClick extends Event {
     metricEvent;
     static eventName = 'sidebarmetricclick';
@@ -61,8 +69,8 @@ export class SidebarWidget extends UI.Widget.VBox {
     setAnnotations(updatedAnnotations, annotationEntryToColorMap) {
         this.#annotationsView.setAnnotations(updatedAnnotations, annotationEntryToColorMap);
     }
-    setTraceParsedData(traceParsedData) {
-        this.#insightsView.setTraceParsedData(traceParsedData);
+    setParsedTrace(parsedTrace) {
+        this.#insightsView.setParsedTrace(parsedTrace);
     }
     setInsights(insights) {
         this.#insightsView.setInsights(insights);
@@ -78,8 +86,8 @@ class InsightsView extends UI.Widget.VBox {
         this.element.classList.add('sidebar-insights');
         this.element.appendChild(this.#component);
     }
-    setTraceParsedData(data) {
-        this.#component.traceParsedData = data;
+    setParsedTrace(data) {
+        this.#component.parsedTrace = data;
     }
     setInsights(data) {
         this.#component.insights = data;

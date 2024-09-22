@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { type VisualLoggingTrackName } from './CompatibilityTracksAppender.js';
 /** An array, indexed by entry levels, where the values are the last timestamp (typically `endTime`) of data within that level. */
@@ -32,9 +32,9 @@ export declare function buildTrackHeader(jslogContext: VisualLoggingTrackName | 
  * @param selfTime the self time of the hovered event.
  * @returns the formatted time string for highlightedEntryInfo
  */
-export declare function getFormattedTime(totalTime?: TraceEngine.Types.Timing.MicroSeconds, selfTime?: TraceEngine.Types.Timing.MicroSeconds): string;
+export declare function getFormattedTime(totalTime?: Trace.Types.Timing.MicroSeconds, selfTime?: Trace.Types.Timing.MicroSeconds): string;
 /**
  * Returns the first level that is available for an event.
  */
-export declare function getEventLevel(event: TraceEngine.Types.TraceEvents.TraceEventData, lastTimestampByLevel: LastTimestampByLevel): number;
+export declare function getEventLevel(event: Trace.Types.Events.Event, lastTimestampByLevel: LastTimestampByLevel): number;
 export declare function addDecorationToEvent(timelineData: PerfUI.FlameChart.FlameChartTimelineData, eventIndex: number, decoration: PerfUI.FlameChart.FlameChartDecoration): void;

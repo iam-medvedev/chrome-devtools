@@ -4,16 +4,16 @@ export declare const secondsToMilliseconds: (value: Types.Timing.Seconds) => Typ
 export declare const secondsToMicroseconds: (value: Types.Timing.Seconds) => Types.Timing.MicroSeconds;
 export declare const microSecondsToMilliseconds: (value: Types.Timing.MicroSeconds) => Types.Timing.MilliSeconds;
 export declare const microSecondsToSeconds: (value: Types.Timing.MicroSeconds) => Types.Timing.Seconds;
-export declare function timeStampForEventAdjustedByClosestNavigation(event: Types.TraceEvents.TraceEventData, traceBounds: Types.Timing.TraceWindowMicroSeconds, navigationsByNavigationId: Map<string, Types.TraceEvents.TraceEventNavigationStart>, navigationsByFrameId: Map<string, Types.TraceEvents.TraceEventNavigationStart[]>): Types.Timing.MicroSeconds;
+export declare function timeStampForEventAdjustedByClosestNavigation(event: Types.Events.Event, traceBounds: Types.Timing.TraceWindowMicroSeconds, navigationsByNavigationId: Map<string, Types.Events.NavigationStart>, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Timing.MicroSeconds;
 export declare function expandWindowByPercentOrToOneMillisecond(annotationWindow: Types.Timing.TraceWindowMicroSeconds, maxTraceWindow: Types.Timing.TraceWindowMicroSeconds, percentage: number): Types.Timing.TraceWindowMicroSeconds;
 export interface EventTimingsData<ValueType extends Types.Timing.MicroSeconds | Types.Timing.MilliSeconds | Types.Timing.Seconds> {
     startTime: ValueType;
     endTime: ValueType;
     duration: ValueType;
 }
-export declare function eventTimingsMicroSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.MicroSeconds>;
-export declare function eventTimingsMilliSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.MilliSeconds>;
-export declare function eventTimingsSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.Seconds>;
+export declare function eventTimingsMicroSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.MicroSeconds>;
+export declare function eventTimingsMilliSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.MilliSeconds>;
+export declare function eventTimingsSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.Seconds>;
 export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;
 export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export declare function traceWindowFromMilliSeconds(min: Types.Timing.MilliSeconds, max: Types.Timing.MilliSeconds): Types.Timing.TraceWindowMicroSeconds;
@@ -36,7 +36,7 @@ export interface BoundsIncludeTimeRange {
  */
 export declare function boundsIncludeTimeRange(data: BoundsIncludeTimeRange): boolean;
 /** Checks to see if the event is within or overlaps the bounds */
-export declare function eventIsInBounds(event: Types.TraceEvents.TraceEventData, bounds: Types.Timing.TraceWindowMicroSeconds): boolean;
+export declare function eventIsInBounds(event: Types.Events.Event, bounds: Types.Timing.TraceWindowMicroSeconds): boolean;
 export declare function timestampIsInBounds(bounds: Types.Timing.TraceWindowMicroSeconds, timestamp: Types.Timing.MicroSeconds): boolean;
 export interface WindowFitsInsideBounds {
     window: Types.Timing.TraceWindowMicroSeconds;

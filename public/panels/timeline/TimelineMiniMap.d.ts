@@ -1,11 +1,11 @@
 import * as Common from '../../core/common/common.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import { type TimelineEventOverview } from './TimelineEventOverview.js';
 export interface OverviewData {
-    traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
+    parsedTrace: Trace.Handlers.Types.ParsedTrace;
     isCpuProfile?: boolean;
     settings: {
         showScreenshots: boolean;
@@ -34,6 +34,8 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     breadcrumbs: TimelineComponents.Breadcrumbs.Breadcrumbs | null;
     constructor();
     addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.OverviewPaneBreadcrumbAddedEvent): void;
+    highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds): void;
+    clearBoundsHighlight(): void;
     wasShown(): void;
     reset(): void;
     getControls(): TimelineEventOverview[];

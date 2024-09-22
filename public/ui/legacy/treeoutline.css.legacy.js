@@ -183,8 +183,8 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
 .tree-outline.tree-variant-navigation li,
 .tree-outline.hide-selection-when-blurred.tree-variant-navigation li {
   height: var(--sys-size-10);
-  margin-right: var(--sys-size-5);
-  padding-right: var(--sys-size-5);
+  margin-right: var(--sys-size-3);
+  padding-right: var(--sys-size-3);
   padding-left: 6px;
 
   &::before {
@@ -198,30 +198,9 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
     border-radius: 0 var(--sys-shape-corner-full) var(--sys-shape-corner-full) 0;
   }
 
-  &.selected,
-  &.selected:focus {
-    color: var(--app-color-navigation-drawer-label-selected);
-    background: transparent;
-
-    & .selection {
-      display: block;
-      background-color: var(--app-color-navigation-drawer-background-selected);
-    }
-
-    & .leading-icons devtools-icon {
-      color: var(--app-color-navigation-drawer-label-selected);
-    }
-  }
-
-  &:active .selection::before {
-    background-color: var(--sys-color-state-ripple-neutral-on-subtle);
-    content: "";
-    height: 100%;
-    width: 100%;
-    border-radius: inherit;
-    position: absolute;
-    top: 0;
-    left: 0;
+  &.selected:focus .selection {
+    display: block;
+    background-color: var(--app-color-navigation-drawer-background-selected);
   }
 
   & .leading-icons {
@@ -235,6 +214,14 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     align-content: center;
+  }
+}
+
+.theme-with-dark-background,
+:host-context(.theme-with-dark-background) {
+  & .tree-variant-navigation li.selected:focus,
+  .tree-variant-navigation li.selected:focus devtools-icon {
+    color: var(--app-color-navigation-drawer-label-selected);
   }
 }
 /* stylelint-enable no-descending-specificity */

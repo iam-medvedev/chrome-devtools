@@ -1,11 +1,11 @@
 import type * as Protocol from '../../../generated/protocol.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
-export declare function buildWarningElementsForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): HTMLSpanElement[];
+import * as Trace from '../../../models/trace/trace.js';
+export declare function buildWarningElementsForEvent(event: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace): HTMLSpanElement[];
 export interface DetailRow {
     key: string;
     value: string;
 }
-export declare function buildRowsForWebSocketEvent(event: TraceEngine.Types.TraceEvents.TraceEventWebSocketCreate | TraceEngine.Types.TraceEvents.TraceEventWebSocketInfo | TraceEngine.Types.TraceEvents.TraceEventWebSocketTransfer, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): readonly DetailRow[];
+export declare function buildRowsForWebSocketEvent(event: Trace.Types.Events.WebSocketCreate | Trace.Types.Events.WebSocketInfo | Trace.Types.Events.WebSocketTransfer, parsedTrace: Trace.Handlers.Types.ParsedTrace): readonly DetailRow[];
 /**
  * This method does not output any content but instead takes a list of
  * invalidations and groups them, doing some processing of the data to collect
@@ -14,7 +14,7 @@ export declare function buildRowsForWebSocketEvent(event: TraceEngine.Types.Trac
  * so that they can be fetched via CDP.
  * It is exported only for testing purposes.
  **/
-export declare function generateInvalidationsList(invalidations: TraceEngine.Types.TraceEvents.InvalidationTrackingEvent[]): {
-    groupedByReason: Record<string, TraceEngine.Types.TraceEvents.InvalidationTrackingEvent[]>;
+export declare function generateInvalidationsList(invalidations: Trace.Types.Events.InvalidationTrackingEvent[]): {
+    groupedByReason: Record<string, Trace.Types.Events.InvalidationTrackingEvent[]>;
     backendNodeIds: Set<Protocol.DOM.BackendNodeId>;
 };

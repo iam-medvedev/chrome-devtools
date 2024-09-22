@@ -66,7 +66,9 @@ export declare class LinearGradientMatcher extends LinearGradientMatcher_base {
 export declare class ColorMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
-    constructor(text: string, node: CodeMirror.SyntaxNode);
+    private readonly currentColorCallback?;
+    computedText: (() => string | null) | undefined;
+    constructor(text: string, node: CodeMirror.SyntaxNode, currentColorCallback?: (() => string | null) | undefined);
 }
 declare const ColorMatcher_base: new () => {
     matchType: SDK.CSSPropertyParser.Constructor<ColorMatch>;
@@ -74,6 +76,8 @@ declare const ColorMatcher_base: new () => {
     matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
 };
 export declare class ColorMatcher extends ColorMatcher_base {
+    private readonly currentColorCallback?;
+    constructor(currentColorCallback?: (() => string | null) | undefined);
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
@@ -215,11 +219,9 @@ export declare class GridTemplateMatcher extends GridTemplateMatcher_base {
 }
 export declare class AnchorFunctionMatch implements Match {
     readonly text: string;
-    readonly matching: BottomUpTreeMatching;
     readonly node: CodeMirror.SyntaxNode;
-    readonly functionName: string;
-    readonly args: CodeMirror.SyntaxNode[];
-    constructor(text: string, matching: BottomUpTreeMatching, node: CodeMirror.SyntaxNode, functionName: string, args: CodeMirror.SyntaxNode[]);
+    readonly functionName: string | null;
+    constructor(text: string, node: CodeMirror.SyntaxNode, functionName: string | null);
 }
 declare const AnchorFunctionMatcher_base: new () => {
     matchType: SDK.CSSPropertyParser.Constructor<AnchorFunctionMatch>;
@@ -227,6 +229,7 @@ declare const AnchorFunctionMatcher_base: new () => {
     matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
 };
 export declare class AnchorFunctionMatcher extends AnchorFunctionMatcher_base {
+    anchorFunction(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): string | null;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare class PositionAnchorMatch implements Match {

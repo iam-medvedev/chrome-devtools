@@ -109,11 +109,11 @@ export class SamplesIntegrator {
             // Because instant trace events have no duration, they don't provide
             // useful information for possible changes in the duration of calls
             // in the JS stack.
-            if (event.ph === "I" /* Types.TraceEvents.Phase.INSTANT */) {
+            if (event.ph === "I" /* Types.Events.Phase.INSTANT */) {
                 continue;
             }
             if (stack.length === 0) {
-                if (Types.TraceEvents.isProfileCall(event)) {
+                if (Types.Events.isProfileCall(event)) {
                     this.#onProfileCall(event);
                     continue;
                 }
@@ -136,7 +136,7 @@ export class SamplesIntegrator {
                 i--;
                 continue;
             }
-            if (Types.TraceEvents.isProfileCall(event)) {
+            if (Types.Events.isProfileCall(event)) {
                 this.#onProfileCall(event, parentEvent);
                 continue;
             }
@@ -154,8 +154,7 @@ export class SamplesIntegrator {
     #onTraceEventStart(event) {
         // Top level events cannot be nested into JS frames so we reset
         // the stack when we find one.
-        if (event.name === "RunMicrotasks" /* Types.TraceEvents.KnownEventName.RUN_MICROTASKS */ ||
-            event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */) {
+        if (event.name === "RunMicrotasks" /* Types.Events.Name.RUN_MICROTASKS */ || event.name === "RunTask" /* Types.Events.Name.RUN_TASK */) {
             this.#lockedJsStackDepth = [];
             this.#truncateJSStack(0, event.ts);
             this.#fakeJSInvocation = false;
@@ -185,10 +184,10 @@ export class SamplesIntegrator {
         this.#lockedJsStackDepth.push(this.#currentJSStack.length);
     }
     #onProfileCall(event, parent) {
-        if ((parent && Types.TraceEvents.isJSInvocationEvent(parent)) || this.#fakeJSInvocation) {
+        if ((parent && Types.Events.isJSInvocationEvent(parent)) || this.#fakeJSInvocation) {
             this.#extractStackTrace(event);
         }
-        else if (Types.TraceEvents.isProfileCall(event) && this.#currentJSStack.length === 0) {
+        else if (Types.Events.isProfileCall(event) && this.#currentJSStack.length === 0) {
             // Force JS Samples to show up even if we are not inside a JS
             // invocation event, because we can be missing the start of JS
             // invocation events if we start tracing half-way through. Pretend
@@ -275,7 +274,7 @@ export class SamplesIntegrator {
      * Update tracked stack using this event's call stack.
      */
     #extractStackTrace(event) {
-        const stackTrace = Types.TraceEvents.isProfileCall(event) ? this.#makeProfileCallsForStack(event) : this.#currentJSStack;
+        const stackTrace = Types.Events.isProfileCall(event) ? this.#makeProfileCallsForStack(event) : this.#currentJSStack;
         SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
         const endTime = event.ts + (event.dur || 0);
         const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);
@@ -366,12 +365,12 @@ export class SamplesIntegrator {
     }
     #makeJSSampleEvent(call, timestamp) {
         const JSSampleEvent = {
-            name: "JSSample" /* Types.TraceEvents.KnownEventName.JS_SAMPLE */,
+            name: "JSSample" /* Types.Events.Name.JS_SAMPLE */,
             cat: 'devtools.timeline',
             args: {
                 data: { stackTrace: this.#makeProfileCallsForStack(call).map(e => e.callFrame) },
             },
-            ph: "I" /* Types.TraceEvents.Phase.INSTANT */,
+            ph: "I" /* Types.Events.Phase.INSTANT */,
             ts: timestamp,
             dur: Types.Timing.MicroSeconds(0),
             pid: this.#processId,

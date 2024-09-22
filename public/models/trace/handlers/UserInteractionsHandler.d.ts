@@ -1,18 +1,18 @@
 import * as Types from '../types/types.js';
 import { ScoreClassification } from './PageLoadMetricsHandler.js';
-import { type TraceEventHandlerName } from './types.js';
+import { type HandlerName } from './types.js';
 export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.MicroSeconds;
 export interface UserInteractionsData {
     /** All the user events we found in the trace */
-    allEvents: readonly Types.TraceEvents.TraceEventEventTiming[];
+    allEvents: readonly Types.Events.EventTiming[];
     /** All the BeginCommitCompositorFrame events we found in the trace */
-    beginCommitCompositorFrameEvents: readonly Types.TraceEvents.TraceEventBeginCommitCompositorFrame[];
+    beginCommitCompositorFrameEvents: readonly Types.Events.BeginCommitCompositorFrame[];
     /** All the ParseMetaViewport events we found in the trace */
-    parseMetaViewportEvents: readonly Types.TraceEvents.TraceEventParseMetaViewport[];
+    parseMetaViewportEvents: readonly Types.Events.ParseMetaViewport[];
     /** All the interaction events we found in the trace that had an
      * interactionId and a duration > 0
      **/
-    interactionEvents: readonly Types.TraceEvents.SyntheticInteractionPair[];
+    interactionEvents: readonly Types.Events.SyntheticInteractionPair[];
     /** If the user rapidly generates interaction events (think typing into a
      * text box), in the UI we only really want to show the user the longest
      * interaction in that set.
@@ -27,14 +27,14 @@ export interface UserInteractionsData {
      * all the interaction events filtered down, removing any nested interactions
      * entirely.
      **/
-    interactionEventsWithNoNesting: readonly Types.TraceEvents.SyntheticInteractionPair[];
-    longestInteractionEvent: Readonly<Types.TraceEvents.SyntheticInteractionPair> | null;
-    interactionsOverThreshold: Readonly<Set<Types.TraceEvents.SyntheticInteractionPair>>;
+    interactionEventsWithNoNesting: readonly Types.Events.SyntheticInteractionPair[];
+    longestInteractionEvent: Readonly<Types.Events.SyntheticInteractionPair> | null;
+    interactionsOverThreshold: Readonly<Set<Types.Events.SyntheticInteractionPair>>;
 }
 export declare function reset(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export type InteractionCategory = 'KEYBOARD' | 'POINTER' | 'OTHER';
-export declare function categoryOfInteraction(interaction: Types.TraceEvents.SyntheticInteractionPair): InteractionCategory;
+export declare function categoryOfInteraction(interaction: Types.Events.SyntheticInteractionPair): InteractionCategory;
 /**
  * We define a set of interactions as nested where:
  * 1. Their end times align.
@@ -58,10 +58,10 @@ export declare function categoryOfInteraction(interaction: Types.TraceEvents.Syn
  *    ====C=[pointerdown]=
  *         =D=[pointerup]=
  **/
-export declare function removeNestedInteractions(interactions: readonly Types.TraceEvents.SyntheticInteractionPair[]): readonly Types.TraceEvents.SyntheticInteractionPair[];
+export declare function removeNestedInteractions(interactions: readonly Types.Events.SyntheticInteractionPair[]): readonly Types.Events.SyntheticInteractionPair[];
 export declare function finalize(): Promise<void>;
 export declare function data(): UserInteractionsData;
-export declare function deps(): TraceEventHandlerName[];
+export declare function deps(): HandlerName[];
 /**
  * Classifications sourced from
  * https://web.dev/articles/inp#good-score

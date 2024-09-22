@@ -36,7 +36,6 @@ export class OverlayModel extends SDKModel {
     #showDebugBordersSetting;
     #showFPSCounterSetting;
     #showScrollBottleneckRectsSetting;
-    #showWebVitalsSetting;
     #registeredListeners;
     #showViewportSizeOnResize;
     #persistentHighlighter;
@@ -70,7 +69,6 @@ export class OverlayModel extends SDKModel {
         this.#showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting('show-fps-counter');
         this.#showScrollBottleneckRectsSetting =
             Common.Settings.Settings.instance().moduleSetting('show-scroll-bottleneck-rects');
-        this.#showWebVitalsSetting = Common.Settings.Settings.instance().moduleSetting('show-web-vitals');
         this.#registeredListeners = [];
         this.#showViewportSizeOnResize = true;
         if (!target.suspended()) {
@@ -149,7 +147,6 @@ export class OverlayModel extends SDKModel {
             this.#showDebugBordersSetting.addChangeListener(() => this.overlayAgent.invoke_setShowDebugBorders({ show: this.#showDebugBordersSetting.get() })),
             this.#showFPSCounterSetting.addChangeListener(() => this.overlayAgent.invoke_setShowFPSCounter({ show: this.#showFPSCounterSetting.get() })),
             this.#showScrollBottleneckRectsSetting.addChangeListener(() => this.overlayAgent.invoke_setShowScrollBottleneckRects({ show: this.#showScrollBottleneckRectsSetting.get() })),
-            this.#showWebVitalsSetting.addChangeListener(() => this.overlayAgent.invoke_setShowWebVitals({ show: this.#showWebVitalsSetting.get() })),
         ];
         if (this.#showPaintRectsSetting.get()) {
             void this.overlayAgent.invoke_setShowPaintRects({ result: true });
@@ -168,9 +165,6 @@ export class OverlayModel extends SDKModel {
         }
         if (this.#showScrollBottleneckRectsSetting.get()) {
             void this.overlayAgent.invoke_setShowScrollBottleneckRects({ show: true });
-        }
-        if (this.#showWebVitalsSetting.get()) {
-            void this.overlayAgent.invoke_setShowWebVitals({ show: true });
         }
         if (this.#debuggerModel && this.#debuggerModel.isPaused()) {
             this.updatePausedInDebuggerMessage();

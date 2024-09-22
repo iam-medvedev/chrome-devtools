@@ -4,7 +4,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
@@ -40,7 +40,7 @@ export function getLCPInsightData(insights, navigationId) {
     if (!insightsByNavigation) {
         return null;
     }
-    const lcpInsight = insightsByNavigation.LargestContentfulPaint;
+    const lcpInsight = insightsByNavigation.data.LargestContentfulPaint;
     if (lcpInsight instanceof Error) {
         return null;
     }
@@ -72,7 +72,7 @@ function getImageData(insights, navigationId) {
     };
     if (lcpInsight.earliestDiscoveryTimeTs && lcpInsight.lcpRequest) {
         const discoveryDelay = lcpInsight.lcpRequest.ts - lcpInsight.earliestDiscoveryTimeTs;
-        data.discoveryDelay = TraceEngine.Types.Timing.MicroSeconds(discoveryDelay);
+        data.discoveryDelay = Trace.Types.Timing.MicroSeconds(discoveryDelay);
     }
     return data;
 }
@@ -105,7 +105,7 @@ export class LCPDiscovery extends BaseInsight {
         if (!imageResults || !imageResults.discoveryDelay) {
             return [];
         }
-        const delay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(TraceEngine.Types.Timing.MicroSeconds(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
+        const delay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.MicroSeconds(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
         const label = LitHtml.html `<div class="discovery-delay"> ${this.#renderDiscoveryDelay(delay.range)}</div>`;
         return [
             {

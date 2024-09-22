@@ -3,30 +3,30 @@ import { type AuctionWorkletsData } from './AuctionWorkletsHandler.js';
 import { type LayerTreeData } from './LayerTreeHandler.js';
 import { type MetaHandlerData } from './MetaHandler.js';
 import { type RendererHandlerData } from './RendererHandler.js';
-import { type TraceEventHandlerName } from './types.js';
+import { type HandlerName } from './types.js';
 export declare function reset(): void;
 export declare function initialize(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export interface FramesData {
     frames: readonly TimelineFrame[];
     framesById: Readonly<Record<number, TimelineFrame | undefined>>;
 }
 export declare function data(): FramesData;
-export declare function deps(): TraceEventHandlerName[];
+export declare function deps(): HandlerName[];
 export declare class TimelineFrameModel {
     #private;
-    constructor(allEvents: readonly Types.TraceEvents.TraceEventData[], rendererData: RendererHandlerData, auctionWorkletsData: AuctionWorkletsData, metaData: MetaHandlerData, layerTreeData: LayerTreeData);
+    constructor(allEvents: readonly Types.Events.Event[], rendererData: RendererHandlerData, auctionWorkletsData: AuctionWorkletsData, metaData: MetaHandlerData, layerTreeData: LayerTreeData);
     framesById(): Readonly<Record<number, TimelineFrame | undefined>>;
     frames(): TimelineFrame[];
 }
-export declare class TimelineFrame implements Types.TraceEvents.LegacyTimelineFrame {
+export declare class TimelineFrame implements Types.Events.LegacyTimelineFrame {
     cat: string;
     name: string;
-    ph: Types.TraceEvents.Phase;
+    ph: Types.Events.Phase;
     ts: Types.Timing.MicroSeconds;
-    pid: Types.TraceEvents.ProcessID;
-    tid: Types.TraceEvents.ThreadID;
+    pid: Types.Events.ProcessID;
+    tid: Types.Events.ThreadID;
     index: number;
     startTime: Types.Timing.MicroSeconds;
     startTimeOffset: Types.Timing.MicroSeconds;
@@ -35,21 +35,26 @@ export declare class TimelineFrame implements Types.TraceEvents.LegacyTimelineFr
     idle: boolean;
     dropped: boolean;
     isPartial: boolean;
-    layerTree: Types.TraceEvents.LegacyFrameLayerTreeData | null;
+    layerTree: Types.Events.LegacyFrameLayerTreeData | null;
     paints: LayerPaintEvent[];
     mainFrameId: number | undefined;
     readonly seqId: number;
     constructor(seqId: number, startTime: Types.Timing.MicroSeconds, startTimeOffset: Types.Timing.MicroSeconds);
     setIndex(i: number): void;
     setEndTime(endTime: Types.Timing.MicroSeconds): void;
-    setLayerTree(layerTree: Types.TraceEvents.LegacyFrameLayerTreeData | null): void;
+    setLayerTree(layerTree: Types.Events.LegacyFrameLayerTreeData | null): void;
+    /**
+     * Fake the `dur` field to meet the expected value given that we pretend
+     * these TimelineFrame classes are trace events across the codebase.
+     */
+    get dur(): Types.Timing.MicroSeconds;
 }
-export declare class LayerPaintEvent implements Types.TraceEvents.LegacyLayerPaintEvent {
+export declare class LayerPaintEvent implements Types.Events.LegacyLayerPaintEvent {
     #private;
-    constructor(event: Types.TraceEvents.TraceEventPaint, snapshot: Types.TraceEvents.TraceEventDisplayItemListSnapshot);
+    constructor(event: Types.Events.Paint, snapshot: Types.Events.DisplayItemListSnapshot);
     layerId(): number;
-    event(): Types.TraceEvents.TraceEventPaint;
-    picture(): Types.TraceEvents.LegacyLayerPaintEventPicture | null;
+    event(): Types.Events.Paint;
+    picture(): Types.Events.LegacyLayerPaintEventPicture | null;
 }
 export declare class PendingFrame {
     paints: LayerPaintEvent[];

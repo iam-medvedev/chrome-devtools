@@ -1,3 +1,4 @@
+import type * as Trace from '../../../../models/trace/trace.js';
 import type * as Overlays from '../../overlays/overlays.js';
 export interface InsightDetails {
     title: string;
@@ -15,10 +16,22 @@ export declare class InsightDeactivated extends Event {
     static readonly eventName = "insightdeactivated";
     constructor();
 }
+export declare class NavigationBoundsHovered extends Event {
+    bounds?: Trace.Types.Timing.TraceWindowMicroSeconds | undefined;
+    static readonly eventName = "navigationhovered";
+    constructor(bounds?: Trace.Types.Timing.TraceWindowMicroSeconds | undefined);
+}
+export declare class InsightOverlayOverride extends Event {
+    overlays: Array<Overlays.Overlays.TimelineOverlay> | null;
+    static readonly eventName = "insightoverlayoverride";
+    constructor(overlays: Array<Overlays.Overlays.TimelineOverlay> | null);
+}
 declare global {
     interface GlobalEventHandlersEventMap {
         [InsightActivated.eventName]: InsightActivated;
         [InsightDeactivated.eventName]: InsightDeactivated;
+        [NavigationBoundsHovered.eventName]: NavigationBoundsHovered;
+        [InsightOverlayOverride.eventName]: InsightOverlayOverride;
     }
 }
 export declare class SidebarInsight extends HTMLElement {

@@ -13,7 +13,7 @@ export function calculateWindow(traceBounds, mainThreadEntries) {
         return traceBounds;
     }
     const entriesWithIdleRemoved = mainThreadEntries.filter(entry => {
-        if (Types.TraceEvents.isProfileCall(entry) &&
+        if (Types.Events.isProfileCall(entry) &&
             (IDLE_FUNCTION_CALL_NAMES.has(entry.callFrame.functionName) || !entry.callFrame.functionName)) {
             return false;
         }

@@ -6,7 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -72,8 +72,8 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     selection;
     updateContentsScheduled;
     lazySelectorStatsView;
-    #traceEngineData = null;
-    #traceInsightsData = null;
+    #parsedTrace = null;
+    #traceInsightsSets = null;
     #filmStrip = null;
     #networkRequestDetails;
     #layoutShiftDetails;
@@ -114,7 +114,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         if (this.lazySelectorStatsView) {
             return this.lazySelectorStatsView;
         }
-        this.lazySelectorStatsView = new TimelineSelectorStatsView(this.#traceEngineData);
+        this.lazySelectorStatsView = new TimelineSelectorStatsView(this.#parsedTrace);
         return this.lazySelectorStatsView;
     }
     getDetailsContentElementForTest() {
@@ -136,21 +136,21 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             }
         }
     }
-    async setModel(traceEngineData, selectedEvents, traceInsightsData) {
-        if (this.#traceEngineData !== traceEngineData) {
+    async setModel(parsedTrace, selectedEvents, traceInsightsSets) {
+        if (this.#parsedTrace !== parsedTrace) {
             // Clear the selector stats view, so the next time the user views it we
             // reconstruct it with the new trace data.
             this.lazySelectorStatsView = null;
-            this.#traceEngineData = traceEngineData;
+            this.#parsedTrace = parsedTrace;
         }
-        if (traceEngineData) {
-            this.#filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceEngineData);
+        if (parsedTrace) {
+            this.#filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace);
         }
         this.#selectedEvents = selectedEvents;
-        this.#traceInsightsData = traceInsightsData;
+        this.#traceInsightsSets = traceInsightsSets;
         this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
         for (const view of this.rangeDetailViews.values()) {
-            view.setModelWithEvents(selectedEvents, traceEngineData);
+            view.setModelWithEvents(selectedEvents, parsedTrace);
         }
         this.lazyPaintProfilerView = null;
         this.lazyLayersView = null;
@@ -199,7 +199,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
      * behaviour.
      */
     scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
-        if (!this.#traceEngineData) {
+        if (!this.#parsedTrace) {
             this.setContent(UI.Fragment.html `<div/>`);
             return;
         }
@@ -230,15 +230,15 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             return null;
         }
         const screenshotTime = (frame.idle ? frame.startTime : frame.endTime);
-        const filmStripFrame = TraceEngine.Extras.FilmStrip.frameClosestToTimestamp(this.#filmStrip, screenshotTime);
+        const filmStripFrame = Trace.Extras.FilmStrip.frameClosestToTimestamp(this.#filmStrip, screenshotTime);
         if (!filmStripFrame) {
             return null;
         }
-        const frameTimeMilliSeconds = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(filmStripFrame.screenshotEvent.ts);
+        const frameTimeMilliSeconds = Trace.Helpers.Timing.microSecondsToMilliseconds(filmStripFrame.screenshotEvent.ts);
         return frameTimeMilliSeconds - frame.endTime < 10 ? filmStripFrame : null;
     }
     async setSelection(selection) {
-        if (!this.#traceEngineData) {
+        if (!this.#parsedTrace) {
             // You can't make a selection if we have no trace data.
             return;
         }
@@ -253,20 +253,20 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         const selectionObject = this.selection.object;
         if (TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selectionObject)) {
             const networkRequest = selectionObject;
-            const maybeTarget = targetForEvent(this.#traceEngineData, networkRequest);
-            await this.#networkRequestDetails.setData(this.#traceEngineData, networkRequest, maybeTarget);
+            const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
+            await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget);
             this.setContent(this.#networkRequestDetails);
         }
-        else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
+        else if (TimelineSelection.isSelection(selectionObject)) {
             const event = selectionObject;
             if (Root.Runtime.experiments.isEnabled("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */) &&
-                TraceEngine.Types.TraceEvents.isSyntheticLayoutShift(event)) {
-                const isFreshRecording = Boolean(this.#traceEngineData && Tracker.instance().recordingIsFresh(this.#traceEngineData));
-                this.#layoutShiftDetails.setData(event, this.#traceInsightsData, this.#traceEngineData, isFreshRecording);
+                Trace.Types.Events.isSyntheticLayoutShift(event)) {
+                const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
+                this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
                 this.setContent(this.#layoutShiftDetails);
             }
             else {
-                const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#traceEngineData, event, this.detailsLinkifier, true);
+                const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true);
                 this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
             }
         }
@@ -307,10 +307,10 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         if (this.lazyPaintProfilerView) {
             return this.lazyPaintProfilerView;
         }
-        if (!this.#traceEngineData) {
+        if (!this.#parsedTrace) {
             return null;
         }
-        this.lazyPaintProfilerView = new TimelinePaintProfilerView(this.#traceEngineData);
+        this.lazyPaintProfilerView = new TimelinePaintProfilerView(this.#parsedTrace);
         return this.lazyPaintProfilerView;
     }
     showSnapshotInPaintProfiler(snapshot) {
@@ -336,11 +336,10 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     }
     appendDetailsTabsForTraceEventAndShowDetails(event, content) {
         this.setContent(content);
-        if (TraceEngine.Types.TraceEvents.isTraceEventPaint(event) ||
-            TraceEngine.Types.TraceEvents.isTraceEventRasterTask(event)) {
+        if (Trace.Types.Events.isPaint(event) || Trace.Types.Events.isRasterTask(event)) {
             this.showEventInPaintProfiler(event);
         }
-        if (TraceEngine.Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+        if (Trace.Types.Events.isUpdateLayoutTree(event)) {
             this.showSelectorStatsForIndividualEvent(event);
         }
     }
@@ -363,10 +362,10 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         this.appendTab(Tab.PaintProfiler, i18nString(UIStrings.paintProfiler), paintProfilerView);
     }
     updateSelectedRangeStats(startTime, endTime) {
-        if (!this.#selectedEvents || !this.#traceEngineData) {
+        if (!this.#selectedEvents || !this.#parsedTrace) {
             return;
         }
-        const minBoundsMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.#traceEngineData.Meta.traceBounds).min;
+        const minBoundsMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(this.#parsedTrace.Meta.traceBounds).min;
         const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
         const startOffset = startTime - minBoundsMilli;
         const endOffset = endTime - minBoundsMilli;
@@ -378,7 +377,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();
         if (this.#selectedEvents && isSelectorStatsEnabled) {
-            const eventsInRange = TraceEngine.Helpers.Trace.findUpdateLayoutTreeEvents(this.#selectedEvents, TraceEngine.Helpers.Timing.millisecondsToMicroseconds(startTime), TraceEngine.Helpers.Timing.millisecondsToMicroseconds(endTime));
+            const eventsInRange = Trace.Helpers.Trace.findUpdateLayoutTreeEvents(this.#selectedEvents, Trace.Helpers.Timing.millisecondsToMicroseconds(startTime), Trace.Helpers.Timing.millisecondsToMicroseconds(endTime));
             if (eventsInRange.length > 0) {
                 this.showAggregatedSelectorStats(eventsInRange);
             }

@@ -1,9 +1,9 @@
 import * as Types from '../types/types.js';
-import { type InsightResult, type NavigationInsightContext, type RequiredData } from './types.js';
+import { type InsightResult, type InsightSetContext, type RequiredData } from './types.js';
 export type CLSInsightResult = InsightResult<{
     animationFailures?: readonly NoncompositedAnimationFailure[];
-    shifts?: Map<Types.TraceEvents.TraceEventLayoutShift, LayoutShiftRootCausesData>;
-    clusters: Types.TraceEvents.SyntheticLayoutShiftCluster[];
+    shifts?: Map<Types.Events.LayoutShift, LayoutShiftRootCausesData>;
+    clusters: Types.Events.SyntheticLayoutShiftCluster[];
 }>;
 export declare function deps(): ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
 export declare const enum AnimationFailureReasons {
@@ -27,10 +27,11 @@ export interface NoncompositedAnimationFailure {
     /**
      * Unsupported properties.
      */
-    unsupportedProperties?: Types.TraceEvents.TraceEventAnimation['args']['data']['unsupportedProperties'];
+    unsupportedProperties?: Types.Events.Animation['args']['data']['unsupportedProperties'];
 }
 export interface LayoutShiftRootCausesData {
     iframeIds: string[];
-    fontRequests: Types.TraceEvents.SyntheticNetworkRequest[];
+    fontRequests: Types.Events.SyntheticNetworkRequest[];
 }
-export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): CLSInsightResult;
+export declare function getNonCompositedFailure(event: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
+export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): CLSInsightResult;

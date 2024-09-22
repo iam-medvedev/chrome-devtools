@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
@@ -18,7 +18,7 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     constructor(delegate: TimelineModeViewDelegate);
     private selectorStatsView;
     getDetailsContentElementForTest(): HTMLElement;
-    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null, traceInsightsData: TraceEngine.Insights.Types.TraceInsightData | null): Promise<void>;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, selectedEvents: Trace.Types.Events.Event[] | null, traceInsightsSets: Trace.Insights.Types.TraceInsightSets | null): Promise<void>;
     private setContent;
     private updateContents;
     private appendTab;

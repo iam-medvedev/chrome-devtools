@@ -11,7 +11,7 @@ export function reset() {
     animationsSyntheticEvents.length = 0;
 }
 export function handleEvent(event) {
-    if (Types.TraceEvents.isTraceEventAnimation(event)) {
+    if (Types.Events.isAnimation(event)) {
         animations.push(event);
         return;
     }

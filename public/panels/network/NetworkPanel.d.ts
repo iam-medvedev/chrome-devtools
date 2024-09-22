@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Extensions from '../../models/extensions/extensions.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -102,7 +102,7 @@ export declare class NetworkLogWithFilterRevealer implements Common.Revealer
     .Revealer<Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter> {
     reveal(request: Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
 }
-export declare class FilmStripRecorder implements TraceEngine.TracingManager.TracingManagerClient {
+export declare class FilmStripRecorder implements Trace.TracingManager.TracingManagerClient {
     #private;
     private tracingManager;
     private resourceTreeModel;
@@ -110,13 +110,13 @@ export declare class FilmStripRecorder implements TraceEngine.TracingManager.Tra
     private readonly filmStripView;
     private callback;
     constructor(timeCalculator: NetworkTimeCalculator, filmStripView: PerfUI.FilmStripView.FilmStripView);
-    traceEventsCollected(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
+    traceEventsCollected(events: Trace.Types.Events.Event[]): void;
     tracingComplete(): Promise<void>;
     tracingBufferUsage(): void;
     eventsRetrievalProgress(_progress: number): void;
     startRecording(): void;
     isRecording(): boolean;
-    stopRecording(callback: (filmStrip: TraceEngine.Extras.FilmStrip.Data) => void): void;
+    stopRecording(callback: (filmStrip: Trace.Extras.FilmStrip.Data) => void): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

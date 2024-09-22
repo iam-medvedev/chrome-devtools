@@ -458,4 +458,64 @@ describe('VersionController', () => {
         });
     });
 });
+describe('updateVersionFrom37To38', () => {
+    let settings;
+    beforeEach(() => {
+        const mockStore = new MockStore();
+        const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        Common.Settings.registerSettingExtension({
+            settingName: 'console-insights-enabled',
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: true,
+        });
+        settings = Common.Settings.Settings.instance({
+            forceNew: true,
+            syncedStorage,
+            globalStorage,
+            localStorage,
+        });
+    });
+    afterEach(() => {
+        Common.Settings.Settings.removeInstance();
+        Common.Settings.resetSettings(); // Clear SettingsRegistrations.
+    });
+    it('disables console insights setting if onboarding not done', () => {
+        const versionController = new VersionController();
+        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        consoleInsightsEnabled.set(true);
+        const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', false);
+        versionController.updateVersionFrom37To38();
+        assert.isFalse(consoleInsightsEnabled.get());
+        assert.isFalse(onboardingFinished.get());
+    });
+    it('preserves state if console insights disabled and not onboarded ', () => {
+        const versionController = new VersionController();
+        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        consoleInsightsEnabled.set(false);
+        const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', false);
+        versionController.updateVersionFrom37To38();
+        assert.isFalse(consoleInsightsEnabled.get());
+        assert.isFalse(onboardingFinished.get());
+    });
+    it('preserves state if console insights enabled and onboarded', () => {
+        const versionController = new VersionController();
+        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        consoleInsightsEnabled.set(true);
+        const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', true);
+        versionController.updateVersionFrom37To38();
+        assert.isTrue(consoleInsightsEnabled.get());
+        assert.isTrue(onboardingFinished.get());
+    });
+    it('resets onboarding if console insights setting is disabled', () => {
+        const versionController = new VersionController();
+        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        consoleInsightsEnabled.set(false);
+        const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', true);
+        versionController.updateVersionFrom37To38();
+        assert.isFalse(consoleInsightsEnabled.get());
+        assert.isFalse(onboardingFinished.get());
+    });
+});
 //# sourceMappingURL=Settings.test.js.map

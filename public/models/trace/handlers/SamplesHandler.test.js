@@ -4,30 +4,30 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getAllNodes, getMainThread } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-import * as TraceModel from '../trace.js';
+import * as Trace from '../trace.js';
 async function handleEventsFromTraceFile(context, name) {
     const traceEvents = await TraceLoader.rawEvents(context, name);
-    TraceModel.Handlers.ModelHandlers.Meta.reset();
-    TraceModel.Handlers.ModelHandlers.Samples.reset();
-    TraceModel.Handlers.ModelHandlers.Meta.initialize();
-    TraceModel.Handlers.ModelHandlers.Samples.initialize();
+    Trace.Handlers.ModelHandlers.Meta.reset();
+    Trace.Handlers.ModelHandlers.Samples.reset();
+    Trace.Handlers.ModelHandlers.Meta.initialize();
+    Trace.Handlers.ModelHandlers.Samples.initialize();
     for (const event of traceEvents) {
-        TraceModel.Handlers.ModelHandlers.Meta.handleEvent(event);
-        TraceModel.Handlers.ModelHandlers.Samples.handleEvent(event);
+        Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
+        Trace.Handlers.ModelHandlers.Samples.handleEvent(event);
     }
-    await TraceModel.Handlers.ModelHandlers.Meta.finalize();
-    await TraceModel.Handlers.ModelHandlers.Samples.finalize();
-    return TraceModel.Handlers.ModelHandlers.Samples.data();
+    await Trace.Handlers.ModelHandlers.Meta.finalize();
+    await Trace.Handlers.ModelHandlers.Samples.finalize();
+    return Trace.Handlers.ModelHandlers.Samples.data();
 }
 describeWithEnvironment('SamplesHandler', function () {
     it('finds all the profiles in a real world recording', async () => {
         const data = await handleEventsFromTraceFile(this, 'multiple-navigations-with-iframes.json.gz');
         // The same thread id is shared across profiles in the profiled
         // processes.
-        const threadId = TraceModel.Types.TraceEvents.ThreadID(1);
-        const firstProcessId = TraceModel.Types.TraceEvents.ProcessID(2236123);
-        const secondProcessId = TraceModel.Types.TraceEvents.ProcessID(2154214);
-        const thirdProcessId = TraceModel.Types.TraceEvents.ProcessID(2236084);
+        const threadId = Trace.Types.Events.ThreadID(1);
+        const firstProcessId = Trace.Types.Events.ProcessID(2236123);
+        const secondProcessId = Trace.Types.Events.ProcessID(2154214);
+        const thirdProcessId = Trace.Types.Events.ProcessID(2236084);
         assert.strictEqual(data.profilesInProcess.size, 3);
         const profilesFirstProcess = data.profilesInProcess.get(firstProcessId);
         assert.strictEqual(profilesFirstProcess?.size, 1);
@@ -40,29 +40,29 @@ describeWithEnvironment('SamplesHandler', function () {
         assert.exists(profilesThirdProcess?.get(threadId));
     });
     describe('profile calls building', () => {
-        const pid = TraceModel.Types.TraceEvents.ProcessID(0);
-        const id = TraceModel.Types.TraceEvents.ProfileID('0');
-        const tid = TraceModel.Types.TraceEvents.ThreadID(1);
+        const pid = Trace.Types.Events.ProcessID(0);
+        const id = Trace.Types.Events.ProfileID('0');
+        const tid = Trace.Types.Events.ThreadID(1);
         function makeProfileChunkEvent(nodes, samples, timeDeltas, ts) {
             return {
                 cat: '',
                 name: 'ProfileChunk',
-                ph: "P" /* TraceModel.Types.TraceEvents.Phase.SAMPLE */,
+                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
                 pid,
-                tid: TraceModel.Types.TraceEvents.ThreadID(0),
-                ts: TraceModel.Types.Timing.MicroSeconds(ts),
+                tid: Trace.Types.Events.ThreadID(0),
+                ts: Trace.Types.Timing.MicroSeconds(ts),
                 id,
                 args: {
                     data: {
                         cpuProfile: {
-                            samples: samples.map(TraceModel.Types.TraceEvents.CallFrameID),
+                            samples: samples.map(Trace.Types.Events.CallFrameID),
                             nodes: nodes.map(node => ({
                                 ...node,
                                 callFrame: { functionName: '', scriptId: 0, columnNumber: 0, lineNumber: 0, url: '' },
-                                id: TraceModel.Types.TraceEvents.CallFrameID(node.id),
+                                id: Trace.Types.Events.CallFrameID(node.id),
                             })),
                         },
-                        timeDeltas: timeDeltas.map(TraceModel.Types.Timing.MicroSeconds),
+                        timeDeltas: timeDeltas.map(Trace.Types.Timing.MicroSeconds),
                     },
                 },
             };
@@ -77,12 +77,12 @@ describeWithEnvironment('SamplesHandler', function () {
             const mockProfileEvent = {
                 name: 'Profile',
                 id,
-                args: { data: { startTime: TraceModel.Types.Timing.MicroSeconds(0) } },
+                args: { data: { startTime: Trace.Types.Timing.MicroSeconds(0) } },
                 cat: '',
                 pid,
                 tid,
-                ts: TraceModel.Types.Timing.MicroSeconds(0),
-                ph: "P" /* TraceModel.Types.TraceEvents.Phase.SAMPLE */,
+                ts: Trace.Types.Timing.MicroSeconds(0),
+                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
             };
             /**
              * +------------> (sample at time)
@@ -109,13 +109,13 @@ describeWithEnvironment('SamplesHandler', function () {
                 makeProfileChunkEvent([{ id: D, children: [] }], [], [], 0),
                 makeProfileChunkEvent([{ id: E, children: [] }], [], [], 0),
             ];
-            TraceModel.Handlers.ModelHandlers.Samples.reset();
-            TraceModel.Handlers.ModelHandlers.Samples.initialize();
+            Trace.Handlers.ModelHandlers.Samples.reset();
+            Trace.Handlers.ModelHandlers.Samples.initialize();
             for (const event of [mockProfileEvent, ...mockChunks]) {
-                TraceModel.Handlers.ModelHandlers.Samples.handleEvent(event);
+                Trace.Handlers.ModelHandlers.Samples.handleEvent(event);
             }
-            await TraceModel.Handlers.ModelHandlers.Samples.finalize();
-            const data = TraceModel.Handlers.ModelHandlers.Samples.data();
+            await Trace.Handlers.ModelHandlers.Samples.finalize();
+            const data = Trace.Handlers.ModelHandlers.Samples.data();
             const calls = data.profilesInProcess.get(pid)?.get(tid)?.profileCalls.map(call => {
                 const selfTime = data.entryToNode.get(call)?.selfTime;
                 return { ...call, selfTime };
@@ -149,8 +149,8 @@ describeWithEnvironment('SamplesHandler', function () {
         });
         it('can build profile calls from a CPU profile coming from a real world trace', async () => {
             const data = await handleEventsFromTraceFile(this, 'multiple-navigations-with-iframes.json.gz');
-            const threadId = TraceModel.Types.TraceEvents.ThreadID(1);
-            const firstProcessId = TraceModel.Types.TraceEvents.ProcessID(2236123);
+            const threadId = Trace.Types.Events.ThreadID(1);
+            const firstProcessId = Trace.Types.Events.ProcessID(2236123);
             const profilesFirstProcess = data.profilesInProcess.get(firstProcessId);
             const calls = profilesFirstProcess?.get(threadId)?.profileCalls.slice(0, 5).map(call => {
                 const selfTime = data.entryToNode.get(call)?.selfTime;
@@ -226,14 +226,13 @@ describeWithEnvironment('SamplesHandler', function () {
     describe('getProfileCallFunctionName', () => {
         // Find an event from the trace that represents some work. The use of
         // this specific call frame event is not for any real reason.
-        function getProfileEventAndNode(traceData) {
-            const mainThread = getMainThread(traceData.Renderer);
+        function getProfileEventAndNode(parsedTrace) {
+            const mainThread = getMainThread(parsedTrace.Renderer);
             let foundNode = null;
             let foundEntry = null;
             for (const entry of mainThread.entries) {
-                if (TraceModel.Types.TraceEvents.isProfileCall(entry) &&
-                    entry.callFrame.functionName === 'performConcurrentWorkOnRoot') {
-                    const profile = traceData.Samples.profilesInProcess.get(entry.pid)?.get(entry.tid);
+                if (Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'performConcurrentWorkOnRoot') {
+                    const profile = parsedTrace.Samples.profilesInProcess.get(entry.pid)?.get(entry.tid);
                     const node = profile?.parsedProfile.nodeById(entry.nodeId);
                     if (node) {
                         foundNode = node;
@@ -254,26 +253,26 @@ describeWithEnvironment('SamplesHandler', function () {
             };
         }
         it('falls back to the call frame name if the ProfileNode name is empty', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
-            const { entry, profileNode } = getProfileEventAndNode(traceData);
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
+            const { entry, profileNode } = getProfileEventAndNode(parsedTrace);
             // Store and then reset this: we are doing this to test the fallback to
             // the entry callFrame.functionName property. After the assertion we
             // reset this to avoid impacting other tests.
             const originalProfileNodeName = profileNode.functionName;
             profileNode.setFunctionName('');
-            assert.strictEqual(TraceModel.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(traceData.Samples, entry), 'performConcurrentWorkOnRoot');
+            assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.Samples, entry), 'performConcurrentWorkOnRoot');
             // St
             profileNode.setFunctionName(originalProfileNodeName);
         });
         it('uses the profile name if it has been set', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
-            const { entry, profileNode } = getProfileEventAndNode(traceData);
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
+            const { entry, profileNode } = getProfileEventAndNode(parsedTrace);
             // Store and then reset this: we are doing this to test the fallback to
             // the entry callFrame.functionName property. After the assertion we
             // reset this to avoid impacting other tests.
             const originalProfileNodeName = profileNode.functionName;
             profileNode.setFunctionName('testing-profile-name');
-            assert.strictEqual(TraceModel.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(traceData.Samples, entry), 'testing-profile-name');
+            assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.Samples, entry), 'testing-profile-name');
             profileNode.setFunctionName(originalProfileNodeName);
         });
     });

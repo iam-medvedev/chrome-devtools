@@ -1,8 +1,8 @@
 import * as Types from '../types/types.js';
 export declare function reset(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export interface ImagePaintData {
-    paintImageByDrawLazyPixelRef: Map<number, Types.TraceEvents.TraceEventPaintImage>;
-    paintImageForEvent: Map<Types.TraceEvents.TraceEventData, Types.TraceEvents.TraceEventPaintImage>;
+    paintImageByDrawLazyPixelRef: Map<number, Types.Events.PaintImage>;
+    paintImageForEvent: Map<Types.Events.Event, Types.Events.PaintImage>;
 }
 export declare function data(): ImagePaintData;

@@ -6,23 +6,23 @@ import * as Helpers from '../helpers/helpers.js';
  * Finds a network request given a navigation context and URL.
  * Considers redirects.
  */
-export function findRequest(traceData, context, url) {
-    const request = traceData.NetworkRequests.byTime.find(req => {
+export function findRequest(parsedTrace, context, url) {
+    const request = parsedTrace.NetworkRequests.byTime.find(req => {
         const urlMatch = req.args.data.url === url || req.args.data.redirects.some(r => r.url === url);
         if (!urlMatch) {
             return false;
         }
-        const nav = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceData.Meta.navigationsByFrameId);
+        const nav = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, parsedTrace.Meta.navigationsByFrameId);
         return nav === context.navigation;
     });
     return request ?? null;
 }
-export function findLCPRequest(traceData, context, lcpEvent) {
+export function findLCPRequest(parsedTrace, context, lcpEvent) {
     const lcpNodeId = lcpEvent.args.data?.nodeId;
     if (!lcpNodeId) {
         throw new Error('no lcp node id');
     }
-    const imagePaint = traceData.LargestImagePaint.get(lcpNodeId);
+    const imagePaint = parsedTrace.LargestImagePaint.get(lcpNodeId);
     if (!imagePaint) {
         return null;
     }
@@ -30,7 +30,7 @@ export function findLCPRequest(traceData, context, lcpEvent) {
     if (!lcpUrl) {
         throw new Error('no lcp url');
     }
-    const lcpRequest = findRequest(traceData, context, lcpUrl);
+    const lcpRequest = findRequest(parsedTrace, context, lcpUrl);
     if (!lcpRequest) {
         throw new Error('no lcp request found');
     }

@@ -7,7 +7,7 @@
  */
 import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
-import * as TraceEngine from '../models/trace/trace.js';
+import * as Trace from '../models/trace/trace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as ThemeSupport from '../ui/legacy/theme_support/theme_support.js';
 import { resetTestDOM } from './DOMHelpers.js';
@@ -16,10 +16,10 @@ import { checkForPendingActivity, startTrackingAsyncActivity, stopTrackingAsyncA
 beforeEach(() => {
     resetTestDOM();
     // Ensure that no trace data leaks between tests when testing the trace engine.
-    for (const handler of Object.values(TraceEngine.Handlers.ModelHandlers)) {
+    for (const handler of Object.values(Trace.Handlers.ModelHandlers)) {
         handler.reset();
     }
-    TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.reset();
+    Trace.Helpers.SyntheticEvents.SyntheticEventsManager.reset();
     Timeline.SourceMapsResolver.SourceMapsResolver.clearResolvedNodeNames();
     // Don't retain host binding listeners across tests. Set this up before initializing ThemeSupport as
     // ThemeSupport adds a host binding listener.

@@ -1,7 +1,7 @@
-import type * as TraceEngine from '../../models/trace/trace.js';
+import type * as Trace from '../../models/trace/trace.js';
 export interface InitiatorData {
-    event: TraceEngine.Types.TraceEvents.TraceEventData;
-    initiator: TraceEngine.Types.TraceEvents.TraceEventData;
+    event: Trace.Types.Events.Event;
+    initiator: Trace.Types.Events.Event;
     isEntryHidden?: boolean;
     isInitiatorHidden?: boolean;
 }
@@ -12,5 +12,5 @@ export interface InitiatorData {
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export declare function initiatorsDataToDraw(traceParsedData: TraceEngine.Handlers.Types.TraceParseData, selectedEvent: TraceEngine.Types.TraceEvents.TraceEventData, hiddenEntries: TraceEngine.Types.TraceEvents.TraceEventData[], expandableEntries: TraceEngine.Types.TraceEvents.TraceEventData[]): readonly InitiatorData[];
-export declare function initiatorsDataToDrawForNetwork(traceParsedData: TraceEngine.Handlers.Types.TraceParseData, selectedEvent: TraceEngine.Types.TraceEvents.TraceEventData): readonly InitiatorData[];
+export declare function initiatorsDataToDraw(parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedEvent: Trace.Types.Events.Event, hiddenEntries: Trace.Types.Events.Event[], expandableEntries: Trace.Types.Events.Event[]): readonly InitiatorData[];
+export declare function initiatorsDataToDrawForNetwork(parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedEvent: Trace.Types.Events.Event): readonly InitiatorData[];

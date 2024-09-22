@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 let instance = null;
 export class StateChangedEvent extends Event {
     state;
@@ -55,9 +55,9 @@ export class BoundsManager extends EventTarget {
         if (this.#currentState === null) {
             return null;
         }
-        const entireBoundsMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.#currentState.entireTraceBounds);
-        const minimapBoundsMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.#currentState.minimapTraceBounds);
-        const timelineTraceWindowMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.#currentState.timelineTraceWindow);
+        const entireBoundsMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(this.#currentState.entireTraceBounds);
+        const minimapBoundsMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(this.#currentState.minimapTraceBounds);
+        const timelineTraceWindowMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(this.#currentState.timelineTraceWindow);
         return {
             micro: this.#currentState,
             milli: {
@@ -118,9 +118,9 @@ export class BoundsManager extends EventTarget {
         if (!options.ignoreMiniMapBounds) {
             // Ensure that the setTimelineVisibleWindow can never go outside the bounds of the minimap bounds.
             newWindow.min =
-                TraceEngine.Types.Timing.MicroSeconds(Math.max(this.#currentState.minimapTraceBounds.min, newWindow.min));
+                Trace.Types.Timing.MicroSeconds(Math.max(this.#currentState.minimapTraceBounds.min, newWindow.min));
             newWindow.max =
-                TraceEngine.Types.Timing.MicroSeconds(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
+                Trace.Types.Timing.MicroSeconds(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
         }
         this.#currentState.timelineTraceWindow = newWindow;
         this.dispatchEvent(new StateChangedEvent(this.state(), 'VISIBLE_WINDOW', { shouldAnimate: options.shouldAnimate }));

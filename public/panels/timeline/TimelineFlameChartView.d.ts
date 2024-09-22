@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type * as TimelineComponents from './components/components.js';
@@ -32,8 +32,6 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private readonly detailsView;
     private readonly onMainAddEntryLabelAnnotation;
     private readonly onNetworkAddEntryLabelAnnotation;
-    private readonly onMainEntriesLinkAnnotationCreated;
-    private readonly onNetworkEntriesLinkAnnotationCreated;
     private readonly onMainEntrySelected;
     private readonly onNetworkEntrySelected;
     private readonly groupBySetting;
@@ -42,15 +40,22 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private selectedSearchResult?;
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
+    revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
+    /**
+     * Replaces any existing overlays with the ones provided to this method.
+     * If `overlays` is null, reverts back to the original overlays provided by
+     * the insight.
+     */
+    setOverlaysOverride(overlays: Overlays.Overlays.TimelineOverlay[] | null): void;
     runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
-    getLinkSelectionAnnotation(): TraceEngine.Types.File.EntriesLinkAnnotation | null;
+    getLinkSelectionAnnotation(): Trace.Types.File.EntriesLinkAnnotation | null;
     getMainDataProvider(): TimelineFlameChartDataProvider;
     getNetworkDataProvider(): TimelineFlameChartNetworkDataProvider;
     refreshMainFlameChart(): void;
     extensionDataVisibilityChanged(): void;
-    windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
+    windowChanged(windowStartTime: Trace.Types.Timing.MilliSeconds, windowEndTime: Trace.Types.Timing.MilliSeconds, animate: boolean): void;
     /**
      * @param startTime - the start time of the selection in MilliSeconds
      * @param endTime - the end time of the selection in MilliSeconds
@@ -60,20 +65,26 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
-    setModel(newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
-    setInsights(insights: TraceEngine.Insights.Types.TraceInsightData | null): void;
+    setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace | null, isCpuProfile?: boolean): void;
+    setInsights(insights: Trace.Insights.Types.TraceInsightSets | null): void;
     updateLinkSelectionAnnotation(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryIndex: number): void;
     private onEntryHovered;
-    highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
+    highlightEvent(event: Trace.Types.Events.Event | null): void;
     willHide(): void;
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;
-    revealEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): void;
-    revealEventVertically(event: TraceEngine.Types.TraceEvents.TraceEventData): void;
+    revealEvent(event: Trace.Types.Events.Event): void;
+    revealEventVertically(event: Trace.Types.Events.Event): void;
     setSelectionAndReveal(selection: TimelineSelection | null): void;
+    /**
+     * Used to create multiple overlays at once without triggering a redraw for each one.
+     */
+    bulkAddOverlays(overlays: Overlays.Overlays.TimelineOverlay[]): void;
     addOverlay<T extends Overlays.Overlays.TimelineOverlay>(newOverlay: T): T;
+    bulkRemoveOverlays(overlays: Overlays.Overlays.TimelineOverlay[]): void;
     removeOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
     updateExistingOverlay<T extends Overlays.Overlays.TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
+    enterLabelEditMode(overlay: Overlays.Overlays.EntryLabel): void;
     private onAddEntryLabelAnnotation;
     onEntriesLinkAnnotationCreate(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryFromIndex: number): void;
     private onEntrySelected;

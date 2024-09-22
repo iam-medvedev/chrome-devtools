@@ -1,5 +1,5 @@
 import type * as Platform from '../../core/platform/platform.js';
-import type * as TraceEngine from '../../models/trace/trace.js';
+import type * as Trace from '../../models/trace/trace.js';
 export declare class LighthouseReportGenerator {
     generateReportHtml(_lhr: ReportJSON): string;
 }
@@ -73,7 +73,7 @@ export interface DetailsJSON {
 export interface RunnerResultArtifacts {
     traces: {
         defaultPass: {
-            traceEvents: TraceEngine.Types.TraceEvents.TraceEventData[];
+            traceEvents: Trace.Types.Events.Event[];
         };
     };
     settings: {

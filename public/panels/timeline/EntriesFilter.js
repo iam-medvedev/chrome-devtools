@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { entryIsVisibleInTimeline, } from './CompatibilityTracksAppender.js';
 /**
@@ -228,15 +228,15 @@ export class EntriesFilter {
         // Walk through all the ancestors, starting at the root node.
         const children = [...root.children];
         const repeatingNodes = [];
-        const rootIsProfileCall = TraceEngine.Types.TraceEvents.isProfileCall(root.entry);
+        const rootIsProfileCall = Trace.Types.Events.isProfileCall(root.entry);
         while (children.length > 0) {
             const childNode = children.shift();
             if (childNode) {
-                const childIsProfileCall = TraceEngine.Types.TraceEvents.isProfileCall(childNode.entry);
+                const childIsProfileCall = Trace.Types.Events.isProfileCall(childNode.entry);
                 if ( /* Handle SyntheticProfileCalls */rootIsProfileCall && childIsProfileCall) {
                     const rootNodeEntry = root.entry;
                     const childNodeEntry = childNode.entry;
-                    if (TraceEngine.Helpers.SamplesIntegrator.SamplesIntegrator.framesAreEqual(rootNodeEntry.callFrame, childNodeEntry.callFrame)) {
+                    if (Trace.Helpers.SamplesIntegrator.SamplesIntegrator.framesAreEqual(rootNodeEntry.callFrame, childNodeEntry.callFrame)) {
                         repeatingNodes.push(childNode.entry);
                     }
                 } /* Handle Renderer events */

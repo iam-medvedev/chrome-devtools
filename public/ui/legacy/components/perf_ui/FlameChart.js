@@ -31,7 +31,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Root from '../../../../core/root/root.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
 import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
@@ -174,6 +174,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     selectedEntryIndex;
     rawTimelineDataLength;
     markerPositions;
+    customDrawnPositions;
     lastMouseOffsetX;
     selectedGroupIndex;
     keyboardFocusedGroup;
@@ -203,6 +204,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     // Stored because we cache this value to save extra lookups and layoffs.
     #canvasBoundingClientRect = null;
     #selectedElementOutlineEnabled = true;
+    #indexToDrawOverride = new Map();
     constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
         super(true);
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
@@ -266,6 +268,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.#searchResultEntryIndex = -1;
         this.rawTimelineDataLength = 0;
         this.markerPositions = new Map();
+        this.customDrawnPositions = new Map();
         this.lastMouseOffsetX = 0;
         this.selectedGroupIndex = -1;
         this.lastPopoverState = {
@@ -283,7 +286,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.hideHighlight();
     }
     canvasBoundingClientRect() {
-        if (this.#canvasBoundingClientRect) {
+        // If we have a rect already, and it has width & height, use it by default.
+        // The reason we check the dimensions is because otherwise if this method was
+        // called before the FlameChart was fully rendered it might have been
+        // calculated with a width or height of 0, and that is clearly incorrect.
+        if (this.#canvasBoundingClientRect && this.#canvasBoundingClientRect.width > 0 &&
+            this.#canvasBoundingClientRect.height > 0) {
             return this.#canvasBoundingClientRect;
         }
         this.#canvasBoundingClientRect = this.canvas.getBoundingClientRect();
@@ -486,10 +494,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.chartViewport.isDragging()) {
             return;
         }
-        const timeMilliSeconds = TraceEngine.Types.Timing.MilliSeconds(this.chartViewport.pixelToTime(mouseEvent.offsetX));
+        const timeMilliSeconds = Trace.Types.Timing.MilliSeconds(this.chartViewport.pixelToTime(mouseEvent.offsetX));
         this.dispatchEventToListeners("MouseMove" /* Events.MOUSE_MOVE */, {
             mouseEvent,
-            timeInMicroSeconds: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(timeMilliSeconds),
+            timeInMicroSeconds: Trace.Helpers.Timing.millisecondsToMicroseconds(timeMilliSeconds),
         });
         // Check if the mouse is hovering any group's header area
         const { groupIndex, hoverType } = this.coordinatesToGroupIndexAndHoverType(mouseEvent.offsetX, mouseEvent.offsetY);
@@ -683,7 +691,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
          */
         if (this.highlightedEntryIndex !== -1) {
             this.#selectGroup(groupIndex);
-            this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.highlightedEntryIndex);
+            this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: this.highlightedEntryIndex, withLinkCreationButton: true });
         }
     }
     /**
@@ -1032,7 +1040,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
             const annotationSection = this.contextMenu.section('annotations');
             const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
-                this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.selectedEntryIndex);
+                this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: this.selectedEntryIndex, withLinkCreationButton: false });
             });
             labelEntryAnnotationOption.setShortcut('Double Click');
             const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
@@ -1334,7 +1342,16 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (offsetFromLevel > this.levelHeight(cursorLevel)) {
             return -1;
         }
-        // Check markers first.
+        // Check custom drawn entries first.
+        for (const [index, pos] of this.customDrawnPositions) {
+            if (timelineData.entryLevels[index] !== cursorLevel) {
+                continue;
+            }
+            if (pos.x <= x && x < pos.x + pos.width) {
+                return index;
+            }
+        }
+        // Check markers.
         for (const [index, pos] of this.markerPositions) {
             if (timelineData.entryLevels[index] !== cursorLevel) {
                 continue;
@@ -1597,7 +1614,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 // that as all being collapsed.
                 allGroupsCollapsed: this.rawTimelineData?.groups.every(g => !g.expanded) ?? true,
             },
-            traceWindow: TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(this.minimumBoundary(), this.maximumBoundary()),
+            traceWindow: Trace.Helpers.Timing.traceWindowFromMilliSeconds(this.minimumBoundary(), this.maximumBoundary()),
         });
         const canvasWidth = this.offsetWidth;
         const canvasHeight = this.offsetHeight;
@@ -1642,6 +1659,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.#drawGenericEvents(context, timelineData, color, indexes);
         }
         this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.CHART_PLAYABLE_STATE_CHANGED */, wideEntryExists);
+        this.#drawCustomSymbols(context, timelineData);
         this.drawMarkers(context, timelineData, markerIndices);
         this.drawEventTitles(context, timelineData, titleIndices, canvasWidth);
         // If there is a `forceDecoration` function, it will be called in `drawEventTitles`, which will overwrite the
@@ -1664,7 +1682,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const hasNextNavStartTime = navStartTimes.length > navStartTimeIndex + 1;
             if (hasNextNavStartTime) {
                 const nextNavStartTime = navStartTimes[navStartTimeIndex + 1];
-                const nextNavStartTimeStartTimestamp = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(nextNavStartTime.ts);
+                const nextNavStartTimeStartTimestamp = Trace.Helpers.Timing.microSecondsToMilliseconds(nextNavStartTime.ts);
                 if (time > nextNavStartTimeStartTimestamp) {
                     navStartTimeIndex++;
                 }
@@ -1672,7 +1690,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // Adjust the time by the nearest nav start marker's value.
             const nearestMarker = navStartTimes[navStartTimeIndex];
             if (nearestMarker) {
-                const nearestMarkerStartTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(nearestMarker.ts);
+                const nearestMarkerStartTime = Trace.Helpers.Timing.microSecondsToMilliseconds(nearestMarker.ts);
                 time -= nearestMarkerStartTime - this.zeroTime();
             }
             return this.formatValue(time, dividersData.precision);
@@ -1701,6 +1719,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.beginPath();
         for (let i = 0; i < indexes.length; ++i) {
             const entryIndex = indexes[i];
+            // If there is a draw override, then this is not a generic event.
+            if (this.#indexToDrawOverride.has(entryIndex)) {
+                continue;
+            }
             this.#drawEventRect(context, timelineData, entryIndex);
         }
         context.fillStyle = color;
@@ -1732,7 +1754,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             for (const decoration of decorationsForEvent) {
                 switch (decoration.type) {
                     case "CANDY" /* FlameChartDecorationType.CANDY */: {
-                        const candyStripeStartTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(decoration.startAtTime);
+                        const candyStripeStartTime = Trace.Helpers.Timing.microSecondsToMilliseconds(decoration.startAtTime);
                         if (duration < candyStripeStartTime) {
                             // If the duration of the event is less than the start time to draw the candy stripes, then we have no stripes to draw.
                             continue;
@@ -1747,7 +1769,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         const barXStart = this.timeToPositionClipped(entryStartTime + candyStripeStartTime);
                         // If a custom end time was passed in, that is when we stop striping, else we stripe until the very end of the entry.
                         const stripingEndTime = decoration.endAtTime ?
-                            TraceEngine.Helpers.Timing.microSecondsToMilliseconds(decoration.endAtTime) :
+                            Trace.Helpers.Timing.microSecondsToMilliseconds(decoration.endAtTime) :
                             entryStartTime + duration;
                         const barXEnd = this.timeToPositionClipped(stripingEndTime);
                         this.#drawEventRect(context, timelineData, entryIndex, {
@@ -1764,7 +1786,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         if (typeof decoration.customEndTime !== 'undefined') {
                             // The user can pass a customEndTime to tell us where the event's box ends and therefore where we should
                             // draw the triangle. So therefore we calculate the width by taking the end time off the start time.
-                            const endTimeMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(decoration.customEndTime);
+                            const endTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(decoration.customEndTime);
                             endTimePixels = this.timeToPositionClipped(endTimeMilli);
                             barWidth = endTimePixels - barX;
                         }
@@ -1774,7 +1796,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                             // The user can pass a customStartTime to tell us where the event's box start and therefore where we
                             // should draw the triangle. So therefore we calculate the width by taking the end time off the start
                             // time.
-                            const startTimeMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(decoration.customStartTime);
+                            const startTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(decoration.customStartTime);
                             const startTimePixels = this.timeToPositionClipped(startTimeMilli);
                             triangleWidth = Math.min(endTimePixels - startTimePixels, 8);
                         }
@@ -2159,7 +2181,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // Markers are sorted top to bottom, right to left.
         for (let m = markerIndices.length - 1; m >= 0; --m) {
             const entryIndex = markerIndices[m];
-            const title = this.dataProvider.entryTitle(entryIndex);
+            const title = this.entryTitle(entryIndex);
             if (!title) {
                 continue;
             }
@@ -2183,6 +2205,22 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         context.strokeStyle = 'rgba(0, 0, 0, 0.2)';
         context.stroke();
+        context.restore();
+    }
+    #drawCustomSymbols(context, timelineData) {
+        const { entryStartTimes, entryLevels } = timelineData;
+        this.customDrawnPositions.clear();
+        context.save();
+        for (const [entryIndex, drawOverride] of this.#indexToDrawOverride.entries()) {
+            const entryStartTime = entryStartTimes[entryIndex];
+            const level = entryLevels[entryIndex];
+            const x = this.chartViewport.timeToPosition(entryStartTime);
+            const y = this.levelToOffset(level);
+            const height = this.levelHeight(level);
+            const width = this.#eventBarWidth(timelineData, entryIndex);
+            const pos = drawOverride(context, x, y, width, height);
+            this.customDrawnPositions.set(entryIndex, pos);
+        }
         context.restore();
     }
     /**
@@ -2597,9 +2635,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.rawTimelineDataLength = timelineData.entryStartTimes.length;
         this.forceDecorationCache = new Array(this.rawTimelineDataLength);
         this.entryColorsCache = new Array(this.rawTimelineDataLength);
+        this.#indexToDrawOverride.clear();
         for (let i = 0; i < this.rawTimelineDataLength; ++i) {
             this.forceDecorationCache[i] = this.dataProvider.forceDecoration(i) ?? false;
             this.entryColorsCache[i] = this.dataProvider.entryColor(i);
+            const drawOverride = this.dataProvider.getDrawOverride?.(i);
+            if (drawOverride) {
+                this.#indexToDrawOverride.set(i, drawOverride);
+            }
         }
         const entryCounters = new Uint32Array(this.dataProvider.maxStackDepth() + 1);
         for (let i = 0; i < timelineData.entryLevels.length; ++i) {
@@ -2966,7 +3009,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         return false;
     }
-    getMarkerPixelsForEntryIndex(entryIndex) {
+    getCustomDrawnPositionForEntryIndex(entryIndex) {
+        const customPos = this.customDrawnPositions.get(entryIndex);
+        if (customPos) {
+            return customPos;
+        }
         return this.markerPositions.get(entryIndex) ?? null;
     }
     /**
@@ -2991,7 +3038,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         let barX = 0;
         let barWidth = 0;
         let visible = true;
-        if (Number.isNaN(duration)) {
+        const customPos = this.customDrawnPositions.get(entryIndex);
+        if (customPos) {
+            barX = customPos.x;
+            barWidth = customPos.width;
+        }
+        else if (Number.isNaN(duration)) {
             const position = this.markerPositions.get(entryIndex);
             if (position) {
                 barX = position.x;
@@ -3147,16 +3199,16 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return this.dataProvider.formatValue(value - this.zeroTime(), precision);
     }
     maximumBoundary() {
-        return TraceEngine.Types.Timing.MilliSeconds(this.chartViewport.windowRightTime());
+        return Trace.Types.Timing.MilliSeconds(this.chartViewport.windowRightTime());
     }
     minimumBoundary() {
-        return TraceEngine.Types.Timing.MilliSeconds(this.chartViewport.windowLeftTime());
+        return Trace.Types.Timing.MilliSeconds(this.chartViewport.windowLeftTime());
     }
     zeroTime() {
-        return TraceEngine.Types.Timing.MilliSeconds(this.dataProvider.minimumBoundary());
+        return Trace.Types.Timing.MilliSeconds(this.dataProvider.minimumBoundary());
     }
     boundarySpan() {
-        return TraceEngine.Types.Timing.MilliSeconds(this.maximumBoundary() - this.minimumBoundary());
+        return Trace.Types.Timing.MilliSeconds(this.maximumBoundary() - this.minimumBoundary());
     }
 }
 export const RulerHeight = 15;

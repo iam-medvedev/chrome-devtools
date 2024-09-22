@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Helpers from '../../../models/trace/helpers/helpers.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -59,8 +59,8 @@ export class LayoutShiftDetails extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-layout-shift-details`;
     #shadow = this.attachShadow({ mode: 'open' });
     #layoutShift;
-    #traceInsightsData = null;
-    #traceEngineData = null;
+    #traceInsightsSets = null;
+    #parsedTrace = null;
     #isFreshRecording = false;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [layoutShiftDetailsStyles];
@@ -68,13 +68,13 @@ export class LayoutShiftDetails extends HTMLElement {
         UI.UIUtils.injectTextButtonStyles(this.#shadow);
         this.#render();
     }
-    setData(layoutShift, traceInsightsData, traceEngineData, isFreshRecording) {
+    setData(layoutShift, traceInsightsSets, parsedTrace, isFreshRecording) {
         if (this.#layoutShift === layoutShift) {
             return;
         }
         this.#layoutShift = layoutShift;
-        this.#traceInsightsData = traceInsightsData;
-        this.#traceEngineData = traceEngineData;
+        this.#traceInsightsSets = traceInsightsSets;
+        this.#parsedTrace = parsedTrace;
         this.#isFreshRecording = isFreshRecording;
         this.#render();
     }
@@ -139,13 +139,14 @@ export class LayoutShiftDetails extends HTMLElement {
       ${rootCauses?.iframeIds.map(iframe => this.#renderIframe(iframe))}
   `;
     }
-    #renderDetailsTable(layoutShift, traceInsightsData, traceEngineData) {
+    #renderDetailsTable(layoutShift, traceInsightsSets, parsedTrace) {
         const score = layoutShift.args.data?.score;
         if (!score) {
             return null;
         }
-        const ts = TraceEngine.Types.Timing.MicroSeconds(layoutShift.ts - traceEngineData.Meta.traceBounds.min);
-        const clsInsight = traceInsightsData.get(layoutShift.args.data?.navigationId ?? '')?.CumulativeLayoutShift;
+        const ts = Trace.Types.Timing.MicroSeconds(layoutShift.ts - parsedTrace.Meta.traceBounds.min);
+        const insightsId = layoutShift.args.data?.navigationId ?? Trace.Insights.Types.NO_NAVIGATION;
+        const clsInsight = traceInsightsSets.get(insightsId)?.data.CumulativeLayoutShift;
         if (clsInsight instanceof Error) {
             return null;
         }
@@ -199,7 +200,7 @@ export class LayoutShiftDetails extends HTMLElement {
         // clang-format on
     }
     #render() {
-        if (!this.#layoutShift || !this.#traceInsightsData || !this.#traceEngineData) {
+        if (!this.#layoutShift || !this.#traceInsightsSets || !this.#parsedTrace) {
             return;
         }
         // clang-format off
@@ -207,7 +208,7 @@ export class LayoutShiftDetails extends HTMLElement {
       <div class="layout-shift-summary-details">
         ${this.#renderInsightTitleCard()}
         ${this.#renderDetailsChip()}
-        ${this.#renderDetailsTable(this.#layoutShift, this.#traceInsightsData, this.#traceEngineData)}
+        ${this.#renderDetailsTable(this.#layoutShift, this.#traceInsightsSets, this.#parsedTrace)}
       </div>
     `;
         // clang-format on

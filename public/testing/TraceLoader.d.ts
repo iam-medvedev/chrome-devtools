@@ -1,5 +1,5 @@
 import type * as Protocol from '../generated/protocol.js';
-import * as TraceEngine from '../models/trace/trace.js';
+import * as Trace from '../models/trace/trace.js';
 export interface TraceEngineLoaderOptions {
     initTraceBounds: boolean;
 }
@@ -23,14 +23,14 @@ export declare class TraceLoader {
      * JSON.parse-ing them
      *
      **/
-    static fixtureContents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<TraceEngine.Types.File.Contents>;
+    static fixtureContents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<Trace.Types.File.Contents>;
     /**
      * Load an array of raw events from the trace file.
      **/
-    static rawEvents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<readonly TraceEngine.Types.TraceEvents.TraceEventData[]>;
+    static rawEvents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<readonly Trace.Types.Events.Event[]>;
     /**
      * Load an array of raw events from the trace file.
-     * Will default to typing those events using the types from TraceEngine, but
+     * Will default to typing those events using the types from Trace Engine, but
      * can be overriden by passing the legacy EventPayload type as the generic.
      **/
     static rawCPUProfile(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<Protocol.Profiler.Profile>;
@@ -53,9 +53,9 @@ export declare class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: TraceEngine.Types.Configuration.Configuration): Promise<{
-        traceData: TraceEngine.Handlers.Types.TraceParseData;
-        insights: TraceEngine.Insights.Types.TraceInsightData | null;
+    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: Trace.Types.Configuration.Configuration): Promise<{
+        parsedTrace: Trace.Handlers.Types.ParsedTrace;
+        insights: Trace.Insights.Types.TraceInsightSets | null;
     }>;
     /**
      * Initialise the BoundsManager with the bounds from a trace.
@@ -63,11 +63,11 @@ export declare class TraceLoader {
      * level - rely on this being set. This is always set in the actual panel, but
      * parsing a trace in a test does not automatically set it.
      **/
-    static initTraceBoundsManager(data: TraceEngine.Handlers.Types.TraceParseData): void;
-    static executeTraceEngineOnFileContents(contents: TraceEngine.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: TraceEngine.Types.Configuration.Configuration): Promise<{
-        model: TraceEngine.TraceModel.Model;
-        metadata: TraceEngine.Types.File.MetaData;
-        traceData: TraceEngine.Handlers.Types.TraceParseData;
-        insights: TraceEngine.Insights.Types.TraceInsightData | null;
+    static initTraceBoundsManager(data: Trace.Handlers.Types.ParsedTrace): void;
+    static executeTraceEngineOnFileContents(contents: Trace.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: Trace.Types.Configuration.Configuration): Promise<{
+        model: Trace.TraceModel.Model;
+        metadata: Trace.Types.File.MetaData;
+        parsedTrace: Trace.Handlers.Types.ParsedTrace;
+        insights: Trace.Insights.Types.TraceInsightSets | null;
     }>;
 }

@@ -1,4 +1,4 @@
-import type * as TraceEngine from '../../../../models/trace/trace.js';
+import type * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsight } from './Helpers.js';
@@ -9,7 +9,7 @@ export declare class SlowCSSSelector extends BaseInsight {
     insightCategory: InsightsCategories;
     internalName: string;
     userVisibleTitle: string;
-    getSlowCSSSelectorData(insights: TraceEngine.Insights.Types.TraceInsightData | null, navigationId: string | null): TraceEngine.Insights.InsightRunners.SlowCSSSelector.SlowCSSSelectorInsightResult | null;
+    getSlowCSSSelectorData(insights: Trace.Insights.Types.TraceInsightSets | null, navigationId: string | null): Trace.Insights.InsightRunners.SlowCSSSelector.SlowCSSSelectorInsightResult | null;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderSlowCSSSelector(): LitHtml.LitTemplate;
     render(): void;

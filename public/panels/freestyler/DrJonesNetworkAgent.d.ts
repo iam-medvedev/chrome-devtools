@@ -47,5 +47,7 @@ export declare class DrJonesNetworkAgent {
     }): AsyncGenerator<ResponseData, void, void>;
 }
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
-export declare function formatNetworkRequest(request: Pick<SDK.NetworkRequest.NetworkRequest, 'url' | 'requestHeaders' | 'responseHeaders' | 'statusCode' | 'statusText'>): string;
+export declare function formatHeaders(title: string, headers: SDK.NetworkRequest.NameValue[]): string;
+export declare function formatNetworkRequestTiming(request: SDK.NetworkRequest.NetworkRequest): string;
+export declare function formatNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): string;
 export {};

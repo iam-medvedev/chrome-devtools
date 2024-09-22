@@ -1,10 +1,10 @@
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 /**
  * An EntryBreakdown, or section, that makes up a TimespanBreakdown.
  */
 export type EntryBreakdown = {
-    bounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
     label: string | LitHtml.LitTemplate;
     showDuration: boolean;
 };
@@ -24,7 +24,7 @@ export declare class TimespanBreakdownOverlay extends HTMLElement {
      * If the label is off to the left or right, we fix it to that corner and
      * align the text so the label is visible as long as possible.
      */
-    afterOverlayUpdate(): void;
+    checkSectionLabelPositioning(): void;
     renderSection(section: EntryBreakdown): LitHtml.TemplateResult;
 }
 declare global {

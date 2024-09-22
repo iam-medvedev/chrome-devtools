@@ -7,19 +7,19 @@ import * as Types from '../types/types.js';
 // used to store the event in the correct process thread entry below.
 const unpairedAsyncEvents = [];
 const snapshotEvents = [];
-const syntheticScreenshotEvents = [];
+const syntheticScreenshots = [];
 let frameSequenceToTs = {};
 export function reset() {
     unpairedAsyncEvents.length = 0;
     snapshotEvents.length = 0;
-    syntheticScreenshotEvents.length = 0;
+    syntheticScreenshots.length = 0;
     frameSequenceToTs = {};
 }
 export function handleEvent(event) {
-    if (Types.TraceEvents.isTraceEventScreenshot(event)) {
+    if (Types.Events.isScreenshot(event)) {
         snapshotEvents.push(event);
     }
-    else if (Types.TraceEvents.isTraceEventPipelineReporter(event)) {
+    else if (Types.Events.isPipelineReporter(event)) {
         unpairedAsyncEvents.push(event);
     }
 }
@@ -32,7 +32,7 @@ export async function finalize() {
     }));
     for (const snapshotEvent of snapshotEvents) {
         const { cat, name, ph, pid, tid } = snapshotEvent;
-        const syntheticEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticBasedEvent({
+        const syntheticEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: snapshotEvent,
             cat,
             name,
@@ -45,7 +45,7 @@ export async function finalize() {
                 dataUri: `data:image/jpg;base64,${snapshotEvent.args.snapshot}`,
             },
         });
-        syntheticScreenshotEvents.push(syntheticEvent);
+        syntheticScreenshots.push(syntheticEvent);
     }
 }
 /**
@@ -73,7 +73,7 @@ function getPresentationTimestamp(screenshotEvent) {
 }
 // TODO(crbug/41484172): should be readonly
 export function data() {
-    return syntheticScreenshotEvents;
+    return syntheticScreenshots;
 }
 export function deps() {
     return ['Meta'];

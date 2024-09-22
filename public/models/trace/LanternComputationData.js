@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
 import * as Lantern from './lantern/lantern.js';
-function createProcessedNavigation(traceEngineData, frameId, navigationId) {
-    const scoresByNav = traceEngineData.PageLoadMetrics.metricScoresByFrameId.get(frameId);
+function createProcessedNavigation(parsedTrace, frameId, navigationId) {
+    const scoresByNav = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(frameId);
     if (!scoresByNav) {
         throw new Lantern.Core.LanternError('missing metric scores for frame');
     }
@@ -48,7 +48,7 @@ function createParsedUrl(url) {
  * Returns a map of `pid` -> `tid[]`.
  */
 function findWorkerThreads(trace) {
-    // TODO: WorkersHandler in TraceEngine needs to be updated to also include `pid` (only had `tid`).
+    // TODO: WorkersHandler in Trace Engine needs to be updated to also include `pid` (only had `tid`).
     const workerThreads = new Map();
     const workerCreationEvents = ['ServiceWorker thread', 'DedicatedWorker thread'];
     for (const event of trace.traceEvents) {
@@ -68,7 +68,7 @@ function findWorkerThreads(trace) {
     }
     return workerThreads;
 }
-function createLanternRequest(traceEngineData, workerThreads, request) {
+function createLanternRequest(parsedTrace, workerThreads, request) {
     if (request.args.data.connectionId === undefined || request.args.data.connectionReused === undefined) {
         throw new Lantern.Core.LanternError('Trace is too old');
     }
@@ -92,9 +92,9 @@ function createLanternRequest(traceEngineData, workerThreads, request) {
     if (tids?.includes(request.tid)) {
         fromWorker = true;
     }
-    // TraceEngine collects worker thread ids in a different manner than `workerThreads` does.
+    // Trace Engine collects worker thread ids in a different manner than `workerThreads` does.
     // AFAIK these should be equivalent, but in case they are not let's also check this for now.
-    if (traceEngineData.Workers.workerIdByThread.has(request.tid)) {
+    if (parsedTrace.Workers.workerIdByThread.has(request.tid)) {
         fromWorker = true;
     }
     // `initiator` in the trace does not contain the stack trace for JS-initiated
@@ -235,18 +235,18 @@ function linkInitiators(lanternRequests) {
         }
     }
 }
-function createNetworkRequests(trace, traceEngineData, startTime = 0, endTime = Number.POSITIVE_INFINITY) {
+function createNetworkRequests(trace, parsedTrace, startTime = 0, endTime = Number.POSITIVE_INFINITY) {
     const workerThreads = findWorkerThreads(trace);
     const lanternRequests = [];
-    for (const request of traceEngineData.NetworkRequests.byTime) {
+    for (const request of parsedTrace.NetworkRequests.byTime) {
         if (request.ts >= startTime && request.ts < endTime) {
-            const lanternRequest = createLanternRequest(traceEngineData, workerThreads, request);
+            const lanternRequest = createLanternRequest(parsedTrace, workerThreads, request);
             if (lanternRequest) {
                 lanternRequests.push(lanternRequest);
             }
         }
     }
-    // TraceEngine consolidates all redirects into a single request object, but lantern needs
+    // Trace Engine consolidates all redirects into a single request object, but lantern needs
     // an entry for each redirected request.
     for (const request of [...lanternRequests]) {
         if (!request.rawRequest) {
@@ -286,10 +286,10 @@ function createNetworkRequests(trace, traceEngineData, startTime = 0, endTime = 
             };
             redirectedRequest.url = redirect.url;
             redirectedRequest.parsedURL = createParsedUrl(redirect.url);
-            // TODO: TraceEngine is not retaining the actual status code.
+            // TODO: Trace Engine is not retaining the actual status code.
             redirectedRequest.statusCode = 302;
             redirectedRequest.resourceType = undefined;
-            // TODO: TraceEngine is not retaining transfer size of redirected request.
+            // TODO: Trace Engine is not retaining transfer size of redirected request.
             redirectedRequest.transferSize = 400;
             requestChain.push(redirectedRequest);
             lanternRequests.push(redirectedRequest);
@@ -316,8 +316,8 @@ function createNetworkRequests(trace, traceEngineData, startTime = 0, endTime = 
     // above.
     return lanternRequests.sort((a, b) => a.rendererStartTime - b.rendererStartTime);
 }
-function collectMainThreadEvents(trace, traceEngineData) {
-    const Meta = traceEngineData.Meta;
+function collectMainThreadEvents(trace, parsedTrace) {
+    const Meta = parsedTrace.Meta;
     const mainFramePids = Meta.mainFrameNavigations.length ? new Set(Meta.mainFrameNavigations.map(nav => nav.pid)) :
         Meta.topLevelRendererIds;
     const rendererPidToTid = new Map();
@@ -346,8 +346,8 @@ function collectMainThreadEvents(trace, traceEngineData) {
     }
     return trace.traceEvents.filter(e => rendererPidToTid.get(e.pid) === e.tid);
 }
-function createGraph(requests, trace, traceEngineData, url) {
-    const mainThreadEvents = collectMainThreadEvents(trace, traceEngineData);
+function createGraph(requests, trace, parsedTrace, url) {
+    const mainThreadEvents = collectMainThreadEvents(trace, parsedTrace);
     // url defines the initial request that the Lantern graph starts at (the root node) and the
     // main document request. These are equal if there are no redirects.
     if (!url) {

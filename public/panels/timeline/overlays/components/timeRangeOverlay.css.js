@@ -75,6 +75,9 @@ styles.replaceSync(
   position: absolute;
   left: 4px;
   bottom: 5px;
+  color: var(--ref-palette-pink55);
+  width: 16px;
+  height: 17px;
 }
 
 /*# sourceURL=timeRangeOverlay.css */

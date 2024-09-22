@@ -7,6 +7,7 @@ import { ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement } fr
 import { BackgroundServiceModel } from './BackgroundServiceModel.js';
 import { BounceTrackingMitigationsTreeElement } from './BounceTrackingMitigationsTreeElement.js';
 import { type DOMStorage } from './DOMStorageModel.js';
+import { type ExtensionStorage } from './ExtensionStorageModel.js';
 import { type Database as IndexedDBModelDatabase, type DatabaseId, type Index, IndexedDBModel, type ObjectStore } from './IndexedDBModel.js';
 import { InterestGroupTreeElement } from './InterestGroupTreeElement.js';
 import type * as PreloadingHelper from './preloading/helper/helper.js';
@@ -35,6 +36,7 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     serviceWorkersTreeElement: ServiceWorkersTreeElement;
     localStorageListTreeElement: ExpandableApplicationPanelTreeElement;
     sessionStorageListTreeElement: ExpandableApplicationPanelTreeElement;
+    extensionStorageListTreeElement: ExpandableApplicationPanelTreeElement | undefined;
     indexedDBListTreeElement: IndexedDBTreeElement;
     interestGroupTreeElement: InterestGroupTreeElement;
     cookieListTreeElement: ExpandableApplicationPanelTreeElement;
@@ -54,6 +56,7 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     preloadingSummaryTreeElement: PreloadingSummaryTreeElement | undefined;
     private readonly resourcesSection;
     private domStorageTreeElements;
+    private extensionStorageTreeElements;
     private sharedStorageTreeElements;
     private domains;
     private target?;
@@ -67,6 +70,8 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private initialize;
     private domStorageModelAdded;
     private domStorageModelRemoved;
+    private extensionStorageModelAdded;
+    private extensionStorageModelRemoved;
     private indexedDBModelAdded;
     private indexedDBModelRemoved;
     private interestGroupModelAdded;
@@ -85,6 +90,10 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private addDOMStorage;
     private domStorageRemoved;
     private removeDOMStorage;
+    private extensionStorageAdded;
+    private addExtensionStorage;
+    private extensionStorageRemoved;
+    private removeExtensionStorage;
     private sharedStorageAdded;
     private addSharedStorage;
     private sharedStorageRemoved;
@@ -217,6 +226,14 @@ export declare class IDBIndexTreeElement extends ApplicationPanelTreeElement {
 export declare class DOMStorageTreeElement extends ApplicationPanelTreeElement {
     private readonly domStorage;
     constructor(storagePanel: ResourcesPanel, domStorage: DOMStorage);
+    get itemURL(): Platform.DevToolsPath.UrlString;
+    onselect(selectedByUser?: boolean): boolean;
+    onattach(): void;
+    private handleContextMenuEvent;
+}
+export declare class ExtensionStorageTreeElement extends ApplicationPanelTreeElement {
+    private readonly extensionStorage;
+    constructor(storagePanel: ResourcesPanel, extensionStorage: ExtensionStorage);
     get itemURL(): Platform.DevToolsPath.UrlString;
     onselect(selectedByUser?: boolean): boolean;
     onattach(): void;

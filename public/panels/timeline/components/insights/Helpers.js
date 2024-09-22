@@ -60,6 +60,12 @@ export class BaseInsight extends HTMLElement {
         }
         this.dispatchEvent(new SidebarInsight.InsightActivated(this.internalName, this.data.navigationId, this.createOverlays.bind(this)));
     }
+    onOverlayOverride(overlays) {
+        if (!this.isActive()) {
+            return;
+        }
+        this.dispatchEvent(new SidebarInsight.InsightOverlayOverride(overlays));
+    }
     isActive() {
         return insightIsActive({
             activeInsight: this.data.activeInsight,

@@ -18,8 +18,8 @@ export class NodeLink extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     async #linkify() {
-        // TODO: consider using `TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent`, which
-        // requires traceParsedData.
+        // TODO: consider using `Trace.Extras.FetchNodes.extractRelatedDOMNodesFromEvent`, which
+        // requires parsedTrace.
         if (this.#backendNodeId === undefined) {
             return;
         }

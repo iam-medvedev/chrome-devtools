@@ -3745,11 +3745,6 @@ export const NativeFunctions = [
         receivers: ["Window"]
     },
     {
-        name: "prompt",
-        signatures: [["input"]],
-        receivers: ["AITextSession"]
-    },
-    {
         name: "watchAvailability",
         signatures: [["callback"]]
     },
@@ -7270,10 +7265,6 @@ export const NativeFunctions = [
         signatures: [["languageTag"]]
     },
     {
-        name: "promptStreaming",
-        signatures: [["input"]]
-    },
-    {
         name: "writeStreaming",
         signatures: [["input", "?options"]]
     },
@@ -7845,6 +7836,10 @@ export const NativeFunctions = [
         signatures: [["input", "filter", "?options"]]
     },
     {
+        name: "cumulativeSum",
+        signatures: [["input", "axis", "?options"]]
+    },
+    {
         name: "equal",
         signatures: [["a", "b", "?options"]]
     },
@@ -7902,6 +7897,10 @@ export const NativeFunctions = [
     },
     {
         name: "gatherElements",
+        signatures: [["input", "indices", "?options"]]
+    },
+    {
+        name: "gatherND",
         signatures: [["input", "indices", "?options"]]
     },
     {
@@ -8941,6 +8940,14 @@ export const NativeFunctions = [
     {
         name: "beginOcclusionQuery",
         signatures: [["queryIndex"]]
+    },
+    {
+        name: "multiDrawIndirect",
+        signatures: [["indirectBuffer", "indirectOffset", "maxDrawCount", "?drawCountBuffer", "?drawCountBufferOffset"]]
+    },
+    {
+        name: "multiDrawIndexedIndirect",
+        signatures: [["indirectBuffer", "indirectOffset", "maxDrawCount", "?drawCountBuffer", "?drawCountBufferOffset"]]
     },
     {
         name: "createView",

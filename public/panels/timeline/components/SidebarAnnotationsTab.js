@@ -4,14 +4,15 @@
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Platform from '../../../core/platform/platform.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Settings from '../../../ui/components/settings/settings.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import { nameForEntry } from './EntryName.js';
-import { RemoveAnnotation } from './Sidebar.js';
+import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
 const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
 const entryLabelImageUrl = new URL('../../../Images/performance-panel-entry-label.svg', import.meta.url).toString();
@@ -92,8 +93,8 @@ export class SidebarAnnotationsTab extends HTMLElement {
             }
             case 'TIME_RANGE': {
                 const minTraceBoundsMilli = TraceBounds.TraceBounds.BoundsManager.instance().state()?.milli.entireTraceBounds.min ?? 0;
-                const timeRangeStartInMs = Math.round(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(annotation.bounds.min) - minTraceBoundsMilli);
-                const timeRangeEndInMs = Math.round(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(annotation.bounds.max) - minTraceBoundsMilli);
+                const timeRangeStartInMs = Math.round(Trace.Helpers.Timing.microSecondsToMilliseconds(annotation.bounds.min) - minTraceBoundsMilli);
+                const timeRangeEndInMs = Math.round(Trace.Helpers.Timing.microSecondsToMilliseconds(annotation.bounds.max) - minTraceBoundsMilli);
                 return LitHtml.html `
               <span class="annotation-identifier time-range">
                 ${timeRangeStartInMs} - ${timeRangeEndInMs} ms
@@ -101,15 +102,10 @@ export class SidebarAnnotationsTab extends HTMLElement {
         `;
             }
             case 'ENTRIES_LINK': {
-                const entryFromName = TraceEngine.Types.TraceEvents.isProfileCall(annotation.entryFrom) ?
-                    annotation.entryFrom.callFrame.functionName :
-                    annotation.entryFrom.name;
-                const entryToName = (!annotation.entryTo) ? '' :
-                    TraceEngine.Types.TraceEvents.isProfileCall(annotation.entryTo) ?
-                        annotation.entryTo.callFrame.functionName :
-                        annotation.entryTo.name;
+                const entryFromName = nameForEntry(annotation.entryFrom);
                 const fromColor = this.#annotationEntryToColorMap.get(annotation.entryFrom);
-                const toColor = (annotation.entryTo) ? this.#annotationEntryToColorMap.get(annotation.entryTo) : '';
+                const entryToName = annotation.entryTo ? nameForEntry(annotation.entryTo) : '';
+                const toColor = annotation.entryTo ? this.#annotationEntryToColorMap.get(annotation.entryTo) : '';
                 // clang-format off
                 return LitHtml.html `
           <div class="entries-link">
@@ -130,60 +126,12 @@ export class SidebarAnnotationsTab extends HTMLElement {
       `;
                 // clang-format on
             }
+            default:
+                Platform.assertNever(annotation, 'Unsupported annotation type');
         }
     }
-    // When an annotations are clicked in the sidebar, zoom into it.
-    #zoomIntoAnnotation(annotation) {
-        let annotationWindow = null;
-        const minVisibleEntryDuration = TraceEngine.Types.Timing.MilliSeconds(1);
-        switch (annotation.type) {
-            case 'ENTRY_LABEL': {
-                const eventDuration = annotation.entry.dur ?? minVisibleEntryDuration;
-                annotationWindow = {
-                    min: annotation.entry.ts,
-                    max: TraceEngine.Types.Timing.MicroSeconds(annotation.entry.ts + eventDuration),
-                    range: TraceEngine.Types.Timing.MicroSeconds(eventDuration),
-                };
-                break;
-            }
-            case 'TIME_RANGE': {
-                annotationWindow = annotation.bounds;
-                break;
-            }
-            case 'ENTRIES_LINK': {
-                // If entryTo does not exist, the annotation is in the process of being created.
-                // Do not allow to zoom into it in this case.
-                if (!annotation.entryTo) {
-                    break;
-                }
-                const fromEventDuration = (annotation.entryFrom.dur) ?? minVisibleEntryDuration;
-                const toEventDuration = annotation.entryTo.dur ?? minVisibleEntryDuration;
-                // To choose window max, check which entry ends later
-                const fromEntryEndTS = (annotation.entryFrom.ts + fromEventDuration);
-                const toEntryEndTS = (annotation.entryTo.ts + toEventDuration);
-                const maxTimestamp = Math.max(fromEntryEndTS, toEntryEndTS);
-                annotationWindow = {
-                    min: annotation.entryFrom.ts,
-                    max: TraceEngine.Types.Timing.MicroSeconds(maxTimestamp),
-                    range: TraceEngine.Types.Timing.MicroSeconds(maxTimestamp - annotation.entryFrom.ts),
-                };
-            }
-        }
-        const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
-        if (annotationWindow && traceBounds) {
-            // Expand the bounds by 20% to make the new window 40% bigger than the annotation so it is not taking the whole visible window.
-            // Pass the trace bounds window to make sure we do not set a window outside of the trace bounds.
-            const newVisibleWindow = TraceEngine.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(annotationWindow, traceBounds, 40);
-            // Set the timeline visible window and ignore the minimap bounds. This
-            // allows us to pick a visible window even if the overlays are outside of
-            // the current breadcrumb. If this happens, the event listener for
-            // BoundsManager changes in TimelineMiniMap will detect it and activate
-            // the correct breadcrumb for us.
-            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(newVisibleWindow, { ignoreMiniMapBounds: true, shouldAnimate: true });
-        }
-        else {
-            console.error('Could not calculate zoom in window for ', annotation);
-        }
+    #revealAnnotation(annotation) {
+        this.dispatchEvent(new RevealAnnotation(annotation));
     }
     #renderTutorialCard() {
         return LitHtml.html `
@@ -221,7 +169,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
             this.#renderTutorialCard() :
             LitHtml.html `
               ${this.#annotations.map(annotation => LitHtml.html `
-                  <div class="annotation-container" @click=${() => this.#zoomIntoAnnotation(annotation)}>
+                  <div class="annotation-container" @click=${() => this.#revealAnnotation(annotation)}>
                     <div class="annotation">
                       ${this.#renderAnnotationIdentifier(annotation)}
                       <span class="label">
@@ -243,7 +191,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                 setting: this.#annotationsHiddenSetting,
                 textOverride: 'Hide annotations',
             }}>
-            </${Settings.SettingCheckbox.SettingCheckbox.litTagName}>
+              </${Settings.SettingCheckbox.SettingCheckbox.litTagName}>
         </span>`}`, this.#shadow, { host: this });
         // clang-format on
     }

@@ -7,9 +7,9 @@ import * as SDK from '../../core/sdk/sdk.js';
  * return the target representing that worker. Otherwise, we return the primary
  * page's target.
  **/
-export function targetForEvent(traceParsedData, event) {
+export function targetForEvent(parsedTrace, event) {
     const targetManager = SDK.TargetManager.TargetManager.instance();
-    const workerId = traceParsedData.Workers.workerIdByThread.get(event.tid);
+    const workerId = parsedTrace.Workers.workerIdByThread.get(event.tid);
     if (workerId) {
         return targetManager.targetById(workerId);
     }

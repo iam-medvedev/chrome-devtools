@@ -1,8 +1,8 @@
 import * as Types from '../types/types.js';
-import { type TraceEventHandlerName } from './types.js';
+import { type HandlerName } from './types.js';
 export declare function reset(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
-export declare function getFrameIdForPageLoadEvent(event: Types.TraceEvents.PageLoadEvent): string;
+export declare function handleEvent(event: Types.Events.Event): void;
+export declare function getFrameIdForPageLoadEvent(event: Types.Events.PageLoadEvent): string;
 /**
  * Classifications sourced from
  * https://web.dev/fcp/
@@ -40,10 +40,10 @@ export type PageLoadMetricsData = {
      * Page load events with no associated duration that happened in the
      * main frame.
      */
-    allMarkerEvents: Types.TraceEvents.PageLoadEvent[];
+    allMarkerEvents: Types.Events.PageLoadEvent[];
 };
 export declare function data(): PageLoadMetricsData;
-export declare function deps(): TraceEventHandlerName[];
+export declare function deps(): HandlerName[];
 export declare const enum ScoreClassification {
     GOOD = "good",
     OK = "ok",
@@ -63,8 +63,8 @@ export declare const enum MetricName {
 export interface MetricScore {
     metricName: MetricName;
     classification: ScoreClassification;
-    event?: Types.TraceEvents.PageLoadEvent;
-    navigation?: Types.TraceEvents.TraceEventNavigationStart;
+    event?: Types.Events.PageLoadEvent;
+    navigation?: Types.Events.NavigationStart;
     estimated?: boolean;
     timing: Types.Timing.MicroSeconds;
 }
