@@ -5,166 +5,133 @@ export function isNestableAsyncPhase(phase) {
     return phase === "b" /* Phase.ASYNC_NESTABLE_START */ || phase === "e" /* Phase.ASYNC_NESTABLE_END */ ||
         phase === "n" /* Phase.ASYNC_NESTABLE_INSTANT */;
 }
-export function isAsyncPhase(phase) {
+export function isPhaseAsync(phase) {
     return isNestableAsyncPhase(phase) || phase === "S" /* Phase.ASYNC_BEGIN */ || phase === "T" /* Phase.ASYNC_STEP_INTO */ ||
         phase === "F" /* Phase.ASYNC_END */ || phase === "p" /* Phase.ASYNC_STEP_PAST */;
 }
 export function isFlowPhase(phase) {
     return phase === "s" /* Phase.FLOW_START */ || phase === "t" /* Phase.FLOW_STEP */ || phase === "f" /* Phase.FLOW_END */;
 }
-export function objectIsTraceEventCallFrame(object) {
+export function objectIsCallFrame(object) {
     return ('functionName' in object && typeof object.functionName === 'string') &&
         ('scriptId' in object && (typeof object.scriptId === 'string' || typeof object.scriptId === 'number')) &&
         ('columnNumber' in object && typeof object.columnNumber === 'number') &&
         ('lineNumber' in object && typeof object.lineNumber === 'number') &&
         ('url' in object && typeof object.url === 'string');
 }
-export function isTraceEventRunTask(event) {
-    return event.name === "RunTask" /* KnownEventName.RUN_TASK */;
+export function isRunTask(event) {
+    return event.name === "RunTask" /* Name.RUN_TASK */;
 }
-export function isTraceEventAuctionWorkletRunningInProcess(event) {
+export function isAuctionWorkletRunningInProcess(event) {
     return event.name === 'AuctionWorkletRunningInProcess';
 }
-export function isTraceEventAuctionWorkletDoneWithProcess(event) {
+export function isAuctionWorkletDoneWithProcess(event) {
     return event.name === 'AuctionWorkletDoneWithProcess';
 }
-export function isTraceEventScreenshot(event) {
-    return event.name === "Screenshot" /* KnownEventName.SCREENSHOT */;
+export function isScreenshot(event) {
+    return event.name === "Screenshot" /* Name.SCREENSHOT */;
 }
 const markerTypeGuards = [
-    isTraceEventMarkDOMContent,
-    isTraceEventMarkLoad,
-    isTraceEventFirstPaint,
-    isTraceEventFirstContentfulPaint,
-    isTraceEventLargestContentfulPaintCandidate,
-    isTraceEventNavigationStart,
+    isMarkDOMContent,
+    isMarkLoad,
+    isFirstPaint,
+    isFirstContentfulPaint,
+    isLargestContentfulPaintCandidate,
+    isNavigationStart,
 ];
 export const MarkerName = ['MarkDOMContent', 'MarkLoad', 'firstPaint', 'firstContentfulPaint', 'largestContentfulPaint::Candidate'];
-export function isTraceEventMarkerEvent(event) {
+export function isMarkerEvent(event) {
     return markerTypeGuards.some(fn => fn(event));
 }
 const pageLoadEventTypeGuards = [
     ...markerTypeGuards,
-    isTraceEventInteractiveTime,
+    isInteractiveTime,
 ];
 export function eventIsPageLoadEvent(event) {
     return pageLoadEventTypeGuards.some(fn => fn(event));
 }
-export function isTraceEventTracingSessionIdForWorker(event) {
+export function isTracingSessionIdForWorker(event) {
     return event.name === 'TracingSessionIdForWorker';
 }
-export function isTraceEventScheduleStyleInvalidationTracking(event) {
-    return event.name === "ScheduleStyleInvalidationTracking" /* KnownEventName.SCHEDULE_STYLE_INVALIDATION_TRACKING */;
+export function isScheduleStyleInvalidationTracking(event) {
+    return event.name === "ScheduleStyleInvalidationTracking" /* Name.SCHEDULE_STYLE_INVALIDATION_TRACKING */;
 }
-export function isTraceEventStyleRecalcInvalidationTracking(event) {
-    return event.name === "StyleRecalcInvalidationTracking" /* KnownEventName.STYLE_RECALC_INVALIDATION_TRACKING */;
+export function isStyleRecalcInvalidationTracking(event) {
+    return event.name === "StyleRecalcInvalidationTracking" /* Name.STYLE_RECALC_INVALIDATION_TRACKING */;
 }
-export function isTraceEventStyleInvalidatorInvalidationTracking(event) {
-    return event.name === "StyleInvalidatorInvalidationTracking" /* KnownEventName.STYLE_INVALIDATOR_INVALIDATION_TRACKING */;
+export function isStyleInvalidatorInvalidationTracking(event) {
+    return event.name === "StyleInvalidatorInvalidationTracking" /* Name.STYLE_INVALIDATOR_INVALIDATION_TRACKING */;
 }
-export function isTraceEventBeginCommitCompositorFrame(event) {
-    return event.name === "BeginCommitCompositorFrame" /* KnownEventName.BEGIN_COMMIT_COMPOSITOR_FRAME */;
+export function isBeginCommitCompositorFrame(event) {
+    return event.name === "BeginCommitCompositorFrame" /* Name.BEGIN_COMMIT_COMPOSITOR_FRAME */;
 }
-export function isTraceEventParseMetaViewport(event) {
-    return event.name === "ParseMetaViewport" /* KnownEventName.PARSE_META_VIEWPORT */;
+export function isParseMetaViewport(event) {
+    return event.name === "ParseMetaViewport" /* Name.PARSE_META_VIEWPORT */;
 }
-export function isTraceEventScheduleStyleRecalculation(event) {
-    return event.name === "ScheduleStyleRecalculation" /* KnownEventName.SCHEDULE_STYLE_RECALCULATION */;
+export function isScheduleStyleRecalculation(event) {
+    return event.name === "ScheduleStyleRecalculation" /* Name.SCHEDULE_STYLE_RECALCULATION */;
 }
-export function isTraceEventRenderFrameImplCreateChildFrame(event) {
-    return event.name === "RenderFrameImpl::createChildFrame" /* KnownEventName.RENDER_FRAME_IMPL_CREATE_CHILD_FRAME */;
+export function isRenderFrameImplCreateChildFrame(event) {
+    return event.name === "RenderFrameImpl::createChildFrame" /* Name.RENDER_FRAME_IMPL_CREATE_CHILD_FRAME */;
 }
-export function isTraceEventTargetRundown(traceEventData) {
-    if (traceEventData.cat !== 'disabled-by-default-devtools.target-rundown') {
-        return false;
-    }
-    const data = traceEventData.args?.data;
-    if (!data) {
-        return false;
-    }
-    return 'frame' in data && 'frameType' in data && 'url' in data && 'isolate' in data && 'v8context' in data &&
-        'scriptId' in data;
+export function isPipelineReporter(event) {
+    return event.name === "PipelineReporter" /* Name.PIPELINE_REPORTER */;
 }
-export function isTraceEventScriptRundown(traceEventData) {
-    if (traceEventData.cat !== 'disabled-by-default-devtools.v8-source-rundown') {
-        return false;
-    }
-    const data = traceEventData.args?.data;
-    if (!data) {
-        return false;
-    }
-    return 'isolate' in data && 'executionContextId' in data && 'scriptId' in data && 'startLine' in data &&
-        'startColumn' in data && 'endLine' in data && 'endColumn' in data && 'hash' in data && 'isModule' in data &&
-        'hasSourceUrl' in data;
-}
-export function isTraceEventScriptRundownSource(traceEventData) {
-    if (traceEventData.cat !== 'disabled-by-default-devtools.v8-source-rundown-sources') {
-        return false;
-    }
-    const data = traceEventData.args?.data;
-    if (!data) {
-        return false;
-    }
-    return 'isolate' in data && 'scriptId' in data && 'sourceText' in data;
-}
-export function isTraceEventPipelineReporter(event) {
-    return event.name === "PipelineReporter" /* KnownEventName.PIPELINE_REPORTER */;
-}
-export function isSyntheticBasedEvent(event) {
+export function isSyntheticBased(event) {
     return 'rawSourceEvent' in event;
 }
-export function isSyntheticInteractionEvent(event) {
+export function isSyntheticInteraction(event) {
     return Boolean('interactionId' in event && event.args?.data && 'beginEvent' in event.args.data && 'endEvent' in event.args.data);
 }
-export function isTraceEventDrawFrame(event) {
+export function isDrawFrame(event) {
     // The extra check for INSTANT here is because in the past DrawFrame events had an ASYNC_NESTABLE_START and ASYNC_NESTABLE_END pair. We don't want to support those old events, so we have to check we are dealing with an instant event.
-    return event.name === "DrawFrame" /* KnownEventName.DRAW_FRAME */ && event.ph === "I" /* Phase.INSTANT */;
+    return event.name === "DrawFrame" /* Name.DRAW_FRAME */ && event.ph === "I" /* Phase.INSTANT */;
 }
 export function isLegacyTraceEventDrawFrameBegin(event) {
-    return event.name === "DrawFrame" /* KnownEventName.DRAW_FRAME */ && event.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
+    return event.name === "DrawFrame" /* Name.DRAW_FRAME */ && event.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
 }
-export function isTraceEventBeginFrame(event) {
+export function isBeginFrame(event) {
     // Old traces did not have frameSeqId; but we do not want to support these.
-    return Boolean(event.name === "BeginFrame" /* KnownEventName.BEGIN_FRAME */ && event.args && 'frameSeqId' in event.args);
+    return Boolean(event.name === "BeginFrame" /* Name.BEGIN_FRAME */ && event.args && 'frameSeqId' in event.args);
 }
-export function isTraceEventDroppedFrame(event) {
+export function isDroppedFrame(event) {
     // Old traces did not have frameSeqId; but we do not want to support these.
-    return Boolean(event.name === "DroppedFrame" /* KnownEventName.DROPPED_FRAME */ && event.args && 'frameSeqId' in event.args);
+    return Boolean(event.name === "DroppedFrame" /* Name.DROPPED_FRAME */ && event.args && 'frameSeqId' in event.args);
 }
-export function isTraceEventRequestMainThreadFrame(event) {
-    return event.name === "RequestMainThreadFrame" /* KnownEventName.REQUEST_MAIN_THREAD_FRAME */;
+export function isRequestMainThreadFrame(event) {
+    return event.name === "RequestMainThreadFrame" /* Name.REQUEST_MAIN_THREAD_FRAME */;
 }
-export function isTraceEventBeginMainThreadFrame(event) {
-    return event.name === "BeginMainThreadFrame" /* KnownEventName.BEGIN_MAIN_THREAD_FRAME */;
+export function isBeginMainThreadFrame(event) {
+    return event.name === "BeginMainThreadFrame" /* Name.BEGIN_MAIN_THREAD_FRAME */;
 }
-export function isTraceEventNeedsBeginFrameChanged(event) {
-    return event.name === "NeedsBeginFrameChanged" /* KnownEventName.NEEDS_BEGIN_FRAME_CHANGED */;
+export function isNeedsBeginFrameChanged(event) {
+    return event.name === "NeedsBeginFrameChanged" /* Name.NEEDS_BEGIN_FRAME_CHANGED */;
 }
-export function isTraceEventCommit(event) {
+export function isCommit(event) {
     // Old traces did not have frameSeqId; but we do not want to support these.
-    return Boolean(event.name === "Commit" /* KnownEventName.COMMIT */ && event.args && 'frameSeqId' in event.args);
+    return Boolean(event.name === "Commit" /* Name.COMMIT */ && event.args && 'frameSeqId' in event.args);
 }
-export function isTraceEventRasterTask(event) {
-    return event.name === "RasterTask" /* KnownEventName.RASTER_TASK */;
+export function isRasterTask(event) {
+    return event.name === "RasterTask" /* Name.RASTER_TASK */;
 }
-export function isTraceEventCompositeLayers(event) {
-    return event.name === "CompositeLayers" /* KnownEventName.COMPOSITE_LAYERS */;
+export function isCompositeLayers(event) {
+    return event.name === "CompositeLayers" /* Name.COMPOSITE_LAYERS */;
 }
-export function isTraceEventActivateLayerTree(event) {
-    return event.name === "ActivateLayerTree" /* KnownEventName.ACTIVATE_LAYER_TREE */;
+export function isActivateLayerTree(event) {
+    return event.name === "ActivateLayerTree" /* Name.ACTIVATE_LAYER_TREE */;
 }
-export function isTraceEventInvalidationTracking(event) {
-    return isTraceEventScheduleStyleInvalidationTracking(event) || isTraceEventStyleRecalcInvalidationTracking(event) ||
-        isTraceEventStyleInvalidatorInvalidationTracking(event) || isTraceEventLayoutInvalidationTracking(event);
+export function isInvalidationTracking(event) {
+    return isScheduleStyleInvalidationTracking(event) || isStyleRecalcInvalidationTracking(event) ||
+        isStyleInvalidatorInvalidationTracking(event) || isLayoutInvalidationTracking(event);
 }
-export function isTraceEventDrawLazyPixelRef(event) {
-    return event.name === "Draw LazyPixelRef" /* KnownEventName.DRAW_LAZY_PIXEL_REF */;
+export function isDrawLazyPixelRef(event) {
+    return event.name === "Draw LazyPixelRef" /* Name.DRAW_LAZY_PIXEL_REF */;
 }
-export function isTraceEventDecodeLazyPixelRef(event) {
-    return event.name === "Decode LazyPixelRef" /* KnownEventName.DECODE_LAZY_PIXEL_REF */;
+export function isDecodeLazyPixelRef(event) {
+    return event.name === "Decode LazyPixelRef" /* Name.DECODE_LAZY_PIXEL_REF */;
 }
-export function isTraceEventDecodeImage(event) {
-    return event.name === "Decode Image" /* KnownEventName.DECODE_IMAGE */;
+export function isDecodeImage(event) {
+    return event.name === "Decode Image" /* Name.DECODE_IMAGE */;
 }
 export var SelectorTimingsKey;
 (function (SelectorTimingsKey) {
@@ -176,17 +143,17 @@ export var SelectorTimingsKey;
     SelectorTimingsKey["Selector"] = "selector";
     SelectorTimingsKey["StyleSheetId"] = "style_sheet_id";
 })(SelectorTimingsKey || (SelectorTimingsKey = {}));
-export function isTraceEventSelectorStats(event) {
-    return event.name === "SelectorStats" /* KnownEventName.SELECTOR_STATS */;
+export function isSelectorStats(event) {
+    return event.name === "SelectorStats" /* Name.SELECTOR_STATS */;
 }
-export function isTraceEventUpdateLayoutTree(event) {
-    return event.name === "UpdateLayoutTree" /* KnownEventName.UPDATE_LAYOUT_TREE */;
+export function isUpdateLayoutTree(event) {
+    return event.name === "UpdateLayoutTree" /* Name.UPDATE_LAYOUT_TREE */;
 }
-export function isTraceEventLayout(event) {
-    return event.name === "Layout" /* KnownEventName.LAYOUT */;
+export function isLayout(event) {
+    return event.name === "Layout" /* Name.LAYOUT */;
 }
-export function isTraceEventInvalidateLayout(event) {
-    return event.name === "InvalidateLayout" /* KnownEventName.INVALIDATE_LAYOUT */;
+export function isInvalidateLayout(event) {
+    return event.name === "InvalidateLayout" /* Name.INVALIDATE_LAYOUT */;
 }
 class ProfileIdTag {
     #profileIdTag;
@@ -230,289 +197,286 @@ class WorkerIdTag {
 export function WorkerId(value) {
     return value;
 }
-export function isTraceEventComplete(event) {
+export function isComplete(event) {
     return event.ph === "X" /* Phase.COMPLETE */;
 }
-export function isTraceEventBegin(event) {
+export function isBegin(event) {
     return event.ph === "B" /* Phase.BEGIN */;
 }
-export function isTraceEventEnd(event) {
+export function isEnd(event) {
     return event.ph === "E" /* Phase.END */;
 }
-export function isTraceEventDispatch(event) {
+export function isDispatch(event) {
     return event.name === 'EventDispatch';
 }
-export function isTraceEventInstant(event) {
+export function isInstant(event) {
     return event.ph === "I" /* Phase.INSTANT */;
 }
-export function isTraceEventRendererEvent(event) {
-    return isTraceEventInstant(event) || isTraceEventComplete(event);
+export function isRendererEvent(event) {
+    return isInstant(event) || isComplete(event);
 }
-export function isTraceEventFireIdleCallback(event) {
+export function isFireIdleCallback(event) {
     return event.name === 'FireIdleCallback';
 }
-export function isTraceEventSchedulePostMessage(event) {
-    return event.name === "SchedulePostMessage" /* KnownEventName.SCHEDULE_POST_MESSAGE */;
+export function isSchedulePostMessage(event) {
+    return event.name === "SchedulePostMessage" /* Name.SCHEDULE_POST_MESSAGE */;
 }
-export function isTraceEventHandlePostMessage(event) {
-    return event.name === "HandlePostMessage" /* KnownEventName.HANDLE_POST_MESSAGE */;
+export function isHandlePostMessage(event) {
+    return event.name === "HandlePostMessage" /* Name.HANDLE_POST_MESSAGE */;
 }
-export function isTraceEventUpdateCounters(event) {
+export function isUpdateCounters(event) {
     return event.name === 'UpdateCounters';
 }
-export function isThreadName(traceEventData) {
-    return traceEventData.name === "thread_name" /* KnownEventName.THREAD_NAME */;
+export function isThreadName(event) {
+    return event.name === "thread_name" /* Name.THREAD_NAME */;
 }
-export function isProcessName(traceEventData) {
-    return traceEventData.name === 'process_name';
+export function isProcessName(event) {
+    return event.name === 'process_name';
 }
-export function isTraceEventTracingStartedInBrowser(traceEventData) {
-    return traceEventData.name === "TracingStartedInBrowser" /* KnownEventName.TRACING_STARTED_IN_BROWSER */;
+export function isTracingStartedInBrowser(event) {
+    return event.name === "TracingStartedInBrowser" /* Name.TRACING_STARTED_IN_BROWSER */;
 }
-export function isTraceEventFrameCommittedInBrowser(traceEventData) {
-    return traceEventData.name === 'FrameCommittedInBrowser';
+export function isFrameCommittedInBrowser(event) {
+    return event.name === 'FrameCommittedInBrowser';
 }
-export function isTraceEventCommitLoad(traceEventData) {
-    return traceEventData.name === 'CommitLoad';
+export function isCommitLoad(event) {
+    return event.name === 'CommitLoad';
 }
-export function isTraceEventNavigationStart(traceEventData) {
-    return traceEventData.name === 'navigationStart';
+export function isNavigationStart(event) {
+    return event.name === 'navigationStart';
 }
-export function isTraceEventAnimation(traceEventData) {
+export function isAnimation(event) {
     // We've found some rare traces with an Animtation trace event from a different category: https://crbug.com/1472375#comment7
-    return traceEventData.name === 'Animation' && traceEventData.cat.includes('devtools.timeline');
+    return event.name === 'Animation' && event.cat.includes('devtools.timeline');
 }
-export function isTraceEventLayoutShift(traceEventData) {
-    return traceEventData.name === 'LayoutShift';
-}
-export function isTraceEventLayoutInvalidationTracking(traceEventData) {
-    return traceEventData.name === "LayoutInvalidationTracking" /* KnownEventName.LAYOUT_INVALIDATION_TRACKING */;
-}
-export function isTraceEventFirstContentfulPaint(traceEventData) {
-    return traceEventData.name === 'firstContentfulPaint';
-}
-export function isTraceEventLargestContentfulPaintCandidate(traceEventData) {
-    return traceEventData.name === "largestContentfulPaint::Candidate" /* KnownEventName.MARK_LCP_CANDIDATE */;
-}
-export function isTraceEventLargestImagePaintCandidate(traceEventData) {
-    return traceEventData.name === 'LargestImagePaint::Candidate';
-}
-export function isTraceEventLargestTextPaintCandidate(traceEventData) {
-    return traceEventData.name === 'LargestTextPaint::Candidate';
-}
-export function isTraceEventMarkLoad(traceEventData) {
-    return traceEventData.name === 'MarkLoad';
-}
-export function isTraceEventFirstPaint(traceEventData) {
-    return traceEventData.name === 'firstPaint';
-}
-export function isTraceEventMarkDOMContent(traceEventData) {
-    return traceEventData.name === 'MarkDOMContent';
-}
-export function isTraceEventInteractiveTime(traceEventData) {
-    return traceEventData.name === 'InteractiveTime';
-}
-export function isTraceEventEventTiming(traceEventData) {
-    return traceEventData.name === "EventTiming" /* KnownEventName.EVENT_TIMING */;
-}
-export function isTraceEventEventTimingEnd(traceEventData) {
-    return isTraceEventEventTiming(traceEventData) && traceEventData.ph === "e" /* Phase.ASYNC_NESTABLE_END */;
-}
-export function isTraceEventEventTimingStart(traceEventData) {
-    return isTraceEventEventTiming(traceEventData) && traceEventData.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
-}
-export function isTraceEventGPUTask(traceEventData) {
-    return traceEventData.name === 'GPUTask';
-}
-export function isTraceEventProfile(traceEventData) {
-    return traceEventData.name === 'Profile';
-}
-export function isSyntheticCpuProfile(traceEventData) {
-    return traceEventData.name === 'CpuProfile';
-}
-export function isTraceEventProfileChunk(traceEventData) {
-    return traceEventData.name === 'ProfileChunk';
-}
-export function isTraceEventResourceChangePriority(traceEventData) {
-    return traceEventData.name === 'ResourceChangePriority';
-}
-export function isTraceEventResourceSendRequest(traceEventData) {
-    return traceEventData.name === 'ResourceSendRequest';
-}
-export function isTraceEventResourceReceiveResponse(traceEventData) {
-    return traceEventData.name === 'ResourceReceiveResponse';
-}
-export function isTraceEventResourceMarkAsCached(traceEventData) {
-    return traceEventData.name === 'ResourceMarkAsCached';
-}
-export function isTraceEventResourceFinish(traceEventData) {
-    return traceEventData.name === 'ResourceFinish';
-}
-export function isTraceEventResourceWillSendRequest(traceEventData) {
-    return traceEventData.name === 'ResourceWillSendRequest';
-}
-export function isTraceEventResourceReceivedData(traceEventData) {
-    return traceEventData.name === 'ResourceReceivedData';
-}
-export function isSyntheticNetworkRequestEvent(traceEventData) {
-    return traceEventData.name === 'SyntheticNetworkRequest';
-}
-export function isSyntheticWebSocketConnectionEvent(traceEventData) {
-    return traceEventData.name === 'SyntheticWebSocketConnectionEvent';
-}
-export function isNetworkTrackEntry(traceEventData) {
-    return isSyntheticNetworkRequestEvent(traceEventData) || isSyntheticWebSocketConnectionEvent(traceEventData) ||
-        isWebSocketTraceEvent(traceEventData);
-}
-export function isTraceEventPrePaint(traceEventData) {
-    return traceEventData.name === 'PrePaint';
-}
-export function isTraceEventNavigationStartWithURL(event) {
-    return Boolean(isTraceEventNavigationStart(event) && event.args.data && event.args.data.documentLoaderURL !== '');
-}
-export function isTraceEventMainFrameViewport(traceEventData) {
-    return traceEventData.name === 'PaintTimingVisualizer::Viewport';
-}
-export function isSyntheticUserTiming(traceEventData) {
-    if (traceEventData.cat !== 'blink.user_timing') {
+export function isSyntheticAnimation(event) {
+    if (event.name !== 'Animation' || !event.cat.includes('devtools.timeline')) {
         return false;
     }
-    const data = traceEventData.args?.data;
+    const data = event.args?.data;
     if (!data) {
         return false;
     }
     return 'beginEvent' in data && 'endEvent' in data;
 }
-export function isSyntheticConsoleTiming(traceEventData) {
-    if (traceEventData.cat !== 'blink.console') {
+export function isLayoutShift(event) {
+    return event.name === 'LayoutShift';
+}
+export function isLayoutInvalidationTracking(event) {
+    return event.name === "LayoutInvalidationTracking" /* Name.LAYOUT_INVALIDATION_TRACKING */;
+}
+export function isFirstContentfulPaint(event) {
+    return event.name === 'firstContentfulPaint';
+}
+export function isLargestContentfulPaintCandidate(event) {
+    return event.name === "largestContentfulPaint::Candidate" /* Name.MARK_LCP_CANDIDATE */;
+}
+export function isLargestImagePaintCandidate(event) {
+    return event.name === 'LargestImagePaint::Candidate';
+}
+export function isLargestTextPaintCandidate(event) {
+    return event.name === 'LargestTextPaint::Candidate';
+}
+export function isMarkLoad(event) {
+    return event.name === 'MarkLoad';
+}
+export function isFirstPaint(event) {
+    return event.name === 'firstPaint';
+}
+export function isMarkDOMContent(event) {
+    return event.name === 'MarkDOMContent';
+}
+export function isInteractiveTime(event) {
+    return event.name === 'InteractiveTime';
+}
+export function isEventTiming(event) {
+    return event.name === "EventTiming" /* Name.EVENT_TIMING */;
+}
+export function isEventTimingEnd(event) {
+    return isEventTiming(event) && event.ph === "e" /* Phase.ASYNC_NESTABLE_END */;
+}
+export function isEventTimingStart(event) {
+    return isEventTiming(event) && event.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
+}
+export function isGPUTask(event) {
+    return event.name === 'GPUTask';
+}
+export function isProfile(event) {
+    return event.name === 'Profile';
+}
+export function isSyntheticCpuProfile(event) {
+    return event.name === 'CpuProfile';
+}
+export function isProfileChunk(event) {
+    return event.name === 'ProfileChunk';
+}
+export function isResourceChangePriority(event) {
+    return event.name === 'ResourceChangePriority';
+}
+export function isResourceSendRequest(event) {
+    return event.name === 'ResourceSendRequest';
+}
+export function isResourceReceiveResponse(event) {
+    return event.name === 'ResourceReceiveResponse';
+}
+export function isResourceMarkAsCached(event) {
+    return event.name === 'ResourceMarkAsCached';
+}
+export function isResourceFinish(event) {
+    return event.name === 'ResourceFinish';
+}
+export function isResourceWillSendRequest(event) {
+    return event.name === 'ResourceWillSendRequest';
+}
+export function isResourceReceivedData(event) {
+    return event.name === 'ResourceReceivedData';
+}
+export function isSyntheticNetworkRequest(event) {
+    return event.name === 'SyntheticNetworkRequest';
+}
+export function isSyntheticWebSocketConnection(event) {
+    return event.name === 'SyntheticWebSocketConnection';
+}
+export function isNetworkTrackEntry(event) {
+    return isSyntheticNetworkRequest(event) || isSyntheticWebSocketConnection(event) || isWebSocketTraceEvent(event);
+}
+export function isPrePaint(event) {
+    return event.name === 'PrePaint';
+}
+export function isNavigationStartWithURL(event) {
+    return Boolean(isNavigationStart(event) && event.args.data && event.args.data.documentLoaderURL !== '');
+}
+export function isMainFrameViewport(event) {
+    return event.name === 'PaintTimingVisualizer::Viewport';
+}
+export function isSyntheticUserTiming(event) {
+    if (event.cat !== 'blink.user_timing') {
         return false;
     }
-    const data = traceEventData.args?.data;
+    const data = event.args?.data;
     if (!data) {
         return false;
     }
     return 'beginEvent' in data && 'endEvent' in data;
 }
-export function isTraceEventUserTiming(traceEventData) {
-    return traceEventData.cat === 'blink.user_timing';
-}
-export function isTraceEventDomLoading(traceEventData) {
-    return traceEventData.name === "domLoading" /* KnownEventName.DOM_LOADING */;
-}
-export function isTraceEventPerformanceMeasure(traceEventData) {
-    return isTraceEventUserTiming(traceEventData) && isTraceEventAsyncPhase(traceEventData);
-}
-export function isTraceEventPerformanceMark(traceEventData) {
-    return isTraceEventUserTiming(traceEventData) &&
-        (traceEventData.ph === "R" /* Phase.MARK */ || traceEventData.ph === "I" /* Phase.INSTANT */);
-}
-export function isTraceEventConsoleTime(traceEventData) {
-    return traceEventData.cat === 'blink.console' && isTraceEventAsyncPhase(traceEventData);
-}
-export function isTraceEventTimeStamp(traceEventData) {
-    return traceEventData.ph === "I" /* Phase.INSTANT */ && traceEventData.name === 'TimeStamp';
-}
-export function isTraceEventParseHTML(traceEventData) {
-    return traceEventData.name === 'ParseHTML';
-}
-const asyncPhases = new Set([
-    "b" /* Phase.ASYNC_NESTABLE_START */,
-    "n" /* Phase.ASYNC_NESTABLE_INSTANT */,
-    "e" /* Phase.ASYNC_NESTABLE_END */,
-    "T" /* Phase.ASYNC_STEP_INTO */,
-    "S" /* Phase.ASYNC_BEGIN */,
-    "F" /* Phase.ASYNC_END */,
-    "p" /* Phase.ASYNC_STEP_PAST */,
-]);
-export function isTraceEventAsyncPhase(traceEventData) {
-    return asyncPhases.has(traceEventData.ph);
-}
-export function isSyntheticLayoutShift(traceEventData) {
-    if (!isTraceEventLayoutShift(traceEventData) || !traceEventData.args.data) {
+export function isSyntheticConsoleTiming(event) {
+    if (event.cat !== 'blink.console') {
         return false;
     }
-    return 'rawEvent' in traceEventData.args.data;
+    const data = event.args?.data;
+    if (!data) {
+        return false;
+    }
+    return 'beginEvent' in data && 'endEvent' in data;
 }
-export function isSyntheticLayoutShiftCluster(traceEventData) {
-    return traceEventData.name === "SyntheticLayoutShiftCluster" /* KnownEventName.SYNTHETIC_LAYOUT_SHIFT_CLUSTER */;
+export function isUserTiming(event) {
+    return event.cat === 'blink.user_timing';
+}
+export function isDomLoading(event) {
+    return event.name === "domLoading" /* Name.DOM_LOADING */;
+}
+export function isBeginRemoteFontLoad(event) {
+    return event.name === "BeginRemoteFontLoad" /* Name.BEGIN_REMOTE_FONT_LOAD */;
+}
+export function isPerformanceMeasure(event) {
+    return isUserTiming(event) && isPhaseAsync(event.ph);
+}
+export function isPerformanceMark(event) {
+    return isUserTiming(event) && (event.ph === "R" /* Phase.MARK */ || event.ph === "I" /* Phase.INSTANT */);
+}
+export function isConsoleTime(event) {
+    return event.cat === 'blink.console' && isPhaseAsync(event.ph);
+}
+export function isTimeStamp(event) {
+    return event.ph === "I" /* Phase.INSTANT */ && event.name === 'TimeStamp';
+}
+export function isParseHTML(event) {
+    return event.name === 'ParseHTML';
+}
+export function isSyntheticLayoutShift(event) {
+    if (!isLayoutShift(event) || !event.args.data) {
+        return false;
+    }
+    return 'rawEvent' in event.args.data;
+}
+export function isSyntheticLayoutShiftCluster(event) {
+    return event.name === "SyntheticLayoutShiftCluster" /* Name.SYNTHETIC_LAYOUT_SHIFT_CLUSTER */;
 }
 export function isProfileCall(event) {
     return 'callFrame' in event;
 }
-export function isTraceEventPaint(event) {
-    return event.name === "Paint" /* KnownEventName.PAINT */;
+export function isPaint(event) {
+    return event.name === "Paint" /* Name.PAINT */;
 }
-export function isTraceEventPaintImage(event) {
-    return event.name === "PaintImage" /* KnownEventName.PAINT_IMAGE */;
+export function isPaintImage(event) {
+    return event.name === "PaintImage" /* Name.PAINT_IMAGE */;
 }
-export function isTraceEventScrollLayer(event) {
-    return event.name === "ScrollLayer" /* KnownEventName.SCROLL_LAYER */;
+export function isScrollLayer(event) {
+    return event.name === "ScrollLayer" /* Name.SCROLL_LAYER */;
 }
-export function isTraceEventSetLayerId(event) {
-    return event.name === "SetLayerTreeId" /* KnownEventName.SET_LAYER_TREE_ID */;
+export function isSetLayerId(event) {
+    return event.name === "SetLayerTreeId" /* Name.SET_LAYER_TREE_ID */;
 }
-export function isTraceEventUpdateLayer(event) {
-    return event.name === "UpdateLayer" /* KnownEventName.UPDATE_LAYER */;
+export function isUpdateLayer(event) {
+    return event.name === "UpdateLayer" /* Name.UPDATE_LAYER */;
 }
-export function isTraceEventDisplayListItemListSnapshot(event) {
-    return event.name === "cc::DisplayItemList" /* KnownEventName.DISPLAY_ITEM_LIST_SNAPSHOT */;
+export function isDisplayListItemListSnapshot(event) {
+    return event.name === "cc::DisplayItemList" /* Name.DISPLAY_ITEM_LIST_SNAPSHOT */;
 }
-export function isTraceEventLayerTreeHostImplSnapshot(event) {
-    return event.name === "cc::LayerTreeHostImpl" /* KnownEventName.LAYER_TREE_HOST_IMPL_SNAPSHOT */;
+export function isLayerTreeHostImplSnapshot(event) {
+    return event.name === "cc::LayerTreeHostImpl" /* Name.LAYER_TREE_HOST_IMPL_SNAPSHOT */;
 }
-export function isTraceEventFireAnimationFrame(event) {
-    return event.name === "FireAnimationFrame" /* KnownEventName.FIRE_ANIMATION_FRAME */;
+export function isFireAnimationFrame(event) {
+    return event.name === "FireAnimationFrame" /* Name.FIRE_ANIMATION_FRAME */;
 }
-export function isTraceEventRequestAnimationFrame(event) {
-    return event.name === "RequestAnimationFrame" /* KnownEventName.REQUEST_ANIMATION_FRAME */;
+export function isRequestAnimationFrame(event) {
+    return event.name === "RequestAnimationFrame" /* Name.REQUEST_ANIMATION_FRAME */;
 }
-export function isTraceEventTimerInstall(event) {
-    return event.name === "TimerInstall" /* KnownEventName.TIMER_INSTALL */;
+export function isTimerInstall(event) {
+    return event.name === "TimerInstall" /* Name.TIMER_INSTALL */;
 }
-export function isTraceEventTimerFire(event) {
-    return event.name === "TimerFire" /* KnownEventName.TIMER_FIRE */;
+export function isTimerFire(event) {
+    return event.name === "TimerFire" /* Name.TIMER_FIRE */;
 }
-export function isTraceEventRequestIdleCallback(event) {
-    return event.name === "RequestIdleCallback" /* KnownEventName.REQUEST_IDLE_CALLBACK */;
+export function isRequestIdleCallback(event) {
+    return event.name === "RequestIdleCallback" /* Name.REQUEST_IDLE_CALLBACK */;
 }
-export function isTraceEventWebSocketCreate(event) {
-    return event.name === "WebSocketCreate" /* KnownEventName.WEB_SOCKET_CREATE */;
+export function isWebSocketCreate(event) {
+    return event.name === "WebSocketCreate" /* Name.WEB_SOCKET_CREATE */;
 }
-export function isTraceEventWebSocketInfo(traceEventData) {
-    return traceEventData.name === "WebSocketSendHandshakeRequest" /* KnownEventName.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */ ||
-        traceEventData.name === "WebSocketReceiveHandshakeResponse" /* KnownEventName.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST */ ||
-        traceEventData.name === "WebSocketDestroy" /* KnownEventName.WEB_SOCKET_DESTROY */;
+export function isWebSocketInfo(event) {
+    return event.name === "WebSocketSendHandshakeRequest" /* Name.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */ ||
+        event.name === "WebSocketReceiveHandshakeResponse" /* Name.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST */ || event.name === "WebSocketDestroy" /* Name.WEB_SOCKET_DESTROY */;
 }
-export function isTraceEventWebSocketTransfer(traceEventData) {
-    return traceEventData.name === "WebSocketSend" /* KnownEventName.WEB_SOCKET_SEND */ ||
-        traceEventData.name === "WebSocketReceive" /* KnownEventName.WEB_SOCKET_RECEIVE */;
+export function isWebSocketTransfer(event) {
+    return event.name === "WebSocketSend" /* Name.WEB_SOCKET_SEND */ || event.name === "WebSocketReceive" /* Name.WEB_SOCKET_RECEIVE */;
 }
-export function isTraceEventWebSocketSend(event) {
-    return event.name === "WebSocketSend" /* KnownEventName.WEB_SOCKET_SEND */;
+export function isWebSocketSend(event) {
+    return event.name === "WebSocketSend" /* Name.WEB_SOCKET_SEND */;
 }
-export function isTraceEventWebSocketReceive(event) {
-    return event.name === "WebSocketReceive" /* KnownEventName.WEB_SOCKET_RECEIVE */;
+export function isWebSocketReceive(event) {
+    return event.name === "WebSocketReceive" /* Name.WEB_SOCKET_RECEIVE */;
 }
-export function isTraceEventWebSocketSendHandshakeRequest(event) {
-    return event.name === "WebSocketSendHandshakeRequest" /* KnownEventName.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */;
+export function isWebSocketSendHandshakeRequest(event) {
+    return event.name === "WebSocketSendHandshakeRequest" /* Name.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */;
 }
-export function isTraceEventWebSocketReceiveHandshakeResponse(event) {
-    return event.name === "WebSocketReceiveHandshakeResponse" /* KnownEventName.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST */;
+export function isWebSocketReceiveHandshakeResponse(event) {
+    return event.name === "WebSocketReceiveHandshakeResponse" /* Name.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST */;
 }
-export function isTraceEventWebSocketDestroy(event) {
-    return event.name === "WebSocketDestroy" /* KnownEventName.WEB_SOCKET_DESTROY */;
+export function isWebSocketDestroy(event) {
+    return event.name === "WebSocketDestroy" /* Name.WEB_SOCKET_DESTROY */;
 }
 export function isWebSocketTraceEvent(event) {
-    return isTraceEventWebSocketCreate(event) || isTraceEventWebSocketInfo(event) || isTraceEventWebSocketTransfer(event);
+    return isWebSocketCreate(event) || isWebSocketInfo(event) || isWebSocketTransfer(event);
 }
 export function isWebSocketEvent(event) {
-    return isWebSocketTraceEvent(event) || isSyntheticWebSocketConnectionEvent(event);
+    return isWebSocketTraceEvent(event) || isSyntheticWebSocketConnection(event);
 }
-export function isTraceEventV8Compile(event) {
-    return event.name === "v8.compile" /* KnownEventName.COMPILE */;
+export function isV8Compile(event) {
+    return event.name === "v8.compile" /* Name.COMPILE */;
 }
-export function isTraceEventFunctionCall(event) {
-    return event.name === "FunctionCall" /* KnownEventName.FUNCTION_CALL */;
+export function isFunctionCall(event) {
+    return event.name === "FunctionCall" /* Name.FUNCTION_CALL */;
 }
 export function isSyntheticServerTiming(event) {
     return event.cat === 'devtools.server-timing';
@@ -524,12 +488,12 @@ export function isSyntheticServerTiming(event) {
  */
 export function isJSInvocationEvent(event) {
     switch (event.name) {
-        case "RunMicrotasks" /* KnownEventName.RUN_MICROTASKS */:
-        case "FunctionCall" /* KnownEventName.FUNCTION_CALL */:
-        case "EvaluateScript" /* KnownEventName.EVALUATE_SCRIPT */:
-        case "v8.evaluateModule" /* KnownEventName.EVALUATE_MODULE */:
-        case "EventDispatch" /* KnownEventName.EVENT_DISPATCH */:
-        case "V8.Execute" /* KnownEventName.V8_EXECUTE */:
+        case "RunMicrotasks" /* Name.RUN_MICROTASKS */:
+        case "FunctionCall" /* Name.FUNCTION_CALL */:
+        case "EvaluateScript" /* Name.EVALUATE_SCRIPT */:
+        case "v8.evaluateModule" /* Name.EVALUATE_MODULE */:
+        case "EventDispatch" /* Name.EVENT_DISPATCH */:
+        case "V8.Execute" /* Name.V8_EXECUTE */:
             return true;
     }
     // Also consider any new v8 trace events. (eg 'V8.RunMicrotasks' and 'v8.run')

@@ -1,16 +1,16 @@
-import type * as TraceEngine from '../../../models/trace/trace.js';
-export declare function flattenBreadcrumbs(initialBreadcrumb: TraceEngine.Types.File.Breadcrumb): TraceEngine.Types.File.Breadcrumb[];
+import type * as Trace from '../../../models/trace/trace.js';
+export declare function flattenBreadcrumbs(initialBreadcrumb: Trace.Types.File.Breadcrumb): Trace.Types.File.Breadcrumb[];
 export interface SetActiveBreadcrumbOptions {
     removeChildBreadcrumbs: boolean;
     updateVisibleWindow: boolean;
 }
 export declare class Breadcrumbs {
-    initialBreadcrumb: TraceEngine.Types.File.Breadcrumb;
-    activeBreadcrumb: TraceEngine.Types.File.Breadcrumb;
-    constructor(initialTraceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds);
-    add(newBreadcrumbTraceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds): TraceEngine.Types.File.Breadcrumb;
-    isTraceWindowWithinTraceWindow(child: TraceEngine.Types.Timing.TraceWindowMicroSeconds, parent: TraceEngine.Types.Timing.TraceWindowMicroSeconds): boolean;
-    setInitialBreadcrumbFromLoadedModifications(initialBreadcrumb: TraceEngine.Types.File.Breadcrumb): void;
+    initialBreadcrumb: Trace.Types.File.Breadcrumb;
+    activeBreadcrumb: Trace.Types.File.Breadcrumb;
+    constructor(initialTraceWindow: Trace.Types.Timing.TraceWindowMicroSeconds);
+    add(newBreadcrumbTraceWindow: Trace.Types.Timing.TraceWindowMicroSeconds): Trace.Types.File.Breadcrumb;
+    isTraceWindowWithinTraceWindow(child: Trace.Types.Timing.TraceWindowMicroSeconds, parent: Trace.Types.Timing.TraceWindowMicroSeconds): boolean;
+    setInitialBreadcrumbFromLoadedModifications(initialBreadcrumb: Trace.Types.File.Breadcrumb): void;
     /**
      * Sets a breadcrumb to be active.
      * Doing this will update the minimap bounds and optionally based on the
@@ -21,5 +21,5 @@ export declare class Breadcrumbs {
      * are activating the breadcrumb to show the user that they are now within
      * this breadcrumb. This is used when revealing insights and annotations.
      */
-    setActiveBreadcrumb(activeBreadcrumb: TraceEngine.Types.File.Breadcrumb, options: SetActiveBreadcrumbOptions): void;
+    setActiveBreadcrumb(activeBreadcrumb: Trace.Types.File.Breadcrumb, options: SetActiveBreadcrumbOptions): void;
 }

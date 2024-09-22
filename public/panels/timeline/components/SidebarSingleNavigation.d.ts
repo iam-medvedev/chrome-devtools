@@ -1,9 +1,9 @@
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { type ActiveInsight } from './Sidebar.js';
 import { InsightsCategories } from './SidebarInsightsTab.js';
 export interface SidebarSingleNavigationData {
-    traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null;
-    insights: TraceEngine.Insights.Types.TraceInsightData | null;
+    parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
+    insights: Trace.Insights.Types.TraceInsightSets | null;
     navigationId: string | null;
     activeCategory: InsightsCategories;
     activeInsight: ActiveInsight | null;

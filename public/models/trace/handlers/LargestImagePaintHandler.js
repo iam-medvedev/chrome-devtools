@@ -24,7 +24,7 @@ export function reset() {
     imageByDOMNodeId.clear();
 }
 export function handleEvent(event) {
-    if (!Types.TraceEvents.isTraceEventLargestImagePaintCandidate(event)) {
+    if (!Types.Events.isLargestImagePaintCandidate(event)) {
         return;
     }
     if (!event.args.data) {

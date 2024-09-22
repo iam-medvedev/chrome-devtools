@@ -19,8 +19,9 @@ export class SidebarInsightsTab extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-insights`;
     #boundRender = this.#render.bind(this);
     #shadow = this.attachShadow({ mode: 'open' });
-    #traceParsedData = null;
+    #parsedTrace = null;
     #insights = null;
+    #insightSets = null;
     #activeInsight = null;
     #selectedCategory = InsightsCategories.ALL;
     /**
@@ -32,17 +33,12 @@ export class SidebarInsightsTab extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
     }
-    set traceParsedData(data) {
-        if (data === this.#traceParsedData) {
+    set parsedTrace(data) {
+        if (data === this.#parsedTrace) {
             return;
         }
-        this.#traceParsedData = data;
-        // When the trace data gets set, we clear the active navigation ID (as any old
-        // navigation ID is now outdated) and we auto-set the first ID to be
-        // active.
-        if (data) {
-            this.#activeNavigationId = data.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId ?? null;
-        }
+        this.#parsedTrace = data;
+        this.#activeNavigationId = null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set insights(data) {
@@ -50,6 +46,21 @@ export class SidebarInsightsTab extends HTMLElement {
             return;
         }
         this.#insights = data;
+        this.#insightSets = [];
+        this.#activeNavigationId = null;
+        if (!this.#insights || !this.#parsedTrace) {
+            return;
+        }
+        for (const insightSets of this.#insights.values()) {
+            // TODO(crbug.com/366049346): move "shouldShow" logic to insight result (rather than the component),
+            // and if none are visible, don't push the insight set.
+            this.#insightSets.push({
+                id: insightSets.id,
+                label: insightSets.label,
+            });
+        }
+        // TODO(crbug.com/366049346): skip the first insight set if trivial.
+        this.#activeNavigationId = this.#insightSets[0]?.id ?? null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set activeInsight(active) {
@@ -73,13 +84,19 @@ export class SidebarInsightsTab extends HTMLElement {
         this.#activeNavigationId = id;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
+    #navigationHovered(id) {
+        const data = this.#insights?.get(id);
+        data && this.dispatchEvent(new Insights.SidebarInsight.NavigationBoundsHovered(data.bounds));
+    }
+    #navigationUnhovered() {
+        this.dispatchEvent(new Insights.SidebarInsight.NavigationBoundsHovered());
+    }
     #render() {
-        if (!this.#traceParsedData || !this.#insights) {
+        if (!this.#parsedTrace || !this.#insights || !this.#insightSets) {
             LitHtml.render(LitHtml.nothing, this.#shadow, { host: this });
             return;
         }
-        const navigations = this.#traceParsedData.Meta.mainFrameNavigations ?? [];
-        const hasMultipleNavigations = navigations.length > 1;
+        const hasMultipleInsightSets = this.#insightSets.length > 1;
         // clang-format off
         const html = LitHtml.html `
       <select class="chrome-select insights-category-select"
@@ -96,16 +113,11 @@ export class SidebarInsightsTab extends HTMLElement {
       </select>
 
       <div class="navigations-wrapper">
-        ${navigations.map(navigation => {
-            const id = navigation.args.data?.navigationId;
-            const url = navigation.args.data?.documentLoaderURL;
-            if (!id || !url) {
-                return LitHtml.nothing;
-            }
+        ${this.#insightSets.map(({ id, label }) => {
             const data = {
-                traceParsedData: this.#traceParsedData ?? null,
+                parsedTrace: this.#parsedTrace,
                 insights: this.#insights,
-                navigationId: id,
+                navigationId: id, // TODO(crbug.com/366049346): rename `navigationId`.
                 activeCategory: this.#selectedCategory,
                 activeInsight: this.#activeInsight,
             };
@@ -114,12 +126,16 @@ export class SidebarInsightsTab extends HTMLElement {
               .data=${data}>
             </${SidebarSingleNavigation.litTagName}>
           `;
-            if (hasMultipleNavigations) {
+            if (hasMultipleInsightSets) {
                 return LitHtml.html `<details
               ?open=${id === this.#activeNavigationId}
               class="navigation-wrapper"
             >
-              <summary @click=${() => this.#navigationClicked(id)}>${url}</summary>
+              <summary
+                @click=${() => this.#navigationClicked(id)}
+                @mouseenter=${() => this.#navigationHovered(id)}
+                @mouseleave=${() => this.#navigationUnhovered()}
+                >${label}</summary>
               ${contents}
             </details>`;
             }

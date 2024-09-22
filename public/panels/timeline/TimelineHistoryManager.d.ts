@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type TimelineMiniMap } from './TimelineMiniMap.js';
 /**
@@ -15,7 +15,7 @@ export declare const LANDING_PAGE_INDEX_DROPDOWN_CHOICE: number;
  */
 interface TraceRecordingHistoryItem {
     type: 'TRACE_INDEX';
-    traceParseDataIndex: number;
+    parsedTraceIndex: number;
 }
 interface LandingPageHistoryItem {
     type: 'LANDING_PAGE';
@@ -23,8 +23,8 @@ interface LandingPageHistoryItem {
 export type RecordingData = TraceRecordingHistoryItem | LandingPageHistoryItem;
 export interface NewHistoryRecordingData {
     data: TraceRecordingHistoryItem;
-    filmStripForPreview: TraceEngine.Extras.FilmStrip.Data | null;
-    traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
+    filmStripForPreview: Trace.Extras.FilmStrip.Data | null;
+    parsedTrace: Trace.Handlers.Types.ParsedTrace;
     startTime: number | null;
 }
 export declare class TimelineHistoryManager {
@@ -51,7 +51,7 @@ export declare class TimelineHistoryManager {
      */
     navigate(direction: number): TraceRecordingHistoryItem | null;
     private updateState;
-    static previewElement(traceDataIndex: number): Element;
+    static previewElement(parsedTraceIndex: number): Element;
     private static coarseAge;
     private title;
     private static dataForTraceIndex;
@@ -71,17 +71,17 @@ export declare class DropDown implements UI.ListControl.ListDelegate<number> {
     private readonly listControl;
     private readonly focusRestorer;
     private selectionDone;
-    constructor(availableTraceDataIndexes: number[]);
-    static show(availableTraceDataIndexes: number[], activeTraceDataIndex: number, anchor: Element): Promise<number | null>;
+    constructor(availableparsedTraceIndexes: number[]);
+    static show(availableparsedTraceIndexes: number[], activeparsedTraceIndex: number, anchor: Element): Promise<number | null>;
     static cancelIfShowing(): void;
     private show;
     private onMouseMove;
     private onClick;
     private onKeyDown;
     private close;
-    createElementForItem(traceDataIndex: number): Element;
-    heightForItem(_traceDataIndex: number): number;
-    isItemSelectable(_traceDataIndex: number): boolean;
+    createElementForItem(parsedTraceIndex: number): Element;
+    heightForItem(_parsedTraceIndex: number): number;
+    isItemSelectable(_parsedTraceIndex: number): boolean;
     selectedItemChanged(_from: number | null, _to: number | null, fromElement: Element | null, toElement: Element | null): void;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
     private static instance;

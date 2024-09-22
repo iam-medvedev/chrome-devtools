@@ -1,6 +1,6 @@
 import type * as SDK from '../../core/sdk/sdk.js';
-import * as TraceEngine from '../../models/trace/trace.js';
-export declare class PerformanceTracing implements TraceEngine.TracingManager.TracingManagerClient {
+import * as Trace from '../../models/trace/trace.js';
+export declare class PerformanceTracing implements Trace.TracingManager.TracingManagerClient {
     #private;
     constructor(target: SDK.Target.Target, delegate: Delegate);
     start(): Promise<void>;

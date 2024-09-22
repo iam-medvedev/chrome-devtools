@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
@@ -59,7 +59,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     searchableView(): UI.SearchableView.SearchableView | null;
     wasShown(): void;
     willHide(): void;
-    loadFromEvents(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
+    loadFromEvents(events: Trace.Types.Events.Event[]): void;
     getFlameChart(): TimelineFlameChartView;
     getMinimap(): TimelineMiniMap;
     /**
@@ -68,14 +68,14 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
      * within DevTools you are warned when using the method.
      * @deprecated
      **/
-    getTraceEngineDataForLayoutTests(): TraceEngine.Handlers.Types.TraceParseData;
+    getParsedTraceForLayoutTests(): Trace.Handlers.Types.ParsedTrace;
     /**
      * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
      * DO NOT use this method within DevTools. It is marked as deprecated so
      * within DevTools you are warned when using the method.
      * @deprecated
      **/
-    getTraceEngineRawTraceEventsForLayoutTests(): readonly TraceEngine.Types.TraceEvents.TraceEventData[];
+    getTraceEngineRawTraceEventsForLayoutTests(): readonly Trace.Types.Events.Event[];
     private loadFromCpuProfile;
     private setState;
     private createSettingCheckbox;
@@ -122,7 +122,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
      * user switches to an existing trace, please {@see setModel} and put your
      * code in there.
      **/
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: (TimelineModel.TimelineModelFilter.TimelineModelFilter | null) | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: (TimelineModel.TimelineModelFilter.TimelineModelFilter | null) | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;
     loadingCompleteForTest(): void;
     private showRecordingStarted;
@@ -131,8 +131,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private frameForSelection;
     jumpToFrame(offset: number): true | undefined;
     select(selection: TimelineSelection | null): void;
-    selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
-    highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
+    selectEntryAtTime(events: Trace.Types.Events.Event[] | null, time: number): void;
+    highlightEvent(event: Trace.Types.Events.Event | null): void;
     private handleDrop;
 }
 export declare const enum State {
@@ -148,8 +148,8 @@ export declare const headerHeight = 20;
 export interface TimelineModeViewDelegate {
     select(selection: TimelineSelection | null): void;
     element: Element;
-    selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
-    highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
+    selectEntryAtTime(events: Trace.Types.Events.Event[] | null, time: number): void;
+    highlightEvent(event: Trace.Types.Events.Event | null): void;
 }
 export declare class StatusPane extends UI.Widget.VBox {
     #private;
@@ -170,7 +170,7 @@ export declare class StatusPane extends UI.Widget.VBox {
         buttonDisabled?: boolean;
     }, buttonCallback: () => (Promise<void> | void));
     finish(): void;
-    enableDownloadOfEvents(rawEvents: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
+    enableDownloadOfEvents(rawEvents: Trace.Types.Events.Event[]): void;
     remove(): void;
     showPane(parent: Element): void;
     enableAndFocusButton(): void;

@@ -1,8 +1,8 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
 import * as Overlays from './overlays/overlays.js';
-export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' | 'UpdateLinkToEntry';
+export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' | 'UpdateLinkToEntry' | 'EnterLabelEditState';
 export declare class AnnotationModifiedEvent extends Event {
     overlay: Overlays.Overlays.TimelineOverlay;
     action: UpdateAction;
@@ -23,22 +23,22 @@ export declare class ModificationsManager extends EventTarget {
      * Initializes a ModificationsManager instance for a parsed trace or changes the active manager for an existing one.
      * This needs to be called if and a trace has been parsed or switched to.
      */
-    static initAndActivateModificationsManager(traceModel: TraceEngine.TraceModel.Model, traceIndex: number): ModificationsManager | null;
+    static initAndActivateModificationsManager(traceModel: Trace.TraceModel.Model, traceIndex: number): ModificationsManager | null;
     private constructor();
     getEntriesFilter(): EntriesFilter;
     getTimelineBreadcrumbs(): TimelineComponents.Breadcrumbs.Breadcrumbs;
-    createAnnotation(newAnnotation: TraceEngine.Types.File.Annotation, loadedFromFile?: boolean): void;
-    removeAnnotation(removedAnnotation: TraceEngine.Types.File.Annotation): void;
+    createAnnotation(newAnnotation: Trace.Types.File.Annotation, loadedFromFile?: boolean): void;
+    removeAnnotation(removedAnnotation: Trace.Types.File.Annotation): void;
     removeAnnotationOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
-    updateAnnotation(updatedAnnotation: TraceEngine.Types.File.Annotation): void;
+    updateAnnotation(updatedAnnotation: Trace.Types.File.Annotation): void;
     updateAnnotationOverlay(updatedOverlay: Overlays.Overlays.TimelineOverlay): void;
-    getAnnotationByOverlay(overlay: Overlays.Overlays.TimelineOverlay): TraceEngine.Types.File.Annotation | null;
-    getAnnotations(): TraceEngine.Types.File.Annotation[];
+    getAnnotationByOverlay(overlay: Overlays.Overlays.TimelineOverlay): Trace.Types.File.Annotation | null;
+    getAnnotations(): Trace.Types.File.Annotation[];
     getOverlays(): Overlays.Overlays.TimelineOverlay[];
     /**
      * Builds all modifications into a serializable object written into
      * the 'modifications' trace file metadata field.
      */
-    toJSON(): TraceEngine.Types.File.Modifications;
+    toJSON(): Trace.Types.File.Modifications;
     applyModificationsIfPresent(): void;
 }

@@ -5,11 +5,12 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { ChangeManager } from './ChangeManager.js';
 import { DOGFOOD_INFO, FreestylerChatUi, } from './components/FreestylerChatUi.js';
-import { DrJonesNetworkAgent, DrJonesNetworkAgentResponseType, } from './DrJonesNetworkAgent.js';
+import { DrJonesNetworkAgent, DrJonesNetworkAgentResponseType, formatHeaders, formatNetworkRequestTiming, } from './DrJonesNetworkAgent.js';
 import { FIX_THIS_ISSUE_PROMPT, FreestylerAgent, ResponseType } from './FreestylerAgent.js';
 import freestylerPanelStyles from './freestylerPanel.css.js';
 /*
@@ -19,13 +20,49 @@ import freestylerPanelStyles from './freestylerPanel.css.js';
   */
 const UIStringsTemp = {
     /**
-     *@description Freestyler UI text for clearing messages.
+     *@description AI assistant UI text for clearing messages.
      */
     clearMessages: 'Clear messages',
     /**
-     *@description Freestyler UI text for sending feedback.
+     *@description AI assistant UI tooltip text for the help button.
      */
-    sendFeedback: 'Send feedback',
+    help: 'Help',
+    /**
+     *@description Title text for thinking step of DrJones Network agent.
+     */
+    inspectingNetworkData: 'Inspecting network data',
+    /**
+     *@description Thought text for thinking step of DrJones Network agent.
+     */
+    dataUsedToGenerateThisResponse: 'Data used to generate this response',
+    /**
+     *@description Heading text for the block that shows the network request details.
+     */
+    request: 'Request',
+    /**
+     *@description Heading text for the block that shows the network response details.
+     */
+    response: 'Response',
+    /**
+     *@description Prefix text for request URL.
+     */
+    requestUrl: 'Request URL',
+    /**
+     *@description Title text for request headers.
+     */
+    requestHeaders: 'Request Headers',
+    /**
+     *@description Title text for request timing details.
+     */
+    timing: 'Timing',
+    /**
+     *@description Title text for response headers.
+     */
+    responseHeaders: 'Response Headers',
+    /**
+     *@description Prefix text for response status.
+     */
+    responseStatus: 'Response Status',
 };
 // TODO(nvitkov): b/346933425
 // const str_ = i18n.i18n.registerUIStrings('panels/freestyler/FreestylerPanel.ts', UIStrings);
@@ -41,7 +78,7 @@ function createToolbar(target, { onClearClick }) {
     clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, onClearClick);
     leftToolbar.appendToolbarItem(clearButton);
     rightToolbar.appendSeparator();
-    const helpButton = new UI.Toolbar.ToolbarButton(i18nString(UIStringsTemp.sendFeedback), 'help', undefined, 'freestyler.feedback');
+    const helpButton = new UI.Toolbar.ToolbarButton(i18nString(UIStringsTemp.help), 'help', undefined, 'freestyler.help');
     helpButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(DOGFOOD_INFO);
     });
@@ -102,6 +139,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             onFixThisIssueClick: () => {
                 void this.#startConversation(FIX_THIS_ISSUE_PROMPT, true);
             },
+            onSelectedNetworkRequestClick: this.#handleSelectedNetworkRequestClick.bind(this),
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
             userInfo: {
                 accountImage: syncInfo.accountImage,
@@ -184,6 +222,12 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#viewProps.state = "chat-view" /* FreestylerChatUiState.CHAT_VIEW */;
         this.doUpdate();
     }
+    #handleSelectedNetworkRequestClick() {
+        if (this.#viewProps.selectedNetworkRequest) {
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(this.#viewProps.selectedNetworkRequest, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
+            return Common.Revealer.reveal(requestLocation);
+        }
+    }
     handleAction(actionId) {
         switch (actionId) {
             case 'freestyler.element-panel-context': {
@@ -224,7 +268,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#viewProps.isLoading = true;
         const systemMessage = {
             entity: "model" /* ChatMessageEntity.MODEL */,
-            aborted: false,
             suggestingFix: false,
             steps: [],
         };
@@ -232,19 +275,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.doUpdate();
         this.#runAbortController = new AbortController();
         const signal = this.#runAbortController.signal;
-        signal.addEventListener('abort', () => {
-            systemMessage.rpcId = undefined;
-            systemMessage.aborted = true;
-            systemMessage.suggestingFix = false;
-            const lastStep = systemMessage.steps.at(-1);
-            // Mark the last step as cancelled to make the UI feel better.
-            if (lastStep) {
-                lastStep.canceled = true;
-            }
-            this.#viewProps.isLoading = false;
-            this.doUpdate();
-            this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
-        });
         if (this.#viewProps.agentType === "freestyler" /* AgentType.FREESTYLER */) {
             await this.#conversationStepsForFreestylerAgent(text, isFixQuery, signal, systemMessage);
         }
@@ -264,10 +294,16 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                     break;
                 }
+                case ResponseType.TITLE: {
+                    step.title = data.title;
+                    if (systemMessage.steps.at(-1) !== step) {
+                        systemMessage.steps.push(step);
+                    }
+                    break;
+                }
                 case ResponseType.THOUGHT: {
                     step.isLoading = false;
                     step.thought = data.thought;
-                    step.title = data.title;
                     if (systemMessage.steps.at(-1) !== step) {
                         systemMessage.steps.push(step);
                     }
@@ -309,7 +345,16 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 case ResponseType.ERROR: {
                     step.isLoading = false;
                     systemMessage.error = data.error;
+                    systemMessage.suggestingFix = false;
+                    systemMessage.rpcId = undefined;
                     this.#viewProps.isLoading = false;
+                    if (data.error === "abort" /* ErrorType.ABORT */) {
+                        const lastStep = systemMessage.steps.at(-1);
+                        // Mark the last step as cancelled to make the UI feel better.
+                        if (lastStep) {
+                            lastStep.canceled = true;
+                        }
+                    }
                 }
             }
             this.doUpdate();
@@ -317,8 +362,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
         }
     }
     async #conversationStepsForDrJonesNetworkAgent(text, signal, systemMessage) {
-        // TODO(samiyac): Improve loading generator
-        const step = { isLoading: true };
+        // TODO(samiyac): Only display the thinking step with context details when it is the first message
+        const step = {
+            isLoading: true,
+            title: UIStringsTemp.inspectingNetworkData,
+            thought: UIStringsTemp.dataUsedToGenerateThisResponse,
+            contextDetails: this.#createContextDetailsForDrJonesNetworkAgent(),
+        };
         if (!systemMessage.steps.length) {
             systemMessage.steps.push(step);
         }
@@ -329,10 +379,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 case DrJonesNetworkAgentResponseType.ANSWER: {
                     systemMessage.answer = data.text;
                     systemMessage.rpcId = data.rpcId;
-                    // When there is an answer without any thinking steps, we don't want to show the thinking step.
-                    if (systemMessage.steps.length === 1 && systemMessage.steps[0].isLoading) {
-                        systemMessage.steps.pop();
-                    }
                     step.isLoading = false;
                     this.#viewProps.isLoading = false;
                     break;
@@ -346,6 +392,31 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.doUpdate();
             this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }
+    }
+    #createContextDetailsForDrJonesNetworkAgent() {
+        if (this.#viewProps.selectedNetworkRequest) {
+            const requestContextDetail = {
+                title: UIStringsTemp.request,
+                text: UIStringsTemp.requestUrl + ': ' + this.#viewProps.selectedNetworkRequest.url() + '\n\n' +
+                    formatHeaders(UIStringsTemp.requestHeaders, this.#viewProps.selectedNetworkRequest.requestHeaders()),
+            };
+            const responseContextDetail = {
+                title: UIStringsTemp.response,
+                text: UIStringsTemp.responseStatus + ': ' + this.#viewProps.selectedNetworkRequest.statusCode + ' ' +
+                    this.#viewProps.selectedNetworkRequest.statusText + '\n\n' +
+                    formatHeaders(UIStringsTemp.responseHeaders, this.#viewProps.selectedNetworkRequest.responseHeaders),
+            };
+            const timingContextDetail = {
+                title: UIStringsTemp.timing,
+                text: formatNetworkRequestTiming(this.#viewProps.selectedNetworkRequest),
+            };
+            return [
+                requestContextDetail,
+                responseContextDetail,
+                timingContextDetail,
+            ];
+        }
+        return [];
     }
 }
 export class ActionDelegate {

@@ -3,6 +3,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { ChangeManager } from './ChangeManager.js';
 export declare const FIX_THIS_ISSUE_PROMPT = "Fix this issue using JavaScript code execution";
 export declare enum ResponseType {
+    TITLE = "title",
     THOUGHT = "thought",
     ACTION = "action",
     SIDE_EFFECT = "side-effect",
@@ -18,6 +19,7 @@ export interface AnswerResponse {
 }
 export declare const enum ErrorType {
     UNKNOWN = "unknown",
+    ABORT = "abort",
     MAX_STEPS = "max-steps"
 }
 export interface ErrorResponse {
@@ -25,10 +27,14 @@ export interface ErrorResponse {
     error: ErrorType;
     rpcId?: number;
 }
+export interface TitleResponse {
+    type: ResponseType.TITLE;
+    title: string;
+    rpcId?: number;
+}
 export interface ThoughtResponse {
     type: ResponseType.THOUGHT;
     thought: string;
-    title?: string;
     rpcId?: number;
 }
 export interface SideEffectResponse {
@@ -47,7 +53,7 @@ export interface ActionResponse {
 export interface QueryResponse {
     type: ResponseType.QUERYING;
 }
-export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | QueryResponse;
+export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse;
 declare function executeJsCode(code: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
 }): Promise<string>;

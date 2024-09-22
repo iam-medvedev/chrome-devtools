@@ -15,12 +15,12 @@ declare global {
 export declare class TraceProcessor extends EventTarget {
     #private;
     static createWithAllHandlers(): TraceProcessor;
-    static getEnabledInsightRunners(traceParsedData: Handlers.Types.TraceParseData): Partial<Insights.Types.InsightRunnersType>;
+    static getEnabledInsightRunners(parsedTrace: Handlers.Types.ParsedTrace): Partial<Insights.Types.InsightRunnersType>;
     constructor(traceHandlers: Partial<Handlers.Types.Handlers>, modelConfiguration?: Types.Configuration.Configuration);
     reset(): void;
-    parse(traceEvents: readonly Types.TraceEvents.TraceEventData[], freshRecording?: boolean): Promise<void>;
-    get traceParsedData(): Handlers.Types.TraceParseData | null;
-    get insights(): Insights.Types.TraceInsightData | null;
+    parse(traceEvents: readonly Types.Events.Event[], freshRecording?: boolean): Promise<void>;
+    get parsedTrace(): Handlers.Types.ParsedTrace | null;
+    get insights(): Insights.Types.TraceInsightSets | null;
 }
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are
@@ -29,5 +29,5 @@ export declare class TraceProcessor extends EventTarget {
  * iterate in such a way that each handler is visited after its dependencies.
  */
 export declare function sortHandlers(traceHandlers: Partial<{
-    [key in Handlers.Types.TraceEventHandlerName]: Handlers.Types.TraceEventHandler;
-}>): Map<Handlers.Types.TraceEventHandlerName, Handlers.Types.TraceEventHandler>;
+    [key in Handlers.Types.HandlerName]: Handlers.Types.Handler;
+}>): Map<Handlers.Types.HandlerName, Handlers.Types.Handler>;

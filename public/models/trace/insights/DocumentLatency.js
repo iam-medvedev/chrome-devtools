@@ -79,8 +79,11 @@ function getCompressionSavings(request) {
     // no percent threshold.
     return estimatedSavings < IGNORE_THRESHOLD_IN_BYTES ? 0 : estimatedSavings;
 }
-export function generateInsight(traceParsedData, context) {
-    const documentRequest = traceParsedData.NetworkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
+export function generateInsight(parsedTrace, context) {
+    if (!context.navigation) {
+        return {};
+    }
+    const documentRequest = parsedTrace.NetworkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!documentRequest) {
         throw new Error('missing document request');
     }
@@ -100,11 +103,13 @@ export function generateInsight(traceParsedData, context) {
         LCP: overallSavingsMs,
     };
     return {
-        serverResponseTime,
-        serverResponseTooSlow,
-        redirectDuration: Types.Timing.MilliSeconds(redirectDuration),
-        uncompressedResponseBytes: getCompressionSavings(documentRequest),
-        documentRequest,
+        data: {
+            serverResponseTime,
+            serverResponseTooSlow,
+            redirectDuration: Types.Timing.MilliSeconds(redirectDuration),
+            uncompressedResponseBytes: getCompressionSavings(documentRequest),
+            documentRequest,
+        },
         metricSavings,
     };
 }

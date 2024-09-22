@@ -1,5 +1,5 @@
 import type * as Protocol from '../../../generated/protocol.js';
-import { type TraceParseData } from '../handlers/types.js';
+import { type ParsedTrace } from '../handlers/types.js';
 import * as Types from '../types/types.js';
 import { type RootCauseProtocolInterface } from './RootCauses.js';
 export type CSSDimensions = {
@@ -16,7 +16,7 @@ export interface InjectedIframe {
     iframe: Protocol.DOM.Node;
 }
 export interface RootCauseRequest {
-    request: Types.TraceEvents.SyntheticNetworkRequest;
+    request: Types.Events.SyntheticNetworkRequest;
     initiator?: Protocol.Network.Initiator;
 }
 export interface FontChange extends RootCauseRequest {
@@ -29,7 +29,7 @@ export interface LayoutShiftRootCausesData {
     iframes: InjectedIframe[];
     fontChanges: FontChange[];
     renderBlockingRequests: RenderBlockingRequest[];
-    scriptStackTrace: Types.TraceEvents.TraceEventCallFrame[];
+    scriptStackTrace: Types.Events.CallFrame[];
 }
 interface Options {
     /** Checking iframe root causes can be an expensive operation, so it is disabled by default. */
@@ -46,18 +46,18 @@ export declare class LayoutShiftRootCauses {
      * events the first time that it's called. That then populates the cache for
      * each shift, so any subsequent calls are just a constant lookup.
      */
-    rootCausesForEvent(modelData: TraceParseData, event: Types.TraceEvents.TraceEventLayoutShift): Promise<Readonly<LayoutShiftRootCausesData> | null>;
+    rootCausesForEvent(modelData: ParsedTrace, event: Types.Events.LayoutShift): Promise<Readonly<LayoutShiftRootCausesData> | null>;
     /**
      * Determines potential root causes for shifts
      */
-    blameShifts(layoutShifts: Types.TraceEvents.TraceEventLayoutShift[], modelData: TraceParseData): Promise<void>;
+    blameShifts(layoutShifts: Types.Events.LayoutShift[], modelData: ParsedTrace): Promise<void>;
     /**
      * "LayoutInvalidations" are a set of trace events dispatched in Blink under the name
      * "layoutInvalidationTracking", which track invalidations on the "Layout"stage of the
      * rendering pipeline. This function utilizes this event to flag potential root causes
      * to layout shifts.
      */
-    linkShiftsToLayoutInvalidations(layoutShifts: Types.TraceEvents.TraceEventLayoutShift[], modelData: TraceParseData): Promise<void>;
+    linkShiftsToLayoutInvalidations(layoutShifts: Types.Events.LayoutShift[], modelData: ParsedTrace): Promise<void>;
     /**
      * For every shift looks up the initiator of its corresponding Layout event. This initiator
      * is assigned by the RendererHandler and contains the stack trace of the point in a script
@@ -66,23 +66,23 @@ export declare class LayoutShiftRootCauses {
      * Note that a Layout cannot always be linked to a script, in that case, we cannot add a
      * "script causing reflow" as a potential root cause to the corresponding shift.
      */
-    linkShiftsToLayoutEvents(layoutShifts: Types.TraceEvents.TraceEventLayoutShift[], modelData: TraceParseData): void;
+    linkShiftsToLayoutEvents(layoutShifts: Types.Events.LayoutShift[], modelData: ParsedTrace): void;
     /**
      * Given a LayoutInvalidation trace event, determines if it was dispatched
      * because a media element without dimensions was resized.
      */
-    getUnsizedMediaRootCause(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking, layoutInvalidationNodeId: Protocol.DOM.NodeId): Promise<UnsizedMedia | null>;
+    getUnsizedMediaRootCause(layoutInvalidation: Types.Events.LayoutInvalidationTracking, layoutInvalidationNodeId: Protocol.DOM.NodeId): Promise<UnsizedMedia | null>;
     /**
      * Given a LayoutInvalidation trace event, determines if it was dispatched
      * because a node, which is an ancestor to an iframe, was injected.
      */
-    getIframeRootCause(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking, layoutInvalidationNodeId: Protocol.DOM.NodeId): Promise<InjectedIframe | null>;
+    getIframeRootCause(layoutInvalidation: Types.Events.LayoutInvalidationTracking, layoutInvalidationNodeId: Protocol.DOM.NodeId): Promise<InjectedIframe | null>;
     getNodeDetails(nodeId: Protocol.DOM.NodeId): Promise<Protocol.DOM.Node | null>;
     /**
      * Given a layout invalidation event and a sorted array, returns the subset of requests that arrived within a
      * 500ms window before the layout invalidation.
      */
-    requestsInInvalidationWindow(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking | Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking, modelData: TraceParseData): RootCauseRequest[];
+    requestsInInvalidationWindow(layoutInvalidation: Types.Events.LayoutInvalidationTracking | Types.Events.ScheduleStyleInvalidationTracking, modelData: ParsedTrace): RootCauseRequest[];
     /**
      * Given a LayoutInvalidation trace event, determines if it was dispatched
      * because fonts were changed and if so returns the information of all network
@@ -92,7 +92,7 @@ export declare class LayoutShiftRootCauses {
      * are not processed and the cached network requests for the prepaint is
      * returned instead.
      */
-    getFontChangeRootCause(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking | Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking, nextPrePaint: Types.TraceEvents.TraceEventPrePaint, modelData: TraceParseData): FontChange[] | null;
+    getFontChangeRootCause(layoutInvalidation: Types.Events.LayoutInvalidationTracking | Types.Events.ScheduleStyleInvalidationTracking, nextPrePaint: Types.Events.PrePaint, modelData: ParsedTrace): FontChange[] | null;
     /**
      * Given the requests that arrived within a 500ms window before the layout invalidation, returns the font
      * requests of them.
@@ -105,7 +105,7 @@ export declare class LayoutShiftRootCauses {
      * that correspond to the same prepaint are not processed and the cached network requests for the prepaint is
      *  returned instead.
      */
-    getRenderBlockRootCause(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking | Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking, nextPrePaint: Types.TraceEvents.TraceEventPrePaint, modelData: TraceParseData): RenderBlockingRequest[] | null;
+    getRenderBlockRootCause(layoutInvalidation: Types.Events.LayoutInvalidationTracking | Types.Events.ScheduleStyleInvalidationTracking, nextPrePaint: Types.Events.PrePaint, modelData: ParsedTrace): RenderBlockingRequest[] | null;
     /**
      * Returns a function that retrieves the active value of a given
      * CSS property within the matched styles of the param node.

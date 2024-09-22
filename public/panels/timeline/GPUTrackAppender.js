@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 const UIStrings = {
@@ -16,10 +16,10 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class GPUTrackAppender {
     appenderName = 'GPU';
     #compatibilityBuilder;
-    #traceParsedData;
-    constructor(compatibilityBuilder, traceParsedData) {
+    #parsedTrace;
+    constructor(compatibilityBuilder, parsedTrace) {
         this.#compatibilityBuilder = compatibilityBuilder;
-        this.#traceParsedData = traceParsedData;
+        this.#parsedTrace = parsedTrace;
     }
     /**
      * Appends into the flame chart data the data corresponding to the
@@ -31,7 +31,7 @@ export class GPUTrackAppender {
      * appended the track's events.
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
-        const gpuEvents = this.#traceParsedData.GPU.mainGPUThreadTasks;
+        const gpuEvents = this.#parsedTrace.GPU.mainGPUThreadTasks;
         if (gpuEvents.length === 0) {
             return trackStartLevel;
         }
@@ -63,7 +63,7 @@ export class GPUTrackAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event) {
-        if (!TraceEngine.Types.TraceEvents.isTraceEventGPUTask(event)) {
+        if (!Trace.Types.Events.isGPUTask(event)) {
             throw new Error(`Unexpected GPU Task: The event's type is '${event.name}'`);
         }
         return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-painting');

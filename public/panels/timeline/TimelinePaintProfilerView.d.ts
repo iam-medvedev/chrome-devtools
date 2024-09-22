@@ -1,6 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
     #private;
@@ -13,10 +13,10 @@ export declare class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidge
     private event;
     private paintProfilerModel;
     private lastLoadedSnapshot;
-    constructor(traceEngineData: TraceEngine.Handlers.Types.TraceParseData);
+    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
     wasShown(): void;
     setSnapshot(snapshot: SDK.PaintProfiler.PaintProfilerSnapshot): void;
-    setEvent(paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel, event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+    setEvent(paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel, event: Trace.Types.Events.Event): boolean;
     private updateWhenVisible;
     private update;
     private releaseSnapshot;

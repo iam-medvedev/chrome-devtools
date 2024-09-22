@@ -7,9 +7,9 @@ import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Timeline from '../timeline.js';
 import * as TimelineComponents from './components.js';
 describeWithMockConnection('NetworkRequestDetails', () => {
-    it('renders the right details for a network event from TraceEngine', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
-        const networkRequests = traceData.NetworkRequests.byTime;
+    it('renders the right details for a network event from Trace', async function () {
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+        const networkRequests = parsedTrace.NetworkRequests.byTime;
         const cssRequest = networkRequests.find(request => {
             return request.args.data.url === 'https://chromedevtools.github.io/performance-stories/lcp-web-font/app.css';
         });
@@ -17,7 +17,7 @@ describeWithMockConnection('NetworkRequestDetails', () => {
             throw new Error('Could not find expected network request.');
         }
         const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(new Components.Linkifier.Linkifier());
-        await details.setData(traceData, cssRequest, Timeline.TargetForEvent.targetForEvent(traceData, cssRequest));
+        await details.setData(parsedTrace, cssRequest, Timeline.TargetForEvent.targetForEvent(parsedTrace, cssRequest));
         if (!details.shadowRoot) {
             throw new Error('Could not find expected element to test.');
         }

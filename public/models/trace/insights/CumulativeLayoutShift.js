@@ -46,34 +46,27 @@ function isInInvalidationWindow(event, targetEvent) {
     const eventEnd = event.dur ? event.ts + event.dur : event.ts;
     return eventEnd < targetEvent.ts && eventEnd >= targetEvent.ts - INVALIDATION_WINDOW;
 }
-/**
- * Returns a list of NoncompositedAnimationFailures.
- */
-function getNonCompositedAnimations(animations) {
+export function getNonCompositedFailure(event) {
     const failures = [];
-    for (const event of animations) {
-        const beginEvent = event.args.data.beginEvent;
-        const instantEvents = event.args.data.instantEvents || [];
-        /**
-         * Animation events containing composite information are ASYNC_NESTABLE_INSTANT ('n').
-         * An animation may also contain multiple 'n' events, so we look through those with useful non-composited data.
-         */
-        for (const event of instantEvents) {
-            const failureMask = event.args.data.compositeFailed;
-            const unsupportedProperties = event.args.data.unsupportedProperties;
-            if (!failureMask || !unsupportedProperties) {
-                continue;
-            }
-            const failureReasons = ACTIONABLE_FAILURE_REASONS.filter(reason => failureMask & reason.flag).map(reason => {
-                return reason.failure;
-            });
-            const failure = {
-                name: beginEvent.args.data.displayName,
-                failureReasons,
-                unsupportedProperties,
-            };
-            failures.push(failure);
+    const beginEvent = event.args.data.beginEvent;
+    const instantEvents = event.args.data.instantEvents || [];
+    /**
+     * Animation events containing composite information are ASYNC_NESTABLE_INSTANT ('n').
+     * An animation may also contain multiple 'n' events, so we look through those with useful non-composited data.
+     */
+    for (const event of instantEvents) {
+        const failureMask = event.args.data.compositeFailed;
+        const unsupportedProperties = event.args.data.unsupportedProperties;
+        if (!failureMask || !unsupportedProperties) {
+            continue;
         }
+        const failureReasons = ACTIONABLE_FAILURE_REASONS.filter(reason => failureMask & reason.flag).map(reason => reason.failure);
+        const failure = {
+            name: beginEvent.args.data.displayName,
+            failureReasons,
+            unsupportedProperties,
+        };
+        failures.push(failure);
     }
     return failures;
 }
@@ -188,22 +181,28 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
     }
     return rootCausesByShift;
 }
-export function generateInsight(traceParsedData, context) {
+export function generateInsight(parsedTrace, context) {
+    // TODO(crbug.com/366049346) make this work w/o a navigation.
+    if (!context.navigation) {
+        return {
+            clusters: [],
+        };
+    }
     const isWithinSameNavigation = ((event) => {
-        const nav = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, traceParsedData.Meta.navigationsByFrameId);
+        const nav = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, parsedTrace.Meta.navigationsByFrameId);
         return nav === context.navigation;
     });
-    const compositeAnimationEvents = traceParsedData.Animations.animations.filter(isWithinSameNavigation);
-    const animationFailures = getNonCompositedAnimations(compositeAnimationEvents);
-    const iframeEvents = traceParsedData.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinSameNavigation);
-    const networkRequests = traceParsedData.NetworkRequests.byTime.filter(isWithinSameNavigation);
-    const domLoadingEvents = traceParsedData.LayoutShifts.domLoadingEvents.filter(isWithinSameNavigation);
+    const compositeAnimationEvents = parsedTrace.Animations.animations.filter(isWithinSameNavigation);
+    const animationFailures = compositeAnimationEvents.map(getNonCompositedFailure).flat();
+    const iframeEvents = parsedTrace.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinSameNavigation);
+    const networkRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinSameNavigation);
+    const domLoadingEvents = parsedTrace.LayoutShifts.domLoadingEvents.filter(isWithinSameNavigation);
     // Sort by cumulative score, since for insights we interpret these for their "bad" scores.
-    const clusters = traceParsedData.LayoutShifts.clustersByNavigationId.get(context.navigationId)
+    const clusters = parsedTrace.LayoutShifts.clustersByNavigationId.get(context.navigationId)
         ?.sort((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ??
         [];
     const layoutShifts = clusters.flatMap(cluster => cluster.events);
-    const prePaintEvents = traceParsedData.LayoutShifts.prePaintEvents.filter(isWithinSameNavigation);
+    const prePaintEvents = parsedTrace.LayoutShifts.prePaintEvents.filter(isWithinSameNavigation);
     // Get root causes.
     const rootCausesByShift = new Map();
     const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);

@@ -13,10 +13,10 @@ let mainFrameURL = '';
 const framesByProcessId = new Map();
 // We will often want to key data by the browser process, GPU process and top
 // level renderer IDs, so keep a track on those.
-let browserProcessId = Types.TraceEvents.ProcessID(-1);
-let browserThreadId = Types.TraceEvents.ThreadID(-1);
-let gpuProcessId = Types.TraceEvents.ProcessID(-1);
-let gpuThreadId = Types.TraceEvents.ThreadID(-1);
+let browserProcessId = Types.Events.ProcessID(-1);
+let browserThreadId = Types.Events.ThreadID(-1);
+let gpuProcessId = Types.Events.ProcessID(-1);
+let gpuThreadId = Types.Events.ThreadID(-1);
 let viewportRect = null;
 const processNames = new Map();
 const topLevelRendererIds = new Set();
@@ -48,10 +48,10 @@ const mainFrameNavigations = [];
 const threadsInProcess = new Map();
 let traceStartedTimeFromTracingStartedEvent = Types.Timing.MicroSeconds(-1);
 const eventPhasesOfInterestForTraceBounds = new Set([
-    "B" /* Types.TraceEvents.Phase.BEGIN */,
-    "E" /* Types.TraceEvents.Phase.END */,
-    "X" /* Types.TraceEvents.Phase.COMPLETE */,
-    "I" /* Types.TraceEvents.Phase.INSTANT */,
+    "B" /* Types.Events.Phase.BEGIN */,
+    "E" /* Types.Events.Phase.END */,
+    "X" /* Types.Events.Phase.COMPLETE */,
+    "I" /* Types.Events.Phase.INSTANT */,
 ]);
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 // Tracks if the trace is a generic trace, which here means that it did not come from athe DevTools Performance Panel recording.
@@ -62,19 +62,19 @@ let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 // These are all events which indicate this is a Chrome browser trace.
 let traceIsGeneric = true;
 const CHROME_WEB_TRACE_EVENTS = new Set([
-    "TracingStartedInPage" /* Types.TraceEvents.KnownEventName.TRACING_STARTED_IN_PAGE */,
-    "TracingSessionIdForWorker" /* Types.TraceEvents.KnownEventName.TRACING_SESSION_ID_FOR_WORKER */,
-    "TracingStartedInBrowser" /* Types.TraceEvents.KnownEventName.TRACING_STARTED_IN_BROWSER */,
+    "TracingStartedInPage" /* Types.Events.Name.TRACING_STARTED_IN_PAGE */,
+    "TracingSessionIdForWorker" /* Types.Events.Name.TRACING_SESSION_ID_FOR_WORKER */,
+    "TracingStartedInBrowser" /* Types.Events.Name.TRACING_STARTED_IN_BROWSER */,
 ]);
 export function reset() {
     navigationsByFrameId.clear();
     navigationsByNavigationId.clear();
     processNames.clear();
     mainFrameNavigations.length = 0;
-    browserProcessId = Types.TraceEvents.ProcessID(-1);
-    browserThreadId = Types.TraceEvents.ThreadID(-1);
-    gpuProcessId = Types.TraceEvents.ProcessID(-1);
-    gpuThreadId = Types.TraceEvents.ThreadID(-1);
+    browserProcessId = Types.Events.ProcessID(-1);
+    browserThreadId = Types.Events.ThreadID(-1);
+    gpuProcessId = Types.Events.ProcessID(-1);
+    gpuThreadId = Types.Events.ThreadID(-1);
     viewportRect = null;
     topLevelRendererIds.clear();
     threadsInProcess.clear();
@@ -124,7 +124,7 @@ export function handleEvent(event) {
     if (traceIsGeneric && CHROME_WEB_TRACE_EVENTS.has(event.name)) {
         traceIsGeneric = false;
     }
-    if (Types.TraceEvents.isProcessName(event)) {
+    if (Types.Events.isProcessName(event)) {
         processNames.set(event.pid, event);
     }
     // If there is a timestamp (which meta events do not have), and the event does
@@ -137,23 +137,22 @@ export function handleEvent(event) {
         const eventDuration = event.dur ?? Types.Timing.MicroSeconds(0);
         traceBounds.max = Types.Timing.MicroSeconds(Math.max(event.ts + eventDuration, traceBounds.max));
     }
-    if (Types.TraceEvents.isProcessName(event) &&
-        (event.args.name === 'Browser' || event.args.name === 'HeadlessBrowser')) {
+    if (Types.Events.isProcessName(event) && (event.args.name === 'Browser' || event.args.name === 'HeadlessBrowser')) {
         browserProcessId = event.pid;
         return;
     }
-    if (Types.TraceEvents.isProcessName(event) && (event.args.name === 'Gpu' || event.args.name === 'GPU Process')) {
+    if (Types.Events.isProcessName(event) && (event.args.name === 'Gpu' || event.args.name === 'GPU Process')) {
         gpuProcessId = event.pid;
         return;
     }
-    if (Types.TraceEvents.isThreadName(event) && event.args.name === 'CrGpuMain') {
+    if (Types.Events.isThreadName(event) && event.args.name === 'CrGpuMain') {
         gpuThreadId = event.tid;
         return;
     }
-    if (Types.TraceEvents.isThreadName(event) && event.args.name === 'CrBrowserMain') {
+    if (Types.Events.isThreadName(event) && event.args.name === 'CrBrowserMain') {
         browserThreadId = event.tid;
     }
-    if (Types.TraceEvents.isTraceEventMainFrameViewport(event) && viewportRect === null) {
+    if (Types.Events.isMainFrameViewport(event) && viewportRect === null) {
         const rectAsArray = event.args.data.viewport_rect;
         const viewportX = rectAsArray[0];
         const viewportY = rectAsArray[1];
@@ -164,7 +163,7 @@ export function handleEvent(event) {
     // The TracingStartedInBrowser event includes the data on which frames are
     // in scope at the start of the trace. We use this to identify the frame with
     // no parent, i.e. the top level frame.
-    if (Types.TraceEvents.isTraceEventTracingStartedInBrowser(event)) {
+    if (Types.Events.isTracingStartedInBrowser(event)) {
         traceStartedTimeFromTracingStartedEvent = event.ts;
         if (!event.args.data) {
             throw new Error('No frames found in trace data');
@@ -231,7 +230,7 @@ export function handleEvent(event) {
     // and we use these to track how long each individual renderer is active
     // for. We track all renderers here (top level and those in frames), but
     // for convenience we also populate a set of top level renderer IDs.
-    if (Types.TraceEvents.isTraceEventFrameCommittedInBrowser(event)) {
+    if (Types.Events.isFrameCommittedInBrowser(event)) {
         const frame = event.args.data;
         if (!frame) {
             return;
@@ -243,7 +242,7 @@ export function handleEvent(event) {
         topLevelRendererIds.add(frame.processId);
         return;
     }
-    if (Types.TraceEvents.isTraceEventCommitLoad(event)) {
+    if (Types.Events.isCommitLoad(event)) {
         const frameData = event.args.data;
         if (!frameData) {
             return;
@@ -253,7 +252,7 @@ export function handleEvent(event) {
         return;
     }
     // Track all threads based on the process & thread IDs.
-    if (Types.TraceEvents.isThreadName(event)) {
+    if (Types.Events.isThreadName(event)) {
         const threads = Platform.MapUtilities.getWithDefault(threadsInProcess, event.pid, () => new Map());
         threads.set(event.tid, event);
         return;
@@ -262,8 +261,8 @@ export function handleEvent(event) {
     // but where the documentLoaderURL is empty. As far as the trace rendering is
     // concerned, these events are noise so we filter them out here.
     // (The filtering of empty URLs is done in the
-    // isTraceEventNavigationStartWithURL check)
-    if (Types.TraceEvents.isTraceEventNavigationStartWithURL(event) && event.args.data) {
+    // isNavigationStartWithURL check)
+    if (Types.Events.isNavigationStartWithURL(event) && event.args.data) {
         const navigationId = event.args.data.navigationId;
         if (navigationsByNavigationId.has(navigationId)) {
             // We have only ever seen this situation once, in crbug.com/1503982, where the user ran:
@@ -368,7 +367,7 @@ export function data() {
         browserThreadId,
         processNames,
         gpuProcessId,
-        gpuThreadId: gpuThreadId === Types.TraceEvents.ThreadID(-1) ? undefined : gpuThreadId,
+        gpuThreadId: gpuThreadId === Types.Events.ThreadID(-1) ? undefined : gpuThreadId,
         viewportRect: viewportRect || undefined,
         mainFrameId,
         mainFrameURL,

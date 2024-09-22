@@ -657,7 +657,8 @@ export declare enum DevtoolsExperiments {
     'gen-ai-settings-panel' = 97,
     'timeline-server-timings' = 98,
     'timeline-layout-shift-details' = 99,
-    MAX_VALUE = 100
+    'extension-storage-viewer' = 100,
+    MAX_VALUE = 101
 }
 export declare const enum ColorPickerOpenedFrom {
     SOURCES_PANEL = 0,

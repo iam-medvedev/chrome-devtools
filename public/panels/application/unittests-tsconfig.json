@@ -42,6 +42,7 @@
     "../../../../../../front_end/panels/application/ApplicationPanelSidebar.test.ts",
     "../../../../../../front_end/panels/application/BackgroundServiceView.test.ts",
     "../../../../../../front_end/panels/application/DOMStorageModel.test.ts",
+    "../../../../../../front_end/panels/application/ExtensionStorageModel.test.ts",
     "../../../../../../front_end/panels/application/IndexedDBModel.test.ts",
     "../../../../../../front_end/panels/application/IndexedDBViews.test.ts",
     "../../../../../../front_end/panels/application/InterestGroupStorageView.test.ts",

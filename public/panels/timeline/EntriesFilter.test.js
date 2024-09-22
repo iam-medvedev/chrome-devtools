@@ -4,12 +4,12 @@
 // Copyright 2023222 The Chromium Author2s. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
-import * as Timeline from './timeline.js';
-import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import { TraceLoader } from '../../testing/TraceLoader.js';
-import { getMainThread } from '../../testing/TraceHelpers.js';
+import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { getMainThread } from '../../testing/TraceHelpers.js';
+import { TraceLoader } from '../../testing/TraceLoader.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as Timeline from './timeline.js';
 function findFirstEntry(allEntries, predicate) {
     const entry = allEntries.find(entry => predicate(entry));
     if (!entry) {
@@ -19,13 +19,13 @@ function findFirstEntry(allEntries, predicate) {
 }
 describeWithEnvironment('EntriesFilter', function () {
     it('parses a stack and returns an empty list of invisible entries', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         assert.deepEqual([], stack?.invisibleEntries());
     });
     it('supports the user merging an entry into its parent', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -51,10 +51,10 @@ describeWithEnvironment('EntriesFilter', function () {
         const entryTwo = findFirstEntry(mainThread.entries, entry => {
             // Processing this trace ends up with two distinct stacks for basicTwo()
             // So we find the first one so we can focus this test on just one stack.
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -64,8 +64,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 1);
     });
     it('adds the parent of the merged entry into the expandableEntries array', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -89,10 +89,10 @@ describeWithEnvironment('EntriesFilter', function () {
         const entryTwo = findFirstEntry(mainThread.entries, entry => {
             // Processing this trace ends up with two distinct stacks for basicTwo()
             // So we find the first one so we can focus this test on just one stack.
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -100,15 +100,15 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(stack.invisibleEntries().includes(entryTwo), 'entryTwo is invisble');
         // Get the parent of basicTwo, which is basicStackOne.
         const basicStackOne = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicStackOne' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicStackOne' &&
                 entry.dur === 827;
         });
         // Get the parent of basicTwo marked as expandable.
         assert.isTrue(stack.isEntryExpandable(basicStackOne));
     });
     it('adds the collapsed entry into the expandableEntries array', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -129,10 +129,10 @@ describeWithEnvironment('EntriesFilter', function () {
         const entryTwo = findFirstEntry(mainThread.entries, entry => {
             // Processing this trace ends up with two distinct stacks for basicTwo()
             // So we find the first one so we can focus this test on just one stack.
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -141,8 +141,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(stack.isEntryExpandable(entryTwo));
     });
     it('adds the next visible parent of the merged entry into the expandableEntries array if the direct parent is hidden', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -172,19 +172,18 @@ describeWithEnvironment('EntriesFilter', function () {
          *
          **/
         const firstFooCallEntry = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo' &&
-                entry.dur === 233;
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo' && entry.dur === 233;
         });
-        const firstFooCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(firstFooCallEntry).endTime;
+        const firstFooCallEndTime = Trace.Helpers.Timing.eventTimingsMicroSeconds(firstFooCallEntry).endTime;
         const fooCalls = mainThread.entries.filter(entry => {
-            const isFooCall = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo';
+            const isFooCall = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo';
             if (!isFooCall) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -205,11 +204,11 @@ describeWithEnvironment('EntriesFilter', function () {
         });
         assert.isTrue(allFooExceptFirstInStackAreHidden, 'First foo is invisible or some following foo calls are still visible');
         const foo2Calls = mainThread.entries.filter(entry => {
-            const isFoo2Call = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo2';
+            const isFoo2Call = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo2';
             if (!isFoo2Call) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
         // Merge second foo2 entry.
@@ -218,8 +217,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(stack.isEntryExpandable(foo2Calls[0]));
     });
     it('supports collapsing an entry', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -239,22 +238,22 @@ describeWithEnvironment('EntriesFilter', function () {
         const basicTwoCallEntry = findFirstEntry(mainThread.entries, entry => {
             // Processing this trace ends up with two distinct stacks for basicTwo()
             // So we find the first one so we can focus this test on just one stack.
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
         // Gather the fib() calls under the first basicTwo stack, by finding all
         // the calls whose end time is less than or equal to the end time of the
         // `basicTwo` function.
         const fibonacciCalls = mainThread.entries.filter(entry => {
-            const isFibCall = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
+            const isFibCall = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
             if (!isFibCall) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
-            const basicTwoCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const basicTwoCallEndTime = Trace.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
             return endTime <= basicTwoCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -268,8 +267,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(allFibonacciInStackAreHidden, 'Some fibonacci calls are still visible');
     });
     it('supports collapsing all repeating entries among descendants', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -289,29 +288,28 @@ describeWithEnvironment('EntriesFilter', function () {
          *               ==== foo2 =====
          **/
         const firstFooCallEntry = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo' &&
-                entry.dur === 233;
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo' && entry.dur === 233;
         });
         // Gather the foo() and foo2() calls under and including the first foo entry, by finding all
         // the calls whose end time is less than or equal to the end time of the first `foo` function.
-        const firstFooCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(firstFooCallEntry).endTime;
+        const firstFooCallEndTime = Trace.Helpers.Timing.eventTimingsMicroSeconds(firstFooCallEntry).endTime;
         const fooCalls = mainThread.entries.filter(entry => {
-            const isFooCall = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo';
+            const isFooCall = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo';
             if (!isFooCall) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
         const foo2Calls = mainThread.entries.filter(entry => {
-            const isFoo2Call = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo2';
+            const isFoo2Call = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo2';
             if (!isFoo2Call) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -333,8 +331,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(allFoo2InStackAreVisible, 'Some foo2 calls are invisible');
     });
     it('supports undo all filter actions by applying context menu undo action', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -364,23 +362,23 @@ describeWithEnvironment('EntriesFilter', function () {
          *
          * Applying 'undo all actions' should bring the stack to the original state.
          **/
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
         const basicTwoCallEntry = findFirstEntry(mainThread.entries, entry => {
             // Processing this trace ends up with two distinct stacks for basicTwo()
             // So we find the first one so we can focus this test on just one stack.
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
         const fibonacciCalls = mainThread.entries.filter(entry => {
-            const isFibCall = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
+            const isFibCall = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
             if (!isFibCall) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
-            const basicTwoCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const basicTwoCallEndTime = Trace.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
             return endTime <= basicTwoCallEndTime;
         });
         // Collapse all repeating descendants of the first fibonacci call:
@@ -397,7 +395,7 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(allFibExceptFirstInStackAreHidden, 'First fib is invisible or some following fib calls are still visible');
         // Merge basicStackOne:
         const basicStackOne = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicStackOne' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicStackOne' &&
                 entry.dur === 827;
         });
         stack.applyFilterAction({ type: "MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entry: basicStackOne });
@@ -406,7 +404,7 @@ describeWithEnvironment('EntriesFilter', function () {
         stack.applyFilterAction({ type: "COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */, entry: basicTwoCallEntry });
         // basicThree and first fibnacci should now be hidden:
         const basicThree = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicThree' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicThree' &&
                 entry.dur === 827;
         });
         assert.isTrue(stack.invisibleEntries().includes(basicThree), 'basicThree is visble');
@@ -418,8 +416,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 0);
     });
     it('supports resetting children of the closest expandable parent when a hidden entry is provided', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -449,14 +447,14 @@ describeWithEnvironment('EntriesFilter', function () {
          *
          * This should result in all basicTwo children being removed from the invisible array and stack being in the initial state.
          **/
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
         const basicTwoCallEntry = findFirstEntry(mainThread.entries, entry => {
             // Processing this trace ends up with two distinct stacks for basicTwo()
             // So we find the first one so we can focus this test on just one stack.
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
         // Make sure no entries are hidden
@@ -467,7 +465,7 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 37);
         // Get the first fibonacci call that is one of the hidden children and make sure it is hidden
         const firstFibCallEntry = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
         });
         assert.isTrue(stack.invisibleEntries().includes(firstFibCallEntry));
         // Reveal the first fibonacci call and make sure that the all of the entries are now visible because the closest
@@ -476,8 +474,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 0);
     });
     it('supports resetting all hidden children of a selected entry', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -509,29 +507,28 @@ describeWithEnvironment('EntriesFilter', function () {
          * are visible, but the entries hidden above the entry children were reset on stay hidden.
          **/
         const firstFooCallEntry = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo' &&
-                entry.dur === 233;
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo' && entry.dur === 233;
         });
         // Gather the foo() and foo2() calls under and including the first foo entry, by finding all
         // the calls whose end time is less than or equal to the end time of the first `foo` function.
-        const firstFooCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(firstFooCallEntry).endTime;
+        const firstFooCallEndTime = Trace.Helpers.Timing.eventTimingsMicroSeconds(firstFooCallEntry).endTime;
         const fooCalls = mainThread.entries.filter(entry => {
-            const isFooCall = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo';
+            const isFooCall = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo';
             if (!isFooCall) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
         const foo2Calls = mainThread.entries.filter(entry => {
-            const isFoo2Call = TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo2';
+            const isFoo2Call = Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo2';
             if (!isFoo2Call) {
                 return false;
             }
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -569,8 +566,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.isTrue(allFooExceptSecondInStackAreVisible, 'Some foo calls except the second one are invisible or the second one is visible');
     });
     it('correctly returns the amount of hidden children of a node', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some erlier events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -591,10 +588,9 @@ describeWithEnvironment('EntriesFilter', function () {
          *               ==== foo2 =====
          **/
         const firstFooCallEntry = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo' &&
-                entry.dur === 233;
+            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo' && entry.dur === 233;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -605,8 +601,8 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.strictEqual(stack.findHiddenDescendantsAmount(firstFooCallEntry), 3);
     });
     it('correctly assigns a visible parent to expandable entries if the direct parent is not visible', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(traceData.Renderer);
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(parsedTrace.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== Task ===============
          * ======== (anonymous) ========                  << entry with an invisible in the timeline direct parent. We need to make sure that we correctly add Task to the expandable entries
@@ -614,9 +610,9 @@ describeWithEnvironment('EntriesFilter', function () {
          * ======== postMessage ========
          **/
         const anonymousEntryWithInvisibleParent = findFirstEntry(mainThread.entries, entry => {
-            return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.nodeId === 42;
+            return Trace.Types.Events.isProfileCall(entry) && entry.nodeId === 42;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }

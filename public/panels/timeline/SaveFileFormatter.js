@@ -30,7 +30,7 @@ export function* arrayOfObjectsJsonGenerator(arrayOfObjects) {
     yield '\n]';
 }
 /**
- * Generates a JSON representation of traceData line-by-line for a nicer printed
+ * Generates a JSON representation of the TraceObject file line-by-line for a nicer printed
  * version with one trace event per line.
  */
 export function* traceJsonGenerator(traceEvents, metadata) {

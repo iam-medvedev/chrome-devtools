@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
@@ -19,7 +19,7 @@ export declare class CountersGraph extends UI.Widget.VBox {
     currentValuesBar?: HTMLElement;
     private markerXPosition?;
     constructor(delegate: TimelineModeViewDelegate);
-    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, events: TraceEngine.Types.TraceEvents.TraceEventData[] | null): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, events: Trace.Types.Events.Event[] | null): void;
     private createCurrentValuesBar;
     private createCounter;
     resizerElement(): Element | null;

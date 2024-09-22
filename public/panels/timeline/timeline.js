@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as AnimationsTrackAppender from './AnimationsTrackAppender.js';
+import * as AnnotationHelpers from './AnnotationHelpers.js';
 import * as AppenderUtils from './AppenderUtils.js';
 import * as BenchmarkEvents from './BenchmarkEvents.js';
 import * as CLSLinkifier from './CLSLinkifier.js';
@@ -43,5 +44,5 @@ import * as TimelineUIUtils from './TimelineUIUtils.js';
 import * as TimingsTrackAppender from './TimingsTrackAppender.js';
 import * as UIDevtoolsController from './UIDevtoolsController.js';
 import * as UIDevtoolsUtils from './UIDevtoolsUtils.js';
-export { AnimationsTrackAppender, AppenderUtils, BenchmarkEvents, CLSLinkifier, CompatibilityTracksAppender, CountersGraph, EntriesFilter, EventsSerializer, EventsTimelineTreeView, ExtensionDataGatherer, ExtensionTrackAppender, FreshRecording, GPUTrackAppender, Initiators, InteractionsTrackAppender, LayoutShiftsTrackAppender, ModificationsManager, NetworkTrackAppender, SaveFileFormatter, ServerTimingsTrackAppender, SourceMapsResolver, TargetForEvent, ThreadAppender, TimelineController, TimelineDetailsView, TimelineEventOverview, TimelineFilters, TimelineFlameChartDataProvider, TimelineFlameChartNetworkDataProvider, TimelineFlameChartView, TimelineHistoryManager, TimelineLayersView, TimelineLoader, TimelineMiniMap, TimelinePaintProfilerView, TimelinePanel, TimelineSelection, TimelineTreeView, TimelineUIUtils, TimingsTrackAppender, UIDevtoolsController, UIDevtoolsUtils, };
+export { AnimationsTrackAppender, AnnotationHelpers, AppenderUtils, BenchmarkEvents, CLSLinkifier, CompatibilityTracksAppender, CountersGraph, EntriesFilter, EventsSerializer, EventsTimelineTreeView, ExtensionDataGatherer, ExtensionTrackAppender, FreshRecording, GPUTrackAppender, Initiators, InteractionsTrackAppender, LayoutShiftsTrackAppender, ModificationsManager, NetworkTrackAppender, SaveFileFormatter, ServerTimingsTrackAppender, SourceMapsResolver, TargetForEvent, ThreadAppender, TimelineController, TimelineDetailsView, TimelineEventOverview, TimelineFilters, TimelineFlameChartDataProvider, TimelineFlameChartNetworkDataProvider, TimelineFlameChartView, TimelineHistoryManager, TimelineLayersView, TimelineLoader, TimelineMiniMap, TimelinePaintProfilerView, TimelinePanel, TimelineSelection, TimelineTreeView, TimelineUIUtils, TimingsTrackAppender, UIDevtoolsController, UIDevtoolsUtils, };
 //# sourceMappingURL=timeline.js.map

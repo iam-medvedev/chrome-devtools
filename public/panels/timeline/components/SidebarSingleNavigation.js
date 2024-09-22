@@ -1,8 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// TODO(crbug.com/366049346): rename file
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Insights from './insights/insights.js';
@@ -14,7 +15,7 @@ export class SidebarSingleNavigation extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #data = {
-        traceParsedData: null,
+        parsedTrace: null,
         insights: null,
         navigationId: null,
         activeCategory: InsightsCategories.ALL,
@@ -34,15 +35,22 @@ export class SidebarSingleNavigation extends HTMLElement {
         }
         return label === this.#data.activeCategory;
     }
-    #referenceEvent(event) {
-        return () => {
-            this.dispatchEvent(new EventReferenceClick(event));
-        };
+    #onClickMetric(event, insightComponentName) {
+        const el = this.shadowRoot?.querySelector(insightComponentName);
+        if (el && this.#data.navigationId) {
+            this.dispatchEvent(new Insights.SidebarInsight.InsightActivated(el.internalName, this.#data.navigationId, el.createOverlays.bind(el)));
+        }
+        this.dispatchEvent(new EventReferenceClick(event));
     }
     #renderMetricValue(label, value, classification, event) {
+        const insightComponentName = {
+            LCP: Insights.LCPPhases.LCPPhases.litTagName.value,
+            CLS: Insights.CLSCulprits.CLSCulprits.litTagName.value,
+            INP: Insights.InteractionToNextPaint.InteractionToNextPaint.litTagName.value,
+        }[label];
         // clang-format off
         return this.#metricIsVisible(label) ? LitHtml.html `
-      <div class="metric" @click=${event ? this.#referenceEvent(event) : null}>
+      <div class="metric" @click=${event ? this.#onClickMetric.bind(this, event, insightComponentName) : null}>
         <div class="metric-value metric-value-${classification}">${value}</div>
         <div class="metric-label">${label}</div>
       </div>
@@ -55,14 +63,14 @@ export class SidebarSingleNavigation extends HTMLElement {
      * as if there are no navigations, we do not want to show the user the INP
      * score.
      */
-    #calculateINP(traceParsedData, navigationId) {
-        const eventsForNavigation = traceParsedData.UserInteractions.interactionEventsWithNoNesting.filter(e => {
+    #calculateINP(parsedTrace, navigationId) {
+        const eventsForNavigation = parsedTrace.UserInteractions.interactionEventsWithNoNesting.filter(e => {
             return e.args.data.navigationId === navigationId;
         });
         if (eventsForNavigation.length === 0) {
             return null;
         }
-        let maxDuration = TraceEngine.Types.Timing.MicroSeconds(0);
+        let maxDuration = Trace.Types.Timing.MicroSeconds(0);
         for (const event of eventsForNavigation) {
             if (event.dur > maxDuration) {
                 maxDuration = event.dur;
@@ -70,9 +78,9 @@ export class SidebarSingleNavigation extends HTMLElement {
         }
         return maxDuration;
     }
-    #calculateCLSScore(traceParsedData, navigationId) {
+    #calculateCLSScore(parsedTrace, navigationId) {
         // Find all clusers associated with this navigation
-        const clustersForNavigation = traceParsedData.LayoutShifts.clusters.filter(c => c.navigationId === navigationId);
+        const clustersForNavigation = parsedTrace.LayoutShifts.clusters.filter(c => c.navigationId === navigationId);
         let maxScore = 0;
         let worstCluster;
         for (const cluster of clustersForNavigation) {
@@ -83,113 +91,58 @@ export class SidebarSingleNavigation extends HTMLElement {
         }
         return { maxScore, worstShfitEvent: worstCluster?.worstShiftEvent ?? null };
     }
-    #renderMetrics(traceParsedData, navigationId) {
-        const forNavigation = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(traceParsedData.Meta.mainFrameId)?.get(navigationId);
-        const lcpMetric = forNavigation?.get("LCP" /* TraceEngine.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
-        const { maxScore: clsScore, worstShfitEvent } = this.#calculateCLSScore(traceParsedData, navigationId);
-        const inp = this.#calculateINP(traceParsedData, navigationId);
+    #renderMetrics(parsedTrace, navigationId) {
+        const forNavigation = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(parsedTrace.Meta.mainFrameId)?.get(navigationId);
+        const lcpMetric = forNavigation?.get("LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+        const { maxScore: clsScore, worstShfitEvent } = this.#calculateCLSScore(parsedTrace, navigationId);
+        const inp = this.#calculateINP(parsedTrace, navigationId);
         return LitHtml.html `
     <div class="metrics-row">
     ${lcpMetric ? this.#renderMetricValue('LCP', i18n.TimeUtilities.formatMicroSecondsAsSeconds(lcpMetric.timing), lcpMetric.classification, lcpMetric.event ?? null) :
             LitHtml.nothing}
-    ${this.#renderMetricValue('CLS', clsScore.toFixed(2), TraceEngine.Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(clsScore), worstShfitEvent)}
-    ${inp ? this.#renderMetricValue('INP', i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(inp), TraceEngine.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp), null) :
+    ${this.#renderMetricValue('CLS', clsScore.toFixed(2), Trace.Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(clsScore), worstShfitEvent)}
+    ${inp ?
+            this.#renderMetricValue('INP', i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(inp), Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp), null) :
             LitHtml.nothing}
     </div>
     `;
     }
     #renderInsights(insights, navigationId) {
+        // TODO(crbug.com/368135130): sort this in a smart way!
+        const insightComponents = [
+            Insights.LCPPhases.LCPPhases,
+            Insights.InteractionToNextPaint.InteractionToNextPaint,
+            Insights.LCPDiscovery.LCPDiscovery,
+            Insights.RenderBlocking.RenderBlockingRequests,
+            Insights.SlowCSSSelector.SlowCSSSelector,
+            Insights.CLSCulprits.CLSCulprits,
+            Insights.DocumentLatency.DocumentLatency,
+            Insights.ThirdParties.ThirdParties,
+            Insights.Viewport.Viewport,
+        ];
         // clang-format off
-        return LitHtml.html `
-    <div>
-      <${Insights.LCPPhases.LCPPhases.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.LCPPhases.LCPPhases}>
-    </div>
-    <div>
-      <${Insights.InteractionToNextPaint.InteractionToNextPaint.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.InteractionToNextPaint.InteractionToNextPaint}>
-    </div>
-    <div>
-      <${Insights.LCPDiscovery.LCPDiscovery.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.LCPDiscovery.LCPDiscovery}>
-    </div>
-    <div>
-      <${Insights.RenderBlocking.RenderBlockingRequests.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.RenderBlocking.RenderBlockingRequests}>
-    </div>
-    <div>
-      <${Insights.SlowCSSSelector.SlowCSSSelector.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.SlowCSSSelector.SlowCSSSelector}>
-    </div>
-    <div>
-      <${Insights.CLSCulprits.CLSCulprits.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.CLSCulprits.CLSCulprits}>
-    </div>
-    <div>
-      <${Insights.DocumentLatency.DocumentLatency.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.DocumentLatency.DocumentLatency}>
-    </div>
-    <div>
-      <${Insights.ThirdParties.ThirdParties.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.ThirdParties.ThirdParties}>
-    </div>
-    <div>
-      <${Insights.Viewport.Viewport.litTagName}
-        .insights=${insights}
-        .navigationId=${navigationId}
-        .activeInsight=${this.#data.activeInsight}
-        .activeCategory=${this.#data.activeCategory}
-      </${Insights.Viewport.Viewport}>
-    </div>`;
+        return LitHtml.html `${insightComponents.map(component => {
+            return LitHtml.html `<div>
+        <${component.litTagName}
+          .insights=${insights}
+          .navigationId=${navigationId}
+          .activeInsight=${this.#data.activeInsight}
+          .activeCategory=${this.#data.activeCategory}
+        </${component.litTagName}>
+      </div>`;
+        })}`;
         // clang-format on
     }
     #render() {
-        const { traceParsedData, insights, navigationId, } = this.#data;
-        if (!traceParsedData || !insights || !navigationId) {
-            LitHtml.render(LitHtml.html ``, this.#shadow, { host: this });
-            return;
-        }
-        const navigation = traceParsedData.Meta.navigationsByNavigationId.get(navigationId);
-        if (!navigation) {
+        const { parsedTrace, insights, navigationId, } = this.#data;
+        if (!parsedTrace || !insights || !navigationId) {
             LitHtml.render(LitHtml.html ``, this.#shadow, { host: this });
             return;
         }
         // clang-format off
         LitHtml.render(LitHtml.html `
       <div class="navigation">
-        ${this.#renderMetrics(traceParsedData, navigationId)}
+        ${this.#renderMetrics(parsedTrace, navigationId)}
         ${this.#renderInsights(insights, navigationId)}
         </div>
       `, this.#shadow, { host: this });

@@ -1,14 +1,14 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from './trace_bounds.js';
 const baseTraceWindow = {
-    min: TraceEngine.Types.Timing.MicroSeconds(0),
-    max: TraceEngine.Types.Timing.MicroSeconds(10_000),
-    range: TraceEngine.Types.Timing.MicroSeconds(10_000),
+    min: Trace.Types.Timing.MicroSeconds(0),
+    max: Trace.Types.Timing.MicroSeconds(10_000),
+    range: Trace.Types.Timing.MicroSeconds(10_000),
 };
-const baseTraceWindowMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(baseTraceWindow);
+const baseTraceWindowMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(baseTraceWindow);
 describe('TraceBounds', () => {
     it('is initialized with the entire trace window and sets the state accordingly', async () => {
         const manager = TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(baseTraceWindow);
@@ -30,9 +30,9 @@ describe('TraceBounds', () => {
         const onStateChange = sinon.spy();
         manager.addEventListener(TraceBounds.TraceBounds.StateChangedEvent.eventName, onStateChange);
         const newMiniMapBounds = {
-            min: TraceEngine.Types.Timing.MicroSeconds(10_000),
-            max: TraceEngine.Types.Timing.MicroSeconds(20_000),
-            range: TraceEngine.Types.Timing.MicroSeconds(10_000),
+            min: Trace.Types.Timing.MicroSeconds(10_000),
+            max: Trace.Types.Timing.MicroSeconds(20_000),
+            range: Trace.Types.Timing.MicroSeconds(10_000),
         };
         manager.setMiniMapBounds(newMiniMapBounds);
         assert.strictEqual(onStateChange.callCount, 1);
@@ -49,11 +49,11 @@ describe('TraceBounds', () => {
         const onStateChange = sinon.spy();
         manager.addEventListener(TraceBounds.TraceBounds.StateChangedEvent.eventName, onStateChange);
         const newBounds = {
-            min: TraceEngine.Types.Timing.MicroSeconds(1_000),
-            max: TraceEngine.Types.Timing.MicroSeconds(5_000),
-            range: TraceEngine.Types.Timing.MicroSeconds(4_000),
+            min: Trace.Types.Timing.MicroSeconds(1_000),
+            max: Trace.Types.Timing.MicroSeconds(5_000),
+            range: Trace.Types.Timing.MicroSeconds(4_000),
         };
-        const newBoundsMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(newBounds);
+        const newBoundsMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(newBounds);
         manager.resetWithNewBounds(newBounds);
         assert.strictEqual(onStateChange.callCount, 1);
         const dataFromEvent = onStateChange.firstCall.args[0];
@@ -76,9 +76,9 @@ describe('TraceBounds', () => {
         const onStateChange = sinon.spy();
         manager.addEventListener(TraceBounds.TraceBounds.StateChangedEvent.eventName, onStateChange);
         const newVisibleWindow = {
-            min: TraceEngine.Types.Timing.MicroSeconds(10_000),
-            max: TraceEngine.Types.Timing.MicroSeconds(20_000),
-            range: TraceEngine.Types.Timing.MicroSeconds(10_000),
+            min: Trace.Types.Timing.MicroSeconds(10_000),
+            max: Trace.Types.Timing.MicroSeconds(20_000),
+            range: Trace.Types.Timing.MicroSeconds(10_000),
         };
         manager.setTimelineVisibleWindow(newVisibleWindow);
         assert.strictEqual(onStateChange.callCount, 1);
@@ -95,9 +95,9 @@ describe('TraceBounds', () => {
         const onStateChange = sinon.spy();
         manager.addEventListener(TraceBounds.TraceBounds.StateChangedEvent.eventName, onStateChange);
         const newVisibleWindow = {
-            min: TraceEngine.Types.Timing.MicroSeconds(10_000),
-            max: TraceEngine.Types.Timing.MicroSeconds(10_500),
-            range: TraceEngine.Types.Timing.MicroSeconds(500),
+            min: Trace.Types.Timing.MicroSeconds(10_000),
+            max: Trace.Types.Timing.MicroSeconds(10_500),
+            range: Trace.Types.Timing.MicroSeconds(500),
         };
         manager.setTimelineVisibleWindow(newVisibleWindow);
         assert.strictEqual(onStateChange.callCount, 0);
@@ -112,9 +112,9 @@ describe('TraceBounds', () => {
         const onStateChange = sinon.spy();
         manager.addEventListener(TraceBounds.TraceBounds.StateChangedEvent.eventName, onStateChange);
         const newMiniMapBounds = {
-            min: TraceEngine.Types.Timing.MicroSeconds(10_000),
-            max: TraceEngine.Types.Timing.MicroSeconds(10_500),
-            range: TraceEngine.Types.Timing.MicroSeconds(500),
+            min: Trace.Types.Timing.MicroSeconds(10_000),
+            max: Trace.Types.Timing.MicroSeconds(10_500),
+            range: Trace.Types.Timing.MicroSeconds(500),
         };
         manager.setMiniMapBounds(newMiniMapBounds);
         assert.strictEqual(onStateChange.callCount, 0);

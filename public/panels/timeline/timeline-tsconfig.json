@@ -31,6 +31,7 @@
   "files": [
     "../../../../../../front_end/panels/timeline/ActiveFilters.ts",
     "../../../../../../front_end/panels/timeline/AnimationsTrackAppender.ts",
+    "../../../../../../front_end/panels/timeline/AnnotationHelpers.ts",
     "../../../../../../front_end/panels/timeline/AppenderUtils.ts",
     "../../../../../../front_end/panels/timeline/BenchmarkEvents.ts",
     "../../../../../../front_end/panels/timeline/CLSLinkifier.ts",

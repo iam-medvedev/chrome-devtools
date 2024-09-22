@@ -73,17 +73,14 @@ styles.replaceSync(
 }
 
 .chat-input-container {
-  margin: var(--sys-size-3) 0;
+  margin: var(--sys-size-4) 0;
   width: 100%;
   display: flex;
   position: relative;
 }
 
 .chat-input {
-  --right-padding:
-    calc(
-      var(--sys-size-5) + 26px + var(--sys-size-4)
-    ); /* Gap between the button and the edge + icon's width + gap between icon and the textarea */
+  --right-padding: calc(var(--sys-size-4) + 26px); /* Gap between the button and the edge + icon's width */
 
   field-sizing: content; /* stylelint-disable-line property-no-unknown */
   resize: none;
@@ -95,8 +92,10 @@ styles.replaceSync(
   line-height: 18px;
   min-height: var(--sys-size-11);
   padding:
-    var(--sys-size-3) var(--right-padding) var(--sys-size-3)
-    var(--sys-size-5);
+    var(--sys-size-4)
+    var(--right-padding)
+    var(--sys-size-4)
+    var(--sys-size-4);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
 
@@ -119,7 +118,7 @@ styles.replaceSync(
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: var(--sys-size-3) var(--sys-size-5);
+  padding: var(--sys-size-4) var(--sys-size-4);
 }
 
 .disclaimer {
@@ -132,7 +131,7 @@ styles.replaceSync(
     color: var(--sys-color-on-surface-subtle);
     font: var(--sys-typescale-body5-regular);
     text-wrap: pretty;
-    padding: var(--sys-size-5);
+    padding: var(--sys-size-2) var(--sys-size-5);
   }
 }
 
@@ -166,9 +165,8 @@ styles.replaceSync(
 
   &.query {
     .message-content {
-      line-height: 18px;
-      white-space: pre;
-      text-wrap: wrap;
+      /* devtools-markdown-view's paragraphs add 10px bottom margin. This negative margin is here to offset that. */
+      margin-bottom: -10px;
     }
   }
 
@@ -311,16 +309,24 @@ styles.replaceSync(
   justify-content: space-between;
   margin-bottom: 2px;
   line-height: 20px;
+  gap: var(--sys-size-8);
 
   & .feedback-icon {
     width: var(--sys-size-8);
     height: var(--sys-size-8);
   }
 
+  & .header-link-container:first-of-type {
+    flex-shrink: 1;
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
   & .header-link-container {
     display: inline-flex;
     align-items: center;
     gap: var(--sys-size-2);
+    flex-shrink: 0;
   }
 }
 
@@ -334,13 +340,13 @@ styles.replaceSync(
 }
 
 .empty-state-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   align-items: center;
   justify-content: center;
   font: var(--sys-typescale-headline4);
   gap: var(--sys-size-11);
   height: 100%;
+  padding: var(--sys-size-3);
 
   .header {
     display: flex;
@@ -348,6 +354,7 @@ styles.replaceSync(
     width: 100%;
     align-items: center;
     justify-content: center;
+    align-self: end;
     gap: var(--sys-size-5);
 
     .icon {
@@ -372,6 +379,7 @@ styles.replaceSync(
     gap: var(--sys-size-5);
     align-items: center;
     justify-content: center;
+    align-self: start;
   }
 }
 
@@ -384,6 +392,12 @@ styles.replaceSync(
 .js-code-output {
   devtools-code-block {
     --max-code-height: 50px;
+  }
+}
+
+.context-details {
+  devtools-code-block {
+    --max-code-height: 80px;
   }
 }
 

@@ -1,9 +1,9 @@
 import type * as Handlers from '../handlers/handlers.js';
 import type * as Types from '../types/types.js';
-import { type NavigationInsightContext } from './types.js';
+import { type InsightSetContextWithNavigation } from './types.js';
 /**
  * Finds a network request given a navigation context and URL.
  * Considers redirects.
  */
-export declare function findRequest(traceData: Pick<Handlers.Types.TraceParseData, 'Meta' | 'NetworkRequests'>, context: NavigationInsightContext, url: string): Types.TraceEvents.SyntheticNetworkRequest | null;
-export declare function findLCPRequest(traceData: Pick<Handlers.Types.TraceParseData, 'Meta' | 'NetworkRequests' | 'LargestImagePaint'>, context: NavigationInsightContext, lcpEvent: Types.TraceEvents.TraceEventLargestContentfulPaintCandidate): Types.TraceEvents.SyntheticNetworkRequest | null;
+export declare function findRequest(parsedTrace: Pick<Handlers.Types.ParsedTrace, 'Meta' | 'NetworkRequests'>, context: InsightSetContextWithNavigation, url: string): Types.Events.SyntheticNetworkRequest | null;
+export declare function findLCPRequest(parsedTrace: Pick<Handlers.Types.ParsedTrace, 'Meta' | 'NetworkRequests' | 'LargestImagePaint'>, context: InsightSetContextWithNavigation, lcpEvent: Types.Events.LargestContentfulPaintCandidate): Types.Events.SyntheticNetworkRequest | null;

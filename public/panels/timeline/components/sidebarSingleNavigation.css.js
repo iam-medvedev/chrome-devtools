@@ -24,10 +24,6 @@ styles.replaceSync(
 .metric {
   margin-top: 10px;
   flex: 1;
-
-  &:hover {
-    transform: scale(1.05);
-  }
 }
 
 .metric-value {

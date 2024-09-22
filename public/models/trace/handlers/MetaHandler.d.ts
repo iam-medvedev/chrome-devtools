@@ -1,18 +1,18 @@
 import * as Types from '../types/types.js';
 export declare function reset(): void;
 export declare function initialize(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export type MetaHandlerData = {
     traceIsGeneric: boolean;
     traceBounds: Types.Timing.TraceWindowMicroSeconds;
-    browserProcessId: Types.TraceEvents.ProcessID;
-    processNames: Map<Types.TraceEvents.ProcessID, Types.TraceEvents.TraceEventProcessName>;
-    browserThreadId: Types.TraceEvents.ThreadID;
-    gpuProcessId: Types.TraceEvents.ProcessID;
-    navigationsByFrameId: Map<string, Types.TraceEvents.TraceEventNavigationStart[]>;
-    navigationsByNavigationId: Map<string, Types.TraceEvents.TraceEventNavigationStart>;
-    threadsInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, Types.TraceEvents.TraceEventThreadName>>;
+    browserProcessId: Types.Events.ProcessID;
+    processNames: Map<Types.Events.ProcessID, Types.Events.ProcessName>;
+    browserThreadId: Types.Events.ThreadID;
+    gpuProcessId: Types.Events.ProcessID;
+    navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>;
+    navigationsByNavigationId: Map<string, Types.Events.NavigationStart>;
+    threadsInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, Types.Events.ThreadName>>;
     mainFrameId: string;
     mainFrameURL: string;
     /**
@@ -24,14 +24,14 @@ export type MetaHandlerData = {
      * entry for each URL it had.
      */
     rendererProcessesByFrame: FrameProcessData;
-    topLevelRendererIds: Set<Types.TraceEvents.ProcessID>;
-    frameByProcessId: Map<Types.TraceEvents.ProcessID, Map<string, Types.TraceEvents.TraceFrame>>;
-    mainFrameNavigations: Types.TraceEvents.TraceEventNavigationStart[];
-    gpuThreadId?: Types.TraceEvents.ThreadID;
+    topLevelRendererIds: Set<Types.Events.ProcessID>;
+    frameByProcessId: Map<Types.Events.ProcessID, Map<string, Types.Events.TraceFrame>>;
+    mainFrameNavigations: Types.Events.NavigationStart[];
+    gpuThreadId?: Types.Events.ThreadID;
     viewportRect?: DOMRect;
 };
-export type FrameProcessData = Map<string, Map<Types.TraceEvents.ProcessID, {
-    frame: Types.TraceEvents.TraceFrame;
+export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, {
+    frame: Types.Events.TraceFrame;
     window: Types.Timing.TraceWindowMicroSeconds;
 }[]>>;
 export declare function data(): MetaHandlerData;

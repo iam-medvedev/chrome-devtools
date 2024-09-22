@@ -55,6 +55,12 @@
       "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/logs/bundle-tsconfig.json"
+    },
+    {
+      "path": "../network/forward/bundle-tsconfig.json"
+    },
+    {
       "path": "../../third_party/marked/bundle-tsconfig.json"
     },
     {

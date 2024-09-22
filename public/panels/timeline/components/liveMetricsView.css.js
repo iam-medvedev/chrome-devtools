@@ -18,6 +18,7 @@ styles.replaceSync(
   font-size: var(--sys-typescale-body4-size);
   line-height: var(--sys-typescale-body4-line-height);
   font-weight: var(--ref-typeface-weight-regular);
+  user-select: text;
 }
 
 .live-metrics-view {
@@ -119,9 +120,9 @@ styles.replaceSync(
 }
 
 .related-element-info {
-  overflow: hidden;
   text-wrap: nowrap;
   margin-top: 8px;
+  display: flex;
 }
 
 .related-element-label {
@@ -132,6 +133,8 @@ styles.replaceSync(
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 2px;
   padding: 0 2px;
+  min-width: 0;
+  margin-left: 4px;
 }
 
 .interactions-section {
@@ -176,9 +179,9 @@ styles.replaceSync(
 }
 
 .interaction-node {
-  overflow: hidden;
   flex-grow: 1;
   margin-right: 32px;
+  min-width: 0;
 }
 
 .interaction-info {

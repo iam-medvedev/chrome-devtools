@@ -37,18 +37,18 @@ export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Handler is not initialized');
     }
-    if (Types.TraceEvents.isTraceEventBeginCommitCompositorFrame(event)) {
+    if (Types.Events.isBeginCommitCompositorFrame(event)) {
         beginCommitCompositorFrameEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventParseMetaViewport(event)) {
+    if (Types.Events.isParseMetaViewport(event)) {
         parseMetaViewportEvents.push(event);
         return;
     }
-    if (!Types.TraceEvents.isTraceEventEventTiming(event)) {
+    if (!Types.Events.isEventTiming(event)) {
         return;
     }
-    if (Types.TraceEvents.isTraceEventEventTimingEnd(event)) {
+    if (Types.Events.isEventTimingEnd(event)) {
         // Store the end event; for each start event that is an interaction, we need the matching end event to calculate the duration correctly.
         eventTimingEndEventsById.set(event.id, event);
     }
@@ -56,7 +56,7 @@ export function handleEvent(event) {
     // From this point on we want to find events that represent interactions.
     // These events are always start events - those are the ones that contain all
     // the metadata about the interaction.
-    if (!event.args.data || !Types.TraceEvents.isTraceEventEventTimingStart(event)) {
+    if (!event.args.data || !Types.Events.isEventTimingStart(event)) {
         return;
     }
     const { duration, interactionId } = event.args.data;
@@ -235,8 +235,7 @@ export async function finalize() {
         const frameId = interactionStartEvent.args.frame ?? interactionStartEvent.args.data.frame;
         const navigation = Helpers.Trace.getNavigationForTraceEvent(interactionStartEvent, frameId, navigationsByFrameId);
         const navigationId = navigation?.args.data?.navigationId;
-        const interactionEvent = Helpers.SyntheticEvents.SyntheticEventsManager
-            .registerSyntheticBasedEvent({
+        const interactionEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             // Use the start event to define the common fields.
             rawSourceEvent: interactionStartEvent,
             cat: interactionStartEvent.cat,

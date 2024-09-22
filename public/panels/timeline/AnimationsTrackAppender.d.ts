@@ -1,9 +1,11 @@
-import type * as TraceEngine from '../../models/trace/trace.js';
-import { type CompatibilityTracksAppender, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import type * as Trace from '../../models/trace/trace.js';
+import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare class AnimationsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, traceParsedData: TraceEngine.Handlers.Types.TraceParseData);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace);
     appendTrackAtLevel(trackStartLevel: number, expanded?: boolean | undefined): number;
     colorForEvent(): string;
+    titleForEvent(event: Trace.Types.Events.SyntheticAnimationPair): string;
+    highlightedEntryInfo(event: Trace.Types.Events.SyntheticAnimationPair): HighlightedEntryInfo;
 }

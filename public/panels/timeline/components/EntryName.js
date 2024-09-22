@@ -4,7 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { getEventStyle } from './EntryStyles.js';
 const UIStrings = {
     /**
@@ -38,17 +38,17 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/EntryName.t
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * Calculates the display name for a given entry.
- * @param traceParsedData - If the trace data is provided
+ * @param parsedTrace - If the trace data is provided
  * as the second argument it can be used to find source map resolved names for
  * profile calls.
  * Use this function to customise the user visible name for an entry. If no
  * custom name is found, we will fallback to the `name` property in the trace
  * entry.
  */
-export function nameForEntry(entry, traceParsedData) {
-    if (TraceEngine.Types.TraceEvents.isProfileCall(entry)) {
-        if (traceParsedData) {
-            const potentialCallName = TraceEngine.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(traceParsedData.Samples, entry);
+export function nameForEntry(entry, parsedTrace) {
+    if (Trace.Types.Events.isProfileCall(entry)) {
+        if (parsedTrace) {
+            const potentialCallName = Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.Samples, entry);
             // We need this extra check because the call name could be the empty
             // string. If it is, we want to fallback.
             if (potentialCallName) {
@@ -57,37 +57,37 @@ export function nameForEntry(entry, traceParsedData) {
         }
         return entry.callFrame.functionName || i18nString(UIStrings.anonymous);
     }
-    if (TraceEngine.Types.TraceEvents.isLegacyTimelineFrame(entry)) {
+    if (Trace.Types.Events.isLegacyTimelineFrame(entry)) {
         return i18n.i18n.lockedString(UIStrings.frame);
     }
-    if (TraceEngine.Types.TraceEvents.isTraceEventDispatch(entry)) {
+    if (Trace.Types.Events.isDispatch(entry)) {
         // EventDispatch represent user actions such as clicks, so in this case
         // rather than show the event title (which is always just "Event"), we
         // add the type ("click") to help the user understand the event.
         return i18nString(UIStrings.eventDispatchS, { PH1: entry.args.data.type });
     }
-    if (TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(entry)) {
+    if (Trace.Types.Events.isSyntheticNetworkRequest(entry)) {
         const parsedURL = new Common.ParsedURL.ParsedURL(entry.args.data.url);
         const text = parsedURL.isValid ? `${parsedURL.displayName} (${parsedURL.host})` : entry.args.data.url || 'Network request';
         return Platform.StringUtilities.trimEndWithMaxLength(text, 40);
     }
-    if (TraceEngine.Types.TraceEvents.isTraceEventWebSocketCreate(entry)) {
+    if (Trace.Types.Events.isWebSocketCreate(entry)) {
         if (entry.args.data.url) {
             return i18nString(UIStrings.wsConnectionOpenedWithUrl, { PH1: entry.args.data.url });
         }
         return i18nString(UIStrings.wsConnectionOpened);
     }
-    if (TraceEngine.Types.TraceEvents.isTraceEventWebSocketDestroy(entry)) {
+    if (Trace.Types.Events.isWebSocketDestroy(entry)) {
         return i18nString(UIStrings.wsConnectionClosed);
     }
-    if (TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(entry)) {
+    if (Trace.Types.Events.isSyntheticInteraction(entry)) {
         return nameForInteractionEvent(entry);
     }
     const eventStyleCustomName = getEventStyle(entry.name)?.title;
     return eventStyleCustomName || entry.name;
 }
 function nameForInteractionEvent(event) {
-    const category = TraceEngine.Handlers.ModelHandlers.UserInteractions.categoryOfInteraction(event);
+    const category = Trace.Handlers.ModelHandlers.UserInteractions.categoryOfInteraction(event);
     // Because we hide nested interactions, we do not want to show the
     // specific type of the interaction that was not hidden, so instead we
     // show just the category of that interaction.

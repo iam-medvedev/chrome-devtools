@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as RequestLinkIcon from '../../../ui/components/request_link_icon/request_link_icon.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
@@ -108,7 +108,7 @@ export class NetworkRequestDetails extends HTMLElement {
     #maybeTarget = null;
     #requestPreviewElements = new WeakMap();
     #linkifier;
-    #traceParsedData = null;
+    #parsedTrace = null;
     constructor(linkifier) {
         super();
         this.#linkifier = linkifier;
@@ -116,11 +116,11 @@ export class NetworkRequestDetails extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [NetworkRequestDetailsStyles];
     }
-    async setData(traceParsedData, networkRequest, maybeTarget) {
-        if (this.#networkRequest === networkRequest && traceParsedData === this.#traceParsedData) {
+    async setData(parsedTrace, networkRequest, maybeTarget) {
+        if (this.#networkRequest === networkRequest && parsedTrace === this.#parsedTrace) {
             return;
         }
-        this.#traceParsedData = traceParsedData;
+        this.#parsedTrace = parsedTrace;
         this.#networkRequest = networkRequest;
         this.#maybeTarget = maybeTarget;
         await this.#render();
@@ -239,10 +239,10 @@ export class NetworkRequestDetails extends HTMLElement {
         if (!this.#networkRequest) {
             return null;
         }
-        const hasStackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(this.#networkRequest) !== null;
+        const hasStackTrace = Trace.Helpers.Trace.stackTraceForEvent(this.#networkRequest) !== null;
         // If we have a stack trace, that is the most reliable way to get the initiator data and display a link to the source.
         if (hasStackTrace) {
-            const topFrame = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(this.#networkRequest)?.at(0) ?? null;
+            const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(this.#networkRequest)?.at(0) ?? null;
             if (topFrame) {
                 const link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
                 if (link) {
@@ -251,7 +251,7 @@ export class NetworkRequestDetails extends HTMLElement {
             }
         }
         // If we do not, we can see if the network handler found an initiator and try to link by URL
-        const initiator = this.#traceParsedData?.NetworkRequests.eventToInitiator.get(this.#networkRequest);
+        const initiator = this.#parsedTrace?.NetworkRequests.eventToInitiator.get(this.#networkRequest);
         if (initiator) {
             const link = this.#linkifier.maybeLinkifyScriptLocation(this.#maybeTarget, null, // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
             initiator.args.data.url, undefined);

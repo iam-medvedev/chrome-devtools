@@ -1,11 +1,11 @@
-import { type TraceEventHandlerName } from './types.js';
 import * as Types from '../types/types.js';
+import { type HandlerName } from './types.js';
 export declare function reset(): void;
 export declare function initialize(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export interface GPUHandlerReturnData {
-    mainGPUThreadTasks: readonly Types.TraceEvents.TraceEventGPUTask[];
+    mainGPUThreadTasks: readonly Types.Events.GPUTask[];
 }
 export declare function data(): GPUHandlerReturnData;
-export declare function deps(): TraceEventHandlerName[];
+export declare function deps(): HandlerName[];

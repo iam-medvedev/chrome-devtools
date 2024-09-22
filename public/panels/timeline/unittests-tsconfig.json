@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/timeline/AnnotationHelpers.test.ts",
     "../../../../../../front_end/panels/timeline/Breadcrumbs.test.ts",
     "../../../../../../front_end/panels/timeline/EntriesFilter.test.ts",
     "../../../../../../front_end/panels/timeline/EventsSerializer.test.ts",

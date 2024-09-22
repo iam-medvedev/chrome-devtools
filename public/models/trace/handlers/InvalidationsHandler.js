@@ -44,11 +44,11 @@ export function handleEvent(event) {
     if (maxInvalidationsPerEvent === 0) {
         return;
     }
-    if (Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+    if (Types.Events.isUpdateLayoutTree(event)) {
         lastRecalcStyleEvent = event;
         // Associate any prior invalidations with this recalc event.
         for (const invalidation of allInvalidationTrackingEvents) {
-            if (Types.TraceEvents.isTraceEventLayoutInvalidationTracking(invalidation)) {
+            if (Types.Events.isLayoutInvalidationTracking(invalidation)) {
                 // LayoutInvalidation events cannot be associated with a LayoutTree
                 // event.
                 continue;
@@ -60,7 +60,7 @@ export function handleEvent(event) {
         }
         return;
     }
-    if (Types.TraceEvents.isTraceEventInvalidationTracking(event)) {
+    if (Types.Events.isInvalidationTracking(event)) {
         if (hasPainted) {
             // If we have painted, then we can clear out the list of all existing
             // invalidations, as we cannot associate them across frames.
@@ -68,15 +68,15 @@ export function handleEvent(event) {
             lastRecalcStyleEvent = null;
             hasPainted = false;
         }
-        // Style invalidation events can occur before and during recalc styles. When we get a recalc style event (aka TraceEventUpdateLayoutTree), we check and associate any prior invalidations with it.
-        // But any invalidations that occur during a TraceEventUpdateLayoutTree
+        // Style invalidation events can occur before and during recalc styles. When we get a recalc style event (aka UpdateLayoutTree), we check and associate any prior invalidations with it.
+        // But any invalidations that occur during a UpdateLayoutTree
         // event would be reported in trace events after. So each time we get an
         // invalidation that might be due to a style recalc, we check if the
         // timings overlap and if so associate them.
         if (lastRecalcStyleEvent &&
-            (Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(event) ||
-                Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(event) ||
-                Types.TraceEvents.isTraceEventStyleInvalidatorInvalidationTracking(event))) {
+            (Types.Events.isScheduleStyleInvalidationTracking(event) ||
+                Types.Events.isStyleRecalcInvalidationTracking(event) ||
+                Types.Events.isStyleInvalidatorInvalidationTracking(event))) {
             const recalcEndTime = lastRecalcStyleEvent.ts + (lastRecalcStyleEvent.dur || 0);
             if (event.ts >= lastRecalcStyleEvent.ts && event.ts <= recalcEndTime &&
                 lastRecalcStyleEvent.args.beginData?.frame === event.args.data.frame) {
@@ -86,16 +86,16 @@ export function handleEvent(event) {
         allInvalidationTrackingEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventPaint(event)) {
+    if (Types.Events.isPaint(event)) {
         // Used to ensure that we do not create relationships across frames.
         hasPainted = true;
         return;
     }
-    if (Types.TraceEvents.isTraceEventLayout(event)) {
+    if (Types.Events.isLayout(event)) {
         const layoutFrame = event.args.beginData.frame;
         for (const invalidation of allInvalidationTrackingEvents) {
             // The only invalidations that cause a Layout are LayoutInvalidations :)
-            if (!Types.TraceEvents.isTraceEventLayoutInvalidationTracking(invalidation)) {
+            if (!Types.Events.isLayoutInvalidationTracking(invalidation)) {
                 continue;
             }
             if (invalidation.args.data.frame === layoutFrame) {

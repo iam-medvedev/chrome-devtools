@@ -35,7 +35,10 @@ styles.replaceSync(
  */
 
 .is-ignore-listed {
-  opacity: 40%;
+  .tree-element-title,
+  .leading-icons {
+    opacity: 40%;
+  }
 }
 
 .tree-outline li {

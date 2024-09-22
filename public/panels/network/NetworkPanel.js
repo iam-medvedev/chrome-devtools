@@ -37,7 +37,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -86,7 +86,7 @@ const UIStrings = {
      */
     showMoreInformationInRequestRows: 'Show more information in request rows',
     /**
-     *@description Text in Network Panel of the Network panel
+     *@description Text in Network Panel used to toggle the "big request rows" setting.
      */
     useLargeRequestRows: 'Big request rows',
     /**
@@ -94,7 +94,7 @@ const UIStrings = {
      */
     showOverviewOfNetworkRequests: 'Show overview of network requests',
     /**
-     *@description Text in Network Panel of the Network panel
+     *@description Text in Network Panel used to show the overview for a given network request.
      */
     showOverview: 'Overview',
     /**
@@ -102,7 +102,7 @@ const UIStrings = {
      */
     groupRequestsByTopLevelRequest: 'Group requests by top level request frame',
     /**
-     *@description Text in Network Panel of the Network panel
+     *@description Text for group by frame network setting
      */
     groupByFrame: 'Group by frame',
     /**
@@ -136,7 +136,7 @@ const UIStrings = {
      */
     throttling: 'Throttling',
     /**
-     *@description Text in Network Panel of the Network panel
+     *@description Text in Network Panel to tell the user to reload the page to capture screenshots.
      *@example {Ctrl + R} PH1
      */
     hitSToReloadAndCaptureFilmstrip: 'Hit {PH1} to reload and capture filmstrip.',
@@ -145,11 +145,11 @@ const UIStrings = {
      */
     revealInNetworkPanel: 'Reveal in Network panel',
     /**
-     *@description Text in Network Panel of the Network panel
+     *@description Text in Network Panel that is displayed whilst the recording is in progress.
      */
     recordingFrames: 'Recording frames...',
     /**
-     *@description Text in Network Panel of the Network panel
+     *@description Text in Network Panel that is displayed when frames are being fetched.
      */
     fetchingFrames: 'Fetching frames...',
     /**
@@ -440,7 +440,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
         const timestamps = filmStrip.frames.map(frame => {
             // The network view works in seconds.
-            return TraceEngine.Helpers.Timing.microSecondsToSeconds(frame.screenshotEvent.ts);
+            return Trace.Helpers.Timing.microSecondsToSeconds(frame.screenshotEvent.ts);
         });
         this.networkLogView.addFilmStripFrames(timestamps);
     }
@@ -562,6 +562,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.currentRequest = request;
         this.networkOverview.setHighlightedRequest(request);
         this.updateNetworkItemView();
+        UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, request);
     }
     onRequestActivated(event) {
         const { showPanel, tab, takeFocus } = event.data;
@@ -678,7 +679,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         const { request } = event.data;
         this.calculator.updateBoundaries(request);
         // FIXME: Unify all time units across the frontend!
-        this.overviewPane.setBounds(TraceEngine.Types.Timing.MilliSeconds(this.calculator.minimumBoundary() * 1000), TraceEngine.Types.Timing.MilliSeconds(this.calculator.maximumBoundary() * 1000));
+        this.overviewPane.setBounds(Trace.Types.Timing.MilliSeconds(this.calculator.minimumBoundary() * 1000), Trace.Types.Timing.MilliSeconds(this.calculator.maximumBoundary() * 1000));
         this.networkOverview.updateRequest(request);
     }
     resolveLocation(locationName) {
@@ -718,8 +719,8 @@ export class FilmStripRecorder {
     #traceEngine;
     #collectedTraceEvents = [];
     constructor(timeCalculator, filmStripView) {
-        this.#traceEngine = TraceEngine.TraceModel.Model.createWithSubsetOfHandlers({
-            Screenshots: TraceEngine.Handlers.ModelHandlers.Screenshots,
+        this.#traceEngine = Trace.TraceModel.Model.createWithSubsetOfHandlers({
+            Screenshots: Trace.Handlers.ModelHandlers.Screenshots,
         });
         this.tracingManager = null;
         this.resourceTreeModel = null;
@@ -736,12 +737,12 @@ export class FilmStripRecorder {
         }
         this.tracingManager = null;
         await this.#traceEngine.parse(this.#collectedTraceEvents);
-        const data = this.#traceEngine.traceParsedData(this.#traceEngine.size() - 1);
+        const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1);
         if (!data) {
             return;
         }
-        const zeroTimeInSeconds = TraceEngine.Types.Timing.Seconds(this.timeCalculator.minimumBoundary());
-        const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(data, TraceEngine.Helpers.Timing.secondsToMicroseconds(zeroTimeInSeconds));
+        const zeroTimeInSeconds = Trace.Types.Timing.Seconds(this.timeCalculator.minimumBoundary());
+        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data, Trace.Helpers.Timing.secondsToMicroseconds(zeroTimeInSeconds));
         if (this.callback) {
             this.callback(filmStrip);
         }
@@ -763,7 +764,7 @@ export class FilmStripRecorder {
         this.#collectedTraceEvents = [];
         this.filmStripView.reset();
         this.filmStripView.setStatusText(i18nString(UIStrings.recordingFrames));
-        const tracingManager = SDK.TargetManager.TargetManager.instance().scopeTarget()?.model(TraceEngine.TracingManager.TracingManager);
+        const tracingManager = SDK.TargetManager.TargetManager.instance().scopeTarget()?.model(Trace.TracingManager.TracingManager);
         if (this.tracingManager || !tracingManager) {
             return;
         }

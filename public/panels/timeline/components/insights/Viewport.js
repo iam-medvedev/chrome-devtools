@@ -24,7 +24,7 @@ export function getViewportInsight(insights, navigationId) {
     if (!insightsByNavigation) {
         return null;
     }
-    const viewportInsight = insightsByNavigation.Viewport;
+    const viewportInsight = insightsByNavigation.data.Viewport;
     if (viewportInsight instanceof Error) {
         return null;
     }
@@ -66,7 +66,7 @@ export class Viewport extends BaseInsight {
     }
     render() {
         const viewportInsight = getViewportInsight(this.data.insights, this.data.navigationId);
-        const shouldShow = viewportInsight && !viewportInsight.mobileOptimized;
+        const shouldShow = viewportInsight && viewportInsight.mobileOptimized === false;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,

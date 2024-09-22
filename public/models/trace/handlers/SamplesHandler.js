@@ -106,7 +106,7 @@ export function handleEvent(event) {
      * A fake trace event created to support CDP.Profiler.Profiles in the
      * trace engine.
      */
-    if (Types.TraceEvents.isSyntheticCpuProfile(event)) {
+    if (Types.Events.isSyntheticCpuProfile(event)) {
         // At the moment we are attaching to a single node target so we
         // should only get a single CPU profile. The values of the process
         // id and thread id are not really important, so we use the data
@@ -121,7 +121,7 @@ export function handleEvent(event) {
         profileData.threadId = tid;
         return;
     }
-    if (Types.TraceEvents.isTraceEventProfile(event)) {
+    if (Types.Events.isProfile(event)) {
         // Do not use event.args.data.startTime as it is in CLOCK_MONOTONIC domain,
         // but use profileEvent.ts which has been translated to Perfetto's clock
         // domain. Also convert from ms to us.
@@ -132,7 +132,7 @@ export function handleEvent(event) {
         profileData.threadId = event.tid;
         return;
     }
-    if (Types.TraceEvents.isTraceEventProfileChunk(event)) {
+    if (Types.Events.isProfileChunk(event)) {
         const profileData = getOrCreatePreProcessedData(event.pid, event.id);
         const cdpProfile = profileData.rawProfile;
         const nodesAndSamples = event.args?.data?.cpuProfile || { samples: [] };

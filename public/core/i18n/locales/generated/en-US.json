@@ -596,9 +596,6 @@
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Extend grid lines"
   },
-  "core/sdk/sdk-meta.ts | hideCoreWebVitalsOverlay": {
-    "message": "Hide Core Web Vitals overlay"
-  },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Hide frames per second (FPS) meter"
   },
@@ -649,9 +646,6 @@
   },
   "core/sdk/sdk-meta.ts | showAreaNames": {
     "message": "Show area names"
-  },
-  "core/sdk/sdk-meta.ts | showCoreWebVitalsOverlay": {
-    "message": "Show Core Web Vitals overlay"
   },
   "core/sdk/sdk-meta.ts | showFramesPerSecondFpsMeter": {
     "message": "Show frames per second (FPS) meter"
@@ -833,9 +827,6 @@
   "entrypoints/inspector_main/OutermostTargetSelector.ts | targetS": {
     "message": "Page: {PH1}"
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | coreWebVitals": {
-    "message": "Core Web Vitals"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | disableAvifImageFormat": {
     "message": "Disable AVIF image format"
   },
@@ -922,9 +913,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | scrollingPerformanceIssues": {
     "message": "Scrolling performance issues"
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
-    "message": "Shows an overlay with Core Web Vitals."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Shows layer borders (orange/olive) and tiles (cyan)."
@@ -2233,6 +2221,9 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | documentNotAvailable": {
     "message": "Document not available"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | extensionStorage": {
+    "message": "Extension storage"
   },
   "panels/application/ApplicationPanelSidebar.ts | frames": {
     "message": "Frames"
@@ -10385,8 +10376,14 @@
   "panels/security/security-meta.ts | security": {
     "message": "Security"
   },
+  "panels/security/security-meta.ts | securityAndPrivacy": {
+    "message": "Security & Privacy"
+  },
   "panels/security/security-meta.ts | showSecurity": {
     "message": "Show Security"
+  },
+  "panels/security/security-meta.ts | showSecurityAndPrivacy": {
+    "message": "Show Security and Privacy"
   },
   "panels/security/SecurityModel.ts | cipherWithMAC": {
     "message": "{PH1} with {PH2}"
@@ -10937,11 +10934,11 @@
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
   },
+  "panels/settings/AISettingsTab.ts | enableAiAssistant": {
+    "message": "Enable AI assistant"
+  },
   "panels/settings/AISettingsTab.ts | enableConsoleInsights": {
     "message": "Enable Console Insights"
-  },
-  "panels/settings/AISettingsTab.ts | enableFreestyler": {
-    "message": "Enable Freestyler"
   },
   "panels/settings/AISettingsTab.ts | experimentalFeatures": {
     "message": "These features are experimental. They use generative AI and may provide inaccurate or offensive information that does not represent Google’s views."
@@ -12815,6 +12812,9 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
   },
+  "panels/timeline/components/insights/CLSCulprits.ts | worstCluster": {
+    "message": "Worst layout shift cluster"
+  },
   "panels/timeline/components/insights/DocumentLatency.ts | failedRedirects": {
     "message": "Had redirects"
   },
@@ -12834,7 +12834,7 @@
     "message": "Applies text compression"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | description": {
-    "message": "Improve user responsiveness by improving the Interaction to Next Paint metric. Learn how to [Optimize INP](https://web.dev/articles/optimize-inp)."
+    "message": "Optimize user responsiveness by [improving the Interaction to Next Paint metric](https://web.dev/articles/optimize-inp)."
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
     "message": "Duration"
@@ -12891,16 +12891,16 @@
     "message": "Blocking time"
   },
   "panels/timeline/components/insights/ThirdParties.ts | columnThirdParty": {
-    "message": "Third-party"
+    "message": "Third party"
   },
   "panels/timeline/components/insights/ThirdParties.ts | columnTransferSize": {
     "message": "Transfer size"
   },
   "panels/timeline/components/insights/ThirdParties.ts | description": {
-    "message": "Third-party code can significantly impact load performance. Limit the number of redundant third-party providers and try to load third-party code after your page has primarily finished loading. [Learn how to minimize third-party impact](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/)."
+    "message": "Third party code can significantly impact load performance. Assess and reduce the [amount of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) on the page, and try to load what you can after the page has finished loading the main content."
   },
   "panels/timeline/components/insights/ThirdParties.ts | title": {
-    "message": "Minimize third-party usage"
+    "message": "Third parties"
   },
   "panels/timeline/components/insights/Viewport.ts | description": {
     "message": "A viewport meta element not only optimizes your app for mobile screen sizes, but also [prevents a 300 millisecond delay to user input](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
@@ -13360,6 +13360,15 @@
   },
   "panels/timeline/NetworkTrackAppender.ts | network": {
     "message": "Network"
+  },
+  "panels/timeline/overlays/components/EntriesLinkOverlay.ts | diagram": {
+    "message": "Links bteween entries"
+  },
+  "panels/timeline/overlays/components/EntryLabelOverlay.ts | entryLabel": {
+    "message": "Entry label"
+  },
+  "panels/timeline/overlays/components/TimeRangeOverlay.ts | timeRange": {
+    "message": "Time range"
   },
   "panels/timeline/ServerTimingsTrackAppender.ts | serverSideTrack": {
     "message": "Server Timings — {PH1}"
@@ -13880,6 +13889,9 @@
   "panels/timeline/TimelineUIUtils.ts | allottedTime": {
     "message": "Allotted time"
   },
+  "panels/timeline/TimelineUIUtils.ts | animating": {
+    "message": "Animating"
+  },
   "panels/timeline/TimelineUIUtils.ts | animationFrameRequested": {
     "message": "Animation frame requested"
   },
@@ -13903,6 +13915,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | compile": {
     "message": "Compile"
+  },
+  "panels/timeline/TimelineUIUtils.ts | compositingFailed": {
+    "message": "Compositing failed"
   },
   "panels/timeline/TimelineUIUtils.ts | consumedCacheSize": {
     "message": "Consumed cache size"
@@ -13949,6 +13964,9 @@
   "panels/timeline/TimelineUIUtils.ts | failedToLoadScriptFromCache": {
     "message": "failed to load script from cache"
   },
+  "panels/timeline/TimelineUIUtils.ts | filterMayMovePixels": {
+    "message": "Filter-related property may move pixels"
+  },
   "panels/timeline/TimelineUIUtils.ts | firstInvalidated": {
     "message": "First invalidated"
   },
@@ -13969,6 +13987,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | imageUrl": {
     "message": "Image URL"
+  },
+  "panels/timeline/TimelineUIUtils.ts | incompatibleAnimations": {
+    "message": "Target has another animation which is incompatible"
   },
   "panels/timeline/TimelineUIUtils.ts | initiatedBy": {
     "message": "Initiated by"
@@ -14026,6 +14047,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | nodesThatNeedLayout": {
     "message": "Nodes that need layout"
+  },
+  "panels/timeline/TimelineUIUtils.ts | nonReplaceCompositeMode": {
+    "message": "Effect has composite mode other than \"replace\""
   },
   "panels/timeline/TimelineUIUtils.ts | outsideBreadcrumbRange": {
     "message": "(outside of the breadcrumb range)"
@@ -14129,9 +14153,6 @@
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Stack trace"
   },
-  "panels/timeline/TimelineUIUtils.ts | state": {
-    "message": "State"
-  },
   "panels/timeline/TimelineUIUtils.ts | streamed": {
     "message": "Streamed"
   },
@@ -14159,11 +14180,20 @@
   "panels/timeline/TimelineUIUtils.ts | traceEvent": {
     "message": "Trace event"
   },
+  "panels/timeline/TimelineUIUtils.ts | transformDependsBoxSize": {
+    "message": "Transform-related property depends on box size"
+  },
   "panels/timeline/TimelineUIUtils.ts | type": {
     "message": "Type"
   },
   "panels/timeline/TimelineUIUtils.ts | UnknownNode": {
     "message": "[ unknown node ]"
+  },
+  "panels/timeline/TimelineUIUtils.ts | unsupportedCSSProperty": {
+    "message": "{propertyCount, plural,\n    =1 {Unsupported CSS property: {properties}}\n    other {Unsupported CSS properties: {properties}}\n  }"
+  },
+  "panels/timeline/TimelineUIUtils.ts | unsupportedTimingParameters": {
+    "message": "Effect has unsupported timing parameters"
   },
   "panels/timeline/TimelineUIUtils.ts | url": {
     "message": "Url"

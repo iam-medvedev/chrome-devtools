@@ -5,10 +5,10 @@ import * as Types from '../types/types.js';
 export declare function clearCacheForTesting(): void;
 /**
  * Looks up the DOM Node on the page for the given BackendNodeId. Uses the
- * provided TraceParseData as the cache and will cache the result after the
+ * provided ParsedTrace as the cache and will cache the result after the
  * first lookup.
  */
-export declare function domNodeForBackendNodeID(modelData: Handlers.Types.TraceParseData, nodeId: Protocol.DOM.BackendNodeId): Promise<SDK.DOMModel.DOMNode | null>;
+export declare function domNodeForBackendNodeID(modelData: Handlers.Types.ParsedTrace, nodeId: Protocol.DOM.BackendNodeId): Promise<SDK.DOMModel.DOMNode | null>;
 /**
  * Extracts a set of NodeIds for a given event.
  * NOTE: you probably don't want to call this and instead use
@@ -16,19 +16,19 @@ export declare function domNodeForBackendNodeID(modelData: Handlers.Types.TraceP
  * This method is primarily exported so we can test the logic more easily
  * without having to mock the CDP layer.
  **/
-export declare function nodeIdsForEvent(modelData: Handlers.Types.TraceParseData, event: Types.TraceEvents.TraceEventData): Set<Protocol.DOM.BackendNodeId>;
+export declare function nodeIdsForEvent(modelData: Handlers.Types.ParsedTrace, event: Types.Events.Event): Set<Protocol.DOM.BackendNodeId>;
 /**
  * Looks up for backend node ids in different types of trace events
  * and resolves them into related DOM nodes.
  * This method should be progressively updated to support more events
  * containing node ids which we want to resolve.
  */
-export declare function extractRelatedDOMNodesFromEvent(modelData: Handlers.Types.TraceParseData, event: Types.TraceEvents.TraceEventData): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null> | null>;
+export declare function extractRelatedDOMNodesFromEvent(modelData: Handlers.Types.ParsedTrace, event: Types.Events.Event): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null> | null>;
 /**
  * Takes a set of Protocol.DOM.BackendNodeId ids and will return a map of NodeId=>DOMNode.
- * Results are cached based on 1) the provided TraceParseData and 2) the provided set of IDs.
+ * Results are cached based on 1) the provided ParsedTrace and 2) the provided set of IDs.
  */
-export declare function domNodesForMultipleBackendNodeIds(modelData: Handlers.Types.TraceParseData, nodeIds: Array<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;
+export declare function domNodesForMultipleBackendNodeIds(modelData: Handlers.Types.ParsedTrace, nodeIds: Array<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;
 export interface LayoutShiftSource {
     previousRect: DOMRect;
     currentRect: DOMRect;
@@ -45,7 +45,7 @@ export interface LayoutShiftSource {
  * This data is cached based on the provided model data and the given layout
  * shift, so it is is safe to call multiple times with the same input.
  */
-export declare function sourcesForLayoutShift(modelData: Handlers.Types.TraceParseData, event: Types.TraceEvents.TraceEventLayoutShift): Promise<readonly LayoutShiftSource[]>;
+export declare function sourcesForLayoutShift(modelData: Handlers.Types.ParsedTrace, event: Types.Events.LayoutShift): Promise<readonly LayoutShiftSource[]>;
 /**
  * Takes a LayoutShift and normalizes its node dimensions based on the device
  * pixel ratio (DPR) of the user's display.
@@ -58,4 +58,4 @@ export declare function sourcesForLayoutShift(modelData: Handlers.Types.TracePar
  * the provided model data.
  * See https://crbug.com/1300309 for details.
  */
-export declare function normalizedImpactedNodesForLayoutShift(modelData: Handlers.Types.TraceParseData, event: Types.TraceEvents.TraceEventLayoutShift): Promise<readonly Types.TraceEvents.TraceImpactedNode[]>;
+export declare function normalizedImpactedNodesForLayoutShift(modelData: Handlers.Types.ParsedTrace, event: Types.Events.LayoutShift): Promise<readonly Types.Events.TraceImpactedNode[]>;

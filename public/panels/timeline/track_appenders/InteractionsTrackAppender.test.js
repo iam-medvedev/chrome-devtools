@@ -1,13 +1,13 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
+function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.interactionsTrackAppender();
 }
 describeWithEnvironment('InteractionsTrackAppender', function () {
@@ -15,12 +15,12 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         const entryTypeByLevel = [];
         const entryData = [];
         const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
-        const { traceData } = await TraceLoader.traceEngine(context, trace);
-        const interactionsTrackAppender = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
+        const { parsedTrace } = await TraceLoader.traceEngine(context, trace);
+        const interactionsTrackAppender = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         interactionsTrackAppender.appendTrackAtLevel(0);
         return {
             entryTypeByLevel,
-            traceParsedData: traceData,
+            parsedTrace,
             flameChartData,
             interactionsTrackAppender,
             entryData,
@@ -41,8 +41,8 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
             assert.strictEqual(entryTypeByLevel.length, 0);
         });
         it('only shows the top level interactions', async function () {
-            const { entryData, traceParsedData } = await renderTrackAppender(this, 'nested-interactions.json.gz');
-            assert.strictEqual(entryData.length, traceParsedData.UserInteractions.interactionEventsWithNoNesting.length);
+            const { entryData, parsedTrace } = await renderTrackAppender(this, 'nested-interactions.json.gz');
+            assert.strictEqual(entryData.length, parsedTrace.UserInteractions.interactionEventsWithNoNesting.length);
         });
         it('creates a flamechart group', async function () {
             const { flameChartData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
@@ -50,28 +50,28 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
             assert.strictEqual(flameChartData.groups[0].name, 'Interactions');
         });
         it('adds all interactions with the correct start times', async function () {
-            const { flameChartData, traceParsedData, entryData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
-            const events = traceParsedData.UserInteractions.interactionEventsWithNoNesting;
+            const { flameChartData, parsedTrace, entryData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
+            const events = parsedTrace.UserInteractions.interactionEventsWithNoNesting;
             for (const event of events) {
                 const markerIndex = entryData.indexOf(event);
                 assert.exists(markerIndex);
-                assert.strictEqual(flameChartData.entryStartTimes[markerIndex], TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts));
+                assert.strictEqual(flameChartData.entryStartTimes[markerIndex], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
             }
         });
         it('adds total times correctly', async function () {
-            const { flameChartData, traceParsedData, entryData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
-            const events = traceParsedData.UserInteractions.interactionEventsWithNoNesting;
+            const { flameChartData, parsedTrace, entryData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
+            const events = parsedTrace.UserInteractions.interactionEventsWithNoNesting;
             for (const event of events) {
                 const markerIndex = entryData.indexOf(event);
                 assert.exists(markerIndex);
-                const expectedTotalTimeForEvent = TraceEngine.Helpers.Timing.microSecondsToMilliseconds((event.dur || 0));
+                const expectedTotalTimeForEvent = Trace.Helpers.Timing.microSecondsToMilliseconds((event.dur || 0));
                 assert.strictEqual(flameChartData.entryTotalTimes[markerIndex], expectedTotalTimeForEvent);
             }
         });
     });
     it('candy-stripes and adds warning triangles to long interactions', async function () {
-        const { traceParsedData, flameChartData, entryData } = await renderTrackAppender(this, 'one-second-interaction.json.gz');
-        const longInteraction = traceParsedData.UserInteractions.longestInteractionEvent;
+        const { parsedTrace, flameChartData, entryData } = await renderTrackAppender(this, 'one-second-interaction.json.gz');
+        const longInteraction = parsedTrace.UserInteractions.longestInteractionEvent;
         if (!longInteraction) {
             throw new Error('Could not find longest interaction');
         }
@@ -80,7 +80,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         assert.deepEqual(decorationsForEntry, [
             {
                 type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                startAtTime: TraceEngine.Types.Timing.MicroSeconds(200_000),
+                startAtTime: Trace.Types.Timing.MicroSeconds(200_000),
                 endAtTime: longInteraction.processingEnd,
             },
             {

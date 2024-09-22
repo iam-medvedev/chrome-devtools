@@ -8,20 +8,20 @@
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export function initiatorsDataToDraw(traceParsedData, selectedEvent, hiddenEntries, expandableEntries) {
+export function initiatorsDataToDraw(parsedTrace, selectedEvent, hiddenEntries, expandableEntries) {
     const initiatorsData = [
-        ...findInitiatorDataPredecessors(traceParsedData, selectedEvent, traceParsedData.Initiators.eventToInitiator),
-        ...findInitiatorDataDirectSuccessors(selectedEvent, traceParsedData.Initiators.initiatorToEvents),
+        ...findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.Initiators.eventToInitiator),
+        ...findInitiatorDataDirectSuccessors(selectedEvent, parsedTrace.Initiators.initiatorToEvents),
     ];
     // For each InitiatorData, call a function that makes sure that neither the initiator or initiated entry is hidden.
     // If they are, it will reassign the event or initiator to the closest ancestor.
-    initiatorsData.forEach(initiatorData => getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, traceParsedData));
+    initiatorsData.forEach(initiatorData => getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, parsedTrace));
     return initiatorsData;
 }
-export function initiatorsDataToDrawForNetwork(traceParsedData, selectedEvent) {
-    return findInitiatorDataPredecessors(traceParsedData, selectedEvent, traceParsedData.NetworkRequests.eventToInitiator);
+export function initiatorsDataToDrawForNetwork(parsedTrace, selectedEvent) {
+    return findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.NetworkRequests.eventToInitiator);
 }
-function findInitiatorDataPredecessors(traceParsedData, selectedEvent, eventToInitiator) {
+function findInitiatorDataPredecessors(parsedTrace, selectedEvent, eventToInitiator) {
     const initiatorsData = [];
     let currentEvent = selectedEvent;
     const visited = new Set();
@@ -42,7 +42,7 @@ function findInitiatorDataPredecessors(traceParsedData, selectedEvent, eventToIn
             visited.add(currentEvent);
             continue;
         }
-        const nodeForCurrentEvent = traceParsedData.Renderer.entryToNode.get(currentEvent);
+        const nodeForCurrentEvent = parsedTrace.Renderer.entryToNode.get(currentEvent);
         if (!nodeForCurrentEvent) {
             // Should not happen - if it does something odd is going
             // on so let's give up.
@@ -71,9 +71,9 @@ function findInitiatorDataDirectSuccessors(selectedEvent, initiatorToEvents) {
  * the actual initiator or initiated event might be hidden form the flame chart.
  * If neither entry is hidden, this function returns the initial initiatorData object.
  */
-function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, traceParsedData) {
+function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, parsedTrace) {
     if (hiddenEntries.includes(initiatorData.event)) {
-        let nextParent = traceParsedData.Renderer.entryToNode.get(initiatorData.event)?.parent;
+        let nextParent = parsedTrace.Renderer.entryToNode.get(initiatorData.event)?.parent;
         while (nextParent?.entry && !expandableEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }
@@ -81,7 +81,7 @@ function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEnt
         initiatorData.isEntryHidden = true;
     }
     if (hiddenEntries.includes(initiatorData.initiator)) {
-        let nextParent = traceParsedData.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
+        let nextParent = parsedTrace.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
         while (nextParent?.entry && !expandableEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }

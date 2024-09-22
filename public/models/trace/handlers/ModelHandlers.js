@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 export * as Animations from './AnimationHandler.js';
 export * as AuctionWorklets from './AuctionWorkletsHandler.js';
-export * as EnhancedTraces from './EnhancedTracesHandler.js';
 export * as ExtensionTraceData from './ExtensionTraceDataHandler.js';
 export * as Frames from './FramesHandler.js';
 export * as GPU from './GPUHandler.js';

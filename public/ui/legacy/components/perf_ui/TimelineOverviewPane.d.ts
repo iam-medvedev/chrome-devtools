@@ -1,5 +1,5 @@
 import * as Common from '../../../../core/common/common.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { TimelineOverviewCalculator } from './TimelineOverviewCalculator.js';
 declare const TimelineOverviewPane_base: (new (...args: any[]) => {
@@ -11,6 +11,7 @@ declare const TimelineOverviewPane_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: import("../../../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
+    #private;
     readonly overviewCalculator: TimelineOverviewCalculator;
     private readonly overviewGrid;
     private readonly cursorArea;
@@ -35,9 +36,9 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     onResize(): void;
     setOverviewControls(overviewControls: TimelineOverview[]): void;
     set showingScreenshots(isShowing: boolean);
-    setBounds(minimumBoundary: TraceEngine.Types.Timing.MilliSeconds, maximumBoundary: TraceEngine.Types.Timing.MilliSeconds): void;
-    setNavStartTimes(navStartTimes: readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[]): void;
-    scheduleUpdate(start?: TraceEngine.Types.Timing.MilliSeconds, end?: TraceEngine.Types.Timing.MilliSeconds): void;
+    setBounds(minimumBoundary: Trace.Types.Timing.MilliSeconds, maximumBoundary: Trace.Types.Timing.MilliSeconds): void;
+    setNavStartTimes(navStartTimes: readonly Trace.Types.Events.NavigationStart[]): void;
+    scheduleUpdate(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
     private update;
     setMarkers(markers: Map<number, Element>): void;
     getMarkers(): Map<number, Element>;
@@ -48,6 +49,8 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     private onWindowChanged;
     setWindowTimes(startTime: number, endTime: number): void;
     private updateWindow;
+    highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds): void;
+    clearBoundsHighlight(): void;
 }
 export declare const enum Events {
     OVERVIEW_PANE_WINDOW_CHANGED = "OverviewPaneWindowChanged",
@@ -55,12 +58,12 @@ export declare const enum Events {
     OPEN_SIDEBAR_BUTTON_CLICKED = "OpenSidebarButtonClicked"
 }
 export interface OverviewPaneWindowChangedEvent {
-    startTime: TraceEngine.Types.Timing.MilliSeconds;
-    endTime: TraceEngine.Types.Timing.MilliSeconds;
+    startTime: Trace.Types.Timing.MilliSeconds;
+    endTime: Trace.Types.Timing.MilliSeconds;
 }
 export interface OverviewPaneBreadcrumbAddedEvent {
-    startTime: TraceEngine.Types.Timing.MilliSeconds;
-    endTime: TraceEngine.Types.Timing.MilliSeconds;
+    startTime: Trace.Types.Timing.MilliSeconds;
+    endTime: Trace.Types.Timing.MilliSeconds;
 }
 export interface OpenSidebarButtonClicked {
 }
@@ -71,7 +74,7 @@ export type EventTypes = {
 };
 export interface TimelineOverview {
     show(parentElement: Element, insertBefore?: Element | null): void;
-    update(start?: TraceEngine.Types.Timing.MilliSeconds, end?: TraceEngine.Types.Timing.MilliSeconds): void;
+    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
     dispose(): void;
     reset(): void;
     overviewInfoPromise(x: number): Promise<Element | null>;

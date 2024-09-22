@@ -6,12 +6,16 @@ import { InsightWarning } from './types.js';
 export function deps() {
     return ['Meta', 'UserInteractions'];
 }
-export function generateInsight(traceParsedData, context) {
-    const compositorEvents = traceParsedData.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {
+export function generateInsight(parsedTrace, context) {
+    // TODO(crbug.com/366049346)
+    if (!context.navigation) {
+        return { mobileOptimized: null };
+    }
+    const compositorEvents = parsedTrace.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {
         if (event.args.frame !== context.frameId) {
             return false;
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, traceParsedData.Meta.navigationsByFrameId);
+        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, parsedTrace.Meta.navigationsByFrameId);
         return navigation === context.navigation;
     });
     if (!compositorEvents.length) {
@@ -21,11 +25,11 @@ export function generateInsight(traceParsedData, context) {
             warnings: [InsightWarning.NO_LAYOUT],
         };
     }
-    const viewportEvent = traceParsedData.UserInteractions.parseMetaViewportEvents.find(event => {
+    const viewportEvent = parsedTrace.UserInteractions.parseMetaViewportEvents.find(event => {
         if (event.args.data.frame !== context.frameId) {
             return false;
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, traceParsedData.Meta.navigationsByFrameId);
+        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, parsedTrace.Meta.navigationsByFrameId);
         return navigation === context.navigation;
     });
     // Returns true only if all events are mobile optimized.

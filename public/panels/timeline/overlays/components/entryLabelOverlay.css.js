@@ -19,13 +19,13 @@ styles.replaceSync(
   transform: translate(-50%);
   display: flex;
   flex-direction: column;
-  color: var(--color-selected-option);
   align-items: center;
 }
 
 .input-field {
+  background-color: var(--color-background-inverted);
+  color: var(--color-background);
   pointer-events: auto;
-  background-color: var(--sys-color-token-variable);
   border-radius: var(--sys-shape-corner-extra-small);
   white-space: nowrap;
   padding: var(--sys-size-3) var(--sys-size-4);
@@ -35,8 +35,9 @@ styles.replaceSync(
 }
 
 .input-field:focus {
-  background-color: var(--color-selected-option);
-  color: var(--sys-color-token-variable);
+  background-color: var(--color-background);
+  color: var(--color-background-inverted);
+  outline: 2px solid var(--color-background-inverted);
 }
 
 .connectorContainer {
@@ -56,6 +57,10 @@ styles.replaceSync(
 
 .user-created-icon {
   margin: var(--sys-size-3);
+  color: var(--color-background-inverted);
+  /* USER_CREATED_ICON_WIDTH */
+  width: 16px;
+  height: 16px;
 }
 
 /*# sourceURL=entryLabelOverlay.css */

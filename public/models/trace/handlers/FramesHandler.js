@@ -55,21 +55,19 @@ export function deps() {
     return ['Meta', 'Renderer', 'AuctionWorklets', 'LayerTree'];
 }
 function isFrameEvent(event) {
-    return (Types.TraceEvents.isTraceEventSetLayerId(event) || Types.TraceEvents.isTraceEventBeginFrame(event) ||
-        Types.TraceEvents.isTraceEventDroppedFrame(event) ||
-        Types.TraceEvents.isTraceEventRequestMainThreadFrame(event) ||
-        Types.TraceEvents.isTraceEventBeginMainThreadFrame(event) ||
-        Types.TraceEvents.isTraceEventNeedsBeginFrameChanged(event) ||
+    return (Types.Events.isSetLayerId(event) || Types.Events.isBeginFrame(event) || Types.Events.isDroppedFrame(event) ||
+        Types.Events.isRequestMainThreadFrame(event) || Types.Events.isBeginMainThreadFrame(event) ||
+        Types.Events.isNeedsBeginFrameChanged(event) ||
         // Note that "Commit" is the replacement for "CompositeLayers" so in a trace
         // we wouldn't expect to see a combination of these. All "new" trace
         // recordings use "Commit", but we can easily support "CompositeLayers" too
         // to not break older traces being imported.
-        Types.TraceEvents.isTraceEventCommit(event) || Types.TraceEvents.isTraceEventCompositeLayers(event) ||
-        Types.TraceEvents.isTraceEventActivateLayerTree(event) || Types.TraceEvents.isTraceEventDrawFrame(event));
+        Types.Events.isCommit(event) || Types.Events.isCompositeLayers(event) ||
+        Types.Events.isActivateLayerTree(event) || Types.Events.isDrawFrame(event));
 }
 function entryIsTopLevel(entry) {
     const devtoolsTimelineCategory = 'disabled-by-default-devtools.timeline';
-    return entry.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */ && entry.cat.includes(devtoolsTimelineCategory);
+    return entry.name === "RunTask" /* Types.Events.Name.RUN_TASK */ && entry.cat.includes(devtoolsTimelineCategory);
 }
 export class TimelineFrameModel {
     #frames = [];
@@ -244,10 +242,10 @@ export class TimelineFrameModel {
         this.#activeProcessId = null;
     }
     #addTraceEvent(event, mainFrameId) {
-        if (Types.TraceEvents.isTraceEventSetLayerId(event) && event.args.data.frame === mainFrameId) {
+        if (Types.Events.isSetLayerId(event) && event.args.data.frame === mainFrameId) {
             this.#layerTreeId = event.args.data.layerTreeId;
         }
-        else if (Types.TraceEvents.isTraceEventLayerTreeHostImplSnapshot(event) && Number(event.id) === this.#layerTreeId) {
+        else if (Types.Events.isLayerTreeHostImplSnapshot(event) && Number(event.id) === this.#layerTreeId) {
             this.#handleLayerTreeSnapshot({
                 entry: event,
                 paints: [],
@@ -268,24 +266,24 @@ export class TimelineFrameModel {
         if (entry.args['layerTreeId'] !== this.#layerTreeId) {
             return;
         }
-        if (Types.TraceEvents.isTraceEventBeginFrame(entry)) {
+        if (Types.Events.isBeginFrame(entry)) {
             this.#handleBeginFrame(entry.ts, entry.args['frameSeqId']);
         }
-        else if (Types.TraceEvents.isTraceEventDrawFrame(entry)) {
+        else if (Types.Events.isDrawFrame(entry)) {
             this.#handleDrawFrame(entry.ts, entry.args['frameSeqId']);
         }
-        else if (Types.TraceEvents.isTraceEventActivateLayerTree(entry)) {
+        else if (Types.Events.isActivateLayerTree(entry)) {
             this.#handleActivateLayerTree();
         }
-        else if (Types.TraceEvents.isTraceEventRequestMainThreadFrame(entry)) {
+        else if (Types.Events.isRequestMainThreadFrame(entry)) {
             this.#handleRequestMainThreadFrame();
         }
-        else if (Types.TraceEvents.isTraceEventNeedsBeginFrameChanged(entry)) {
+        else if (Types.Events.isNeedsBeginFrameChanged(entry)) {
             // needsBeginFrame property will either be 0 or 1, which represents
             // true/false in this case, hence the Boolean() wrapper.
             this.#handleNeedFrameChanged(entry.ts, entry.args['data'] && Boolean(entry.args['data']['needsBeginFrame']));
         }
-        else if (Types.TraceEvents.isTraceEventDroppedFrame(entry)) {
+        else if (Types.Events.isDroppedFrame(entry)) {
             this.#handleDroppedFrame(entry.ts, entry.args['frameSeqId'], Boolean(entry.args['hasPartialUpdate']));
         }
     }
@@ -299,10 +297,10 @@ export class TimelineFrameModel {
         if (!this.#framePendingCommit) {
             return;
         }
-        if (Types.TraceEvents.isTraceEventBeginMainThreadFrame(entry) && entry.args.data.frameId) {
+        if (Types.Events.isBeginMainThreadFrame(entry) && entry.args.data.frameId) {
             this.#framePendingCommit.mainFrameId = entry.args.data.frameId;
         }
-        if (Types.TraceEvents.isTraceEventPaint(entry)) {
+        if (Types.Events.isPaint(entry)) {
             const snapshot = this.#layerTreeData.paintsToSnapshots.get(entry);
             if (snapshot) {
                 this.#framePendingCommit.paints.push(new LayerPaintEvent(entry, snapshot));
@@ -310,29 +308,29 @@ export class TimelineFrameModel {
         }
         // Commit will be replacing CompositeLayers but CompositeLayers is kept
         // around for backwards compatibility.
-        if ((Types.TraceEvents.isTraceEventCompositeLayers(entry) || Types.TraceEvents.isTraceEventCommit(entry)) &&
+        if ((Types.Events.isCompositeLayers(entry) || Types.Events.isCommit(entry)) &&
             entry.args['layerTreeId'] === this.#layerTreeId) {
             this.#handleCommit();
         }
     }
 }
 const MAIN_FRAME_MARKERS = new Set([
-    "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.SCHEDULE_STYLE_RECALCULATION */,
-    "InvalidateLayout" /* Types.TraceEvents.KnownEventName.INVALIDATE_LAYOUT */,
-    "BeginMainThreadFrame" /* Types.TraceEvents.KnownEventName.BEGIN_MAIN_THREAD_FRAME */,
-    "ScrollLayer" /* Types.TraceEvents.KnownEventName.SCROLL_LAYER */,
+    "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */,
+    "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */,
+    "BeginMainThreadFrame" /* Types.Events.Name.BEGIN_MAIN_THREAD_FRAME */,
+    "ScrollLayer" /* Types.Events.Name.SCROLL_LAYER */,
 ]);
 export class TimelineFrame {
-    // These fields exist to satisfy the base TraceEventData type which all
+    // These fields exist to satisfy the base Event type which all
     // "trace events" must implement. They aren't used, but doing this means we
     // can pass `TimelineFrame` instances into places that expect
-    // Types.TraceEvents.TraceEventData.
+    // Types.Events.Event.
     cat = 'devtools.legacy_frame';
     name = 'frame';
-    ph = "X" /* Types.TraceEvents.Phase.COMPLETE */;
+    ph = "X" /* Types.Events.Phase.COMPLETE */;
     ts;
-    pid = Types.TraceEvents.ProcessID(-1);
-    tid = Types.TraceEvents.ThreadID(-1);
+    pid = Types.Events.ProcessID(-1);
+    tid = Types.Events.ThreadID(-1);
     index = -1;
     startTime;
     startTimeOffset;
@@ -368,6 +366,13 @@ export class TimelineFrame {
     }
     setLayerTree(layerTree) {
         this.layerTree = layerTree;
+    }
+    /**
+     * Fake the `dur` field to meet the expected value given that we pretend
+     * these TimelineFrame classes are trace events across the codebase.
+     */
+    get dur() {
+        return this.duration;
     }
 }
 export class LayerPaintEvent {

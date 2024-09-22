@@ -11,7 +11,7 @@ import * as UI from '../../ui/legacy/legacy.js';
   */
 const UIStringsTemp = {
     /**
-     * @description The title of the command menu action for showing the Freestyler panel.
+     * @description The title of the command menu action for showing the AI assistant panel.
      */
     showAiAssistant: 'Show  AI assistant',
     /**
@@ -19,10 +19,10 @@ const UIStringsTemp = {
      */
     aiAssistant: 'AI assistant',
     /**
-     * @description The setting title to enable the freestyler via
+     * @description The setting title to enable the AI assistant via
      * the settings tab.
      */
-    enableFreestyler: 'Enable AI assistant',
+    enableAiAssistant: 'Enable AI assistant',
     /**
      *@description Text of a tooltip to redirect to the AI assistant panel with
      *the current element as context
@@ -102,7 +102,7 @@ Common.Settings.registerSettingExtension({
     category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
     settingName: setting,
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    title: i18nLazyString(UIStringsTemp.enableFreestyler),
+    title: i18nLazyString(UIStringsTemp.enableAiAssistant),
     defaultValue: isFeatureAvailable,
     reloadRequired: true,
     condition: isFeatureAvailable,

@@ -1,9 +1,9 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { data as metaHandlerData } from './MetaHandler.js';
-import * as Types from '../types/types.js';
 import * as Helpers from '../helpers/helpers.js';
+import * as Types from '../types/types.js';
+import { data as metaHandlerData } from './MetaHandler.js';
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 // Each thread contains events. Events indicate the thread and process IDs, which are
 // used to store the event in the correct process thread entry below.
@@ -24,7 +24,7 @@ export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('GPU Handler is not initialized');
     }
-    if (!Types.TraceEvents.isTraceEventGPUTask(event)) {
+    if (!Types.Events.isGPUTask(event)) {
         return;
     }
     Helpers.Trace.addEventToProcessThread(event, eventsInProcessThread);

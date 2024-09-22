@@ -221,7 +221,7 @@ c`;
             element.simpleSelector.returns('div#myElement');
             element.getChildNodesPromise.resolves(null);
             const result = await FreestylerAgent.describeElement(element);
-            assert.strictEqual(result, '\n* Its selector is `div#myElement`');
+            assert.strictEqual(result, '* Its selector is `div#myElement`');
         });
         it('should describe an element with child element and text nodes', async () => {
             const childNodes = [
@@ -240,8 +240,7 @@ c`;
             element.previousSibling = null;
             element.parentNode = null;
             const result = await FreestylerAgent.describeElement(element);
-            const expectedOutput = `
-* Its selector is \`div#parentElement\`
+            const expectedOutput = `* Its selector is \`div#parentElement\`
 * It has 2 child element nodes: \`span.child1\`, \`span.child2\`
 * It only has 1 child text node`;
             assert.strictEqual(result, expectedOutput);
@@ -267,8 +266,7 @@ c`;
             element.previousSibling = previousSibling;
             element.parentNode = parentNode;
             const result = await FreestylerAgent.describeElement(element);
-            const expectedOutput = `
-* Its selector is \`div#parentElement\`
+            const expectedOutput = `* Its selector is \`div#parentElement\`
 * It has a next sibling and it is an element node
 * It has a previous sibling and it is a non element node
 * Its parent's selector is \`div#grandparentElement\`
@@ -376,7 +374,7 @@ c`;
                 metadata: {
                     disable_user_content_logging: false,
                     string_session_id: 'sessionId',
-                    user_tier: 1,
+                    user_tier: 2,
                 },
                 options: {
                     model_id: 'test model',
@@ -777,7 +775,6 @@ ANSWER: this is the answer`,
                 {
                     type: Freestyler.ResponseType.THOUGHT,
                     thought: 'I am thinking.',
-                    title: undefined,
                     rpcId: undefined,
                 },
                 {

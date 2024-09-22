@@ -1,7 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import { TimelineJSProfileProcessor } from './TimelineJSProfile.js';
 export class Node {
     totalTime;
@@ -94,17 +94,17 @@ export class TopDownNode extends Node {
         let matchedDepth = 0;
         let currentDirectChild = null;
         // Walk on the full event tree to find this node's children.
-        TraceEngine.Helpers.Trace.forEachEvent(root.events, {
+        Trace.Helpers.Trace.forEachEvent(root.events, {
             onStartEvent,
             onEndEvent,
             onInstantEvent: instantEventCallback,
-            startTime: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(startTime),
-            endTime: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(endTime),
+            startTime: Trace.Helpers.Timing.millisecondsToMicroseconds(startTime),
+            endTime: Trace.Helpers.Timing.millisecondsToMicroseconds(endTime),
             eventFilter: root.filter,
             ignoreAsyncEvents: false,
         });
         function onStartEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
+            const { startTime: currentStartTime, endTime: currentEndTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
             ++depth;
             if (depth > path.length + 2) {
                 return;
@@ -167,7 +167,7 @@ export class TopDownNode extends Node {
          * is cached on `matchedDepth`, for future checks.
          */
         function matchPath(e) {
-            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
+            const { endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
             if (matchedDepth === path.length) {
                 return true;
             }
@@ -304,16 +304,16 @@ export class BottomUpRootNode extends Node {
         const selfTimeStack = [endTime - startTime];
         const firstNodeStack = [];
         const totalTimeById = new Map();
-        TraceEngine.Helpers.Trace.forEachEvent(this.events, {
+        Trace.Helpers.Trace.forEachEvent(this.events, {
             onStartEvent,
             onEndEvent,
-            startTime: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(this.startTime),
-            endTime: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(this.endTime),
+            startTime: Trace.Helpers.Timing.millisecondsToMicroseconds(this.startTime),
+            endTime: Trace.Helpers.Timing.millisecondsToMicroseconds(this.endTime),
             eventFilter: this.filter,
             ignoreAsyncEvents: false,
         });
         function onStartEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
+            const { startTime: currentStartTime, endTime: currentEndTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
             const actualEndTime = currentEndTime !== undefined ? Math.min(currentEndTime, endTime) : endTime;
             const duration = actualEndTime - Math.max(currentStartTime, startTime);
             selfTimeStack[selfTimeStack.length - 1] -= duration;
@@ -424,16 +424,16 @@ export class BottomUpNode extends Node {
         const endTime = this.root.endTime;
         let lastTimeMarker = startTime;
         const self = this;
-        TraceEngine.Helpers.Trace.forEachEvent(this.root.events, {
+        Trace.Helpers.Trace.forEachEvent(this.root.events, {
             onStartEvent,
             onEndEvent,
-            startTime: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(startTime),
-            endTime: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(endTime),
+            startTime: Trace.Helpers.Timing.millisecondsToMicroseconds(startTime),
+            endTime: Trace.Helpers.Timing.millisecondsToMicroseconds(endTime),
             eventFilter: this.root.filter,
             ignoreAsyncEvents: false,
         });
         function onStartEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
+            const { startTime: currentStartTime, endTime: currentEndTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
             const actualEndTime = currentEndTime !== undefined ? Math.min(currentEndTime, endTime) : endTime;
             const duration = actualEndTime - Math.max(currentStartTime, startTime);
             if (duration < 0) {
@@ -446,7 +446,7 @@ export class BottomUpNode extends Node {
             eventStack.push(e);
         }
         function onEndEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
+            const { startTime: currentStartTime, endTime: currentEndTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
             const selfTime = selfTimeStack.pop();
             const id = eventIdStack.pop();
             eventStack.pop();
@@ -485,7 +485,7 @@ export class BottomUpNode extends Node {
     }
 }
 export function eventStackFrame(event) {
-    if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
+    if (Trace.Types.Events.isProfileCall(event)) {
         return event.callFrame;
     }
     const topFrame = event.args?.data?.stackTrace?.[0];
@@ -495,14 +495,14 @@ export function eventStackFrame(event) {
     return { ...topFrame, scriptId: String(topFrame.scriptId) };
 }
 export function generateEventID(event) {
-    if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
+    if (Trace.Types.Events.isProfileCall(event)) {
         const name = TimelineJSProfileProcessor.isNativeRuntimeFrame(event.callFrame) ?
             TimelineJSProfileProcessor.nativeGroup(event.callFrame.functionName) :
             event.callFrame.functionName;
         const location = event.callFrame.scriptId || event.callFrame.url || '';
         return `f:${name}@${location}`;
     }
-    if (TraceEngine.Types.TraceEvents.isTraceEventTimeStamp(event)) {
+    if (Trace.Types.Events.isTimeStamp(event)) {
         return `${event.name}:${event.args.data.message}`;
     }
     return event.name;

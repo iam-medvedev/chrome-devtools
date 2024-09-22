@@ -112,6 +112,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */,
     "timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */,
+    "extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -155,7 +156,6 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'show-debug-borders', false),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'show-fps-counter', false),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'show-scroll-bottleneck-rects', false),
-        createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'show-web-vitals', false),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'webp-format-disabled', false),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'allow-scroll-past-eof', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'css-source-maps-enabled', true),

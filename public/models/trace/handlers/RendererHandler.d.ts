@@ -1,11 +1,11 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { type FrameProcessData } from './MetaHandler.js';
-import { type TraceEventHandlerName } from './types.js';
+import { type HandlerName } from './types.js';
 export declare function handleUserConfig(userConfig: Types.Configuration.Configuration): void;
 export declare function reset(): void;
 export declare function initialize(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export declare function data(): RendererHandlerData;
 /**
@@ -14,34 +14,34 @@ export declare function data(): RendererHandlerData;
  * collecting each one of their threads' name. This meta handler's data is
  * assigned to the renderer handler's data.
  */
-export declare function assignMeta(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>, mainFrameId: string, rendererProcessesByFrame: FrameProcessData, threadsInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, Types.TraceEvents.TraceEventThreadName>>): void;
+export declare function assignMeta(processes: Map<Types.Events.ProcessID, RendererProcess>, mainFrameId: string, rendererProcessesByFrame: FrameProcessData, threadsInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, Types.Events.ThreadName>>): void;
 /**
  * Assigns origins to all threads in all processes.
  * @see assignMeta
  */
-export declare function assignOrigin(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>, rendererProcessesByFrame: FrameProcessData): void;
+export declare function assignOrigin(processes: Map<Types.Events.ProcessID, RendererProcess>, rendererProcessesByFrame: FrameProcessData): void;
 /**
  * Assigns whether or not a thread is the main frame to all threads in all processes.
  * @see assignMeta
  */
-export declare function assignIsMainFrame(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>, mainFrameId: string, rendererProcessesByFrame: FrameProcessData): void;
+export declare function assignIsMainFrame(processes: Map<Types.Events.ProcessID, RendererProcess>, mainFrameId: string, rendererProcessesByFrame: FrameProcessData): void;
 /**
  * Assigns the thread name to all threads in all processes.
  * @see assignMeta
  */
-export declare function assignThreadName(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>, rendererProcessesByFrame: FrameProcessData, threadsInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, Types.TraceEvents.TraceEventThreadName>>): void;
+export declare function assignThreadName(processes: Map<Types.Events.ProcessID, RendererProcess>, rendererProcessesByFrame: FrameProcessData, threadsInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, Types.Events.ThreadName>>): void;
 /**
  * Removes unneeded trace data opportunistically stored while handling events.
  * This currently does the following:
  *  - Deletes processes with an unkonwn origin.
  */
-export declare function sanitizeProcesses(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>): void;
+export declare function sanitizeProcesses(processes: Map<Types.Events.ProcessID, RendererProcess>): void;
 /**
  * Removes unneeded trace data opportunistically stored while handling events.
  * This currently does the following:
  *  - Deletes threads with no roots.
  */
-export declare function sanitizeThreads(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>): void;
+export declare function sanitizeThreads(processes: Map<Types.Events.ProcessID, RendererProcess>): void;
 /**
  * Creates a hierarchical structure from the trace events. Each thread in each
  * process will contribute to their own individual hierarchy.
@@ -64,31 +64,31 @@ export declare function sanitizeThreads(processes: Map<Types.TraceEvents.Process
  *  |-- Task B --||-- Task D --|
  *   |- Task C -|
  */
-export declare function buildHierarchy(processes: Map<Types.TraceEvents.ProcessID, RendererProcess>, options?: {
+export declare function buildHierarchy(processes: Map<Types.Events.ProcessID, RendererProcess>, options?: {
     filter: {
-        has: (name: Types.TraceEvents.KnownEventName) => boolean;
+        has: (name: Types.Events.Name) => boolean;
     };
 }): void;
-export declare function makeCompleteEvent(event: Types.TraceEvents.TraceEventBegin | Types.TraceEvents.TraceEventEnd): Types.TraceEvents.SyntheticCompleteEvent | null;
-export declare function deps(): TraceEventHandlerName[];
+export declare function makeCompleteEvent(event: Types.Events.Begin | Types.Events.End): Types.Events.SyntheticComplete | null;
+export declare function deps(): HandlerName[];
 export interface RendererHandlerData {
-    processes: Map<Types.TraceEvents.ProcessID, RendererProcess>;
+    processes: Map<Types.Events.ProcessID, RendererProcess>;
     /**
      * A map of all compositor workers (which we show in the UI as Rasterizers)
      * by the process ID.
      */
-    compositorTileWorkers: Map<Types.TraceEvents.ProcessID, Types.TraceEvents.ThreadID[]>;
-    entryToNode: Map<Types.TraceEvents.TraceEventData, Helpers.TreeHelpers.TraceEntryNode>;
+    compositorTileWorkers: Map<Types.Events.ProcessID, Types.Events.ThreadID[]>;
+    entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
     /**
      * All trace events and synthetic profile calls made from
      * samples.
      */
-    allTraceEntries: Types.TraceEvents.TraceEventData[];
+    allTraceEntries: Types.Events.Event[];
 }
 export interface RendererProcess {
     url: string | null;
     isOnMainFrame: boolean;
-    threads: Map<Types.TraceEvents.ThreadID, RendererThread>;
+    threads: Map<Types.Events.ThreadID, RendererThread>;
 }
 export interface RendererThread {
     name: string | null;
@@ -96,7 +96,7 @@ export interface RendererThread {
      * Contains trace events and synthetic profile calls made from
      * samples.
      */
-    entries: Types.TraceEvents.TraceEventData[];
-    profileCalls: Types.TraceEvents.SyntheticProfileCall[];
+    entries: Types.Events.Event[];
+    profileCalls: Types.Events.SyntheticProfileCall[];
     tree?: Helpers.TreeHelpers.TraceEntryTree;
 }

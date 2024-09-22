@@ -34,6 +34,8 @@ export var UserTier;
     UserTier[UserTier["USER_TIER_UNSPECIFIED"] = 0] = "USER_TIER_UNSPECIFIED";
     // Users who are internal testers.
     UserTier[UserTier["TESTERS"] = 1] = "TESTERS";
+    // Users who are early adopters.
+    UserTier[UserTier["BETA"] = 2] = "BETA";
     // Users in the general public.
     UserTier[UserTier["PUBLIC"] = 3] = "PUBLIC";
 })(UserTier || (UserTier = {}));
@@ -47,6 +49,8 @@ export var RecitationAction;
 })(RecitationAction || (RecitationAction = {}));
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 const CODE_CHUNK_SEPARATOR = '\n`````\n';
+export class AidaAbortError extends Error {
+}
 export class AidaClient {
     static buildConsoleInsightsRequest(input) {
         const request = {
@@ -91,12 +95,15 @@ export class AidaClient {
         }
         return "available" /* AidaAccessPreconditions.AVAILABLE */;
     }
-    async *fetch(request) {
+    async *fetch(request, options) {
         if (!InspectorFrontendHostInstance.doAidaConversation) {
             throw new Error('doAidaConversation is not available');
         }
         const stream = (() => {
             let { promise, resolve, reject } = Promise.withResolvers();
+            options?.signal?.addEventListener('abort', () => {
+                reject(new AidaAbortError());
+            });
             return {
                 write: async (data) => {
                     resolve(data);
@@ -218,10 +225,12 @@ export function convertToUserTierEnum(userTier) {
         switch (userTier) {
             case 'TESTERS':
                 return UserTier.TESTERS;
+            case 'BETA':
+                return UserTier.BETA;
             case 'PUBLIC':
                 return UserTier.PUBLIC;
         }
     }
-    return UserTier.TESTERS;
+    return UserTier.BETA;
 }
 //# sourceMappingURL=AidaClient.js.map

@@ -350,11 +350,13 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const { match, text } = matchSingleValue('left', 'anchor', new Elements.PropertyMatchers.AnchorFunctionMatcher());
             assert.isNull(match, text);
         });
-        it('should not match if the anchor() and anchor-size() calls dont have any arguments', () => {
+        it('should not match anchor() call without arguments', () => {
             const { match: anchorMatch } = matchSingleValue('left', 'anchor()', new Elements.PropertyMatchers.AnchorFunctionMatcher());
             assert.isNull(anchorMatch);
-            const { match: anchorSizeMatch } = matchSingleValue('width', 'anchor-size()', new Elements.PropertyMatchers.AnchorFunctionMatcher());
-            assert.isNull(anchorSizeMatch);
+        });
+        it('should match anchor-size() call without arguments', () => {
+            const { match: anchorSizeMatch, text: anchorSizeText } = matchSingleValue('width', 'anchor-size()', new Elements.PropertyMatchers.AnchorFunctionMatcher());
+            assert.exists(anchorSizeMatch, anchorSizeText);
         });
         it('should match if it is an anchor() or anchor-size() call', () => {
             const { match: anchorMatch, text: anchorText } = matchSingleValue('left', 'anchor(left)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
@@ -363,12 +365,20 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             assert.exists(anchorSizeMatch, anchorSizeText);
         });
         it('should match dashed identifier as name from the first argument', () => {
-            const { ast: anchorAst, match: anchorMatch, text: anchorText } = matchSingleValue('left', 'anchor(--dashed-ident left)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
+            const { match: anchorMatch, text: anchorText } = matchSingleValue('left', 'anchor(--dashed-ident left)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
             assert.exists(anchorMatch, anchorText);
-            assert.strictEqual(anchorAst.text(anchorMatch.args[0]), '--dashed-ident');
-            const { ast: anchorSizeAst, match: anchorSizeMatch, text: anchorSizeText } = matchSingleValue('width', 'anchor-size(--dashed-ident width)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
+            assert.strictEqual(anchorMatch.text, '--dashed-ident');
+            const { match: anchorSizeMatch, text: anchorSizeText } = matchSingleValue('width', 'anchor-size(--dashed-ident width)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
             assert.exists(anchorSizeMatch, anchorSizeText);
-            assert.strictEqual(anchorSizeAst.text(anchorSizeMatch.args[0]), '--dashed-ident');
+            assert.strictEqual(anchorSizeMatch.text, '--dashed-ident');
+        });
+        it('should match dashed identifier as name from the second argument', () => {
+            const { match: anchorMatch, text: anchorText } = matchSingleValue('left', 'anchor(right --dashed-ident)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
+            assert.exists(anchorMatch, anchorText);
+            assert.strictEqual(anchorMatch.text, '--dashed-ident');
+            const { match: anchorSizeMatch, text: anchorSizeText } = matchSingleValue('width', 'anchor-size(height --dashed-ident)', new Elements.PropertyMatchers.AnchorFunctionMatcher());
+            assert.exists(anchorSizeMatch, anchorSizeText);
+            assert.strictEqual(anchorSizeMatch.text, '--dashed-ident');
         });
     });
     describe('PositionAnchorMatcher', () => {

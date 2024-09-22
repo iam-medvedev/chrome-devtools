@@ -36,9 +36,13 @@ function breakdownPhases(nav, docRequest, lcpMs, lcpRequest) {
         renderDelay,
     };
 }
-export function generateInsight(traceParsedData, context) {
-    const networkRequests = traceParsedData.NetworkRequests;
-    const frameMetrics = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
+export function generateInsight(parsedTrace, context) {
+    // TODO(crbug.com/366049346) make this work w/o a navigation.
+    if (!context.navigation) {
+        return {};
+    }
+    const networkRequests = parsedTrace.NetworkRequests;
+    const frameMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
     if (!frameMetrics) {
         throw new Error('no frame metrics');
     }
@@ -48,14 +52,14 @@ export function generateInsight(traceParsedData, context) {
     }
     const metricScore = navMetrics.get("LCP" /* Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
     const lcpEvent = metricScore?.event;
-    if (!lcpEvent || !Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate(lcpEvent)) {
+    if (!lcpEvent || !Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
         return { warnings: [InsightWarning.NO_LCP] };
     }
     // This helps calculate the phases.
     const lcpMs = Helpers.Timing.microSecondsToMilliseconds(metricScore.timing);
     // This helps position things on the timeline's UI accurately for a trace.
     const lcpTs = metricScore.event?.ts ? Helpers.Timing.microSecondsToMilliseconds(metricScore.event?.ts) : undefined;
-    const lcpRequest = findLCPRequest(traceParsedData, context, lcpEvent);
+    const lcpRequest = findLCPRequest(parsedTrace, context, lcpEvent);
     const docRequest = networkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!docRequest) {
         return { lcpMs, lcpTs, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] };

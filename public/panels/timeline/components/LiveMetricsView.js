@@ -312,8 +312,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         LiveMetrics.LiveMetrics.instance().removeEventListener("status" /* LiveMetrics.Events.STATUS */, this.#onMetricStatus, this);
         const cruxManager = CrUXManager.CrUXManager.instance();
         cruxManager.removeEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
-        const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
-        emulationModel.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
+        this.#deviceModeModel()?.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
     }
     #renderLcpCard() {
         const fieldData = this.#getFieldMetricData('largest_contentful_paint');

@@ -1,15 +1,15 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { type TraceEventHandlerName } from './types.js';
+import { type HandlerName } from './types.js';
 export interface ExtensionTraceData {
     extensionTrackData: readonly Types.Extensions.ExtensionTrackData[];
     extensionMarkers: readonly Types.Extensions.SyntheticExtensionMarker[];
-    entryToNode: Map<Types.TraceEvents.TraceEventData, Helpers.TreeHelpers.TraceEntryNode>;
+    entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
 }
-export declare function handleEvent(_event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(_event: Types.Events.Event): void;
 export declare function reset(): void;
 export declare function finalize(): Promise<void>;
-export declare function extractExtensionEntries(timings: (Types.TraceEvents.SyntheticUserTimingPair | Types.TraceEvents.TraceEventPerformanceMark)[]): void;
-export declare function extensionDataInTiming(timing: Types.TraceEvents.SyntheticUserTimingPair | Types.TraceEvents.TraceEventPerformanceMark): Types.Extensions.ExtensionDataPayload | null;
+export declare function extractExtensionEntries(timings: (Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark)[]): void;
+export declare function extensionDataInTiming(timing: Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark): Types.Extensions.ExtensionDataPayload | null;
 export declare function data(): ExtensionTraceData;
-export declare function deps(): TraceEventHandlerName[];
+export declare function deps(): HandlerName[];

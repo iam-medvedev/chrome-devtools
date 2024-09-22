@@ -28,9 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../../../core/common/common.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as VisualLoggging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
+import * as ThemeSupport from '../../theme_support/theme_support.js';
 import { OverviewGrid } from './OverviewGrid.js';
 import { TimelineOverviewCalculator } from './TimelineOverviewCalculator.js';
 import timelineOverviewInfoStyles from './timelineOverviewInfo.css.js';
@@ -49,6 +50,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     windowStartTime;
     windowEndTime;
     muteOnWindowChanged;
+    #dimHighlightSVG;
     constructor(prefix) {
         super();
         this.element.id = prefix + '-overview-pane';
@@ -74,6 +76,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowStartTime = 0;
         this.windowEndTime = Infinity;
         this.muteOnWindowChanged = false;
+        this.#dimHighlightSVG = UI.UIUtils.createSVGChild(this.element, 'svg', 'timeline-minimap-dim-highlight-svg hidden');
     }
     enableCreateBreadcrumbsButton() {
         const breacrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
@@ -173,7 +176,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         const filteredMarkers = new Map();
         for (const time of this.markers.keys()) {
             const marker = this.markers.get(time);
-            const position = Math.round(this.overviewCalculator.computePosition(TraceEngine.Types.Timing.MilliSeconds(time)));
+            const position = Math.round(this.overviewCalculator.computePosition(Trace.Types.Timing.MilliSeconds(time)));
             // Limit the number of markers to one per pixel.
             if (filteredMarkers.has(position)) {
                 continue;
@@ -204,8 +207,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     }
     onBreadcrumbAdded() {
         this.dispatchEventToListeners("OverviewPaneBreadcrumbAdded" /* Events.OVERVIEW_PANE_BREADCRUMB_ADDED */, {
-            startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
-            endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
+            startTime: Trace.Types.Timing.MilliSeconds(this.windowStartTime),
+            endTime: Trace.Types.Timing.MilliSeconds(this.windowEndTime),
         });
     }
     onWindowChanged(event) {
@@ -221,8 +224,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowEndTime =
             event.data.rawEndValue === this.overviewCalculator.maximumBoundary() ? Infinity : event.data.rawEndValue;
         const windowTimes = {
-            startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
-            endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
+            startTime: Trace.Types.Timing.MilliSeconds(this.windowStartTime),
+            endTime: Trace.Types.Timing.MilliSeconds(this.windowEndTime),
         };
         this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OVERVIEW_PANE_WINDOW_CHANGED */, windowTimes);
     }
@@ -234,8 +237,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowEndTime = endTime;
         this.updateWindow();
         this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OVERVIEW_PANE_WINDOW_CHANGED */, {
-            startTime: TraceEngine.Types.Timing.MilliSeconds(startTime),
-            endTime: TraceEngine.Types.Timing.MilliSeconds(endTime),
+            startTime: Trace.Types.Timing.MilliSeconds(startTime),
+            endTime: Trace.Types.Timing.MilliSeconds(endTime),
         });
     }
     updateWindow() {
@@ -250,6 +253,49 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.muteOnWindowChanged = true;
         this.overviewGrid.setWindow(left, right);
         this.muteOnWindowChanged = false;
+    }
+    highlightBounds(bounds) {
+        let mask = this.#dimHighlightSVG?.querySelector('mask');
+        if (!mask) {
+            // Set up the desaturation mask
+            const defs = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'defs');
+            mask = UI.UIUtils.createSVGChild(defs, 'mask');
+            mask.id = 'dim-highlight-cutouts';
+            /* Within the mask...
+                - black fill = punch, fully transparently, through to the next thing. these are the cutouts to the color.
+                - white fill = be 100% desaturated
+                - grey fill  = show at the Lightness level of grayscale/desaturation
+            */
+            const showAllRect = UI.UIUtils.createSVGChild(mask, 'rect');
+            showAllRect.setAttribute('width', '100%');
+            showAllRect.setAttribute('height', '100%');
+            showAllRect.setAttribute('fill', 'hsl(0deg 0% 95%)');
+            const desaturateRect = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'rect');
+            desaturateRect.setAttribute('width', '100%');
+            desaturateRect.setAttribute('height', '100%');
+            desaturateRect.setAttribute('fill', '#ffffff');
+            desaturateRect.setAttribute('mask', `url(#${mask.id})`);
+            desaturateRect.style.mixBlendMode = 'saturation';
+            const punchRect = UI.UIUtils.createSVGChild(mask, 'rect', 'punch');
+            punchRect.setAttribute('y', '0');
+            punchRect.setAttribute('height', '100%');
+            punchRect.setAttribute('fill', 'black');
+            const bracketColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-state-on-header-hover');
+            const bracket = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'polygon');
+            bracket.setAttribute('fill', bracketColor);
+        }
+        const left = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.min));
+        const right = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.max));
+        const punchRect = this.#dimHighlightSVG.querySelector('rect.punch');
+        punchRect?.setAttribute('x', left.toString());
+        punchRect?.setAttribute('width', (right - left).toString());
+        const size = 5; // px size of triangles
+        const bracket = this.#dimHighlightSVG.querySelector('polygon');
+        bracket?.setAttribute('points', `${left},0 ${left},${size} ${left + size - 1},1 ${right - size - 1},1 ${right},${size} ${right},0`);
+        this.#dimHighlightSVG.classList.remove('hidden');
+    }
+    clearBoundsHighlight() {
+        this.#dimHighlightSVG.classList.add('hidden');
     }
 }
 export class TimelineOverviewBase extends UI.Widget.VBox {

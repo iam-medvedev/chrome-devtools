@@ -9,6 +9,7 @@ const MILLISECONDS_TO_MICROSECONDS = 1000;
 const SECONDS_TO_MICROSECONDS = 1000000;
 const webSocketData = new Map();
 const requestMap = new Map();
+const requestsById = new Map();
 const requestsByOrigin = new Map();
 const requestsByTime = [];
 const networkRequestEventByInitiatorUrl = new Map();
@@ -43,6 +44,7 @@ function firstPositiveValueInList(entries) {
 }
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function reset() {
+    requestsById.clear();
     requestsByOrigin.clear();
     requestMap.clear();
     requestsByTime.length = 0;
@@ -58,36 +60,36 @@ export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Network Request handler is not initialized');
     }
-    if (Types.TraceEvents.isTraceEventResourceChangePriority(event)) {
+    if (Types.Events.isResourceChangePriority(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'changePriority', event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventResourceWillSendRequest(event)) {
+    if (Types.Events.isResourceWillSendRequest(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'willSendRequests', [event]);
         return;
     }
-    if (Types.TraceEvents.isTraceEventResourceSendRequest(event)) {
+    if (Types.Events.isResourceSendRequest(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'sendRequests', [event]);
         return;
     }
-    if (Types.TraceEvents.isTraceEventResourceReceiveResponse(event)) {
+    if (Types.Events.isResourceReceiveResponse(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'receiveResponse', event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventResourceReceivedData(event)) {
+    if (Types.Events.isResourceReceivedData(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'receivedData', [event]);
         return;
     }
-    if (Types.TraceEvents.isTraceEventResourceFinish(event)) {
+    if (Types.Events.isResourceFinish(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'resourceFinish', event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventResourceMarkAsCached(event)) {
+    if (Types.Events.isResourceMarkAsCached(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'resourceMarkAsCached', event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventWebSocketCreate(event) || Types.TraceEvents.isTraceEventWebSocketInfo(event) ||
-        Types.TraceEvents.isTraceEventWebSocketTransfer(event)) {
+    if (Types.Events.isWebSocketCreate(event) || Types.Events.isWebSocketInfo(event) ||
+        Types.Events.isWebSocketTransfer(event)) {
         const identifier = event.args.data.identifier;
         if (!webSocketData.has(identifier)) {
             if (event.args.data.frame) {
@@ -95,7 +97,7 @@ export function handleEvent(event) {
                     frame: event.args.data.frame,
                     webSocketIdentifier: identifier,
                     events: [],
-                    syntheticConnectionEvent: null,
+                    syntheticConnection: null,
                 });
             }
             else if (event.args.data.workerId) {
@@ -103,7 +105,7 @@ export function handleEvent(event) {
                     workerId: event.args.data.workerId,
                     webSocketIdentifier: identifier,
                     events: [],
-                    syntheticConnectionEvent: null,
+                    syntheticConnection: null,
                 });
             }
         }
@@ -292,8 +294,7 @@ export async function finalize() {
         const isHttps = parsedUrl.protocol === 'https:';
         const requestingFrameUrl = Helpers.Trace.activeURLForFrameAtTime(frame, finalSendRequest.ts, rendererProcessesByFrame) || '';
         // Construct a synthetic trace event for this network request.
-        const networkEvent = Helpers.SyntheticEvents.SyntheticEventsManager
-            .registerSyntheticBasedEvent({
+        const networkEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: finalSendRequest,
             args: {
                 data: {
@@ -352,7 +353,7 @@ export async function finalize() {
             },
             cat: 'loading',
             name: 'SyntheticNetworkRequest',
-            ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+            ph: "X" /* Types.Events.Phase.COMPLETE */,
             dur: Types.Timing.MicroSeconds(endTime - startTime),
             tdur: Types.Timing.MicroSeconds(endTime - startTime),
             ts: Types.Timing.MicroSeconds(startTime),
@@ -379,6 +380,7 @@ export async function finalize() {
         // the captured requests, so here we store all of them together.
         requests.all.push(networkEvent);
         requestsByTime.push(networkEvent);
+        requestsById.set(networkEvent.args.data.requestId, networkEvent);
         const initiatorUrl = networkEvent.args.data.initiator?.url ||
             Helpers.Trace.getZeroIndexedStackTraceForEvent(networkEvent)?.at(0)?.url;
         if (initiatorUrl) {
@@ -403,6 +405,7 @@ export function data() {
         throw new Error('Network Request handler is not finalized');
     }
     return {
+        byId: requestsById,
         byOrigin: requestsByOrigin,
         byTime: requestsByTime,
         eventToInitiator: eventToInitiatorMap,
@@ -419,32 +422,32 @@ function finalizeWebSocketData() {
     // for the end. So each WebSocketTraceData will have
     // {
     //    events:  the list of WebSocket events
-    //    syntheticConnectionEvent:  the synthetic event representing the entire WebSocket connection
+    //    syntheticConnection:  the synthetic event representing the entire WebSocket connection
     // }
     webSocketData.forEach(data => {
         let startEvent = null;
         let endEvent = null;
         for (const event of data.events) {
-            if (Types.TraceEvents.isTraceEventWebSocketCreate(event)) {
+            if (Types.Events.isWebSocketCreate(event)) {
                 startEvent = event;
             }
-            if (Types.TraceEvents.isTraceEventWebSocketDestroy(event)) {
+            if (Types.Events.isWebSocketDestroy(event)) {
                 endEvent = event;
             }
         }
-        data.syntheticConnectionEvent = createSyntheticWebSocketConnectionEvent(startEvent, endEvent, data.events[0]);
+        data.syntheticConnection = createSyntheticWebSocketConnection(startEvent, endEvent, data.events[0]);
     });
 }
-function createSyntheticWebSocketConnectionEvent(startEvent, endEvent, firstRecordedEvent) {
+function createSyntheticWebSocketConnection(startEvent, endEvent, firstRecordedEvent) {
     const { traceBounds } = metaHandlerData();
     const startTs = startEvent ? startEvent.ts : traceBounds.min;
     const endTs = endEvent ? endEvent.ts : traceBounds.max;
     const duration = endTs - startTs;
     const mainEvent = startEvent || endEvent || firstRecordedEvent;
     return {
-        name: 'SyntheticWebSocketConnectionEvent',
+        name: 'SyntheticWebSocketConnection',
         cat: mainEvent.cat,
-        ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+        ph: "X" /* Types.Events.Phase.COMPLETE */,
         ts: startTs,
         dur: duration,
         pid: mainEvent.pid,

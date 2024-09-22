@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 // *********************************************************************
 // At the moment this file consists of helpers to aid in the rendering
@@ -64,14 +64,14 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/DetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function buildWarningElementsForEvent(event, traceParsedData) {
-    const warnings = traceParsedData.Warnings.perEvent.get(event);
+export function buildWarningElementsForEvent(event, parsedTrace) {
+    const warnings = parsedTrace.Warnings.perEvent.get(event);
     const warningElements = [];
     if (!warnings) {
         return warningElements;
     }
     for (const warning of warnings) {
-        const duration = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(TraceEngine.Types.Timing.MicroSeconds(event.dur || 0));
+        const duration = Trace.Helpers.Timing.microSecondsToMilliseconds(Trace.Types.Timing.MicroSeconds(event.dur || 0));
         const span = document.createElement('span');
         switch (warning) {
             case 'FORCED_REFLOW': {
@@ -80,7 +80,7 @@ export function buildWarningElementsForEvent(event, traceParsedData) {
                 break;
             }
             case 'IDLE_CALLBACK_OVER_TIME': {
-                if (!TraceEngine.Types.TraceEvents.isTraceEventFireIdleCallback(event)) {
+                if (!Trace.Types.Events.isFireIdleCallback(event)) {
                     break;
                 }
                 const exceededMs = i18n.TimeUtilities.millisToString((duration || 0) - event.args.data['allottedMilliseconds'], true);
@@ -105,23 +105,23 @@ export function buildWarningElementsForEvent(event, traceParsedData) {
     }
     return warningElements;
 }
-export function buildRowsForWebSocketEvent(event, traceParsedData) {
+export function buildRowsForWebSocketEvent(event, parsedTrace) {
     const rows = [];
-    const initiator = traceParsedData.Initiators.eventToInitiator.get(event);
-    if (initiator && TraceEngine.Types.TraceEvents.isTraceEventWebSocketCreate(initiator)) {
+    const initiator = parsedTrace.Initiators.eventToInitiator.get(event);
+    if (initiator && Trace.Types.Events.isWebSocketCreate(initiator)) {
         // The initiator will be a WebSocketCreate, but this check helps TypeScript to understand.
         rows.push({ key: i18n.i18n.lockedString('URL'), value: initiator.args.data.url });
         if (initiator.args.data.websocketProtocol) {
             rows.push({ key: i18nString(UIStrings.websocketProtocol), value: initiator.args.data.websocketProtocol });
         }
     }
-    else if (TraceEngine.Types.TraceEvents.isTraceEventWebSocketCreate(event)) {
+    else if (Trace.Types.Events.isWebSocketCreate(event)) {
         rows.push({ key: i18n.i18n.lockedString('URL'), value: event.args.data.url });
         if (event.args.data.websocketProtocol) {
             rows.push({ key: i18nString(UIStrings.websocketProtocol), value: event.args.data.websocketProtocol });
         }
     }
-    if (TraceEngine.Types.TraceEvents.isTraceEventWebSocketTransfer(event)) {
+    if (Trace.Types.Events.isWebSocketTransfer(event)) {
         if (event.args.data.dataLength) {
             rows.push({
                 key: i18nString(UIStrings.webSocketDataLength),
@@ -148,8 +148,7 @@ export function generateInvalidationsList(invalidations) {
         // ScheduleStyle events do not always have a reason, but if they tell us
         // via their data what changed, we can update the reason that we show to
         // the user.
-        if (reason === 'unknown' &&
-            TraceEngine.Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(invalidation) &&
+        if (reason === 'unknown' && Trace.Types.Events.isScheduleStyleInvalidationTracking(invalidation) &&
             invalidation.args.data.invalidatedSelectorId) {
             switch (invalidation.args.data.invalidatedSelectorId) {
                 case 'attribute':
@@ -172,14 +171,12 @@ export function generateInvalidationsList(invalidations) {
                     break;
             }
         }
-        if (reason === 'PseudoClass' &&
-            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation) &&
+        if (reason === 'PseudoClass' && Trace.Types.Events.isStyleRecalcInvalidationTracking(invalidation) &&
             invalidation.args.data.extraData) {
             // This will append the `:focus` onto the reason.
             reason += invalidation.args.data.extraData;
         }
-        if (reason === 'Attribute' &&
-            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation) &&
+        if (reason === 'Attribute' && Trace.Types.Events.isStyleRecalcInvalidationTracking(invalidation) &&
             invalidation.args.data.extraData) {
             // Append the attribute that changed.
             reason += ` (${invalidation.args.data.extraData})`;

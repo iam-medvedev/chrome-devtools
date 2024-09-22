@@ -1,13 +1,13 @@
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 export interface BreadcrumbsUIData {
-    initialBreadcrumb: TraceEngine.Types.File.Breadcrumb;
-    activeBreadcrumb: TraceEngine.Types.File.Breadcrumb;
+    initialBreadcrumb: Trace.Types.File.Breadcrumb;
+    activeBreadcrumb: Trace.Types.File.Breadcrumb;
 }
 export declare class BreadcrumbActivatedEvent extends Event {
-    breadcrumb: TraceEngine.Types.File.Breadcrumb;
+    breadcrumb: Trace.Types.File.Breadcrumb;
     childBreadcrumbsRemoved?: boolean | undefined;
     static readonly eventName = "breadcrumbactivated";
-    constructor(breadcrumb: TraceEngine.Types.File.Breadcrumb, childBreadcrumbsRemoved?: boolean | undefined);
+    constructor(breadcrumb: Trace.Types.File.Breadcrumb, childBreadcrumbsRemoved?: boolean | undefined);
 }
 export declare class BreadcrumbsUI extends HTMLElement {
     #private;

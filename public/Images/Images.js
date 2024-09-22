@@ -47,6 +47,7 @@ style.setProperty('--image-file-arrow-down', 'url(\"' + new URL(new URL('arrow-d
 style.setProperty('--image-file-arrow-drop-down-dark', 'url(\"' + new URL(new URL('arrow-drop-down-dark.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-drop-down-light', 'url(\"' + new URL(new URL('arrow-drop-down-light.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-forward', 'url(\"' + new URL(new URL('arrow-forward.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-arrow-right-circle', 'url(\"' + new URL(new URL('arrow-right-circle.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-up-down-circle', 'url(\"' + new URL(new URL('arrow-up-down-circle.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-up-down', 'url(\"' + new URL(new URL('arrow-up-down.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-up', 'url(\"' + new URL(new URL('arrow-up.svg', import.meta.url).href, import.meta.url).toString() + '\")');
@@ -242,7 +243,9 @@ style.setProperty('--image-file-stop', 'url(\"' + new URL(new URL('stop.svg', im
 style.setProperty('--image-file-symbol', 'url(\"' + new URL(new URL('symbol.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-sync', 'url(\"' + new URL(new URL('sync.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-table', 'url(\"' + new URL(new URL('table.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-thumb-down-filled', 'url(\"' + new URL(new URL('thumb-down-filled.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-down', 'url(\"' + new URL(new URL('thumb-down.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-thumb-up-filled', 'url(\"' + new URL(new URL('thumb-up-filled.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-up', 'url(\"' + new URL(new URL('thumb-up.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-top-panel-close', 'url(\"' + new URL(new URL('top-panel-close.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-top-panel-open', 'url(\"' + new URL(new URL('top-panel-open.svg', import.meta.url).href, import.meta.url).toString() + '\")');

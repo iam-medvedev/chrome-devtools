@@ -20,21 +20,21 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/ServerTimingsTrackAppe
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ServerTimingsTrackAppender {
     appenderName = 'ServerTimings';
-    #traceParsedData;
+    #parsedTrace;
     #compatibilityBuilder;
-    constructor(compatibilityBuilder, traceParsedData) {
-        this.#traceParsedData = traceParsedData;
+    constructor(compatibilityBuilder, parsedTrace) {
+        this.#parsedTrace = parsedTrace;
         this.#compatibilityBuilder = compatibilityBuilder;
     }
     appendTrackAtLevel(trackStartLevel, expanded) {
         if (!Root.Runtime.experiments.isEnabled("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */)) {
             return trackStartLevel;
         }
-        if (this.#traceParsedData.ServerTimings.serverTimings.length === 0) {
+        if (this.#parsedTrace.ServerTimings.serverTimings.length === 0) {
             return trackStartLevel;
         }
         let lastLevel = trackStartLevel;
-        const serverTimingsByOrigin = Object.groupBy(this.#traceParsedData.ServerTimings.serverTimings, serverTiming => serverTiming.args.data.origin);
+        const serverTimingsByOrigin = Object.groupBy(this.#parsedTrace.ServerTimings.serverTimings, serverTiming => serverTiming.args.data.origin);
         for (const [origin, serverTimings] of Object.entries(serverTimingsByOrigin)) {
             if (!serverTimings || serverTimings.length === 0) {
                 continue;

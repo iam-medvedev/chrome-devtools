@@ -108,6 +108,12 @@ styles.replaceSync(
   height: 100%;
 }
 
+.timeline-minimap-dim-highlight-svg {
+  width: 100%;
+  position: absolute;
+  height: 100%;
+}
+
 .timeline-minimap .memory-graph-label {
   position: absolute;
   right: 0;

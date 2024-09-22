@@ -51,8 +51,8 @@ function estimateSavingsWithGraphs(deferredIds, lanternContext) {
     minimalFCPGraph.request.transferSize = originalTransferSize;
     return Math.round(Math.max(estimateBeforeInline - estimateAfterInline, 0));
 }
-function hasImageLCP(traceParsedData, context) {
-    const frameMetrics = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
+function hasImageLCP(parsedTrace, context) {
+    const frameMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
     if (!frameMetrics) {
         throw new Error('no frame metrics');
     }
@@ -62,12 +62,12 @@ function hasImageLCP(traceParsedData, context) {
     }
     const metricScore = navMetrics.get("LCP" /* Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
     const lcpEvent = metricScore?.event;
-    if (!lcpEvent || !Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate(lcpEvent)) {
+    if (!lcpEvent || !Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
         return false;
     }
-    return findLCPRequest(traceParsedData, context, lcpEvent) !== null;
+    return findLCPRequest(parsedTrace, context, lcpEvent) !== null;
 }
-function computeSavings(traceParsedData, context, renderBlockingRequests) {
+function computeSavings(parsedTrace, context, renderBlockingRequests) {
     if (!context.lantern) {
         return;
     }
@@ -93,14 +93,20 @@ function computeSavings(traceParsedData, context, renderBlockingRequests) {
     if (requestIdToWastedMs.size) {
         metricSavings.FCP = estimateSavingsWithGraphs(deferredNodeIds, context.lantern);
         // In most cases, render blocking resources only affect LCP if LCP isn't an image.
-        if (!hasImageLCP(traceParsedData, context)) {
+        if (!hasImageLCP(parsedTrace, context)) {
             metricSavings.LCP = metricSavings.FCP;
         }
     }
     return { metricSavings, requestIdToWastedMs };
 }
-export function generateInsight(traceParsedData, context) {
-    const firstPaintTs = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(context.frameId)
+export function generateInsight(parsedTrace, context) {
+    // TODO(crbug.com/366049346) make this work w/o a navigation.
+    if (!context.navigation) {
+        return {
+            renderBlockingRequests: [],
+        };
+    }
+    const firstPaintTs = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId)
         ?.get(context.navigationId)
         ?.get("FP" /* Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP */)
         ?.event?.ts;
@@ -110,8 +116,8 @@ export function generateInsight(traceParsedData, context) {
             warnings: [InsightWarning.NO_FP],
         };
     }
-    const renderBlockingRequests = [];
-    for (const req of traceParsedData.NetworkRequests.byTime) {
+    let renderBlockingRequests = [];
+    for (const req of parsedTrace.NetworkRequests.byTime) {
         if (req.args.data.frame !== context.frameId) {
             continue;
         }
@@ -135,12 +141,16 @@ export function generateInsight(traceParsedData, context) {
                 continue;
             }
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceParsedData.Meta.navigationsByFrameId);
+        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, parsedTrace.Meta.navigationsByFrameId);
         if (navigation === context.navigation) {
             renderBlockingRequests.push(req);
         }
     }
-    const savings = computeSavings(traceParsedData, context, renderBlockingRequests);
+    const savings = computeSavings(parsedTrace, context, renderBlockingRequests);
+    // Sort by request duration for insights.
+    renderBlockingRequests = renderBlockingRequests.sort((a, b) => {
+        return b.dur - a.dur;
+    });
     return {
         renderBlockingRequests,
         ...savings,

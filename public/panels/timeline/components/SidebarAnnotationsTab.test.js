@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -36,9 +36,9 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const labelledTimeRangeAnnotation = {
             type: 'TIME_RANGE',
             bounds: {
-                min: TraceEngine.Types.Timing.MicroSeconds(0),
-                max: TraceEngine.Types.Timing.MicroSeconds(10),
-                range: TraceEngine.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.MicroSeconds(0),
+                max: Trace.Types.Timing.MicroSeconds(10),
+                range: Trace.Types.Timing.MicroSeconds(10),
             },
             label: 'Labelled Time Range',
         };
@@ -67,8 +67,8 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         assert.strictEqual(annotationEntryLabelElements[2].innerText, 'Labelled Time Range');
     });
     it('uses the URL for displaying network event labels and truncates it', async function () {
-        const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const event = traceData.NetworkRequests.byTime.find(event => {
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const event = parsedTrace.NetworkRequests.byTime.find(event => {
             return event.args.data.url.includes('private-aggregation-test');
         });
         assert.isOk(event);
@@ -142,9 +142,9 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const labelledTimeRangeAnnotation = {
             type: 'TIME_RANGE',
             bounds: {
-                min: TraceEngine.Types.Timing.MicroSeconds(0),
-                max: TraceEngine.Types.Timing.MicroSeconds(10),
-                range: TraceEngine.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.MicroSeconds(0),
+                max: Trace.Types.Timing.MicroSeconds(10),
+                range: Trace.Types.Timing.MicroSeconds(10),
             },
             label: 'Labelled Time Range',
         };

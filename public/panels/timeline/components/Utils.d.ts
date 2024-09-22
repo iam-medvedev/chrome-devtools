@@ -1,4 +1,4 @@
-import type * as TraceEngine from '../../../models/trace/trace.js';
+import type * as Trace from '../../../models/trace/trace.js';
 export declare enum NetworkCategory {
     DOC = "Doc",
     CSS = "CSS",
@@ -10,7 +10,7 @@ export declare enum NetworkCategory {
     OTHER = "Other"
 }
 export declare function colorForNetworkCategory(category: NetworkCategory): string;
-export declare function colorForNetworkRequest(request: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest): string;
+export declare function colorForNetworkRequest(request: Trace.Types.Events.SyntheticNetworkRequest): string;
 export type MetricRating = 'good' | 'needs-improvement' | 'poor';
 export type MetricThresholds = [number, number];
 export declare const LCP_THRESHOLDS: MetricThresholds;

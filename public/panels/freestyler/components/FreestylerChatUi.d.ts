@@ -14,9 +14,14 @@ export interface Step {
     output?: string;
     canceled?: boolean;
     sideEffect?: ConfirmSideEffectDialog;
+    contextDetails?: ContextDetail[];
 }
 interface ConfirmSideEffectDialog {
     onAnswer: (result: boolean) => void;
+}
+export interface ContextDetail {
+    title: string;
+    text: string;
 }
 export declare const enum ChatMessageEntity {
     MODEL = "model",
@@ -32,7 +37,6 @@ export interface ModelChatMessage {
     steps: Step[];
     answer?: string;
     error?: ErrorType;
-    aborted: boolean;
     rpcId?: number;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
@@ -51,6 +55,7 @@ export interface Props {
     onAcceptConsentClick: () => void;
     onCancelClick: () => void;
     onFixThisIssueClick: () => void;
+    onSelectedNetworkRequestClick: () => void | Promise<void>;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;

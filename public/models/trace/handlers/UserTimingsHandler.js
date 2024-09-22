@@ -72,17 +72,17 @@ export function handleEvent(event) {
     if (ignoredNames.includes(event.name)) {
         return;
     }
-    if (Types.TraceEvents.isTraceEventPerformanceMeasure(event)) {
+    if (Types.Events.isPerformanceMeasure(event)) {
         performanceMeasureEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventPerformanceMark(event)) {
+    if (Types.Events.isPerformanceMark(event)) {
         performanceMarkEvents.push(event);
     }
-    if (Types.TraceEvents.isTraceEventConsoleTime(event)) {
+    if (Types.Events.isConsoleTime(event)) {
         consoleTimings.push(event);
     }
-    if (Types.TraceEvents.isTraceEventTimeStamp(event)) {
+    if (Types.Events.isTimeStamp(event)) {
         timestampEvents.push(event);
     }
 }

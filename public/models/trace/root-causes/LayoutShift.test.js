@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { describeWithMockConnection, } from '../../../testing/MockConnection.js';
 import { getBaseTraceParseModelData } from '../../../testing/TraceHelpers.js';
-import * as TraceEngine from '../trace.js';
+import * as Trace from '../trace.js';
 import * as RootCauses from './RootCauses.js';
 function assertArrayHasNoNulls(inputArray) {
     inputArray.forEach((item, index) => {
@@ -56,7 +56,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
         beforeEach(() => {
             fontFaceMock = { fontFamily: 'Roboto', src: fontSource, fontDisplay: 'swap' };
             // Layout shifts for which we want to extract potential root causes.
-            shifts = [{ ts: 10 }, { ts: 30 }, { ts: 50 }, { ts: 70 }, { ts: 90 }];
+            shifts =
+                [{ ts: 10 }, { ts: 30 }, { ts: 50 }, { ts: 70 }, { ts: 90 }];
             // Initialize the shifts.
             for (const shift of shifts) {
                 shift.args = {
@@ -66,14 +67,13 @@ describeWithMockConnection('LayoutShift root causes', () => {
             }
             const clusters = [{ events: shifts }];
             // PrePaint events to which each layout shift belongs.
-            prePaintEvents = [{ ts: 5, dur: 30 }, { ts: 45, dur: 30 }, { ts: 85, dur: 10 }];
-            resizeEvents = [{ ts: 0 }, { ts: 25 }, { ts: 80 }, { ts: 100 }];
-            injectedIframeEvents =
-                [{ ts: 2 }, { ts: 81 }];
-            fontChanges =
-                [{ ts: 3 }, { ts: 35 }];
-            unknownLayoutInvalidation =
-                [{ ts: 4 }, { ts: 36 }];
+            prePaintEvents =
+                [{ ts: 5, dur: 30 }, { ts: 45, dur: 30 }, { ts: 85, dur: 10 }];
+            resizeEvents =
+                [{ ts: 0 }, { ts: 25 }, { ts: 80 }, { ts: 100 }];
+            injectedIframeEvents = [{ ts: 2 }, { ts: 81 }];
+            fontChanges = [{ ts: 3 }, { ts: 35 }];
+            unknownLayoutInvalidation = [{ ts: 4 }, { ts: 36 }];
             // |Resize|---|Iframe|---|Fonts-|---|--PrePaint 1--|----|Resize|---|Fonts-|-|---PrePaint 2---|---|Resize|---|Iframe|---|PrePaint 3|
             // ----------------------------------|LS 1|-|LS 2|----------------------------|LS 3|-|LS 4|-----------------------------|LS 5|
             // Initialize the LI events by adding a nodeId and setting a reason so that they
@@ -82,7 +82,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 resizeEvents[i].args = {
                     data: {
                         nodeId: i + 1,
-                        reason: "Size changed" /* TraceEngine.Types.TraceEvents.LayoutInvalidationReason.SIZE_CHANGED */,
+                        reason: "Size changed" /* Trace.Types.Events.LayoutInvalidationReason.SIZE_CHANGED */,
                         nodeName: 'IMG',
                         frame: 'frame-id-123',
                     },
@@ -92,7 +92,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 injectedIframeEvents[i].args = {
                     data: {
                         nodeId: i + 11,
-                        reason: "Added to layout" /* TraceEngine.Types.TraceEvents.LayoutInvalidationReason.ADDED_TO_LAYOUT */,
+                        reason: "Added to layout" /* Trace.Types.Events.LayoutInvalidationReason.ADDED_TO_LAYOUT */,
                         nodeName: 'IFRAME',
                         frame: 'frame-id-123',
                     },
@@ -102,7 +102,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 fontChanges[i].args = {
                     data: {
                         nodeId: i + 21,
-                        reason: "Fonts changed" /* TraceEngine.Types.TraceEvents.LayoutInvalidationReason.FONTS_CHANGED */,
+                        reason: "Fonts changed" /* Trace.Types.Events.LayoutInvalidationReason.FONTS_CHANGED */,
                         nodeName: 'DIV',
                         frame: 'frame-id-123',
                     },
@@ -112,7 +112,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 unknownLayoutInvalidation[i].args = {
                     data: {
                         nodeId: i + 31,
-                        reason: "Unknown" /* TraceEngine.Types.TraceEvents.LayoutInvalidationReason.UNKNOWN */,
+                        reason: "Unknown" /* Trace.Types.Events.LayoutInvalidationReason.UNKNOWN */,
                         nodeName: 'DIV',
                         frame: 'frame-id-123',
                     },
@@ -125,7 +125,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 ...unknownLayoutInvalidation,
             ].sort((a, b) => a.ts - b.ts);
             for (const e of layoutInvalidationEvents) {
-                e.name = "LayoutInvalidationTracking" /* TraceEngine.Types.TraceEvents.KnownEventName.LAYOUT_INVALIDATION_TRACKING */;
+                e.name = "LayoutInvalidationTracking" /* Trace.Types.Events.Name.LAYOUT_INVALIDATION_TRACKING */;
             }
             // Map from fake BackendNodeId to fake Protocol.DOM.Node used by the handler to
             // resolve the nodeIds in the traces.
@@ -344,7 +344,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             });
             it('does not error when there are no layout shifts', async () => {
                 // Layout shifts for which we want to associate LayoutInvalidation events as potential root causes.
-                shifts = [{ ts: 10 }, { ts: 30 }, { ts: 50 }, { ts: 70 }, { ts: 90 }];
+                shifts =
+                    [{ ts: 10 }, { ts: 30 }, { ts: 50 }, { ts: 70 }, { ts: 90 }];
                 // Initialize the shifts.
                 for (const shift of shifts) {
                     shift.args = {
@@ -381,7 +382,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
             it('ignores events that could not add or resize an iframe', async () => {
                 injectedIframeEvents.forEach(e => {
                     e.args.data.nodeName = 'DIV';
-                    e.args.data.reason = "Size changed" /* TraceEngine.Types.TraceEvents.LayoutInvalidationReason.SIZE_CHANGED */;
+                    e.args.data.reason = "Size changed" /* Trace.Types.Events.LayoutInvalidationReason.SIZE_CHANGED */;
                 });
                 const rootCauses = await Promise.all(shifts.map(shift => layoutShifts.rootCausesForEvent(model, shift)));
                 assertArrayHasNoNulls(rootCauses);
@@ -393,8 +394,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             // that correspond to font changes.
             const fontRequests = [
                 {
-                    dur: TraceEngine.Types.Timing.MicroSeconds(2),
-                    ts: TraceEngine.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.MicroSeconds(2),
+                    ts: Trace.Types.Timing.MicroSeconds(0),
                     args: {
                         data: {
                             url: fontSource,
@@ -403,8 +404,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
                     },
                 },
                 {
-                    dur: TraceEngine.Types.Timing.MicroSeconds(30),
-                    ts: TraceEngine.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.MicroSeconds(30),
+                    ts: Trace.Types.Timing.MicroSeconds(0),
                     args: {
                         data: {
                             url: fontSource,
@@ -431,8 +432,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             });
             it('ignores requests for fonts whose font-display property is "optional"', async () => {
                 const optionalFontRequests = [{
-                        dur: TraceEngine.Types.Timing.MicroSeconds(2),
-                        ts: TraceEngine.Types.Timing.MicroSeconds(0),
+                        dur: Trace.Types.Timing.MicroSeconds(2),
+                        ts: Trace.Types.Timing.MicroSeconds(0),
                         args: {
                             data: {
                                 url: fontSource,
@@ -455,8 +456,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             });
             it('ignores requests for fonts that lie outside the fixed time window from ending at the "font change" layout invalidation event', async () => {
                 const optionalFontRequests = [{
-                        dur: TraceEngine.Types.Timing.MicroSeconds(2),
-                        ts: TraceEngine.Types.Timing.MicroSeconds(85),
+                        dur: Trace.Types.Timing.MicroSeconds(2),
+                        ts: Trace.Types.Timing.MicroSeconds(85),
                         args: {
                             data: {
                                 url: fontSource,
@@ -481,8 +482,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
         describe('Render blocking request', () => {
             const RenderBlockingRequest = [
                 {
-                    dur: TraceEngine.Types.Timing.MicroSeconds(2),
-                    ts: TraceEngine.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.MicroSeconds(2),
+                    ts: Trace.Types.Timing.MicroSeconds(0),
                     args: {
                         data: {
                             url: renderBlockSource,
@@ -492,8 +493,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
                     },
                 },
                 {
-                    dur: TraceEngine.Types.Timing.MicroSeconds(30),
-                    ts: TraceEngine.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.MicroSeconds(30),
+                    ts: Trace.Types.Timing.MicroSeconds(0),
                     args: {
                         data: {
                             url: renderBlockSource,

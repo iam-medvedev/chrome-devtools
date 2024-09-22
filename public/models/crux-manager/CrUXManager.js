@@ -164,7 +164,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     async #getScopedData(normalizedUrl, pageScope, deviceScope) {
         const { origin, href: url, hostname } = normalizedUrl;
-        if (hostname === 'localhost') {
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || !origin.startsWith('http')) {
             return null;
         }
         const cache = pageScope === 'origin' ? this.#originCache : this.#urlCache;

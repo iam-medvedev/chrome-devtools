@@ -36,7 +36,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(sharedDisclaimerHeader?.textContent, 'Boost your productivity with Chrome AI');
         const settingCards = view.shadowRoot.querySelectorAll('.setting-card h2');
         const settingNames = Array.from(settingCards).map(element => element.textContent);
-        assert.deepEqual(settingNames, ['Console Insights', 'Freestyler']);
+        assert.deepEqual(settingNames, ['Console Insights', 'AI assistant']);
     });
     it('can turn feature on, which automatically expands it', async () => {
         const { switches, details } = await renderAISettings();

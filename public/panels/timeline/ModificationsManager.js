@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
 import { EventsSerializer } from './EventsSerializer.js';
@@ -27,7 +27,7 @@ export class ModificationsManager extends EventTarget {
     #entriesFilter;
     #timelineBreadcrumbs;
     #modifications = null;
-    #traceParsedData;
+    #parsedTrace;
     #eventsSerializer;
     #overlayForAnnotation;
     #annotationsHiddenSetting;
@@ -57,11 +57,11 @@ export class ModificationsManager extends EventTarget {
             activeManager = modificationsManagerByTraceIndex[traceIndex];
             ModificationsManager.activeManager()?.applyModificationsIfPresent();
         }
-        const traceParsedData = traceModel.traceParsedData(traceIndex);
-        if (!traceParsedData) {
+        const parsedTrace = traceModel.parsedTrace(traceIndex);
+        if (!parsedTrace) {
             throw new Error('ModificationsManager was initialized without a corresponding trace data');
         }
-        const traceBounds = traceParsedData.Meta.traceBounds;
+        const traceBounds = parsedTrace.Meta.traceBounds;
         const traceEvents = traceModel.rawTraceEvents(traceIndex);
         if (!traceEvents) {
             throw new Error('ModificationsManager was initialized without a corresponding raw trace events array');
@@ -72,25 +72,25 @@ export class ModificationsManager extends EventTarget {
         }
         const metadata = traceModel.metadata(traceIndex);
         const newModificationsManager = new ModificationsManager({
-            traceParsedData,
+            parsedTrace,
             traceBounds,
             rawTraceEvents: traceEvents,
             modifications: metadata?.modifications,
-            syntheticEvents: syntheticEventsManager.getSyntheticTraceEvents(),
+            syntheticEvents: syntheticEventsManager.getSyntheticTraces(),
         });
         modificationsManagerByTraceIndex[traceIndex] = newModificationsManager;
         activeManager = newModificationsManager;
         ModificationsManager.activeManager()?.applyModificationsIfPresent();
         return this.activeManager();
     }
-    constructor({ traceParsedData, traceBounds, modifications }) {
+    constructor({ parsedTrace, traceBounds, modifications }) {
         super();
-        const entryToNodeMap = new Map([...traceParsedData.Samples.entryToNode, ...traceParsedData.Renderer.entryToNode]);
+        const entryToNodeMap = new Map([...parsedTrace.Samples.entryToNode, ...parsedTrace.Renderer.entryToNode]);
         this.#entriesFilter = new EntriesFilter(entryToNodeMap);
         // Create first breadcrumb from the initial full window
         this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(traceBounds);
         this.#modifications = modifications || null;
-        this.#traceParsedData = traceParsedData;
+        this.#parsedTrace = parsedTrace;
         this.#eventsSerializer = new EventsSerializer();
         // This method is also called in SidebarAnnotationsTab, but calling this multiple times doesn't recreate the setting.
         // Instead, after the second call, the cached setting is returned.
@@ -105,6 +105,14 @@ export class ModificationsManager extends EventTarget {
         return this.#timelineBreadcrumbs;
     }
     createAnnotation(newAnnotation, loadedFromFile = false) {
+        // If a label already exists on an entry and a user is trying to create a new one, start editing an existing label instead.
+        if (newAnnotation.type === 'ENTRY_LABEL') {
+            const overlay = this.#findLabelOverlayForEntry(newAnnotation.entry);
+            if (overlay) {
+                this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'EnterLabelEditState'));
+                return;
+            }
+        }
         // If the new annotation created was not loaded from the file, set the annotations visibility setting to true. That way we make sure
         // the annotations are on when a new one is created.
         if (!loadedFromFile) {
@@ -117,6 +125,14 @@ export class ModificationsManager extends EventTarget {
         const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
+    }
+    #findLabelOverlayForEntry(entry) {
+        for (const [annotation, overlay] of this.#overlayForAnnotation.entries()) {
+            if (annotation.type === 'ENTRY_LABEL' && annotation.entry === entry) {
+                return overlay;
+            }
+        }
+        return null;
     }
     #createOverlayFromAnnotation(annotation) {
         switch (annotation.type) {
@@ -164,13 +180,13 @@ export class ModificationsManager extends EventTarget {
     updateAnnotation(updatedAnnotation) {
         const overlay = this.#overlayForAnnotation.get(updatedAnnotation);
         if (overlay && Overlays.Overlays.isTimeRangeLabel(overlay) &&
-            TraceEngine.Types.File.isTimeRangeAnnotation(updatedAnnotation)) {
+            Trace.Types.File.isTimeRangeAnnotation(updatedAnnotation)) {
             overlay.label = updatedAnnotation.label;
             overlay.bounds = updatedAnnotation.bounds;
             this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'UpdateTimeRange'));
         }
         else if (overlay && Overlays.Overlays.isEntriesLink(overlay) &&
-            TraceEngine.Types.File.isEntriesLinkAnnotation(updatedAnnotation)) {
+            Trace.Types.File.isEntriesLinkAnnotation(updatedAnnotation)) {
             overlay.entryFrom = updatedAnnotation.entryFrom;
             overlay.entryTo = updatedAnnotation.entryTo;
             this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'UpdateLinkToEntry'));
@@ -234,7 +250,7 @@ export class ModificationsManager extends EventTarget {
         const linksBetweenEntriesSerialized = [];
         for (let i = 0; i < annotations.length; i++) {
             const currAnnotation = annotations[i];
-            if (TraceEngine.Types.File.isEntryLabelAnnotation(currAnnotation)) {
+            if (Trace.Types.File.isEntryLabelAnnotation(currAnnotation)) {
                 const serializedEvent = this.#eventsSerializer.keyForEvent(currAnnotation.entry);
                 if (serializedEvent) {
                     entryLabelsSerialized.push({
@@ -243,13 +259,13 @@ export class ModificationsManager extends EventTarget {
                     });
                 }
             }
-            else if (TraceEngine.Types.File.isTimeRangeAnnotation(currAnnotation)) {
+            else if (Trace.Types.File.isTimeRangeAnnotation(currAnnotation)) {
                 labelledTimeRangesSerialized.push({
                     bounds: currAnnotation.bounds,
                     label: currAnnotation.label,
                 });
             }
-            else if (TraceEngine.Types.File.isEntriesLinkAnnotation(currAnnotation)) {
+            else if (Trace.Types.File.isEntriesLinkAnnotation(currAnnotation)) {
                 // Only save the links between entries that are fully created and have the entry that it is pointing to set
                 if (currAnnotation.entryTo) {
                     const serializedFromEvent = this.#eventsSerializer.keyForEvent(currAnnotation.entryFrom);
@@ -287,7 +303,7 @@ export class ModificationsManager extends EventTarget {
             entryLabels.forEach(entryLabel => {
                 this.createAnnotation({
                     type: 'ENTRY_LABEL',
-                    entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#traceParsedData),
+                    entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#parsedTrace),
                     label: entryLabel.label,
                 }, true);
             });
@@ -303,8 +319,8 @@ export class ModificationsManager extends EventTarget {
             linksBetweenEntries.forEach(linkBetweenEntries => {
                 this.createAnnotation({
                     type: 'ENTRIES_LINK',
-                    entryFrom: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryFrom, this.#traceParsedData),
-                    entryTo: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryTo, this.#traceParsedData),
+                    entryFrom: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryFrom, this.#parsedTrace),
+                    entryTo: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryTo, this.#parsedTrace),
                 }, true);
             });
         }
@@ -321,8 +337,8 @@ export class ModificationsManager extends EventTarget {
     }
     #applyEntriesFilterModifications(hiddenEntriesKeys, expandableEntriesKeys) {
         try {
-            const hiddenEntries = hiddenEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#traceParsedData));
-            const expandableEntries = expandableEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#traceParsedData));
+            const hiddenEntries = hiddenEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#parsedTrace));
+            const expandableEntries = expandableEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#parsedTrace));
             this.#entriesFilter.setHiddenAndExpandableEntries(hiddenEntries, expandableEntries);
         }
         catch (err) {

@@ -1,2 +1,2 @@
-import type * as TraceEngine from '../../../models/trace/trace.js';
-export declare function extensionEntryColor(event: TraceEngine.Types.Extensions.SyntheticExtensionEntry): string;
+import type * as Trace from '../../../models/trace/trace.js';
+export declare function extensionEntryColor(event: Trace.Types.Extensions.SyntheticExtensionEntry): string;

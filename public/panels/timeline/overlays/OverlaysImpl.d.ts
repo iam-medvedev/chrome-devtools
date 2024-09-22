@@ -1,7 +1,7 @@
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import type * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from './components/components.js';
-export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: TraceEngine.Types.Timing.MicroSeconds;
+export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.MicroSeconds;
 /**
  * Represents which flamechart an entry is rendered in.
  * We need to know this because when we place an overlay for an entry we need
@@ -17,7 +17,7 @@ export type EntryChartLocation = 'main' | 'network';
  * support TimelineFrame instances (which themselves will be removed from the
  * codebase.)
  */
-export type OverlayEntry = TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Types.TraceEvents.LegacyTimelineFrame;
+export type OverlayEntry = Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame;
 /**
  * Represents when a user has selected an entry in the timeline
  */
@@ -50,12 +50,20 @@ export interface EntriesLink {
     entryTo?: OverlayEntry;
 }
 /**
+ * Represents an object created when a user double click an entry and before
+ * creating a link between two entries.
+ */
+export interface CreateEntriesLink {
+    type: 'ENTRIES_LINK_CREATE_BUTTON';
+    entry: OverlayEntry;
+}
+/**
  * Represents a time range on the trace. Also used when the user shift+clicks
  * and drags to create a time range.
  */
 export interface TimeRangeLabel {
     type: 'TIME_RANGE';
-    bounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
     label: string;
     showDuration: boolean;
 }
@@ -63,7 +71,7 @@ export interface TimeRangeLabel {
  * Given a list of overlays, this method will calculate the smallest possible
  * trace window that will contain all of the overlays.
  */
-export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): Trace.Types.Timing.TraceWindowMicroSeconds;
 /**
  * Get a list of entries for a given overlay.
  */
@@ -71,6 +79,7 @@ export declare function entriesForOverlay(overlay: TimelineOverlay): readonly Ov
 export declare function chartForEntry(entry: OverlayEntry): EntryChartLocation;
 export declare function isTimeRangeLabel(annotation: TimelineOverlay): annotation is TimeRangeLabel;
 export declare function isEntriesLink(annotation: TimelineOverlay): annotation is EntriesLink;
+export declare function isEntryLabel(annotation: TimelineOverlay): annotation is EntryLabel;
 /**
  * Used to highlight with a red-candy stripe a time range. It takes an entry
  * because this entry is the row that will be used to place the candy stripe,
@@ -78,8 +87,8 @@ export declare function isEntriesLink(annotation: TimelineOverlay): annotation i
  */
 export interface CandyStripedTimeRange {
     type: 'CANDY_STRIPED_TIME_RANGE';
-    bounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
-    entry: TraceEngine.Types.TraceEvents.TraceEventData;
+    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
+    entry: Trace.Types.Events.Event;
 }
 /**
  * Represents a timespan on a trace broken down into parts. Each part has a label to it.
@@ -88,22 +97,22 @@ export interface CandyStripedTimeRange {
 export interface TimespanBreakdown {
     type: 'TIMESPAN_BREAKDOWN';
     sections: Array<Components.TimespanBreakdownOverlay.EntryBreakdown>;
-    entry?: TraceEngine.Types.TraceEvents.TraceEventData;
+    entry?: Trace.Types.Events.Event;
 }
 export interface CursorTimestampMarker {
     type: 'CURSOR_TIMESTAMP_MARKER';
-    timestamp: TraceEngine.Types.Timing.MicroSeconds;
+    timestamp: Trace.Types.Timing.MicroSeconds;
 }
 /**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | CursorTimestampMarker | CandyStripedTimeRange;
+export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | CreateEntriesLink | TimespanBreakdown | CursorTimestampMarker | CandyStripedTimeRange;
 /**
  * Denotes overlays that are singletons; only one of these will be allowed to
  * exist at any given time. If one exists and the add() method is called, the
  * new overlay will replace the existing one.
  */
-type SingletonOverlay = EntrySelected | CursorTimestampMarker;
+type SingletonOverlay = EntrySelected | CursorTimestampMarker | CreateEntriesLink;
 export declare function overlayIsSingleton(overlay: TimelineOverlay): overlay is SingletonOverlay;
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
@@ -124,10 +133,10 @@ export interface TimelineCharts {
     networkProvider: PerfUI.FlameChart.FlameChartDataProvider;
 }
 export interface OverlayEntryQueries {
-    isEntryCollapsedByUser: (entry: TraceEngine.Types.TraceEvents.TraceEventData) => boolean;
-    firstVisibleParentForEntry: (entry: TraceEngine.Types.TraceEvents.TraceEventData) => TraceEngine.Types.TraceEvents.TraceEventData | null;
+    isEntryCollapsedByUser: (entry: Trace.Types.Events.Event) => boolean;
+    firstVisibleParentForEntry: (entry: Trace.Types.Events.Event) => Trace.Types.Events.Event | null;
 }
-export type UpdateAction = 'Remove' | 'Update';
+export type UpdateAction = 'Remove' | 'Update' | 'CreateLink';
 export declare class AnnotationOverlayActionEvent extends Event {
     overlay: TimelineOverlay;
     action: UpdateAction;
@@ -165,6 +174,7 @@ export declare class Overlays extends EventTarget {
      * old overlay and re-creating the new one.
      */
     updateExisting<T extends TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
+    enterLabelEditMode(overlay: EntryLabel): void;
     /**
      * @returns the list of overlays associated with a given entry.
      */
@@ -192,7 +202,7 @@ export declare class Overlays extends EventTarget {
      * Update the visible window of the UI.
      * IMPORTANT: this does not trigger a re-draw. You must call the render() method manually.
      */
-    updateVisibleWindow(visibleWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds): void;
+    updateVisibleWindow(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds): void;
     /**
      * Clears all overlays and all data. Call this when the trace is changing
      * (e.g. the user has imported/recorded a new trace) and we need to start from
@@ -258,5 +268,5 @@ export declare class Overlays extends EventTarget {
  * helper exists to return a consistent set of timings regardless of the type
  * of entry.
  */
-export declare function timingsForOverlayEntry(entry: OverlayEntry): TraceEngine.Helpers.Timing.EventTimingsData<TraceEngine.Types.Timing.MicroSeconds>;
+export declare function timingsForOverlayEntry(entry: OverlayEntry): Trace.Helpers.Timing.EventTimingsData<Trace.Types.Timing.MicroSeconds>;
 export {};

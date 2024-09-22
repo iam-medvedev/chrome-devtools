@@ -50,7 +50,7 @@ styles.replaceSync(
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  word-break: break-all;
+  word-break: break-word;
   padding-top: 15px;
   gap: 6px;
 }
@@ -59,6 +59,8 @@ styles.replaceSync(
   padding: 4px 8px;
   border-radius: 10px;
   font-weight: bold;
+  /* The identifier text will always be black to match the event title in the flame chart */
+  color: var(--app-color-performance-sidebar-label-text);
 
   &.time-range {
     background-color: var(--app-color-performance-sidebar-time-range);

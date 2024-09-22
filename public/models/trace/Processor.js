@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
+import * as Helpers from './helpers/helpers.js';
 import * as Insights from './insights/insights.js';
 import * as Lantern from './lantern/lantern.js';
 import * as LanternComputationData from './LanternComputationData.js';
@@ -32,11 +33,11 @@ export class TraceProcessor extends EventTarget {
     static createWithAllHandlers() {
         return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.defaults());
     }
-    static getEnabledInsightRunners(traceParsedData) {
+    static getEnabledInsightRunners(parsedTrace) {
         const enabledInsights = {};
         for (const [name, insight] of Object.entries(Insights.InsightRunners)) {
             const deps = insight.deps();
-            if (deps.some(dep => !traceParsedData[dep])) {
+            if (deps.some(dep => !parsedTrace[dep])) {
                 continue;
             }
             Object.assign(enabledInsights, { [name]: insight });
@@ -117,7 +118,7 @@ export class TraceProcessor extends EventTarget {
         }
         try {
             this.#status = "PARSING" /* Status.PARSING */;
-            await this.#computeTraceParsedData(traceEvents, freshRecording);
+            await this.#computeParsedTrace(traceEvents, freshRecording);
             if (this.#data) {
                 this.#computeInsights(this.#data, traceEvents);
             }
@@ -131,7 +132,7 @@ export class TraceProcessor extends EventTarget {
     /**
      * Run all the handlers and set the result to `#data`.
      */
-    async #computeTraceParsedData(traceEvents, freshRecording) {
+    async #computeParsedTrace(traceEvents, freshRecording) {
         /**
          * We want to yield regularly to maintain responsiveness. If we yield too often, we're wasting idle time.
          * We could do this by checking `performance.now()` regularly, but it's an expensive call in such a hot loop.
@@ -202,15 +203,15 @@ export class TraceProcessor extends EventTarget {
             }
             return value;
         };
-        const traceParsedData = {};
+        const parsedTrace = {};
         for (const [name, handler] of Object.entries(this.#traceHandlers)) {
             const data = shallowClone(handler.data());
-            Object.assign(traceParsedData, { [name]: data });
+            Object.assign(parsedTrace, { [name]: data });
         }
         this.dispatchEvent(new TraceParseProgressEvent({ percent: 1 /* ProgressPhase.CLONE */ }));
-        this.#data = traceParsedData;
+        this.#data = parsedTrace;
     }
-    get traceParsedData() {
+    get parsedTrace() {
         if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
             return null;
         }
@@ -222,15 +223,15 @@ export class TraceProcessor extends EventTarget {
         }
         return this.#insights;
     }
-    #createLanternContext(traceParsedData, traceEvents, frameId, navigationId) {
+    #createLanternContext(parsedTrace, traceEvents, frameId, navigationId) {
         // Check for required handlers.
-        if (!traceParsedData.NetworkRequests || !traceParsedData.Workers || !traceParsedData.PageLoadMetrics) {
+        if (!parsedTrace.NetworkRequests || !parsedTrace.Workers || !parsedTrace.PageLoadMetrics) {
             return;
         }
-        if (!traceParsedData.NetworkRequests.byTime.length) {
+        if (!parsedTrace.NetworkRequests.byTime.length) {
             throw new Lantern.Core.LanternError('No network requests found in trace');
         }
-        const navStarts = traceParsedData.Meta.navigationsByFrameId.get(frameId);
+        const navStarts = parsedTrace.Meta.navigationsByFrameId.get(frameId);
         const navStartIndex = navStarts?.findIndex(n => n.args.data?.navigationId === navigationId);
         if (!navStarts || navStartIndex === undefined || navStartIndex === -1) {
             throw new Lantern.Core.LanternError('Could not find navigation start');
@@ -238,14 +239,14 @@ export class TraceProcessor extends EventTarget {
         const startTime = navStarts[navStartIndex].ts;
         const endTime = navStartIndex + 1 < navStarts.length ? navStarts[navStartIndex + 1].ts : Number.POSITIVE_INFINITY;
         const boundedTraceEvents = traceEvents.filter(e => e.ts >= startTime && e.ts < endTime);
-        // Lantern.Types.TraceEvent and Types.TraceEvents.TraceEventData represent the same
+        // Lantern.Types.TraceEvent and Types.Events.Event represent the same
         // object - a trace event - but one is more flexible than the other. It should be safe to cast between them.
         const trace = {
             traceEvents: boundedTraceEvents,
         };
-        const requests = LanternComputationData.createNetworkRequests(trace, traceParsedData, startTime, endTime);
-        const graph = LanternComputationData.createGraph(requests, trace, traceParsedData);
-        const processedNavigation = LanternComputationData.createProcessedNavigation(traceParsedData, frameId, navigationId);
+        const requests = LanternComputationData.createNetworkRequests(trace, parsedTrace, startTime, endTime);
+        const graph = LanternComputationData.createGraph(requests, trace, parsedTrace);
+        const processedNavigation = LanternComputationData.createProcessedNavigation(parsedTrace, frameId, navigationId);
         const networkAnalysis = Lantern.Core.NetworkAnalyzer.analyze(requests);
         const simulator = Lantern.Simulation.Simulator.createSimulator({
             networkAnalysis,
@@ -264,24 +265,79 @@ export class TraceProcessor extends EventTarget {
         };
         return { graph, simulator, metrics };
     }
+    #computeInsightSets(insights, parsedTrace, insightRunners, context) {
+        const data = {};
+        for (const [name, insight] of Object.entries(insightRunners)) {
+            let insightResult;
+            try {
+                insightResult = insight.generateInsight(parsedTrace, context);
+            }
+            catch (err) {
+                insightResult = err;
+            }
+            Object.assign(data, { [name]: insightResult });
+        }
+        let id, label, navigation;
+        if (context.navigation) {
+            id = context.navigationId;
+            label = context.navigation.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
+            navigation = context.navigation;
+        }
+        else {
+            id = Insights.Types.NO_NAVIGATION;
+            label = parsedTrace.Meta.mainFrameURL;
+        }
+        const insightSets = {
+            id,
+            label,
+            navigation,
+            frameId: context.frameId,
+            bounds: context.bounds,
+            data,
+        };
+        insights.set(insightSets.id, insightSets);
+    }
     /**
      * Run all the insights and set the result to `#insights`.
      */
-    #computeInsights(traceParsedData, traceEvents) {
+    #computeInsights(parsedTrace, traceEvents) {
         this.#insights = new Map();
-        const enabledInsightRunners = TraceProcessor.getEnabledInsightRunners(traceParsedData);
-        for (const navigation of traceParsedData.Meta.mainFrameNavigations) {
+        const enabledInsightRunners = TraceProcessor.getEnabledInsightRunners(parsedTrace);
+        const navigations = parsedTrace.Meta.mainFrameNavigations.filter(navigation => navigation.args.frame && navigation.args.data?.navigationId);
+        // Check if there is a meaningful chunk of work happening prior to the first navigation.
+        // If so, we run the insights on that initial bounds.
+        // Otherwise, there are no navigations and we do a no-navigation insights pass on the entire trace.
+        if (navigations.length) {
+            const bounds = Helpers.Timing.traceWindowFromMicroSeconds(parsedTrace.Meta.traceBounds.min, navigations[0].ts);
+            // When using "Record and reload" option, it typically takes ~5ms. So use 50ms to be safe.
+            const threshold = Helpers.Timing.millisecondsToMicroseconds(50);
+            if (bounds.range > threshold) {
+                const context = {
+                    bounds,
+                    frameId: parsedTrace.Meta.mainFrameId,
+                };
+                this.#computeInsightSets(this.#insights, parsedTrace, enabledInsightRunners, context);
+            }
+            // If threshold is not met, then the very beginning of the trace is ignored by the insights engine.
+        }
+        else {
+            const context = {
+                bounds: parsedTrace.Meta.traceBounds,
+                frameId: parsedTrace.Meta.mainFrameId,
+            };
+            this.#computeInsightSets(this.#insights, parsedTrace, enabledInsightRunners, context);
+        }
+        // Now run the insights for each navigation in isolation.
+        for (const [i, navigation] of navigations.entries()) {
+            // The above filter guarantees these are present.
             const frameId = navigation.args.frame;
             const navigationId = navigation.args.data?.navigationId;
-            if (!frameId || !navigationId) {
-                continue;
-            }
             // The lantern sub-context is optional on NavigationInsightContext, so not setting it is OK.
             // This is also a hedge against an error inside Lantern resulting in breaking the entire performance panel.
             // Additionally, many trace fixtures are too old to be processed by Lantern.
             let lantern;
             try {
-                lantern = this.#createLanternContext(traceParsedData, traceEvents, frameId, navigationId);
+                lantern = this.#createLanternContext(parsedTrace, traceEvents, frameId, navigationId);
             }
             catch (e) {
                 // Don't allow an error in constructing the Lantern graphs to break the rest of the trace processor.
@@ -305,24 +361,17 @@ export class TraceProcessor extends EventTarget {
                     console.error(e.message);
                 }
             }
+            const min = navigation.ts;
+            const max = i + 1 < navigations.length ? navigations[i + 1].ts : parsedTrace.Meta.traceBounds.max;
+            const bounds = Helpers.Timing.traceWindowFromMicroSeconds(min, max);
             const context = {
+                bounds,
                 frameId,
                 navigation,
                 navigationId,
                 lantern,
             };
-            const navInsightData = {};
-            for (const [name, insight] of Object.entries(enabledInsightRunners)) {
-                let insightResult;
-                try {
-                    insightResult = insight.generateInsight(traceParsedData, context);
-                }
-                catch (err) {
-                    insightResult = err;
-                }
-                Object.assign(navInsightData, { [name]: insightResult });
-            }
-            this.#insights.set(context.navigationId, navInsightData);
+            this.#computeInsightSets(this.#insights, parsedTrace, enabledInsightRunners, context);
         }
     }
 }

@@ -122,6 +122,14 @@ export class Settings {
         }
         return Platform.StringUtilities.toKebabCase(name);
     }
+    /**
+     * Prefer a module setting if this setting is one that you might not want to
+     * surface to the user to control themselves. Examples of these are settings
+     * to store UI state such as how a user choses to position a split widget or
+     * which panel they last opened.
+     * If you are creating a setting that you expect the user to control, and
+     * sync, prefer {@see createSetting}
+     */
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     moduleSetting(settingName) {
@@ -540,7 +548,7 @@ export class VersionController {
     static GLOBAL_VERSION_SETTING_NAME = 'inspectorVersion';
     static SYNCED_VERSION_SETTING_NAME = 'syncedInspectorVersion';
     static LOCAL_VERSION_SETTING_NAME = 'localInspectorVersion';
-    static CURRENT_VERSION = 37;
+    static CURRENT_VERSION = 38;
     #globalVersionSetting;
     #syncedVersionSetting;
     #localVersionSetting;
@@ -1094,6 +1102,24 @@ export class VersionController {
                 const setting = Settings.instance().createSetting(key, '');
                 setting.set(Platform.StringUtilities.toKebabCase(setting.get()));
             }
+        }
+    }
+    updateVersionFrom37To38() {
+        const getConsoleInsightsEnabledSetting = () => {
+            try {
+                return moduleSetting('console-insights-enabled');
+            }
+            catch {
+                return;
+            }
+        };
+        const consoleInsightsEnabled = getConsoleInsightsEnabledSetting();
+        const onboardingFinished = Settings.instance().createLocalSetting('console-insights-onboarding-finished', false);
+        if (consoleInsightsEnabled && consoleInsightsEnabled.get() === true && onboardingFinished.get() === false) {
+            consoleInsightsEnabled.set(false);
+        }
+        if (consoleInsightsEnabled && consoleInsightsEnabled.get() === false) {
+            onboardingFinished.set(false);
         }
     }
     /*

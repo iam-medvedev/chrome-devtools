@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
@@ -22,10 +22,10 @@ describeWithEnvironment('TimelineTreeView', function () {
             Timeline.TimelineUIUtils.TimelineUIUtils.categories().scripting.hidden = false;
         });
         it('Creates a tree from nestable async events', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
             const eventTreeView = new Timeline.EventsTimelineTreeView.EventsTimelineTreeView(mockViewDelegate);
-            const consoleTimings = [...traceData.UserTimings.consoleTimings];
-            eventTreeView.setModelWithEvents(consoleTimings, traceData);
+            const consoleTimings = [...parsedTrace.UserTimings.consoleTimings];
+            eventTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             const tree = eventTreeView.buildTree();
             const topNodesIterator = tree.children().values();
             const firstNode = topNodesIterator.next().value;
@@ -36,10 +36,10 @@ describeWithEnvironment('TimelineTreeView', function () {
             assert.strictEqual(bottomNode.event?.name, 'second console time');
         });
         it('shows instant events as nodes', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             const eventTreeView = new Timeline.EventsTimelineTreeView.EventsTimelineTreeView(mockViewDelegate);
-            const consoleTimings = [...traceData.UserTimings.performanceMarks];
-            eventTreeView.setModelWithEvents(consoleTimings, traceData);
+            const consoleTimings = [...parsedTrace.UserTimings.performanceMarks];
+            eventTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             const tree = eventTreeView.buildTree();
             const topNodesIterator = tree.children().values();
             const firstNode = topNodesIterator.next().value;
@@ -48,10 +48,10 @@ describeWithEnvironment('TimelineTreeView', function () {
             assert.strictEqual(secondNode.event?.name, 'mark3');
         });
         it('can filter events by text', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             const eventTreeView = new Timeline.EventsTimelineTreeView.EventsTimelineTreeView(mockViewDelegate);
-            const consoleTimings = [...traceData.UserTimings.performanceMarks];
-            eventTreeView.setModelWithEvents(consoleTimings, traceData);
+            const consoleTimings = [...parsedTrace.UserTimings.performanceMarks];
+            eventTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             let tree = eventTreeView.buildTree();
             const topLevelChildren = Array.from(tree.children().values(), childNode => {
                 return childNode.event?.name || 'NO_EVENT_FOR_NODE';
@@ -65,10 +65,10 @@ describeWithEnvironment('TimelineTreeView', function () {
             assert.deepEqual(newTopLevelChildren, ['mark1']);
         });
         it('can filter and hide entire categories', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             const eventTreeView = new Timeline.EventsTimelineTreeView.EventsTimelineTreeView(mockViewDelegate);
-            const performanceTimingEvents = [...traceData.UserTimings.performanceMeasures];
-            eventTreeView.setModelWithEvents(performanceTimingEvents, traceData);
+            const performanceTimingEvents = [...parsedTrace.UserTimings.performanceMeasures];
+            eventTreeView.setModelWithEvents(performanceTimingEvents, parsedTrace);
             let tree = eventTreeView.buildTree();
             const topLevelChildren = Array.from(tree.children().values(), childNode => {
                 return childNode.event?.name || 'NO_EVENT_FOR_NODE';
@@ -86,13 +86,13 @@ describeWithEnvironment('TimelineTreeView', function () {
     });
     describe('BottomUpTimelineTreeView', function () {
         it('Creates a bottom up tree from nestable events', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
             const bottomUpTreeView = new Timeline.TimelineTreeView.BottomUpTimelineTreeView();
-            const consoleTimings = [...traceData.UserTimings.consoleTimings];
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const consoleTimings = [...parsedTrace.UserTimings.consoleTimings];
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             bottomUpTreeView.setRange(startTime, endTime);
-            bottomUpTreeView.setModelWithEvents(consoleTimings, traceData);
+            bottomUpTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             const tree = bottomUpTreeView.buildTree();
             const topNodesIterator = tree.children().values();
             const firstNode = topNodesIterator.next().value;
@@ -107,13 +107,13 @@ describeWithEnvironment('TimelineTreeView', function () {
     });
     describe('CallTreeTimelineTreeView', function () {
         it('Creates a call tree from nestable events', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.CallTreeTimelineTreeView();
-            const consoleTimings = [...traceData.UserTimings.consoleTimings];
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const consoleTimings = [...parsedTrace.UserTimings.consoleTimings];
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
-            callTreeView.setModelWithEvents(consoleTimings, traceData);
+            callTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             const tree = callTreeView.buildTree();
             const topNodesIterator = tree.children().values();
             const firstNode = topNodesIterator.next().value;
@@ -126,14 +126,14 @@ describeWithEnvironment('TimelineTreeView', function () {
     });
     describe('event grouping', function () {
         it('groups events by category in the Call Tree view', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.CallTreeTimelineTreeView();
-            const consoleTimings = [...traceData.UserTimings.consoleTimings];
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const consoleTimings = [...parsedTrace.UserTimings.consoleTimings];
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
             callTreeView.setGroupBySettingForTests(Timeline.TimelineTreeView.AggregatedTimelineTreeView.GroupBy.Category);
-            callTreeView.setModelWithEvents(consoleTimings, traceData);
+            callTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             const tree = callTreeView.buildTree();
             const treeEntries = tree.children().entries();
             const groupEntry = treeEntries.next();
@@ -147,14 +147,14 @@ describeWithEnvironment('TimelineTreeView', function () {
             assert.strictEqual(children.next().value.event.name, 'third console time');
         });
         it('groups events by category in the Bottom up Tree view', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'sync-like-timings.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.BottomUpTimelineTreeView();
-            const consoleTimings = [...traceData.UserTimings.consoleTimings];
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const consoleTimings = [...parsedTrace.UserTimings.consoleTimings];
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
             callTreeView.setGroupBySettingForTests(Timeline.TimelineTreeView.AggregatedTimelineTreeView.GroupBy.Category);
-            callTreeView.setModelWithEvents(consoleTimings, traceData);
+            callTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             const tree = callTreeView.buildTree();
             const treeEntries = tree.children().entries();
             const groupEntry = treeEntries.next();
@@ -169,13 +169,13 @@ describeWithEnvironment('TimelineTreeView', function () {
             assert.strictEqual(children.next().value.event.name, 'third console time');
         });
         it('can group entries by domain', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.BottomUpTimelineTreeView();
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
             callTreeView.setGroupBySettingForTests(Timeline.TimelineTreeView.AggregatedTimelineTreeView.GroupBy.Domain);
-            callTreeView.setModelWithEvents(traceData.Renderer.allTraceEntries, traceData);
+            callTreeView.setModelWithEvents(parsedTrace.Renderer.allTraceEntries, parsedTrace);
             const tree = callTreeView.buildTree();
             const topLevelGroupNodes = Array.from(tree.children().entries());
             assert.deepEqual(topLevelGroupNodes.map(node => node[0]), [
@@ -190,13 +190,13 @@ describeWithEnvironment('TimelineTreeView', function () {
             ]);
         });
         it('can group entries by third parties', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.BottomUpTimelineTreeView();
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
             callTreeView.setGroupBySettingForTests(Timeline.TimelineTreeView.AggregatedTimelineTreeView.GroupBy.ThirdParties);
-            callTreeView.setModelWithEvents(traceData.Renderer.allTraceEntries, traceData);
+            callTreeView.setModelWithEvents(parsedTrace.Renderer.allTraceEntries, parsedTrace);
             const tree = callTreeView.buildTree();
             const topLevelGroupNodes = Array.from(tree.children().entries());
             assert.deepEqual(topLevelGroupNodes.map(node => node[0]), [
@@ -211,13 +211,13 @@ describeWithEnvironment('TimelineTreeView', function () {
             ]);
         });
         it('can group entries by frame', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.BottomUpTimelineTreeView();
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
             callTreeView.setGroupBySettingForTests(Timeline.TimelineTreeView.AggregatedTimelineTreeView.GroupBy.Frame);
-            callTreeView.setModelWithEvents(traceData.Renderer.allTraceEntries, traceData);
+            callTreeView.setModelWithEvents(parsedTrace.Renderer.allTraceEntries, parsedTrace);
             const tree = callTreeView.buildTree();
             const topLevelGroupNodes = Array.from(tree.children().entries());
             assert.deepEqual(topLevelGroupNodes.map(node => node[0]), [
@@ -226,13 +226,13 @@ describeWithEnvironment('TimelineTreeView', function () {
             ]);
         });
         it('can group entries by URL', async function () {
-            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const callTreeView = new Timeline.TimelineTreeView.BottomUpTimelineTreeView();
-            const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.min);
-            const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceData.Meta.traceBounds.max);
+            const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+            const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
             callTreeView.setRange(startTime, endTime);
             callTreeView.setGroupBySettingForTests(Timeline.TimelineTreeView.AggregatedTimelineTreeView.GroupBy.URL);
-            callTreeView.setModelWithEvents(traceData.Renderer.allTraceEntries, traceData);
+            callTreeView.setModelWithEvents(parsedTrace.Renderer.allTraceEntries, parsedTrace);
             const tree = callTreeView.buildTree();
             const topLevelGroupNodes = Array.from(tree.children().entries());
             assert.deepEqual(topLevelGroupNodes.map(node => node[0]), [

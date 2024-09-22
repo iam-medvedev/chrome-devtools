@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
@@ -13,7 +13,7 @@ export type HighlightedEntryInfo = {
     formattedTime: string;
     warningElements?: HTMLSpanElement[];
 };
-export declare function entryIsVisibleInTimeline(entry: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
+export declare function entryIsVisibleInTimeline(entry: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
 /**
  * Track appenders add the data of each track into the timeline flame
  * chart. Each track appender also implements functions tha allow the
@@ -51,18 +51,23 @@ export interface TrackAppender {
     /**
      * Returns the color an event is shown with in the timeline.
      */
-    colorForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    colorForEvent(event: Trace.Types.Events.Event): string;
     /**
      * Returns the title an event is shown with in the timeline.
      */
-    titleForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    titleForEvent?(event: Trace.Types.Events.Event): string;
     /**
      * Returns the info shown when an event in the timeline is hovered.
      */
-    highlightedEntryInfo?(event: TraceEngine.Types.TraceEvents.TraceEventData): Partial<HighlightedEntryInfo>;
+    highlightedEntryInfo?(event: Trace.Types.Events.Event): Partial<HighlightedEntryInfo>;
+    /**
+     * Returns the a callback function to draw an event to overrides the normal rectangle draw operation.
+     */
+    getDrawOverride?(event: Trace.Types.Events.Event): DrawOverride | undefined;
 }
 export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet", "Extension", "ServerTimings"];
 export type TrackAppenderName = typeof TrackNames[number] | 'Network';
+export type DrawOverride = PerfUI.FlameChart.DrawOverride;
 /**
  * Used as the context when a track (aka group) is selected and we log
  * something to the VE Logging framework.
@@ -97,7 +102,7 @@ export declare class CompatibilityTracksAppender {
     /**
      * @param flameChartData the data used by the flame chart renderer on
      * which the track data will be appended.
-     * @param traceParsedData the trace parsing engines output.
+     * @param parsedTrace the trace parsing engines output.
      * @param entryData the array containing all event to be rendered in
      * the flamechart.
      * @param legacyEntryTypeByLevel an array containing the type of
@@ -107,7 +112,7 @@ export declare class CompatibilityTracksAppender {
      * architecture and should be removed once all tracks use the new
      * system.
      */
-    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]);
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]);
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     timingsTrackAppender(): TimingsTrackAppender;
@@ -117,13 +122,13 @@ export declare class CompatibilityTracksAppender {
     layoutShiftsTrackAppender(): LayoutShiftsTrackAppender;
     threadAppenders(): ThreadAppender[];
     serverTimingsTrackAppender(): ServerTimingsTrackAppender;
-    eventsInTrack(trackAppender: TrackAppender): TraceEngine.Types.TraceEvents.TraceEventData[];
+    eventsInTrack(trackAppender: TrackAppender): Trace.Types.Events.Event[];
     /**
      * Gets the events to be shown in the tree views of the details pane
      * (Bottom-up, Call tree, etc.). These are the events from the track
      * that can be arranged in a tree shape.
      */
-    eventsForTreeView(trackAppender: TrackAppender): TraceEngine.Types.TraceEvents.TraceEventData[];
+    eventsForTreeView(trackAppender: TrackAppender): Trace.Types.Events.Event[];
     /**
      * Caches the track appender that owns a flame chart group. FlameChart
      * groups are created for each track in the timeline. When an user
@@ -135,7 +140,7 @@ export declare class CompatibilityTracksAppender {
      * Returns number of tracks of given type already appended.
      * Used to name the "Raster Thread 6" tracks, etc
      */
-    getCurrentTrackCountForThreadType(threadType: TraceEngine.Handlers.Threads.ThreadType.RASTERIZER | TraceEngine.Handlers.Threads.ThreadType.THREAD_POOL): number;
+    getCurrentTrackCountForThreadType(threadType: Trace.Handlers.Threads.ThreadType.RASTERIZER | Trace.Handlers.Threads.ThreadType.THREAD_POOL): number;
     /**
      * Looks up a FlameChart group for a given appender.
      */
@@ -144,7 +149,7 @@ export declare class CompatibilityTracksAppender {
      * Given a FlameChart group, gets the events to be shown in the tree
      * views if that group was registered by the appender system.
      */
-    groupEventsForTreeView(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | null;
+    groupEventsForTreeView(group: PerfUI.FlameChart.Group): Trace.Types.Events.Event[] | null;
     /**
      * Caches the track appender that owns a level. An appender takes
      * ownership of a level when it appends data to it.
@@ -161,7 +166,7 @@ export declare class CompatibilityTracksAppender {
      * @param appender the track which the event belongs to.
      * @returns the index of the event in all events to be rendered in the flamechart.
      */
-    appendEventAtLevel(event: TraceEngine.Types.TraceEvents.TraceEventData, level: number, appender: TrackAppender): number;
+    appendEventAtLevel(event: Trace.Types.Events.Event, level: number, appender: TrackAppender): number;
     /**
      * Adds into the flame chart data a list of trace events.
      * @param events the trace events that will be appended to the flame chart.
@@ -179,28 +184,29 @@ export declare class CompatibilityTracksAppender {
      * @returns the next level after the last occupied by the appended these
      * trace events (the first available level to append next track).
      */
-    appendEventsAtLevel<T extends TraceEngine.Types.TraceEvents.TraceEventData>(events: readonly T[], trackStartLevel: number, appender: TrackAppender, eventAppendedCallback?: (event: T, index: number) => void): number;
+    appendEventsAtLevel<T extends Trace.Types.Events.Event>(events: readonly T[], trackStartLevel: number, appender: TrackAppender, eventAppendedCallback?: (event: T, index: number) => void): number;
     /**
      * Gets the all track appenders that have been set to be visible.
      */
     allVisibleTrackAppenders(): TrackAppender[];
-    allThreadAppendersByProcess(): Map<TraceEngine.Types.TraceEvents.ProcessID, ThreadAppender[]>;
+    allThreadAppendersByProcess(): Map<Trace.Types.Events.ProcessID, ThreadAppender[]>;
     /**
      * Sets the visible tracks internally
      * @param visibleTracks set with the names of the visible track
      * appenders. If undefined, all tracks are set to be visible.
      */
     setVisibleTracks(visibleTracks?: Set<TrackAppenderName>): void;
+    getDrawOverride(event: Trace.Types.Events.Event, level: number): DrawOverride | undefined;
     /**
      * Returns the color an event is shown with in the timeline.
      */
-    colorForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, level: number): string;
+    colorForEvent(event: Trace.Types.Events.Event, level: number): string;
     /**
      * Returns the title an event is shown with in the timeline.
      */
-    titleForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, level: number): string;
+    titleForEvent(event: Trace.Types.Events.Event, level: number): string;
     /**
      * Returns the info shown when an event in the timeline is hovered.
      */
-    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData, level: number): HighlightedEntryInfo;
+    highlightedEntryInfo(event: Trace.Types.Events.Event, level: number): HighlightedEntryInfo;
 }

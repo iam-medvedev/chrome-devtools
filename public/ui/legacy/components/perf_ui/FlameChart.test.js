@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { FakeFlameChartProvider, MockFlameChartDelegate, } from '../../../../testing/TraceHelpers.js';
@@ -10,11 +10,11 @@ describeWithEnvironment('FlameChart', () => {
     it('sorts decorations, putting candy striping before warning triangles', async () => {
         const decorations = [
             { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
-            { type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */, startAtTime: TraceEngine.Types.Timing.MicroSeconds(10) },
+            { type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */, startAtTime: Trace.Types.Timing.MicroSeconds(10) },
         ];
         PerfUI.FlameChart.sortDecorationsForRenderingOrder(decorations);
         assert.deepEqual(decorations, [
-            { type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */, startAtTime: TraceEngine.Types.Timing.MicroSeconds(10) },
+            { type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */, startAtTime: Trace.Types.Timing.MicroSeconds(10) },
             { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
         ]);
     });

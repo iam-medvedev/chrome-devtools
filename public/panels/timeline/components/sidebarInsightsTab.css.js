@@ -17,6 +17,7 @@ styles.replaceSync(
   flex-grow: 1;
 }
 
+/* TODO(crbug.com/366049346): rename */
 .navigations-wrapper {
   display: flex;
   flex-flow: column nowrap;

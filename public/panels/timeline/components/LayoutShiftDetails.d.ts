@@ -1,9 +1,9 @@
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 export declare class LayoutShiftDetails extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
-    setData(layoutShift: TraceEngine.Types.TraceEvents.SyntheticLayoutShift, traceInsightsData: TraceEngine.Insights.Types.TraceInsightData | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isFreshRecording: Boolean): void;
+    setData(layoutShift: Trace.Types.Events.SyntheticLayoutShift, traceInsightsSets: Trace.Insights.Types.TraceInsightSets | null, parsedTrace: Trace.Handlers.Types.ParsedTrace | null, isFreshRecording: Boolean): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

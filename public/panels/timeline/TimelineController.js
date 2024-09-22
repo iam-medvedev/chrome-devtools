@@ -6,7 +6,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Extensions from '../../models/extensions/extensions.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Controller of the Performance panel indicating that the Performance Panel cannot
@@ -56,7 +56,7 @@ export class TimelineController {
         this.rootTarget = rootTarget;
         // Ensure the tracing manager is the one for the Root Target, NOT the
         // primaryPageTarget, as that is the one we have to invoke tracing against.
-        this.tracingManager = rootTarget.model(TraceEngine.TracingManager.TracingManager);
+        this.tracingManager = rootTarget.model(Trace.TracingManager.TracingManager);
         this.client = client;
     }
     async dispose() {
@@ -78,9 +78,9 @@ export class TimelineController {
         //   └ default: on, option: enableJSSampling
         const categoriesArray = [
             Root.Runtime.experiments.isEnabled('timeline-show-all-events') ? '*' : '-*',
-            TraceEngine.Types.TraceEvents.Categories.Console,
-            TraceEngine.Types.TraceEvents.Categories.Loading,
-            TraceEngine.Types.TraceEvents.Categories.UserTiming,
+            Trace.Types.Events.Categories.Console,
+            Trace.Types.Events.Categories.Loading,
+            Trace.Types.Events.Categories.UserTiming,
             'devtools.timeline',
             disabledByDefault('devtools.timeline'),
             disabledByDefault('devtools.timeline.frame'),

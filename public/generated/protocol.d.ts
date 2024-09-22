@@ -717,7 +717,9 @@ export declare namespace Audits {
         WarnAttributeValueExceedsMaxSize = "WarnAttributeValueExceedsMaxSize",
         WarnDomainNonASCII = "WarnDomainNonASCII",
         WarnThirdPartyPhaseout = "WarnThirdPartyPhaseout",
-        WarnCrossSiteRedirectDowngradeChangesInclusion = "WarnCrossSiteRedirectDowngradeChangesInclusion"
+        WarnCrossSiteRedirectDowngradeChangesInclusion = "WarnCrossSiteRedirectDowngradeChangesInclusion",
+        WarnDeprecationTrialMetadata = "WarnDeprecationTrialMetadata",
+        WarnThirdPartyCookieHeuristic = "WarnThirdPartyCookieHeuristic"
     }
     const enum CookieOperation {
         SetCookie = "SetCookie",
@@ -5596,7 +5598,6 @@ export declare namespace Emulation {
         Gyroscope = "gyroscope",
         LinearAcceleration = "linear-acceleration",
         Magnetometer = "magnetometer",
-        Proximity = "proximity",
         RelativeOrientation = "relative-orientation"
     }
     interface SensorMetadata {
@@ -10751,6 +10752,7 @@ export declare namespace Page {
         DeferredFetch = "deferred-fetch",
         DigitalCredentialsGet = "digital-credentials-get",
         DirectSockets = "direct-sockets",
+        DirectSocketsPrivate = "direct-sockets-private",
         DisplayCapture = "display-capture",
         DocumentDomain = "document-domain",
         EncryptedMedia = "encrypted-media",

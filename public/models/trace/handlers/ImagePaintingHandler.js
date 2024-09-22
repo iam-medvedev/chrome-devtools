@@ -37,19 +37,17 @@ export function reset() {
     eventToPaintImage.clear();
 }
 export function handleEvent(event) {
-    if (Types.TraceEvents.isTraceEventPaintImage(event)) {
-        const forProcess = paintImageEvents.get(event.pid) ||
-            new Map();
+    if (Types.Events.isPaintImage(event)) {
+        const forProcess = paintImageEvents.get(event.pid) || new Map();
         const forThread = forProcess.get(event.tid) || [];
         forThread.push(event);
         forProcess.set(event.tid, forThread);
         paintImageEvents.set(event.pid, forProcess);
         return;
     }
-    if (Types.TraceEvents.isTraceEventDecodeLazyPixelRef(event) && typeof event.args?.LazyPixelRef !== 'undefined') {
+    if (Types.Events.isDecodeLazyPixelRef(event) && typeof event.args?.LazyPixelRef !== 'undefined') {
         // Store these because we use them to tie DecodeImage to a PaintEvent.
-        const forProcess = decodeLazyPixelRefEvents.get(event.pid) ||
-            new Map();
+        const forProcess = decodeLazyPixelRefEvents.get(event.pid) || new Map();
         const forThread = forProcess.get(event.tid) || [];
         forThread.push(event);
         forProcess.set(event.tid, forThread);
@@ -61,7 +59,7 @@ export function handleEvent(event) {
     // This means that later on if we see a DecodeLazyPixelRef event with the
     // same LazyPixelRef key, we can find its associated PaintImage event by
     // looking it up.
-    if (Types.TraceEvents.isTraceEventDrawLazyPixelRef(event) && typeof event.args?.LazyPixelRef !== 'undefined') {
+    if (Types.Events.isDrawLazyPixelRef(event) && typeof event.args?.LazyPixelRef !== 'undefined') {
         const lastPaintEvent = paintImageEvents.get(event.pid)?.get(event.tid)?.at(-1);
         if (!lastPaintEvent) {
             return;
@@ -69,7 +67,7 @@ export function handleEvent(event) {
         paintImageByLazyPixelRef.set(event.args.LazyPixelRef, lastPaintEvent);
         return;
     }
-    if (Types.TraceEvents.isTraceEventDecodeImage(event)) {
+    if (Types.Events.isDecodeImage(event)) {
         // When we see a DecodeImage, we want to associate it to a PaintImage
         // event. We try two approaches:
         //

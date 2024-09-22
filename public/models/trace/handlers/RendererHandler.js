@@ -65,13 +65,13 @@ export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Renderer Handler is not initialized');
     }
-    if (Types.TraceEvents.isThreadName(event) && event.args.name?.startsWith('CompositorTileWorker')) {
+    if (Types.Events.isThreadName(event) && event.args.name?.startsWith('CompositorTileWorker')) {
         compositorTileWorkers.push({
             pid: event.pid,
             tid: event.tid,
         });
     }
-    if (Types.TraceEvents.isTraceEventBegin(event) || Types.TraceEvents.isTraceEventEnd(event)) {
+    if (Types.Events.isBegin(event) || Types.Events.isEnd(event)) {
         const process = getOrCreateRendererProcess(processes, event.pid);
         const thread = getOrCreateRendererThread(process, event.tid);
         const completeEvent = makeCompleteEvent(event);
@@ -82,7 +82,7 @@ export function handleEvent(event) {
         allTraceEntries.push(completeEvent);
         return;
     }
-    if (Types.TraceEvents.isTraceEventInstant(event) || Types.TraceEvents.isTraceEventComplete(event)) {
+    if (Types.Events.isInstant(event) || Types.Events.isComplete(event)) {
         const process = getOrCreateRendererProcess(processes, event.pid);
         const thread = getOrCreateRendererThread(process, event.tid);
         thread.entries.push(event);
@@ -305,7 +305,7 @@ export function buildHierarchy(processes, options) {
     }
 }
 export function makeCompleteEvent(event) {
-    if (Types.TraceEvents.isTraceEventEnd(event)) {
+    if (Types.Events.isEnd(event)) {
         // Quietly ignore unbalanced close events, they're legit (we could
         // have missed start one).
         const beginEvent = completeEventStack.pop();
@@ -326,7 +326,7 @@ export function makeCompleteEvent(event) {
     // matching end event later we will update its duration.
     const syntheticComplete = {
         ...event,
-        ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+        ph: "X" /* Types.Events.Phase.COMPLETE */,
         dur: Types.Timing.MicroSeconds(0),
     };
     completeEventStack.push(syntheticComplete);

@@ -1,20 +1,20 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 export declare abstract class TimelineModelFilter {
-    abstract accept(_event: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
+    abstract accept(_event: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
 }
 export declare class TimelineVisibleEventsFilter extends TimelineModelFilter {
     private readonly visibleTypes;
     constructor(visibleTypes: string[]);
-    accept(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
-    static eventType(event: TraceEngine.Types.TraceEvents.TraceEventData): TraceEngine.Types.TraceEvents.KnownEventName;
+    accept(event: Trace.Types.Events.Event): boolean;
+    static eventType(event: Trace.Types.Events.Event): Trace.Types.Events.Name;
 }
 export declare class TimelineInvisibleEventsFilter extends TimelineModelFilter {
     #private;
-    constructor(invisibleTypes: TraceEngine.Types.TraceEvents.KnownEventName[]);
-    accept(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+    constructor(invisibleTypes: Trace.Types.Events.Name[]);
+    accept(event: Trace.Types.Events.Event): boolean;
 }
 export declare class ExclusiveNameFilter extends TimelineModelFilter {
     #private;
-    constructor(excludeNames: TraceEngine.Types.TraceEvents.KnownEventName[]);
-    accept(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+    constructor(excludeNames: Trace.Types.Events.Name[]);
+    accept(event: Trace.Types.Events.Event): boolean;
 }

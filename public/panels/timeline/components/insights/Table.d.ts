@@ -2,6 +2,9 @@ export interface TableData {
     headers: string[];
     /** Each row is a tuple of values. */
     rows: Array<Array<string | number>>;
+    onHoverRow?: (index: number, rowEl: HTMLElement) => void;
+    onClickRow?: (index: number, rowEl: HTMLElement) => void;
+    onMouseLeave?: () => void;
 }
 export declare class Table extends HTMLElement {
     #private;

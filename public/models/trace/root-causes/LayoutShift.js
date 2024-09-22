@@ -118,8 +118,7 @@ export class LayoutShiftRootCauses {
             const layoutInvalidationNodeId = nodeIdsByBackendIdMap.get(layoutInvalidation.args.data.nodeId);
             let unsizedMediaRootCause = null;
             let iframeRootCause = null;
-            if (layoutInvalidationNodeId !== undefined &&
-                Types.TraceEvents.isTraceEventLayoutInvalidationTracking(layoutInvalidation)) {
+            if (layoutInvalidationNodeId !== undefined && Types.Events.isLayoutInvalidationTracking(layoutInvalidation)) {
                 unsizedMediaRootCause = await this.getUnsizedMediaRootCause(layoutInvalidation, layoutInvalidationNodeId);
                 iframeRootCause = await this.getIframeRootCause(layoutInvalidation, layoutInvalidationNodeId);
             }
@@ -172,7 +171,7 @@ export class LayoutShiftRootCauses {
         const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
         const eventTriggersLayout = ({ name }) => {
             const knownName = name;
-            return knownName === "Layout" /* Types.TraceEvents.KnownEventName.LAYOUT */;
+            return knownName === "Layout" /* Types.Events.Name.LAYOUT */;
         };
         const layoutEvents = modelData.Renderer.allTraceEntries.filter(eventTriggersLayout);
         for (const layout of layoutEvents) {
@@ -217,7 +216,7 @@ export class LayoutShiftRootCauses {
      */
     async getUnsizedMediaRootCause(layoutInvalidation, layoutInvalidationNodeId) {
         // Filter events to resizes only.
-        if (layoutInvalidation.args.data.reason !== "Size changed" /* Types.TraceEvents.LayoutInvalidationReason.SIZE_CHANGED */) {
+        if (layoutInvalidation.args.data.reason !== "Size changed" /* Types.Events.LayoutInvalidationReason.SIZE_CHANGED */) {
             return null;
         }
         const layoutInvalidationNode = await this.getNodeDetails(layoutInvalidationNodeId);
@@ -245,8 +244,8 @@ export class LayoutShiftRootCauses {
             return null;
         }
         if (!layoutInvalidation.args.data.nodeName?.startsWith('IFRAME') &&
-            layoutInvalidation.args.data.reason !== "Style changed" /* Types.TraceEvents.LayoutInvalidationReason.STYLE_CHANGED */ &&
-            layoutInvalidation.args.data.reason !== "Added to layout" /* Types.TraceEvents.LayoutInvalidationReason.ADDED_TO_LAYOUT */) {
+            layoutInvalidation.args.data.reason !== "Style changed" /* Types.Events.LayoutInvalidationReason.STYLE_CHANGED */ &&
+            layoutInvalidation.args.data.reason !== "Added to layout" /* Types.Events.LayoutInvalidationReason.ADDED_TO_LAYOUT */) {
             return null;
         }
         const layoutInvalidationNode = await this.getNodeDetails(layoutInvalidationNodeId);
@@ -311,7 +310,7 @@ export class LayoutShiftRootCauses {
      * returned instead.
      */
     getFontChangeRootCause(layoutInvalidation, nextPrePaint, modelData) {
-        if (layoutInvalidation.args.data.reason !== "Fonts changed" /* Types.TraceEvents.LayoutInvalidationReason.FONTS_CHANGED */) {
+        if (layoutInvalidation.args.data.reason !== "Fonts changed" /* Types.Events.LayoutInvalidationReason.FONTS_CHANGED */) {
             return null;
         }
         // Prevent computing the result of this function multiple times per PrePaint event.

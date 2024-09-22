@@ -1,10 +1,10 @@
-import * as TraceEngine from '../../models/trace/trace.js';
-import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
-export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: TraceEngine.Types.Timing.MicroSeconds;
+import * as Trace from '../../models/trace/trace.js';
+import { type CompatibilityTracksAppender, type DrawOverride, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.MicroSeconds;
 export declare class LayoutShiftsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, traceParsedData: TraceEngine.Handlers.Types.TraceParseData);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace);
     /**
      * Appends into the flame chart data the data corresponding to the
      * layout shifts track.
@@ -18,14 +18,15 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
-    colorForEvent(_event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    colorForEvent(_event: Trace.Types.Events.Event): string;
     /**
      * Gets the title an event added by this appender should be rendered with.
      */
-    titleForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    titleForEvent(event: Trace.Types.Events.Event): string;
     /**
      * Returns the info shown when an event added by this appender
      * is hovered in the timeline.
      */
-    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventLayoutShift): HighlightedEntryInfo;
+    highlightedEntryInfo(event: Trace.Types.Events.LayoutShift): HighlightedEntryInfo;
+    getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
 }

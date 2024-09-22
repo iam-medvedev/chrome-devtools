@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceModel from '../trace.js';
+import * as Trace from '../trace.js';
 describe('ExtensionTraceDataHandler', function () {
     let extensionHandlerOutput;
     let idCounter = 0;
@@ -10,8 +10,8 @@ describe('ExtensionTraceDataHandler', function () {
         const currentId = idCounter++;
         const traceEventBase = {
             cat: 'blink.user_timing',
-            pid: TraceModel.Types.TraceEvents.ProcessID(2017),
-            tid: TraceModel.Types.TraceEvents.ThreadID(259),
+            pid: Trace.Types.Events.ProcessID(2017),
+            tid: Trace.Types.Events.ThreadID(259),
             id2: { local: `${currentId}` },
         };
         const stringDetail = JSON.stringify(detail);
@@ -19,8 +19,8 @@ describe('ExtensionTraceDataHandler', function () {
         const firstEvent = {
             args,
             name,
-            ph: isMark ? "I" /* TraceModel.Types.TraceEvents.Phase.INSTANT */ : "b" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
-            ts: TraceModel.Types.Timing.MicroSeconds(tsMicro),
+            ph: isMark ? "I" /* Trace.Types.Events.Phase.INSTANT */ : "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+            ts: Trace.Types.Timing.MicroSeconds(tsMicro),
             ...traceEventBase,
         };
         if (isMark) {
@@ -31,24 +31,24 @@ describe('ExtensionTraceDataHandler', function () {
             {
                 name,
                 ...traceEventBase,
-                ts: TraceModel.Types.Timing.MicroSeconds(tsMicro + (durMicro || 0)),
-                ph: "e" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_END */,
+                ts: Trace.Types.Timing.MicroSeconds(tsMicro + (durMicro || 0)),
+                ph: "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */,
             },
         ];
     }
     async function createTraceExtensionDataFromTestInput(extensionData) {
         const events = extensionData.flatMap(makeTimingEventWithExtensionData).sort((e1, e2) => e1.ts - e2.ts);
-        TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(events);
-        TraceModel.Handlers.ModelHandlers.UserTimings.reset();
+        Trace.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(events);
+        Trace.Handlers.ModelHandlers.UserTimings.reset();
         for (const event of events) {
-            TraceModel.Handlers.ModelHandlers.UserTimings.handleEvent(event);
+            Trace.Handlers.ModelHandlers.UserTimings.handleEvent(event);
         }
-        await TraceModel.Handlers.ModelHandlers.UserTimings.finalize();
-        TraceModel.Handlers.ModelHandlers.ExtensionTraceData.reset();
+        await Trace.Handlers.ModelHandlers.UserTimings.finalize();
+        Trace.Handlers.ModelHandlers.ExtensionTraceData.reset();
         // ExtensionTraceData handler doesn't need to handle events since
         // it only consumes the output of the user timings handler.
-        await TraceModel.Handlers.ModelHandlers.ExtensionTraceData.finalize();
-        return TraceModel.Handlers.ModelHandlers.ExtensionTraceData.data();
+        await Trace.Handlers.ModelHandlers.ExtensionTraceData.finalize();
+        return Trace.Handlers.ModelHandlers.ExtensionTraceData.data();
     }
     function createTraceExtensionDataExample() {
         const extensionData = [
@@ -176,12 +176,12 @@ describe('ExtensionTraceDataHandler', function () {
                 },
                 name: 'test-perf-mark',
                 cat: 'blink.user_timing',
-                ph: "I" /* TraceModel.Types.TraceEvents.Phase.INSTANT */,
-                pid: TraceModel.Types.TraceEvents.ProcessID(1),
-                tid: TraceModel.Types.TraceEvents.ThreadID(1),
-                ts: TraceModel.Types.Timing.MicroSeconds(100),
+                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                pid: Trace.Types.Events.ProcessID(1),
+                tid: Trace.Types.Events.ThreadID(1),
+                ts: Trace.Types.Timing.MicroSeconds(100),
             };
-            assert.isNull(TraceModel.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(performanceMarkEvent));
+            assert.isNull(Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(performanceMarkEvent));
         });
         it('discards markers without a valid dataType field', async () => {
             // The test example contains extension data with an invalid dataType

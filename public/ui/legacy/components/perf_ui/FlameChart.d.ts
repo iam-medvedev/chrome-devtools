@@ -30,7 +30,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import type * as TimelineModel from '../../../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 import { type Calculator } from './TimelineGrid.js';
@@ -87,7 +87,7 @@ export declare const enum FilterAction {
 }
 export interface UserFilterAction {
     type: FilterAction;
-    entry: TraceEngine.Types.TraceEvents.TraceEventData;
+    entry: Trace.Types.Events.Event;
 }
 export interface PossibleFilterActions {
     [FilterAction.MERGE_FUNCTION]: boolean;
@@ -96,6 +96,11 @@ export interface PossibleFilterActions {
     [FilterAction.RESET_CHILDREN]: boolean;
     [FilterAction.UNDO_ALL_ACTIONS]: boolean;
 }
+export interface PositionOverride {
+    x: number;
+    width: number;
+}
+export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => PositionOverride;
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -140,6 +145,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private selectedEntryIndex;
     private rawTimelineDataLength;
     private readonly markerPositions;
+    private readonly customDrawnPositions;
     private lastMouseOffsetX;
     private selectedGroupIndex;
     private keyboardFocusedGroup;
@@ -418,10 +424,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     groupIsLastVisibleTopLevel(group?: Group): boolean;
     setSelectedEntry(entryIndex: number): void;
     private entryHasDecoration;
-    getMarkerPixelsForEntryIndex(entryIndex: number): {
-        x: number;
-        width: number;
-    } | null;
+    getCustomDrawnPositionForEntryIndex(entryIndex: number): PositionOverride | null;
     /**
      * Update position of an Element. By default, the element is treated as a full entry and it's dimentions are set to the full entry width/length/height.
      * If isDecoration parameter is set to true, the element will be positioned on the right side of the entry and have a square shape where width == height of the entry.
@@ -459,10 +462,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private enabled;
     computePosition(time: number): number;
     formatValue(value: number, precision?: number): string;
-    maximumBoundary(): TraceEngine.Types.Timing.MilliSeconds;
-    minimumBoundary(): TraceEngine.Types.Timing.MilliSeconds;
-    zeroTime(): TraceEngine.Types.Timing.MilliSeconds;
-    boundarySpan(): TraceEngine.Types.Timing.MilliSeconds;
+    maximumBoundary(): Trace.Types.Timing.MilliSeconds;
+    minimumBoundary(): Trace.Types.Timing.MilliSeconds;
+    zeroTime(): Trace.Types.Timing.MilliSeconds;
+    boundarySpan(): Trace.Types.Timing.MilliSeconds;
 }
 export declare const RulerHeight = 15;
 export declare const MinimalTimeWindowMs = 0.5;
@@ -497,12 +500,12 @@ export declare const enum FlameChartDecorationType {
  **/
 export type FlameChartDecoration = {
     type: FlameChartDecorationType.CANDY;
-    startAtTime: TraceEngine.Types.Timing.MicroSeconds;
-    endAtTime?: TraceEngine.Types.Timing.MicroSeconds;
+    startAtTime: Trace.Types.Timing.MicroSeconds;
+    endAtTime?: Trace.Types.Timing.MicroSeconds;
 } | {
     type: FlameChartDecorationType.WARNING_TRIANGLE;
-    customStartTime?: TraceEngine.Types.Timing.MicroSeconds;
-    customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
+    customStartTime?: Trace.Types.Timing.MicroSeconds;
+    customEndTime?: Trace.Types.Timing.MicroSeconds;
 } | {
     type: FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW;
 };
@@ -534,12 +537,12 @@ export declare class FlameChartTimelineData {
 }
 export interface DataProviderSearchResult {
     index: number;
-    startTimeMilli: TraceEngine.Types.Timing.MilliSeconds;
+    startTimeMilli: Trace.Types.Timing.MilliSeconds;
     provider: 'main' | 'network' | 'other';
 }
 export interface DataProviderSearchResult {
     index: number;
-    startTimeMilli: TraceEngine.Types.Timing.MilliSeconds;
+    startTimeMilli: Trace.Types.Timing.MilliSeconds;
     provider: 'main' | 'network' | 'other';
 }
 export interface FlameChartDataProvider {
@@ -558,17 +561,18 @@ export interface FlameChartDataProvider {
     forceDecoration(entryIndex: number): boolean;
     forceDrawableLevel?(level: number): boolean;
     textColor(entryIndex: number): string;
-    mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
+    mainFrameNavigationStartEvents?(): readonly Trace.Types.Events.NavigationStart[];
     hasTrackConfigurationMode(): boolean;
-    eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
-    indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Types.TraceEvents.LegacyTimelineFrame): number | null;
+    eventByIndex?(entryIndex: number): Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame | null;
+    indexForEvent?(event: Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame): number | null;
     buildFlowForInitiator?(index: number): unknown;
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    search?(visibleWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
+    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     groupForEvent?(entryIndex: number): Group | null;
+    getDrawOverride?(entryIndex: number): DrawOverride | undefined;
 }
 export interface FlameChartMarker {
     startTime(): number;
@@ -614,7 +618,10 @@ export declare const enum Events {
     MOUSE_MOVE = "MouseMove"
 }
 export type EventTypes = {
-    [Events.ENTRY_LABEL_ANNOTATION_ADDED]: number;
+    [Events.ENTRY_LABEL_ANNOTATION_ADDED]: {
+        entryIndex: number;
+        withLinkCreationButton: boolean;
+    };
     [Events.ENTRIES_LINK_ANNOTATION_CREATED]: {
         entryFromIndex: number;
     };
@@ -630,11 +637,11 @@ export type EventTypes = {
             scrollOffsetPixels: number;
             allGroupsCollapsed: boolean;
         };
-        traceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+        traceWindow: Trace.Types.Timing.TraceWindowMicroSeconds;
     };
     [Events.MOUSE_MOVE]: {
         mouseEvent: MouseEvent;
-        timeInMicroSeconds: TraceEngine.Types.Timing.MicroSeconds;
+        timeInMicroSeconds: Trace.Types.Timing.MicroSeconds;
     };
 };
 export interface Group {

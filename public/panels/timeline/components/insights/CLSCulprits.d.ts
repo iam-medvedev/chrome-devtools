@@ -1,8 +1,8 @@
-import type * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsight } from './Helpers.js';
 import { InsightsCategories } from './types.js';
-export declare function getCLSInsight(insights: TraceEngine.Insights.Types.TraceInsightData | null, navigationId: string | null): TraceEngine.Insights.Types.InsightResults['CumulativeLayoutShift'] | null;
+export declare function getCLSInsight(insights: Trace.Insights.Types.TraceInsightSets | null, navigationId: string | null): Trace.Insights.Types.InsightResults['CumulativeLayoutShift'] | null;
 export declare class CLSCulprits extends BaseInsight {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
@@ -13,7 +13,7 @@ export declare class CLSCulprits extends BaseInsight {
     /**
      * getTopCulprits gets the top 3 shift root causes based on clusters.
      */
-    getTopCulprits(clusters: TraceEngine.Types.TraceEvents.SyntheticLayoutShiftCluster[], culpritsByShift: Map<TraceEngine.Types.TraceEvents.TraceEventLayoutShift, TraceEngine.Insights.InsightRunners.CumulativeLayoutShift.LayoutShiftRootCausesData> | undefined): string[];
+    getTopCulprits(clusters: Trace.Types.Events.SyntheticLayoutShiftCluster[], culpritsByShift: Map<Trace.Types.Events.LayoutShift, Trace.Insights.InsightRunners.CumulativeLayoutShift.LayoutShiftRootCausesData> | undefined): string[];
     render(): void;
 }
 declare global {

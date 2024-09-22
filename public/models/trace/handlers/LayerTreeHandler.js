@@ -33,8 +33,8 @@ export function handleEvent(event) {
     // is because we need to have all the events before we process them, and we
     // need the Meta handler to be finalized() so we can use its data as we need
     // the mainFrameId to know which Layer(s) to care about.
-    if (Types.TraceEvents.isTraceEventPaint(event) || Types.TraceEvents.isTraceEventDisplayListItemListSnapshot(event) ||
-        Types.TraceEvents.isTraceEventUpdateLayer(event) || Types.TraceEvents.isTraceEventSetLayerId(event)) {
+    if (Types.Events.isPaint(event) || Types.Events.isDisplayListItemListSnapshot(event) ||
+        Types.Events.isUpdateLayer(event) || Types.Events.isSetLayerId(event)) {
         relevantEvents.push(event);
     }
 }
@@ -45,21 +45,21 @@ export async function finalize() {
     const metaData = metaHandlerData();
     Helpers.Trace.sortTraceEventsInPlace(relevantEvents);
     for (const event of relevantEvents) {
-        if (Types.TraceEvents.isTraceEventSetLayerId(event)) {
+        if (Types.Events.isSetLayerId(event)) {
             if (metaData.mainFrameId !== event.args.data.frame) {
                 // We only care about LayerId changes that affect the main frame.
                 continue;
             }
             currentMainFrameLayerTreeId = event.args.data.layerTreeId;
         }
-        else if (Types.TraceEvents.isTraceEventUpdateLayer(event)) {
+        else if (Types.Events.isUpdateLayer(event)) {
             // We don't do anything with this event, but we need to store it because
             // the information in it determines if we need to care about future
             // snapshot events - we need to know what the active layer is when we see a
             // snapshot.
             updateLayerEvents.push(event);
         }
-        else if (Types.TraceEvents.isTraceEventPaint(event)) {
+        else if (Types.Events.isPaint(event)) {
             if (!event.args.data.layerId) {
                 // Note that this check purposefully includes excluding an event with a layerId of 0.
                 // 0 indicates that this paint was for a subframe - we do not want these
@@ -70,7 +70,7 @@ export async function finalize() {
             lastPaintForLayerId[event.args.data.layerId] = event;
             continue;
         }
-        else if (Types.TraceEvents.isTraceEventDisplayListItemListSnapshot(event)) {
+        else if (Types.Events.isDisplayListItemListSnapshot(event)) {
             // First we figure out which layer is active for this event's thread. To
             // do this we work backwards through the list of UpdateLayerEvents,
             // finding the first one (i.e. the most recent one) with the same pid and

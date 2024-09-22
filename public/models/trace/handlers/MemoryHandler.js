@@ -8,7 +8,7 @@ export function reset() {
     updateCountersByProcess.clear();
 }
 export function handleEvent(event) {
-    if (Types.TraceEvents.isTraceEventUpdateCounters(event)) {
+    if (Types.Events.isUpdateCounters(event)) {
         const countersForProcess = Platform.MapUtilities.getWithDefault(updateCountersByProcess, event.pid, () => []);
         countersForProcess.push(event);
         updateCountersByProcess.set(event.pid, countersForProcess);

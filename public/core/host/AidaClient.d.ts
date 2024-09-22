@@ -25,6 +25,7 @@ export declare enum ClientFeature {
 export declare enum UserTier {
     USER_TIER_UNSPECIFIED = 0,
     TESTERS = 1,
+    BETA = 2,
     PUBLIC = 3
 }
 export interface AidaRequest {
@@ -88,10 +89,14 @@ export declare const enum AidaAccessPreconditions {
     NO_INTERNET = "no-internet"
 }
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
+export declare class AidaAbortError extends Error {
+}
 export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;
     static checkAccessPreconditions(): Promise<AidaAccessPreconditions>;
-    fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
+    fetch(request: AidaRequest, options?: {
+        signal?: AbortSignal;
+    }): AsyncGenerator<AidaResponse, void, void>;
     registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
 }
 export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;

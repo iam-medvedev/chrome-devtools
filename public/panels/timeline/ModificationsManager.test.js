@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
@@ -56,10 +56,10 @@ describeWithEnvironment('ModificationsManager', () => {
         ]);
     });
     it('creates annotations and generates correct json for annotations', async function () {
-        const traceParsedData = (await TraceLoader.traceEngine(null, 'web-dev-with-commit.json.gz')).traceData;
+        const parsedTrace = (await TraceLoader.traceEngine(null, 'web-dev-with-commit.json.gz')).parsedTrace;
         // Get any entres to create a label and a link with.
-        const entry = traceParsedData.Renderer.allTraceEntries[0];
-        const entry2 = traceParsedData.Renderer.allTraceEntries[1];
+        const entry = parsedTrace.Renderer.allTraceEntries[0];
+        const entry2 = parsedTrace.Renderer.allTraceEntries[1];
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
         assert.isOk(modificationsManager);
         modificationsManager.createAnnotation({
@@ -75,9 +75,9 @@ describeWithEnvironment('ModificationsManager', () => {
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
             bounds: {
-                min: TraceEngine.Types.Timing.MicroSeconds(0),
-                max: TraceEngine.Types.Timing.MicroSeconds(10),
-                range: TraceEngine.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.MicroSeconds(0),
+                max: Trace.Types.Timing.MicroSeconds(10),
+                range: Trace.Types.Timing.MicroSeconds(10),
             },
             label: 'range label',
         });
@@ -89,9 +89,9 @@ describeWithEnvironment('ModificationsManager', () => {
                 }],
             labelledTimeRanges: [{
                     bounds: {
-                        min: TraceEngine.Types.Timing.MicroSeconds(0),
-                        max: TraceEngine.Types.Timing.MicroSeconds(10),
-                        range: TraceEngine.Types.Timing.MicroSeconds(10),
+                        min: Trace.Types.Timing.MicroSeconds(0),
+                        max: Trace.Types.Timing.MicroSeconds(10),
+                        range: Trace.Types.Timing.MicroSeconds(10),
                     },
                     label: 'range label',
                 }],
@@ -102,10 +102,10 @@ describeWithEnvironment('ModificationsManager', () => {
         });
     });
     it('does not add the annotation link between entries into the json saved into metadata if `entryTo` does not exist', async function () {
-        const traceParsedData = (await TraceLoader.traceEngine(null, 'web-dev-with-commit.json.gz')).traceData;
+        const parsedTrace = (await TraceLoader.traceEngine(null, 'web-dev-with-commit.json.gz')).parsedTrace;
         // Get any entry to create links with.
-        const entry = traceParsedData.Renderer.allTraceEntries[0];
-        const entry2 = traceParsedData.Renderer.allTraceEntries[1];
+        const entry = parsedTrace.Renderer.allTraceEntries[0];
+        const entry2 = parsedTrace.Renderer.allTraceEntries[1];
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
         assert.isOk(modificationsManager);
         modificationsManager.createAnnotation({

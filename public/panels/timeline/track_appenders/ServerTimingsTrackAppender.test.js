@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Root from '../../../core/root/root.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
+function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.serverTimingsTrackAppender();
 }
 describeWithEnvironment('ServerTimingsTrackAppender', function () {
-    let traceData;
+    let parsedTrace;
     let serverTimingsTrackAppender;
     let entryData = [];
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
         Root.Runtime.experiments.enableForTest("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */);
-        ({ traceData } = await TraceLoader.traceEngine(this, 'server-timings.json.gz'));
-        serverTimingsTrackAppender = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
+        ({ parsedTrace } = await TraceLoader.traceEngine(this, 'server-timings.json.gz'));
+        serverTimingsTrackAppender = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         serverTimingsTrackAppender.appendTrackAtLevel(0);
     });
     afterEach(() => {
@@ -40,22 +40,22 @@ describeWithEnvironment('ServerTimingsTrackAppender', function () {
             assert.strictEqual(flameChartData.groups[0].description, 'This track contains timings taken from Server-Timing network response headers. Their respective start times are only estimated and may not be accurate.');
         });
         it('adds start times correctly', function () {
-            const animationsRequests = traceData.Animations.animations;
+            const animationsRequests = parsedTrace.Animations.animations;
             for (let i = 0; i < animationsRequests.length; ++i) {
                 const event = animationsRequests[i];
-                assert.strictEqual(flameChartData.entryStartTimes[i], TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts));
+                assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
             }
         });
         it('adds total times correctly', function () {
-            const animationsRequests = traceData.Animations.animations;
+            const animationsRequests = parsedTrace.Animations.animations;
             for (let i = 0; i < animationsRequests.length; i++) {
                 const event = animationsRequests[i];
-                if (TraceEngine.Types.TraceEvents.isTraceEventMarkerEvent(event)) {
+                if (Trace.Types.Events.isMarkerEvent(event)) {
                     assert.isNaN(flameChartData.entryTotalTimes[i]);
                     continue;
                 }
                 const expectedTotalTimeForEvent = event.dur ?
-                    TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
+                    Trace.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
                     Timeline.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
                 assert.strictEqual(flameChartData.entryTotalTimes[i], expectedTotalTimeForEvent);
             }
@@ -86,7 +86,7 @@ describeWithEnvironment('ServerTimingsTrackAppender', function () {
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('returns the correct color and title for server timing events', function () {
-            const serverTimings = traceData.ServerTimings.serverTimings;
+            const serverTimings = parsedTrace.ServerTimings.serverTimings;
             for (const event of serverTimings) {
                 assert.strictEqual(serverTimingsTrackAppender.titleForEvent(event), event.name);
                 assert.strictEqual(serverTimingsTrackAppender.colorForEvent(), 'rgb(4 4 4)');
@@ -95,7 +95,7 @@ describeWithEnvironment('ServerTimingsTrackAppender', function () {
     });
     describe('highlightedEntryInfo', function () {
         it('returns the info for an entry correctly', function () {
-            const serverTimings = traceData.ServerTimings.serverTimings;
+            const serverTimings = parsedTrace.ServerTimings.serverTimings;
             const highlightedEntryInfo = serverTimingsTrackAppender.highlightedEntryInfo(serverTimings[0]);
             // The i18n encodes spaces using the u00A0 unicode character.
             assert.strictEqual(highlightedEntryInfo.formattedTime, '1.00\u00A0s');

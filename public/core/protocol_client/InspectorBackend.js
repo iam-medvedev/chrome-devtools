@@ -481,6 +481,9 @@ export class TargetBase {
     eventBreakpointsAgent() {
         return this.getAgent('EventBreakpoints');
     }
+    extensionsAgent() {
+        return this.getAgent('Extensions');
+    }
     fetchAgent() {
         return this.getAgent('Fetch');
     }

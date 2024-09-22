@@ -25,15 +25,14 @@ function aggregateSelectorStats(data) {
     }
     return [...selectorMap.values()];
 }
-export function generateInsight(traceParsedData, context) {
-    const selectorStatsData = traceParsedData.SelectorStats;
-    const nav = traceParsedData.Meta.navigationsByNavigationId.get(context.navigationId);
-    if (!nav) {
-        throw new Error('no trace navigation');
-    }
+export function generateInsight(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+parsedTrace, context) {
+    const selectorStatsData = parsedTrace.SelectorStats;
     if (!selectorStatsData) {
         throw new Error('no selector stats data');
     }
+    // TODO(b/357047902): this needs to be scoped to the context.window.
     const selectorTimings = aggregateSelectorStats(selectorStatsData.dataForUpdateLayoutEvent);
     let totalElapsedUs = 0;
     let totalMatchAttempts = 0;

@@ -917,7 +917,7 @@ export class CallFrame {
         this.#scopeChainInternal = [];
         this.#localScopeInternal = null;
         this.inlineFrameIndex = inlineFrameIndex || 0;
-        this.functionName = functionName || payload.functionName;
+        this.functionName = functionName ?? payload.functionName;
         this.missingDebugInfoDetails = null;
         this.canBeRestarted = Boolean(payload.canBeRestarted);
         this.exception = exception;
@@ -947,7 +947,7 @@ export class CallFrame {
         return result;
     }
     createVirtualCallFrame(inlineFrameIndex, name) {
-        return new CallFrame(this.debuggerModel, this.script, this.payload, inlineFrameIndex, name);
+        return new CallFrame(this.debuggerModel, this.script, this.payload, inlineFrameIndex, name, this.exception);
     }
     get id() {
         return this.payload.callFrameId;

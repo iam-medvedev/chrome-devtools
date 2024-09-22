@@ -32,22 +32,50 @@ export class SourceMapScopesInfo {
      * except the last function (since the last function didn't get inlined).
      */
     findInlinedFunctions(generatedLine, generatedColumn) {
-        const result = [];
         const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+        const result = {
+            inlinedFunctions: [],
+            originalFunctionName: '',
+        };
         // Walk the generated ranges from the innermost containing range outwards as long as we don't
         // encounter a range that is a scope in the generated code and a function scope originally.
         for (let i = rangeChain.length - 1; i >= 0; --i) {
             const range = rangeChain[i];
-            const originalScope = range.originalScope;
-            // Record the name if the range corresponds to a function scope in the authored code. And it's either a scope in the
-            // generated code as well or it has a callsite info (which indicates inlining).
-            if (originalScope?.kind === 'function' && (range.isFunctionScope || range.callsite)) {
-                result.push({ name: originalScope.name ?? '', callsite: range.callsite });
-                if (range.isFunctionScope) {
-                    break;
-                }
+            if (range.callsite) {
+                // Record the name and call-site if the range corresponds to an inlined function.
+                result.inlinedFunctions.push({ name: range.originalScope?.name ?? '', callsite: range.callsite });
+            }
+            if (range.isFunctionScope) {
+                // We arrived at an actual generated JS function, don't go further.
+                // The corresponding original scope could not actually be a function
+                // (e.g. a block scope transpiled down to a JS function), but we'll
+                // filter that out later.
+                result.originalFunctionName = range.originalScope?.name ?? '';
+                break;
             }
         }
+        return result;
+    }
+    /**
+     * Takes a V8 provided call frame and expands any inlined frames into virtual call frames.
+     *
+     * For call frames where nothing was inlined, the result contains only a single element,
+     * the provided frame but with the original name.
+     *
+     * For call frames where we are paused in inlined code, this function returns a list of
+     * call frames from "inner to outer". This is the call frame at index 0
+     * signifies the top of this stack trace fragment.
+     *
+     * The rest are "virtual" call frames and will have an "inlineFrameIndex" set in ascending
+     * order, so the condition `result[index] === result[index].inlineFrameIndex` always holds.
+     */
+    expandCallFrame(callFrame) {
+        const { originalFunctionName, inlinedFunctions } = this.findInlinedFunctions(callFrame.location().lineNumber, callFrame.location().columnNumber);
+        const result = [];
+        for (const [index, fn] of inlinedFunctions.entries()) {
+            result.push(callFrame.createVirtualCallFrame(index, fn.name));
+        }
+        result.push(callFrame.createVirtualCallFrame(result.length, originalFunctionName));
         return result;
     }
     /**

@@ -1,8 +1,8 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { type LastTimestampByLevel } from './AppenderUtils.js';
 import { type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
-export type NetworkTrackEvent = TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent;
+export type NetworkTrackEvent = Trace.Types.Events.SyntheticNetworkRequest | Trace.Types.Events.WebSocketEvent;
 export declare class NetworkTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
@@ -27,10 +27,10 @@ export declare class NetworkTrackAppender implements TrackAppender {
      * invisible events to the last level, and hide them.
      * @returns the number of levels used by this track
      */
-    relayoutEntriesWithinBounds(events: NetworkTrackEvent[], minTime: TraceEngine.Types.Timing.MilliSeconds, maxTime: TraceEngine.Types.Timing.MilliSeconds): number;
-    getWebSocketLevel(event: TraceEngine.Types.TraceEvents.WebSocketEvent, lastTimestampByLevel: LastTimestampByLevel): number;
+    relayoutEntriesWithinBounds(events: NetworkTrackEvent[], minTime: Trace.Types.Timing.MilliSeconds, maxTime: Trace.Types.Timing.MilliSeconds): number;
+    getWebSocketLevel(event: Trace.Types.Events.WebSocketEvent, lastTimestampByLevel: LastTimestampByLevel): number;
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
-    colorForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    colorForEvent(event: Trace.Types.Events.Event): string;
 }

@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../models/trace/trace.js';
+import * as Trace from '../models/trace/trace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as TraceBounds from '../services/trace_bounds/trace_bounds.js';
 // We maintain two caches:
@@ -72,7 +72,7 @@ export class TraceLoader {
     }
     /**
      * Load an array of raw events from the trace file.
-     * Will default to typing those events using the types from TraceEngine, but
+     * Will default to typing those events using the types from Trace Engine, but
      * can be overriden by passing the legacy EventPayload type as the generic.
      **/
     static async rawCPUProfile(context, name) {
@@ -98,12 +98,12 @@ export class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static async traceEngine(context, name, config = TraceEngine.Types.Configuration.defaults()) {
+    static async traceEngine(context, name, config = Trace.Types.Configuration.defaults()) {
         // Force the TraceBounds to be reset to empty. This ensures that in
         // tests where we are using the new engine data we don't accidentally
         // rely on the fact that a previous test has set the BoundsManager.
         TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true });
-        const configCacheKey = TraceEngine.Types.Configuration.configToCacheKey(config);
+        const configCacheKey = Trace.Types.Configuration.configToCacheKey(config);
         const fromCache = traceEngineCache.get(name)?.get(configCacheKey);
         // If we have results from the cache, we use those to ensure we keep the
         // tests speedy and don't re-parse trace files over and over again.
@@ -112,23 +112,23 @@ export class TraceLoader {
             if (!syntheticEventsManager) {
                 throw new Error('Cached trace engine result did not have a synthetic events manager instance');
             }
-            TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
-            TraceLoader.initTraceBoundsManager(fromCache.traceData);
+            Trace.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
+            TraceLoader.initTraceBoundsManager(fromCache.parsedTrace);
             Timeline.ModificationsManager.ModificationsManager.reset();
             Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
-            return { traceData: fromCache.traceData, insights: fromCache.insights };
+            return { parsedTrace: fromCache.parsedTrace, insights: fromCache.insights };
         }
         const fileContents = await TraceLoader.fixtureContents(context, name);
-        const traceEngineData = await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
+        const parsedTraceData = await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
         const cacheByName = traceEngineCache.get(name) || new Map();
-        cacheByName.set(configCacheKey, traceEngineData);
+        cacheByName.set(configCacheKey, parsedTraceData);
         traceEngineCache.set(name, cacheByName);
-        TraceLoader.initTraceBoundsManager(traceEngineData.traceData);
+        TraceLoader.initTraceBoundsManager(parsedTraceData.parsedTrace);
         Timeline.ModificationsManager.ModificationsManager.reset();
-        Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(traceEngineData.model, 0);
+        Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceData.model, 0);
         return {
-            traceData: traceEngineData.traceData,
-            insights: traceEngineData.insights,
+            parsedTrace: parsedTraceData.parsedTrace,
+            insights: parsedTraceData.insights,
         };
     }
     /**
@@ -148,20 +148,20 @@ export class TraceLoader {
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;
         const metadata = 'metadata' in contents ? contents.metadata : {};
         return new Promise((resolve, reject) => {
-            const model = TraceEngine.TraceModel.Model.createWithAllHandlers(traceEngineConfig);
-            model.addEventListener(TraceEngine.TraceModel.ModelUpdateEvent.eventName, (event) => {
+            const model = Trace.TraceModel.Model.createWithAllHandlers(traceEngineConfig);
+            model.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, (event) => {
                 const { data } = event;
                 // When we receive the final update from the model, update the recording
                 // state back to waiting.
-                if (TraceEngine.TraceModel.isModelUpdateDataComplete(data)) {
+                if (Trace.TraceModel.isModelUpdateDataComplete(data)) {
                     const metadata = model.metadata(0);
-                    const traceData = model.traceParsedData(0);
+                    const parsedTrace = model.parsedTrace(0);
                     const insights = model.traceInsights(0);
-                    if (metadata && traceData) {
+                    if (metadata && parsedTrace) {
                         resolve({
                             model,
                             metadata,
-                            traceData,
+                            parsedTrace,
                             insights,
                         });
                     }

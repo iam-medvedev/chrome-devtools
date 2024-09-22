@@ -88,9 +88,9 @@ function createSyntheticServerTiming(request, serverStart, serverEnd, timingsInR
         const serverTiming = Helpers.SyntheticEvents.SyntheticEventsManager.registerServerTiming({
             rawSourceEvent: request.rawSourceEvent,
             name: timing.metric,
-            ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
-            pid: Types.TraceEvents.ProcessID(0),
-            tid: Types.TraceEvents.ThreadID(0),
+            ph: "X" /* Types.Events.Phase.COMPLETE */,
+            pid: Types.Events.ProcessID(0),
+            tid: Types.Events.ThreadID(0),
             ts: Types.Timing.MicroSeconds(convertedTimestamp),
             dur: Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(timing.value)),
             cat: 'devtools.server-timing',

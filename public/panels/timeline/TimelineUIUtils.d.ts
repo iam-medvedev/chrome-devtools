@@ -2,7 +2,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as TimelineComponents from './components/components.js';
 type LinkifyLocationOptions = {
@@ -16,48 +16,48 @@ type LinkifyLocationOptions = {
 };
 export declare class TimelineUIUtils {
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
-    static testContentMatching(traceEvent: TraceEngine.Types.TraceEvents.TraceEventData, regExp: RegExp, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
-    static eventStyle(event: TraceEngine.Types.TraceEvents.TraceEventData): TimelineComponents.EntryStyles.TimelineRecordStyle;
-    static eventColor(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
-    static eventTitle(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
+    static testContentMatching(traceEvent: Trace.Types.Events.Event, regExp: RegExp, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
+    static eventStyle(event: Trace.Types.Events.Event): TimelineComponents.EntryStyles.TimelineRecordStyle;
+    static eventColor(event: Trace.Types.Events.Event): string;
+    static eventTitle(event: Trace.Types.Events.Event): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
-    static buildDetailsTextForTraceEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): Promise<string | null>;
-    static buildDetailsNodeForTraceEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording: boolean | undefined, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): Promise<Node | null>;
+    static buildDetailsTextForTraceEvent(event: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace): Promise<string | null>;
+    static buildDetailsNodeForTraceEvent(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording: boolean | undefined, parsedTrace: Trace.Handlers.Types.ParsedTrace): Promise<Node | null>;
     static linkifyLocation(linkifyOptions: LinkifyLocationOptions): Element | null;
-    static linkifyTopCallFrame(event: TraceEngine.Types.TraceEvents.TraceEventData, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;
-    static buildDetailsNodeForMarkerEvents(event: TraceEngine.Types.TraceEvents.MarkerEvent): HTMLElement;
+    static linkifyTopCallFrame(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;
+    static buildDetailsNodeForMarkerEvents(event: Trace.Types.Events.MarkerEvent): HTMLElement;
     static buildConsumeCacheDetails(eventData: {
         consumedCacheSize?: number;
         cacheRejected?: boolean;
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
-    static buildTraceEventDetails(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventData, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean): Promise<DocumentFragment>;
-    static statsForTimeRange(events: TraceEngine.Types.TraceEvents.TraceEventData[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): {
+    static buildTraceEventDetails(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean): Promise<DocumentFragment>;
+    static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): {
         [x: string]: number;
     };
     private static renderEventJson;
     private static renderObjectJson;
-    static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | TraceEngine.Types.TraceEvents.TraceEventCallFrame[]): Protocol.Runtime.StackTrace;
+    static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | Trace.Types.Events.CallFrame[]): Protocol.Runtime.StackTrace;
     private static generateCauses;
     private static createEntryLink;
     private static generateInvalidationsList;
     private static generateInvalidationsForReason;
     private static aggregatedStatsForTraceEvent;
-    static buildPicturePreviewContent(traceData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventPaint, target: SDK.Target.Target): Promise<Element | null>;
-    static createEventDivider(event: TraceEngine.Types.TraceEvents.TraceEventData, zeroTime: number): Element;
+    static buildPicturePreviewContent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Paint, target: SDK.Target.Target): Promise<Element | null>;
+    static createEventDivider(event: Trace.Types.Events.Event, zeroTime: number): Element;
     static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter;
     static categories(): TimelineComponents.EntryStyles.CategoryPalette;
     static generatePieChart(aggregatedStats: {
         [x: string]: number;
     }, selfCategory?: TimelineComponents.EntryStyles.TimelineCategory, selfTime?: number): Element;
-    static generateDetailsContentForFrame(frame: TraceEngine.Types.TraceEvents.LegacyTimelineFrame, filmStrip: TraceEngine.Extras.FilmStrip.Data | null, filmStripFrame: TraceEngine.Extras.FilmStrip.Frame | null): DocumentFragment;
-    static frameDuration(frame: TraceEngine.Types.TraceEvents.LegacyTimelineFrame): Element;
+    static generateDetailsContentForFrame(frame: Trace.Types.Events.LegacyTimelineFrame, filmStrip: Trace.Extras.FilmStrip.Data | null, filmStripFrame: Trace.Extras.FilmStrip.Frame | null): DocumentFragment;
+    static frameDuration(frame: Trace.Types.Events.LegacyTimelineFrame): Element;
     static quadWidth(quad: number[]): number;
     static quadHeight(quad: number[]): number;
     static eventDispatchDesciptors(): EventDispatchTypeDescriptor[];
-    static markerStyleForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): TimelineMarkerStyle;
+    static markerStyleForEvent(event: Trace.Types.Events.Event): TimelineMarkerStyle;
     static colorForId(id: string): string;
-    static displayNameForFrame(frame: TraceEngine.Types.TraceEvents.TraceFrame, trimAt?: number): string;
+    static displayNameForFrame(frame: Trace.Types.Events.TraceFrame, trimAt?: number): string;
 }
 export declare const aggregatedStatsKey: unique symbol;
 export declare const previewElementSymbol: unique symbol;
@@ -97,12 +97,12 @@ export interface TimelineMarkerStyle {
  * where the user has navigated multiple times in the trace, so that we can show
  * the LCP (for example) relative to the last navigation.
  **/
-export declare function timeStampForEventAdjustedForClosestNavigationIfPossible(event: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): TraceEngine.Types.Timing.MilliSeconds;
+export declare function timeStampForEventAdjustedForClosestNavigationIfPossible(event: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace | null): Trace.Types.Timing.MilliSeconds;
 /**
  * Determines if an event is potentially a marker event. A marker event here
  * is a single moment in time that we want to highlight on the timeline, such as
  * the LCP time. This method does not filter out events: for example, it treats
  * every LCP Candidate event as a potential marker event.
  **/
-export declare function isMarkerEvent(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+export declare function isMarkerEvent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event): boolean;
 export {};

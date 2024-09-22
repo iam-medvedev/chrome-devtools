@@ -1,32 +1,33 @@
 import * as Types from '../types/types.js';
-import { type TraceEventHandlerName } from './types.js';
+import { type HandlerName } from './types.js';
 export interface WebSocketTraceDataForFrame {
     frame: string;
     webSocketIdentifier: number;
-    events: Types.TraceEvents.WebSocketEvent[];
-    syntheticConnectionEvent: Types.TraceEvents.SyntheticWebSocketConnectionEvent | null;
+    events: Types.Events.WebSocketEvent[];
+    syntheticConnection: Types.Events.SyntheticWebSocketConnection | null;
 }
 export interface WebSocketTraceDataForWorker {
     workerId: string;
     webSocketIdentifier: number;
-    events: Types.TraceEvents.WebSocketEvent[];
-    syntheticConnectionEvent: Types.TraceEvents.SyntheticWebSocketConnectionEvent | null;
+    events: Types.Events.WebSocketEvent[];
+    syntheticConnection: Types.Events.SyntheticWebSocketConnection | null;
 }
 export type WebSocketTraceData = WebSocketTraceDataForFrame | WebSocketTraceDataForWorker;
 interface NetworkRequestData {
+    byId: Map<string, Types.Events.SyntheticNetworkRequest>;
     byOrigin: Map<string, {
-        renderBlocking: Types.TraceEvents.SyntheticNetworkRequest[];
-        nonRenderBlocking: Types.TraceEvents.SyntheticNetworkRequest[];
-        all: Types.TraceEvents.SyntheticNetworkRequest[];
+        renderBlocking: Types.Events.SyntheticNetworkRequest[];
+        nonRenderBlocking: Types.Events.SyntheticNetworkRequest[];
+        all: Types.Events.SyntheticNetworkRequest[];
     }>;
-    byTime: Types.TraceEvents.SyntheticNetworkRequest[];
-    eventToInitiator: Map<Types.TraceEvents.SyntheticNetworkRequest, Types.TraceEvents.SyntheticNetworkRequest>;
+    byTime: Types.Events.SyntheticNetworkRequest[];
+    eventToInitiator: Map<Types.Events.SyntheticNetworkRequest, Types.Events.SyntheticNetworkRequest>;
     webSocket: WebSocketTraceData[];
 }
 export declare function reset(): void;
 export declare function initialize(): void;
-export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
+export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export declare function data(): NetworkRequestData;
-export declare function deps(): TraceEventHandlerName[];
+export declare function deps(): HandlerName[];
 export {};

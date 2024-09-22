@@ -26,9 +26,9 @@ function getRowDataForNetworkDetailsElement(details) {
 describeWithEnvironment('TimelineDetailsView', function () {
     const mockViewDelegate = new MockViewDelegate();
     it('displays the details of a network request event correctly', async function () {
-        const { traceData, insights } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsView(mockViewDelegate);
-        const networkRequests = traceData.NetworkRequests.byTime;
+        const networkRequests = parsedTrace.NetworkRequests.byTime;
         const cssRequest = networkRequests.find(request => {
             return request.args.data.url === 'https://chromedevtools.github.io/performance-stories/lcp-web-font/app.css';
         });
@@ -36,7 +36,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
             throw new Error('Could not find expected network request.');
         }
         const selection = Timeline.TimelineSelection.TimelineSelection.fromTraceEvent(cssRequest);
-        await detailsView.setModel(traceData, null, insights);
+        await detailsView.setModel(parsedTrace, null, insights);
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         assert.strictEqual(detailsContentElement.childNodes.length, 1);

@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as EnvironmentHelpers from '../../../../testing/EnvironmentHelpers.js';
 import * as TraceHelpers from '../../../../testing/TraceHelpers.js';
 import * as PerfUI from '../../../legacy/components/perf_ui/perf_ui.js';
@@ -73,7 +73,7 @@ function renderDecorationExample() {
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(25_000),
+                            startAtTime: Trace.Types.Timing.MicroSeconds(25_000),
                         },
                         { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
                     ],
@@ -85,13 +85,13 @@ function renderDecorationExample() {
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(15_000),
+                            startAtTime: Trace.Types.Timing.MicroSeconds(15_000),
                         },
                     ],
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(10_000),
+                            startAtTime: Trace.Types.Timing.MicroSeconds(10_000),
                         },
                         { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
                     ],
@@ -101,7 +101,7 @@ function renderDecorationExample() {
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(10_000),
+                            startAtTime: Trace.Types.Timing.MicroSeconds(10_000),
                         },
                         { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
                         { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
@@ -116,14 +116,14 @@ function renderDecorationExample() {
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(1_000),
+                            startAtTime: Trace.Types.Timing.MicroSeconds(1_000),
                         },
                         { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
                     ],
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(1_000),
+                            startAtTime: Trace.Types.Timing.MicroSeconds(1_000),
                         },
                         { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
                         { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
@@ -132,8 +132,8 @@ function renderDecorationExample() {
                         {
                             type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,
                             // This triangle should start 1/4 of hte event, and end at 3/4 of the event.
-                            customStartTime: TraceEngine.Types.Timing.MicroSeconds(25_250),
-                            customEndTime: TraceEngine.Types.Timing.MicroSeconds(25_750),
+                            customStartTime: Trace.Types.Timing.MicroSeconds(25_250),
+                            customEndTime: Trace.Types.Timing.MicroSeconds(25_750),
                         },
                     ],
                 ],

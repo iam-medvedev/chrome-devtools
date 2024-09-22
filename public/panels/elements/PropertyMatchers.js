@@ -162,13 +162,22 @@ export class LinearGradientMatcher extends matcherBase(LinearGradientMatch) {
 export class ColorMatch {
     text;
     node;
-    constructor(text, node) {
+    currentColorCallback;
+    computedText;
+    constructor(text, node, currentColorCallback) {
         this.text = text;
         this.node = node;
+        this.currentColorCallback = currentColorCallback;
+        this.computedText = currentColorCallback;
     }
 }
 // clang-format off
 export class ColorMatcher extends matcherBase(ColorMatch) {
+    currentColorCallback;
+    constructor(currentColorCallback) {
+        super();
+        this.currentColorCallback = currentColorCallback;
+    }
     // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
@@ -178,8 +187,14 @@ export class ColorMatcher extends matcherBase(ColorMatch) {
         if (node.name === 'ColorLiteral') {
             return new ColorMatch(text, node);
         }
-        if (node.name === 'ValueName' && Common.Color.Nicknames.has(text)) {
-            return new ColorMatch(text, node);
+        if (node.name === 'ValueName') {
+            if (Common.Color.Nicknames.has(text)) {
+                return new ColorMatch(text, node);
+            }
+            if (text.toLowerCase() === 'currentcolor' && this.currentColorCallback) {
+                const callback = this.currentColorCallback;
+                return new ColorMatch(text, node, () => callback() ?? text);
+            }
         }
         if (node.name === 'CallExpression') {
             const callee = node.getChild('Callee');
@@ -545,33 +560,53 @@ export class GridTemplateMatcher extends matcherBase(GridTemplateMatch) {
 }
 export class AnchorFunctionMatch {
     text;
-    matching;
     node;
     functionName;
-    args;
-    constructor(text, matching, node, functionName, args) {
+    constructor(text, node, functionName) {
         this.text = text;
-        this.matching = matching;
         this.node = node;
         this.functionName = functionName;
-        this.args = args;
     }
 }
 // clang-format off
 export class AnchorFunctionMatcher extends matcherBase(AnchorFunctionMatch) {
-    matches(node, matching) {
+    anchorFunction(node, matching) {
         if (node.name !== 'CallExpression') {
             return null;
         }
         const calleeText = matching.ast.text(node.getChild('Callee'));
-        if (calleeText !== 'anchor' && calleeText !== 'anchor-size') {
+        if (calleeText === 'anchor' || calleeText === 'anchor-size') {
+            return calleeText;
+        }
+        return null;
+    }
+    matches(node, matching) {
+        if (node.name === 'VariableName') {
+            // Double-dashed anchor reference to be rendered with a link to its matching anchor.
+            let parent = node.parent;
+            if (!parent || parent.name !== 'ArgList') {
+                return null;
+            }
+            parent = parent.parent;
+            if (!parent || !this.anchorFunction(parent, matching)) {
+                return null;
+            }
+            return new AnchorFunctionMatch(matching.ast.text(node), node, null);
+        }
+        const calleeText = this.anchorFunction(node, matching);
+        if (!calleeText) {
             return null;
         }
-        const [firstArg] = ASTUtils.callArgs(node);
-        if (!firstArg || firstArg.length === 0) {
+        // Match if the anchor/anchor-size function implicitly references an anchor.
+        const args = ASTUtils.children(node.getChild('ArgList'));
+        if (calleeText === 'anchor' && args.length <= 2) {
             return null;
         }
-        return new AnchorFunctionMatch(matching.ast.text(node), matching, node, calleeText, firstArg);
+        if (args.find(arg => arg.name === 'VariableName')) {
+            // We have an explicit anchor reference, no need to render swatch.
+            return null;
+        }
+        return new AnchorFunctionMatch(matching.ast.text(node), node, calleeText);
     }
 }
 // clang-format on

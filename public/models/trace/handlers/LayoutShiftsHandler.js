@@ -26,6 +26,7 @@ const scheduleStyleInvalidationEvents = [];
 const styleRecalcInvalidationEvents = [];
 const renderFrameImplCreateChildFrameEvents = [];
 const domLoadingEvents = [];
+const beginRemoteFontLoadEvents = [];
 const backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
 // We determine if a LayoutInvalidation event is a potential root cause of a layout
@@ -55,6 +56,7 @@ export function reset() {
     prePaintEvents.length = 0;
     renderFrameImplCreateChildFrameEvents.length = 0;
     domLoadingEvents.length = 0;
+    beginRemoteFontLoadEvents.length = 0;
     backendNodeIds.clear();
     clusters.length = 0;
     sessionMaxScore = 0;
@@ -66,29 +68,32 @@ export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Handler is not initialized');
     }
-    if (Types.TraceEvents.isTraceEventLayoutShift(event) && !event.args.data?.had_recent_input) {
+    if (Types.Events.isLayoutShift(event) && !event.args.data?.had_recent_input) {
         layoutShiftEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventLayoutInvalidationTracking(event)) {
+    if (Types.Events.isLayoutInvalidationTracking(event)) {
         layoutInvalidationEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(event)) {
+    if (Types.Events.isScheduleStyleInvalidationTracking(event)) {
         scheduleStyleInvalidationEvents.push(event);
     }
-    if (Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(event)) {
+    if (Types.Events.isStyleRecalcInvalidationTracking(event)) {
         styleRecalcInvalidationEvents.push(event);
     }
-    if (Types.TraceEvents.isTraceEventPrePaint(event)) {
+    if (Types.Events.isPrePaint(event)) {
         prePaintEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventRenderFrameImplCreateChildFrame(event)) {
+    if (Types.Events.isRenderFrameImplCreateChildFrame(event)) {
         renderFrameImplCreateChildFrameEvents.push(event);
     }
-    if (Types.TraceEvents.isTraceEventDomLoading(event)) {
+    if (Types.Events.isDomLoading(event)) {
         domLoadingEvents.push(event);
+    }
+    if (Types.Events.isBeginRemoteFontLoad(event)) {
+        beginRemoteFontLoadEvents.push(event);
     }
 }
 function traceWindowFromTime(time) {
@@ -157,6 +162,7 @@ export async function finalize() {
     layoutInvalidationEvents.sort((a, b) => a.ts - b.ts);
     renderFrameImplCreateChildFrameEvents.sort((a, b) => a.ts - b.ts);
     domLoadingEvents.sort((a, b) => a.ts - b.ts);
+    beginRemoteFontLoadEvents.sort((a, b) => a.ts - b.ts);
     // Each function transforms the data used by the next, as such the invoke order
     // is important.
     await buildLayoutShiftsClusters();
@@ -223,11 +229,11 @@ async function buildLayoutShiftsClusters() {
                     good: traceWindowFromTime(clusterStartTime),
                 },
                 navigationId,
-                // Set default TraceEventData so that this event is treated accordingly for the track appender.
+                // Set default Event so that this event is treated accordingly for the track appender.
                 ts: event.ts,
                 pid: event.pid,
                 tid: event.tid,
-                ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+                ph: "X" /* Types.Events.Phase.COMPLETE */,
                 cat: '',
             });
             firstShiftTime = clusterStartTime;
@@ -242,8 +248,7 @@ async function buildLayoutShiftsClusters() {
         if (!event.args.data) {
             continue;
         }
-        const shift = Helpers.SyntheticEvents.SyntheticEventsManager
-            .registerSyntheticBasedEvent({
+        const shift = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: event,
             ...event,
             args: {
@@ -352,7 +357,8 @@ async function buildLayoutShiftsClusters() {
         // Capture the time range of the cluster.
         cluster.ts = cluster.events[0].ts;
         const lastShiftTimings = Helpers.Timing.eventTimingsMicroSeconds(cluster.events[cluster.events.length - 1]);
-        cluster.dur = Types.Timing.MicroSeconds(lastShiftTimings.endTime - cluster.events[0].ts);
+        // Add MAX_SHIFT_TIME_DELTA, the section gap after the last layout shift. This marks the end of the cluster.
+        cluster.dur = Types.Timing.MicroSeconds((lastShiftTimings.endTime - cluster.events[0].ts) + MAX_SHIFT_TIME_DELTA);
         if (weightedScore > sessionMaxScore) {
             clsWindowID = windowID;
             sessionMaxScore = weightedScore;
@@ -379,6 +385,7 @@ export function data() {
         styleRecalcInvalidationEvents: [],
         renderFrameImplCreateChildFrameEvents,
         domLoadingEvents,
+        beginRemoteFontLoadEvents,
         scoreRecords,
         // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],

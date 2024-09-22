@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 export class IsLong extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
-    #minimumRecordDurationMilli = TraceEngine.Types.Timing.MilliSeconds(0);
+    #minimumRecordDurationMilli = Trace.Types.Timing.MilliSeconds(0);
     constructor() {
         super();
     }
@@ -13,7 +13,7 @@ export class IsLong extends TimelineModel.TimelineModelFilter.TimelineModelFilte
         this.#minimumRecordDurationMilli = value;
     }
     accept(event) {
-        const { duration } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
+        const { duration } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
         return duration >= this.#minimumRecordDurationMilli;
     }
 }
@@ -37,8 +37,8 @@ export class TimelineRegExp extends TimelineModel.TimelineModelFilter.TimelineMo
     regExp() {
         return this.regExpInternal;
     }
-    accept(event, traceParsedData) {
-        return !this.regExpInternal || TimelineUIUtils.testContentMatching(event, this.regExpInternal, traceParsedData);
+    accept(event, parsedTrace) {
+        return !this.regExpInternal || TimelineUIUtils.testContentMatching(event, this.regExpInternal, parsedTrace);
     }
 }
 //# sourceMappingURL=TimelineFilters.js.map

@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Logs from '../../models/logs/logs.js';
 /* clang-format off */
 const preamble = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
 Provide a comprehensive analysis of the network request, focusing on areas crucial for a software engineer. Your analysis should include:
 * Briefly explain the purpose of the request based on the URL, method, and any relevant headers or payload.
+* Analyze timing information to identify potential bottlenecks or areas for optimization.
 * Highlight potential issues indicated by the status code.
 
 # Considerations
@@ -52,14 +54,13 @@ export class DrJonesNetworkAgent {
             chat_history: opts.chatHistory,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
-                temperature: config.devToolsFreestylerDogfood?.temperature ?? 0,
-                model_id: config.devToolsFreestylerDogfood?.modelId ?? undefined,
+                temperature: config.devToolsExplainThisResourceDogfood?.temperature ?? 0,
+                model_id: config.devToolsExplainThisResourceDogfood?.modelId ?? undefined,
             },
             metadata: {
                 // TODO: disable logging based on query params.
                 disable_user_content_logging: !(opts.serverSideLoggingEnabled ?? false),
                 string_session_id: opts.sessionId,
-                user_tier: Host.AidaClient.convertToUserTierEnum(config.devToolsFreestylerDogfood?.userTier),
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             functionality_type: Host.AidaClient.FunctionalityType.CHAT,
@@ -151,7 +152,7 @@ export class DrJonesNetworkAgent {
             ]);
         };
         const currentRunEntries = this.#chatHistory.get(currentRunId) ?? [];
-        addToHistory(`ANSWER: ${response}`);
+        addToHistory(response);
         yield {
             type: DrJonesNetworkAgentResponseType.ANSWER,
             text: response,
@@ -207,6 +208,52 @@ export function allowHeader(header) {
     }
     return true;
 }
+export function formatHeaders(title, headers) {
+    return formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
+}
+export function formatNetworkRequestTiming(request) {
+    const timing = request.timing;
+    return `
+Request start time: ${request.startTime}
+Request end time: ${request.endTime}
+Receiving response headers start time: ${timing?.receiveHeadersStart}
+Receiving response headers end time: ${timing?.receiveHeadersEnd}
+Proxy negotiation start time: ${timing?.proxyStart}
+Proxy negotiation end time: ${timing?.proxyEnd}
+DNS lookup start time: ${timing?.dnsStart}
+DNS lookup end time: ${timing?.dnsEnd}
+TCP start time: ${timing?.connectStart}
+TCP end time: ${timing?.connectEnd}
+SSL start time: ${timing?.sslStart}
+SSL end time: ${timing?.sslEnd}
+Sending start: ${timing?.sendStart}
+Sending end: ${timing?.sendEnd}
+  `;
+}
+function formatRequestInitiated(request, initiatorChain, lineStart) {
+    const initiated = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(request).initiated;
+    initiated.forEach((k, initiatedRequest) => {
+        if (request === k) {
+            initiatorChain = initiatorChain + lineStart + initiatedRequest.url() + '\n';
+            initiatorChain = formatRequestInitiated(initiatedRequest, initiatorChain, '\t' + lineStart);
+        }
+    });
+    return initiatorChain;
+}
+function formatRequestInitiatorChain(request) {
+    let initiatorChain = '';
+    let lineStart = '- URL: ';
+    const initiators = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(request).initiators;
+    for (const initator of Array.from(initiators).reverse()) {
+        initiatorChain = initiatorChain + lineStart + initator.url() + '\n';
+        lineStart = '\t' + lineStart;
+        if (initator === request) {
+            initiatorChain = formatRequestInitiated(initator, initiatorChain, lineStart);
+            break;
+        }
+    }
+    return initiatorChain;
+}
 export function formatNetworkRequest(request) {
     const formatHeaders = (title, headers) => formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
     // TODO: anything else that might be relavant?
@@ -217,7 +264,11 @@ ${formatHeaders('Request headers:', request.requestHeaders())}
 
 ${formatHeaders('Response headers:', request.responseHeaders)}
 
-Response status: ${request.statusCode} ${request.statusText}`;
+Response status: ${request.statusCode} ${request.statusText}
+
+Request Timing:\n ${formatNetworkRequestTiming(request)}
+
+Request Initiator Chain:\n ${formatRequestInitiatorChain(request)}`;
 }
 // @ts-ignore
 globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;

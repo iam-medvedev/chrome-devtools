@@ -1,8 +1,8 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import * as TraceEngine from '../../models/trace/trace.js';
-export declare class TimelineController implements TraceEngine.TracingManager.TracingManagerClient {
+import * as Trace from '../../models/trace/trace.js';
+export declare class TimelineController implements Trace.TracingManager.TracingManagerClient {
     #private;
     readonly primaryPageTarget: SDK.Target.Target;
     readonly rootTarget: SDK.Target.Target;
@@ -42,7 +42,7 @@ export declare class TimelineController implements TraceEngine.TracingManager.Tr
     private waitForTracingToStop;
     private startRecordingWithCategories;
     warmupJsProfiler(): Promise<void>;
-    traceEventsCollected(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
+    traceEventsCollected(events: Trace.Types.Events.Event[]): void;
     tracingComplete(): void;
     private allSourcesFinished;
     tracingBufferUsage(usage: number): void;
@@ -53,7 +53,7 @@ export interface Client {
     loadingStarted(): void;
     processingStarted(): void;
     loadingProgress(progress?: number): void;
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
     loadingCompleteForTest(): void;
 }
 export interface RecordingOptions {

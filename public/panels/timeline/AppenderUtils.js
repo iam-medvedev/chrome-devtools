@@ -1,5 +1,5 @@
 import * as i18n from '../../core/i18n/i18n.js';
-import * as TraceEngine from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 const UIStrings = {
     /**
@@ -68,11 +68,11 @@ export function buildTrackHeader(jslogContext, startLevel, name, style, selectab
  * @returns the formatted time string for highlightedEntryInfo
  */
 export function getFormattedTime(totalTime, selfTime) {
-    const formattedTotalTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds((totalTime || 0));
-    if (formattedTotalTime === TraceEngine.Types.Timing.MilliSeconds(0)) {
+    const formattedTotalTime = Trace.Helpers.Timing.microSecondsToMilliseconds((totalTime || 0));
+    if (formattedTotalTime === Trace.Types.Timing.MilliSeconds(0)) {
         return '';
     }
-    const formattedSelfTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds((selfTime || 0));
+    const formattedSelfTime = Trace.Helpers.Timing.microSecondsToMilliseconds((selfTime || 0));
     const minSelfTimeSignificance = 1e-6;
     const formattedTime = Math.abs(formattedTotalTime - formattedSelfTime) > minSelfTimeSignificance &&
         formattedSelfTime > minSelfTimeSignificance ?

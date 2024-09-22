@@ -60,6 +60,7 @@ core/sdk/CookieParser.test.js
 core/sdk/DOMModel.test.js
 core/sdk/DebuggerModel.test.js
 core/sdk/EmulationModel.test.js
+core/sdk/EnhancedTracesParser.test.js
 core/sdk/FrameManager.test.js
 core/sdk/NetworkManager.test.js
 core/sdk/NetworkRequest.test.js
@@ -169,7 +170,6 @@ models/trace/extras/Metadata.test.js
 models/trace/extras/URLForEntry.test.js
 models/trace/handlers/AnimationHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
-models/trace/handlers/EnhancedTracesHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js
 models/trace/handlers/FramesHandler.test.js
 models/trace/handlers/GPUHandler.test.js
@@ -202,6 +202,7 @@ models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
 models/trace/insights/CumulativeLayoutShift.test.js
 models/trace/insights/DocumentLatency.test.js
+models/trace/insights/FontDisplay.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js
@@ -234,6 +235,7 @@ panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
 panels/application/BackgroundServiceView.test.js
 panels/application/DOMStorageModel.test.js
+panels/application/ExtensionStorageModel.test.js
 panels/application/IndexedDBModel.test.js
 panels/application/IndexedDBViews.test.js
 panels/application/InterestGroupStorageView.test.js
@@ -421,6 +423,7 @@ panels/sources/TabbedEditorContainer.test.js
 panels/sources/components/BreakpointsView.test.js
 panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
+panels/timeline/AnnotationHelpers.test.js
 panels/timeline/Breadcrumbs.test.js
 panels/timeline/EntriesFilter.test.js
 panels/timeline/EventsSerializer.test.js

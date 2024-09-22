@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
 export declare enum EventCategory {
     DRAWING = "drawing",
     RASTERIZING = "rasterizing",
@@ -38,9 +38,9 @@ export type CategoryPalette = {
     [c in EventCategory]: TimelineCategory;
 };
 type EventStylesMap = {
-    [key in TraceEngine.Types.TraceEvents.KnownEventName]?: TimelineRecordStyle;
+    [key in Trace.Types.Events.Name]?: TimelineRecordStyle;
 };
-export declare function getEventStyle(eventName: TraceEngine.Types.TraceEvents.KnownEventName): TimelineRecordStyle | undefined;
+export declare function getEventStyle(eventName: Trace.Types.Events.Name): TimelineRecordStyle | undefined;
 export declare function stringIsEventCategory(it: string): it is EventCategory;
 export declare function getCategoryStyles(): CategoryPalette;
 export declare function maybeInitSylesMap(): EventStylesMap;
