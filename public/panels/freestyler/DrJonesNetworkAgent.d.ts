@@ -1,37 +1,10 @@
 import * as Host from '../../core/host/host.js';
 import type * as SDK from '../../core/sdk/sdk.js';
-export declare enum DrJonesNetworkAgentResponseType {
-    ANSWER = "answer",
-    ERROR = "error"
-}
-export interface AnswerResponse {
-    type: DrJonesNetworkAgentResponseType.ANSWER;
-    text: string;
-    rpcId?: number;
-}
-export interface ErrorResponse {
-    type: DrJonesNetworkAgentResponseType.ERROR;
-    rpcId?: number;
-}
-export type ResponseData = AnswerResponse | ErrorResponse;
-type HistoryChunk = {
-    text: string;
-    entity: Host.AidaClient.Entity;
-};
+import { type AidaRequestOptions, type HistoryChunk, type ResponseData } from './AiAgent.js';
 type AgentOptions = {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
 };
-interface AidaRequestOptions {
-    input: string;
-    preamble?: string;
-    chatHistory?: Host.AidaClient.Chunk[];
-    /**
-     * @default false
-     */
-    serverSideLoggingEnabled?: boolean;
-    sessionId?: string;
-}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.

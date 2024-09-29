@@ -570,6 +570,7 @@ export class AnchorFunctionMatch {
 }
 // clang-format off
 export class AnchorFunctionMatcher extends matcherBase(AnchorFunctionMatch) {
+    // clang-format on
     anchorFunction(node, matching) {
         if (node.name !== 'CallExpression') {
             return null;
@@ -609,7 +610,6 @@ export class AnchorFunctionMatcher extends matcherBase(AnchorFunctionMatch) {
         return new AnchorFunctionMatch(matching.ast.text(node), node, calleeText);
     }
 }
-// clang-format on
 // For linking `position-anchor: --anchor-name`.
 export class PositionAnchorMatch {
     text;
@@ -623,6 +623,7 @@ export class PositionAnchorMatch {
 }
 // clang-format off
 export class PositionAnchorMatcher extends matcherBase(PositionAnchorMatch) {
+    // clang-format on
     accepts(propertyName) {
         return propertyName === 'position-anchor';
     }
@@ -634,5 +635,48 @@ export class PositionAnchorMatcher extends matcherBase(PositionAnchorMatch) {
         return new PositionAnchorMatch(dashedIdentifier, matching, node);
     }
 }
-// clang-format on
+export class CSSWideKeywordMatch {
+    text;
+    node;
+    property;
+    matchedStyles;
+    constructor(text, node, property, matchedStyles) {
+        this.text = text;
+        this.node = node;
+        this.property = property;
+        this.matchedStyles = matchedStyles;
+    }
+    resolveProperty() {
+        return this.matchedStyles.resolveGlobalKeyword(this.property, this.text);
+    }
+    computedText() {
+        return this.resolveProperty()?.value ?? null;
+    }
+}
+// clang-format off
+export class CSSWideKeywordMatcher extends matcherBase(CSSWideKeywordMatch) {
+    property;
+    matchedStyles;
+    // clang-format on
+    constructor(property, matchedStyles) {
+        super();
+        this.property = property;
+        this.matchedStyles = matchedStyles;
+    }
+    matches(node, matching) {
+        const parentNode = node.parent;
+        if (node.name !== 'ValueName' || parentNode?.name !== 'Declaration') {
+            return null;
+        }
+        if (Array.from(ASTUtils.stripComments(ASTUtils.siblings(ASTUtils.declValue(parentNode))))
+            .some(child => !ASTUtils.equals(child, node))) {
+            return null;
+        }
+        const text = matching.ast.text(node);
+        if (!SDK.CSSMetadata.CSSMetadata.isCSSWideKeyword(text)) {
+            return null;
+        }
+        return new CSSWideKeywordMatch(text, node, this.property, this.matchedStyles);
+    }
+}
 //# sourceMappingURL=PropertyMatchers.js.map

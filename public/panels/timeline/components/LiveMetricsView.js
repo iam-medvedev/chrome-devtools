@@ -12,6 +12,7 @@ import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as Settings from '../../../ui/components/settings/settings.js';
+import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
@@ -206,6 +207,42 @@ const UIStrings = {
      * @description Title for an expandable section that contains more information about real user environments. This message is meant to prompt the user to understand the conditions experienced by real users.
      */
     considerRealUser: 'Consider real user environments',
+    /**
+     * @description Title for a page load phase that measures the time between when the page load starts and the time when the first byte of the initial document is downloaded.
+     */
+    timeToFirstByte: 'Time to first byte',
+    /**
+     * @description Title for a page load phase that measures the time between when the first byte of the initial document is downloaded and when the request for the largest image content starts.
+     */
+    resourceLoadDelay: 'Resource load delay',
+    /**
+     * @description Title for a page load phase that measures the time between when the request for the largest image content starts and when it finishes.
+     */
+    resourceLoadDuration: 'Resource load duration',
+    /**
+     * @description Title for a page load phase that measures the time between when the request for the largest image content finishes and when the largest image element is rendered on the page.
+     */
+    elementRenderDelay: 'Element render delay',
+    /**
+     * @description Title for a phase during a user interaction that measures the time between when the interaction starts and when the browser starts running interaction handlers.
+     */
+    inputDelay: 'Input delay',
+    /**
+     * @description Title for a phase during a user interaction that measures the time between when the browser starts running interaction handlers and when the browser finishes running interaction handlers.
+     */
+    processingDuration: 'Processing duration',
+    /**
+     * @description Title for a phase during a user interaction that measures the time between when the browser finishes running interaction handlers and when the browser renders the next visual frame that shows the result of the interaction.
+     */
+    presentationDelay: 'Presentation delay',
+    /**
+     * @description Tooltip text for a status chip in a list of user interactions that indicates if the associated interaction is the interaction used in the Interaction to Next Paint (INP) performance metric because it's interaction delay is at the 98th percentile.
+     */
+    inpInteraction: 'The INP interaction is at the 98th percentile of interaction delays.',
+    /**
+     * @description Tooltip text for a button that reveals the user interaction associated with the Interaction to Next Paint (INP) performance metric.
+     */
+    showInpInteraction: 'Go to the INP interaction.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LiveMetricsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -228,6 +265,16 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         super();
         this.#toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.#recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
+        const interactionRevealer = new InteractionRevealer(this);
+        Common.Revealer.registerRevealer({
+            contextTypes() {
+                return [LiveMetrics.Interaction];
+            },
+            destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+            async loadRevealer() {
+                return interactionRevealer;
+            },
+        });
         this.#render();
     }
     #onMetricStatus(event) {
@@ -317,6 +364,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     #renderLcpCard() {
         const fieldData = this.#getFieldMetricData('largest_contentful_paint');
         const node = this.#lcpValue?.node;
+        const phases = this.#lcpValue?.phases;
         // clang-format off
         return html `
       <${MetricCard.litTagName} .data=${{
@@ -325,11 +373,17 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
             tooltipContainer: this.#tooltipContainerEl,
+            phases: phases && [
+                [i18nString(UIStrings.timeToFirstByte), phases.timeToFirstByte],
+                [i18nString(UIStrings.resourceLoadDelay), phases.resourceLoadDelay],
+                [i18nString(UIStrings.resourceLoadDuration), phases.resourceLoadTime],
+                [i18nString(UIStrings.elementRenderDelay), phases.elementRenderDelay],
+            ],
         }}>
         ${node ? html `
-            <div class="related-element-info" slot="extra-info">
-              <span class="related-element-label">${i18nString(UIStrings.lcpElement)}</span>
-              <span class="related-element-link">${until(Common.Linkifier.Linkifier.linkify(node))}</span>
+            <div class="related-info" slot="extra-info">
+              <span class="related-info-label">${i18nString(UIStrings.lcpElement)}</span>
+              <span class="related-info-link">${until(Common.Linkifier.Linkifier.linkify(node))}</span>
             </div>
           `
             : nothing}
@@ -354,6 +408,13 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderInpCard() {
         const fieldData = this.#getFieldMetricData('interaction_to_next_paint');
+        const phases = this.#inpValue?.phases;
+        const interaction = this.#interactions.find(interaction => interaction.uniqueInteractionId === this.#inpValue?.uniqueInteractionId);
+        let interactionLink;
+        if (interaction) {
+            interactionLink = Components.Linkifier.Linkifier.linkifyRevealable(interaction, interaction.interactionType, undefined, i18nString(UIStrings.showInpInteraction), 'link-to-interaction');
+            interactionLink.tabIndex = 0;
+        }
         // clang-format off
         return html `
       <${MetricCard.litTagName} .data=${{
@@ -362,7 +423,18 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
             tooltipContainer: this.#tooltipContainerEl,
+            phases: phases && [
+                [i18nString(UIStrings.inputDelay), phases.inputDelay],
+                [i18nString(UIStrings.processingDuration), phases.processingDuration],
+                [i18nString(UIStrings.presentationDelay), phases.presentationDelay],
+            ],
         }}>
+        ${interactionLink ? html `
+          <div class="related-info" slot="extra-info">
+            <span class="related-info-label">INP interaction</span>
+            ${interactionLink}
+          </div>
+        ` : nothing}
       </${MetricCard.litTagName}>
     `;
         // clang-format on
@@ -703,9 +775,15 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
           ${this.#interactions.map(interaction => {
             const metricValue = renderMetricValue('timeline.landing.interaction-event-timing', interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.millisToString(v), { dim: true });
             const isP98Excluded = this.#inpValue && this.#inpValue.value < interaction.duration;
+            const isInp = this.#inpValue?.uniqueInteractionId === interaction.uniqueInteractionId;
             return html `
-              <li class="interaction">
-                <span class="interaction-type">${interaction.interactionType}</span>
+              <li id=${interaction.uniqueInteractionId} class="interaction" tabindex="-1">
+                <span class="interaction-type">
+                  ${interaction.interactionType}
+                  ${isInp ?
+                html `<span class="interaction-inp-chip" title=${i18nString(UIStrings.inpInteraction)}>INP</span>`
+                : nothing}
+                </span>
                 <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
                 ${isP98Excluded ? html `<${IconButton.Icon.Icon.litTagName}
                   class="interaction-info"
@@ -775,6 +853,23 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
         LitHtml.render(output, this.#shadow, { host: this });
     };
+}
+export class InteractionRevealer {
+    #view;
+    constructor(view) {
+        this.#view = view;
+    }
+    async reveal(interaction) {
+        const interactionEl = this.#view.shadowRoot?.getElementById(interaction.uniqueInteractionId);
+        if (!interactionEl) {
+            return;
+        }
+        interactionEl.scrollIntoView({
+            block: 'center',
+        });
+        interactionEl.focus();
+        UI.UIUtils.runCSSAnimationOnce(interactionEl, 'highlight');
+    }
 }
 customElements.define('devtools-live-metrics-view', LiveMetricsView);
 //# sourceMappingURL=LiveMetricsView.js.map

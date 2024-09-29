@@ -1,5 +1,6 @@
 import * as CLSCulprits from './CLSCulprits.js';
 import * as DocumentLatency from './DocumentLatency.js';
+import * as FontDisplay from './FontDisplay.js';
 import * as Helpers from './Helpers.js';
 import * as InteractionToNextPaint from './InteractionToNextPaint.js';
 import * as LCPDiscovery from './LCPDiscovery.js';
@@ -12,4 +13,4 @@ import * as Table from './Table.js';
 import * as ThirdParties from './ThirdParties.js';
 import * as Types from './types.js';
 import * as Viewport from './Viewport.js';
-export { CLSCulprits, DocumentLatency, Helpers, InteractionToNextPaint, LCPDiscovery, LCPPhases, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };
+export { CLSCulprits, DocumentLatency, FontDisplay, Helpers, InteractionToNextPaint, LCPDiscovery, LCPPhases, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };

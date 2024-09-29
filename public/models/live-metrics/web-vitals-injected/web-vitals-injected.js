@@ -85,6 +85,12 @@ function initialize() {
         const event = {
             name: 'LCP',
             value: metric.value,
+            phases: {
+                timeToFirstByte: metric.attribution.timeToFirstByte,
+                resourceLoadDelay: metric.attribution.resourceLoadDelay,
+                resourceLoadTime: metric.attribution.resourceLoadDuration,
+                elementRenderDelay: metric.attribution.elementRenderDelay,
+            },
         };
         const element = metric.attribution.lcpEntry?.element;
         if (element) {
@@ -103,19 +109,21 @@ function initialize() {
         const event = {
             name: 'INP',
             value: metric.value,
+            phases: {
+                inputDelay: metric.attribution.inputDelay,
+                processingDuration: metric.attribution.processingDuration,
+                presentationDelay: metric.attribution.presentationDelay,
+            },
+            uniqueInteractionId: Spec.getUniqueInteractionId(metric.entries),
             interactionType: metric.attribution.interactionType,
         };
-        const element = metric.attribution.interactionTargetElement;
-        if (element) {
-            event.nodeIndex = establishNodeIndex(element);
-        }
         sendEventToDevTools(event);
     }, { reportAllChanges: true });
     onEachInteraction(interaction => {
         const event = {
             name: 'Interaction',
             duration: interaction.value,
-            interactionId: interaction.attribution.interactionId,
+            uniqueInteractionId: Spec.getUniqueInteractionId(interaction.entries),
             interactionType: interaction.attribution.interactionType,
         };
         const node = interaction.attribution.interactionTargetElement;

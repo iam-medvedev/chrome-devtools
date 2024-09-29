@@ -1,7 +1,7 @@
 import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
-import * as Overlays from './overlays/overlays.js';
+import type * as Overlays from './overlays/overlays.js';
 export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' | 'UpdateLinkToEntry' | 'EnterLabelEditState';
 export declare class AnnotationModifiedEvent extends Event {
     overlay: Overlays.Overlays.TimelineOverlay;

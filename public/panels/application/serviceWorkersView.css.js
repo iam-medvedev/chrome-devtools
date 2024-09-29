@@ -114,9 +114,7 @@ styles.replaceSync(
 }
 
 .report-field-value-filename {
-  /* hack to prevent focus-ring from being cut off on the left */
-  padding-left: 2px;
-  margin-left: -2px;
+  display: contents;
 }
 
 .report-field-value-subtitle {

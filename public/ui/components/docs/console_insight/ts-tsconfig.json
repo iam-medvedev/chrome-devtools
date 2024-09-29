@@ -41,6 +41,8 @@
     "../../../../../../../../front_end/ui/components/docs/console_insight/basic.ts",
     "../../../../../../../../front_end/ui/components/docs/console_insight/error.ts",
     "../../../../../../../../front_end/ui/components/docs/console_insight/loading.ts",
+    "../../../../../../../../front_end/ui/components/docs/console_insight/optin.ts",
+    "../../../../../../../../front_end/ui/components/docs/console_insight/reminder.ts",
     "../../../../../../../../front_end/ui/components/docs/console_insight/static.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",

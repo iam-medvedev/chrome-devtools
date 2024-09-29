@@ -50,6 +50,9 @@ function getLiveMetricsTitle(view) {
     // There may be multiple, but this should always be the first one.
     return view.shadowRoot.querySelector('.live-metrics > .section-title');
 }
+function getInpInteractionLink(view) {
+    return view.shadowRoot.querySelector('#inp .related-info button');
+}
 function createMockFieldData() {
     return {
         record: {
@@ -96,8 +99,10 @@ function createMockFieldData() {
 }
 describeWithMockConnection('LiveMetricsView', () => {
     const mockHandleAction = sinon.stub();
+    let mockReveal = sinon.stub();
     beforeEach(async () => {
         mockHandleAction.reset();
+        mockReveal = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal');
         UI.ActionRegistration.registerActionExtension({
             actionId: 'timeline.toggle-recording',
             category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
@@ -131,21 +136,34 @@ describeWithMockConnection('LiveMetricsView', () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
         renderElementIntoDOM(view);
         LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.STATUS */, {
+            inp: {
+                value: 500,
+                phases: {
+                    inputDelay: 100,
+                    processingDuration: 300,
+                    presentationDelay: 100,
+                },
+                uniqueInteractionId: 'interaction-1-1',
+            },
             interactions: [
-                { duration: 500, interactionType: 'pointer' },
-                { duration: 30, interactionType: 'keyboard' },
+                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-1' },
+                { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
             ],
         });
         await coordinator.done();
         const interactionsEls = getInteractions(view);
         assert.lengthOf(interactionsEls, 2);
         const typeEl1 = interactionsEls[0].querySelector('.interaction-type');
-        assert.strictEqual(typeEl1.textContent, 'pointer');
+        assert.match(typeEl1.textContent, /pointer/);
+        const inpChip1 = typeEl1.querySelector('.interaction-inp-chip');
+        assert.isNotNull(inpChip1);
         const durationEl1 = interactionsEls[0].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl1.textContent, '500 ms');
         assert.strictEqual(durationEl1.className, 'metric-value needs-improvement dim');
         const typeEl2 = interactionsEls[1].querySelector('.interaction-type');
-        assert.strictEqual(typeEl2.textContent, 'keyboard');
+        assert.match(typeEl2.textContent, /keyboard/);
+        const inpChip2 = typeEl2.querySelector('.interaction-inp-chip');
+        assert.isNull(inpChip2);
         const durationEl2 = interactionsEls[1].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl2.textContent, '30 ms');
         assert.strictEqual(durationEl2.className, 'metric-value good dim');
@@ -154,29 +172,86 @@ describeWithMockConnection('LiveMetricsView', () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
         renderElementIntoDOM(view);
         LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.STATUS */, {
-            inp: { value: 50 },
+            inp: {
+                value: 50,
+                phases: {
+                    inputDelay: 10,
+                    processingDuration: 30,
+                    presentationDelay: 10,
+                },
+                uniqueInteractionId: 'interaction-1-2',
+            },
             interactions: [
-                { duration: 50, interactionType: 'keyboard' },
-                { duration: 500, interactionType: 'pointer' },
+                { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
+                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
             ],
         });
         await coordinator.done();
         const interactionsEls = getInteractions(view);
         assert.lengthOf(interactionsEls, 2);
         const typeEl1 = interactionsEls[0].querySelector('.interaction-type');
-        assert.strictEqual(typeEl1.textContent, 'keyboard');
+        assert.match(typeEl1.textContent, /keyboard/);
         const durationEl1 = interactionsEls[0].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl1.textContent, '50 ms');
         assert.strictEqual(durationEl1.className, 'metric-value good dim');
         const helpEl1 = interactionsEls[0].querySelector('.interaction-info');
         assert.isNull(helpEl1);
         const typeEl2 = interactionsEls[1].querySelector('.interaction-type');
-        assert.strictEqual(typeEl2.textContent, 'pointer');
+        assert.match(typeEl2.textContent, /pointer/);
         const helpEl2 = interactionsEls[1].querySelector('.interaction-info');
         assert.match(helpEl2.title, /98th percentile/);
         const durationEl2 = interactionsEls[1].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl2.textContent, '500 ms');
         assert.strictEqual(durationEl2.className, 'metric-value needs-improvement dim');
+    });
+    it('should reveal INP interaction when link clicked', async () => {
+        const view = new Components.LiveMetricsView.LiveMetricsView();
+        renderElementIntoDOM(view);
+        LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.STATUS */, {
+            inp: {
+                value: 500,
+                phases: {
+                    inputDelay: 100,
+                    processingDuration: 300,
+                    presentationDelay: 100,
+                },
+                uniqueInteractionId: 'interaction-1-1',
+            },
+            interactions: [
+                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-1' },
+                { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
+            ],
+        });
+        await coordinator.done();
+        const inpInteractionLink = getInpInteractionLink(view);
+        inpInteractionLink.click();
+        await coordinator.done();
+        assert(mockReveal.calledWithExactly({
+            duration: 500,
+            interactionType: 'pointer',
+            uniqueInteractionId: 'interaction-1-1',
+        }, false));
+    });
+    it('should hide INP link if no matching interaction', async () => {
+        const view = new Components.LiveMetricsView.LiveMetricsView();
+        renderElementIntoDOM(view);
+        LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.STATUS */, {
+            inp: {
+                value: 500,
+                phases: {
+                    inputDelay: 100,
+                    processingDuration: 300,
+                    presentationDelay: 100,
+                },
+                uniqueInteractionId: 'interaction-1-1',
+            },
+            interactions: [
+                { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
+            ],
+        });
+        await coordinator.done();
+        const inpInteractionLink = getInpInteractionLink(view);
+        assert.isNull(inpInteractionLink);
     });
     it('clear interactions log button should work', async () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
@@ -185,10 +260,18 @@ describeWithMockConnection('LiveMetricsView', () => {
         assert.isNull(getClearInteractionsButton(view));
         assert.lengthOf(getInteractions(view), 0);
         LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.STATUS */, {
-            inp: { value: 50 },
+            inp: {
+                value: 50,
+                phases: {
+                    inputDelay: 10,
+                    processingDuration: 30,
+                    presentationDelay: 10,
+                },
+                uniqueInteractionId: 'interaction-1-2',
+            },
             interactions: [
-                { duration: 50, interactionType: 'keyboard' },
-                { duration: 500, interactionType: 'pointer' },
+                { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
+                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
             ],
         });
         await coordinator.done();

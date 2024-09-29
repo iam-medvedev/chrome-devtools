@@ -43,7 +43,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsComponents from './components/components.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { ElementsTreeElement, InitialChildrenLimit } from './ElementsTreeElement.js';
+import { ElementsTreeElement, InitialChildrenLimit, isOpeningTag } from './ElementsTreeElement.js';
 import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
@@ -1365,8 +1365,8 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             node = node.ownerDocument.documentElement;
         }
         const treeElement = this.treeElementByNode.get(node);
-        if (treeElement) {
-            treeElement.updateScrollAdorner();
+        if (treeElement && isOpeningTag(treeElement.tagTypeContext)) {
+            void treeElement.tagTypeContext.adornersThrottler.schedule(async () => treeElement.updateScrollAdorner());
         }
     }
     static treeOutlineSymbol = Symbol('treeOutline');

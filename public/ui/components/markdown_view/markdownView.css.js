@@ -19,13 +19,19 @@ styles.replaceSync(
   line-height: 18px;
   font-size: 12px;
   color: var(--override-markdown-view-message-color, --sys-color-token-subtle);
-  margin-bottom: 4px;
   user-select: text;
 }
 
 .message p {
-  margin-bottom: 10px;
+  margin: 0;
+}
+
+.message p:not(:first-child) {
   margin-block-start: 2px;
+}
+
+.message p:not(:last-child) {
+  margin-bottom: 10px;
 }
 
 .message ul {
@@ -49,7 +55,8 @@ styles.replaceSync(
   user-select: text;
   cursor: text;
   /* This is still using design tokens because \\'--code-background-color\\' is defined with them by default */
-  background-color: var(--code-background-color); /* stylelint-disable-line plugin/use_theme_colors */
+  /* stylelint-disable-next-line plugin/use_theme_colors */
+  background-color: var(--code-background-color);
   border-radius: 2px;
   padding: 1px 3px;
 }

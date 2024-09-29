@@ -75,6 +75,7 @@ export declare class TabbedPane extends TabbedPane_base {
     selectPrevTab(): void;
     lastOpenedTabIds(tabsCount: number): string[];
     setTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
+    setSuffixElement(id: string, suffixElement: HTMLElement | null): void;
     setTabEnabled(id: string, enabled: boolean): void;
     toggleTabClass(id: string, className: string, force?: boolean): void;
     private zoomChanged;
@@ -149,6 +150,7 @@ export declare class TabbedPaneTab {
     measuredWidth: number | undefined;
     private tabElementInternal;
     private icon;
+    private suffixElement;
     private widthInternal?;
     private delegate?;
     private titleElement?;
@@ -161,6 +163,7 @@ export declare class TabbedPaneTab {
     get jslogContext(): string;
     isCloseable(): boolean;
     setIcon(icon: IconButton.Icon.Icon | null): void;
+    setSuffixElement(suffixElement: HTMLElement | null): void;
     toggleClass(className: string, force?: boolean): boolean;
     get view(): Widget;
     set view(view: Widget);
@@ -171,6 +174,7 @@ export declare class TabbedPaneTab {
     setWidth(width: number): void;
     setDelegate(delegate: TabbedPaneTabDelegate): void;
     private createIconElement;
+    private createSuffixElement;
     private createMeasureClone;
     createTabElement(measuring: boolean): HTMLElement;
     private createCloseIconButton;

@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../models/trace/trace.js';
-export function createContextForNavigation(navigation, frameId) {
+export function createContextForNavigation(parsedTrace, navigation, frameId) {
     if (!navigation.args.data?.navigationId) {
         throw new Error('expected navigationId');
     }
+    const navigationIndex = parsedTrace.Meta.mainFrameNavigations.indexOf(navigation);
+    if (navigationIndex === -1) {
+        throw new Error('unexpected navigation');
+    }
     const min = navigation.ts;
-    const max = (navigation.ts + (navigation?.dur ?? 0));
+    const max = navigationIndex + 1 < parsedTrace.Meta.mainFrameNavigations.length ?
+        parsedTrace.Meta.mainFrameNavigations[navigationIndex + 1].ts :
+        parsedTrace.Meta.traceBounds.max;
     const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
     return {
         bounds,
@@ -16,7 +22,7 @@ export function createContextForNavigation(navigation, frameId) {
         navigationId: navigation.args.data?.navigationId,
     };
 }
-export function getInsight(insightKey, insights, navigation) {
+export function getInsightOrError(insightName, insights, navigation) {
     let key;
     if (navigation) {
         if (!navigation.args.data?.navigationId) {
@@ -31,7 +37,7 @@ export function getInsight(insightKey, insights, navigation) {
     if (!insightSets) {
         throw new Error('missing navInsights');
     }
-    const insight = insightSets.data[insightKey];
+    const insight = insightSets.data[insightName];
     if (insight instanceof Error) {
         throw insight;
     }

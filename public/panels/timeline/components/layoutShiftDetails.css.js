@@ -11,7 +11,7 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-.timeline-details-chip-decorative-title {
+.insight-chip {
   border: var(--sys-size-1) solid var(--sys-color-primary);
   border-radius: var(--sys-shape-corner-extra-small);
   display: flex;
@@ -26,12 +26,14 @@ styles.replaceSync(
   }
 }
 
-.layout-shift-details-title {
+.layout-shift-details-title,
+.cluster-details-title {
   padding: var(--sys-size-5);
   display: flex;
   align-items: center;
 
-  .layout-shift-event-chip {
+  .layout-shift-event-title,
+  .cluster-event-title {
     background-color: var(--app-color-rendering);
     width: var(--sys-size-6);
     height: var(--sys-size-6);
@@ -42,23 +44,28 @@ styles.replaceSync(
 }
 
 .layout-shift-details-table {
-  width: 90%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: var(--sys-size-5);
   margin-left: var(--sys-size-5);
   text-align: left;
+  border-block: var(--sys-size-1) solid var(--sys-color-divider);
+  border-collapse: collapse;
 
-  .table-title th {
-    font-weight: var(--ref-typeface-weight-medium);
-    border-block: var(--sys-size-1) solid var(--sys-color-divider);
-    padding: 0;
+  th,
+  td {
+    padding: 0 var(--sys-size-4);
   }
 
-  .culprit-types tr,
-  .culprits tr {
+  tr {
+    width: 100%;
+  }
+}
+
+.table-title {
+  th {
+    font-weight: var(--ref-typeface-weight-medium);
+  }
+
+  tr {
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-    border-spacing: 0;
   }
 }
 
@@ -70,6 +77,54 @@ styles.replaceSync(
 
 .devtools-link.invalid-link {
   color: var(--sys-color-state-disabled);
+}
+
+.details-row {
+  display: flex;
+  padding: 0 var(--sys-size-5);
+  min-height: var(--sys-size-9);
+}
+
+.title {
+  color: var(--sys-color-token-subtle);
+  overflow: hidden;
+  padding-right: var(--sys-size-5);
+  display: inline-block;
+  vertical-align: top;
+}
+
+.value {
+  display: inline-block;
+  user-select: text;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 0 var(--sys-size-3);
+}
+
+.layout-shift-summary-details,
+.layout-shift-cluster-summary-details {
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.event-details {
+  width: 70%;
+}
+
+.culprits {
+  overflow: hidden;
+
+  .culprit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .culprit-type {
+    display: flex;
+    justify-content: flex-start;
+  }
 }
 
 /*# sourceURL=layoutShiftDetails.css */

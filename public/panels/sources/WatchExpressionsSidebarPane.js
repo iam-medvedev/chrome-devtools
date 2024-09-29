@@ -101,10 +101,12 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
         this.watchExpressionsSetting =
             Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []);
         this.addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addWatchExpression), 'plus', undefined, 'add-watch-expression');
+        this.addButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
         this.addButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
             void this.addButtonClicked();
         });
         this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refreshWatchExpressions), 'refresh', undefined, 'refresh-watch-expressions');
+        this.refreshButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
         this.refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.update, this);
         this.contentElement.classList.add('watch-expressions');
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.watch')}`);

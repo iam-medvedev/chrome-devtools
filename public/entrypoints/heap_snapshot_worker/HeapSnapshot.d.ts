@@ -279,15 +279,9 @@ export declare abstract class HeapSnapshot {
         tableId: string;
     } | undefined;
     private computeIsEssentialEdge;
-    /**
-     * The function checks whether the edge should be considered during building
-     * postorder iterator and dominator tree.
-     */
     private isEssentialEdge;
-    private buildPostOrderIndex;
     private hasOnlyWeakRetainers;
-    private buildDominatorTree;
-    private calculateRetainedSizes;
+    private buildDominatorTreeAndCalculateRetainedSizes;
     private buildDominatedNodes;
     private calculateObjectNames;
     interfaceDefinitions(): string;

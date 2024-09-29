@@ -31,7 +31,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -165,7 +164,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         // TODO(caseq): properly unload extensions when we disable them.
         this.extensionsEnabled = true;
         this.registerHandler("addRequestHeaders" /* PrivateAPI.Commands.AddRequestHeaders */, this.onAddRequestHeaders.bind(this));
-        this.registerHandler("applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */, this.onApplyStyleSheet.bind(this));
         this.registerHandler("createPanel" /* PrivateAPI.Commands.CreatePanel */, this.onCreatePanel.bind(this));
         this.registerHandler("createSidebarPane" /* PrivateAPI.Commands.CreateSidebarPane */, this.onCreateSidebarPane.bind(this));
         this.registerHandler("createToolbarButton" /* PrivateAPI.Commands.CreateToolbarButton */, this.onCreateToolbarButton.bind(this));
@@ -511,25 +509,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         SDK.NetworkManager.MultitargetNetworkManager.instance().setExtraHTTPHeaders(allHeaders);
-        return undefined;
-    }
-    onApplyStyleSheet(message) {
-        if (message.command !== "applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */) {
-            return this.status.E_BADARG('command', `expected ${"applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */}`);
-        }
-        if (!Root.Runtime.experiments.isEnabled('apply-custom-stylesheet')) {
-            return;
-        }
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = message.styleSheet;
-        document.head.appendChild(styleSheet);
-        ThemeSupport.ThemeSupport.instance().addCustomStylesheet(message.styleSheet);
-        // Add to all the shadow roots that have already been created
-        for (let node = document.body; node; node = node.traverseNextNode(document.body)) {
-            if (node instanceof ShadowRoot) {
-                ThemeSupport.ThemeSupport.instance().injectCustomStyleSheets(node);
-            }
-        }
         return undefined;
     }
     getExtensionOrigin(port) {

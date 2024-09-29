@@ -69,6 +69,7 @@ describeWithEnvironment('ModificationsManager', () => {
         });
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
+            state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
             entryFrom: entry,
             entryTo: entry2,
         });
@@ -110,11 +111,13 @@ describeWithEnvironment('ModificationsManager', () => {
         assert.isOk(modificationsManager);
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
+            state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
             entryFrom: entry,
             entryTo: entry2,
         });
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
+            state: "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */,
             entryFrom: entry2,
         });
         // Make sure only the link with both 'to' and 'from' entries in in the generated JSON

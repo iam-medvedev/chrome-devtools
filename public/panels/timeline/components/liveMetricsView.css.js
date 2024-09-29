@@ -119,22 +119,22 @@ styles.replaceSync(
   font-weight: var(--ref-typeface-weight-medium);
 }
 
-.related-element-info {
+.related-info {
   text-wrap: nowrap;
   margin-top: 8px;
   display: flex;
 }
 
-.related-element-label {
+.related-info-label {
   font-weight: var(--ref-typeface-weight-medium);
+  margin-right: 4px;
 }
 
-.related-element-link {
+.related-info-link {
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 2px;
   padding: 0 2px;
   min-width: 0;
-  margin-left: 4px;
 }
 
 .interactions-section {
@@ -165,6 +165,10 @@ styles.replaceSync(
   padding: 7px 0;
   border: none;
   border-bottom: 1px solid var(--sys-color-divider);
+
+  &.highlight {
+    animation: interaction-highlight-fadeout 2s;
+  }
 }
 
 .interaction:first-child {
@@ -173,9 +177,16 @@ styles.replaceSync(
 
 .interaction-type {
   font-weight: var(--ref-typeface-weight-medium);
-  width: 60px;
+  width: 80px;
   flex-shrink: 0;
-  margin-right: 32px;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+.interaction-inp-chip {
+  background-color: var(--sys-color-yellow-bright);
+  color: var(--sys-color-on-yellow);
+  padding: 0 2px;
 }
 
 .interaction-node {
@@ -263,6 +274,26 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
 .environment-recs-list {
   margin: 0;
   padding-left: 20px;
+}
+
+.link-to-interaction {
+  padding: unset;
+  background: unset;
+  border: unset;
+  font: inherit;
+  color: var(--sys-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@keyframes interaction-highlight-fadeout {
+  from {
+    background-color: var(--sys-color-yellow-container);
+  }
+
+  to {
+    background-color: transparent;
+  }
 }
 
 /*# sourceURL=liveMetricsView.css */

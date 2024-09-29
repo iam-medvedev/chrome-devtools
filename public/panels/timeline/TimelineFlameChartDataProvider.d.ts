@@ -70,8 +70,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     totalTime(): number;
     static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is Trace.Types.Events.Event;
     search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
-    isIgnoreListedEvent(event: Trace.Types.Events.Event): boolean;
-    private isIgnoreListedURL;
     getEntryTypeForLevel(level: number): EntryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;

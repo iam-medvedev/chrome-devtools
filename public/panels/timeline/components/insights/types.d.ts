@@ -1,13 +1,12 @@
 import type * as Overlays from '../../overlays/overlays.js';
-export declare enum InsightsCategories {
+export declare enum Category {
     ALL = "All",
     INP = "INP",
     LCP = "LCP",
-    CLS = "CLS",
-    OTHER = "Other"
+    CLS = "CLS"
 }
 export interface ActiveInsight {
     name: string;
-    navigationId: string;
+    insightSetKey: string;
     createOverlayFn: (() => Overlays.Overlays.TimelineOverlay[]);
 }

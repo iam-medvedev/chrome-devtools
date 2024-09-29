@@ -32,6 +32,7 @@ export interface NoncompositedAnimationFailure {
 export interface LayoutShiftRootCausesData {
     iframeIds: string[];
     fontRequests: Types.Events.SyntheticNetworkRequest[];
+    nonCompositedAnimations: NoncompositedAnimationFailure[];
 }
 export declare function getNonCompositedFailure(event: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): CLSInsightResult;

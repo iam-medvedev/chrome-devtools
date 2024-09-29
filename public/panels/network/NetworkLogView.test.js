@@ -46,6 +46,11 @@ describeWithMockConnection('NetworkLogView', () => {
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
     });
+    afterEach(() => {
+        if (networkLogView) {
+            networkLogView.detach();
+        }
+    });
     let nextId = 0;
     function createNetworkRequest(url, options) {
         const effectiveTarget = options.target || target;
@@ -203,7 +208,6 @@ describeWithMockConnection('NetworkLogView', () => {
             assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [URL_1, URL_2]);
             networkLogView.setTextFilterValue('favicon');
             assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [URL_2]);
-            networkLogView.detach();
         });
         it('shows summary toolbar with content', () => {
             target.setInspectedURL('http://example.com/');
@@ -235,7 +239,6 @@ describeWithMockConnection('NetworkLogView', () => {
             else {
                 assert.strictEqual(textElements.length, 0);
             }
-            networkLogView.detach();
         });
     };
     describe('in scope', tests(true));
@@ -258,7 +261,6 @@ describeWithMockConnection('NetworkLogView', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(anotherTarget);
         await coordinator.done();
         assert.deepEqual(rootNode.children.map(n => n.request()), preserveLog ? [request1, request2, request3] : [request3]);
-        networkLogView.detach();
     };
     it('replaces requests when switching scope with preserve log off', handlesSwitchingScope(false));
     it('appends requests when switching scope with preserve log on', handlesSwitchingScope(true));
@@ -280,7 +282,6 @@ describeWithMockConnection('NetworkLogView', () => {
         activate(target);
         await coordinator.done();
         assert.deepEqual(rootNode.children.map(n => n.request()), [request1, request2, request3]);
-        networkLogView.detach();
     });
     it('hide Chrome extension requests from checkbox', async () => {
         createNetworkRequest('chrome-extension://url1', { target });
@@ -292,7 +293,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['chrome-extension://url1', 'url2']);
         clickCheckbox(hideExtCheckbox);
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['url2']);
-        networkLogView.detach();
     });
     it('can hide Chrome extension requests from dropdown', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
@@ -314,7 +314,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.isTrue(hideExtensionURL.hasAttribute('checked'));
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['url2']);
         dropdown.discard();
-        networkLogView.detach();
     });
     it('displays correct count for more filters', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
@@ -331,7 +330,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.strictEqual(getMoreFiltersActiveCount(filterBar), '1');
         assert.isFalse(getCountAdorner(filterBar)?.classList.contains('hidden'));
         dropdown.discard();
-        networkLogView.detach();
     });
     it('can filter requests with blocked response cookies from checkbox', async () => {
         const request1 = createNetworkRequest('url1', { target });
@@ -349,7 +347,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [
             'url1',
         ]);
-        networkLogView.detach();
     });
     it('can filter requests with blocked response cookies from dropdown', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
@@ -382,7 +379,6 @@ describeWithMockConnection('NetworkLogView', () => {
         dropdown.discard();
         assert.isTrue(umaCountSpy.calledOnceWith(1));
         assert.isTrue(umaItemSpy.calledOnceWith('Blocked response cookies'));
-        networkLogView.detach();
     });
     it('lists selected options in more filters tooltip', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
@@ -404,7 +400,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.isTrue(umaItemSpy.calledTwice);
         assert.isTrue(umaItemSpy.calledWith('Hide extension URLs'));
         assert.isTrue(umaItemSpy.calledWith('Blocked response cookies'));
-        networkLogView.detach();
     });
     it('updates tooltip to default when more filters option deselected', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
@@ -421,7 +416,6 @@ describeWithMockConnection('NetworkLogView', () => {
         await selectMoreFiltersOption(softMenu, 'Blocked response cookies');
         assert.strictEqual(button.title, 'Show only/hide requests');
         dropdown.discard();
-        networkLogView.detach();
     });
     it('can remove requests', async () => {
         networkLogView = createNetworkLogView();
@@ -432,7 +426,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.strictEqual(rootNode.children.length, 1);
         networkLog.dispatchEventToListeners(Logs.NetworkLog.Events.RequestRemoved, { request });
         assert.strictEqual(rootNode.children.length, 0);
-        networkLogView.detach();
     });
     it('correctly shows and hides waterfall column', async () => {
         const columnSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});
@@ -485,7 +478,6 @@ describeWithMockConnection('NetworkLogView', () => {
             urlContentOverridden,
             urlHeaderAndContentOverridden,
         ]);
-        networkLogView.detach();
     });
     it('can apply filter - has-overrides:no', async () => {
         const { urlNotOverridden } = createOverrideRequests();
@@ -498,7 +490,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [
             urlNotOverridden,
         ]);
-        networkLogView.detach();
     });
     it('can apply filter - has-overrides:headers', async () => {
         const { urlHeaderOverridden, urlHeaderAndContentOverridden } = createOverrideRequests();
@@ -512,7 +503,6 @@ describeWithMockConnection('NetworkLogView', () => {
             urlHeaderOverridden,
             urlHeaderAndContentOverridden,
         ]);
-        networkLogView.detach();
     });
     it('can apply filter - has-overrides:content', async () => {
         const { urlContentOverridden, urlHeaderAndContentOverridden } = createOverrideRequests();
@@ -526,7 +516,6 @@ describeWithMockConnection('NetworkLogView', () => {
             urlContentOverridden,
             urlHeaderAndContentOverridden,
         ]);
-        networkLogView.detach();
     });
     it('can apply filter - has-overrides:tent', async () => {
         const { urlHeaderAndContentOverridden, urlContentOverridden } = createOverrideRequests();
@@ -540,7 +529,6 @@ describeWithMockConnection('NetworkLogView', () => {
             urlContentOverridden,
             urlHeaderAndContentOverridden,
         ]);
-        networkLogView.detach();
     });
     it('"Copy all" commands respects filters', async () => {
         createOverrideRequests();
@@ -660,7 +648,6 @@ Invoke-WebRequest -UseBasicParsing -Uri "url-header-overridden";\r
 Invoke-WebRequest -UseBasicParsing -Uri "url-content-overridden";\r
 Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
         copyText.resetHistory();
-        networkLogView.detach();
     });
     it('skips unknown columns without title in persistence setting', async () => {
         const columnSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});

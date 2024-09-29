@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../models/trace/trace.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Timeline from './timeline.js';
 const { getAnnotationEntries, getAnnotationWindow, } = Timeline.AnnotationHelpers;
 describe('AnnotationHelpers', () => {
@@ -26,9 +27,10 @@ describe('AnnotationHelpers', () => {
         });
         it('returns both entries for a link', async () => {
             const annotation = {
+                type: 'ENTRIES_LINK',
+                state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
                 entryFrom: FAKE_ENTRY_1,
                 entryTo: FAKE_ENTRY_2,
-                type: 'ENTRIES_LINK',
             };
             assert.deepEqual(getAnnotationEntries(annotation), [FAKE_ENTRY_1, FAKE_ENTRY_2]);
         });
@@ -68,15 +70,75 @@ describe('AnnotationHelpers', () => {
         });
         it('returns the bounds based on the start and end entry for an ENTRIES_LINK', async () => {
             const annotation = {
+                type: 'ENTRIES_LINK',
+                state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
                 entryFrom: FAKE_ENTRY_1,
                 entryTo: FAKE_ENTRY_2,
-                type: 'ENTRIES_LINK',
             };
             assert.deepEqual(getAnnotationWindow(annotation), {
                 min: 1,
                 max: 25,
                 range: 24,
             });
+        });
+    });
+    describeWithEnvironment('Aria Announcement', () => {
+        const { ariaAnnouncementForModifiedEvent } = Timeline.AnnotationHelpers;
+        const FAKE_ENTRY_1 = {
+            name: 'fake-one',
+            ts: 1,
+            dur: 10,
+        };
+        const FAKE_ENTRY_2 = {
+            name: 'fake-two',
+            ts: 10,
+            dur: 10,
+        };
+        it('returns text for an annotation being removed', () => {
+            const overlay = { type: 'ENTRY_LABEL', entry: FAKE_ENTRY_1, label: 'Hello world' };
+            const event = new Timeline.ModificationsManager.AnnotationModifiedEvent(overlay, 'Remove');
+            const text = ariaAnnouncementForModifiedEvent(event);
+            assert.strictEqual(text, 'The entry label annotation has been removed');
+        });
+        it('returns text for entering the edit state on a label', () => {
+            const overlay = { type: 'ENTRY_LABEL', entry: FAKE_ENTRY_1, label: 'Hello world' };
+            const event = new Timeline.ModificationsManager.AnnotationModifiedEvent(overlay, 'EnterLabelEditState');
+            const text = ariaAnnouncementForModifiedEvent(event);
+            assert.strictEqual(text, 'Editing the annotation label text');
+        });
+        it('returns text for an annotation being added', async () => {
+            const overlay = { type: 'ENTRY_LABEL', entry: FAKE_ENTRY_1, label: 'Hello world' };
+            const event = new Timeline.ModificationsManager.AnnotationModifiedEvent(overlay, 'Add');
+            const text = ariaAnnouncementForModifiedEvent(event);
+            assert.strictEqual(text, 'The entry label annotation has been added');
+        });
+        it('returns text for an annotation having its label updated', async () => {
+            const overlay = { type: 'ENTRY_LABEL', entry: FAKE_ENTRY_1, label: 'Hello world' };
+            const event = new Timeline.ModificationsManager.AnnotationModifiedEvent(overlay, 'UpdateLabel');
+            const text = ariaAnnouncementForModifiedEvent(event);
+            assert.strictEqual(text, 'Label updated to Hello world');
+        });
+        it('returns text for a time range having its bounds updated', async () => {
+            const timeRange = {
+                type: 'TIME_RANGE',
+                bounds: Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.MicroSeconds(0), Trace.Types.Timing.MicroSeconds(10)),
+                label: 'hello',
+                showDuration: true,
+            };
+            const event = new Timeline.ModificationsManager.AnnotationModifiedEvent(timeRange, 'UpdateTimeRange');
+            const text = ariaAnnouncementForModifiedEvent(event);
+            assert.strictEqual(text, 'Time range bounds updated');
+        });
+        it('returns text when an entries link has its entries connected', async () => {
+            const link = {
+                type: 'ENTRIES_LINK',
+                state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
+                entryFrom: FAKE_ENTRY_1,
+                entryTo: FAKE_ENTRY_2,
+            };
+            const event = new Timeline.ModificationsManager.AnnotationModifiedEvent(link, 'UpdateLinkToEntry');
+            const text = ariaAnnouncementForModifiedEvent(event);
+            assert.strictEqual(text, 'The connected entries annotation now links from fake-one to fake-two');
         });
     });
 });

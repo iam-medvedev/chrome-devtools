@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Root from '../../../core/root/root.js';
+import * as Adorners from '../../../ui/components/adorners/adorners.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { SidebarAnnotationsTab } from './SidebarAnnotationsTab.js';
 import { SidebarInsightsTab } from './SidebarInsightsTab.js';
@@ -37,6 +38,7 @@ export class SidebarWidget extends UI.Widget.VBox {
     #tabbedPane = new UI.TabbedPane.TabbedPane();
     #insightsView = new InsightsView();
     #annotationsView = new AnnotationsView();
+    #annotationCount = 0;
     /**
      * Track if the user has opened the sidebar before. We do this so that the
      * very first time they record/import a trace after the sidebar ships, we can
@@ -62,12 +64,29 @@ export class SidebarWidget extends UI.Widget.VBox {
         if (!this.#tabbedPane.hasTab("annotations" /* SidebarTabs.ANNOTATIONS */) &&
             Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
             this.#tabbedPane.appendTab('annotations', 'Annotations', this.#annotationsView, undefined, undefined, false, false, 1, 'timeline.annotations-tab');
+            this.#updateAnnotationsCountBadge();
         }
         // TODO: automatically select the right tab depending on what content is
         // available to us.
     }
     setAnnotations(updatedAnnotations, annotationEntryToColorMap) {
         this.#annotationsView.setAnnotations(updatedAnnotations, annotationEntryToColorMap);
+        this.#annotationCount = updatedAnnotations.length;
+        this.#updateAnnotationsCountBadge();
+    }
+    #updateAnnotationsCountBadge() {
+        let countAdorner = null;
+        if (this.#annotationCount > 0) {
+            countAdorner = new Adorners.Adorner.Adorner();
+            const countSpan = document.createElement('span');
+            countSpan.textContent = this.#annotationCount.toString();
+            countAdorner.data = {
+                name: 'countWrapper',
+                content: countSpan,
+            };
+            countAdorner.classList.add('annotations-count');
+        }
+        this.#tabbedPane.setSuffixElement('annotations', countAdorner);
     }
     setParsedTrace(parsedTrace) {
         this.#insightsView.setParsedTrace(parsedTrace);
@@ -104,6 +123,8 @@ class AnnotationsView extends UI.Widget.VBox {
         this.element.appendChild(this.#component);
     }
     setAnnotations(annotations, annotationEntryToColorMap) {
+        // The component will only re-render when set the annotations, so we should
+        // set the `annotationEntryToColorMap` first.
         this.#component.annotationEntryToColorMap = annotationEntryToColorMap;
         this.#component.annotations = annotations;
     }

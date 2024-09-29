@@ -85,8 +85,8 @@ export interface AidaResponse {
 export declare const enum AidaAccessPreconditions {
     AVAILABLE = "available",
     NO_ACCOUNT_EMAIL = "no-account-email",
-    NO_ACTIVE_SYNC = "no-active-sync",
-    NO_INTERNET = "no-internet"
+    NO_INTERNET = "no-internet",
+    SYNC_IS_PAUSED = "sync-is-paused"
 }
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
 export declare class AidaAbortError extends Error {

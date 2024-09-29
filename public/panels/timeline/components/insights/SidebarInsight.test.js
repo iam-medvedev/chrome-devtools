@@ -11,7 +11,7 @@ describeWithEnvironment('SidebarInsight', () => {
     describe('sidebar insight component rendering', () => {
         it('renders insight title', async () => {
             const component = new SidebarInsight();
-            component.data = { title: 'LCP by Phase', expanded: true };
+            component.data = { title: 'LCP by Phase', description: '', expanded: true, internalName: 'lcp-by-phase' };
             renderElementIntoDOM(component);
             await coordinator.done();
             assert.isNotNull(component.shadowRoot);
@@ -22,32 +22,33 @@ describeWithEnvironment('SidebarInsight', () => {
         describe('insight toggling', () => {
             it('renders only insight title when not toggled', async () => {
                 const component = new SidebarInsight();
-                component.data = { title: 'LCP by Phase', expanded: false };
+                component.data = { title: 'LCP by Phase', description: '', expanded: false, internalName: 'lcp-by-phase' };
                 renderElementIntoDOM(component);
                 await coordinator.done();
                 assert.isNotNull(component.shadowRoot);
                 const titleElement = component.shadowRoot.querySelector('.insight-title');
                 assert.isNotNull(titleElement);
                 assert.deepEqual(titleElement.textContent, 'LCP by Phase');
-                // Should not contain the description and content slots.
+                // Should not contain the content slot.
                 const slotElements = component.shadowRoot.querySelectorAll('slot');
                 assert.isEmpty(slotElements);
             });
             it('renders title, description and content when toggled', async () => {
                 const component = new SidebarInsight();
-                component.data = { title: 'LCP by Phase', expanded: true };
+                component.data = { title: 'LCP by Phase', description: 'desc', expanded: true, internalName: 'lcp-by-phase' };
                 renderElementIntoDOM(component);
                 await coordinator.done();
                 assert.isNotNull(component.shadowRoot);
                 const titleElement = component.shadowRoot.querySelector('.insight-title');
                 assert.isNotNull(titleElement);
                 assert.deepEqual(titleElement.textContent, 'LCP by Phase');
+                const descriptionElement = component.shadowRoot.querySelector('.insight-description');
+                assert.isNotNull(descriptionElement);
+                // It's in the markdown component.
+                assert.strictEqual(descriptionElement.children[0].shadowRoot?.textContent?.trim(), 'desc');
                 const slotElements = component.shadowRoot.querySelectorAll('slot');
                 assert.isNotEmpty(slotElements);
-                const descriptionSlot = slotElements[0];
-                assert.isNotNull(descriptionSlot);
-                assert.strictEqual(descriptionSlot.name, 'insight-description');
-                const contentSlot = slotElements[1];
+                const contentSlot = slotElements[0];
                 assert.isNotNull(contentSlot);
                 assert.strictEqual(contentSlot.name, 'insight-content');
             });

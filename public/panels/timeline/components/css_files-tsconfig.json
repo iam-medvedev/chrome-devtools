@@ -17,6 +17,6 @@
         "networkThrottlingSelector.css.js",
         "sidebarAnnotationsTab.css.js",
         "sidebarInsightsTab.css.js",
-        "sidebarSingleNavigation.css.js"
+        "sidebarSingleInsightSet.css.js"
     ]
 }

@@ -15,12 +15,10 @@ table {
   width: 100%;
   padding: 5px 0;
   border-collapse: collapse;
-  /* TODO(cjamcl): figure out the styling. This is from the mocks but other stuff needs to change too else
-     it looks awful. */
-  /*
-  border: 1px solid #D3E3FD;
-  border-radius: 4px; */
-  margin: 5px 0;
+}
+
+thead {
+  white-space: nowrap;
 }
 
 table tr > * {
@@ -31,18 +29,18 @@ table tr > *:first-child {
   text-align: left;
 }
 
-table.hoverable tbody tr:hover,
-table.hoverable tbody tr.selected {
+table.interactive tbody tr {
+  cursor: pointer;
+}
+
+table.interactive tbody tr:hover,
+table.interactive tbody tr.selected {
   background-color: var(--app-color-performance-sidebar-table-row-hover);
 }
 
 table th[scope="row"] {
   font-weight: normal;
   padding: 3px 0;
-}
-
-td {
-  font-weight: bold;
 }
 
 /*# sourceURL=table.css */

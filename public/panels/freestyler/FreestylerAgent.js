@@ -6,6 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { ResponseType } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
@@ -22,10 +23,12 @@ The user selected a DOM element in the browser's DevTools and sends a query abou
 * When presenting solutions, clearly distinguish between the primary cause and contributing factors.
 * Please answer only if you are sure about the answer. Otherwise, explain why you're not able to answer.
 * When answering, always consider MULTIPLE possible solutions.
+* You're also capable of executing the fix for the issue user mentioned. Reflect this in your suggestions.
 * Use \`window.getComputedStyle\` to gather **rendered** styles and make sure that you take the distinction between authored styles and computed styles into account.
 * **CRITICAL** Use \`window.getComputedStyle\` ALWAYS with property access, like \`window.getComputedStyle($0.parentElement)['color']\`.
 * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
 * **CRITICAL** Consider that \`data\` variable from the previous ACTION blocks are not available in a different ACTION block.
+* **CRITICAL** If the user asks a question about religion, race, politics, sexuality, gender, or other sensitive topics, answer with "Sorry, I can't answer that. I'm best at questions about debugging web pages."
 
 # Instructions
 You are going to answer to the query in these steps:
@@ -33,7 +36,7 @@ You are going to answer to the query in these steps:
 * TITLE
 * ACTION
 * ANSWER
-* FIXABLE
+* SUGGESTIONS
 Use THOUGHT to explain why you take the ACTION. Use TITLE to provide a short summary of the thought.
 Use ACTION to evaluate JavaScript code on the page to gather all the data needed to answer the query and put it inside the data variable - then return STOP.
 You have access to a special $0 variable referencing the current element in the scope of the JavaScript code.
@@ -43,7 +46,7 @@ Please run ACTION again if the information you received is not enough to answer 
 Please answer only if you are sure about the answer. Otherwise, explain why you're not able to answer.
 When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.
 When answering, always consider MULTIPLE possible solutions.
-After the ANSWER, output FIXABLE: true if the user request needs a fix using JavaScript or Web APIs and it has not been fixed previously.
+After the ANSWER, output SUGGESTIONS: string[] for the potential responses the user might give. Make sure that the array and the \`SUGGESTIONS: \` text is in the same line.
 
 If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function.
 
@@ -99,20 +102,10 @@ STOP
 OBSERVATION: {"elementStyles":{"display":"block","visibility":"visible","position":"absolute","zIndex":"3","opacity":"1"},"parentStyles":{"display":"block","visibility":"visible","position":"relative","zIndex":"1","opacity":"1"},"overlappingElements":[{"tagName":"HTML","id":"","className":"","zIndex":"auto"},{"tagName":"BODY","id":"","className":"","zIndex":"auto"},{"tagName":"DIV","id":"","className":"container","zIndex":"auto"},{"tagName":"DIV","id":"","className":"background","zIndex":"2"}]}"
 
 ANSWER: Even though the popup itself has a z-index of 3, its parent container has position: relative and z-index: 1. This creates a new stacking context for the popup. Because the "background" div has a z-index of 2, which is higher than the stacking context of the popup, it is rendered on top, obscuring the popup.
-FIXABLE: true
+SUGGESTIONS: ["What is a stacking context?", "How can I change the stacking order?"]
 `;
 /* clang-format on */
 export const FIX_THIS_ISSUE_PROMPT = 'Fix this issue using JavaScript code execution';
-export var ResponseType;
-(function (ResponseType) {
-    ResponseType["TITLE"] = "title";
-    ResponseType["THOUGHT"] = "thought";
-    ResponseType["ACTION"] = "action";
-    ResponseType["SIDE_EFFECT"] = "side-effect";
-    ResponseType["ANSWER"] = "answer";
-    ResponseType["ERROR"] = "error";
-    ResponseType["QUERYING"] = "querying";
-})(ResponseType || (ResponseType = {}));
 async function executeJsCode(code, { throwOnSideEffect }) {
     const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
@@ -151,6 +144,7 @@ const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
 export class FreestylerAgent {
     static buildRequest(opts) {
         const config = Common.Settings.Settings.instance().getHostConfig();
+        const temperature = config.devToolsFreestylerDogfood?.temperature;
         const request = {
             input: opts.input,
             preamble: opts.preamble,
@@ -158,11 +152,10 @@ export class FreestylerAgent {
             chat_history: opts.chatHistory,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
-                temperature: config.devToolsFreestylerDogfood?.temperature ?? 0,
+                ...(temperature !== undefined && temperature >= 0) && { temperature },
                 model_id: config.devToolsFreestylerDogfood?.modelId ?? undefined,
             },
             metadata: {
-                // TODO: disable logging based on query params.
                 disable_user_content_logging: !(opts.serverSideLoggingEnabled ?? false),
                 string_session_id: opts.sessionId,
                 user_tier: Host.AidaClient.convertToUserTierEnum(config.devToolsFreestylerDogfood?.userTier),
@@ -175,18 +168,37 @@ export class FreestylerAgent {
         return request;
     }
     static parseResponse(response) {
+        // We're returning an empty answer to denote the erroneous case.
+        if (!response) {
+            return { answer: '', suggestions: [] };
+        }
         const lines = response.split('\n');
         let thought;
         let title;
         let action;
         let answer;
-        let fixable = false;
+        let suggestions = [];
         let i = 0;
+        // If one of these is present, it means we're going to follow the instruction tags
+        // to parse the response. If none of these is present, we'll assume the whole `response`
+        // to be the `answer`.
+        const isDefiningInstructionStart = (line) => {
+            const trimmed = line.trim();
+            return trimmed.startsWith('THOUGHT:') || trimmed.startsWith('ACTION') || trimmed.startsWith('ANSWER:');
+        };
         const isInstructionStart = (line) => {
             const trimmed = line.trim();
-            return trimmed.startsWith('THOUGHT:') || trimmed.startsWith('OBSERVATION:') || trimmed.startsWith('TITLE:') ||
-                trimmed.startsWith('ACTION') || trimmed.startsWith('ANSWER:') || trimmed.startsWith('FIXABLE:');
+            return isDefiningInstructionStart(line) || trimmed.startsWith('OBSERVATION:') || trimmed.startsWith('TITLE:') ||
+                trimmed.startsWith('SUGGESTIONS:');
         };
+        // Sometimes agent answers with no "ANSWER: " tag at the start, and also does not
+        // include any "defining instructions". Then we use the whole `response` as the answer.
+        // However, that case sometimes includes `SUGGESTIONS: ` tag in the response which is then shown to the user.
+        // The block below ensures that the response we parse always contains a defining instruction tag.
+        const hasDefiningInstruction = lines.some(line => isDefiningInstructionStart(line));
+        if (!hasDefiningInstruction) {
+            return FreestylerAgent.parseResponse(`ANSWER: ${response}`);
+        }
         while (i < lines.length) {
             const trimmed = lines[i].trim();
             if (trimmed.startsWith('THOUGHT:') && !thought) {
@@ -235,20 +247,44 @@ export class FreestylerAgent {
                 answer = answerLines.join('\n').trim();
                 i = j;
             }
-            else if (trimmed.startsWith('FIXABLE: true')) {
-                fixable = true;
+            else if (trimmed.startsWith('SUGGESTIONS:')) {
+                try {
+                    suggestions = JSON.parse(trimmed.substring('SUGGESTIONS:'.length).trim());
+                }
+                catch (err) {
+                    suggestions = [];
+                }
                 i++;
             }
             else {
                 i++;
             }
         }
-        // If we could not parse the parts, consider the response to be an
-        // answer.
-        if (!answer && !thought && !action) {
-            answer = response;
+        // Sometimes the answer will follow an action and a thought. In
+        // that case, we only use the action and the thought (if present)
+        // since the answer is not based on the observation resulted from
+        // the action.
+        if (action) {
+            return {
+                title,
+                thought,
+                action,
+            };
         }
-        return { thought, title, action, answer, fixable };
+        // If we have a thought and an answer we want to give priority
+        // to the answer as no observation is happening.
+        if (thought && !answer) {
+            return {
+                title,
+                thought,
+            };
+        }
+        return {
+            // If we could not parse the parts, consider the response to be an
+            // answer.
+            answer: answer || response,
+            suggestions,
+        };
     }
     #aidaClient;
     #chatHistory = new Map();
@@ -408,9 +444,6 @@ export class FreestylerAgent {
             '';
         query = `${elementEnchantmentQuery}QUERY: ${query}`;
         const currentRunId = ++this.#runId;
-        options.signal?.addEventListener('abort', () => {
-            this.#chatHistory.delete(currentRunId);
-        });
         for (let i = 0; i < MAX_STEPS; i++) {
             yield {
                 type: ResponseType.QUERYING,
@@ -434,6 +467,7 @@ export class FreestylerAgent {
             catch (err) {
                 debugLog('Error calling the AIDA API', err);
                 if (err instanceof Host.AidaClient.AidaAbortError) {
+                    this.#chatHistory.delete(currentRunId);
                     yield {
                         type: ResponseType.ERROR,
                         error: "abort" /* ErrorType.ABORT */,
@@ -446,9 +480,6 @@ export class FreestylerAgent {
                     error: "unknown" /* ErrorType.UNKNOWN */,
                     rpcId,
                 };
-                break;
-            }
-            if (options.signal?.aborted) {
                 break;
             }
             debugLog({
@@ -474,41 +505,58 @@ export class FreestylerAgent {
                 ]);
             };
             const currentRunEntries = this.#chatHistory.get(currentRunId) ?? [];
-            const { thought, title, action, answer, fixable } = FreestylerAgent.parseResponse(response);
-            // Sometimes the answer will follow an action and a thought. In
-            // that case, we only use the action and the thought (if present)
-            // since the answer is not based on the observation resulted from
-            // the action.
-            if (action) {
-                if (title) {
+            const parsedResponse = FreestylerAgent.parseResponse(response);
+            if ('answer' in parsedResponse) {
+                const { answer, suggestions, } = parsedResponse;
+                if (answer) {
+                    addToHistory(`ANSWER: ${answer}`);
                     yield {
-                        type: ResponseType.TITLE,
-                        title,
+                        type: ResponseType.ANSWER,
+                        text: answer,
+                        rpcId,
+                        suggestions,
+                    };
+                }
+                else {
+                    yield {
+                        type: ResponseType.ERROR,
+                        error: "unknown" /* ErrorType.UNKNOWN */,
                         rpcId,
                     };
                 }
-                if (thought) {
-                    addToHistory(`THOUGHT: ${thought}
+                break;
+            }
+            const { title, thought, action, } = parsedResponse;
+            if (title) {
+                yield {
+                    type: ResponseType.TITLE,
+                    title,
+                    rpcId,
+                };
+            }
+            if (thought) {
+                addToHistory(`THOUGHT: ${thought}
 TITLE: ${title}
 ACTION
 ${action}
 STOP`);
-                    yield {
-                        type: ResponseType.THOUGHT,
-                        thought,
-                        rpcId,
-                    };
-                }
-                else {
-                    addToHistory(`ACTION
+                yield {
+                    type: ResponseType.THOUGHT,
+                    thought,
+                    rpcId,
+                };
+            }
+            else {
+                addToHistory(`ACTION
 ${action}
 STOP`);
-                }
+            }
+            if (action) {
                 debugLog(`Action to execute: ${action}`);
                 const scope = this.#createExtensionScope(this.#changes);
                 await scope.install();
                 try {
-                    let result = await this.#generateObservation(action, { throwOnSideEffect: !options.isFixQuery });
+                    let result = await this.#generateObservation(action, { throwOnSideEffect: true });
                     debugLog(`Action result: ${JSON.stringify(result)}`);
                     if (result.sideEffect) {
                         const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
@@ -538,25 +586,6 @@ STOP`);
                 finally {
                     await scope.uninstall();
                 }
-            }
-            else if (answer) {
-                addToHistory(`ANSWER: ${answer}`);
-                yield {
-                    type: ResponseType.ANSWER,
-                    text: answer,
-                    rpcId,
-                    fixable,
-                };
-                break;
-            }
-            else {
-                addToHistory(response);
-                yield {
-                    type: ResponseType.ERROR,
-                    error: "unknown" /* ErrorType.UNKNOWN */,
-                    rpcId,
-                };
-                break;
             }
             if (i === MAX_STEPS - 1) {
                 yield {

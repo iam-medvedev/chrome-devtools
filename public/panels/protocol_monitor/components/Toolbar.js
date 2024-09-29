@@ -66,7 +66,7 @@ let Toolbar = class Toolbar extends LitElement {
           jslog=${VisualLogging.action('protocol-monitor.copy-command').track({ click: true })}
         ></${Buttons.Button.Button.litTagName}>
         <${Buttons.Button.Button.litTagName}
-          .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+          .size=${"REGULAR" /* Buttons.Button.Size.REGULAR */}
           title=${Host.Platform.isMac() ? i18nString(UIStrings.sendCommandCmdEnter) : i18nString(UIStrings.sendCommandCtrlEnter)}
           .iconUrl=${sendIconUrl}
           .variant=${"primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */}

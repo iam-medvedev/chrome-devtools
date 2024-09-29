@@ -88,7 +88,7 @@ function getSelfTimeByUrl(parsedTrace, context) {
                     if (!node || !node.selfTime) {
                         continue;
                     }
-                    const url = Extras.URLForEntry.get(parsedTrace, event);
+                    const url = Extras.URLForEntry.getNonResolved(parsedTrace, event);
                     if (!url) {
                         continue;
                     }
@@ -130,20 +130,15 @@ function getSummaries(requests, entityByRequest, selfTimeByUrl) {
     return { byEntity, byRequest, requestsByEntity };
 }
 export function generateInsight(parsedTrace, context) {
-    const networkRequests = [];
-    for (const req of parsedTrace.NetworkRequests.byTime) {
+    const networkRequests = parsedTrace.NetworkRequests.byTime.filter(event => {
         if (!context.navigation) {
-            break;
+            return false;
         }
-        if (req.args.data.frame !== context.frameId) {
-            continue;
+        if (event.args.data.frame !== context.frameId) {
+            return false;
         }
-        // TODO(crbug.com/366049346): use context.bounds instead
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, parsedTrace.Meta.navigationsByFrameId);
-        if (navigation === context.navigation) {
-            networkRequests.push(req);
-        }
-    }
+        return Helpers.Timing.eventIsInBounds(event, context.bounds);
+    });
     const entityByRequest = new Map();
     const madeUpEntityCache = new Map();
     for (const request of networkRequests) {

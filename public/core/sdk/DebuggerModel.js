@@ -111,6 +111,11 @@ export function sortAndMergeRanges(locationRanges) {
     merged.push(prev);
     return merged;
 }
+export const WASM_SYMBOLS_PRIORITY = [
+    "ExternalDWARF" /* Protocol.Debugger.DebugSymbolsType.ExternalDWARF */,
+    "EmbeddedDWARF" /* Protocol.Debugger.DebugSymbolsType.EmbeddedDWARF */,
+    "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */,
+];
 export class DebuggerModel extends SDKModel {
     agent;
     runtimeModelInternal;
@@ -184,6 +189,32 @@ export class DebuggerModel extends SDKModel {
         if (resourceTreeModel) {
             resourceTreeModel.addEventListener(ResourceTreeModelEvents.FrameNavigated, this.onFrameNavigated, this);
         }
+    }
+    static selectSymbolSource(debugSymbols) {
+        if (!debugSymbols || debugSymbols.length === 0) {
+            return null;
+        }
+        // Provides backwards compatibility to previous CDP version on Protocol.Debugger.DebugSymbols.
+        // TODO(crbug.com/369515221): Remove extra code as soon as old v8 versions used in Node are no longer supported.
+        if ('type' in debugSymbols) {
+            if (debugSymbols.type === 'None') {
+                return null;
+            }
+            return debugSymbols;
+        }
+        let debugSymbolsSource = null;
+        const symbolTypes = new Map(debugSymbols.map(symbol => [symbol.type, symbol]));
+        for (const symbol of WASM_SYMBOLS_PRIORITY) {
+            if (symbolTypes.has(symbol)) {
+                debugSymbolsSource = symbolTypes.get(symbol) || null;
+                break;
+            }
+        }
+        console.assert(debugSymbolsSource !== null, 'Unknown symbol types. Front-end and back-end should be kept in sync regarding Protocol.Debugger.DebugSymbolTypes');
+        if (debugSymbolsSource && debugSymbols.length > 1) {
+            Common.Console.Console.instance().warn(`Multiple debug symbols for script were found. Using ${debugSymbolsSource.type}`);
+        }
+        return debugSymbolsSource;
     }
     sourceMapManager() {
         return this.#sourceMapManagerInternal;
@@ -586,7 +617,8 @@ export class DebuggerModel extends SDKModel {
         if (executionContextAuxData && ('isDefault' in executionContextAuxData)) {
             isContentScript = !executionContextAuxData['isDefault'];
         }
-        const script = new Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURLComment, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName);
+        const selectedDebugSymbol = DebuggerModel.selectSymbolSource(debugSymbols);
+        const script = new Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURLComment, length, isModule, originStackTrace, codeOffset, scriptLanguage, selectedDebugSymbol, embedderName);
         this.registerScript(script);
         this.dispatchEventToListeners(Events.ParsedScriptSource, script);
         if (script.sourceMapURL && !hasSyntaxError) {

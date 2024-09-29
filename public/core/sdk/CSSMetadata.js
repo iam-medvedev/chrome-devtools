@@ -90,9 +90,12 @@ export class CSSMetadata {
             this.#nameValuePresetsIncludingSVG.push(...presets);
         }
     }
+    static isCSSWideKeyword(a) {
+        return CSSWideKeywords.includes(a);
+    }
     static sortPrefixesAndCSSWideKeywordsToEnd(a, b) {
-        const aIsCSSWideKeyword = CSSWideKeywords.includes(a);
-        const bIsCSSWideKeyword = CSSWideKeywords.includes(b);
+        const aIsCSSWideKeyword = CSSMetadata.isCSSWideKeyword(a);
+        const bIsCSSWideKeyword = CSSMetadata.isCSSWideKeyword(b);
         if (aIsCSSWideKeyword && !bIsCSSWideKeyword) {
             return 1;
         }
@@ -274,10 +277,15 @@ export class CSSMetadata {
             pseudoType === "spelling-error" /* Protocol.DOM.PseudoType.SpellingError */);
     }
 }
-// CSS-wide keywords.
 // Spec: https://drafts.csswg.org/css-cascade/#defaulting-keywords
 // https://drafts.csswg.org/css-cascade-5/#revert-layer
-export const CSSWideKeywords = ['inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+export const CSSWideKeywords = [
+    "inherit" /* CSSWideKeyword.INHERIT */,
+    "initial" /* CSSWideKeyword.INITIAL */,
+    "revert" /* CSSWideKeyword.REVERT */,
+    "revert-layer" /* CSSWideKeyword.REVERT_LAYER */,
+    "unset" /* CSSWideKeyword.UNSET */,
+];
 export const VariableNameRegex = /(\s*--.*?)/gs;
 export const VariableRegex = /(var\(\s*--.*?\))/gs;
 export const CustomVariableRegex = /(var\(*--[\w\d]+-([\w]+-[\w]+)\))/g;

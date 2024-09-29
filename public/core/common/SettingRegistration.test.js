@@ -105,7 +105,7 @@ describe('SettingRegistration', () => {
             config: {
                 devToolsConsoleInsights: {
                     modelId: 'mockModel',
-                    temperature: 0.2,
+                    temperature: -1,
                     enabled: true,
                 },
             },

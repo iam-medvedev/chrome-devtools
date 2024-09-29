@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { describeWithEnvironment, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Freestyler from './freestyler.js';
 function getTestAidaClient() {
     return {
@@ -24,7 +25,6 @@ describeWithEnvironment('FreestylerPanel', () => {
     });
     describe('consent view', () => {
         it('should render consent view when the consent is not given before', async () => {
-            Common.Settings.settingForTest('freestyler-dogfood-consent-onboarding-finished').set(false);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -32,22 +32,21 @@ describeWithEnvironment('FreestylerPanel', () => {
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
         });
-        it('should set the setting to true and render chat view on accept click', async () => {
-            const setting = Common.Settings.settingForTest('freestyler-dogfood-consent-onboarding-finished');
-            setting.set(false);
-            new Freestyler.FreestylerPanel(mockView, {
+        it('should switch from consent view to chat view when enabling setting', async () => {
+            const panel = new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                 syncInfo: getTestSyncInfo(),
             });
-            const callArgs = mockView.getCall(0).args[0];
-            mockView.reset();
-            callArgs.onAcceptConsentClick();
-            assert.isTrue(setting.get());
+            panel.markAsRoot();
+            panel.show(document.body);
+            sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
+            Common.Settings.moduleSetting('freestyler-enabled').set(true);
             sinon.assert.calledWith(mockView, sinon.match({ state: "chat-view" /* Freestyler.State.CHAT_VIEW */ }));
+            panel.detach();
         });
         it('should render chat view when the consent is given before', async () => {
-            Common.Settings.settingForTest('freestyler-dogfood-consent-onboarding-finished').set(true);
+            Common.Settings.moduleSetting('freestyler-enabled').set(true);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -57,12 +56,23 @@ describeWithEnvironment('FreestylerPanel', () => {
         });
     });
     describe('on rate click', () => {
-        beforeEach(() => {
-            Common.Settings.settingForTest('freestyler-dogfood-consent-onboarding-finished').set(true);
-        });
         afterEach(() => {
             // @ts-expect-error global test variable
             setFreestylerServerSideLoggingEnabled(false);
+        });
+        it('renders a button linking to settings', () => {
+            const stub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
+            const panel = new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            const toolbar = panel.contentElement.querySelector('.freestyler-right-toolbar');
+            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Settings\']');
+            assert.instanceOf(button, HTMLElement);
+            button.click();
+            assert.isTrue(stub.calledWith('chrome-ai'));
+            stub.restore();
         });
         it('should allow logging if configured', () => {
             // @ts-expect-error global test variable

@@ -2,8 +2,27 @@ import { type INPAttribution, type MetricType } from '../../../../third_party/we
 export declare const EVENT_BINDING_NAME = "__chromium_devtools_metrics_reporter";
 export declare const INTERNAL_KILL_SWITCH = "__chromium_devtools_kill_live_metrics";
 export type MetricChangeEvent = Pick<MetricType, 'name' | 'value'>;
+export type UniqueInteractionId = `interaction-${number}-${number}`;
+/**
+ * An interaction can have multiple associated `PerformanceEventTiming`s.
+ * The `interactionId` available on `PerformanceEventTiming` isn't guaranteed to be unique. (e.g. a `keyup` event issued long after a `keydown` event will have the same `interactionId`).
+ * Double-keying with the start time of the longest entry should uniquely identify each interaction.
+ */
+export declare function getUniqueInteractionId(entries: PerformanceEventTiming[]): UniqueInteractionId;
+export interface LCPPhases {
+    timeToFirstByte: number;
+    resourceLoadDelay: number;
+    resourceLoadTime: number;
+    elementRenderDelay: number;
+}
+export interface INPPhases {
+    inputDelay: number;
+    processingDuration: number;
+    presentationDelay: number;
+}
 export interface LCPChangeEvent extends MetricChangeEvent {
     name: 'LCP';
+    phases: LCPPhases;
     nodeIndex?: number;
 }
 export interface CLSChangeEvent extends MetricChangeEvent {
@@ -12,12 +31,13 @@ export interface CLSChangeEvent extends MetricChangeEvent {
 export interface INPChangeEvent extends MetricChangeEvent {
     name: 'INP';
     interactionType: INPAttribution['interactionType'];
-    nodeIndex?: number;
+    phases: INPPhases;
+    uniqueInteractionId: UniqueInteractionId;
 }
 export interface InteractionEvent {
     name: 'Interaction';
     interactionType: INPAttribution['interactionType'];
-    interactionId: number;
+    uniqueInteractionId: UniqueInteractionId;
     duration: number;
     nodeIndex?: number;
 }

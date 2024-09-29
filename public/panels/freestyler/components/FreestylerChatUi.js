@@ -9,18 +9,50 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as Spinners from '../../../ui/components/spinners/spinners.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
 import { ProvideFeedback } from './ProvideFeedback.js';
-const DOGFOOD_FEEDBACK_URL = 'https://goo.gle/freestyler-feedback';
-export const DOGFOOD_INFO = 'https://goo.gle/freestyler-dogfood';
+const UIStrings = {
+    /**
+     * @description The error message when the user is not logged in into Chrome.
+     */
+    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account',
+    /**
+     * @description Message shown when the user is offline.
+     */
+    offline: 'Check your internet connection and try again',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
+    /**
+     * @description Text for a link to Chrome DevTools Settings.
+     */
+    settingsLink: 'AI assistance in Settings',
+    /**
+     * @description Placeholder text for an inactive text field. When active, it's used for the user's input to the GenAI assistance.
+     */
+    followTheSteps: 'Follow the steps above to ask a question',
+    /**
+     *@description Text for asking the user to turn the AI assistance feature in settings first before they are able to use it.
+     *@example {AI assistance in Settings} PH1
+     */
+    turnOnForStyles: 'Turn on {PH1} to get help with understanding CSS styles',
+};
 /*
-  * TODO(nvitkov): b/346933425
-  * Temporary string that should not be translated
-  * as they may change often during development.
-  */
-const UIStringsTemp = {
+* Strings that don't need to be translated at this time.
+*/
+const UIStringsNotTranslate = {
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForFreestylerAgent: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForDrJonesNetworkAgent: 'Chat messages and the selected call stack are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
     /**
      *@description Placeholder text for the chat UI input.
      */
@@ -29,14 +61,6 @@ const UIStringsTemp = {
      *@description Placeholder text for the chat UI input.
      */
     inputPlaceholderForDrJonesNetworkAgent: 'Ask a question about the selected network request',
-    /**
-     *@description Disclaimer text right after the chat input.
-     */
-    inputDisclaimerForFreestylerAgent: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
-    /**
-     *@description Disclaimer text right after the chat input.
-     */
-    inputDisclaimerForDrJonesNetworkAgent: 'Chat messages and the selected network request are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
     /**
      *@description Title for the send icon button.
      */
@@ -54,17 +78,9 @@ const UIStringsTemp = {
      */
     noElementSelected: 'No element selected',
     /**
-     *@description Text for the empty state of the AI assistant panel.
+     *@description Text for the empty state of the AI assistance panel.
      */
     emptyStateText: 'How can I help you?',
-    /**
-     * @description The error message when the user is not logged in into Chrome.
-     */
-    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account',
-    /**
-     * @description The error message when the user is not logged in into Chrome.
-     */
-    syncIsOff: 'This feature requires you to turn on Chrome sync',
     /**
      * @description The error message when the LLM loop is stopped for some reason (Max steps reached or request to LLM failed)
      */
@@ -78,34 +94,6 @@ const UIStringsTemp = {
      */
     stoppedResponse: 'You stopped this response',
     /**
-     * @description Message shown when the user is offline.
-     */
-    offline: 'Check your internet connection and try again',
-    /**
-     *@description Heading for the consent view.
-     */
-    consentScreenHeading: 'Things to consider',
-    /**
-     *@description Title of the button for accepting in the consent screen.
-     */
-    acceptButtonTitle: 'Accept',
-    /**
-     *@description Consent view main text
-     */
-    consentTextAiDisclaimer: 'This feature uses AI and might produce inaccurate information.',
-    /**
-     *@description Consent view data collection text
-     */
-    consentTextDataDisclaimer: 'Your inputs and the information from the page you are using this feature for are sent to Google.',
-    /**
-     *@description Consent view data collection text
-     */
-    consentTextDoNotUseDisclaimer: 'Do not use on pages with personal or sensitive information.',
-    /**
-     *@description Consent view data visibility text
-     */
-    consentTextVisibilityDisclaimer: 'Data may be seen by human reviewers and can be used to improve this feature.',
-    /**
      * @description Side effect confirmation text
      */
     sideEffectConfirmationDescription: 'The code contains side effects. Do you wish to continue?',
@@ -118,10 +106,6 @@ const UIStringsTemp = {
      */
     negativeSideEffectConfirmation: 'Cancel',
     /**
-     *@description Name of the dogfood program.
-     */
-    dogfood: 'Dogfood',
-    /**
      *@description Link text for redirecting to feedback form
      */
     feedbackLink: 'Send feedback',
@@ -130,9 +114,9 @@ const UIStringsTemp = {
      */
     fixThisIssue: 'Fix this issue',
     /**
-     *@description The generic name of the AI Assistant (do not translate)
+     *@description The generic name of the AI assistance (do not translate)
      */
-    aiAssistant: 'AI assistant',
+    aiAssistance: 'AI assistance',
     /**
      *@description The fallback text when we can't find the user full name
      */
@@ -157,26 +141,39 @@ const UIStringsTemp = {
      *@description Heading text for the code block that shows the returned data.
      */
     dataReturned: 'Data returned',
+    /**
+     *@description The footer disclaimer that links to more information about the AI feature.
+     */
+    learnAbout: 'Learn about AI in DevTools',
+    /**
+     * @description Text for a link to Chrome DevTools Settings.
+     */
+    settingsLink: 'AI assistance in Settings',
+    /**
+     * @description Placeholder text for an inactive text field. When active, it's used for the user's input to the GenAI assistance.
+     */
+    followTheSteps: 'Follow the steps above to ask a question',
 };
-// const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
-// const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-/* eslint-disable  rulesdir/l10n_i18nString_call_only_with_uistrings */
-const i18nString = i18n.i18n.lockedString;
-function getInputPlaceholderString(aidaAvailability, agentType) {
+const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const lockedString = i18n.i18n.lockedString;
+function getInputPlaceholderString(aidaAvailability, agentType, state) {
+    if (state === "consent-view" /* State.CONSENT_VIEW */) {
+        return i18nString(UIStrings.followTheSteps);
+    }
     switch (aidaAvailability) {
         case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */:
             switch (agentType) {
                 case "freestyler" /* AgentType.FREESTYLER */:
-                    return i18nString(UIStringsTemp.inputPlaceholderForFreestylerAgent);
+                    return lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgent);
                 case "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */:
-                    return i18nString(UIStringsTemp.inputPlaceholderForDrJonesNetworkAgent);
+                    return lockedString(UIStringsNotTranslate.inputPlaceholderForDrJonesNetworkAgent);
             }
         case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
-            return i18nString(UIStringsTemp.notLoggedIn);
-        case "no-active-sync" /* Host.AidaClient.AidaAccessPreconditions.NO_ACTIVE_SYNC */:
-            return i18nString(UIStringsTemp.syncIsOff);
+        case "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */:
+            return i18nString(UIStrings.notLoggedIn);
         case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */:
-            return i18nString(UIStringsTemp.offline);
+            return i18nString(UIStrings.offline);
     }
 }
 // The model returns multiline code blocks in an erroneous way with the language being in new line.
@@ -243,8 +240,16 @@ export class FreestylerChatUi extends HTMLElement {
         }
         message.scrollIntoViewIfNeeded();
     }
+    #setInputText(text) {
+        const textArea = this.#shadow.querySelector('.chat-input');
+        if (!textArea) {
+            return;
+        }
+        textArea.value = text;
+    }
     #isTextInputDisabled = () => {
         const isAidaAvailable = this.#props.aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
+        const isConsentView = this.#props.state === "consent-view" /* State.CONSENT_VIEW */;
         const showsSideEffects = this.#props.messages.some(message => {
             return message.entity === "model" /* ChatMessageEntity.MODEL */ && message.steps.some(step => {
                 return Boolean(step.sideEffect);
@@ -254,7 +259,7 @@ export class FreestylerChatUi extends HTMLElement {
         const isInputDisabledCheckForDrJonesNetworkAgent = !Boolean(this.#props.selectedNetworkRequest);
         return (this.#props.agentType === "freestyler" /* AgentType.FREESTYLER */ && isInputDisabledCheckForFreestylerAgent) ||
             (this.#props.agentType === "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */ && isInputDisabledCheckForDrJonesNetworkAgent) ||
-            !isAidaAvailable;
+            !isAidaAvailable || isConsentView;
     };
     #handleScroll = (ev) => {
         if (!ev.target || !(ev.target instanceof HTMLElement)) {
@@ -291,6 +296,10 @@ export class FreestylerChatUi extends HTMLElement {
             return;
         }
         this.#props.onCancelClick();
+    };
+    #handleSuggestionClick = (suggestion) => {
+        this.#setInputText(suggestion);
+        this.focusTextInput();
     };
     #renderRateButtons(rpcId) {
         // clang-format off
@@ -329,9 +338,10 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     }
     #renderTitle(step) {
-        const paused = step.sideEffect ? LitHtml.html `<span class="paused">${i18nString(UIStringsTemp.paused)}: </span>` :
+        const paused = step.sideEffect ?
+            LitHtml.html `<span class="paused">${lockedString(UIStringsNotTranslate.paused)}: </span>` :
             LitHtml.nothing;
-        const actionTitle = step.title ?? `${i18nString(UIStringsTemp.investigating)}…`;
+        const actionTitle = step.title ?? `${lockedString(UIStringsNotTranslate.investigating)}…`;
         return LitHtml.html `<span class="title">${paused}${actionTitle}</span>`;
     }
     #renderStepDetails(step, options) {
@@ -339,8 +349,8 @@ export class FreestylerChatUi extends HTMLElement {
         const thought = step.thought ? LitHtml.html `<p>${this.#renderTextAsMarkdown(step.thought)}</p>` : LitHtml.nothing;
         // If there is no "output" yet, it means we didn't execute the code yet (e.g. maybe it is still waiting for confirmation from the user)
         // thus we show "Code to execute" text rather than "Code executed" text on the heading of the code block.
-        const codeHeadingText = (step.output && !step.canceled) ? i18nString(UIStringsTemp.codeExecuted) :
-            i18nString(UIStringsTemp.codeToExecute);
+        const codeHeadingText = (step.output && !step.canceled) ? lockedString(UIStringsNotTranslate.codeExecuted) :
+            lockedString(UIStringsNotTranslate.codeToExecute);
         // If there is output, we don't show notice on this code block and instead show
         // it in the data returned code block.
         // clang-format off
@@ -363,7 +373,7 @@ export class FreestylerChatUi extends HTMLElement {
         .displayToolbar=${false}
         .displayNotice=${true}
         .heading=${{
-            text: i18nString(UIStringsTemp.dataReturned),
+            text: lockedString(UIStringsNotTranslate.dataReturned),
             showCopyButton: false,
         }}
       ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
@@ -377,7 +387,7 @@ export class FreestylerChatUi extends HTMLElement {
           .displayToolbar=${false}
           .displayNotice=${false}
           .heading=${{
-                    text: i18nString(contextDetail.title),
+                    text: contextDetail.title,
                     showCopyButton: true,
                 }}
         ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
@@ -446,7 +456,7 @@ export class FreestylerChatUi extends HTMLElement {
       class="side-effect-confirmation"
       jslog=${VisualLogging.section('side-effect-confirmation')}
     >
-      <p>${i18nString(UIStringsTemp.sideEffectConfirmationDescription)}</p>
+      <p>${lockedString(UIStringsNotTranslate.sideEffectConfirmationDescription)}</p>
       <div class="side-effect-buttons-container">
         <${Buttons.Button.Button.litTagName}
           .data=${{
@@ -454,7 +464,7 @@ export class FreestylerChatUi extends HTMLElement {
             jslogContext: 'decline-execute-code',
         }}
           @click=${() => sideEffectAction(false)}
-        >${i18nString(UIStringsTemp.negativeSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+        >${lockedString(UIStringsNotTranslate.negativeSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
         <${Buttons.Button.Button.litTagName}
           .data=${{
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
@@ -462,7 +472,7 @@ export class FreestylerChatUi extends HTMLElement {
             iconName: 'play',
         }}
           @click=${() => sideEffectAction(true)}
-        >${i18nString(UIStringsTemp.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+        >${lockedString(UIStringsNotTranslate.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
       </div>
     </div>`;
         // clang-format on
@@ -472,22 +482,21 @@ export class FreestylerChatUi extends HTMLElement {
             let errorMessage;
             switch (message.error) {
                 case "unknown" /* ErrorType.UNKNOWN */:
-                    errorMessage = UIStringsTemp.systemError;
+                    errorMessage = UIStringsNotTranslate.systemError;
                     break;
                 case "max-steps" /* ErrorType.MAX_STEPS */:
-                    errorMessage = UIStringsTemp.maxStepsError;
+                    errorMessage = UIStringsNotTranslate.maxStepsError;
                     break;
                 case "abort" /* ErrorType.ABORT */:
-                    return LitHtml.html `<p class="aborted" jslog=${VisualLogging.section('aborted')}>${i18nString(UIStringsTemp.stoppedResponse)}</p>`;
+                    return LitHtml.html `<p class="aborted" jslog=${VisualLogging.section('aborted')}>${lockedString(UIStringsNotTranslate.stoppedResponse)}</p>`;
             }
-            return LitHtml.html `<p class="error" jslog=${VisualLogging.section('error')}>${i18nString(errorMessage)}</p>`;
+            return LitHtml.html `<p class="error" jslog=${VisualLogging.section('error')}>${lockedString(errorMessage)}</p>`;
         }
         return LitHtml.nothing;
     }
     #renderChatMessage = (message, { isLast }) => {
-        // TODO(b/365068104): Render user's message as markdown too.
         if (message.entity === "user" /* ChatMessageEntity.USER */) {
-            const name = this.#props.userInfo.accountFullName || i18nString(UIStringsTemp.you);
+            const name = this.#props.userInfo.accountFullName || lockedString(UIStringsNotTranslate.you);
             const image = this.#props.userInfo.accountImage ?
                 LitHtml.html `<img src="data:image/png;base64, ${this.#props.userInfo.accountImage}" alt="Account avatar" />` :
                 LitHtml.html `<${IconButton.Icon.Icon.litTagName}
@@ -508,6 +517,7 @@ export class FreestylerChatUi extends HTMLElement {
       </div>`;
             // clang-format on
         }
+        const shouldShowSuggestions = (isLast && !this.#props.isLoading && message.suggestions?.length > 0);
         // clang-format off
         return LitHtml.html `
       <div class="chat-message answer" jslog=${VisualLogging.section('answer')}>
@@ -516,7 +526,7 @@ export class FreestylerChatUi extends HTMLElement {
             name="smart-assistant"
           ></${IconButton.Icon.Icon.litTagName}>
           <div class="message-name">
-            <span>${i18nString(UIStringsTemp.aiAssistant)}</span>
+            <span>${lockedString(UIStringsNotTranslate.aiAssistance)}</span>
           </div>
         </div>
         ${LitHtml.Directives.repeat(message.steps, (_, index) => index, step => {
@@ -532,15 +542,16 @@ export class FreestylerChatUi extends HTMLElement {
           ${message.rpcId !== undefined
             ? this.#renderRateButtons(message.rpcId)
             : LitHtml.nothing}
-          ${message.suggestingFix && isLast
-            ? LitHtml.html `<${Buttons.Button.Button.litTagName}
+          ${shouldShowSuggestions ?
+            LitHtml.html `<div class="suggestions">
+              ${message.suggestions.map(suggestion => LitHtml.html `<${Buttons.Button.Button.litTagName}
                   .data=${{
                 variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
                 jslogContext: 'fix-this-issue',
             }}
-                  @click=${this.#props.onFixThisIssueClick}
-                >${i18nString(UIStringsTemp.fixThisIssue)}</${Buttons.Button.Button.litTagName}>`
-            : LitHtml.nothing}
+                  @click=${() => this.#handleSuggestionClick(suggestion)}
+                >${suggestion}</${Buttons.Button.Button.litTagName}>`)}
+            </div>` : LitHtml.nothing}
         </div>
       </div>
     `;
@@ -584,31 +595,15 @@ export class FreestylerChatUi extends HTMLElement {
             toggledIconName: 'select-element',
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             toggled: this.#props.inspectElementToggled,
-            title: i18nString(UIStringsTemp.selectAnElement),
+            title: lockedString(UIStringsNotTranslate.selectAnElement),
             jslogContext: 'select-element',
         }}
           @click=${this.#props.onInspectElementClick}
         ></${Buttons.Button.Button.litTagName}>
         <div class=${resourceClass}>${this.#props.selectedElement
             ? LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedElement))
-            : LitHtml.html `<span>${i18nString(UIStringsTemp.noElementSelected)}</span>`}</div>
+            : LitHtml.html `<span>${lockedString(UIStringsNotTranslate.noElementSelected)}</span>`}</div>
       </div>`;
-        // clang-format on
-    };
-    #renderFeedbackLink = () => {
-        // clang-format off
-        return LitHtml.html `
-        <${IconButton.Icon.Icon.litTagName}
-          name="dog-paw"
-          class="feedback-icon"
-        ></${IconButton.Icon.Icon.litTagName}>
-        <span>${i18nString(UIStringsTemp.dogfood)}</span>
-        <span>-</span>
-        <x-link href=${DOGFOOD_FEEDBACK_URL}
-          class="link"
-          jslog=${VisualLogging.link('freestyler.feedback').track({
-            click: true,
-        })}>${i18nString(UIStringsTemp.feedbackLink)}</x-link>`;
         // clang-format on
     };
     #renderMessages = () => {
@@ -634,13 +629,13 @@ export class FreestylerChatUi extends HTMLElement {
             name="smart-assistant"
           ></${IconButton.Icon.Icon.litTagName}>
         </div>
-        ${i18nString(UIStringsTemp.emptyStateText)}
+        ${lockedString(UIStringsNotTranslate.emptyStateText)}
       </div>
       <div class="suggestions">
         ${suggestions.map(suggestion => {
             return LitHtml.html `<${Buttons.Button.Button.litTagName}
             class="suggestion"
-            @click=${() => this.#props.onTextSubmit(suggestion)}
+            @click=${() => this.#handleSuggestionClick(suggestion)}
             .data=${{
                 variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
                 size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
@@ -658,9 +653,9 @@ export class FreestylerChatUi extends HTMLElement {
         switch (this.#props.agentType) {
             case "freestyler" /* AgentType.FREESTYLER */:
                 return [
-                    'Why is the element not visible?',
-                    'Why is this element overlapping another element?',
-                    'How can I center this element?',
+                    'Why isn’t this element visible?',
+                    'Why does this element overlap another?',
+                    'How do I center this element?',
                 ];
             case "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */:
                 return [
@@ -676,32 +671,32 @@ export class FreestylerChatUi extends HTMLElement {
           .disabled=${this.#isTextInputDisabled()}
           wrap="hard"
           @keydown=${this.#handleTextAreaKeyDown}
-          placeholder=${getInputPlaceholderString(this.#props.aidaAvailability, this.#props.agentType)}
+          placeholder=${getInputPlaceholderString(this.#props.aidaAvailability, this.#props.agentType, this.#props.state)}
           jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}></textarea>
           ${this.#props.isLoading
             ? LitHtml.html `<${Buttons.Button.Button.litTagName}
               class="chat-input-button"
-              aria-label=${i18nString(UIStringsTemp.cancelButtonTitle)}
+              aria-label=${lockedString(UIStringsNotTranslate.cancelButtonTitle)}
               @click=${this.#handleCancel}
               .data=${{
-                variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
                 disabled: this.#isTextInputDisabled(),
-                iconName: 'stop',
-                title: i18nString(UIStringsTemp.cancelButtonTitle),
+                iconName: 'record-stop',
+                title: lockedString(UIStringsNotTranslate.cancelButtonTitle),
                 jslogContext: 'stop',
             }}
             ></${Buttons.Button.Button.litTagName}>`
             : LitHtml.html `<${Buttons.Button.Button.litTagName}
               class="chat-input-button"
-              aria-label=${i18nString(UIStringsTemp.sendButtonTitle)}
+              aria-label=${lockedString(UIStringsNotTranslate.sendButtonTitle)}
               .data=${{
                 type: 'submit',
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
                 disabled: this.#isTextInputDisabled(),
                 iconName: 'send',
-                title: i18nString(UIStringsTemp.sendButtonTitle),
+                title: lockedString(UIStringsNotTranslate.sendButtonTitle),
                 jslogContext: 'send',
             }}
             ></${Buttons.Button.Button.litTagName}>`}
@@ -709,88 +704,79 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     };
     #getDisclaimerText = () => {
+        if (this.#props.state === "consent-view" /* State.CONSENT_VIEW */) {
+            return i18nString(UIStrings.inputDisclaimerForEmptyState);
+        }
         switch (this.#props.agentType) {
             case "freestyler" /* AgentType.FREESTYLER */:
-                return UIStringsTemp.inputDisclaimerForFreestylerAgent;
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForFreestylerAgent);
             case "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */:
-                return UIStringsTemp.inputDisclaimerForDrJonesNetworkAgent;
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForDrJonesNetworkAgent);
         }
     };
-    #renderChatUi = () => {
+    #renderOptIn() {
+        const settingsLink = document.createElement('button');
+        settingsLink.textContent = i18nString(UIStrings.settingsLink);
+        settingsLink.classList.add('link');
+        UI.ARIAUtils.markAsLink(settingsLink);
+        settingsLink.addEventListener('click', () => {
+            void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
+        });
+        settingsLink.setAttribute('jslog', `${VisualLogging.action('open-ai-settings').track({ click: true })}`);
         // clang-format off
         return LitHtml.html `
-      <div class="chat-ui">
-        ${this.#props.messages.length > 0
-            ? this.#renderMessages()
-            : this.#renderEmptyState()}
-        <form class="input-form" @submit=${this.#handleSubmit}>
-          <div class="input-header">
-            <div class="header-link-container">
-              ${this.#renderSelection()}
-            </div>
-            <div class="header-link-container">
-              ${this.#renderFeedbackLink()}
-            </div>
+      <div class="empty-state-container">
+        <div class="opt-in">
+          <div class="opt-in-icon-container">
+            <${IconButton.Icon.Icon.litTagName} .data=${{
+            iconName: 'smart-assistant',
+            width: 'var(--sys-size-8)',
+            height: 'var(--sys-size-8)',
+        }}>
           </div>
+          <div>
+            ${i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink })}
+          </div>
+        </div>
+      </div>
+    `;
+        // clang-format on
+    }
+    #render() {
+        // clang-format off
+        LitHtml.render(LitHtml.html `
+      <div class="chat-ui">
+        ${this.#props.state === "consent-view" /* State.CONSENT_VIEW */ ? this.#renderOptIn()
+            : (this.#props.messages.length > 0
+                ? this.#renderMessages()
+                : this.#renderEmptyState())}
+        <form class="input-form" @submit=${this.#handleSubmit}>
+          ${this.#props.state !== "consent-view" /* State.CONSENT_VIEW */ ? LitHtml.html `
+            <div class="input-header">
+              <div class="header-link-container">
+                ${this.#renderSelection()}
+              </div>
+            </div>
+          ` : LitHtml.nothing}
           ${this.#renderChatInput()}
         </form>
         <footer class="disclaimer">
-          <p class="disclaimer-text">${i18nString(this.#getDisclaimerText())} See <x-link
+          <p class="disclaimer-text">${lockedString(this.#getDisclaimerText())} <x-link
+              href="#"
               class="link"
-              href=${DOGFOOD_INFO}
-              jslog=${VisualLogging.link('freestyler.dogfood-info').track({
+              jslog=${VisualLogging.link('open-ai-settings').track({
             click: true,
         })}
-            >dogfood terms</x-link>.
+              @click=${(event) => {
+            event.preventDefault();
+            void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
+        }}
+            >${lockedString(UIStringsNotTranslate.learnAbout)}</x-link>
           </p>
         </footer>
       </div>
-    `;
+    `, this.#shadow, { host: this });
         // clang-format on
-    };
-    #renderConsentView = () => {
-        // clang-format off
-        return LitHtml.html `
-      <div class="consent-view">
-        <h2 tabindex="-1">
-          ${i18nString(UIStringsTemp.consentScreenHeading)}
-        </h2>
-        <main>
-          ${i18nString(UIStringsTemp.consentTextAiDisclaimer)}
-          <ul>
-            <li>${i18nString(UIStringsTemp.consentTextDataDisclaimer)}</li>
-            <li>${i18nString(UIStringsTemp.consentTextVisibilityDisclaimer)}</li>
-            <li>${i18nString(UIStringsTemp.consentTextDoNotUseDisclaimer)}</li>
-            <li>See <x-link
-              class="link"
-              href=${DOGFOOD_INFO}
-              jslog=${VisualLogging.link('freestyler.dogfood-info').track({
-            click: true,
-        })}
-            >dogfood terms</x-link>.</li>
-          </ul>
-          <${Buttons.Button.Button.litTagName}
-            class="accept-button"
-            @click=${this.#props.onAcceptConsentClick}
-            .data=${{
-            variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-            jslogContext: 'accept',
-        }}
-          >${i18nString(UIStringsTemp.acceptButtonTitle)}</${Buttons.Button.Button.litTagName}>
-        </main>
-      </div>
-    `;
-        // clang-format on
-    };
-    #render() {
-        switch (this.#props.state) {
-            case "chat-view" /* State.CHAT_VIEW */:
-                LitHtml.render(this.#renderChatUi(), this.#shadow, { host: this });
-                break;
-            case "consent-view" /* State.CONSENT_VIEW */:
-                LitHtml.render(this.#renderConsentView(), this.#shadow, { host: this });
-                break;
-        }
     }
 }
 export const FOR_TEST = {

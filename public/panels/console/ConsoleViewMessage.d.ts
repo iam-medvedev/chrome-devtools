@@ -56,6 +56,8 @@ export declare class ConsoleViewMessage implements ConsoleViewportElement {
     private createAffectedResourceLinks;
     protected buildMessageAnchor(): HTMLElement | null;
     private buildMessageWithStackTrace;
+    private buildMessageWithIgnoreLinks;
+    private buildMessageHelper;
     private format;
     protected formatParameter(output: SDK.RemoteObject.RemoteObject, forceObjectFormat?: boolean, includePreview?: boolean): HTMLElement;
     private formatParameterAsValue;

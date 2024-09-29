@@ -5,10 +5,10 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, md, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { Table } from './Table.js';
-import { InsightsCategories } from './types.js';
+import { Category } from './types.js';
 const UIStrings = {
     /**
      * @description Text to tell the user about the longest user interaction.
@@ -46,35 +46,14 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/InteractionToNextPaint.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function getINPInsight(insights, navigationId) {
-    if (!insights || !navigationId) {
-        return null;
-    }
-    const insightsByNavigation = insights.get(navigationId);
-    if (!insightsByNavigation) {
-        return null;
-    }
-    const insight = insightsByNavigation.data.InteractionToNextPaint;
-    if (insight instanceof Error) {
-        return null;
-    }
-    return insight;
-}
 export class InteractionToNextPaint extends BaseInsight {
     static litTagName = LitHtml.literal `devtools-performance-inp`;
-    insightCategory = InsightsCategories.INP;
+    insightCategory = Category.INP;
     internalName = 'inp';
     userVisibleTitle = i18nString(UIStrings.title);
+    description = i18nString(UIStrings.description);
     createOverlays() {
-        if (!this.data.insights || !this.data.navigationId) {
-            return [];
-        }
-        const { navigationId, insights } = this.data;
-        const insightsByNavigation = insights.get(navigationId);
-        if (!insightsByNavigation) {
-            return [];
-        }
-        const insight = getINPInsight(insights, this.data.navigationId);
+        const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);
         if (!insight) {
             return [];
         }
@@ -110,20 +89,20 @@ export class InteractionToNextPaint extends BaseInsight {
         <div class="insights">
             <${SidebarInsight.SidebarInsight.litTagName} .data=${{
             title: this.userVisibleTitle,
+            description: this.description,
+            internalName: this.internalName,
             expanded: this.isActive(),
         }}
             @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-description" class="insight-description">
-                  ${md(i18nString(UIStrings.description))}
-                </div>
-                <div slot="insight-content">
+                <div slot="insight-content" class="insight-section">
                   ${LitHtml.html `<${Table.litTagName}
                     .data=${{
+            insight: this,
             headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
             rows: [
-                [i18nString(UIStrings.inputDelay), time(event.inputDelay)],
-                [i18nString(UIStrings.processingDuration), time(event.mainThreadHandling)],
-                [i18nString(UIStrings.presentationDelay), time(event.presentationDelay)],
+                { values: [i18nString(UIStrings.inputDelay), time(event.inputDelay)] },
+                { values: [i18nString(UIStrings.processingDuration), time(event.mainThreadHandling)] },
+                { values: [i18nString(UIStrings.presentationDelay), time(event.presentationDelay)] },
             ],
         }}>
                   </${Table.litTagName}>`}
@@ -133,7 +112,7 @@ export class InteractionToNextPaint extends BaseInsight {
         // clang-format on
     }
     render() {
-        const insight = getINPInsight(this.data.insights, this.data.navigationId);
+        const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);
         const event = insight?.longestInteractionEvent;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,

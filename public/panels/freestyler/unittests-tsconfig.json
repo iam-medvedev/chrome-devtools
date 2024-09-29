@@ -39,6 +39,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/freestyler/ChangeManager.test.ts",
+    "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerEvaluateAction.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerPanel.test.ts",

@@ -1432,7 +1432,7 @@ export class DataGridNode {
     parent;
     previousSibling;
     nextSibling;
-    #disclosureToggleWidth = 15;
+    #disclosureToggleHitBoxWidth = 20;
     selectable;
     isRoot;
     nodeAccessibleText;
@@ -2025,7 +2025,7 @@ export class DataGridNode {
             return false;
         }
         const left = cell.getBoundingClientRect().left + this.leftPadding;
-        return event.pageX >= left && event.pageX <= left + this.#disclosureToggleWidth;
+        return event.pageX >= left && event.pageX <= left + this.#disclosureToggleHitBoxWidth;
     }
     attach() {
         if (!this.dataGrid || this.attachedInternal) {

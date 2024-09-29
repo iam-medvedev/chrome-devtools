@@ -54,6 +54,22 @@ describeWithEnvironment('AidaClient', () => {
         });
         stub.restore();
     });
+    it('ignores a negative model temperature', () => {
+        const stub = getGetHostConfigStub({
+            devToolsConsoleInsights: {
+                enabled: true,
+                temperature: -1,
+            },
+        });
+        const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
+        assert.deepStrictEqual(request, {
+            input: 'foo',
+            client: 'CHROME_DEVTOOLS',
+            client_feature: 1,
+            functionality_type: 2,
+        });
+        stub.restore();
+    });
     it('adds a model id and temperature', () => {
         const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
@@ -377,13 +393,13 @@ describeWithEnvironment('AidaClient', () => {
             const result = await Host.AidaClient.AidaClient.checkAccessPreconditions();
             assert.strictEqual(result, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         });
-        it('should return NO_ACTIVE_SYNC when the syncInfo.isSyncActive is not true', async () => {
-            mockGetSyncInformation({ accountEmail: 'some-email', isSyncActive: false });
-            const result = await Host.AidaClient.AidaClient.checkAccessPreconditions();
-            assert.strictEqual(result, "no-active-sync" /* Host.AidaClient.AidaAccessPreconditions.NO_ACTIVE_SYNC */);
-        });
         it('should return AVAILABLE when navigator is online, accountEmail exists and isSyncActive is true', async () => {
             mockGetSyncInformation({ accountEmail: 'some-email', isSyncActive: true });
+            const result = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+            assert.strictEqual(result, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        });
+        it('should return AVAILABLE when navigator is online, accountEmail exists and isSyncActive is false', async () => {
+            mockGetSyncInformation({ accountEmail: 'some-email', isSyncActive: false });
             const result = await Host.AidaClient.AidaClient.checkAccessPreconditions();
             assert.strictEqual(result, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         });

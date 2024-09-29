@@ -93,6 +93,7 @@ class CookiePreviewWidget extends UI.Widget.VBox {
         header.appendChild(span);
         this.contentElement.appendChild(header);
         const toggle = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.showUrlDecoded), this.showDecodedSetting.get(), undefined, 'show-url-decoded');
+        toggle.title = i18nString(UIStrings.showUrlDecoded);
         toggle.classList.add('cookie-preview-widget-toggle');
         toggle.checkboxElement.addEventListener('click', () => this.showDecoded(!this.showDecodedSetting.get()));
         header.appendChild(toggle);

@@ -27,20 +27,23 @@ styles.replaceSync(
   margin-top: auto;
 }
 
-.bin-icon {
-  visibility: hidden;
-}
-
 .annotation-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
 
-  &:hover {
+  .delete-button {
+    visibility: hidden;
+    border: none;
+    background: none;
+  }
+
+  &:hover,
+  &:focus-within {
     background-color: var(--sys-color-neutral-container);
 
-    .bin-icon {
+    button.delete-button {
       visibility: visible;
     }
   }
@@ -51,7 +54,7 @@ styles.replaceSync(
   flex-direction: column;
   align-items: flex-start;
   word-break: break-word;
-  padding-top: 15px;
+  padding: var(--sys-size-8) 0;
   gap: 6px;
 }
 
@@ -59,12 +62,10 @@ styles.replaceSync(
   padding: 4px 8px;
   border-radius: 10px;
   font-weight: bold;
-  /* The identifier text will always be black to match the event title in the flame chart */
-  color: var(--app-color-performance-sidebar-label-text);
 
   &.time-range {
     background-color: var(--app-color-performance-sidebar-time-range);
-    color: var(--app-color-performance-sidebar-time-range-text);
+    color: var(--app-color-performance-sidebar-label-text-light);
   }
 }
 

@@ -36,14 +36,10 @@ export declare class EntryLabelOverlay extends HTMLElement {
      *
      * Otherwise, the entry label overlay object only gets repositioned.
      */
-    constructor(label: string, entryIsInMainChart: boolean, shouldDrawBelowEntry?: boolean);
+    constructor(label: string, shouldDrawBelowEntry?: boolean);
     connectedCallback(): void;
-    set entryLabelParams(entryLabelParams: {
-        height: number;
-        width: number;
-        cutOffEntryHeight: number;
-        chart: string;
-    });
+    entryHighlightWrapper(): HTMLElement | null;
+    set entryLabelVisibleHeight(entryLabelVisibleHeight: number);
     setLabelEditabilityAndRemoveEmptyLabel(editable: boolean): void;
 }
 declare global {

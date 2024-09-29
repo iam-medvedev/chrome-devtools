@@ -6,38 +6,48 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
-import { InsightsCategories } from './types.js';
+import { Category } from './types.js';
 const UIStrings = {
+    /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
+    title: 'Layout shift culprits',
+    /**
+     * @description Description of a DevTools insight that identifies the reasons that elements shift on the page.
+     * This is displayed after a user expands the section to see more. No character length limits.
+     */
+    description: 'Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.',
     /**
      *@description Text indicating the worst layout shift cluster.
      */
     worstCluster: 'Worst layout shift cluster',
+    /**
+     *@description Text indicating the biggest reasons for the layout shifts.
+     */
+    topCulprits: 'Top layout shift culprits',
+    /**
+     * @description Text for a culprit type of Injected iframe.
+     */
+    injectedIframe: 'Injected iframe',
+    /**
+     * @description Text for a culprit type of Font request.
+     */
+    fontRequest: 'Font request',
+    /**
+     * @description Text for a culprit type of Animation.
+     */
+    animation: 'Animation',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/CLSCulprits.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function getCLSInsight(insights, navigationId) {
-    if (!insights || !navigationId) {
-        return null;
-    }
-    const insightsByNavigation = insights.get(navigationId);
-    if (!insightsByNavigation) {
-        return null;
-    }
-    const clsInsight = insightsByNavigation.data.CumulativeLayoutShift;
-    if (clsInsight instanceof Error) {
-        return null;
-    }
-    return clsInsight;
-}
 export class CLSCulprits extends BaseInsight {
     static litTagName = LitHtml.literal `devtools-performance-cls-culprits`;
-    insightCategory = InsightsCategories.CLS;
+    insightCategory = Category.CLS;
     internalName = 'cls-culprits';
-    userVisibleTitle = 'Layout shift culprits';
+    userVisibleTitle = i18nString(UIStrings.title);
+    description = i18nString(UIStrings.description);
     createOverlays() {
-        const insight = getCLSInsight(this.data.insights, this.data.navigationId);
-        // Clusters are sorted by bad scores, so we can grab the first.
-        const worstCluster = insight?.clusters[0];
+        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
+        const clustersByScore = insight?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
+        const worstCluster = clustersByScore[0];
         if (!worstCluster) {
             return [];
         }
@@ -62,7 +72,8 @@ export class CLSCulprits extends BaseInsight {
         }
         const MAX_TOP_CULPRITS = 3;
         const causes = [];
-        for (const cluster of clusters) {
+        const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
+        for (const cluster of clustersByScore) {
             if (causes.length === MAX_TOP_CULPRITS) {
                 break;
             }
@@ -77,11 +88,15 @@ export class CLSCulprits extends BaseInsight {
                 }
                 const fontReq = culprits.fontRequests;
                 const iframes = culprits.iframeIds;
+                const animations = culprits.nonCompositedAnimations;
                 for (let i = 0; i < fontReq.length && causes.length < MAX_TOP_CULPRITS; i++) {
-                    causes.push('Font request');
+                    causes.push(i18nString(UIStrings.fontRequest));
                 }
                 for (let i = 0; i < iframes.length && causes.length < MAX_TOP_CULPRITS; i++) {
-                    causes.push('Injected iframe');
+                    causes.push(i18nString(UIStrings.injectedIframe));
+                }
+                for (let i = 0; i < animations.length && causes.length < MAX_TOP_CULPRITS; i++) {
+                    causes.push(i18nString(UIStrings.animation));
                 }
             }
         }
@@ -93,19 +108,14 @@ export class CLSCulprits extends BaseInsight {
         <div class="insights">
             <${SidebarInsight.SidebarInsight.litTagName} .data=${{
             title: this.userVisibleTitle,
+            description: this.description,
+            internalName: this.internalName,
             expanded: this.isActive(),
         }}
             @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-description" class="insight-description">
+                <div slot="insight-content" class="insight-section">
                   <p>
-                    Layout shifts happen when existing elements unexpectedly move.
-                    Shifts are caused by nodes changing size or newly added. Investigate
-                    and fix these culprits.
-                  </p>
-                </div>
-                <div slot="insight-content" style="insight-content">
-                  <p>
-                    Top layout shift culprits:
+                    <h3>${i18nString(UIStrings.topCulprits)}</h3>
                     ${culprits.map(culprit => {
             return LitHtml.html `
                         <li>${culprit}</li>
@@ -118,9 +128,9 @@ export class CLSCulprits extends BaseInsight {
         // clang-format on
     }
     render() {
-        const clsInsight = getCLSInsight(this.data.insights, this.data.navigationId);
-        const culpritsByShift = clsInsight?.shifts;
-        const clusters = clsInsight?.clusters ?? [];
+        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
+        const culpritsByShift = insight?.shifts;
+        const clusters = insight?.clusters ?? [];
         const causes = this.getTopCulprits(clusters, culpritsByShift);
         const hasCulprits = causes.length > 0;
         const matchesCategory = shouldRenderForCategory({

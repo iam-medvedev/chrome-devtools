@@ -12,41 +12,9 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import lockIconStyles from './lockIcon.css.js';
 import mainViewStyles from './mainView.css.js';
 import originViewStyles from './originView.css.js';
+import { SecurityAndPrivacyPanelSidebar } from './SecurityAndPrivacyPanelSidebar.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
-import sidebarStyles from './sidebar.css.js';
 const UIStrings = {
-    /**
-     *@description Title text content in Security Panel of the Security panel
-     */
-    overview: 'Overview',
-    /**
-     *@description Text in Security Panel of the Security panel
-     */
-    mainOrigin: 'Main origin',
-    /**
-     *@description Text in Security Panel of the Security panel
-     */
-    nonsecureOrigins: 'Non-secure origins',
-    /**
-     *@description Text in Security Panel of the Security panel
-     */
-    secureOrigins: 'Secure origins',
-    /**
-     *@description Text in Security Panel of the Security panel
-     */
-    unknownCanceled: 'Unknown / canceled',
-    /**
-     *@description Text in Security Panel of the Security panel
-     */
-    reloadToViewDetails: 'Reload to view details',
-    /**
-     *@description New parent title in Security Panel of the Security panel
-     */
-    mainOriginSecure: 'Main origin (secure)',
-    /**
-     *@description New parent title in Security Panel of the Security panel
-     */
-    mainOriginNonsecure: 'Main origin (non-secure)',
     /**
      *@description Summary div text content in Security Panel of the Security panel
      */
@@ -465,7 +433,7 @@ const SignatureSchemeStrings = new Map([
 const LOCK_ICON_NAME = 'lock';
 const WARNING_ICON_NAME = 'warning';
 const INFO_ICON_NAME = 'info';
-function getSecurityStateIconForDetailedView(securityState, className) {
+export function getSecurityStateIconForDetailedView(securityState, className) {
     let iconName;
     switch (securityState) {
         case "neutral" /* Protocol.Security.SecurityState.Neutral */: // fallthrough
@@ -483,7 +451,7 @@ function getSecurityStateIconForDetailedView(securityState, className) {
     }
     return IconButton.Icon.create(iconName, className);
 }
-function getSecurityStateIconForOverview(securityState, className) {
+export function getSecurityStateIconForOverview(securityState, className) {
     let iconName;
     switch (securityState) {
         case "unknown" /* Protocol.Security.SecurityState.Unknown */: // fallthrough
@@ -502,10 +470,27 @@ function getSecurityStateIconForOverview(securityState, className) {
     }
     return IconButton.Icon.create(iconName, className);
 }
+export function createHighlightedUrl(url, securityState) {
+    const schemeSeparator = '://';
+    const index = url.indexOf(schemeSeparator);
+    // If the separator is not found, just display the text without highlighting.
+    if (index === -1) {
+        const text = document.createElement('span');
+        text.textContent = url;
+        return text;
+    }
+    const highlightedUrl = document.createElement('span');
+    highlightedUrl.classList.add('highlighted-url');
+    const scheme = url.substr(0, index);
+    const content = url.substr(index + schemeSeparator.length);
+    highlightedUrl.createChild('span', 'url-scheme-' + securityState).textContent = scheme;
+    highlightedUrl.createChild('span', 'url-scheme-separator').textContent = schemeSeparator;
+    highlightedUrl.createChild('span').textContent = content;
+    return highlightedUrl;
+}
 export class SecurityPanel extends UI.Panel.PanelWithSidebar {
     mainView;
-    sidebarMainViewElement;
-    sidebarTree;
+    sidebar;
     lastResponseReceivedForLoaderId;
     origins;
     filterRequestCounts;
@@ -515,22 +500,9 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
     constructor() {
         super('security');
         this.mainView = new SecurityMainView(this);
-        const getIconForSecurityState = (securityState) => getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`);
-        const getTitleForSecurityState = (_securityState) => {
-            const title = document.createElement('span');
-            title.classList.add('title');
-            title.textContent = i18nString(UIStrings.overview);
-            return title;
-        };
-        this.sidebarMainViewElement = new SecurityPanelSidebarTreeElement({
-            onSelect: this.setVisibleView.bind(this, this.mainView),
-            getIconForSecurityState,
-            getTitleForSecurityState,
-            className: 'security-main-view-sidebar-tree-item',
-        });
-        this.sidebarMainViewElement.tooltip = i18nString(UIStrings.overview);
-        this.sidebarTree = new SecurityPanelSidebarTree(this.sidebarMainViewElement, this.showOrigin.bind(this));
-        this.panelSidebarElement().appendChild(this.sidebarTree.element);
+        this.sidebar =
+            new SecurityAndPrivacyPanelSidebar(this.showOrigin.bind(this), this.setVisibleView.bind(this, this.mainView));
+        this.sidebar.show(this.panelSidebarElement());
         this.lastResponseReceivedForLoaderId = new Map();
         this.origins = new Map();
         this.filterRequestCounts = new Map();
@@ -566,26 +538,8 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         UI.ARIAUtils.markAsButton(certificateButton);
         return certificateButton;
     }
-    static createHighlightedUrl(url, securityState) {
-        const schemeSeparator = '://';
-        const index = url.indexOf(schemeSeparator);
-        // If the separator is not found, just display the text without highlighting.
-        if (index === -1) {
-            const text = document.createElement('span');
-            text.textContent = url;
-            return text;
-        }
-        const highlightedUrl = document.createElement('span');
-        highlightedUrl.classList.add('highlighted-url');
-        const scheme = url.substr(0, index);
-        const content = url.substr(index + schemeSeparator.length);
-        highlightedUrl.createChild('span', 'url-scheme-' + securityState).textContent = scheme;
-        highlightedUrl.createChild('span', 'url-scheme-separator').textContent = schemeSeparator;
-        highlightedUrl.createChild('span').textContent = content;
-        return highlightedUrl;
-    }
     updateVisibleSecurityState(visibleSecurityState) {
-        this.sidebarMainViewElement.setSecurityState(visibleSecurityState.securityState);
+        this.sidebar.securityOverviewElement.setSecurityState(visibleSecurityState.securityState);
         this.mainView.updateVisibleSecurityState(visibleSecurityState);
     }
     onVisibleSecurityStateChanged({ data }) {
@@ -593,7 +547,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
     }
     selectAndSwitchToMainView() {
         // The sidebar element will trigger displaying the main view. Rather than making a redundant call to display the main view, we rely on this.
-        this.sidebarMainViewElement.select(true);
+        this.sidebar.securityOverviewElement.select(true);
     }
     showOrigin(origin) {
         const originState = this.origins.get(origin);
@@ -612,7 +566,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         }
     }
     focus() {
-        this.sidebarTree.focus();
+        this.sidebar.focus();
     }
     setVisibleView(view) {
         if (this.visibleView === view) {
@@ -651,7 +605,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
                 if (securityDetails) {
                     originState.securityDetails = securityDetails;
                 }
-                this.sidebarTree.updateOrigin(origin, securityState);
+                this.sidebar.updateOrigin(origin, securityState);
                 if (originState.originView) {
                     originState.originView.setSecurityState(securityState);
                 }
@@ -668,7 +622,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
                 originView: undefined,
             };
             this.origins.set(origin, newOriginState);
-            this.sidebarTree.addOrigin(origin, securityState);
+            this.sidebar.addOrigin(origin, securityState);
             // Don't construct the origin view yet (let it happen lazily).
         }
     }
@@ -735,7 +689,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         const { frame } = event.data;
         const request = this.lastResponseReceivedForLoaderId.get(frame.loaderId);
         this.selectAndSwitchToMainView();
-        this.sidebarTree.clearOrigins();
+        this.sidebar.clearOrigins();
         this.origins.clear();
         this.lastResponseReceivedForLoaderId.clear();
         this.filterRequestCounts.clear();
@@ -746,7 +700,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         // through an interstitial, see https://crbug.com/669309), set the origin
         // based upon the url data from the PrimaryPageChanged event itself.
         const origin = Common.ParsedURL.ParsedURL.extractOrigin(request ? request.url() : frame.url);
-        this.sidebarTree.setMainOrigin(origin);
+        this.sidebar.setMainOrigin(origin);
         if (request) {
             this.processRequest(request);
         }
@@ -756,142 +710,10 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         // previously loaded page. When showing an interstitial, switch
         // back to the Overview view.
         this.selectAndSwitchToMainView();
-        this.sidebarTree.toggleOriginsList(true /* hidden */);
+        this.sidebar.toggleOriginsList(true /* hidden */);
     }
     onInterstitialHidden() {
-        this.sidebarTree.toggleOriginsList(false /* hidden */);
-    }
-}
-export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow {
-    showOriginInPanel;
-    mainOrigin;
-    originGroupTitles;
-    originGroups;
-    elementsByOrigin;
-    mainViewReloadMessage;
-    constructor(mainViewElement, showOriginInPanel) {
-        super();
-        this.appendChild(mainViewElement);
-        this.registerCSSFiles([lockIconStyles, sidebarStyles]);
-        this.showOriginInPanel = showOriginInPanel;
-        this.mainOrigin = null;
-        this.originGroupTitles = new Map([
-            [OriginGroup.MainOrigin, i18nString(UIStrings.mainOrigin)],
-            [OriginGroup.NonSecure, i18nString(UIStrings.nonsecureOrigins)],
-            [OriginGroup.Secure, i18nString(UIStrings.secureOrigins)],
-            [OriginGroup.Unknown, i18nString(UIStrings.unknownCanceled)],
-        ]);
-        this.originGroups = new Map();
-        for (const group of Object.values(OriginGroup)) {
-            const element = this.createOriginGroupElement(this.originGroupTitles.get(group));
-            this.originGroups.set(group, element);
-            this.appendChild(element);
-        }
-        this.mainViewReloadMessage = new UI.TreeOutline.TreeElement(i18nString(UIStrings.reloadToViewDetails));
-        this.mainViewReloadMessage.selectable = false;
-        this.mainViewReloadMessage.listItemElement.classList.add('security-main-view-reload-message');
-        const treeElement = this.originGroups.get(OriginGroup.MainOrigin);
-        treeElement.appendChild(this.mainViewReloadMessage);
-        this.clearOriginGroups();
-        this.elementsByOrigin = new Map();
-    }
-    originGroupTitle(originGroup) {
-        return this.originGroupTitles.get(originGroup);
-    }
-    originGroupElement(originGroup) {
-        return this.originGroups.get(originGroup);
-    }
-    createOriginGroupElement(originGroupTitle) {
-        const originGroup = new UI.TreeOutline.TreeElement(originGroupTitle, true);
-        originGroup.selectable = false;
-        originGroup.setCollapsible(false);
-        originGroup.expand();
-        originGroup.listItemElement.classList.add('security-sidebar-origins');
-        UI.ARIAUtils.setLabel(originGroup.childrenListElement, originGroupTitle);
-        return originGroup;
-    }
-    toggleOriginsList(hidden) {
-        for (const element of this.originGroups.values()) {
-            element.hidden = hidden;
-        }
-    }
-    addOrigin(origin, securityState) {
-        this.mainViewReloadMessage.hidden = true;
-        const getIconForSecurityState = (securityState) => getSecurityStateIconForDetailedView(securityState, `security-property security-property-${securityState}`);
-        const getTitleForSecurityState = (securityState) => SecurityPanel.createHighlightedUrl(origin, securityState);
-        const originElement = new SecurityPanelSidebarTreeElement({
-            onSelect: this.showOriginInPanel.bind(this, origin),
-            getIconForSecurityState,
-            getTitleForSecurityState,
-            className: 'security-sidebar-tree-item',
-        });
-        originElement.tooltip = origin;
-        this.elementsByOrigin.set(origin, originElement);
-        this.updateOrigin(origin, securityState);
-    }
-    setMainOrigin(origin) {
-        this.mainOrigin = origin;
-    }
-    updateOrigin(origin, securityState) {
-        const originElement = this.elementsByOrigin.get(origin);
-        originElement.setSecurityState(securityState);
-        let newParent;
-        if (origin === this.mainOrigin) {
-            newParent = this.originGroups.get(OriginGroup.MainOrigin);
-            if (securityState === "secure" /* Protocol.Security.SecurityState.Secure */) {
-                newParent.title = i18nString(UIStrings.mainOriginSecure);
-            }
-            else {
-                newParent.title = i18nString(UIStrings.mainOriginNonsecure);
-            }
-            UI.ARIAUtils.setLabel(newParent.childrenListElement, newParent.title);
-        }
-        else {
-            switch (securityState) {
-                case "secure" /* Protocol.Security.SecurityState.Secure */:
-                    newParent = this.originGroupElement(OriginGroup.Secure);
-                    break;
-                case "unknown" /* Protocol.Security.SecurityState.Unknown */:
-                    newParent = this.originGroupElement(OriginGroup.Unknown);
-                    break;
-                default:
-                    newParent = this.originGroupElement(OriginGroup.NonSecure);
-                    break;
-            }
-        }
-        const oldParent = originElement.parent;
-        if (oldParent !== newParent) {
-            if (oldParent) {
-                oldParent.removeChild(originElement);
-                if (oldParent.childCount() === 0) {
-                    oldParent.hidden = true;
-                }
-            }
-            newParent.appendChild(originElement);
-            newParent.hidden = false;
-        }
-    }
-    clearOriginGroups() {
-        for (const [originGroup, originGroupElement] of this.originGroups) {
-            if (originGroup === OriginGroup.MainOrigin) {
-                for (let i = originGroupElement.childCount() - 1; i > 0; i--) {
-                    originGroupElement.removeChildAtIndex(i);
-                }
-                originGroupElement.title = this.originGroupTitle(OriginGroup.MainOrigin);
-                originGroupElement.hidden = false;
-                this.mainViewReloadMessage.hidden = false;
-            }
-            else {
-                originGroupElement.removeChildren();
-                originGroupElement.hidden = true;
-            }
-        }
-    }
-    clearOrigins() {
-        this.clearOriginGroups();
-        this.elementsByOrigin.clear();
-    }
-    wasShown() {
+        this.sidebar.toggleOriginsList(false /* hidden */);
     }
 }
 export var OriginGroup;
@@ -903,33 +725,6 @@ export var OriginGroup;
     OriginGroup["Unknown"] = "Unknown";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(OriginGroup || (OriginGroup = {}));
-export class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
-    selectCallback;
-    securityStateInternal;
-    #getIconForSecurityState;
-    #getTitleForSecurityState;
-    constructor(options) {
-        super('', false);
-        this.selectCallback = options.onSelect;
-        this.listItemElement.classList.add(options.className);
-        this.#getIconForSecurityState = options.getIconForSecurityState;
-        this.#getTitleForSecurityState = options.getTitleForSecurityState;
-        this.securityStateInternal = null;
-        this.setSecurityState("unknown" /* Protocol.Security.SecurityState.Unknown */);
-    }
-    setSecurityState(newSecurityState) {
-        this.securityStateInternal = newSecurityState;
-        this.setLeadingIcons([this.#getIconForSecurityState(newSecurityState)]);
-        this.listItemElement.replaceChildren(this.#getTitleForSecurityState(newSecurityState));
-    }
-    securityState() {
-        return this.securityStateInternal;
-    }
-    onselect() {
-        this.selectCallback();
-        return true;
-    }
-}
 export class SecurityMainView extends UI.Widget.VBox {
     panel;
     summarySection;
@@ -1293,7 +1088,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
         this.originLockIcon = originDisplay.createChild('span');
         const icon = getSecurityStateIconForDetailedView(originState.securityState, `security-property security-property-${originState.securityState}`);
         this.originLockIcon.appendChild(icon);
-        originDisplay.appendChild(SecurityPanel.createHighlightedUrl(origin, originState.securityState));
+        originDisplay.appendChild(createHighlightedUrl(origin, originState.securityState));
         const originNetworkDiv = titleSection.createChild('div', 'view-network-button');
         const originNetworkButton = UI.UIUtils.createTextButton(i18nString(UIStrings.viewRequestsInNetworkPanel), event => {
             event.consume();

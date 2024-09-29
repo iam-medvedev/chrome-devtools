@@ -247,4 +247,24 @@ export declare class PositionAnchorMatcher extends PositionAnchorMatcher_base {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+export declare class CSSWideKeywordMatch implements Match {
+    readonly text: SDK.CSSMetadata.CSSWideKeyword;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly property: SDK.CSSProperty.CSSProperty;
+    readonly matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles;
+    constructor(text: SDK.CSSMetadata.CSSWideKeyword, node: CodeMirror.SyntaxNode, property: SDK.CSSProperty.CSSProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles);
+    resolveProperty(): SDK.CSSMatchedStyles.CSSValueSource | null;
+    computedText?(): string | null;
+}
+declare const CSSWideKeywordMatcher_base: new () => {
+    matchType: SDK.CSSPropertyParser.Constructor<CSSWideKeywordMatch>;
+    accepts(_propertyName: string): boolean;
+    matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
+};
+export declare class CSSWideKeywordMatcher extends CSSWideKeywordMatcher_base {
+    readonly property: SDK.CSSProperty.CSSProperty;
+    readonly matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles;
+    constructor(property: SDK.CSSProperty.CSSProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles);
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export {};

@@ -3,8 +3,8 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import type * as Overlays from '../overlays/overlays.js';
 export interface ActiveInsight {
     name: string;
-    navigationId: string;
-    createOverlayFn: (() => Overlays.Overlays.TimelineOverlay[]);
+    insightSetKey: string;
+    overlays: Overlays.Overlays.TimelineOverlay[];
 }
 export declare class RemoveAnnotation extends Event {
     removedAnnotation: Trace.Types.File.Annotation;

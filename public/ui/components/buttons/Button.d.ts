@@ -78,6 +78,7 @@ export declare class Button extends HTMLElement {
     set reducedFocusRing(reducedFocusRing: boolean);
     set type(type: ButtonType);
     set title(title: string);
+    get disabled(): boolean;
     set disabled(disabled: boolean);
     set toggleOnClick(toggleOnClick: boolean);
     set toggled(toggled: boolean);

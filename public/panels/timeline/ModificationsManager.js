@@ -5,9 +5,9 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
+import * as AnnotationHelpers from './AnnotationHelpers.js';
 import { EntriesFilter } from './EntriesFilter.js';
 import { EventsSerializer } from './EventsSerializer.js';
-import * as Overlays from './overlays/overlays.js';
 const modificationsManagerByTraceIndex = [];
 let activeManager;
 // Event dispatched after an annotation was added, removed or updated.
@@ -152,6 +152,7 @@ export class ModificationsManager extends EventTarget {
             case 'ENTRIES_LINK':
                 return {
                     type: 'ENTRIES_LINK',
+                    state: annotation.state,
                     entryFrom: annotation.entryFrom,
                     entryTo: annotation.entryTo,
                 };
@@ -179,14 +180,15 @@ export class ModificationsManager extends EventTarget {
     }
     updateAnnotation(updatedAnnotation) {
         const overlay = this.#overlayForAnnotation.get(updatedAnnotation);
-        if (overlay && Overlays.Overlays.isTimeRangeLabel(overlay) &&
+        if (overlay && AnnotationHelpers.isTimeRangeLabel(overlay) &&
             Trace.Types.File.isTimeRangeAnnotation(updatedAnnotation)) {
             overlay.label = updatedAnnotation.label;
             overlay.bounds = updatedAnnotation.bounds;
             this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'UpdateTimeRange'));
         }
-        else if (overlay && Overlays.Overlays.isEntriesLink(overlay) &&
+        else if (overlay && AnnotationHelpers.isEntriesLink(overlay) &&
             Trace.Types.File.isEntriesLinkAnnotation(updatedAnnotation)) {
+            overlay.state = updatedAnnotation.state;
             overlay.entryFrom = updatedAnnotation.entryFrom;
             overlay.entryTo = updatedAnnotation.entryTo;
             this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'UpdateLinkToEntry'));
@@ -205,8 +207,12 @@ export class ModificationsManager extends EventTarget {
             (updatedOverlay.type === 'TIME_RANGE' && annotationForUpdatedOverlay.type === 'TIME_RANGE')) {
             this.#annotationsHiddenSetting.set(false);
             annotationForUpdatedOverlay.label = updatedOverlay.label;
+            this.dispatchEvent(new AnnotationModifiedEvent(updatedOverlay, 'UpdateLabel'));
         }
-        this.dispatchEvent(new AnnotationModifiedEvent(updatedOverlay, 'UpdateLabel'));
+        if ((updatedOverlay.type === 'ENTRIES_LINK' && annotationForUpdatedOverlay.type === 'ENTRIES_LINK')) {
+            this.#annotationsHiddenSetting.set(false);
+            annotationForUpdatedOverlay.state = updatedOverlay.state;
+        }
     }
     getAnnotationByOverlay(overlay) {
         for (const [annotation, currOverlay] of this.#overlayForAnnotation.entries()) {
@@ -319,6 +325,7 @@ export class ModificationsManager extends EventTarget {
             linksBetweenEntries.forEach(linkBetweenEntries => {
                 this.createAnnotation({
                     type: 'ENTRIES_LINK',
+                    state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
                     entryFrom: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryFrom, this.#parsedTrace),
                     entryTo: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryTo, this.#parsedTrace),
                 }, true);

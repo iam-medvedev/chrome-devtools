@@ -22,10 +22,9 @@ styles.replaceSync(
   padding-bottom: 5px;
   background: linear-gradient(180deg, rgb(255 125 210 / 0%) 0%, rgb(255 125 210 / 15%) 85%); /* stylelint-disable-line plugin/use_theme_colors */
   border-color: var(--ref-palette-pink55);
-  border-width: 1px;
+  border-width: 0 1px 5px;
   border-style: solid;
   pointer-events: none;
-  border-bottom-width: 5px;
 }
 
 .range-container {
@@ -36,7 +35,7 @@ styles.replaceSync(
   padding: 0 3px;
   pointer-events: all;
   user-select: none;
-  color: var(--ref-palette-pink55);
+  color: var(--sys-color-pink);
 
   &.labelHidden {
     /* Have to use this not display: none so it maintains its width */
@@ -58,7 +57,6 @@ styles.replaceSync(
   text-overflow: ellipsis;
   max-height: 40px;
   overflow: hidden;
-  color: var(--ref-palette-pink55);
   margin-bottom: 3px;
   display: -webkit-box;
   white-space: break-spaces;
@@ -75,7 +73,7 @@ styles.replaceSync(
   position: absolute;
   left: 4px;
   bottom: 5px;
-  color: var(--ref-palette-pink55);
+  color: inherit;
   width: 16px;
   height: 17px;
 }

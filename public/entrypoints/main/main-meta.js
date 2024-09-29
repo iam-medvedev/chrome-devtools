@@ -68,11 +68,11 @@ const UIStrings = {
     /**
      *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
      */
-    switchToBrowserPreferredColor: 'Switch to browser\'s preferred color theme',
+    switchToBrowserPreferredTheme: 'Switch to browser\'s preferred theme',
     /**
-     *@description A drop-down menu option to switch to the browser's preferred color theme
+     *@description A drop-down menu option to switch to the same (light or dark) theme as the browser
      */
-    browserPreference: 'Browser preference',
+    autoTheme: 'Auto',
     /**
      *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
      */
@@ -209,6 +209,14 @@ const UIStrings = {
      * @description Tooltip for the learn more link of the Match Chrome color scheme Setting.
      */
     matchChromeColorSchemeDocumentation: 'Match DevTools colors to your customized Chrome theme (when enabled)',
+    /**
+     * @description Command to turn the browser color scheme matching on through the command menu.
+     */
+    matchChromeColorSchemeCommand: 'Match Chrome color scheme',
+    /**
+     * @description Command to turn the browser color scheme matching off through the command menu.
+     */
+    dontMatchChromeColorSchemeCommand: 'Don\'t match Chrome color scheme',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/main-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -569,8 +577,8 @@ Common.Settings.registerSettingExtension({
     reloadRequired: false,
     options: [
         {
-            title: i18nLazyString(UIStrings.switchToBrowserPreferredColor),
-            text: i18nLazyString(UIStrings.browserPreference),
+            title: i18nLazyString(UIStrings.switchToBrowserPreferredTheme),
+            text: i18nLazyString(UIStrings.autoTheme),
             value: 'systemPreferred',
         },
         {
@@ -596,6 +604,16 @@ Common.Settings.registerSettingExtension({
     settingName: 'chrome-theme-colors',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.matchChromeColorSchemeCommand),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.dontMatchChromeColorSchemeCommand),
+        },
+    ],
     reloadRequired: true,
     learnMore: {
         url: 'https://goo.gle/devtools-customize-theme',

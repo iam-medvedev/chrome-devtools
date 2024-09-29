@@ -205,7 +205,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 Samples: makeMockSamplesHandlerData([profileCall]),
                 Workers: workersData,
             };
-            const resolver = new Timeline.SourceMapsResolver.SourceMapsResolver(parsedTrace);
+            const resolver = new Timeline.Utils.SourceMapsResolver.SourceMapsResolver(parsedTrace);
             await resolver.install();
             const linkifier = new Components.Linkifier.Linkifier();
             const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(profileCall, target, linkifier, true, parsedTrace);
@@ -248,8 +248,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
     });
     function getInnerTextAcrossShadowRoots(root) {
-        // Don't recurse into STYLE elements
-        if (!root || root.nodeName === 'STYLE') {
+        // Don't recurse into elements that are not displayed
+        if (!root || (root instanceof HTMLElement && !root.checkVisibility())) {
             return '';
         }
         if (root.nodeType === Node.TEXT_NODE) {
@@ -261,7 +261,10 @@ describeWithMockConnection('TimelineUIUtils', function () {
         return Array.from(root.childNodes).map(getInnerTextAcrossShadowRoots).join('');
     }
     function getRowDataForDetailsElement(details) {
-        return Array.from(details.querySelectorAll('.timeline-details-view-row')).map(row => {
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        container.appendChild(details);
+        return Array.from(container.querySelectorAll('.timeline-details-view-row')).map(row => {
             const title = row.querySelector('.timeline-details-view-row-title')?.innerText;
             const valueEl = row.querySelector('.timeline-details-view-row-value') ??
                 row.querySelector('div,span');
@@ -280,7 +283,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         if (!stackTraceContainer) {
             return null;
         }
-        return Array.from(stackTraceContainer.querySelectorAll('tr')).map(row => {
+        return Array.from(stackTraceContainer.querySelectorAll('tbody tr')).map(row => {
             const functionName = row.querySelector('.function-name')?.innerText;
             const url = row.querySelector('.link')?.innerText;
             return `${functionName || ''} @ ${url || ''}`;
@@ -683,13 +686,13 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const [thread] = process.threads.values();
             const scheduleStyleRecalcs = thread.entries.filter(entry => Trace.Types.Events.isScheduleStyleRecalculation(entry));
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, scheduleStyleRecalcs[1], new Components.Linkifier.Linkifier(), false);
+            const stackTraceData = getStackTraceForDetailsElement(details);
+            assert.deepEqual(stackTraceData, ['(anonymous) @ web.dev/js/app.js?v=1423cda3:1:183']);
             const rowData = getRowDataForDetailsElement(details)[0];
             assert.deepEqual(rowData, {
                 title: 'Details',
                 value: 'web.dev/js/app.js?v=1423cda3:1:183',
             });
-            const stackTraceData = getStackTraceForDetailsElement(details);
-            assert.deepEqual(stackTraceData, ['(anonymous) @ web.dev/js/app.js?v=1423cda3:1:183']);
         });
         it('renders the stack trace of a RecalculateStyles properly', async function () {
             Common.Linkifier.registerLinkifier({
@@ -866,7 +869,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.deepEqual(details, 'Pointer');
         });
         it('will use the resolved function name for a profile node that has a sourcemap', async function () {
-            // Timeline.SourceMapsResolver.SourceMapsResolver.
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
             const mainThread = getMainThread(parsedTrace.Renderer);
             const profileEntry = mainThread.entries.find(entry => {
@@ -876,7 +878,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 throw new Error('Could not find a profile entry');
             }
             // Fake that we resolved the entry's name from a sourcemap.
-            Timeline.SourceMapsResolver.SourceMapsResolver.storeResolvedNodeNameForEntry(profileEntry.pid, profileEntry.tid, profileEntry.nodeId, 'resolved-function-test');
+            Timeline.Utils.SourceMapsResolver.SourceMapsResolver.storeResolvedNodeDataForEntry(profileEntry.pid, profileEntry.tid, profileEntry.callFrame, { name: 'resolved-function-test', devtoolsLocation: null });
             const title = Timeline.TimelineUIUtils.TimelineUIUtils.eventTitle(profileEntry);
             assert.strictEqual(title, 'resolved-function-test');
         });

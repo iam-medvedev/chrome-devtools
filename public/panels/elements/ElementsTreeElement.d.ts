@@ -22,6 +22,7 @@ type ClosingTagContext = {
     tagType: TagType.CLOSING;
 };
 export type TagTypeContext = OpeningTagContext | ClosingTagContext;
+export declare function isOpeningTag(context: TagTypeContext): context is OpeningTagContext;
 export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     #private;
     nodeInternal: SDK.DOMModel.DOMNode;

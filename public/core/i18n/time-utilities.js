@@ -34,6 +34,11 @@ const UIStrings = {
      *@example {2.2} PH1
      */
     fdays: '{PH1} days',
+    /**
+     *@description describes a number of milliseconds
+     *@example {2.14} PH1
+     */
+    fmsExpanded: '{PH1} milliseconds',
 };
 const str_ = registerUIStrings('core/i18n/time-utilities.ts', UIStrings);
 const i18nString = getLocalizedString.bind(undefined, str_);
@@ -47,6 +52,10 @@ export function formatMicroSecondsTime(time) {
 export function formatMicroSecondsAsMillisFixed(time, fractionDigits = 0) {
     const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
     return i18nString(UIStrings.fms, { PH1: milliseconds.toFixed(fractionDigits) });
+}
+export function formatMicroSecondsAsMillisFixedExpanded(time, fractionDigits = 0) {
+    const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
+    return i18nString(UIStrings.fmsExpanded, { PH1: milliseconds.toFixed(fractionDigits) });
 }
 export function formatMicroSecondsAsSeconds(time) {
     const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);

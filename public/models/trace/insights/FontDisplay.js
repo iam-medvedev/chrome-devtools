@@ -8,19 +8,11 @@ export function deps() {
     return ['Meta', 'NetworkRequests', 'LayoutShifts'];
 }
 export function generateInsight(parsedTrace, context) {
-    // TODO(b/366049346) make this work w/o a navigation.
-    if (!context.navigation) {
-        return { fonts: [] };
-    }
-    const remoteFontLoadEvents = [];
-    for (const event of parsedTrace.LayoutShifts.beginRemoteFontLoadEvents) {
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, parsedTrace.Meta.navigationsByFrameId);
-        if (navigation === context.navigation) {
-            remoteFontLoadEvents.push(event);
-        }
-    }
     const fonts = [];
-    for (const event of remoteFontLoadEvents) {
+    for (const event of parsedTrace.LayoutShifts.beginRemoteFontLoadEvents) {
+        if (!Helpers.Timing.eventIsInBounds(event, context.bounds)) {
+            continue;
+        }
         const requestId = `${event.pid}.${event.args.id}`;
         const request = parsedTrace.NetworkRequests.byId.get(requestId);
         if (!request) {
@@ -30,7 +22,10 @@ export function generateInsight(parsedTrace, context) {
         let wastedTime = Types.Timing.MilliSeconds(0);
         if (/^(block|fallback|auto)$/.test(display)) {
             const wastedTimeMicro = Types.Timing.MicroSeconds(request.args.data.syntheticData.finishTime - request.args.data.syntheticData.sendStartTime);
+            // TODO(crbug.com/352244504): should really end at the time of the next Commit trace event.
             wastedTime = Platform.NumberUtilities.floor(Helpers.Timing.microSecondsToMilliseconds(wastedTimeMicro), 1 / 5);
+            // All browsers wait for no more than 3s.
+            wastedTime = Math.min(wastedTime, 3000);
         }
         fonts.push({
             request,
@@ -38,6 +33,7 @@ export function generateInsight(parsedTrace, context) {
             wastedTime,
         });
     }
+    fonts.sort((a, b) => b.wastedTime - a.wastedTime);
     return {
         fonts,
     };

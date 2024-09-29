@@ -18,6 +18,7 @@ export declare class FreestylerPanel extends UI.Panel.Panel {
         forceNew: boolean | null;
     } | undefined): Promise<FreestylerPanel>;
     wasShown(): void;
+    willHide(): void;
     doUpdate(): void;
     handleAction(actionId: string): void;
 }

@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/freestyler/AiAgent.ts",
     "../../../../../../front_end/panels/freestyler/ChangeManager.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.ts",
     "../../../../../../front_end/panels/freestyler/ExtensionScope.ts",

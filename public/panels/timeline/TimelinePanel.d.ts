@@ -46,7 +46,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private networkThrottlingSelect?;
     private cpuThrottlingSelect?;
     private fileSelectorElement?;
-    private selection?;
+    private selection;
     private traceLoadStart;
     private primaryPageTargetPromiseCallback;
     private primaryPageTargetPromise;

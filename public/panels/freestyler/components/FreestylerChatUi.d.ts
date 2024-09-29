@@ -1,11 +1,9 @@
 import * as Host from '../../../core/host/host.js';
-import type * as Platform from '../../../core/platform/platform.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { ErrorType } from '../FreestylerAgent.js';
-export declare const DOGFOOD_INFO: Platform.DevToolsPath.UrlString;
+import { type ContextDetail, ErrorType } from '../AiAgent.js';
 export interface Step {
     isLoading: boolean;
     thought?: string;
@@ -19,10 +17,6 @@ export interface Step {
 interface ConfirmSideEffectDialog {
     onAnswer: (result: boolean) => void;
 }
-export interface ContextDetail {
-    title: string;
-    text: string;
-}
 export declare const enum ChatMessageEntity {
     MODEL = "model",
     USER = "user"
@@ -33,7 +27,7 @@ export interface UserChatMessage {
 }
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
-    suggestingFix: boolean;
+    suggestions: string[];
     steps: Step[];
     answer?: string;
     error?: ErrorType;
@@ -52,9 +46,7 @@ export interface Props {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
     onFeedbackSubmit: (rpcId: number, rate: Host.AidaClient.Rating, feedback?: string) => void;
-    onAcceptConsentClick: () => void;
     onCancelClick: () => void;
-    onFixThisIssueClick: () => void;
     onSelectedNetworkRequestClick: () => void | Promise<void>;
     inspectElementToggled: boolean;
     state: State;

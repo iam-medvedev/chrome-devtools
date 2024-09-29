@@ -37,7 +37,6 @@ function breakdownPhases(nav, docRequest, lcpMs, lcpRequest) {
     };
 }
 export function generateInsight(parsedTrace, context) {
-    // TODO(crbug.com/366049346) make this work w/o a navigation.
     if (!context.navigation) {
         return {};
     }
@@ -62,12 +61,13 @@ export function generateInsight(parsedTrace, context) {
     const lcpRequest = findLCPRequest(parsedTrace, context, lcpEvent);
     const docRequest = networkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!docRequest) {
-        return { lcpMs, lcpTs, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] };
+        return { lcpMs, lcpTs, lcpEvent, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] };
     }
     if (!lcpRequest) {
         return {
             lcpMs,
             lcpTs,
+            lcpEvent,
             phases: breakdownPhases(context.navigation, docRequest, lcpMs, lcpRequest),
         };
     }
@@ -82,6 +82,7 @@ export function generateInsight(parsedTrace, context) {
     return {
         lcpMs,
         lcpTs,
+        lcpEvent,
         phases: breakdownPhases(context.navigation, docRequest, lcpMs, lcpRequest),
         shouldRemoveLazyLoading: imageLoadingAttr === 'lazy',
         shouldIncreasePriorityHint: imageFetchPriorityHint !== 'high',

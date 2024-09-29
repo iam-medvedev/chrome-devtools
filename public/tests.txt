@@ -329,6 +329,7 @@ panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
 panels/freestyler/ChangeManager.test.js
+panels/freestyler/DrJonesNetworkAgent.test.js
 panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
@@ -431,7 +432,6 @@ panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/ModificationsManager.test.js
 panels/timeline/SaveFileFormatter.test.js
-panels/timeline/SourceMapsResolver.test.js
 panels/timeline/TimelineController.test.js
 panels/timeline/TimelineDetailsView.test.js
 panels/timeline/TimelineFilters.test.js
@@ -456,6 +456,8 @@ panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
+panels/timeline/components/SidebarInsightsTab.test.js
+panels/timeline/components/SidebarSingleInsightSet.test.js
 panels/timeline/components/insights/SidebarInsight.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
@@ -469,6 +471,8 @@ panels/timeline/track_appenders/NetworkTrackAppender.test.js
 panels/timeline/track_appenders/ServerTimingsTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
+panels/timeline/utils/IgnoreList.test.js
+panels/timeline/utils/SourceMapsResolver.test.js
 panels/utils/utils.test.js
 panels/web_audio/web_audio.test.js
 panels/webauthn/WebauthnPane.test.js

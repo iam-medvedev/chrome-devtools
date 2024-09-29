@@ -23,14 +23,6 @@ export declare const UIStrings: {
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    buildingPostorderIndex: string;
-    /**
-     *@description Text to indicate the status of a heap snapshot in the Performance Pane
-     */
-    buildingDominatorTree: string;
-    /**
-     *@description Text to indicate the status of a heap snapshot in the Performance Pane
-     */
     calculatingShallowSizes: string;
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane

@@ -1,2 +1,4 @@
+import * as IgnoreList from './IgnoreList.js';
 import * as NetworkRequest from './NetworkRequest.js';
-export { NetworkRequest, };
+import * as SourceMapsResolver from './SourceMapsResolver.js';
+export { IgnoreList, NetworkRequest, SourceMapsResolver, };

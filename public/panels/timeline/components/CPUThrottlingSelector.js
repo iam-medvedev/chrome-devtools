@@ -45,12 +45,13 @@ export class CPUThrottlingSelector extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [cpuThrottlingSelectorStyles];
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.#onRateChange, this);
+        this.#onRateChange();
     }
     disconnectedCallback() {
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().removeEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.#onRateChange, this);
     }
-    #onRateChange(event) {
-        this.#currentRate = event.data;
+    #onRateChange() {
+        this.#currentRate = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate();
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onMenuItemSelected(event) {

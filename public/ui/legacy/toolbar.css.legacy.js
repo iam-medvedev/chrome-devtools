@@ -161,7 +161,7 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
   }
 
   &:focus-visible {
-    border: 2px solid var(--sys-color-state-focus-ring);
+    outline: 2px solid var(--sys-color-state-focus-ring);
   }
 
   &[disabled] {
@@ -450,7 +450,7 @@ select.toolbar-item:not(.toolbar-has-dropdown):disabled {
 }
 
 .toolbar-shadow:not(.floating) .toolbar-button.toolbar-item:last-child:not(:first-child, .toolbar-select-container) {
-  justify-content: center;
+  justify-content: left;
   margin-right: 2px;
 }
 

@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, ShadowMatcher, } from './PropertyMatchers.js';
+import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, CSSWideKeywordMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, ShadowMatcher, } from './PropertyMatchers.js';
 import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
@@ -93,6 +93,37 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const parentMap = new WeakMap();
+export class CSSWideKeywordRenderer {
+    #treeElement;
+    constructor(treeElement) {
+        this.#treeElement = treeElement;
+    }
+    matcher() {
+        return new CSSWideKeywordMatcher(this.#treeElement.property, this.#treeElement.matchedStyles());
+    }
+    render(match, context) {
+        const resolvedProperty = match.resolveProperty();
+        if (!resolvedProperty) {
+            return [document.createTextNode(match.text)];
+        }
+        const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
+        UI.UIUtils.createTextChild(swatch, match.text);
+        swatch.data = {
+            text: match.text,
+            isDefined: Boolean(resolvedProperty),
+            onLinkActivate: () => resolvedProperty && this.#treeElement.parentPane().jumpToDeclaration(resolvedProperty),
+            jslogContext: 'css-wide-keyword-link',
+        };
+        if (SDK.CSSMetadata.cssMetadata().isColorAwareProperty(resolvedProperty.name) ||
+            SDK.CSSMetadata.cssMetadata().isCustomProperty(resolvedProperty.name)) {
+            const color = Common.Color.parse(context.matchedResult.getComputedText(match.node));
+            if (color) {
+                return [new ColorRenderer(this.#treeElement).renderColorSwatch(color, swatch)];
+            }
+        }
+        return [swatch];
+    }
+}
 export class VariableRenderer {
     #treeElement;
     #style;
@@ -172,15 +203,15 @@ export class VariableRenderer {
     #handleVarDefinitionActivate(variable) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CustomPropertyLinkClicked);
         Host.userMetrics.swatchActivated(0 /* Host.UserMetrics.SwatchType.VAR_LINK */);
-        if (variable instanceof SDK.CSSProperty.CSSProperty) {
-            this.#pane.revealProperty(variable);
-        }
-        else if (variable instanceof SDK.CSSMatchedStyles.CSSRegisteredProperty) {
-            this.#pane.jumpToProperty('initial-value', variable.propertyName(), REGISTERED_PROPERTY_SECTION_NAME);
-        }
-        else {
+        if (typeof variable === 'string') {
             this.#pane.jumpToProperty(variable) ||
                 this.#pane.jumpToProperty('initial-value', variable, REGISTERED_PROPERTY_SECTION_NAME);
+        }
+        else if (variable.declaration instanceof SDK.CSSProperty.CSSProperty) {
+            this.#pane.revealProperty(variable.declaration);
+        }
+        else if (variable.declaration instanceof SDK.CSSMatchedStyles.CSSRegisteredProperty) {
+            this.#pane.jumpToProperty('initial-value', variable.name, REGISTERED_PROPERTY_SECTION_NAME);
         }
     }
 }
@@ -1336,12 +1367,13 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 new BezierRenderer(this),
                 new StringRenderer(),
                 new ShadowRenderer(this),
-                new FontRenderer(this),
+                new CSSWideKeywordRenderer(this),
                 new LightDarkColorRenderer(this),
                 new GridTemplateRenderer(),
                 new LinearGradientRenderer(),
                 new AnchorFunctionRenderer(this),
                 new PositionAnchorRenderer(this),
+                new FontRenderer(this),
             ] :
             [];
         if (!Root.Runtime.experiments.isEnabled('css-type-component-length-deprecate') && this.property.parsedOk) {

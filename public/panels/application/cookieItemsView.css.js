@@ -27,6 +27,7 @@ styles.replaceSync(
 
 .cookie-preview-widget-header-label {
   line-height: 18px;
+  flex-shrink: 0;
 }
 
 .cookie-preview-widget-cookie-value {
@@ -39,6 +40,7 @@ styles.replaceSync(
 .cookie-preview-widget-toggle {
   margin-left: 12px;
   font-weight: normal;
+  flex-shrink: 1;
 }
 
 /*# sourceURL=cookieItemsView.css */

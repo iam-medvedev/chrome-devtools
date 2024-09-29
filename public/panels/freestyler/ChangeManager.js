@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-export const AI_ASSISTANT_CSS_CLASS_NAME = 'ai-assistant-change';
+export const AI_ASSISTANCE_CSS_CLASS_NAME = 'ai-style-change';
 /**
  * Keeps track of changes done by Freestyler. Currently, it is primarily
  * for stylesheet generation based on all changes.

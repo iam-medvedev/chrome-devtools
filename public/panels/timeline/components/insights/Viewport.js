@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, md, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import { NodeLink } from './NodeLink.js';
 import * as SidebarInsight from './SidebarInsight.js';
-import { InsightsCategories } from './types.js';
+import { Category } from './types.js';
 const UIStrings = {
+    /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
+    title: 'Mobile-optimized viewport',
     /**
      * @description Text to tell the user how a viewport meta element can improve performance.
      */
@@ -16,25 +19,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Viewport.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function getViewportInsight(insights, navigationId) {
-    if (!insights || !navigationId) {
-        return null;
-    }
-    const insightsByNavigation = insights.get(navigationId);
-    if (!insightsByNavigation) {
-        return null;
-    }
-    const viewportInsight = insightsByNavigation.data.Viewport;
-    if (viewportInsight instanceof Error) {
-        return null;
-    }
-    return viewportInsight;
-}
 export class Viewport extends BaseInsight {
     static litTagName = LitHtml.literal `devtools-performance-viewport`;
-    insightCategory = InsightsCategories.INP;
+    insightCategory = Category.INP;
     internalName = 'viewport';
-    userVisibleTitle = 'Mobile-optimized viewport';
+    userVisibleTitle = i18nString(UIStrings.title);
+    description = i18nString(UIStrings.description);
     createOverlays() {
         // TODO(b/351757418): create overlay for synthetic input delay events
         return [];
@@ -46,13 +36,12 @@ export class Viewport extends BaseInsight {
         <div class="insights">
             <${SidebarInsight.SidebarInsight.litTagName} .data=${{
             title: this.userVisibleTitle,
+            description: this.description,
             expanded: this.isActive(),
+            internalName: this.internalName,
         }}
             @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-description" class="insight-description">
-                  ${md(i18nString(UIStrings.description))}
-                </div>
-                <div slot="insight-content" class="insight-content">
+                <div slot="insight-content" class="insight-section">
                   ${backendNodeId !== undefined ? LitHtml.html `<${NodeLink.litTagName}
                     .data=${{
             backendNodeId,
@@ -65,7 +54,7 @@ export class Viewport extends BaseInsight {
         // clang-format on
     }
     render() {
-        const viewportInsight = getViewportInsight(this.data.insights, this.data.navigationId);
+        const viewportInsight = Trace.Insights.Common.getInsight('Viewport', this.data.insights, this.data.insightSetKey);
         const shouldShow = viewportInsight && viewportInsight.mobileOptimized === false;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,

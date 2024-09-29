@@ -4,9 +4,14 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+// The css files aren't exported by the bundle, so we need to import it directly.
+// eslint-disable-next-line rulesdir/es_modules_import
+import consoleViewStyles from './consoleView.css.js';
 describeWithMockConnection('ConsoleViewMessage', () => {
     describe('anchor rendering', () => {
         it('links to the top frame for normal console message', () => {
@@ -101,6 +106,177 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             const messageElement = message.toMessageElement(); // Trigger rendering.
             const button = messageElement.querySelector('[aria-label=\'Understand this warning. Powered by AI.\']');
             assert.isNull(button);
+        });
+    });
+    describe('with ignore listing', () => {
+        const IGNORE_LIST_LINK = 'ignore-list-link';
+        function findStackPreviewContainer(element) {
+            const outer = element.querySelector('span.stack-preview-container');
+            assert.isNotNull(outer);
+            const inner = outer.shadowRoot;
+            assert.isNotNull(inner);
+            return inner;
+        }
+        function findLinks(element) {
+            const root = findStackPreviewContainer(element);
+            const showAll = root.querySelector('.show-all-link');
+            assert.isNotNull(showAll);
+            const showLess = root.querySelector('.show-less-link');
+            assert.isNotNull(showLess);
+            return { showAll, showLess };
+        }
+        function assertNoLinks(element) {
+            const { showAll, showLess } = findLinks(element);
+            assert.isFalse(showAll.checkVisibility());
+            assert.isFalse(showLess.checkVisibility());
+        }
+        function assertShowAllLink(element) {
+            const { showAll, showLess } = findLinks(element);
+            assert.isTrue(showAll.checkVisibility());
+            assert.isFalse(showLess.checkVisibility());
+        }
+        function assertShowLessLink(element) {
+            const { showAll, showLess } = findLinks(element);
+            assert.isFalse(showAll.checkVisibility());
+            assert.isTrue(showLess.checkVisibility());
+        }
+        function errorMessageForStack(stack) {
+            return [
+                'Error:',
+                ...(stack.callFrames.map(frame => `    at ${frame.functionName} (${frame.url}:${frame.lineNumber}:${frame.columnNumber})`)),
+            ].join('\n');
+        }
+        function getCallFrames(element) {
+            const results = [];
+            for (const line of element.querySelectorAll('.formatted-stack-frame')) {
+                if (line.checkVisibility()) {
+                    results.push(line.textContent ?? 'Error: line was null or undefined');
+                }
+            }
+            return results;
+        }
+        function getStructuredCallFrames(element) {
+            const results = [];
+            for (const line of findStackPreviewContainer(element).querySelectorAll('tbody tr')) {
+                if (line.checkVisibility()) {
+                    results.push(line.textContent ?? 'Error: line was null or undefined');
+                }
+            }
+            return results;
+        }
+        function expandStructuredTrace(element) {
+            element.querySelector('.console-message-stack-trace-wrapper > div').click();
+        }
+        function expandIgnored(element) {
+            const { showAll } = findLinks(element);
+            showAll.querySelector('.link').click();
+        }
+        function collapseIgnored(element) {
+            const { showLess } = findLinks(element);
+            showLess.querySelector('.link').click();
+        }
+        async function createConsoleMessageWithIgnoreListing(ignoreListFn) {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const stackTrace = createStackTrace([
+                'USER_ID::userNestedFunction::http://example.com/script.js::40::15',
+                'USER_ID::userFunction::http://example.com/script.js::10::2',
+                'APP_ID::entry::http://example.com/app.js::25::10',
+            ]);
+            const stackTraceMessage = errorMessageForStack(stackTrace);
+            const messageDetails = {
+                type: "error" /* Protocol.Runtime.ConsoleAPICalledEventType.Error */,
+                stackTrace,
+                parameters: [{
+                        type: 'object',
+                        subtype: 'error',
+                        className: 'Error',
+                        description: stackTraceMessage,
+                    }],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, stackTraceMessage, messageDetails);
+            const { message, linkifier } = createConsoleViewMessageWithStubDeps(rawMessage);
+            linkifier.linkifyScriptLocation.callsFake((target, scriptId, sourceURL, lineNumber, options) => {
+                const link = Components.Linkifier.Linkifier.linkifyURL(sourceURL, { lineNumber, ...options });
+                if (ignoreListFn(sourceURL)) {
+                    link.classList.add(IGNORE_LIST_LINK);
+                }
+                return link;
+            });
+            linkifier.maybeLinkifyConsoleCallFrame.callsFake((target, callFrame, options) => {
+                const link = Components.Linkifier.Linkifier.linkifyURL(callFrame.url, { lineNumber: callFrame.lineNumber, ...options });
+                if (ignoreListFn(callFrame.url)) {
+                    link.classList.add(IGNORE_LIST_LINK);
+                }
+                return link;
+            });
+            const element = message.toMessageElement(); // Trigger rendering.
+            await message.formatErrorStackPromiseForTest();
+            const wrapperElement = document.createElement('div');
+            const shadowElement = UI.UIUtils.createShadowRootWithCoreStyles(wrapperElement, { cssFile: [consoleViewStyles] });
+            shadowElement.appendChild(element);
+            renderElementIntoDOM(wrapperElement);
+            assert.isTrue(element.checkVisibility());
+            return element;
+        }
+        const EXPANDED_UNSTRUCTURED = [
+            '    at userNestedFunction (/script.js:40:15)\n',
+            '    at userFunction (/script.js:10:2)\n',
+            '    at entry (/app.js:25:10)',
+        ];
+        const COLLAPSED_UNSTRUCTURED = [
+            '    at userNestedFunction (/script.js:40:15)\n',
+            '    at userFunction (/script.js:10:2)\n',
+        ];
+        const EXPANDED_STRUCTURED = [
+            '\nuserNestedFunction @ example.com/script.js:41',
+            '\nuserFunction @ example.com/script.js:11',
+            '\nentry @ example.com/app.js:26',
+        ];
+        const COLLAPSED_STRUCTURED = [
+            '\nuserNestedFunction @ example.com/script.js:41',
+            '\nuserFunction @ example.com/script.js:11',
+        ];
+        it('shows everything with no links when nothing is ignore listed', async () => {
+            const element = await createConsoleMessageWithIgnoreListing(_ => false);
+            assertNoLinks(element);
+            assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
+            assert.deepEqual(getStructuredCallFrames(element), []);
+            expandStructuredTrace(element);
+            assertNoLinks(element);
+            assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
+        });
+        it('shows everything with no links when everything is ignore listed', async () => {
+            const element = await createConsoleMessageWithIgnoreListing(_ => true);
+            assertNoLinks(element);
+            assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
+            assert.deepEqual(getStructuredCallFrames(element), []);
+            expandStructuredTrace(element);
+            assertNoLinks(element);
+            assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
+        });
+        it('shows expandable list when something is ignore listed', async () => {
+            const element = await createConsoleMessageWithIgnoreListing(url => url.includes('/app.js'));
+            assertShowAllLink(element);
+            assert.deepEqual(getStructuredCallFrames(element), []);
+            assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED);
+            expandIgnored(element);
+            assertShowLessLink(element);
+            assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
+            collapseIgnored(element);
+            assertShowAllLink(element);
+            expandStructuredTrace(element);
+            assertShowAllLink(element);
+            assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
+            assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED);
+            expandIgnored(element);
+            assertShowLessLink(element);
+            assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
+            assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
+            collapseIgnored(element);
+            assertShowAllLink(element);
+            assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
+            assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED);
         });
     });
 });

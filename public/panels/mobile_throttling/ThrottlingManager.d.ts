@@ -18,6 +18,7 @@ export declare class ThrottlingManager {
     createMobileThrottlingButton(): UI.Toolbar.ToolbarMenuButton;
     private updatePanelIcon;
     setCPUThrottlingRate(rate: number): void;
+    onCPUThrottlingRateChangedOnSDK(rate: number): void;
     createCPUThrottlingSelector(): UI.Toolbar.ToolbarComboBox;
     createHardwareConcurrencySelector(): {
         input: UI.Toolbar.ToolbarItem;

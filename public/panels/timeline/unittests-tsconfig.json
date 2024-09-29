@@ -46,7 +46,6 @@
     "../../../../../../front_end/panels/timeline/Initiators.test.ts",
     "../../../../../../front_end/panels/timeline/ModificationsManager.test.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.test.ts",
-    "../../../../../../front_end/panels/timeline/SourceMapsResolver.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineController.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineDetailsView.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineFilters.test.ts",

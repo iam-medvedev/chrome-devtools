@@ -14,10 +14,8 @@ export interface Options {
 }
 export interface StackTraceRegularRow {
     functionName: string;
-    ignoreListHide: boolean;
     link: HTMLElement | null;
 }
 export interface StackTraceAsyncRow {
     asyncDescription: string;
-    ignoreListHide: boolean;
 }

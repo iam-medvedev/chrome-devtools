@@ -233,7 +233,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         return Presets.some(preset => preset.setting.get());
     }
     unauditablePageMessage() {
-        if (!this.manager) {
+        if (!this.manager || this.getFlags().mode !== 'navigation') {
             return null;
         }
         const mainTarget = this.manager.target();

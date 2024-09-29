@@ -99,8 +99,10 @@ export interface PossibleFilterActions {
 export interface PositionOverride {
     x: number;
     width: number;
+    /** The z index of this entry. Use -1 if placing it underneath other entries. A z of 0 is assumed, otherwise, much like CSS's z-index */
+    z?: number;
 }
-export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => PositionOverride;
+export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, timeToPosition: (time: number) => number) => PositionOverride;
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;

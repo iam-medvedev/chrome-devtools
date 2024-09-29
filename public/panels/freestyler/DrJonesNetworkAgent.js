@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import * as Logs from '../../models/logs/logs.js';
+import { ResponseType, } from './AiAgent.js';
 /* clang-format off */
 const preamble = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
@@ -16,6 +18,7 @@ Provide a comprehensive analysis of the network request, focusing on areas cruci
 * If the response payload or request payload contains sensitive data, redact or generalize it in your analysis to ensure privacy.
 * Tailor your explanations and suggestions to the specific context of the request and the technologies involved (if discernible from the provided details).
 * Keep your analysis concise and focused, highlighting only the most critical aspects for a software engineer.
+* **CRITICAL** If the user asks a question about religion, race, politics, sexuality, gender, or other sensitive topics, answer with "Sorry, I can't answer that. I'm best at questions about network requests."
 
 ## Example session
 
@@ -35,11 +38,49 @@ This request aims to retrieve a list of products matching the search query "lapt
 `;
 /* clang-format on */
 const MAX_HEADERS_SIZE = 1000;
-export var DrJonesNetworkAgentResponseType;
-(function (DrJonesNetworkAgentResponseType) {
-    DrJonesNetworkAgentResponseType["ANSWER"] = "answer";
-    DrJonesNetworkAgentResponseType["ERROR"] = "error";
-})(DrJonesNetworkAgentResponseType || (DrJonesNetworkAgentResponseType = {}));
+/*
+* Strings that don't need to be translated at this time.
+*/
+const UIStringsNotTranslate = {
+    inspectingNetworkData: 'Inspecting network data',
+    /**
+     *@description Thought text for thinking step of DrJones Network agent.
+     */
+    dataUsedToGenerateThisResponse: 'Data used to generate this response',
+    /**
+     *@description Heading text for the block that shows the network request details.
+     */
+    request: 'Request',
+    /**
+     *@description Heading text for the block that shows the network response details.
+     */
+    response: 'Response',
+    /**
+     *@description Prefix text for request URL.
+     */
+    requestUrl: 'Request URL',
+    /**
+     *@description Title text for request headers.
+     */
+    requestHeaders: 'Request Headers',
+    /**
+     *@description Title text for request timing details.
+     */
+    timing: 'Timing',
+    /**
+     *@description Title text for response headers.
+     */
+    responseHeaders: 'Response Headers',
+    /**
+     *@description Prefix text for response status.
+     */
+    responseStatus: 'Response Status',
+    /**
+     *@description Title text for request initiator chain.
+     */
+    requestInitiatorChain: 'Request Initiator Chain',
+};
+const lockedString = i18n.i18n.lockedString;
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -47,6 +88,7 @@ export var DrJonesNetworkAgentResponseType;
 export class DrJonesNetworkAgent {
     static buildRequest(opts) {
         const config = Common.Settings.Settings.instance().getHostConfig();
+        const temperature = config.devToolsExplainThisResourceDogfood?.temperature;
         const request = {
             input: opts.input,
             preamble: opts.preamble,
@@ -54,13 +96,14 @@ export class DrJonesNetworkAgent {
             chat_history: opts.chatHistory,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
-                temperature: config.devToolsExplainThisResourceDogfood?.temperature ?? 0,
+                ...(temperature !== undefined && temperature >= 0) && { temperature },
                 model_id: config.devToolsExplainThisResourceDogfood?.modelId ?? undefined,
             },
             metadata: {
-                // TODO: disable logging based on query params.
                 disable_user_content_logging: !(opts.serverSideLoggingEnabled ?? false),
                 string_session_id: opts.sessionId,
+                // TODO(b/369822364): use a feature param instead.
+                user_tier: Host.AidaClient.convertToUserTierEnum('BETA'),
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             functionality_type: Host.AidaClient.FunctionalityType.CHAT,
@@ -83,10 +126,10 @@ export class DrJonesNetworkAgent {
     get chatHistoryForTesting() {
         return this.#getHistoryEntry;
     }
-    async #aidaFetch(request) {
+    async #aidaFetch(request, options) {
         let response = '';
         let rpcId;
-        for await (const lastResult of this.#aidaClient.fetch(request)) {
+        for await (const lastResult of this.#aidaClient.fetch(request, options)) {
             response = lastResult.explanation;
             rpcId = lastResult.metadata.rpcGlobalId ?? rpcId;
             if (lastResult.metadata.attributionMetadata?.some(meta => meta.attributionAction === Host.AidaClient.RecitationAction.BLOCK)) {
@@ -102,9 +145,6 @@ export class DrJonesNetworkAgent {
             `# Selected network request \n${formatNetworkRequest(options.selectedNetworkRequest)}\n\n# User request\n\n` :
             ''}${query}`;
         const currentRunId = ++this.#runId;
-        options.signal?.addEventListener('abort', () => {
-            this.#chatHistory.delete(currentRunId);
-        });
         const request = DrJonesNetworkAgent.buildRequest({
             input: query,
             preamble,
@@ -115,17 +155,35 @@ export class DrJonesNetworkAgent {
         let response;
         let rpcId;
         try {
-            const fetchResult = await this.#aidaFetch(request);
+            yield {
+                type: ResponseType.TITLE,
+                title: lockedString(UIStringsNotTranslate.inspectingNetworkData),
+                rpcId,
+            };
+            yield {
+                type: ResponseType.THOUGHT,
+                thought: lockedString(UIStringsNotTranslate.dataUsedToGenerateThisResponse),
+                contextDetails: createContextDetailsForDrJonesNetworkAgent(options.selectedNetworkRequest),
+                rpcId,
+            };
+            const fetchResult = await this.#aidaFetch(request, { signal: options.signal });
             response = fetchResult.response;
             rpcId = fetchResult.rpcId;
         }
         catch (err) {
             debugLog('Error calling the AIDA API', err);
-            if (options.signal?.aborted) {
+            if (err instanceof Host.AidaClient.AidaAbortError) {
+                this.#chatHistory.delete(currentRunId);
+                yield {
+                    type: ResponseType.ERROR,
+                    error: "abort" /* ErrorType.ABORT */,
+                    rpcId,
+                };
                 return;
             }
             yield {
-                type: DrJonesNetworkAgentResponseType.ERROR,
+                type: ResponseType.ERROR,
+                error: "unknown" /* ErrorType.UNKNOWN */,
                 rpcId,
             };
             return;
@@ -154,8 +212,10 @@ export class DrJonesNetworkAgent {
         const currentRunEntries = this.#chatHistory.get(currentRunId) ?? [];
         addToHistory(response);
         yield {
-            type: DrJonesNetworkAgentResponseType.ANSWER,
+            type: ResponseType.ANSWER,
             text: response,
+            // TODO: Remove this need.
+            suggestions: [],
             rpcId,
         };
         if (isDebugMode()) {
@@ -213,8 +273,7 @@ export function formatHeaders(title, headers) {
 }
 export function formatNetworkRequestTiming(request) {
     const timing = request.timing;
-    return `
-Request start time: ${request.startTime}
+    return `Request start time: ${request.startTime}
 Request end time: ${request.endTime}
 Receiving response headers start time: ${timing?.receiveHeadersStart}
 Receiving response headers end time: ${timing?.receiveHeadersEnd}
@@ -228,12 +287,12 @@ SSL start time: ${timing?.sslStart}
 SSL end time: ${timing?.sslEnd}
 Sending start: ${timing?.sendStart}
 Sending end: ${timing?.sendEnd}
-  `;
+`;
 }
 function formatRequestInitiated(request, initiatorChain, lineStart) {
     const initiated = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(request).initiated;
-    initiated.forEach((k, initiatedRequest) => {
-        if (request === k) {
+    initiated.forEach((v, initiatedRequest) => {
+        if (request === v) {
             initiatorChain = initiatorChain + lineStart + initiatedRequest.url() + '\n';
             initiatorChain = formatRequestInitiated(initiatedRequest, initiatorChain, '\t' + lineStart);
         }
@@ -266,9 +325,38 @@ ${formatHeaders('Response headers:', request.responseHeaders)}
 
 Response status: ${request.statusCode} ${request.statusText}
 
-Request Timing:\n ${formatNetworkRequestTiming(request)}
+Request Timing:\n${formatNetworkRequestTiming(request)}
 
-Request Initiator Chain:\n ${formatRequestInitiatorChain(request)}`;
+Request Initiator Chain:\n${formatRequestInitiatorChain(request)}`;
+}
+function createContextDetailsForDrJonesNetworkAgent(request) {
+    if (request) {
+        const requestContextDetail = {
+            title: lockedString(UIStringsNotTranslate.request),
+            text: lockedString(UIStringsNotTranslate.requestUrl) + ': ' + request.url() + '\n\n' +
+                formatHeaders(lockedString(UIStringsNotTranslate.requestHeaders), request.requestHeaders()),
+        };
+        const responseContextDetail = {
+            title: lockedString(UIStringsNotTranslate.response),
+            text: lockedString(UIStringsNotTranslate.responseStatus) + ': ' + request.statusCode + ' ' + request.statusText +
+                '\n\n' + formatHeaders(lockedString(UIStringsNotTranslate.responseHeaders), request.responseHeaders),
+        };
+        const timingContextDetail = {
+            title: lockedString(UIStringsNotTranslate.timing),
+            text: formatNetworkRequestTiming(request),
+        };
+        const initiatorChainContextDetail = {
+            title: lockedString(UIStringsNotTranslate.requestInitiatorChain),
+            text: formatRequestInitiatorChain(request),
+        };
+        return [
+            requestContextDetail,
+            responseContextDetail,
+            timingContextDetail,
+            initiatorChainContextDetail,
+        ];
+    }
+    return [];
 }
 // @ts-ignore
 globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;

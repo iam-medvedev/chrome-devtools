@@ -3,7 +3,6 @@ export declare class ThemeSupport extends EventTarget {
     #private;
     private setting;
     private themeNameInternal;
-    private customSheets;
     private computedStyleOfHTML;
     private constructor();
     static hasInstance(): boolean;
@@ -23,8 +22,6 @@ export declare class ThemeSupport extends EventTarget {
     appendStyle(node: Node, { cssContent }: {
         cssContent: string;
     }): void;
-    injectCustomStyleSheets(element: Element | ShadowRoot): void;
-    addCustomStylesheet(sheetText: string): void;
     static clearThemeCache(): void;
     fetchColorsAndApplyHostTheme(): void;
 }

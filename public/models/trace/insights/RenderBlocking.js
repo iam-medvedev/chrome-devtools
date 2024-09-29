@@ -100,7 +100,6 @@ function computeSavings(parsedTrace, context, renderBlockingRequests) {
     return { metricSavings, requestIdToWastedMs };
 }
 export function generateInsight(parsedTrace, context) {
-    // TODO(crbug.com/366049346) make this work w/o a navigation.
     if (!context.navigation) {
         return {
             renderBlockingRequests: [],

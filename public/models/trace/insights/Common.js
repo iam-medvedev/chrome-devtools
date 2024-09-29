@@ -2,6 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
+export function getInsight(insightName, insights, key) {
+    if (!insights || !key) {
+        return null;
+    }
+    const insightSets = insights.get(key);
+    if (!insightSets) {
+        return null;
+    }
+    const insight = insightSets.data[insightName];
+    if (insight instanceof Error) {
+        return null;
+    }
+    // For some reason typescript won't narrow the type by removing Error, so do it manually.
+    return insight;
+}
 /**
  * Finds a network request given a navigation context and URL.
  * Considers redirects.

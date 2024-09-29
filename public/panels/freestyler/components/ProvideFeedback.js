@@ -9,21 +9,19 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import provideFeedbackStyles from './provideFeedback.css.js';
 /*
-  * TODO(nvitkov): b/346933425
-  * Temporary string that should not be translated
-  * as they may change often during development.
-  */
-const UIStringsTemp = {
+* Strings that don't need to be translated at this time.
+*/
+const UIStringsNotTranslate = {
     /**
      * @description The title of the button that allows submitting positive
-     * feedback about the response for AI assistant.
+     * feedback about the response for AI assistance.
      */
-    thumbsUp: 'Thumbs up',
+    thumbsUp: 'Good response',
     /**
      * @description The title of the button that allows submitting negative
-     * feedback about the response for AI assistant.
+     * feedback about the response for AI assistance.
      */
-    thumbsDown: 'Thumbs down',
+    thumbsDown: 'Bad response',
     /**
      * @description The placeholder text for the feedback input.
      */
@@ -32,7 +30,7 @@ const UIStringsTemp = {
      * @description The disclaimer text that tells the user what will be shared
      * and what will be stored.
      */
-    disclaimer: 'Feedback submitted will also include your conversation',
+    disclaimer: 'Submitted feedback will also include your conversation',
     /**
      * @description The button text for the action of submitting feedback.
      */
@@ -47,14 +45,11 @@ const UIStringsTemp = {
     close: 'Close',
     /**
      * @description The title of the button that opens a page to report a legal
-     * issue with the AI assistant message.
+     * issue with the AI assistance message.
      */
     report: 'Report legal issue',
 };
-// const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/AiRatings.ts', UIStrings);
-// const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-/* eslint-disable  rulesdir/l10n_i18nString_call_only_with_uistrings */
-const i18nString = i18n.i18n.lockedString;
+const lockedString = i18n.i18n.lockedString;
 const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504';
 export class ProvideFeedback extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-provide-feedback`;
@@ -111,7 +106,7 @@ export class ProvideFeedback extends HTMLElement {
             toggledIconName: 'thumb-up-filled',
             toggled: this.#currentRating === "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */,
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
-            title: i18nString(UIStringsTemp.thumbsUp),
+            title: lockedString(UIStringsNotTranslate.thumbsUp),
             jslogContext: 'thumbs-up',
         }}
         @click=${() => this.#handleRateClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */)}
@@ -124,7 +119,7 @@ export class ProvideFeedback extends HTMLElement {
             toggledIconName: 'thumb-down-filled',
             toggled: this.#currentRating === "NEGATIVE" /* Host.AidaClient.Rating.NEGATIVE */,
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
-            title: i18nString(UIStringsTemp.thumbsDown),
+            title: lockedString(UIStringsNotTranslate.thumbsDown),
             jslogContext: 'thumbs-down',
         }}
         @click=${() => this.#handleRateClick("NEGATIVE" /* Host.AidaClient.Rating.NEGATIVE */)}
@@ -134,7 +129,7 @@ export class ProvideFeedback extends HTMLElement {
         .data=${{
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            title: i18nString(UIStringsTemp.report),
+            title: lockedString(UIStringsNotTranslate.report),
             iconName: 'report',
             jslogContext: 'report',
         }}
@@ -148,15 +143,15 @@ export class ProvideFeedback extends HTMLElement {
         return LitHtml.html `
       <form class="feedback-form" @submit=${this.#handleSubmit}>
         <div class="feedback-header">
-          <h4 class="feedback-title">${i18nString(UIStringsTemp.whyThisRating)}</h4>
+          <h4 class="feedback-title">${lockedString(UIStringsNotTranslate.whyThisRating)}</h4>
           <${Buttons.Button.Button.litTagName}
-            aria-label=${i18nString(UIStringsTemp.close)}
+            aria-label=${lockedString(UIStringsNotTranslate.close)}
             @click=${this.#handleClose}
             .data=${{
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             iconName: 'cross',
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            title: i18nString(UIStringsTemp.close),
+            title: lockedString(UIStringsNotTranslate.close),
             jslogContext: 'close',
         }}
           ></${Buttons.Button.Button.litTagName}>
@@ -164,20 +159,20 @@ export class ProvideFeedback extends HTMLElement {
         <input
           type="text"
           class="devtools-text-input feedback-input"
-          placeholder=${i18nString(UIStringsTemp.provideFeedbackPlaceholder)}
+          placeholder=${lockedString(UIStringsNotTranslate.provideFeedbackPlaceholder)}
           jslog=${VisualLogging.textField('feedback').track({ keydown: 'Enter' })}
         >
-        <span class="feedback-disclaimer">${i18nString(UIStringsTemp.disclaimer)}</span>
+        <span class="feedback-disclaimer">${lockedString(UIStringsNotTranslate.disclaimer)}</span>
         <${Buttons.Button.Button.litTagName}
-        aria-label=${i18nString(UIStringsTemp.submit)}
+        aria-label=${lockedString(UIStringsNotTranslate.submit)}
         .data=${{
             type: 'submit',
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            title: i18nString(UIStringsTemp.submit),
+            title: lockedString(UIStringsNotTranslate.submit),
             jslogContext: 'send',
         }}
-        >${i18nString(UIStringsTemp.submit)}</${Buttons.Button.Button.litTagName}>
+        >${lockedString(UIStringsNotTranslate.submit)}</${Buttons.Button.Button.litTagName}>
       </div>
     `;
         // clang-format on

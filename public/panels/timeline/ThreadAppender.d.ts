@@ -24,8 +24,6 @@ export declare class ThreadAppender implements TrackAppender {
     trackName(): string;
     getUrl(): string;
     getEntries(): Trace.Types.Events.Event[];
-    isIgnoreListedEntry(entry: Trace.Types.Events.Event): boolean;
-    private isIgnoreListedURL;
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
