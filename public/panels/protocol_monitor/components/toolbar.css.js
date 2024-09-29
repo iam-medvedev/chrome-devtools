@@ -27,7 +27,7 @@ styles.replaceSync(
   display: flex;
   justify-content: space-between;
   padding-left: 5px;
-  padding-right: 10px;
+  padding-right: 6px;
   padding-top: 1px;
   height: 27px;
   background-color: var(--sys-color-cdt-base-container);
@@ -35,11 +35,6 @@ styles.replaceSync(
   bottom: 0;
   width: 100%;
   border-top: 1px solid var(--sys-color-divider);
-}
-
-.toolbar devtools-button {
-  width: 20px;
-  height: 20px;
 }
 
 /*# sourceURL=toolbar.css */

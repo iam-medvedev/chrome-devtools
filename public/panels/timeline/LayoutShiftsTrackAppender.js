@@ -1,16 +1,25 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
      */
     layoutShifts: 'Layout shifts',
+    /**
+     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+     */
+    layoutShiftCluster: 'Layout shift cluster',
+    /**
+     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+     */
+    layoutShift: 'Layout shift',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/LayoutShiftsTrackAppender.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -19,6 +28,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // set it to a small duration so that the user is able to see and click
 // them more easily. Long term we will explore a better UI solution to
 // allow us to do this properly and not hack around it.
+// TODO: Delete this once the new Layout Shift UI ships out of the TIMELINE_LAYOUT_SHIFT_DETAILS experiment
 export const LAYOUT_SHIFT_SYNTHETIC_DURATION = Trace.Types.Timing.MicroSeconds(5_000);
 export class LayoutShiftsTrackAppender {
     appenderName = 'LayoutShifts';
@@ -69,26 +79,11 @@ export class LayoutShiftsTrackAppender {
      */
     #appendLayoutShiftsAtLevel(currentLevel) {
         const allLayoutShifts = this.#parsedTrace.LayoutShifts.clusters.flatMap(cluster => cluster.events);
-        const setFlameChartEntryTotalTime = (_event, index) => {
-            let totalTime = LAYOUT_SHIFT_SYNTHETIC_DURATION;
-            if (Trace.Types.Events.isSyntheticLayoutShiftCluster(_event)) {
-                // This is to handle the cases where there is a singular shift for a cluster.
-                // A single shift would make the cluster duration 0 and hard to read.
-                // So in this case, give it the LAYOUT_SHIFT_SYNTHETIC_DURATION duration.
-                totalTime = _event.dur || LAYOUT_SHIFT_SYNTHETIC_DURATION;
-            }
-            this.#compatibilityBuilder.getFlameChartTimelineData().entryTotalTimes[index] =
-                Trace.Helpers.Timing.microSecondsToMilliseconds(totalTime);
-        };
-        let shiftLevel = currentLevel;
         if (Root.Runtime.experiments.isEnabled("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */)) {
             const allClusters = this.#parsedTrace.LayoutShifts.clusters;
-            this.#compatibilityBuilder.appendEventsAtLevel(allClusters, currentLevel + 1, this, setFlameChartEntryTotalTime);
-            // layout shifts should be below clusters.
-            shiftLevel = currentLevel + 2;
-            return this.#compatibilityBuilder.appendEventsAtLevel(allLayoutShifts, shiftLevel, this);
+            this.#compatibilityBuilder.appendEventsAtLevel(allClusters, currentLevel, this);
         }
-        return this.#compatibilityBuilder.appendEventsAtLevel(allLayoutShifts, shiftLevel, this, setFlameChartEntryTotalTime);
+        return this.#compatibilityBuilder.appendEventsAtLevel(allLayoutShifts, currentLevel, this);
     }
     /*
       ------------------------------------------------------------------------------------
@@ -99,62 +94,100 @@ export class LayoutShiftsTrackAppender {
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
-    colorForEvent(_event) {
-        return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
+    colorForEvent(event) {
+        const renderingColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
+        if (Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
+            const parsedColor = Common.Color.parse(renderingColor);
+            if (parsedColor) {
+                const colorWithAlpha = parsedColor.setAlpha(0.5).asString("rgba" /* Common.Color.Format.RGBA */);
+                return colorWithAlpha;
+            }
+        }
+        return renderingColor;
     }
     /**
      * Gets the title an event added by this appender should be rendered with.
      */
     titleForEvent(event) {
         if (Trace.Types.Events.isLayoutShift(event)) {
-            return 'Layout shift';
+            return i18nString(UIStrings.layoutShift);
         }
-        if (Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
-            return 'Layout shift cluster';
-        }
-        return event.name;
+        return '';
     }
     /**
      * Returns the info shown when an event added by this appender
      * is hovered in the timeline.
      */
     highlightedEntryInfo(event) {
-        const title = this.titleForEvent(event);
-        return { title, formattedTime: getFormattedTime(event.dur) };
+        const score = Trace.Types.Events.isLayoutShift(event) ? event.args.data?.weighted_score_delta ?? 0 :
+            Trace.Types.Events.isSyntheticLayoutShiftCluster(event) ? event.clusterCumulativeScore :
+                -1;
+        const title = Trace.Types.Events.isLayoutShift(event) ? i18nString(UIStrings.layoutShift) :
+            Trace.Types.Events.isSyntheticLayoutShiftCluster(event) ? i18nString(UIStrings.layoutShiftCluster) :
+                event.name;
+        // Score isn't a duration, but the UI works anyhow.
+        return { title, formattedTime: score.toFixed(4) };
     }
     getDrawOverride(event) {
         if (!Root.Runtime.experiments.isEnabled("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */)) {
-            return;
+            // If the new CLS experience isn't on.. Continue to present that Shifts are 5ms long. (but now via drawOverrides)
+            // TODO: Remove this when the experiment ships
+            if (Trace.Types.Events.isLayoutShift(event)) {
+                return (context, x, y, _width, levelHeight, timeToPosition) => {
+                    const fakeDurMs = Trace.Helpers.Timing.microSecondsToMilliseconds(Trace.Types.Timing.MicroSeconds(event.ts + LAYOUT_SHIFT_SYNTHETIC_DURATION));
+                    const barEnd = timeToPosition(fakeDurMs);
+                    const barWidth = barEnd - x;
+                    context.rect(x, y, barWidth - 0.5, levelHeight - 1);
+                    context.fillStyle = this.colorForEvent(event);
+                    context.fill();
+                    return {
+                        x,
+                        width: barWidth,
+                    };
+                };
+            }
         }
-        if (!Trace.Types.Events.isLayoutShift(event)) {
-            return;
-        }
-        const score = event.args.data?.weighted_score_delta || 0;
-        // `buffer` is how much space is between the actual diamond shape and the
-        // edge of its select box. The select box will have a constant size
-        // so a larger `buffer` will create a smaller diamond.
-        //
-        // This logic will scale the size of the diamond based on the layout shift score.
-        // A LS score of >=0.1 will create a diamond of maximum size
-        // A LS score of ~0 will create a diamond of minimum size (exactly 0 should not happen in practice)
-        const bufferScale = 1 - Math.min(score / 0.1, 1);
-        const buffer = Math.round(bufferScale * 3);
-        return (context, x, y, _width, height) => {
-            const boxSize = height;
-            const halfSize = boxSize / 2;
-            context.beginPath();
-            context.moveTo(x, y + buffer);
-            context.lineTo(x + halfSize - buffer, y + halfSize);
-            context.lineTo(x, y + height - buffer);
-            context.lineTo(x - halfSize + buffer, y + halfSize);
-            context.closePath();
-            context.fillStyle = this.colorForEvent(event);
-            context.fill();
-            return {
-                x: x - halfSize,
-                width: boxSize,
+        if (Trace.Types.Events.isLayoutShift(event)) {
+            const score = event.args.data?.weighted_score_delta || 0;
+            // `buffer` is how much space is between the actual diamond shape and the
+            // edge of its select box. The select box will have a constant size
+            // so a larger `buffer` will create a smaller diamond.
+            //
+            // This logic will scale the size of the diamond based on the layout shift score.
+            // A LS score of >=0.1 will create a diamond of maximum size
+            // A LS score of ~0 will create a diamond of minimum size (exactly 0 should not happen in practice)
+            const bufferScale = 1 - Math.min(score / 0.10, 1);
+            return (context, x, y, _width, levelHeight) => {
+                // levelHeight is 17px, so this math translates to a minimum diamond size of 5.6px tall.
+                const maxBuffer = levelHeight / 3;
+                const buffer = bufferScale * maxBuffer;
+                const boxSize = levelHeight;
+                const halfSize = boxSize / 2;
+                context.beginPath();
+                context.moveTo(x, y + buffer);
+                context.lineTo(x + halfSize - buffer, y + halfSize);
+                context.lineTo(x, y + levelHeight - buffer);
+                context.lineTo(x - halfSize + buffer, y + halfSize);
+                context.closePath();
+                context.fillStyle = this.colorForEvent(event);
+                context.fill();
+                return {
+                    x: x - halfSize,
+                    width: boxSize,
+                };
             };
-        };
+        }
+        if (Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
+            return (context, x, y, width, levelHeight) => {
+                const barHeight = levelHeight * 0.2;
+                const barY = y + (levelHeight - barHeight) / 2 + 0.5;
+                context.fillStyle = this.colorForEvent(event);
+                context.rect(x, barY, width - 0.5, barHeight - 1);
+                context.fill();
+                return { x, width, z: -1 };
+            };
+        }
+        return;
     }
 }
 //# sourceMappingURL=LayoutShiftsTrackAppender.js.map

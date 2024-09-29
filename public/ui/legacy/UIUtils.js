@@ -1555,7 +1555,6 @@ export function injectCoreStyles(root) {
     ThemeSupport.ThemeSupport.instance().appendStyle(root, themeColorsStyles);
     ThemeSupport.ThemeSupport.instance().appendStyle(root, tokens);
     ThemeSupport.ThemeSupport.instance().injectHighlightStyleSheets(root);
-    ThemeSupport.ThemeSupport.instance().injectCustomStyleSheets(root);
 }
 export function injectTextButtonStyles(root) {
     ThemeSupport.ThemeSupport.instance().appendStyle(root, textButtonStyles);

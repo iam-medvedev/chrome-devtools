@@ -109,6 +109,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             case 'LCP': {
                 const lcpEvent = {
                     value: webVitalsEvent.value,
+                    phases: webVitalsEvent.phases,
                 };
                 if (webVitalsEvent.nodeIndex !== undefined) {
                     const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
@@ -129,19 +130,21 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             case 'INP': {
                 const inpEvent = {
                     value: webVitalsEvent.value,
+                    phases: webVitalsEvent.phases,
+                    uniqueInteractionId: webVitalsEvent.uniqueInteractionId,
                 };
                 this.#inpValue = inpEvent;
                 break;
             }
             case 'Interaction': {
-                const interactionEvent = webVitalsEvent;
+                const interaction = new Interaction(webVitalsEvent);
                 if (webVitalsEvent.nodeIndex !== undefined) {
                     const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
                     if (node) {
-                        interactionEvent.node = node;
+                        interaction.node = node;
                     }
                 }
-                this.#interactions.push(interactionEvent);
+                this.#interactions.push(interaction);
                 break;
             }
             case 'reset': {
@@ -311,6 +314,17 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             });
         }
         this.#enabled = false;
+    }
+}
+export class Interaction {
+    interactionType;
+    duration;
+    uniqueInteractionId;
+    node;
+    constructor(interactionEvent) {
+        this.interactionType = interactionEvent.interactionType;
+        this.duration = interactionEvent.duration;
+        this.uniqueInteractionId = interactionEvent.uniqueInteractionId;
     }
 }
 //# sourceMappingURL=LiveMetrics.js.map

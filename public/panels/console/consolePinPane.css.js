@@ -14,7 +14,7 @@ styles.replaceSync(
 .close-button {
   position: absolute;
   top: 1px;
-  left: 3px;
+  left: 0;
 }
 
 .console-pins {
@@ -52,7 +52,7 @@ styles.replaceSync(
 }
 
 .console-pin-name {
-  margin-left: 8px;
+  margin-left: -5px;
   margin-bottom: 1px;
   height: auto;
 }

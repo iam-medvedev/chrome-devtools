@@ -18,7 +18,7 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
-    colorForEvent(_event: Trace.Types.Events.Event): string;
+    colorForEvent(event: Trace.Types.Events.Event): string;
     /**
      * Gets the title an event added by this appender should be rendered with.
      */
@@ -27,6 +27,6 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
      * Returns the info shown when an event added by this appender
      * is hovered in the timeline.
      */
-    highlightedEntryInfo(event: Trace.Types.Events.LayoutShift): HighlightedEntryInfo;
+    highlightedEntryInfo(event: Trace.Types.Events.Event): HighlightedEntryInfo;
     getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
 }

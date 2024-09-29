@@ -76,7 +76,6 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private onSubscribe;
     private onUnsubscribe;
     private onAddRequestHeaders;
-    private onApplyStyleSheet;
     private getExtensionOrigin;
     private onCreatePanel;
     private onShowPanel;

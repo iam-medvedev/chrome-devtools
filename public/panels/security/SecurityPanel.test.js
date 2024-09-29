@@ -2,29 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Security from './security.js';
-describeWithLocale('SecurityPanelSidebarTree', () => {
-    const { SecurityPanelSidebarTree, SecurityPanelSidebarTreeElement } = Security.SecurityPanel;
+describeWithMockConnection('SecurityAndPrivacyPanel', () => {
     describe('updateOrigin', () => {
         it('correctly updates the URL scheme highlighting', () => {
             const origin = 'https://foo.bar';
-            const mainViewElement = new SecurityPanelSidebarTreeElement({
-                onSelect: () => undefined,
-                getIconForSecurityState: () => new IconButton.Icon.Icon(),
-                getTitleForSecurityState: () => document.createElement('span'),
-                className: 'main-view-element',
-            });
-            const tree = new SecurityPanelSidebarTree(mainViewElement, () => { });
-            tree.addOrigin(origin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
-            assert.notExists(tree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));
-            assert.exists(tree.contentElement.querySelector('.highlighted-url > .url-scheme-unknown'));
-            tree.updateOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
-            assert.exists(tree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));
-            assert.notExists(tree.contentElement.querySelector('.highlighted-url > .url-scheme-unknown'));
+            const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+            securityPanel.sidebar.addOrigin(origin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
+            assert.notExists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));
+            assert.exists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-unknown'));
+            securityPanel.sidebar.updateOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
+            assert.exists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));
+            assert.notExists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-unknown'));
         });
     });
 });
@@ -84,7 +76,7 @@ describeWithMockConnection('SecurityPanel', () => {
         assert.isTrue(securityPanel.mainView.contentElement.querySelector('.security-summary')
             ?.classList.contains('security-summary-secure'));
         // Check that the SecurityPanel listens to any PrimaryPageChanged event
-        const sidebarTreeClearSpy = sinon.spy(securityPanel.sidebarTree, 'clearOrigins');
+        const sidebarTreeClearSpy = sinon.spy(securityPanel.sidebar, 'clearOrigins');
         navigate(getMainFrame(target));
         assert.isTrue(sidebarTreeClearSpy.calledOnce);
     });
@@ -93,7 +85,7 @@ describeWithMockConnection('SecurityPanel', () => {
         assert.exists(securityModel);
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
         // Check that reload message is visible initially.
-        const reloadMessage = securityPanel.sidebarTree.shadowRoot.querySelector('.security-main-view-reload-message');
+        const reloadMessage = securityPanel.sidebar.sidebarTree.shadowRoot.querySelector('.security-main-view-reload-message');
         assert.instanceOf(reloadMessage, HTMLLIElement);
         assert.isFalse(reloadMessage.classList.contains('hidden'));
         // Check that reload message is hidden when there is data to display.

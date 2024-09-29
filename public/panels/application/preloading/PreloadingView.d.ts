@@ -1,4 +1,4 @@
-import type * as Common from '../../../core/common/common.js';
+import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Protocol from '../../../generated/protocol.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -13,6 +13,7 @@ export declare class PreloadingRuleSetView extends UI.Widget.VBox {
     private readonly hsplit;
     private readonly ruleSetGrid;
     private readonly ruleSetDetails;
+    private shouldPrettyPrint;
     constructor(model: SDK.PreloadingModel.PreloadingModel);
     wasShown(): void;
     onScopeChange(): void;

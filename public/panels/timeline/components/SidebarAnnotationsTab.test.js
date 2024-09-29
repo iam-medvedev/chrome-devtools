@@ -100,9 +100,9 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
             label: 'Entry Label 1',
         };
         component.annotations = [entryLabelAnnotation];
-        assert.isNotNull(component.shadowRoot);
         await coordinator.done();
-        const deleteButton = component.shadowRoot.querySelector('.bin-icon');
+        assert.isNotNull(component.shadowRoot);
+        const deleteButton = component.shadowRoot.querySelector('.delete-button');
         assert.isNotNull(deleteButton);
         // Make sure the remove annotation event is not fired before clicking the button
         assert.isFalse(removeAnnotationEventFired);

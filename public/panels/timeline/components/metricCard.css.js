@@ -68,7 +68,7 @@ styles.replaceSync(
   width: 100%;
   border: 0;
   border-bottom: 1px solid var(--sys-color-divider);
-  margin: 2px 0;
+  margin: 8px 0;
   box-sizing: border-box;
 }
 
@@ -146,6 +146,15 @@ styles.replaceSync(
   border-radius: var(--sys-shape-corner-small);
   background-color: var(--sys-color-cdt-base-container);
   box-shadow: var(--drop-shadow-depth-3);
+}
+
+.phase-table-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.phase-table-header-row {
+  font-weight: var(--ref-typeface-weight-medium);
 }
 
 /*# sourceURL=metricCard.css */

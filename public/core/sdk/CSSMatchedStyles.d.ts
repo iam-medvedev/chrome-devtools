@@ -1,6 +1,7 @@
 import * as Protocol from '../../generated/protocol.js';
+import { CSSWideKeyword } from './CSSMetadata.js';
 import { type CSSModel } from './CSSModel.js';
-import { type CSSProperty } from './CSSProperty.js';
+import { CSSProperty } from './CSSProperty.js';
 import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 import { type DOMNode } from './DOMModel.js';
@@ -69,13 +70,21 @@ export declare class CSSMatchedStyles {
     nodeForStyle(style: CSSStyleDeclaration): DOMNode | null;
     availableCSSVariables(style: CSSStyleDeclaration): string[];
     computeCSSVariable(style: CSSStyleDeclaration, variableName: string): CSSVariableValue | null;
+    resolveGlobalKeyword(property: CSSProperty, keyword: CSSWideKeyword): CSSValueSource | null;
     isInherited(style: CSSStyleDeclaration): boolean;
     propertyState(property: CSSProperty): PropertyState | null;
     resetActiveProperties(): void;
 }
+export declare class CSSValueSource {
+    readonly declaration: CSSProperty | CSSRegisteredProperty;
+    constructor(declaration: CSSProperty | CSSRegisteredProperty);
+    get value(): string | null;
+    get style(): CSSStyleDeclaration;
+    get name(): string;
+}
 export interface CSSVariableValue {
     value: string;
-    declaration: CSSProperty | CSSRegisteredProperty;
+    declaration: CSSValueSource;
 }
 export declare const enum PropertyState {
     ACTIVE = "Active",

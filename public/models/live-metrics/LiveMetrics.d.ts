@@ -10,7 +10,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     get lcpValue(): LCPValue | undefined;
     get clsValue(): CLSValue | undefined;
     get inpValue(): INPValue | undefined;
-    get interactions(): InteractionValue[];
+    get interactions(): Interaction[];
     clearInteractions(): void;
     targetAdded(target: SDK.Target.Target): Promise<void>;
     targetRemoved(target: SDK.Target.Target): Promise<void>;
@@ -22,18 +22,26 @@ export declare const enum Events {
 }
 export type MetricValue = Pick<Spec.MetricChangeEvent, 'value'>;
 export interface LCPValue extends MetricValue {
+    phases: Spec.LCPPhases;
     node?: SDK.DOMModel.DOMNode;
 }
-export type INPValue = MetricValue;
+export interface INPValue extends MetricValue {
+    phases: Spec.INPPhases;
+    uniqueInteractionId: Spec.UniqueInteractionId;
+}
 export type CLSValue = MetricValue;
-export type InteractionValue = Pick<Spec.InteractionEvent, 'interactionType' | 'duration'> & {
+export declare class Interaction {
+    interactionType: Spec.InteractionEvent['interactionType'];
+    duration: Spec.InteractionEvent['duration'];
+    uniqueInteractionId: Spec.UniqueInteractionId;
     node?: SDK.DOMModel.DOMNode;
-};
+    constructor(interactionEvent: Spec.InteractionEvent);
+}
 export interface StatusEvent {
     lcp?: LCPValue;
     cls?: CLSValue;
     inp?: INPValue;
-    interactions: InteractionValue[];
+    interactions: Interaction[];
 }
 type EventTypes = {
     [Events.STATUS]: StatusEvent;

@@ -1,59 +1,8 @@
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { type AidaRequestOptions, type ResponseData } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 export declare const FIX_THIS_ISSUE_PROMPT = "Fix this issue using JavaScript code execution";
-export declare enum ResponseType {
-    TITLE = "title",
-    THOUGHT = "thought",
-    ACTION = "action",
-    SIDE_EFFECT = "side-effect",
-    ANSWER = "answer",
-    ERROR = "error",
-    QUERYING = "querying"
-}
-export interface AnswerResponse {
-    type: ResponseType.ANSWER;
-    text: string;
-    rpcId?: number;
-    fixable: boolean;
-}
-export declare const enum ErrorType {
-    UNKNOWN = "unknown",
-    ABORT = "abort",
-    MAX_STEPS = "max-steps"
-}
-export interface ErrorResponse {
-    type: ResponseType.ERROR;
-    error: ErrorType;
-    rpcId?: number;
-}
-export interface TitleResponse {
-    type: ResponseType.TITLE;
-    title: string;
-    rpcId?: number;
-}
-export interface ThoughtResponse {
-    type: ResponseType.THOUGHT;
-    thought: string;
-    rpcId?: number;
-}
-export interface SideEffectResponse {
-    type: ResponseType.SIDE_EFFECT;
-    code: string;
-    confirm: (confirm: boolean) => void;
-    rpcId?: number;
-}
-export interface ActionResponse {
-    type: ResponseType.ACTION;
-    code: string;
-    output: string;
-    canceled: boolean;
-    rpcId?: number;
-}
-export interface QueryResponse {
-    type: ResponseType.QUERYING;
-}
-export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse;
 declare function executeJsCode(code: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
 }): Promise<string>;
@@ -73,16 +22,6 @@ type AgentOptions = {
     createExtensionScope?: CreateExtensionScopeFunction;
     execJs?: typeof executeJsCode;
 };
-interface AidaRequestOptions {
-    input: string;
-    preamble?: string;
-    chatHistory?: Host.AidaClient.Chunk[];
-    /**
-     * @default false
-     */
-    serverSideLoggingEnabled?: boolean;
-    sessionId?: string;
-}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -94,8 +33,9 @@ export declare class FreestylerAgent {
         thought?: string;
         title?: string;
         action?: string;
-        answer?: string;
-        fixable: boolean;
+    } | {
+        answer: string;
+        suggestions: string[];
     };
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;
@@ -104,7 +44,6 @@ export declare class FreestylerAgent {
     run(query: string, options: {
         signal?: AbortSignal;
         selectedElement: SDK.DOMModel.DOMNode | null;
-        isFixQuery: boolean;
     }): AsyncGenerator<ResponseData, void, void>;
 }
 export {};

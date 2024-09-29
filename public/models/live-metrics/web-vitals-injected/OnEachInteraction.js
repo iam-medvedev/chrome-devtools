@@ -14,16 +14,14 @@ export function onEachInteraction(callback) {
         }
         // Will report as a single interaction even if parts are in separate frames.
         // Consider splitting by animation frame.
-        for (const [interactionId, interaction] of interactions.entries()) {
+        for (const interaction of interactions.values()) {
             const longestEntry = interaction.reduce((prev, curr) => prev.duration >= curr.duration ? prev : curr);
             const value = longestEntry.duration;
             const firstEntryWithTarget = interaction.find(entry => entry.target);
             callback({
                 attribution: {
                     interactionTargetElement: firstEntryWithTarget?.target ?? null,
-                    interactionTime: longestEntry.startTime,
                     interactionType: longestEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
-                    interactionId,
                 },
                 entries: interaction,
                 value,

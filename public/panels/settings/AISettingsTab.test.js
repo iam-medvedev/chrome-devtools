@@ -33,10 +33,10 @@ describeWithEnvironment('AISettingsTab', () => {
         await view.render();
         assert.isNotNull(view.shadowRoot);
         const sharedDisclaimerHeader = view.shadowRoot.querySelector('.shared-disclaimer h2');
-        assert.strictEqual(sharedDisclaimerHeader?.textContent, 'Boost your productivity with Chrome AI');
+        assert.strictEqual(sharedDisclaimerHeader?.textContent, 'Boost your productivity with AI');
         const settingCards = view.shadowRoot.querySelectorAll('.setting-card h2');
         const settingNames = Array.from(settingCards).map(element => element.textContent);
-        assert.deepEqual(settingNames, ['Console Insights', 'AI assistant']);
+        assert.deepEqual(settingNames, ['Console Insights', 'AI assistance']);
     });
     it('can turn feature on, which automatically expands it', async () => {
         const { switches, details } = await renderAISettings();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getFirstOrError, getInsight } from '../../../testing/InsightHelpers.js';
+import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
@@ -21,7 +21,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
         it('gets the correct non composited animations', async function () {
             const { data, insights } = await processTrace(this, 'non-composited-animation.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-            const insight = getInsight('CumulativeLayoutShift', insights, firstNav);
+            const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
             const { animationFailures } = insight;
             const expected = [
                 {
@@ -37,10 +37,42 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
             ];
             assert.deepStrictEqual(animationFailures, expected);
         });
+        it('gets the correct non composited animations for shift', async function () {
+            const { data, insights } = await processTrace(this, 'non-composited-animation-shift.json.gz');
+            const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
+            const { shifts, animationFailures } = insight;
+            const shiftAnimations = [];
+            shifts?.forEach(entry => {
+                shiftAnimations.push(...entry.nonCompositedAnimations);
+            });
+            const expectedWithShift = [
+                {
+                    name: 'simple-animation',
+                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    unsupportedProperties: ['height', 'color', 'top'],
+                },
+            ];
+            assert.deepStrictEqual(shiftAnimations, expectedWithShift);
+            const expectedAll = [
+                {
+                    name: 'simple-animation',
+                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    unsupportedProperties: ['height', 'color', 'top'],
+                },
+                {
+                    name: 'top',
+                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    unsupportedProperties: ['top'],
+                },
+            ];
+            // animationFailures should include both root causes failures, and failures without associated shifts.
+            assert.deepStrictEqual(animationFailures, expectedAll);
+        });
         it('returns no insights when there are no non-composited animations', async function () {
             const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-            const insight = getInsight('CumulativeLayoutShift', insights, firstNav);
+            const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
             const { animationFailures } = insight;
             assert.isEmpty(animationFailures);
         });
@@ -49,7 +81,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
         it('returns correct layout shifts', async function () {
             const { data, insights } = await processTrace(this, 'cls-single-frame.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-            const insight = getInsight('CumulativeLayoutShift', insights, firstNav);
+            const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
             const { shifts } = insight;
             assert.exists(shifts);
             assert.strictEqual(shifts.size, 7);
@@ -59,7 +91,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
                 // Trace has a single iframe that gets created before the first layout shift and causes a layout shift.
                 const { data, insights } = await processTrace(this, 'iframe-shift.json.gz');
                 const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-                const insight = getInsight('CumulativeLayoutShift', insights, firstNav);
+                const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
                 const { shifts } = insight;
                 assert.exists(shifts);
                 assert.strictEqual(shifts.size, 3);
@@ -85,7 +117,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
                 // Trace has font load before the second layout shift.
                 const { data, insights } = await processTrace(this, 'iframe-shift.json.gz');
                 const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-                const insight = getInsight('CumulativeLayoutShift', insights, firstNav);
+                const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
                 const { shifts } = insight;
                 assert.exists(shifts);
                 assert.strictEqual(shifts.size, 3);
@@ -114,7 +146,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
         it('returns clusters correctly', async function () {
             const { data, insights } = await processTrace(this, 'iframe-shift.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-            const insight = getInsight('CumulativeLayoutShift', insights, firstNav);
+            const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
             const { shifts, clusters } = insight;
             assert.exists(clusters);
             assert.exists(shifts);

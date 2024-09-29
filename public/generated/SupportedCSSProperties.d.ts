@@ -713,10 +713,7 @@ export const generatedPropertyValues: {
     "scroll-snap-type": {
         values: string[];
     };
-    "scroll-start-target-x": {
-        values: string[];
-    };
-    "scroll-start-target-y": {
+    "scroll-start-target": {
         values: string[];
     };
     "scrollbar-color": {

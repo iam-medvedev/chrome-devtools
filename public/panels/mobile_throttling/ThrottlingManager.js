@@ -94,6 +94,7 @@ export class ThrottlingManager {
     }
     constructor() {
         this.cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
+        this.cpuThrottlingManager.addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, (event) => this.onCPUThrottlingRateChangedOnSDK(event.data));
         this.cpuThrottlingControls = new Set();
         this.cpuThrottlingRates = ThrottlingPresets.cpuThrottlingPresets;
         this.customNetworkConditionsSetting =
@@ -243,7 +244,10 @@ export class ThrottlingManager {
         UI.InspectorView.InspectorView.instance().setPanelWarnings('timeline', warnings);
     }
     setCPUThrottlingRate(rate) {
+        // This will transitively call onCPUThrottlingRateChangedOnSDK.
         this.cpuThrottlingManager.setCPUThrottlingRate(rate);
+    }
+    onCPUThrottlingRateChangedOnSDK(rate) {
         if (rate !== SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuThrottlingEnabled);
         }

@@ -262,6 +262,49 @@ describeWithMockConnection('DebuggerModel', () => {
     });
 });
 describe('DebuggerModel', () => {
+    describe('selectSymbolSource', () => {
+        const embeddedDwarfSymbols = { type: "EmbeddedDWARF" /* Protocol.Debugger.DebugSymbolsType.EmbeddedDWARF */, externalURL: '' };
+        const externalDwarfSymbols = { type: "ExternalDWARF" /* Protocol.Debugger.DebugSymbolsType.ExternalDWARF */, externalURL: 'abc' };
+        const sourceMapSymbols = { type: "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */, externalURL: 'abc' };
+        beforeEach(() => {
+            Common.Console.Console.instance({ forceNew: true });
+        });
+        function testSelectSymbolSource(debugSymbols, expectedSymbolType, expectedWarning) {
+            const selectedSymbol = SDK.DebuggerModel.DebuggerModel.selectSymbolSource(debugSymbols);
+            assert.isNotNull(selectedSymbol);
+            assert.strictEqual(selectedSymbol.type, expectedSymbolType);
+            const consoleMessages = Common.Console.Console.instance().messages();
+            if (!expectedWarning) {
+                assert.lengthOf(consoleMessages, 0);
+                return;
+            }
+            assert.lengthOf(consoleMessages, 1);
+            assert.deepStrictEqual(consoleMessages[0].text, expectedWarning);
+        }
+        it('prioritizes external DWARF over all types', () => {
+            const debugSymbols = [embeddedDwarfSymbols, externalDwarfSymbols, sourceMapSymbols];
+            const expectedSelectedSymbol = "ExternalDWARF" /* Protocol.Debugger.DebugSymbolsType.ExternalDWARF */;
+            const expectedWarning = 'Multiple debug symbols for script were found. Using ExternalDWARF';
+            testSelectSymbolSource(debugSymbols, expectedSelectedSymbol, expectedWarning);
+        });
+        it('prioritizes embedded DWARF if source maps and embedded DWARF exist', () => {
+            const debugSymbols = [embeddedDwarfSymbols, sourceMapSymbols];
+            const expectedSymbolType = "EmbeddedDWARF" /* Protocol.Debugger.DebugSymbolsType.EmbeddedDWARF */;
+            const expectedWarning = 'Multiple debug symbols for script were found. Using EmbeddedDWARF';
+            testSelectSymbolSource(debugSymbols, expectedSymbolType, expectedWarning);
+        });
+        it('picks source maps if no DWARF is available', () => {
+            const debugSymbols = [sourceMapSymbols];
+            const expectedSymbolType = "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */;
+            testSelectSymbolSource(debugSymbols, expectedSymbolType);
+        });
+        it('returns null if nothing is available', () => {
+            const selectedSymbol = SDK.DebuggerModel.DebuggerModel.selectSymbolSource([]);
+            assert.isNull(selectedSymbol);
+            const consoleMessages = Common.Console.Console.instance().messages();
+            assert.lengthOf(consoleMessages, 0);
+        });
+    });
     describe('sortAndMergeRanges', () => {
         function createRange(scriptId, startLine, startColumn, endLine, endColumn) {
             return {

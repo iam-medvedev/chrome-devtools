@@ -70,8 +70,9 @@ export class ContentData {
         this.#contentAsText = new TextDecoder(this.charset).decode(bytes);
         return this.#contentAsText;
     }
+    /** @returns true, if this `ContentData` was constructed from text content or the mime type indicates text that can be decoded */
     get isTextContent() {
-        return Platform.MimeType.isTextType(this.mimeType);
+        return this.#createdFromText || Platform.MimeType.isTextType(this.mimeType);
     }
     get isEmpty() {
         // Don't trigger unnecessary decoding. Only check if both of the strings are empty.
@@ -79,6 +80,9 @@ export class ContentData {
     }
     get createdFromBase64() {
         return this.#contentAsBase64 !== undefined;
+    }
+    get #createdFromText() {
+        return this.#contentAsBase64 === undefined;
     }
     /**
      * Returns the text content as a `Text` object. The returned object is always the same to

@@ -130,6 +130,9 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         }
         sourceCodeAnchors.add(anchor);
     }
+    static bindUILocationForTest(anchor, uiLocation) {
+        Linkifier.bindUILocation(anchor, uiLocation);
+    }
     static unbindUILocation(anchor) {
         const info = Linkifier.linkInfo(anchor);
         if (!info || !info.uiLocation) {

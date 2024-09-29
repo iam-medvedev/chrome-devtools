@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
+import * as Formatter from '../../../../models/formatter/formatter.js';
 import * as CodeMirror from '../../../../third_party/codemirror.next/codemirror.next.js';
 import * as CodeHighlighter from '../../../../ui/components/code_highlighter/code_highlighter.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
@@ -16,6 +17,7 @@ const codeMirrorJsonType = await CodeHighlighter.CodeHighlighter.languageFromMIM
 export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
+    #shouldPrettyPrint = true;
     #editorState;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [ruleSetDetailsViewStyles];
@@ -24,7 +26,11 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
         this.#data = data;
         void this.#render();
     }
+    set shouldPrettyPrint(shouldPrettyPrint) {
+        this.#shouldPrettyPrint = shouldPrettyPrint;
+    }
     async #render() {
+        const sourceText = await this.#getSourceText();
         await coordinator.write('RuleSetDetailsView render', () => {
             if (this.#data === null) {
                 LitHtml.render(LitHtml.nothing, this.#shadow, { host: this });
@@ -38,7 +44,7 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
           ${this.#maybeError()}
         </div>
         <div class="text-ellipsis">
-          ${this.#renderSource()}
+          ${this.#renderSource(sourceText)}
         </div>
       `, this.#shadow, { host: this });
             // clang-format on
@@ -67,11 +73,11 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
     `;
         // clang-format on
     }
-    #renderSource() {
+    #renderSource(sourceText) {
         this.#editorState = CodeMirror.EditorState.create({
-            doc: this.#data?.sourceText,
+            doc: sourceText,
             extensions: [
-                TextEditor.Config.baseConfiguration(this.#data?.sourceText || ''),
+                TextEditor.Config.baseConfiguration(sourceText || ''),
                 CodeMirror.lineNumbers(),
                 CodeMirror.EditorState.readOnly.of(true),
                 codeMirrorJsonType,
@@ -82,9 +88,16 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // clang-format off
         // TODO(https://crbug.com/1425354): Add Raw button.
         return LitHtml.html `
-        <${TextEditor.TextEditor.TextEditor.litTagName} .style.flexGrow = '1' .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
-      `;
+      <${TextEditor.TextEditor.TextEditor.litTagName} .style.flexGrow = '1' .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
+    `;
         // clang-format on
+    }
+    async #getSourceText() {
+        if (this.#shouldPrettyPrint && this.#data?.sourceText !== undefined) {
+            const formattedResult = await Formatter.ScriptFormatter.formatScriptContent('application/json', this.#data.sourceText);
+            return formattedResult.formattedContent;
+        }
+        return this.#data?.sourceText || '';
     }
 }
 customElements.define('devtools-resources-rulesets-details-view', RuleSetDetailsView);

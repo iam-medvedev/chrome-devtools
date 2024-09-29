@@ -69,6 +69,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     };
     revealProperty(cssProperty: SDK.CSSProperty.CSSProperty): void;
     jumpToProperty(propertyName: string, sectionName?: string, blockName?: string): boolean;
+    jumpToDeclaration(valueSource: SDK.CSSMatchedStyles.CSSValueSource): void;
     jumpToSection(sectionName: string, blockName: string): void;
     jumpToSectionBlock(section: string): void;
     forceUpdate(): void;

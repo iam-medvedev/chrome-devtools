@@ -34,6 +34,7 @@ export declare class ContentData {
      * @throws if `mimeType` is not a text type.
      */
     get text(): string;
+    /** @returns true, if this `ContentData` was constructed from text content or the mime type indicates text that can be decoded */
     get isTextContent(): boolean;
     get isEmpty(): boolean;
     get createdFromBase64(): boolean;

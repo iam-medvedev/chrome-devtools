@@ -7,6 +7,7 @@ export declare class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.Wrap
     #private;
     connectedCallback(): void;
     set data(data: RuleSetDetailsViewData);
+    set shouldPrettyPrint(shouldPrettyPrint: boolean);
 }
 declare global {
     interface HTMLElementTagNameMap {

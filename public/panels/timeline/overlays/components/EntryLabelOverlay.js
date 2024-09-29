@@ -9,9 +9,13 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './entryLabelOverlay.css.js';
 const UIStrings = {
     /**
-     *@description Accessible label used to explain to a user that they are viewing an entry label.
+     * @description Accessible label used to explain to a user that they are viewing an entry label.
      */
     entryLabel: 'Entry label',
+    /**
+     *@description Accessible label used to prompt the user to input text into the field.
+     */
+    inputTextPrompt: 'Enter an annotation label',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/EntryLabelOverlay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -48,14 +52,13 @@ export class EntryLabelOverlay extends HTMLElement {
     // The label is set to editable when it is double clicked. If the user clicks away from the label box
     // element, the lable is set to not editable until it double clicked.s
     #isLabelEditable = true;
-    #entryLabelParams = null;
+    #entryLabelVisibleHeight = null;
     #labelPartsWrapper = null;
+    #entryHighlightWrapper = null;
     #inputField = null;
     #labelBox = null;
-    #entryHighlightWrapper = null;
     #connectorLineContainer = null;
     #label;
-    #entryIsInMainChart;
     #shouldDrawBelowEntry;
     /**
      * The entry label overlay consists of 3 parts - the label part with the label string inside,
@@ -76,7 +79,7 @@ export class EntryLabelOverlay extends HTMLElement {
      *
      * Otherwise, the entry label overlay object only gets repositioned.
      */
-    constructor(label, entryIsInMainChart, shouldDrawBelowEntry = false) {
+    constructor(label, shouldDrawBelowEntry = false) {
         super();
         this.#render();
         this.#shouldDrawBelowEntry = shouldDrawBelowEntry;
@@ -87,18 +90,21 @@ export class EntryLabelOverlay extends HTMLElement {
         this.#entryHighlightWrapper =
             this.#labelPartsWrapper?.querySelector('.entry-highlight-wrapper') ?? null;
         this.#label = label;
-        this.#entryIsInMainChart = entryIsInMainChart;
         this.#drawLabel(label);
         // If the label is not empty, it was loaded from the trace file.
         // In that case, do not auto-focus it as if the user were creating it for the first time
         if (label !== '') {
             this.setLabelEditabilityAndRemoveEmptyLabel(false);
-            this.#inputField?.setAttribute('aria-label', this.#label);
         }
+        const ariaLabel = label === '' ? i18nString(UIStrings.inputTextPrompt) : label;
+        this.#inputField?.setAttribute('aria-label', ariaLabel);
         this.#drawConnector();
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
+    }
+    entryHighlightWrapper() {
+        return this.#entryHighlightWrapper;
     }
     #handleLabelInputKeyUp() {
         // If the label changed on key up, dispatch label changed event
@@ -162,18 +168,20 @@ export class EntryLabelOverlay extends HTMLElement {
         selection?.removeAllRanges();
         selection?.addRange(range);
     }
-    set entryLabelParams(entryLabelParams) {
-        if (entryLabelParams.height === this.#entryLabelParams?.height &&
-            entryLabelParams.width === this.#entryLabelParams?.width &&
-            entryLabelParams.cutOffEntryHeight === this.#entryLabelParams?.cutOffEntryHeight) {
+    set entryLabelVisibleHeight(entryLabelVisibleHeight) {
+        if (entryLabelVisibleHeight === this.#entryLabelVisibleHeight) {
             // Even the position is not changed, the theme color might change, so we need to redraw the connector here.
             this.#drawConnector();
             return;
         }
-        this.#entryLabelParams = entryLabelParams;
+        this.#entryLabelVisibleHeight = entryLabelVisibleHeight;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-        // We need to redraw the entry wrapper only if the entry dimensions change
-        this.#drawEntryHighlightWrapper();
+        // If the label is editable, focus cursor on it.
+        // This method needs to be called after rendering the wrapper because it is the last label overlay element to render.
+        // By doing this, the cursor focuses when the label is created.
+        if (this.#isLabelEditable) {
+            this.#focusInputBox();
+        }
         // The label and connector can move depending on the height of the entry
         this.#drawLabel();
         this.#drawConnector();
@@ -183,9 +191,8 @@ export class EntryLabelOverlay extends HTMLElement {
             console.error('`connectorLineContainer` element is missing.');
             return;
         }
-        if (this.#shouldDrawBelowEntry && this.#entryLabelParams) {
-            const translation = this.#entryLabelParams.height - this.#entryLabelParams.cutOffEntryHeight +
-                EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
+        if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
+            const translation = this.#entryLabelVisibleHeight + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
             this.#connectorLineContainer.style.transform = `translateY(${translation}px) rotate(180deg)`;
         }
         const connector = this.#connectorLineContainer.querySelector('line');
@@ -236,14 +243,12 @@ export class EntryLabelOverlay extends HTMLElement {
             xTranslation =
                 EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1 - EntryLabelOverlay.USER_CREATED_ICON_WIDTH / 2;
         }
-        if (this.#shouldDrawBelowEntry && this.#entryLabelParams) {
+        if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
             // Move the label down from above the entry to below it. The label is positioned by default quite far above the entry, hence why we add:
             // 1. the height of the entry + of the label (inc its padding)
             // 2. the height of the connector (*2), so we have room to draw it
-            // 3. another 4 px, because it looks nicer than if we don't have that :)
-            const verticalTransform = this.#entryLabelParams.height - this.#entryLabelParams.cutOffEntryHeight +
-                EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 +
-                EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2;
+            const verticalTransform = this.#entryLabelVisibleHeight + EntryLabelOverlay.LABEL_HEIGHT +
+                EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2;
             yTranslation = verticalTransform;
         }
         let transformString = '';
@@ -255,31 +260,6 @@ export class EntryLabelOverlay extends HTMLElement {
         }
         if (transformString.length) {
             this.#labelBox.style.transform = transformString;
-        }
-    }
-    #drawEntryHighlightWrapper() {
-        if (!this.#entryHighlightWrapper || !this.#entryLabelParams || !this.#inputField || !this.#connectorLineContainer) {
-            console.error('Some elements required to draw `entryHighlightWrapper` are missing.');
-            return;
-        }
-        const { height, width, cutOffEntryHeight } = this.#entryLabelParams;
-        // If part of the entry is hidden by the resizer in the main chart, it is hidden from the top.
-        // Therefore, set the bottom border to hidden and hide the label and connector parts of the label.
-        // If it's partly hidden in the network chart, it's hidden from the bottom. In that case, hide the bottom border.
-        if (this.#entryIsInMainChart) {
-            this.#entryHighlightWrapper.style.borderTopWidth = cutOffEntryHeight > 0 ? '0' : '2px';
-        }
-        else {
-            this.#entryHighlightWrapper.style.borderBottomWidth = cutOffEntryHeight > 0 ? '0' : '2px';
-        }
-        // PART 3: draw the box that highlights the entry with a label
-        this.#entryHighlightWrapper.style.height = `${height - cutOffEntryHeight}px`;
-        this.#entryHighlightWrapper.style.width = `${width}px`;
-        // If the label is editable, focus cursor on it.
-        // This method needs to be called after rendering the wrapper because it is the last label overlay element to render.
-        // By doing this, the cursor focuses when the label is created.
-        if (this.#isLabelEditable) {
-            this.#focusInputBox();
         }
     }
     #focusInputBox() {

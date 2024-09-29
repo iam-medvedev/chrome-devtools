@@ -874,7 +874,6 @@ export var KeyboardShortcutAction;
 export var DevtoolsExperiments;
 (function (DevtoolsExperiments) {
     /* eslint-disable @typescript-eslint/naming-convention */
-    DevtoolsExperiments[DevtoolsExperiments["apply-custom-stylesheet"] = 0] = "apply-custom-stylesheet";
     DevtoolsExperiments[DevtoolsExperiments["capture-node-creation-stacks"] = 1] = "capture-node-creation-stacks";
     DevtoolsExperiments[DevtoolsExperiments["live-heap-profile"] = 11] = "live-heap-profile";
     DevtoolsExperiments[DevtoolsExperiments["protocol-monitor"] = 13] = "protocol-monitor";
@@ -904,7 +903,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["perf-panel-annotations"] = 94] = "perf-panel-annotations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
     DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
-    DevtoolsExperiments[DevtoolsExperiments["gen-ai-settings-panel"] = 97] = "gen-ai-settings-panel";
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
     DevtoolsExperiments[DevtoolsExperiments["timeline-layout-shift-details"] = 99] = "timeline-layout-shift-details";
     DevtoolsExperiments[DevtoolsExperiments["extension-storage-viewer"] = 100] = "extension-storage-viewer";

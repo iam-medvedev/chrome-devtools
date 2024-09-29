@@ -18,6 +18,7 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     static setLinkDecorator(linkDecorator: LinkDecorator): void;
     private updateAllAnchorDecorations;
     private static bindUILocation;
+    static bindUILocationForTest(anchor: Element, uiLocation: Workspace.UISourceCode.UILocation): void;
     private static unbindUILocation;
     /**
      * When we link to a breakpoint condition, we need to stash the BreakpointLocation as the revealable

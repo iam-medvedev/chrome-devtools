@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getFirstOrError, getInsight } from '../../../testing/InsightHelpers.js';
+import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 export async function processTrace(testContext, traceFile) {
     const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
@@ -15,7 +15,7 @@ describeWithEnvironment('ThirdPartyWeb', function () {
     it('categorizes third party web requests (simple)', async () => {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.strictEqual(insights.size, 2);
-        const insight = getInsight('ThirdPartyWeb', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
+        const insight = getInsightOrError('ThirdPartyWeb', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         const entityByRequestResult = [...insight.entityByRequest.entries()].map(([request, entity]) => {
             return [request.args.data.url, entity.name];
         });
@@ -59,7 +59,7 @@ describeWithEnvironment('ThirdPartyWeb', function () {
     it('categorizes third party web requests (complex)', async () => {
         const { data, insights } = await processTrace(this, 'lantern/paul/trace.json.gz');
         assert.strictEqual(insights.size, 1);
-        const insight = getInsight('ThirdPartyWeb', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
+        const insight = getInsightOrError('ThirdPartyWeb', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         const entityNames = [...insight.entityByRequest.values()].map(entity => entity.name);
         assert.deepEqual([...new Set(entityNames)], [
             'paulirish.com',

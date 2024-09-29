@@ -103,6 +103,7 @@ export declare namespace ASTUtils {
     function stripComments(nodes: CodeMirror.SyntaxNode[]): Generator<CodeMirror.SyntaxNode>;
     function split(nodes: CodeMirror.SyntaxNode[]): CodeMirror.SyntaxNode[][];
     function callArgs(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode[][];
+    function equals(a: CodeMirror.SyntaxNode, b: CodeMirror.SyntaxNode): boolean;
 }
 export declare class VariableMatch implements Match {
     readonly text: string;

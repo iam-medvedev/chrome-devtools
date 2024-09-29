@@ -23,8 +23,8 @@ const ADDITIONAL_TEXT_MIME_TYPES = new Set([
  *   - if `mimeType` is one of a predefined list textual mime types.
  */
 export function isTextType(mimeType) {
-    return mimeType.startsWith('text/') || mimeType.endsWith('+json') || mimeType.endsWith('+xml') ||
-        ADDITIONAL_TEXT_MIME_TYPES.has(mimeType);
+    return mimeType.startsWith('text/') || mimeType.startsWith('multipart/') || mimeType.includes('+json') ||
+        mimeType.endsWith('+xml') || ADDITIONAL_TEXT_MIME_TYPES.has(mimeType);
 }
 /**
  * Port of net::HttpUtils::ParseContentType to extract mimeType and charset from

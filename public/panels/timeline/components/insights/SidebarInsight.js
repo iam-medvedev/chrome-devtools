@@ -6,6 +6,7 @@ import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
+import { md } from './Helpers.js';
 import sidebarInsightStyles from './sidebarInsight.css.js';
 const UIStrings = {
     /**
@@ -18,14 +19,14 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Si
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class InsightActivated extends Event {
     name;
-    navigationId;
-    createOverlayFn;
+    insightSetKey;
+    overlays;
     static eventName = 'insightactivated';
-    constructor(name, navigationId, createOverlayFn) {
+    constructor(name, insightSetKey, overlays) {
         super(InsightActivated.eventName, { bubbles: true, composed: true });
         this.name = name;
-        this.navigationId = navigationId;
-        this.createOverlayFn = createOverlayFn;
+        this.insightSetKey = insightSetKey;
+        this.overlays = overlays;
     }
 }
 export class InsightDeactivated extends Event {
@@ -34,20 +35,22 @@ export class InsightDeactivated extends Event {
         super(InsightDeactivated.eventName, { bubbles: true, composed: true });
     }
 }
-export class NavigationBoundsHovered extends Event {
+export class InsightSetHovered extends Event {
     bounds;
-    static eventName = 'navigationhovered';
+    static eventName = 'insightsethovered';
     constructor(bounds) {
-        super(NavigationBoundsHovered.eventName, { bubbles: true, composed: true });
+        super(InsightSetHovered.eventName, { bubbles: true, composed: true });
         this.bounds = bounds;
     }
 }
-export class InsightOverlayOverride extends Event {
+export class InsightProvideOverlays extends Event {
     overlays;
-    static eventName = 'insightoverlayoverride';
-    constructor(overlays) {
-        super(InsightOverlayOverride.eventName, { bubbles: true, composed: true });
+    options;
+    static eventName = 'insightprovideoverlays';
+    constructor(overlays, options) {
+        super(InsightProvideOverlays.eventName, { bubbles: true, composed: true });
         this.overlays = overlays;
+        this.options = options;
     }
 }
 export class SidebarInsight extends HTMLElement {
@@ -55,12 +58,24 @@ export class SidebarInsight extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #insightTitle = '';
+    #insightDescription = '';
+    #insightInternalName = '';
     #expanded = false;
     #estimatedSavings = undefined;
     set data(data) {
         this.#insightTitle = data.title;
+        this.#insightDescription = data.description;
+        this.#insightInternalName = data.internalName;
         this.#expanded = data.expanded;
         this.#estimatedSavings = data.estimatedSavings;
+        // Used for testing.
+        this.dataset.insightTitle = data.title;
+        if (data.expanded) {
+            this.dataset.insightExpanded = '';
+        }
+        else {
+            delete this.dataset.insightExpanded;
+        }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     connectedCallback() {
@@ -97,7 +112,7 @@ export class SidebarInsight extends HTMLElement {
         // clang-format off
         const output = LitHtml.html `
       <div class=${containerClasses}>
-        <header @click=${this.#dispatchInsightToggle} jslog=${VisualLogging.action('timeline.toggle-insight').track({ click: true })}>
+        <header @click=${this.#dispatchInsightToggle} jslog=${VisualLogging.action(`timeline.toggle-insight.${this.#insightInternalName}`).track({ click: true })}>
           ${this.#renderHoverIcon(this.#expanded)}
           <h3 class="insight-title">${this.#insightTitle}</h3>
           ${this.#estimatedSavings && this.#estimatedSavings > 0 ?
@@ -110,8 +125,10 @@ export class SidebarInsight extends HTMLElement {
         </header>
         ${this.#expanded ? LitHtml.html `
           <div class="insight-body">
-            <slot name="insight-description"></slot>
-            <slot name="insight-content"></slot>
+            <div class="insight-description">${this.#insightDescription ? md(this.#insightDescription) : LitHtml.nothing}</div>
+            <div class="insight-content">
+              <slot name="insight-content"></slot>
+            </div>
           </div>`
             : LitHtml.nothing}
       </div>

@@ -1,14 +1,13 @@
-import * as Trace from '../../../../models/trace/trace.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsight } from './Helpers.js';
-import { InsightsCategories } from './types.js';
-export declare function getINPInsight(insights: Trace.Insights.Types.TraceInsightSets | null, navigationId: string | null): Trace.Insights.Types.InsightResults['InteractionToNextPaint'] | null;
+import { Category } from './types.js';
 export declare class InteractionToNextPaint extends BaseInsight {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    insightCategory: InsightsCategories;
+    insightCategory: Category;
     internalName: string;
     userVisibleTitle: string;
+    description: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     render(): void;
 }

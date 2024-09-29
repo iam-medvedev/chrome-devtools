@@ -410,6 +410,10 @@ export var ASTUtils;
         return split(args);
     }
     ASTUtils.callArgs = callArgs;
+    function equals(a, b) {
+        return a.name === b.name && a.from === b.from && a.to === b.to;
+    }
+    ASTUtils.equals = equals;
 })(ASTUtils || (ASTUtils = {}));
 export class VariableMatch {
     text;

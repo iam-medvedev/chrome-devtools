@@ -4,7 +4,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { type AnchorFunctionMatch, AnchorFunctionMatcher, AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LengthMatch, LengthMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type PositionAnchorMatch, PositionAnchorMatcher, type ShadowMatch, ShadowMatcher, ShadowType } from './PropertyMatchers.js';
+import { type AnchorFunctionMatch, AnchorFunctionMatcher, AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type CSSWideKeywordMatch, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LengthMatch, LengthMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type PositionAnchorMatch, PositionAnchorMatcher, type ShadowMatch, ShadowMatcher, ShadowType } from './PropertyMatchers.js';
 import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
@@ -18,6 +18,12 @@ interface StylePropertyTreeElementParams {
     inherited: boolean;
     overloaded: boolean;
     newProperty: boolean;
+}
+export declare class CSSWideKeywordRenderer implements MatchRenderer<CSSWideKeywordMatch> {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement);
+    matcher(): SDK.CSSPropertyParser.Matcher<CSSWideKeywordMatch>;
+    render(match: CSSWideKeywordMatch, context: RenderingContext): Node[];
 }
 export declare class VariableRenderer implements MatchRenderer<SDK.CSSPropertyParser.VariableMatch> {
     #private;

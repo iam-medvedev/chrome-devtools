@@ -355,6 +355,14 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         tab.setIcon(icon);
         this.updateTabElements();
     }
+    setSuffixElement(id, suffixElement) {
+        const tab = this.tabsById.get(id);
+        if (!tab) {
+            return;
+        }
+        tab.setSuffixElement(suffixElement);
+        this.updateTabElements();
+    }
     setTabEnabled(id, enabled) {
         const tab = this.tabsById.get(id);
         if (tab) {
@@ -658,7 +666,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             if (typeof tab.measuredWidth === 'number') {
                 continue;
             }
-            const measuringTabElement = tab.createTabElement(true);
+            const measuringTabElement = tab.createTabElement(/* measure */ true);
             measuringTabElements.set(measuringTabElement, tab);
             this.tabsElement.appendChild(measuringTabElement);
         }
@@ -871,6 +879,7 @@ export class TabbedPaneTab {
     measuredWidth;
     tabElementInternal;
     icon = null;
+    suffixElement = null;
     widthInternal;
     delegate;
     titleElement;
@@ -916,6 +925,13 @@ export class TabbedPaneTab {
         this.icon = icon;
         if (this.tabElementInternal && this.titleElement) {
             this.createIconElement(this.tabElementInternal, this.titleElement, false);
+        }
+        delete this.measuredWidth;
+    }
+    setSuffixElement(suffixElement) {
+        this.suffixElement = suffixElement;
+        if (this.tabElementInternal && this.titleElement) {
+            this.createSuffixElement(this.tabElementInternal, this.titleElement, false);
         }
         delete this.measuredWidth;
     }
@@ -976,6 +992,22 @@ export class TabbedPaneTab {
         tabElement.insertBefore(iconContainer, titleElement);
         tabIcons.set(tabElement, iconContainer);
     }
+    createSuffixElement(tabElement, titleElement, measuring) {
+        const tabSuffixElement = tabSuffixElements.get(tabElement);
+        if (tabSuffixElement) {
+            tabSuffixElement.remove();
+            tabSuffixElements.delete(tabElement);
+        }
+        if (!this.suffixElement) {
+            return;
+        }
+        const suffixElementContainer = document.createElement('span');
+        suffixElementContainer.classList.add('tabbed-pane-header-tab-suffix-element');
+        const suffixElement = measuring ? this.suffixElement.cloneNode() : this.suffixElement;
+        suffixElementContainer.appendChild(suffixElement);
+        titleElement.insertAdjacentElement('afterend', suffixElementContainer);
+        tabSuffixElements.set(tabElement, suffixElementContainer);
+    }
     createMeasureClone(original) {
         // Cloning doesn't work for the icon component because the shadow
         // root isn't copied, but it is sufficient to create a div styled
@@ -996,6 +1028,7 @@ export class TabbedPaneTab {
         titleElement.textContent = this.title;
         Tooltip.install(titleElement, this.tooltip || '');
         this.createIconElement(tabElement, titleElement, measuring);
+        this.createSuffixElement(tabElement, titleElement, measuring);
         if (!measuring) {
             this.titleElement = titleElement;
         }
@@ -1171,4 +1204,5 @@ export class TabbedPaneTab {
     }
 }
 const tabIcons = new WeakMap();
+const tabSuffixElements = new WeakMap();
 //# sourceMappingURL=TabbedPane.js.map

@@ -2,6 +2,7 @@ import * as Protocol from '../../generated/protocol.js';
 export declare class CSSMetadata {
     #private;
     constructor(properties: CSSPropertyDefinition[], aliasesFor: Map<string, string>);
+    static isCSSWideKeyword(a: string): a is CSSWideKeyword;
     private static sortPrefixesAndCSSWideKeywordsToEnd;
     allProperties(): string[];
     aliasesFor(): Map<string, string>;
@@ -36,7 +37,14 @@ export declare class CSSMetadata {
     } | null;
     isHighlightPseudoType(pseudoType: Protocol.DOM.PseudoType): boolean;
 }
-export declare const CSSWideKeywords: string[];
+export declare const enum CSSWideKeyword {
+    INHERIT = "inherit",
+    INITIAL = "initial",
+    REVERT = "revert",
+    REVERT_LAYER = "revert-layer",
+    UNSET = "unset"
+}
+export declare const CSSWideKeywords: CSSWideKeyword[];
 export declare const VariableNameRegex: RegExp;
 export declare const VariableRegex: RegExp;
 export declare const CustomVariableRegex: RegExp;

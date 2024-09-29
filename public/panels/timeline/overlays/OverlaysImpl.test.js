@@ -27,12 +27,16 @@ const FAKE_OVERLAY_ENTRY_QUERIES = {
 function createCharts(parsedTrace) {
     const mainProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
     const networkProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
-    const delegate = new MockFlameChartDelegate();
-    const mainChart = new PerfUI.FlameChart.FlameChart(mainProvider, delegate);
-    const networkChart = new PerfUI.FlameChart.FlameChart(networkProvider, delegate);
     if (parsedTrace) {
         mainProvider.setModel(parsedTrace);
         networkProvider.setModel(parsedTrace);
+    }
+    const delegate = new MockFlameChartDelegate();
+    const mainChart = new PerfUI.FlameChart.FlameChart(mainProvider, delegate);
+    const networkChart = new PerfUI.FlameChart.FlameChart(networkProvider, delegate);
+    // Add to DOM for offsetWidth, etc working
+    document.body.append(mainChart.element, networkChart.element);
+    if (parsedTrace) {
         // Force the charts to render. Normally the TimelineFlameChartView would do
         // this, but we aren't creating one for these tests.
         mainChart.update();
@@ -48,6 +52,10 @@ function createCharts(parsedTrace) {
 describeWithEnvironment('Overlays', () => {
     beforeEach(() => {
         setupIgnoreListManagerEnvironment();
+    });
+    afterEach(() => {
+        // Remove any FlameChart elements from the DOM
+        document.body.querySelectorAll('widget').forEach(e => e.remove());
     });
     it('can calculate the x position of an event based on the dimensions and its timestamp', async () => {
         const flameChartsContainer = document.createElement('div');
@@ -611,7 +619,7 @@ describeWithEnvironment('Overlays', () => {
             overlays.update();
             const overlayDOM = container.querySelector('.overlay-type-ENTRY_SELECTED');
             assert.isOk(overlayDOM);
-            assert.strictEqual(window.parseInt(overlayDOM.style.width), 250);
+            assert.strictEqual(window.parseInt(overlayDOM.style.width), 2);
         });
         it('renders the duration and label for a time range overlay', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');

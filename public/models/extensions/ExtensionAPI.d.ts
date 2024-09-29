@@ -27,7 +27,6 @@ export declare namespace PrivateAPI {
     }
     export const enum Commands {
         AddRequestHeaders = "addRequestHeaders",
-        ApplyStyleSheet = "applyStyleSheet",
         CreatePanel = "createPanel",
         CreateSidebarPane = "createSidebarPane",
         CreateToolbarButton = "createToolbarButton",
@@ -132,10 +131,6 @@ export declare namespace PrivateAPI {
         headers: {
             [key: string]: string;
         };
-    };
-    type ApplyStyleSheetRequest = {
-        command: Commands.ApplyStyleSheet;
-        styleSheet: string;
     };
     type CreatePanelRequest = {
         command: Commands.CreatePanel;
@@ -274,7 +269,7 @@ export declare namespace PrivateAPI {
             size?: number;
         };
     };
-    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | ApplyStyleSheetRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest | ShowNetworkPanelRequest | ReportResourceLoadRequest;
+    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest | ShowNetworkPanelRequest | ReportResourceLoadRequest;
     export type ExtensionServerRequestMessage = PrivateAPI.ServerRequests & {
         requestId?: number;
     };
@@ -458,7 +453,6 @@ declare namespace APIImpl {
         get SearchAction(): {
             [key: string]: string;
         };
-        applyStyleSheet(styleSheet: string): void;
         setOpenResourceHandler(callback?: (resource: PublicAPI.Chrome.DevTools.Resource, lineNumber: number) => unknown): void;
         setThemeChangeHandler(callback?: (themeName: string) => unknown): void;
     }

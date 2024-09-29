@@ -687,7 +687,7 @@ export interface SyntheticLayoutShiftCluster {
     navigationId?: string;
     worstShiftEvent?: Event;
     ts: MicroSeconds;
-    dur?: MicroSeconds;
+    dur: MicroSeconds;
     cat: '';
     ph: Phase.COMPLETE;
     pid: ProcessID;

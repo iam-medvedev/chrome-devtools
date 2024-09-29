@@ -44,6 +44,7 @@ import { ThreadAppender } from './ThreadAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
 import { TimelineSelection } from './TimelineSelection.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Text for rendering frames
@@ -225,27 +226,28 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             jslogContext: 'reset-trace',
         });
         const entry = this.eventByIndex(entryIndex);
-        if (entry && entry instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame === false) {
-            const url = (Trace.Types.Events.isProfileCall(entry)) ? entry.callFrame.url :
-                undefined;
-            if (url) {
-                if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
-                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
-                        Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
-                        this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
-                    }, {
-                        jslogContext: 'remove-from-ignore-list',
-                    });
-                }
-                else {
-                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
-                        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
-                        this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
-                    }, {
-                        jslogContext: 'add-to-ignore-list',
-                    });
-                }
-            }
+        if (!entry || entry instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame || !this.parsedTrace) {
+            return contextMenu;
+        }
+        const url = Utils.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
+        if (!url) {
+            return contextMenu;
+        }
+        if (Utils.IgnoreList.isIgnoreListedEntry(entry)) {
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
+                Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
+                this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
+            }, {
+                jslogContext: 'remove-from-ignore-list',
+            });
+        }
+        else {
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
+                Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
+                this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
+            }, {
+                jslogContext: 'add-to-ignore-list',
+            });
         }
         return contextMenu;
     }
@@ -388,7 +390,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (!TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(event)) {
             return FlameChartStyle.textColor;
         }
-        return this.isIgnoreListedEvent(event) ? '#888' : FlameChartStyle.textColor;
+        return Utils.IgnoreList.isIgnoreListedEntry(event) ? '#888' : FlameChartStyle.textColor;
     }
     entryFont(_index) {
         return this.#font;
@@ -549,15 +551,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         return results;
     }
-    isIgnoreListedEvent(event) {
-        if (Trace.Types.Events.isProfileCall(event)) {
-            return this.isIgnoreListedURL(event.callFrame.url);
-        }
-        return false;
-    }
-    isIgnoreListedURL(url) {
-        return Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url);
-    }
     getEntryTypeForLevel(level) {
         return this.entryTypeByLevel[level];
     }
@@ -706,10 +699,27 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         const event = this.entryData[entryIndex];
         return this.compatibilityTracksAppender?.getDrawOverride(event, eventLevel);
     }
+    #entryColorForFrame(entryIndex) {
+        const frame = this.entryData[entryIndex];
+        if (frame.idle) {
+            return 'white';
+        }
+        if (frame.dropped) {
+            if (frame.isPartial) {
+                // For partially presented frame boxes, paint a yellow background with
+                // a sparse white dashed-line pattern overlay.
+                return '#f0e442';
+            }
+            // For dropped frame boxes, paint a red background with a dense white
+            // solid-line pattern overlay.
+            return '#f08080';
+        }
+        return '#d7f0d1';
+    }
     entryColor(entryIndex) {
         const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Frame" /* EntryType.FRAME */) {
-            return 'white';
+            return this.#entryColorForFrame(entryIndex);
         }
         if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             const timelineData = this.timelineDataInternal;
@@ -755,14 +765,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         const frame = this.entryData[entryIndex];
         barX += hPadding;
         barWidth -= 2 * hPadding;
-        if (frame.idle) {
-            context.fillStyle = 'white';
-        }
-        else if (frame.dropped) {
+        context.fillStyle = this.entryColor(entryIndex);
+        if (frame.dropped) {
             if (frame.isPartial) {
                 // For partially presented frame boxes, paint a yellow background with
                 // a sparse white dashed-line pattern overlay.
-                context.fillStyle = '#f0e442';
                 context.fillRect(barX, barY, barWidth, barHeight);
                 const overlay = context.createPattern(this.partialFramePatternCanvas, 'repeat');
                 context.fillStyle = overlay || context.fillStyle;
@@ -770,14 +777,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             else {
                 // For dropped frame boxes, paint a red background with a dense white
                 // solid-line pattern overlay.
-                context.fillStyle = '#f08080';
                 context.fillRect(barX, barY, barWidth, barHeight);
                 const overlay = context.createPattern(this.droppedFramePatternCanvas, 'repeat');
                 context.fillStyle = overlay || context.fillStyle;
             }
-        }
-        else {
-            context.fillStyle = '#d7f0d1';
         }
         context.fillRect(barX, barY, barWidth, barHeight);
         const frameDurationText = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microSecondsToMilliseconds(frame.duration), 1);

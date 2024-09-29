@@ -11,7 +11,6 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-/* stylelint-disable no-descending-specificity */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -39,6 +38,7 @@ styles.replaceSync(
   display: flex;
   gap: var(--sys-size-3);
   align-items: center;
+  width: 100%;
 
   .resource-link {
     padding: var(--sys-size-2) var(--sys-size-4);
@@ -49,6 +49,7 @@ styles.replaceSync(
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: var(--sys-size-32);
+    cursor: pointer;
 
     devtools-icon[name="file-script"] {
       color: var(--icon-file-script);
@@ -80,8 +81,12 @@ styles.replaceSync(
 }
 
 .chat-input {
-  --right-padding: calc(var(--sys-size-4) + 26px); /* Gap between the button and the edge + icon's width */
+  --right-padding:
+    calc(
+      var(--sys-size-3) + 26px
+    ); /* Gap between the button and the edge + icon's width */
 
+  scrollbar-width: none;
   field-sizing: content; /* stylelint-disable-line property-no-unknown */
   resize: none;
   width: 100%;
@@ -92,9 +97,7 @@ styles.replaceSync(
   line-height: 18px;
   min-height: var(--sys-size-11);
   padding:
-    var(--sys-size-4)
-    var(--right-padding)
-    var(--sys-size-4)
+    var(--sys-size-4) var(--right-padding) var(--sys-size-4)
     var(--sys-size-4);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
@@ -118,7 +121,8 @@ styles.replaceSync(
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: var(--sys-size-4) var(--sys-size-4);
+  padding-bottom: 3px;
+  padding-right: var(--sys-size-3);
 }
 
 .disclaimer {
@@ -163,13 +167,6 @@ styles.replaceSync(
     border-bottom: 0;
   }
 
-  &.query {
-    .message-content {
-      /* devtools-markdown-view's paragraphs add 10px bottom margin. This negative margin is here to offset that. */
-      margin-bottom: -10px;
-    }
-  }
-
   .message-info {
     display: flex;
     align-items: center;
@@ -193,8 +190,81 @@ styles.replaceSync(
     align-items: flex-end;
   }
 
+  /*
+    Scroll driven animation below is used for generating shadows
+    when the \\'.suggestions\\' area is scrollable.
+  */
+  .suggestions {
+    display: flex;
+    overflow-y: hidden;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: var(--sys-size-3);
+    scroll-timeline: --scroll-timeline x; /* stylelint-disable-line property-no-unknown */
+    animation: detect-scroll;
+    animation-timeline: --scroll-timeline; /* stylelint-disable-line property-no-unknown */
+    animation-fill-mode: none;
+    position: relative;
+  }
+
+  .suggestions::before,
+  .suggestions::after {
+    content: "";
+    display: block;
+    position: sticky;
+    min-width: var(--sys-size-3);
+    height: var(--sys-size-11);
+    left: 0;
+    right: 0;
+    z-index: 999;
+    animation-name: reveal;
+    animation-timeline: --scroll-timeline; /* stylelint-disable-line property-no-unknown */
+    animation-fill-mode: both;
+  }
+
+  .suggestions::before {
+    top: 0;
+    visibility: var(--visibility-if-can-scroll, hidden);
+    animation-range: var(--sys-size-6) var(--sys-size-11); /* stylelint-disable-line property-no-unknown */
+    background: radial-gradient(farthest-side at 0 50%, var(--app-color-scroll-area-shadow-start), transparent);
+  }
+
+  .suggestions::after {
+    bottom: 0;
+    visibility: var(--visibility-if-can-scroll, hidden);
+    animation-direction: reverse;
+    animation-range: calc(100% - var(--sys-size-11)) calc(100% - var(--sys-size-6)); /* stylelint-disable-line property-no-unknown */
+    background: radial-gradient(farthest-side at 100% 50%, var(--app-color-scroll-area-shadow-start), transparent);
+  }
+
   .aborted {
-    color: var(--sys-color-state-disabled);
+    color: var(--sys-color-on-surface-subtle);
+  }
+}
+
+.indicator {
+  color: var(--sys-color-green-bright);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  padding: var(--sys-size-3);
+  line-height: var(--sys-size-9);
+  cursor: default;
+  gap: var(--sys-size-3);
+  justify-content: center;
+  align-items: center;
+
+  .title {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font: var(--sys-typescale-body4-regular);
+
+    .paused {
+      font: var(--sys-typescale-body4-bold);
+    }
   }
 }
 
@@ -249,36 +319,10 @@ styles.replaceSync(
     vertical-align: bottom;
   }
 
-  .indicator {
-    color: var(--sys-color-green-bright);
-  }
-
   devtools-spinner {
     width: var(--sys-size-9);
     height: var(--sys-size-9);
     padding: var(--sys-size-2);
-  }
-
-  .summary {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    padding: var(--sys-size-3);
-    line-height: var(--sys-size-9);
-    cursor: default;
-    gap: var(--sys-size-3);
-    justify-content: center;
-    align-items: center;
-
-    .title {
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-      font: var(--sys-typescale-body4-regular);
-
-      .paused {
-        font: var(--sys-typescale-body4-bold);
-      }
-    }
   }
 
   &[open] {
@@ -299,7 +343,13 @@ styles.replaceSync(
   }
 
   .step-details {
-    padding: 0 var(--sys-size-10) var(--sys-size-3);
+    padding: 0 var(--sys-size-5) var(--sys-size-4) var(--sys-size-12);
+    display: flex;
+    flex-direction: column;
+
+    p {
+      margin-bottom: var(--sys-size-5);
+    }
   }
 }
 
@@ -316,23 +366,29 @@ styles.replaceSync(
     height: var(--sys-size-8);
   }
 
-  & .header-link-container:first-of-type {
-    flex-shrink: 1;
-    flex-basis: 100%;
-    min-width: 0;
-  }
-
   & .header-link-container {
     display: inline-flex;
     align-items: center;
     gap: var(--sys-size-2);
     flex-shrink: 0;
   }
+
+  & .header-link-container:first-of-type {
+    flex-shrink: 1;
+    min-width: 0;
+  }
 }
 
 .link {
   color: var(--text-link);
   text-decoration: underline;
+}
+
+button.link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
 }
 
 .select-an-element-text {
@@ -383,6 +439,28 @@ styles.replaceSync(
   }
 }
 
+.opt-in {
+  border-radius: var(--sys-shape-corner-small);
+  padding: var(--sys-size-6) var(--sys-size-8);
+  box-shadow: var(--drop-shadow);
+  font: var(--sys-typescale-body4-regular);
+  margin: var(--sys-size-8);
+  max-width: var(--sys-size-34);
+  display: flex;
+
+  .opt-in-icon-container {
+    border-radius: var(--sys-shape-corner-extra-small);
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
+    background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
+    margin-right: var(--sys-size-5);
+
+    devtools-icon {
+      margin: var(--sys-size-2);
+    }
+  }
+}
+
 .action-result {
   /* devtools-code-block adds \\'margin-top: 8px\\' however we want the margin between \\'.action-result\\' and \\'.js-code-output\\' to be 2px
   that's why we use -6px here. */
@@ -406,11 +484,10 @@ styles.replaceSync(
 }
 
 .side-effect-confirmation {
-  p {
-    margin: 0;
-    margin-bottom: 12px;
-    padding: 0;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-5);
+  padding-bottom: var(--sys-size-4);
 }
 
 .side-effect-buttons-container {
@@ -418,24 +495,17 @@ styles.replaceSync(
   gap: var(--sys-size-4);
 }
 
-.consent-view {
-  padding: 24px;
-  text-wrap: pretty;
-
-  .accept-button {
-    margin-top: 8px;
-  }
-
-  ul {
-    padding: 0 13px;
-  }
-
-  h2 {
-    font-weight: 500;
-  }
+@keyframes reveal {
+  0% { opacity: 0%; }
+  100% { opacity: 100%; }
 }
 
-/* stylelint-enable no-descending-specificity */
+@keyframes detect-scroll {
+  from,
+  to {
+    --visibility-if-can-scroll: visible;
+  }
+}
 
 /*# sourceURL=./components/freestylerChatUi.css */
 `);

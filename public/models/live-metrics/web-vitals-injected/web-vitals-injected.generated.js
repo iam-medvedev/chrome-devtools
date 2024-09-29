@@ -1974,16 +1974,14 @@
             }
             // Will report as a single interaction even if parts are in separate frames.
             // Consider splitting by animation frame.
-            for (const [interactionId, interaction] of interactions.entries()) {
+            for (const interaction of interactions.values()) {
                 const longestEntry = interaction.reduce((prev, curr) => prev.duration >= curr.duration ? prev : curr);
                 const value = longestEntry.duration;
                 const firstEntryWithTarget = interaction.find(entry => entry.target);
                 callback({
                     attribution: {
                         interactionTargetElement: firstEntryWithTarget?.target ?? null,
-                        interactionTime: longestEntry.startTime,
                         interactionType: longestEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
-                        interactionId,
                     },
                     entries: interaction,
                     value,
@@ -2017,6 +2015,20 @@
     // found in the LICENSE file.
     const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
     const INTERNAL_KILL_SWITCH = '__chromium_devtools_kill_live_metrics';
+    /**
+     * An interaction can have multiple associated `PerformanceEventTiming`s.
+     * The `interactionId` available on `PerformanceEventTiming` isn't guaranteed to be unique. (e.g. a `keyup` event issued long after a `keydown` event will have the same `interactionId`).
+     * Double-keying with the start time of the longest entry should uniquely identify each interaction.
+     */
+    function getUniqueInteractionId(entries) {
+        const longestEntry = entries.reduce((prev, curr) => {
+            if (prev.duration === curr.duration) {
+                return prev.startTime < curr.startTime ? prev : curr;
+            }
+            return prev.duration > curr.duration ? prev : curr;
+        });
+        return `interaction-${longestEntry.interactionId}-${longestEntry.startTime}`;
+    }
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
     const { onLCP, onCLS, onINP } = index;
@@ -2100,6 +2112,12 @@
             const event = {
                 name: 'LCP',
                 value: metric.value,
+                phases: {
+                    timeToFirstByte: metric.attribution.timeToFirstByte,
+                    resourceLoadDelay: metric.attribution.resourceLoadDelay,
+                    resourceLoadTime: metric.attribution.resourceLoadDuration,
+                    elementRenderDelay: metric.attribution.elementRenderDelay,
+                },
             };
             const element = metric.attribution.lcpEntry?.element;
             if (element) {
@@ -2118,19 +2136,21 @@
             const event = {
                 name: 'INP',
                 value: metric.value,
+                phases: {
+                    inputDelay: metric.attribution.inputDelay,
+                    processingDuration: metric.attribution.processingDuration,
+                    presentationDelay: metric.attribution.presentationDelay,
+                },
+                uniqueInteractionId: getUniqueInteractionId(metric.entries),
                 interactionType: metric.attribution.interactionType,
             };
-            const element = metric.attribution.interactionTargetElement;
-            if (element) {
-                event.nodeIndex = establishNodeIndex(element);
-            }
             sendEventToDevTools(event);
         }, { reportAllChanges: true });
         onEachInteraction(interaction => {
             const event = {
                 name: 'Interaction',
                 duration: interaction.value,
-                interactionId: interaction.attribution.interactionId,
+                uniqueInteractionId: getUniqueInteractionId(interaction.entries),
                 interactionType: interaction.attribution.interactionType,
             };
             const node = interaction.attribution.interactionTargetElement;

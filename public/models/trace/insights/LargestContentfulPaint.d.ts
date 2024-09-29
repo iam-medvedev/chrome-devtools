@@ -25,6 +25,7 @@ interface LCPPhases {
 export type LCPInsightResult = InsightResult<{
     lcpMs?: Types.Timing.MilliSeconds;
     lcpTs?: Types.Timing.MilliSeconds;
+    lcpEvent?: Types.Events.LargestContentfulPaintCandidate;
     phases?: LCPPhases;
     shouldRemoveLazyLoading?: boolean;
     shouldIncreasePriorityHint?: boolean;

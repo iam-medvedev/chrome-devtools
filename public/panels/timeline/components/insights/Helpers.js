@@ -5,15 +5,16 @@ import * as Marked from '../../../../third_party/marked/marked.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as MarkdownView from '../../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import sidebarInsightStyles from './sidebarInsight.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
-import { InsightsCategories } from './types.js';
+import { Category } from './types.js';
 export function shouldRenderForCategory(options) {
-    return options.activeCategory === InsightsCategories.ALL || options.activeCategory === options.insightCategory;
+    return options.activeCategory === Category.ALL || options.activeCategory === options.insightCategory;
 }
 export function insightIsActive(options) {
     const active = options.activeInsight && options.activeInsight.name === options.insightName &&
-        options.activeInsight.navigationId === options.insightNavigationId;
+        options.activeInsight.insightSetKey === options.insightSetKey;
     return Boolean(active);
 }
 // This is an abstract base class so the component naming rules do not apply.
@@ -22,23 +23,31 @@ export class BaseInsight extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     data = {
         insights: null,
-        navigationId: null,
+        insightSetKey: null,
         activeInsight: null,
-        activeCategory: InsightsCategories.ALL,
+        activeCategory: Category.ALL,
     };
     #boundRender = this.render.bind(this);
+    sharedTableState = {
+        selectedRowEl: null,
+        selectionIsSticky: false,
+    };
+    #initialOverlays = null;
     scheduleRender() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     connectedCallback() {
         this.shadow.adoptedStyleSheets.push(sidebarInsightStyles);
+        this.setAttribute('jslog', `${VisualLogging.section(`timeline.insights.${this.internalName}`)}`);
+        // Used for unit test purposes when querying the DOM.
+        this.dataset.insightName = this.internalName;
     }
     set insights(insights) {
         this.data.insights = insights;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
-    set navigationId(navigationId) {
-        this.data.navigationId = navigationId;
+    set insightSetKey(insightSetKey) {
+        this.data.insightSetKey = insightSetKey;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set activeInsight(activeInsight) {
@@ -54,23 +63,45 @@ export class BaseInsight extends HTMLElement {
             this.dispatchEvent(new SidebarInsight.InsightDeactivated());
             return;
         }
-        if (!this.data.navigationId) {
+        if (!this.data.insightSetKey) {
             // Shouldn't happen, but needed to satisfy TS.
             return;
         }
-        this.dispatchEvent(new SidebarInsight.InsightActivated(this.internalName, this.data.navigationId, this.createOverlays.bind(this)));
+        this.sharedTableState.selectedRowEl?.classList.remove('selected');
+        this.sharedTableState.selectedRowEl = null;
+        this.sharedTableState.selectionIsSticky = false;
+        this.dispatchEvent(new SidebarInsight.InsightActivated(this.internalName, this.data.insightSetKey, this.getInitialOverlays()));
     }
-    onOverlayOverride(overlays) {
+    /**
+     * Replaces the initial insight overlays with the ones provided.
+     *
+     * If `overlays` is null, reverts back to the initial overlays.
+     *
+     * This allows insights to provide an initial set of overlays,
+     * and later temporarily replace all of those insights with a different set.
+     * This enables the hover/click table interactions.
+     */
+    toggleTemporaryOverlays(overlays, options) {
         if (!this.isActive()) {
             return;
         }
-        this.dispatchEvent(new SidebarInsight.InsightOverlayOverride(overlays));
+        if (!options) {
+            options = { updateTraceWindow: true };
+        }
+        this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(overlays ?? this.getInitialOverlays(), options));
+    }
+    getInitialOverlays() {
+        if (this.#initialOverlays) {
+            return this.#initialOverlays;
+        }
+        this.#initialOverlays = this.createOverlays();
+        return this.#initialOverlays;
     }
     isActive() {
         return insightIsActive({
             activeInsight: this.data.activeInsight,
             insightName: this.internalName,
-            insightNavigationId: this.data.navigationId,
+            insightSetKey: this.data.insightSetKey,
         });
     }
 }

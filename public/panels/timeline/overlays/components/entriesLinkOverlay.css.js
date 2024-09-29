@@ -17,12 +17,6 @@ styles.replaceSync(
   height: 100%;
 }
 
-.entry-highlight-wrapper {
-  box-sizing: border-box;
-  border: 2px solid var(--sys-color-on-surface);
-  position: absolute;
-}
-
 .create-link-icon {
   pointer-events: auto;
   cursor: pointer;

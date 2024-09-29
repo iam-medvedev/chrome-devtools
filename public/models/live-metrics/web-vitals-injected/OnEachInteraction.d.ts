@@ -7,11 +7,9 @@ import type * as WebVitals from '../../../third_party/web-vitals/web-vitals.js';
 export interface InteractionWithAttribution {
     attribution: {
         interactionTargetElement: Node | null;
-        interactionTime: number;
         interactionType: WebVitals.INPAttribution['interactionType'];
-        interactionId: number;
     };
-    entries: PerformanceEntry[];
+    entries: PerformanceEventTiming[];
     value: number;
 }
 export declare function onEachInteraction(callback: (interaction: InteractionWithAttribution) => void): void;

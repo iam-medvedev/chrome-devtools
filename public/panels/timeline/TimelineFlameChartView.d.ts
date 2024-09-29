@@ -40,14 +40,9 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private selectedSearchResult?;
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
+    setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
-    /**
-     * Replaces any existing overlays with the ones provided to this method.
-     * If `overlays` is null, reverts back to the original overlays provided by
-     * the insight.
-     */
-    setOverlaysOverride(overlays: Overlays.Overlays.TimelineOverlay[] | null): void;
     runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
     getLinkSelectionAnnotation(): Trace.Types.File.EntriesLinkAnnotation | null;
@@ -67,7 +62,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
     setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace | null, isCpuProfile?: boolean): void;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null): void;
-    updateLinkSelectionAnnotation(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryIndex: number): void;
+    updateLinkSelectionAnnotationWithToEntry(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryIndex: number): void;
     private onEntryHovered;
     highlightEvent(event: Trace.Types.Events.Event | null): void;
     willHide(): void;
@@ -86,7 +81,12 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     updateExistingOverlay<T extends Overlays.Overlays.TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
     enterLabelEditMode(overlay: Overlays.Overlays.EntryLabel): void;
     private onAddEntryLabelAnnotation;
-    onEntriesLinkAnnotationCreate(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryFromIndex: number): void;
+    onEntriesLinkAnnotationCreate(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryFromIndex: number, linkCreateButton?: boolean): void;
+    /**
+     * This is invoked when the user uses their KEYBOARD ONLY to navigate between
+     * events.
+     * It IS NOT called when the user uses the mouse. See `onEntryInvoked`.
+     */
     private onEntrySelected;
     handleToEntryOfLinkBetweenEntriesSelection(toIndex: number): void;
     resizeToPreferredHeights(): void;

@@ -129,11 +129,23 @@ describeWithEnvironment('MarkdownView', () => {
     describe('MarkdownInsightRenderer renderToken', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
         it('renders link as an x-link', () => {
-            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'exampleLink' });
+            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'https://example.com' });
             assert(result.values[0].tagName === 'X-LINK');
         });
+        it('does not render URLs with "javascript:"', () => {
+            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'javascript:alert("test")' });
+            assert(result.values[0] === undefined);
+        });
+        it('does not render chrome:// URLs', () => {
+            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'chrome://settings' });
+            assert(result.values[0] === undefined);
+        });
+        it('does not render invalid URLs', () => {
+            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: '123' });
+            assert(result.values[0] === undefined);
+        });
         it('renders images as an x-link', () => {
-            const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'exampleLink' });
+            const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'https://example.com' });
             assert(result.values[0].tagName === 'X-LINK');
         });
         it('renders headers as a strong element', () => {

@@ -40,7 +40,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         mockMatchedStyles.computeCSSVariable.callsFake((style, name) => {
             return {
                 value: mockVariableMap[name],
-                declaration: sinon.createStubInstance(SDK.CSSProperty.CSSProperty),
+                declaration: new SDK.CSSMatchedStyles.CSSValueSource(sinon.createStubInstance(SDK.CSSProperty.CSSProperty)),
             };
         });
         mockCssStyleDeclaration.leadingProperties.returns([]);
@@ -305,8 +305,11 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
     describe('custom-properties', () => {
         it('linkifies var functions to declarations', async () => {
             const cssCustomPropertyDef = new SDK.CSSProperty.CSSProperty(mockCssStyleDeclaration, 0, '--prop', 'value', true, false, true, false, '', undefined);
-            mockMatchedStyles.computeCSSVariable.callsFake((_, name) => name === '--prop' ?
-                { value: 'computedvalue', declaration: cssCustomPropertyDef, fromFallback: false } :
+            mockMatchedStyles.computeCSSVariable.callsFake((_, name) => name === '--prop' ? {
+                value: 'computedvalue',
+                declaration: new SDK.CSSMatchedStyles.CSSValueSource(cssCustomPropertyDef),
+                fromFallback: false,
+            } :
                 null);
             const renderValueSpy = sinon.spy(Elements.PropertyRenderer.Renderer, 'renderValueElement');
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
@@ -325,7 +328,10 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.isTrue(addElementPopoverHook.calledOnce);
             const registration = sinon.createStubInstance(SDK.CSSMatchedStyles.CSSRegisteredProperty);
             mockMatchedStyles.getRegisteredProperty.callsFake(name => name === '--prop' ? registration : undefined);
-            mockMatchedStyles.computeCSSVariable.returns({ value: 'computedvalue', declaration: sinon.createStubInstance(SDK.CSSProperty.CSSProperty) });
+            mockMatchedStyles.computeCSSVariable.returns({
+                value: 'computedvalue',
+                declaration: new SDK.CSSMatchedStyles.CSSValueSource(sinon.createStubInstance(SDK.CSSProperty.CSSProperty)),
+            });
             const popoverContents = addElementPopoverHook.args[0][1].contents();
             assert.isTrue(popoverContents instanceof ElementsComponents.CSSVariableValueView.CSSVariableValueView);
             const { details } = popoverContents;
@@ -337,7 +343,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         it('linkifies var functions to initial-value registrations', async () => {
             mockMatchedStyles.computeCSSVariable.returns({
                 value: 'computedvalue',
-                declaration: sinon.createStubInstance(SDK.CSSMatchedStyles.CSSRegisteredProperty, { propertyName: '--prop' }),
+                declaration: new SDK.CSSMatchedStyles.CSSValueSource(sinon.createStubInstance(SDK.CSSMatchedStyles.CSSRegisteredProperty, { propertyName: '--prop' })),
             });
             const renderValueSpy = sinon.spy(Elements.PropertyRenderer.Renderer, 'renderValueElement');
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
@@ -1206,6 +1212,44 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             const swatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-length');
             assert.exists(swatch);
+        });
+    });
+    describe('CSSWideKeywordRenderer', () => {
+        function mockResolvedKeyword(propertyName, keyword, propertyValue = '') {
+            const originalDeclaration = sinon.createStubInstance(SDK.CSSProperty.CSSProperty);
+            mockMatchedStyles.resolveGlobalKeyword.callsFake((property, keyword) => property.name === propertyName && property.value === keyword ?
+                new SDK.CSSMatchedStyles.CSSValueSource(originalDeclaration) :
+                null);
+            originalDeclaration.name = propertyName;
+            originalDeclaration.value = propertyValue;
+            originalDeclaration.ownerStyle = sinon.createStubInstance(SDK.CSSStyleDeclaration.CSSStyleDeclaration);
+            return originalDeclaration;
+        }
+        it('linkifies keywords to the referenced declarations', () => {
+            const keyword = SDK.CSSMetadata.CSSWideKeywords[0];
+            const originalDeclaration = mockResolvedKeyword('width', keyword);
+            const stylePropertyTreeElement = getTreeElement(originalDeclaration.name, keyword);
+            stylePropertyTreeElement.updateTitle();
+            const linkSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch');
+            assert.isOk(linkSwatch);
+            const spy = sinon.spy(stylePropertyTreeElement.parentPane(), 'revealProperty');
+            linkSwatch.shadowRoot?.querySelector('devtools-base-link-swatch')?.shadowRoot?.querySelector('button')?.click();
+            assert.isTrue(spy.calledOnceWithExactly(originalDeclaration));
+        });
+        it('shows non-existant referenced declarations as unlinked', () => {
+            const stylePropertyTreeElement = getTreeElement('width', SDK.CSSMetadata.CSSWideKeywords[0]);
+            stylePropertyTreeElement.updateTitle();
+            const linkSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch');
+            assert.isNotOk(linkSwatch);
+        });
+        it('renders colors', () => {
+            const keyword = SDK.CSSMetadata.CSSWideKeywords[0];
+            const originalDeclaration = mockResolvedKeyword('color', keyword, 'red');
+            const stylePropertyTreeElement = getTreeElement(originalDeclaration.name, keyword);
+            stylePropertyTreeElement.updateTitle();
+            const colorSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-swatch');
+            assert.isOk(colorSwatch);
+            assert.strictEqual(colorSwatch.getColor()?.asString(), 'red');
         });
     });
     describe('Autocompletion', function () {

@@ -148,6 +148,9 @@ export class Settings {
     }
     /**
      * Get setting via key, and create a new setting if the requested setting does not exist.
+     * @param {string} key kebab-case string ID
+     * @param {T} defaultValue
+     * @param {SettingStorageType=} storageType If not specified, SettingStorageType.GLOBAL is used.
      */
     createSetting(key, defaultValue, storageType) {
         const storage = this.storageFromType(storageType);

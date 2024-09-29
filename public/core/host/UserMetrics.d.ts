@@ -624,7 +624,6 @@ export declare const enum IssueOpener {
  * gaps are expected.
  */
 export declare enum DevtoolsExperiments {
-    'apply-custom-stylesheet' = 0,
     'capture-node-creation-stacks' = 1,
     'live-heap-profile' = 11,
     'protocol-monitor' = 13,
@@ -654,7 +653,6 @@ export declare enum DevtoolsExperiments {
     'perf-panel-annotations' = 94,
     'timeline-rpp-sidebar' = 95,
     'timeline-observations' = 96,
-    'gen-ai-settings-panel' = 97,
     'timeline-server-timings' = 98,
     'timeline-layout-shift-details' = 99,
     'extension-storage-viewer' = 100,

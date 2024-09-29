@@ -7,16 +7,11 @@ export function deps() {
     return ['Meta', 'UserInteractions'];
 }
 export function generateInsight(parsedTrace, context) {
-    // TODO(crbug.com/366049346)
-    if (!context.navigation) {
-        return { mobileOptimized: null };
-    }
     const compositorEvents = parsedTrace.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {
         if (event.args.frame !== context.frameId) {
             return false;
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, parsedTrace.Meta.navigationsByFrameId);
-        return navigation === context.navigation;
+        return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
     if (!compositorEvents.length) {
         // Trace doesn't have the data we need.
@@ -29,8 +24,7 @@ export function generateInsight(parsedTrace, context) {
         if (event.args.data.frame !== context.frameId) {
             return false;
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(event, context.frameId, parsedTrace.Meta.navigationsByFrameId);
-        return navigation === context.navigation;
+        return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
     // Returns true only if all events are mobile optimized.
     for (const event of compositorEvents) {

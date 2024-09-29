@@ -15,6 +15,7 @@ export declare const enum StepMode {
     STEP_OUT = "StepOut",
     STEP_OVER = "StepOver"
 }
+export declare const WASM_SYMBOLS_PRIORITY: Protocol.Debugger.DebugSymbolsType[];
 export declare class DebuggerModel extends SDKModel<EventTypes> {
     #private;
     readonly agent: ProtocolProxyApi.DebuggerApi;
@@ -22,6 +23,7 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     continueToLocationCallback: ((arg0: DebuggerPausedDetails) => boolean) | null;
     evaluateOnCallFrameCallback: ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult | null>) | null;
     constructor(target: Target);
+    static selectSymbolSource(debugSymbols: Protocol.Debugger.DebugSymbols[] | null): Protocol.Debugger.DebugSymbols | null;
     sourceMapManager(): SourceMapManager<Script>;
     runtimeModel(): RuntimeModel;
     debuggerEnabled(): boolean;
@@ -73,7 +75,7 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     setSynchronizeBreakpointsCallback(callback: ((script: Script) => Promise<void>) | null): void;
     pausedScript(callFrames: Protocol.Debugger.CallFrame[], reason: Protocol.Debugger.PausedEventReason, auxData: Object | undefined, breakpointIds: string[], asyncStackTrace?: Protocol.Runtime.StackTrace, asyncStackTraceId?: Protocol.Runtime.StackTraceId): Promise<void>;
     resumedScript(): void;
-    parsedScriptSource(scriptId: Protocol.Runtime.ScriptId, sourceURL: Platform.DevToolsPath.UrlString, startLine: number, startColumn: number, endLine: number, endColumn: number, executionContextId: number, hash: string, executionContextAuxData: any, isLiveEdit: boolean, sourceMapURL: string | undefined, hasSourceURLComment: boolean, hasSyntaxError: boolean, length: number, isModule: boolean | null, originStackTrace: Protocol.Runtime.StackTrace | null, codeOffset: number | null, scriptLanguage: string | null, debugSymbols: Protocol.Debugger.DebugSymbols | null, embedderName: Platform.DevToolsPath.UrlString | null): Script;
+    parsedScriptSource(scriptId: Protocol.Runtime.ScriptId, sourceURL: Platform.DevToolsPath.UrlString, startLine: number, startColumn: number, endLine: number, endColumn: number, executionContextId: number, hash: string, executionContextAuxData: any, isLiveEdit: boolean, sourceMapURL: string | undefined, hasSourceURLComment: boolean, hasSyntaxError: boolean, length: number, isModule: boolean | null, originStackTrace: Protocol.Runtime.StackTrace | null, codeOffset: number | null, scriptLanguage: string | null, debugSymbols: Protocol.Debugger.DebugSymbols[] | null, embedderName: Platform.DevToolsPath.UrlString | null): Script;
     setSourceMapURL(script: Script, newSourceMapURL: Platform.DevToolsPath.UrlString): void;
     setDebugInfoURL(script: Script, _externalURL: Platform.DevToolsPath.UrlString): Promise<void>;
     executionContextDestroyed(executionContext: ExecutionContext): void;

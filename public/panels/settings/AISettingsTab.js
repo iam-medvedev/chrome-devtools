@@ -16,7 +16,7 @@ const UIStrings = {
     /**
      *@description Header text for for a list of things to consider in the context of generative AI features
      */
-    boostYourProductivity: 'Boost your productivity with Chrome AI',
+    boostYourProductivity: 'Boost your productivity with AI',
     /**
      *@description Text announcing a list of facts to consider (when using a GenAI feature)
      */
@@ -24,19 +24,19 @@ const UIStrings = {
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    experimentalFeatures: 'These features are experimental. They use generative AI and may provide inaccurate or offensive information that does not represent Google’s views.',
+    experimentalFeatures: 'These features are experimental. They use generative AI and may provide inaccurate or offensive information that doesn’t represent Google’s views.',
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    sendsDataToGoogle: 'Using these features sends data relevant for the feature to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information.',
+    sendsDataToGoogle: 'These features send relevant data to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information.',
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    retainData: 'Usage data will be retained for up to 18 months and stored in a way where Google cannot tell who provided it.',
+    retainData: 'Usage data will be retained for up to 18 months and stored in such a way that Google can’t tell who provided it.',
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    adminSettings: 'Depending on your Google account management and/or region, Google may refrain from data collection. Depending on their organization’s settings, features available to managed users may vary.',
+    adminSettings: 'Depending on your Google account management and/or region, Google may refrain from data collection. Depending on your organization’s settings, features available to managed users may vary.',
     /**
      *@description Text describing the 'Console Insights' feature
      */
@@ -76,7 +76,7 @@ const UIStrings = {
      */
     generatedSnippets: 'Use generated code snippets with caution',
     /**
-     *@description Text describing the 'AI assistant' feature
+     *@description Text describing the 'AI assistance' feature
      */
     helpUnderstandStyling: 'Helps you understand and fix styling issues',
     /**
@@ -84,15 +84,15 @@ const UIStrings = {
      */
     learnMore: 'Learn more',
     /**
-     *@description Description of the AI assistant feature
+     *@description Description of the AI assistance feature
      */
     explainStyling: 'Get explanations and additional context for styling behaviors',
     /**
-     *@description Description of the AI assistant feature
+     *@description Description of the AI assistance feature
      */
     receiveStylingSuggestions: 'Receive suggestions and code samples for fixing styling issues',
     /**
-     *@description Explainer for which data is being sent by the AI assistant feature
+     *@description Explainer for which data is being sent by the AI assistance feature
      */
     freestylerSendsData: 'Any data the inspected page can access via Web APIs may be sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature.',
     /**
@@ -108,17 +108,17 @@ const UIStrings = {
      */
     oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect.',
     /**
-     *@description Header for the Chrome AI settings page
+     *@description Header for the AI innovations settings page
      */
-    chromeAi: 'Chrome AI',
+    aiInnovations: 'AI innovations',
     /**
      *@description Label for a toggle to enable the Console Insights feature
      */
     enableConsoleInsights: 'Enable Console Insights',
     /**
-     *@description Label for a toggle to enable the AI assistant feature
+     *@description Label for a toggle to enable the AI assistance feature
      */
-    enableAiAssistant: 'Enable AI assistant',
+    enableAiAssistance: 'Enable AI assistance',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/AISettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -344,7 +344,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
           <${IconButton.Icon.Icon.litTagName} name="pen-spark"></${IconButton.Icon.Icon.litTagName}>
         </div>
         <div class="setting-card">
-          <h2>${i18n.i18n.lockedString('AI assistant')}</h2>
+          <h2>${i18n.i18n.lockedString('AI assistance')}</h2>
           <div class="setting-description">${i18nString(UIStrings.helpUnderstandStyling)}</div>
         </div>
         <div class="dropdown centered">
@@ -367,7 +367,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
           .disabled=${this.#freestylerSetting?.disabled()}
           title=${this.#freestylerSetting?.disabledReason()}
           @switchchange=${this.#toggleFreestylerSetting.bind(this)}
-          aria-label=${this.#freestylerSetting?.disabledReason() || i18nString(UIStrings.enableAiAssistant)}
+          aria-label=${this.#freestylerSetting?.disabledReason() || i18nString(UIStrings.enableAiAssistance)}
         ></${Switch.Switch.Switch.litTagName}>
       </div>
       <div class=${LitHtml.Directives.classMap(detailsClasses)}>
@@ -405,7 +405,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         // clang-format off
         LitHtml.render(LitHtml.html `
       <header>
-        <h1>${i18nString(UIStrings.chromeAi)}</h1>
+        <h1>${i18nString(UIStrings.aiInnovations)}</h1>
       </header>
       <div class="settings-container-wrapper" jslog=${VisualLogging.pane('chrome-ai')}>
         ${this.#renderSharedDisclaimer()}

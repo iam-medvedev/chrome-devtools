@@ -1,35 +1,28 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Trace from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Insights from './insights/insights.js';
 import styles from './sidebarInsightsTab.css.js';
-import { SidebarSingleNavigation } from './SidebarSingleNavigation.js';
-export var InsightsCategories;
-(function (InsightsCategories) {
-    InsightsCategories["ALL"] = "All";
-    InsightsCategories["INP"] = "INP";
-    InsightsCategories["LCP"] = "LCP";
-    InsightsCategories["CLS"] = "CLS";
-    InsightsCategories["OTHER"] = "Other";
-})(InsightsCategories || (InsightsCategories = {}));
+import { SidebarSingleInsightSet } from './SidebarSingleInsightSet.js';
 export class SidebarInsightsTab extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-insights`;
     #boundRender = this.#render.bind(this);
     #shadow = this.attachShadow({ mode: 'open' });
     #parsedTrace = null;
     #insights = null;
-    #insightSets = null;
     #activeInsight = null;
-    #selectedCategory = InsightsCategories.ALL;
+    #selectedCategory = Insights.Types.Category.ALL;
     /**
-     * When a trace has multiple navigations, we show an accordion with each
-     * navigation in. You can only have one of these open at any time, and we
-     * track it via this ID.
+     * When a trace has sets of insights, we show an accordion with each
+     * set within. A set can be specific to a single navigation, or include the
+     * beginning of the trace up to the first navigation.
+     * You can only have one of these open at any time, and we track it via this ID.
      */
-    #activeNavigationId = null;
+    #insightSetKey = null;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
     }
@@ -38,29 +31,30 @@ export class SidebarInsightsTab extends HTMLElement {
             return;
         }
         this.#parsedTrace = data;
-        this.#activeNavigationId = null;
+        this.#insightSetKey = null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set insights(data) {
         if (data === this.#insights) {
             return;
         }
+        // TODO(crbug.com/366049346): move "shouldShow" logic to insight result (rather than the component),
+        // and if none are visible, exclude it here.
         this.#insights = data;
-        this.#insightSets = [];
-        this.#activeNavigationId = null;
+        this.#insightSetKey = null;
         if (!this.#insights || !this.#parsedTrace) {
             return;
         }
-        for (const insightSets of this.#insights.values()) {
-            // TODO(crbug.com/366049346): move "shouldShow" logic to insight result (rather than the component),
-            // and if none are visible, don't push the insight set.
-            this.#insightSets.push({
-                id: insightSets.id,
-                label: insightSets.label,
-            });
-        }
-        // TODO(crbug.com/366049346): skip the first insight set if trivial.
-        this.#activeNavigationId = this.#insightSets[0]?.id ?? null;
+        // Select by default the first non-trivial insight set:
+        // - greater than 5s in duration
+        // - or, has a navigation
+        // In practice this means selecting either the first or the second insight set.
+        const trivialThreshold = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(5000));
+        const insightSets = [...this.#insights.values()];
+        this.#insightSetKey =
+            insightSets.find(insightSet => insightSet.navigation || insightSet.bounds.range > trivialThreshold)?.id
+                // If everything is "trivial", just select the first one.
+                ?? insightSets[0]?.id ?? null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set activeInsight(active) {
@@ -76,34 +70,35 @@ export class SidebarInsightsTab extends HTMLElement {
         this.#selectedCategory = value;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
-    #navigationClicked(id) {
-        // New navigation clicked. Update the active insight.
-        if (id !== this.#activeInsight?.navigationId) {
+    #insightSetClicked(id) {
+        // Update the active insight set.
+        if (id !== this.#activeInsight?.insightSetKey) {
             this.dispatchEvent(new Insights.SidebarInsight.InsightDeactivated());
         }
-        this.#activeNavigationId = id;
+        this.#insightSetKey = id;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
-    #navigationHovered(id) {
+    #insightSetHovered(id) {
         const data = this.#insights?.get(id);
-        data && this.dispatchEvent(new Insights.SidebarInsight.NavigationBoundsHovered(data.bounds));
+        data && this.dispatchEvent(new Insights.SidebarInsight.InsightSetHovered(data.bounds));
     }
-    #navigationUnhovered() {
-        this.dispatchEvent(new Insights.SidebarInsight.NavigationBoundsHovered());
+    #insightSetUnhovered() {
+        this.dispatchEvent(new Insights.SidebarInsight.InsightSetHovered());
     }
+    // TODO(crbug.com/368170718): use a shorter label for each insight set/url when possible.
     #render() {
-        if (!this.#parsedTrace || !this.#insights || !this.#insightSets) {
+        if (!this.#parsedTrace || !this.#insights) {
             LitHtml.render(LitHtml.nothing, this.#shadow, { host: this });
             return;
         }
-        const hasMultipleInsightSets = this.#insightSets.length > 1;
+        const hasMultipleInsightSets = this.#insights.size > 1;
         // clang-format off
         const html = LitHtml.html `
       <select class="chrome-select insights-category-select"
         @change=${this.#onCategoryDropdownChange}
         jslog=${VisualLogging.dropDown('timeline.sidebar-insights-category-select').track({ click: true })}
       >
-        ${Object.values(InsightsCategories).map(insightsCategory => {
+        ${Object.values(Insights.Types.Category).map(insightsCategory => {
             return LitHtml.html `
             <option value=${insightsCategory}>
               ${insightsCategory}
@@ -112,29 +107,28 @@ export class SidebarInsightsTab extends HTMLElement {
         })}
       </select>
 
-      <div class="navigations-wrapper">
-        ${this.#insightSets.map(({ id, label }) => {
+      <div class="insight-sets-wrapper">
+        ${[...this.#insights.values()].map(({ id, label }) => {
             const data = {
                 parsedTrace: this.#parsedTrace,
                 insights: this.#insights,
-                navigationId: id, // TODO(crbug.com/366049346): rename `navigationId`.
+                insightSetKey: id,
                 activeCategory: this.#selectedCategory,
                 activeInsight: this.#activeInsight,
             };
             const contents = LitHtml.html `
-            <${SidebarSingleNavigation.litTagName}
+            <${SidebarSingleInsightSet.litTagName}
               .data=${data}>
-            </${SidebarSingleNavigation.litTagName}>
+            </${SidebarSingleInsightSet.litTagName}>
           `;
             if (hasMultipleInsightSets) {
                 return LitHtml.html `<details
-              ?open=${id === this.#activeNavigationId}
-              class="navigation-wrapper"
+              ?open=${id === this.#insightSetKey}
             >
               <summary
-                @click=${() => this.#navigationClicked(id)}
-                @mouseenter=${() => this.#navigationHovered(id)}
-                @mouseleave=${() => this.#navigationUnhovered()}
+                @click=${() => this.#insightSetClicked(id)}
+                @mouseenter=${() => this.#insightSetHovered(id)}
+                @mouseleave=${() => this.#insightSetUnhovered()}
                 >${label}</summary>
               ${contents}
             </details>`;

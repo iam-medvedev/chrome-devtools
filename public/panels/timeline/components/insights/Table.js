@@ -8,25 +8,26 @@ export class Table extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-table`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
+    #insight;
+    #state;
     #headers;
     #rows;
-    #onHoverRowCallback;
-    #onClickRowCallback;
-    #onMouseLeaveCallback;
+    #interactive = false;
     #currentHoverIndex = null;
     set data(data) {
+        this.#insight = data.insight;
+        this.#state = data.insight.sharedTableState;
         this.#headers = data.headers;
         this.#rows = data.rows;
-        this.#onHoverRowCallback = data.onHoverRow;
-        this.#onClickRowCallback = data.onClickRow;
-        this.#onMouseLeaveCallback = data.onMouseLeave;
+        // If this table isn't interactive, don't attach mouse listeners or use CSS :hover.
+        this.#interactive = this.#rows.some(row => row.overlays);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets.push(tableStyles);
     }
     #onHoverRow(e) {
-        if (!this.#onHoverRowCallback || !(e.target instanceof HTMLElement)) {
+        if (!(e.target instanceof HTMLElement)) {
             return;
         }
         const rowEl = e.target.closest('tr');
@@ -38,10 +39,11 @@ export class Table extends HTMLElement {
             return;
         }
         this.#currentHoverIndex = index;
-        this.#onHoverRowCallback(index, rowEl);
+        // Temporarily selects the row, but only if there is not already a sticky selection.
+        this.#onSelectedRowChanged(rowEl, index, { isHover: true });
     }
     #onClickRow(e) {
-        if (!this.#onClickRowCallback || !(e.target instanceof HTMLElement)) {
+        if (!(e.target instanceof HTMLElement)) {
             return;
         }
         const rowEl = e.target.closest('tr');
@@ -52,14 +54,39 @@ export class Table extends HTMLElement {
         if (index === -1) {
             return;
         }
-        this.#onClickRowCallback(index, rowEl);
+        // Select the row and make it sticky.
+        this.#onSelectedRowChanged(rowEl, index, { sticky: true });
     }
     #onMouseLeave() {
-        if (!this.#onMouseLeaveCallback) {
+        this.#currentHoverIndex = null;
+        // Unselect the row, unless it's sticky.
+        this.#onSelectedRowChanged(null, null);
+    }
+    #onSelectedRowChanged(rowEl, rowIndex, opts = {}) {
+        if (!this.#rows || !this.#state || !this.#insight) {
             return;
         }
-        this.#currentHoverIndex = null;
-        this.#onMouseLeaveCallback();
+        if (this.#state.selectionIsSticky && !opts.sticky) {
+            return;
+        }
+        // Unselect a sticky-selection when clicking it for a second time.
+        if (this.#state.selectionIsSticky && rowEl === this.#state.selectedRowEl) {
+            rowEl = null;
+            opts.sticky = false;
+        }
+        if (rowEl && rowIndex !== null) {
+            const overlays = this.#rows[rowIndex].overlays;
+            if (overlays) {
+                this.#insight.toggleTemporaryOverlays(overlays, { updateTraceWindow: !opts.isHover });
+            }
+        }
+        else {
+            this.#insight.toggleTemporaryOverlays(null);
+        }
+        this.#state.selectedRowEl?.classList.remove('selected');
+        rowEl?.classList.add('selected');
+        this.#state.selectedRowEl = rowEl;
+        this.#state.selectionIsSticky = opts.sticky ?? false;
     }
     async #render() {
         if (!this.#headers || !this.#rows) {
@@ -67,20 +94,20 @@ export class Table extends HTMLElement {
         }
         LitHtml.render(LitHtml.html `<table
           class=${LitHtml.Directives.classMap({
-            hoverable: Boolean(this.#onHoverRowCallback),
+            interactive: this.#interactive,
         })}
-          @mouseleave=${this.#onMouseLeaveCallback ? this.#onMouseLeave : null}>
+          @mouseleave=${this.#interactive ? this.#onMouseLeave : null}>
         <thead>
           <tr>
           ${this.#headers.map(h => LitHtml.html `<th scope="col">${h}</th>`)}
           </tr>
         </thead>
         <tbody
-          @mouseover=${this.#onHoverRowCallback ? this.#onHoverRow : null}
-          @click=${this.#onClickRowCallback ? this.#onClickRow : null}
+          @mouseover=${this.#interactive ? this.#onHoverRow : null}
+          @click=${this.#interactive ? this.#onClickRow : null}
         >
           ${this.#rows.map(row => {
-            const rowsEls = row.map((value, i) => i === 0 ? LitHtml.html `<th scope="row">${value}</th>` : LitHtml.html `<td>${value}</td>`);
+            const rowsEls = row.values.map((value, i) => i === 0 ? LitHtml.html `<th scope="row">${value}</th>` : LitHtml.html `<td>${value}</td>`);
             return LitHtml.html `<tr>${rowsEls}</tr>`;
         })}
         </tbody>

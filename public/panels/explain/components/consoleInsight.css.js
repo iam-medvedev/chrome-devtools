@@ -24,7 +24,6 @@ styles.replaceSync(
 }
 
 .wrapper {
-  padding: var(--sys-size-6) var(--sys-size-8);
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 16px;
   /* stylelint-disable-next-line property-no-unknown */
@@ -61,6 +60,7 @@ styles.replaceSync(
 
 .animation-wrapper {
   overflow: hidden;
+  padding: var(--sys-size-6) var(--sys-size-8);
 }
 
 .wrapper.top {
@@ -287,6 +287,7 @@ details {
 
   overflow: hidden;
   height: var(--collapsed-height);
+  margin-top: 10px;
 }
 
 details[open] {

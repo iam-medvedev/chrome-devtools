@@ -148,9 +148,6 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         for (const panel in panels) {
             Object.defineProperty(this, panel, { get: panelGetter.bind(null, panel), enumerable: true });
         }
-        this.applyStyleSheet = function (styleSheet) {
-            extensionServer.sendRequest({ command: "applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */, styleSheet });
-        };
     }
     Panels.prototype = {
         create: function (title, icon, page, callback) {

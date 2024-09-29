@@ -37,9 +37,7 @@ css
             onTextSubmit: noop,
             onInspectElementClick: noop,
             onFeedbackSubmit: noop,
-            onAcceptConsentClick: noop,
             onCancelClick: noop,
-            onFixThisIssueClick: noop,
             onSelectedNetworkRequestClick: noop,
             inspectElementToggled: false,
             state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
@@ -60,7 +58,7 @@ css
                 messages: [
                     {
                         entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
-                        suggestingFix: false,
+                        suggestions: [],
                         steps: [
                             {
                                 isLoading: false,
@@ -79,6 +77,18 @@ css
             renderElementIntoDOM(chat);
             const sideEffect = chat.shadowRoot.querySelector('.side-effect-confirmation');
             assert.exists(sideEffect);
+        });
+        it('shows the consent view', async () => {
+            const props = getProp({
+                state: "consent-view" /* Freestyler.State.CONSENT_VIEW */,
+            });
+            const chat = new Freestyler.FreestylerChatUi(props);
+            renderElementIntoDOM(chat);
+            const optIn = chat.shadowRoot?.querySelector('.opt-in');
+            assert.strictEqual(optIn?.textContent?.trim(), 'Turn on AI assistance in Settings to get help with understanding CSS styles');
+            const chatInput = chat.shadowRoot?.querySelector('.chat-input');
+            assert.isTrue(chatInput.disabled);
+            assert.strictEqual(chatInput.placeholder, 'Follow the steps above to ask a question');
         });
     });
 });
