@@ -16,14 +16,8 @@ export declare class RevealAnnotation extends Event {
     static readonly eventName = "revealannotation";
     constructor(annotation: Trace.Types.File.Annotation);
 }
-export declare class EventReferenceClick extends Event {
-    metricEvent: Trace.Types.Events.Event;
-    static readonly eventName = "sidebarmetricclick";
-    constructor(metricEvent: Trace.Types.Events.Event);
-}
 declare global {
     interface GlobalEventHandlersEventMap {
-        [EventReferenceClick.eventName]: EventReferenceClick;
         [RevealAnnotation.eventName]: RevealAnnotation;
     }
 }

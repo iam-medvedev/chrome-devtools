@@ -11,6 +11,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     get clsValue(): CLSValue | undefined;
     get inpValue(): INPValue | undefined;
     get interactions(): Interaction[];
+    get layoutShifts(): LayoutShift[];
     clearInteractions(): void;
     targetAdded(target: SDK.Target.Target): Promise<void>;
     targetRemoved(target: SDK.Target.Target): Promise<void>;
@@ -29,7 +30,16 @@ export interface INPValue extends MetricValue {
     phases: Spec.INPPhases;
     uniqueInteractionId: Spec.UniqueInteractionId;
 }
-export type CLSValue = MetricValue;
+export interface CLSValue extends MetricValue {
+    clusterShiftIds: Spec.UniqueLayoutShiftId[];
+}
+export interface LayoutShift {
+    score: number;
+    uniqueLayoutShiftId: Spec.UniqueLayoutShiftId;
+    affectedNodes: Array<{
+        node: SDK.DOMModel.DOMNode;
+    }>;
+}
 export declare class Interaction {
     interactionType: Spec.InteractionEvent['interactionType'];
     duration: Spec.InteractionEvent['duration'];
@@ -42,6 +52,7 @@ export interface StatusEvent {
     cls?: CLSValue;
     inp?: INPValue;
     interactions: Interaction[];
+    layoutShifts: LayoutShift[];
 }
 type EventTypes = {
     [Events.STATUS]: StatusEvent;

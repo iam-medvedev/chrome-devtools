@@ -40,6 +40,10 @@ input.inside-datagrid {
 .dt-checkbox-text {
   overflow: hidden;
   text-overflow: ellipsis;
+
+  input:disabled ~ & {
+    opacity: 38%;
+  }
 }
 
 .dt-checkbox-subtitle {

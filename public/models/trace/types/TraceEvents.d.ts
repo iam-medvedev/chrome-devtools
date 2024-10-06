@@ -247,6 +247,7 @@ interface SyntheticArgsData {
     ssl: MicroSeconds;
     stalled: MicroSeconds;
     totalTime: MicroSeconds;
+    /** Server response time (receiveHeadersEnd - sendEnd) */
     waiting: MicroSeconds;
 }
 export interface SyntheticNetworkRequest extends Complete, SyntheticBased<Phase.COMPLETE> {
@@ -670,6 +671,13 @@ export interface SyntheticLayoutShift extends LayoutShift, SyntheticBased<Phase.
     };
     parsedData: LayoutShiftParsedData;
 }
+export declare const NO_NAVIGATION = "NO_NAVIGATION";
+/**
+ * This maybe be a navigation id string from Chromium, or `NO_NAVIGATION`, which represents the
+ * portion of the trace for which we don't have any navigation event for (as it happeneded prior
+ * to the trace start).
+ */
+export type NavigationId = string | typeof NO_NAVIGATION;
 /**
  * This is a synthetic Layout shift cluster. Not based on a raw event as there's no concept
  * of this as a trace event.
@@ -684,7 +692,7 @@ export interface SyntheticLayoutShiftCluster {
         needsImprovement?: TraceWindowMicroSeconds;
         bad?: TraceWindowMicroSeconds;
     };
-    navigationId?: string;
+    navigationId?: NavigationId;
     worstShiftEvent?: Event;
     ts: MicroSeconds;
     dur: MicroSeconds;

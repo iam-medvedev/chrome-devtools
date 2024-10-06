@@ -7,8 +7,7 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
-import discoveryStyles from './lcpDiscovery.css.js';
+import { BaseInsight, eventRef, shortenUrl, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { Category } from './types.js';
 const UIStrings = {
@@ -59,6 +58,7 @@ function getImageData(insights, insightSetKey) {
         shouldRemoveLazyLoading,
         request: insight.lcpRequest,
         discoveryDelay: null,
+        estimatedSavings: insight.metricSavings?.LCP ?? null,
     };
     if (insight.earliestDiscoveryTimeTs && insight.lcpRequest) {
         const discoveryDelay = insight.lcpRequest.ts - insight.earliestDiscoveryTimeTs;
@@ -72,10 +72,6 @@ export class LCPDiscovery extends BaseInsight {
     internalName = 'lcp-discovery';
     userVisibleTitle = i18nString(UIStrings.title);
     description = '';
-    connectedCallback() {
-        super.connectedCallback();
-        this.shadow.adoptedStyleSheets.push(discoveryStyles);
-    }
     #adviceIcon(didFail) {
         const icon = didFail ? 'clear' : 'check-circle';
         return LitHtml.html `
@@ -117,8 +113,33 @@ export class LCPDiscovery extends BaseInsight {
                         showDuration: false,
                     }],
                 entry: imageResults.request,
+                renderLocation: 'ABOVE_EVENT',
             },
         ];
+    }
+    #handleBadImage(event) {
+        const img = event.target;
+        img.style.display = 'none';
+    }
+    #renderImage(imageData) {
+        const name = Common.ParsedURL.ParsedURL.extractName(imageData.request.args.data.url ?? '');
+        const reqElement = eventRef(this, imageData.request, shortenUrl(name));
+        // clang-format off
+        return LitHtml.html `
+      <div class="lcp-element">
+        ${imageData.request.args.data.mimeType.includes('image') ?
+            LitHtml.html `
+        <img
+          class="element-img"
+          src=${imageData.request.args.data.url}
+          @error=${this.#handleBadImage}
+           />` : LitHtml.nothing}
+        <span class="element-img-details">
+          ${reqElement}
+          <span class="element-img-details-size">${Platform.NumberUtilities.bytesToString(imageData.request.args.data.decodedBodyLength ?? 0)}</span>
+        </span>
+      </div>`;
+        // clang-format on
     }
     #renderDiscovery(imageData) {
         // clang-format off
@@ -129,13 +150,13 @@ export class LCPDiscovery extends BaseInsight {
             description: this.description,
             internalName: this.internalName,
             expanded: this.isActive(),
+            estimatedSavingsTime: imageData.estimatedSavings,
         }}
           @insighttoggleclick=${this.onSidebarClick}
         >
           <div slot="insight-content" class="insight-section">
-            <div>
-              ${imageData.discoveryDelay ? LitHtml.html `<div class="discovery-delay">${this.#renderDiscoveryDelay(imageData.discoveryDelay)}</div>` : LitHtml.nothing}
-              <ul class="insight-results insight-icon-results">
+            <div class="insight-results">
+              <ul class="insight-icon-results">
                 <li class="insight-entry">
                   ${this.#adviceIcon(imageData.shouldIncreasePriorityHint)}
                   <span>${i18nString(UIStrings.fetchPriorityApplied)}</span>
@@ -150,15 +171,7 @@ export class LCPDiscovery extends BaseInsight {
                 </li>
               </ul>
             </div>
-
-            <div>
-              <img class="element-img" data-src=${imageData.request.args.data.url} src=${imageData.request.args.data.url}>
-              <div class="element-img-details">
-                ${Common.ParsedURL.ParsedURL.extractName(imageData.request.args.data.url ?? '')}
-                <div class="element-img-details-size">${Platform.NumberUtilities.bytesToString(imageData.request.args.data.decodedBodyLength ?? 0)}</div>
-              </div>
-            </div>
-          </div>
+            ${this.#renderImage(imageData)}
         </${SidebarInsight.SidebarInsight}>
       </div>`;
         // clang-format on

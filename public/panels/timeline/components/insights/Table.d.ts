@@ -1,3 +1,4 @@
+import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { type BaseInsight } from './Helpers.js';
 /**
@@ -26,7 +27,7 @@ export interface TableData {
     rows: TableDataRow[];
 }
 export type TableDataRow = {
-    values: string[];
+    values: Array<string | LitHtml.LitTemplate>;
     overlays?: Overlays.Overlays.TimelineOverlay[];
 };
 export declare class Table extends HTMLElement {

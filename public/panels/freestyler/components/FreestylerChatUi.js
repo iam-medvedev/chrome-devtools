@@ -12,13 +12,14 @@ import * as Spinners from '../../../ui/components/spinners/spinners.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import { PanelUtils } from '../../utils/utils.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
 import { ProvideFeedback } from './ProvideFeedback.js';
 const UIStrings = {
     /**
      * @description The error message when the user is not logged in into Chrome.
      */
-    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account',
+    notLoggedIn: 'This feature is only available when you are signed into Chrome with your Google account',
     /**
      * @description Message shown when the user is offline.
      */
@@ -40,6 +41,15 @@ const UIStrings = {
      *@example {AI assistance in Settings} PH1
      */
     turnOnForStyles: 'Turn on {PH1} to get help with understanding CSS styles',
+    /**
+     *@description Text for asking the user to turn the AI assistance feature in settings first before they are able to use it.
+     *@example {AI assistance in Settings} PH1
+     */
+    turnOnForStylesAndRequests: 'Turn on {PH1} to get help with styles and network requests',
+    /**
+     *@description The footer disclaimer that links to more information about the AI feature.
+     */
+    learnAbout: 'Learn about AI in DevTools',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -52,7 +62,7 @@ const UIStringsNotTranslate = {
     /**
      *@description Disclaimer text right after the chat input.
      */
-    inputDisclaimerForDrJonesNetworkAgent: 'Chat messages and the selected call stack are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
+    inputDisclaimerForDrJonesNetworkAgent: 'Chat messages and the selected network request are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
     /**
      *@description Placeholder text for the chat UI input.
      */
@@ -94,29 +104,21 @@ const UIStringsNotTranslate = {
      */
     stoppedResponse: 'You stopped this response',
     /**
-     * @description Side effect confirmation text
+     * @description Prompt for user to confirm code execution that may affect the page.
      */
-    sideEffectConfirmationDescription: 'The code contains side effects. Do you wish to continue?',
+    sideEffectConfirmationDescription: 'This code may modify page content. Continue?',
     /**
-     * @description Side effect confirmation text for the button that says "Continue"
+     * @description Button text that confirm code execution that may affect the page.
      */
     positiveSideEffectConfirmation: 'Continue',
     /**
-     * @description Side effect confirmation text for the button that says "Cancel"
+     * @description Button text that cancels code execution that may affect the page.
      */
     negativeSideEffectConfirmation: 'Cancel',
     /**
-     *@description Link text for redirecting to feedback form
+     *@description The generic name of the AI agent (do not translate)
      */
-    feedbackLink: 'Send feedback',
-    /**
-     *@description Button text for "Fix this issue" button
-     */
-    fixThisIssue: 'Fix this issue',
-    /**
-     *@description The generic name of the AI assistance (do not translate)
-     */
-    aiAssistance: 'AI assistance',
+    ai: 'AI',
     /**
      *@description The fallback text when we can't find the user full name
      */
@@ -141,18 +143,6 @@ const UIStringsNotTranslate = {
      *@description Heading text for the code block that shows the returned data.
      */
     dataReturned: 'Data returned',
-    /**
-     *@description The footer disclaimer that links to more information about the AI feature.
-     */
-    learnAbout: 'Learn about AI in DevTools',
-    /**
-     * @description Text for a link to Chrome DevTools Settings.
-     */
-    settingsLink: 'AI assistance in Settings',
-    /**
-     * @description Placeholder text for an inactive text field. When active, it's used for the user's input to the GenAI assistance.
-     */
-    followTheSteps: 'Follow the steps above to ask a question',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -344,9 +334,10 @@ export class FreestylerChatUi extends HTMLElement {
         const actionTitle = step.title ?? `${lockedString(UIStringsNotTranslate.investigating)}…`;
         return LitHtml.html `<span class="title">${paused}${actionTitle}</span>`;
     }
-    #renderStepDetails(step, options) {
-        const sideEffects = options.isLast && step.sideEffect ? this.#renderSideEffectConfirmationUi(step) : LitHtml.nothing;
-        const thought = step.thought ? LitHtml.html `<p>${this.#renderTextAsMarkdown(step.thought)}</p>` : LitHtml.nothing;
+    #renderStepCode(step) {
+        if (!step.code && !step.output) {
+            return LitHtml.nothing;
+        }
         // If there is no "output" yet, it means we didn't execute the code yet (e.g. maybe it is still waiting for confirmation from the user)
         // thus we show "Code to execute" text rather than "Code executed" text on the heading of the code block.
         const codeHeadingText = (step.output && !step.canceled) ? lockedString(UIStringsNotTranslate.codeExecuted) :
@@ -358,46 +349,45 @@ export class FreestylerChatUi extends HTMLElement {
         <${MarkdownView.CodeBlock.CodeBlock.litTagName}
           .code=${step.code.trim()}
           .codeLang=${'js'}
-          .displayToolbar=${false}
           .displayNotice=${!Boolean(step.output)}
-          .heading=${{
-            text: codeHeadingText,
-            showCopyButton: true,
-        }}
+          .header=${codeHeadingText}
+          .showCopyButton=${true}
         ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
-    </div>` : LitHtml.nothing;
+    </div>` :
+            LitHtml.nothing;
         const output = step.output ? LitHtml.html `<div class="js-code-output">
       <${MarkdownView.CodeBlock.CodeBlock.litTagName}
         .code=${step.output}
         .codeLang=${'js'}
-        .displayToolbar=${false}
         .displayNotice=${true}
-        .heading=${{
-            text: lockedString(UIStringsNotTranslate.dataReturned),
-            showCopyButton: false,
-        }}
+        .header=${lockedString(UIStringsNotTranslate.dataReturned)}
+        .showCopyButton=${false}
       ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
-    </div>` : LitHtml.nothing;
+    </div>` :
+            LitHtml.nothing;
+        return LitHtml.html `<div class="step-code">${code}${output}</div>`;
+        // clang-format on
+    }
+    #renderStepDetails(step, options) {
+        const sideEffects = options.isLast && step.sideEffect ? this.#renderSideEffectConfirmationUi(step) : LitHtml.nothing;
+        const thought = step.thought ? LitHtml.html `<p>${this.#renderTextAsMarkdown(step.thought)}</p>` : LitHtml.nothing;
+        // clang-format off
         const contextDetails = step.contextDetails && step.contextDetails?.length > 0 ?
             LitHtml.html `${LitHtml.Directives.repeat(step.contextDetails, contextDetail => {
                 return LitHtml.html `<div class="context-details">
         <${MarkdownView.CodeBlock.CodeBlock.litTagName}
           .code=${contextDetail.text}
           .codeLang=${'js'}
-          .displayToolbar=${false}
           .displayNotice=${false}
-          .heading=${{
-                    text: contextDetail.title,
-                    showCopyButton: true,
-                }}
+          .header=${contextDetail.title}
+          .showCopyButton=${true}
         ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
       </div>`;
             })}` : LitHtml.nothing;
         return LitHtml.html `<div class="step-details">
       ${thought}
-      ${code}
+      ${this.#renderStepCode(step)}
       ${sideEffects}
-      ${output}
       ${contextDetails}
     </div>`;
         // clang-format on
@@ -503,30 +493,30 @@ export class FreestylerChatUi extends HTMLElement {
             .name=${'profile'}
           ></${IconButton.Icon.Icon.litTagName}>`;
             // clang-format off
-            return LitHtml.html `<div
+            return LitHtml.html `<section
         class="chat-message query"
         jslog=${VisualLogging.section('question')}
       >
         <div class="message-info">
           ${image}
           <div class="message-name">
-            <span>${name}</span>
+            <h2>${name}</h2>
           </div>
         </div>
         <div class="message-content">${this.#renderTextAsMarkdown(message.text)}</div>
-      </div>`;
+      </section>`;
             // clang-format on
         }
-        const shouldShowSuggestions = (isLast && !this.#props.isLoading && message.suggestions?.length > 0);
+        const shouldShowSuggestions = (isLast && !this.#props.isLoading && message.suggestions && message.suggestions?.length > 0);
         // clang-format off
         return LitHtml.html `
-      <div class="chat-message answer" jslog=${VisualLogging.section('answer')}>
+      <section class="chat-message answer" jslog=${VisualLogging.section('answer')}>
         <div class="message-info">
           <${IconButton.Icon.Icon.litTagName}
             name="smart-assistant"
           ></${IconButton.Icon.Icon.litTagName}>
           <div class="message-name">
-            <span>${lockedString(UIStringsNotTranslate.aiAssistance)}</span>
+            <h2>${lockedString(UIStringsNotTranslate.ai)}</h2>
           </div>
         </div>
         ${LitHtml.Directives.repeat(message.steps, (_, index) => index, step => {
@@ -544,7 +534,7 @@ export class FreestylerChatUi extends HTMLElement {
             : LitHtml.nothing}
           ${shouldShowSuggestions ?
             LitHtml.html `<div class="suggestions">
-              ${message.suggestions.map(suggestion => LitHtml.html `<${Buttons.Button.Button.litTagName}
+              ${message.suggestions?.map(suggestion => LitHtml.html `<${Buttons.Button.Button.litTagName}
                   .data=${{
                 variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
                 jslogContext: 'fix-this-issue',
@@ -553,7 +543,7 @@ export class FreestylerChatUi extends HTMLElement {
                 >${suggestion}</${Buttons.Button.Button.litTagName}>`)}
             </div>` : LitHtml.nothing}
         </div>
-      </div>
+      </section>
     `;
         // clang-format on
     };
@@ -570,13 +560,16 @@ export class FreestylerChatUi extends HTMLElement {
             'not-selected': !this.#props.selectedNetworkRequest,
             'resource-link': true,
         });
+        if (!this.#props.selectedNetworkRequest) {
+            return LitHtml.html `${LitHtml.nothing}`;
+        }
+        const icon = PanelUtils.getIconForNetworkRequest(this.#props.selectedNetworkRequest);
         // clang-format off
         return LitHtml.html `<div class="select-element">
-      <div class=${resourceClass}
-      @click=${this.#props.onSelectedNetworkRequestClick}>
-        <${IconButton.Icon.Icon.litTagName} name="file-script"></${IconButton.Icon.Icon.litTagName}>
-        ${this.#props.selectedNetworkRequest?.name()}
-      </div></div>`;
+    <div class=${resourceClass}
+    @click=${this.#props.onSelectedNetworkRequestClick}>
+      ${icon}${this.#props.selectedNetworkRequest?.name()}
+    </div></div>`;
         // clang-format on
     };
     #renderSelectAnElement = () => {
@@ -609,27 +602,27 @@ export class FreestylerChatUi extends HTMLElement {
     #renderMessages = () => {
         // clang-format off
         return LitHtml.html `
-      <div class="messages-scroll-container" @scroll=${this.#handleScroll}>
+      <main class="messages-scroll-container" @scroll=${this.#handleScroll}>
         <div class="messages-container">
           ${this.#props.messages.map((message, _, array) => this.#renderChatMessage(message, {
             isLast: array.at(-1) === message,
         }))}
         </div>
-      </div>
+      </main>
     `;
         // clang-format on
     };
     #renderEmptyState = () => {
         const suggestions = this.#getSuggestions();
         // clang-format off
-        return LitHtml.html `<div class="empty-state-container messages-scroll-container">
+        return LitHtml.html `<main class="empty-state-container messages-scroll-container">
       <div class="header">
         <div class="icon">
           <${IconButton.Icon.Icon.litTagName}
             name="smart-assistant"
           ></${IconButton.Icon.Icon.litTagName}>
         </div>
-        ${lockedString(UIStringsNotTranslate.emptyStateText)}
+        <h2>${lockedString(UIStringsNotTranslate.emptyStateText)}</h2>
       </div>
       <div class="suggestions">
         ${suggestions.map(suggestion => {
@@ -723,6 +716,7 @@ export class FreestylerChatUi extends HTMLElement {
             void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
         });
         settingsLink.setAttribute('jslog', `${VisualLogging.action('open-ai-settings').track({ click: true })}`);
+        const config = Common.Settings.Settings.instance().getHostConfig();
         // clang-format off
         return LitHtml.html `
       <div class="empty-state-container">
@@ -735,7 +729,9 @@ export class FreestylerChatUi extends HTMLElement {
         }}>
           </div>
           <div>
-            ${i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink })}
+            ${config.devToolsExplainThisResourceDogfood?.enabled ?
+            i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesAndRequests, { PH1: settingsLink }) :
+            i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink })}
           </div>
         </div>
       </div>
@@ -761,8 +757,9 @@ export class FreestylerChatUi extends HTMLElement {
           ${this.#renderChatInput()}
         </form>
         <footer class="disclaimer">
-          <p class="disclaimer-text">${lockedString(this.#getDisclaimerText())} <x-link
-              href="#"
+          <p class="disclaimer-text">
+            ${this.#getDisclaimerText()}
+            <x-link
               class="link"
               jslog=${VisualLogging.link('open-ai-settings').track({
             click: true,
@@ -771,7 +768,7 @@ export class FreestylerChatUi extends HTMLElement {
             event.preventDefault();
             void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
         }}
-            >${lockedString(UIStringsNotTranslate.learnAbout)}</x-link>
+            >${i18nString(UIStrings.learnAbout)}</x-link>
           </p>
         </footer>
       </div>

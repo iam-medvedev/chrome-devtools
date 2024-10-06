@@ -20,14 +20,14 @@ describeWithEnvironment('DocumentLatency', function () {
         assert.strictEqual(insight.data?.redirectDuration, 1779);
         assert.deepEqual(insight.metricSavings, { FCP: 1779, LCP: 1779 });
     });
-    it('reports no savings for server with low response time', async () => {
+    it('reports no savings for server with fast server response time', async () => {
         const { data, insights } = await processTrace(this, 'lantern/paul/trace.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.serverResponseTime, 43);
         assert(!insight.data?.serverResponseTooSlow);
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
     });
-    it('reports savings for server with high response time', async function () {
+    it('reports savings for server with slow server response time', async function () {
         const traceEvents = [...await TraceLoader.rawEvents(this, 'lantern/paul/trace.json.gz')];
         const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
         const mainRequestEventIndex = traceEvents.findIndex(e => e.name === 'ResourceReceiveResponse');
@@ -37,10 +37,10 @@ describeWithEnvironment('DocumentLatency', function () {
         if (!mainRequestEvent.args.data.timing) {
             throw new Error('missing timing field');
         }
-        mainRequestEvent.args.data.timing.receiveHeadersStart =
-            Types.Timing.MilliSeconds(mainRequestEvent.args.data.timing.receiveHeadersStart + 1000);
+        mainRequestEvent.args.data.timing.receiveHeadersEnd =
+            Types.Timing.MilliSeconds(mainRequestEvent.args.data.timing.receiveHeadersEnd + 1000);
         traceEvents[mainRequestEventIndex] = mainRequestEvent;
-        await processor.parse(traceEvents);
+        await processor.parse(traceEvents, { isCPUProfile: false, isFreshRecording: true });
         const data = processor.parsedTrace;
         if (!data) {
             throw new Error('missing parsedTrace');
@@ -68,7 +68,7 @@ describeWithEnvironment('DocumentLatency', function () {
         // Delete content-encoding header.
         mainRequestEvent.args.data.headers = mainRequestEvent.args.data.headers?.filter(h => h.name !== 'content-encoding');
         traceEvents[mainRequestEventIndex] = mainRequestEvent;
-        await processor.parse(traceEvents);
+        await processor.parse(traceEvents, { isCPUProfile: false, isFreshRecording: true });
         const data = processor.parsedTrace;
         if (!data) {
             throw new Error('missing parsedTrace');
@@ -78,6 +78,15 @@ describeWithEnvironment('DocumentLatency', function () {
         const insight = Trace.Insights.InsightRunners.DocumentLatency.generateInsight(data, context);
         assert.strictEqual(insight.data?.uncompressedResponseBytes, 39799);
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
+    });
+    it('reports savings for main document with many issues, many redirects', async () => {
+        const { data, insights } = await processTrace(this, 'many-redirects.json.gz');
+        const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
+        assert.strictEqual(insight.data?.redirectDuration, 6059);
+        assert.strictEqual(insight.data?.uncompressedResponseBytes, 111506);
+        assert.strictEqual(insight.data?.serverResponseTime, 2008);
+        assert(insight.data?.serverResponseTooSlow);
+        assert.deepEqual(insight.metricSavings, { FCP: 7967, LCP: 7967 });
     });
 });
 //# sourceMappingURL=DocumentLatency.test.js.map

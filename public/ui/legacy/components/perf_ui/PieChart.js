@@ -100,6 +100,7 @@ export class PieChart extends HTMLElement {
           </div>
         </div>
         ` : ''}
+      </div>
     `;
         // clang-format on
         render(output, this.shadow, { host: this });

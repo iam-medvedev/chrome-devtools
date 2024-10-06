@@ -1,3 +1,4 @@
+import '../../../ui/legacy/legacy.js';
 interface CSSProperty {
     name: string;
     description?: string;

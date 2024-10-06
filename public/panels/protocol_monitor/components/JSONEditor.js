@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Toolbar.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -863,6 +864,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                   <div class="row-icons">
                       <!-- If an object has no predefined keys, show an input to enter the value, and a delete icon to delete the whole key/value pair -->
                       ${hasNoKeys && isParentObject ? html `
+                      <!-- @ts-ignore -->
                       <devtools-suggestion-input
                           data-paramId=${parameterId}
                           .isCorrectInput=${live(parameter.isCorrectType)}
@@ -887,6 +889,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                     <!-- In case  the parameter is not optional or its value is not undefined render the input -->
                     ${isPrimitive && !hasNoKeys && (!isParamValueUndefined || !isParamOptional) && (!isParentArray) ?
                 html `
+                        <!-- @ts-ignore -->
                         <devtools-suggestion-input
                           data-paramId=${parameterId}
                           .strikethrough=${live(parameter.isCorrectType)}
@@ -925,6 +928,7 @@ let JSONEditor = class JSONEditor extends LitElement {
                     ${isParentArray ? html `
                     <!-- If the parameter is an object we don't want to display the input field we just want the delete button-->
                     ${!isObject ? html `
+                    <!-- @ts-ignore -->
                     <devtools-suggestion-input
                       data-paramId=${parameterId}
                       .options=${hasOptions ? this.#computeDropdownValues(parameter) : []}
@@ -982,13 +986,13 @@ let JSONEditor = class JSONEditor extends LitElement {
     }
 };
 __decorate([
-    property()
+    property({ attribute: false })
 ], JSONEditor.prototype, "metadataByCommand", void 0);
 __decorate([
-    property()
+    property({ attribute: false })
 ], JSONEditor.prototype, "typesByName", void 0);
 __decorate([
-    property()
+    property({ attribute: false })
 ], JSONEditor.prototype, "enumsByName", void 0);
 __decorate([
     state()

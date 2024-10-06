@@ -4,7 +4,7 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsight, EventReferenceClick, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { Category } from './types.js';
 const UIStrings = {
@@ -18,7 +18,16 @@ const UIStrings = {
     /**
      *@description Text indicating the worst layout shift cluster.
      */
-    worstCluster: 'Worst layout shift cluster',
+    worstLayoutShiftCluster: 'Worst layout shift cluster',
+    /**
+     * @description Text indicating the worst layout shift cluster.
+     */
+    worstCluster: 'Worst cluster',
+    /**
+     * @description Text indicating a layout shift cluster and its start time.
+     * @example {32 ms} PH1
+     */
+    layoutShiftCluster: 'Layout shift cluster @ {PH1}',
     /**
      *@description Text indicating the biggest reasons for the layout shifts.
      */
@@ -53,7 +62,7 @@ export class CLSCulprits extends BaseInsight {
         }
         const range = Trace.Types.Timing.MicroSeconds(worstCluster.dur ?? 0);
         const max = Trace.Types.Timing.MicroSeconds(worstCluster.ts + range);
-        const label = LitHtml.html `<div>${i18nString(UIStrings.worstCluster)}</div>`;
+        const label = LitHtml.html `<div>${i18nString(UIStrings.worstLayoutShiftCluster)}</div>`;
         return [{
                 type: 'TIMESPAN_BREAKDOWN',
                 sections: [
@@ -61,48 +70,52 @@ export class CLSCulprits extends BaseInsight {
                 ],
                 // This allows for the overlay to sit over the layout shift.
                 entry: worstCluster.events[0],
+                renderLocation: 'ABOVE_EVENT',
             }];
     }
     /**
-     * getTopCulprits gets the top 3 shift root causes based on clusters.
+     * getTopCulprits gets the top 3 shift root causes based on worst cluster.
      */
-    getTopCulprits(clusters, culpritsByShift) {
+    getTopCulprits(cluster, culpritsByShift) {
         if (!culpritsByShift) {
             return [];
         }
         const MAX_TOP_CULPRITS = 3;
         const causes = [];
-        const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
-        for (const cluster of clustersByScore) {
+        if (causes.length === MAX_TOP_CULPRITS) {
+            return causes;
+        }
+        const shifts = cluster.events;
+        for (const shift of shifts) {
             if (causes.length === MAX_TOP_CULPRITS) {
                 break;
             }
-            const shifts = cluster.events;
-            for (const shift of shifts) {
-                if (causes.length === MAX_TOP_CULPRITS) {
-                    break;
-                }
-                const culprits = culpritsByShift.get(shift);
-                if (!culprits) {
-                    continue;
-                }
-                const fontReq = culprits.fontRequests;
-                const iframes = culprits.iframeIds;
-                const animations = culprits.nonCompositedAnimations;
-                for (let i = 0; i < fontReq.length && causes.length < MAX_TOP_CULPRITS; i++) {
-                    causes.push(i18nString(UIStrings.fontRequest));
-                }
-                for (let i = 0; i < iframes.length && causes.length < MAX_TOP_CULPRITS; i++) {
-                    causes.push(i18nString(UIStrings.injectedIframe));
-                }
-                for (let i = 0; i < animations.length && causes.length < MAX_TOP_CULPRITS; i++) {
-                    causes.push(i18nString(UIStrings.animation));
-                }
+            const culprits = culpritsByShift.get(shift);
+            if (!culprits) {
+                continue;
+            }
+            const fontReq = culprits.fontRequests;
+            const iframes = culprits.iframeIds;
+            const animations = culprits.nonCompositedAnimations;
+            for (let i = 0; i < fontReq.length && causes.length < MAX_TOP_CULPRITS; i++) {
+                causes.push(i18nString(UIStrings.fontRequest));
+            }
+            for (let i = 0; i < iframes.length && causes.length < MAX_TOP_CULPRITS; i++) {
+                causes.push(i18nString(UIStrings.injectedIframe));
+            }
+            for (let i = 0; i < animations.length && causes.length < MAX_TOP_CULPRITS; i++) {
+                causes.push(i18nString(UIStrings.animation));
             }
         }
         return causes.slice(0, MAX_TOP_CULPRITS);
     }
-    #render(culprits) {
+    #clickEvent(event) {
+        this.dispatchEvent(new EventReferenceClick(event));
+    }
+    #render(culprits, worstCluster) {
+        const ts = Trace.Types.Timing.MicroSeconds(worstCluster.ts - (this.data.parsedTrace?.Meta.traceBounds.min ?? 0));
+        const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
+        // TODO(crbug.com/369102516): use Table for hover/click ux.
         // clang-format off
         return LitHtml.html `
         <div class="insights">
@@ -114,14 +127,13 @@ export class CLSCulprits extends BaseInsight {
         }}
             @insighttoggleclick=${this.onSidebarClick}>
                 <div slot="insight-content" class="insight-section">
-                  <p>
-                    <h3>${i18nString(UIStrings.topCulprits)}</h3>
-                    ${culprits.map(culprit => {
+                  <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <span class="devtools-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</span></span>
+                    <p>${i18nString(UIStrings.topCulprits)}:</p>
+                        ${culprits.map(culprit => {
             return LitHtml.html `
-                        <li>${culprit}</li>
-                      `;
+                            <li>${culprit}</li>
+                          `;
         })}
-                  <p>
                 </div>
             </${SidebarInsight.SidebarInsight}>
         </div>`;
@@ -131,13 +143,17 @@ export class CLSCulprits extends BaseInsight {
         const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
         const culpritsByShift = insight?.shifts;
         const clusters = insight?.clusters ?? [];
-        const causes = this.getTopCulprits(clusters, culpritsByShift);
+        if (!clusters.length) {
+            return;
+        }
+        const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
+        const causes = this.getTopCulprits(clustersByScore[0], culpritsByShift);
         const hasCulprits = causes.length > 0;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,
         });
-        const output = hasCulprits && matchesCategory ? this.#render(causes) : LitHtml.nothing;
+        const output = hasCulprits && matchesCategory ? this.#render(causes, clustersByScore[0]) : LitHtml.nothing;
         LitHtml.render(output, this.shadow, { host: this });
     }
 }

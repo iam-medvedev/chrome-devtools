@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../../core/platform/platform.js';
 import * as Marked from '../../../../third_party/marked/marked.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as MarkdownView from '../../../../ui/components/markdown_view/markdown_view.js';
@@ -23,6 +24,7 @@ export class BaseInsight extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     data = {
         insights: null,
+        parsedTrace: null,
         insightSetKey: null,
         activeInsight: null,
         activeCategory: Category.ALL,
@@ -44,6 +46,10 @@ export class BaseInsight extends HTMLElement {
     }
     set insights(insights) {
         this.data.insights = insights;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set parsedTrace(parsedTrace) {
+        this.data.parsedTrace = parsedTrace;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set insightSetKey(insightSetKey) {
@@ -85,9 +91,6 @@ export class BaseInsight extends HTMLElement {
         if (!this.isActive()) {
             return;
         }
-        if (!options) {
-            options = { updateTraceWindow: true };
-        }
         this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(overlays ?? this.getInitialOverlays(), options));
     }
     getInitialOverlays() {
@@ -105,6 +108,24 @@ export class BaseInsight extends HTMLElement {
         });
     }
 }
+// TODO(crbug.com/368170718): consider better treatments for shortening URLs.
+export function shortenUrl(url) {
+    const maxLength = 20;
+    // TODO(crbug.com/368170718): This is something that should only be done if the origin is the same
+    // as the insight set's origin.
+    const elideOrigin = false;
+    if (elideOrigin) {
+        try {
+            url = new URL(url).pathname;
+        }
+        catch {
+        }
+    }
+    if (url.length <= maxLength) {
+        return url;
+    }
+    return Platform.StringUtilities.trimMiddle(url.split('/').at(-1) ?? '', maxLength);
+}
 /**
  * Returns a rendered MarkdownView component.
  *
@@ -116,4 +137,58 @@ export function md(markdown) {
     .data=${{ tokens }}>
   </${MarkdownView.MarkdownView.MarkdownView.litTagName}>`;
 }
+export class EventReferenceClick extends Event {
+    event;
+    static eventName = 'eventreferenceclick';
+    constructor(event) {
+        super(EventReferenceClick.eventName, { bubbles: true, composed: true });
+        this.event = event;
+    }
+}
+class EventRef extends HTMLElement {
+    static litTagName = LitHtml.literal `devtools-performance-event-ref`;
+    #shadow = this.attachShadow({ mode: 'open' });
+    #boundRender = this.#render.bind(this);
+    #baseInsight = null;
+    #text = null;
+    #event = null;
+    connectedCallback() {
+        this.#shadow.adoptedStyleSheets = [sidebarInsightStyles];
+    }
+    set text(text) {
+        this.#text = text;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set baseInsight(baseInsight) {
+        this.#baseInsight = baseInsight;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set event(event) {
+        this.#event = event;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    #render() {
+        if (!this.#baseInsight || !this.#text || !this.#event) {
+            return;
+        }
+        // clang-format off
+        LitHtml.render(LitHtml.html `
+      <span class=devtools-link @click=${(e) => {
+            e.stopPropagation();
+            if (this.#baseInsight && this.#event) {
+                this.#baseInsight.dispatchEvent(new EventReferenceClick(this.#event));
+            }
+        }}>${this.#text}</span>
+    `, this.#shadow, { host: this });
+        // clang-format on
+    }
+}
+export function eventRef(baseInsight, event, text) {
+    return LitHtml.html `<${EventRef.litTagName}
+    .baseInsight=${baseInsight}
+    .event=${event}
+    .text=${text}
+  ></${EventRef.litTagName}>`;
+}
+customElements.define('devtools-performance-event-ref', EventRef);
 //# sourceMappingURL=Helpers.js.map

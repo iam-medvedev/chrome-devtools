@@ -88,10 +88,10 @@ UI.ViewManager.registerViewExtension({
         const Settings = await loadSettingsModule();
         return LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new Settings.AISettingsTab.AISettingsTab());
     },
-    iconName: 'spark',
+    iconName: 'button-magic',
     settings: ['console-insights-enabled'],
     condition: config => {
-        return (config?.devToolsConsoleInsights?.enabled || config?.devToolsFreestylerDogfood?.enabled) ?? false;
+        return (config?.devToolsConsoleInsights?.enabled || config?.devToolsFreestyler?.enabled) ?? false;
     },
 });
 UI.ViewManager.registerViewExtension({

@@ -1,5 +1,5 @@
-import { Types } from './insights.js';
+import * as Trace from '../../trace/trace.js';
 export declare function processTrace(testContext: Mocha.Suite | Mocha.Context | null, traceFile: string): Promise<{
-    data: Readonly<import("../handlers/types.js").EnabledHandlerDataWithMeta<typeof import("../handlers/ModelHandlers.js")>>;
-    insights: Types.TraceInsightSets;
+    data: Readonly<Trace.Handlers.Types.EnabledHandlerDataWithMeta<typeof Trace.Handlers.ModelHandlers>>;
+    insights: Trace.Insights.Types.TraceInsightSets;
 }>;

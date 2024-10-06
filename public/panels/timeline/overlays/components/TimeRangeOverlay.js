@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './timeRangeOverlay.css.js';
 const UIStrings = {
@@ -31,7 +29,6 @@ export class TimeRangeRemoveEvent extends Event {
 export class TimeRangeOverlay extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-time-range-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #duration = null;
     #canvasRect = null;
     #label;
@@ -70,14 +67,14 @@ export class TimeRangeOverlay extends HTMLElement {
             return;
         }
         this.#canvasRect = rect;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        this.#render();
     }
     set duration(duration) {
         if (duration === this.#duration) {
             return;
         }
         this.#duration = duration;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        this.#render();
     }
     /**
      * This calculates how much of the time range is in the user's view. This is
@@ -115,11 +112,16 @@ export class TimeRangeOverlay extends HTMLElement {
         // consistent on both edges of the UI.
         const paddingForScrollbar = 9;
         const overlayRect = this.getBoundingClientRect();
+        const labelFocused = this.#shadow.activeElement === this.#labelBox;
         const labelRect = this.#rangeContainer.getBoundingClientRect();
         const visibleOverlayWidth = this.#visibleOverlayWidth(overlayRect) - paddingForScrollbar;
         const overlayTooNarrow = visibleOverlayWidth <= labelRect.width - paddingForScrollbar;
-        this.#rangeContainer.classList.toggle('labelHidden', overlayTooNarrow);
-        if (overlayTooNarrow) {
+        // We do not hide the label if:
+        // 1. it is focused (user is typing into it)
+        // 2. it is empty - this means it's a new label and we need to let the user type into it!
+        const hideLabel = overlayTooNarrow && !labelFocused && this.#label.length > 0;
+        this.#rangeContainer.classList.toggle('labelHidden', hideLabel);
+        if (hideLabel) {
             // Label is invisible, no need to do all the layout.
             return;
         }
@@ -218,8 +220,6 @@ export class TimeRangeOverlay extends HTMLElement {
         // clang-format off
         LitHtml.render(LitHtml.html `
           <span class="range-container" role="region" aria-label=${i18nString(UIStrings.timeRange)}>
-            <${IconButton.Icon.Icon.litTagName} class="user-created-icon" name='profile'}>
-            </${IconButton.Icon.Icon.litTagName}>
             <span
              class="label-text"
              role="textbox"

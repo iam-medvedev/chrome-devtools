@@ -525,6 +525,7 @@ export class Category extends HTMLElement {
               ` : LitHtml.nothing}
             </div>
             <div class="hide-when-closed">${this.#additionalContent}</div>
+          </div>
         </summary>
         <slot></slot>
       </details>

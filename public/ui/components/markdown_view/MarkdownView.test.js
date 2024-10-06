@@ -50,7 +50,7 @@ describeWithEnvironment('MarkdownView', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownLitRenderer();
         it('wraps paragraph tokens in <p> tags', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'paragraph', tokens: [] }));
-            assert.deepStrictEqual(renderResult.strings.raw, ['<p>', '']);
+            assert.deepStrictEqual(renderResult.strings.raw, ['<p>', '</p>']);
         });
         it('wraps an unordered list token in <ul> tags', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'list', items: [] }));
@@ -58,7 +58,7 @@ describeWithEnvironment('MarkdownView', () => {
         });
         it('wraps list items in <li> tags', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'list_item', tokens: [] }));
-            assert.deepStrictEqual(renderResult.strings.raw, ['<li>', '']);
+            assert.deepStrictEqual(renderResult.strings.raw, ['<li>', '</li>']);
         });
         it('wraps a codespan token in <code> tags', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'codespan', text: 'const foo = 42;' }));

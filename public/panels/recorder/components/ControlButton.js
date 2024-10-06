@@ -45,7 +45,7 @@ __decorate([
     property()
 ], ControlButton.prototype, "shape", void 0);
 __decorate([
-    property()
+    property({ type: Boolean })
 ], ControlButton.prototype, "disabled", void 0);
 ControlButton = __decorate([
     customElement('devtools-control-button')

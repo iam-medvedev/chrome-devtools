@@ -34,40 +34,10 @@ styles.replaceSync(
   flex-direction: column;
 }
 
-.select-element {
-  display: flex;
-  gap: var(--sys-size-3);
-  align-items: center;
-  width: 100%;
-
-  .resource-link {
-    padding: var(--sys-size-2) var(--sys-size-4);
-    font: var(--sys-typescale-body4-size);
-    border: var(--sys-size-1) solid var(--sys-color-divider);
-    border-radius: var(--sys-shape-corner-extra-small);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: var(--sys-size-32);
-    cursor: pointer;
-
-    devtools-icon[name="file-script"] {
-      color: var(--icon-file-script);
-      vertical-align: top;
-      margin-right: var(--sys-size-1);
-    }
-  }
-
-  .resource-link.not-selected {
-    color: var(--sys-color-state-disabled);
-    border-color: var(--sys-color-neutral-outline);
-  }
-}
-
 .input-form {
   display: flex;
   flex-direction: column;
-  padding: var(--sys-size-8) var(--sys-size-4) 0 var(--sys-size-4);
+  padding: var(--sys-size-8) var(--sys-size-5) 0 var(--sys-size-5);
   max-width: var(--sys-size-36);
   width: 100%;
   margin: 0 auto;
@@ -143,12 +113,12 @@ styles.replaceSync(
   overflow: auto;
   flex-grow: 1;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
 }
 
 .messages-container {
   margin: 0 auto;
   max-width: var(--sys-size-36);
-  padding: 0 var(--sys-size-4);
 }
 
 .chat-message {
@@ -180,6 +150,10 @@ styles.replaceSync(
       display: block;
       height: var(--sys-size-9);
       width: var(--sys-size-9);
+    }
+
+    h2 {
+      font: var(--sys-typescale-body4-bold);
     }
   }
 
@@ -226,19 +200,76 @@ styles.replaceSync(
     top: 0;
     visibility: var(--visibility-if-can-scroll, hidden);
     animation-range: var(--sys-size-6) var(--sys-size-11); /* stylelint-disable-line property-no-unknown */
-    background: radial-gradient(farthest-side at 0 50%, var(--app-color-scroll-area-shadow-start), transparent);
+    background:
+      radial-gradient(
+        farthest-side at 0 50%,
+        var(--app-color-scroll-area-shadow-start),
+        transparent
+      );
   }
 
   .suggestions::after {
     bottom: 0;
     visibility: var(--visibility-if-can-scroll, hidden);
     animation-direction: reverse;
-    animation-range: calc(100% - var(--sys-size-11)) calc(100% - var(--sys-size-6)); /* stylelint-disable-line property-no-unknown */
-    background: radial-gradient(farthest-side at 100% 50%, var(--app-color-scroll-area-shadow-start), transparent);
+    /* stylelint-disable-next-line property-no-unknown */
+    animation-range:
+      calc(100% - var(--sys-size-11))
+      calc(100% - var(--sys-size-6));
+    background:
+      radial-gradient(
+        farthest-side at 100% 50%,
+        var(--app-color-scroll-area-shadow-start),
+        transparent
+      );
   }
 
   .aborted {
     color: var(--sys-color-on-surface-subtle);
+  }
+}
+
+.select-element {
+  display: flex;
+  gap: var(--sys-size-3);
+  align-items: center;
+  width: 100%;
+
+  .resource-link {
+    padding: var(--sys-size-2) var(--sys-size-4);
+    font: var(--sys-typescale-body4-size);
+    border: var(--sys-size-1) solid var(--sys-color-divider);
+    border-radius: var(--sys-shape-corner-extra-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: var(--sys-size-32);
+    cursor: pointer;
+
+    .icon {
+      display: inline-flex;
+      vertical-align: top;
+      margin-right: var(--sys-size-3);
+      width: var(--sys-size-9);
+      height: var(--sys-size-9);
+    }
+
+    .image.icon {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: var(--sys-size-3);
+
+      img {
+        max-width: var(--sys-size-8);
+        max-height: var(--sys-size-8);
+      }
+    }
+  }
+
+  .resource-link.not-selected {
+    color: var(--sys-color-state-disabled);
+    border-color: var(--sys-color-neutral-outline);
   }
 }
 
@@ -265,6 +296,24 @@ styles.replaceSync(
     .paused {
       font: var(--sys-typescale-body4-bold);
     }
+  }
+}
+
+.step-code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-2);
+}
+
+.js-code-output {
+  devtools-code-block {
+    --code-block-max-code-height: 50px;
+  }
+}
+
+.context-details {
+  devtools-code-block {
+    --code-block-max-code-height: 80px;
   }
 }
 
@@ -346,9 +395,10 @@ styles.replaceSync(
     padding: 0 var(--sys-size-5) var(--sys-size-4) var(--sys-size-12);
     display: flex;
     flex-direction: column;
+    gap: var(--sys-size-6);
 
-    p {
-      margin-bottom: var(--sys-size-5);
+    devtools-code-block {
+      --code-block-background-color: var(--sys-color-surface1);
     }
   }
 }
@@ -427,6 +477,10 @@ button.link {
           var(--sys-color-gradient-tertiary)
         );
     }
+
+    h2 {
+      font: var(--sys-typescale-headline4);
+    }
   }
 
   .suggestions {
@@ -452,30 +506,17 @@ button.link {
     border-radius: var(--sys-shape-corner-extra-small);
     width: var(--sys-size-9);
     height: var(--sys-size-9);
-    background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
+    background:
+      linear-gradient(
+        135deg,
+        var(--sys-color-gradient-primary),
+        var(--sys-color-gradient-tertiary)
+      );
     margin-right: var(--sys-size-5);
 
     devtools-icon {
       margin: var(--sys-size-2);
     }
-  }
-}
-
-.action-result {
-  /* devtools-code-block adds \\'margin-top: 8px\\' however we want the margin between \\'.action-result\\' and \\'.js-code-output\\' to be 2px
-  that's why we use -6px here. */
-  margin-bottom: -6px;
-}
-
-.js-code-output {
-  devtools-code-block {
-    --max-code-height: 50px;
-  }
-}
-
-.context-details {
-  devtools-code-block {
-    --max-code-height: 80px;
   }
 }
 
@@ -496,8 +537,13 @@ button.link {
 }
 
 @keyframes reveal {
-  0% { opacity: 0%; }
-  100% { opacity: 100%; }
+  0% {
+    opacity: 0%;
+  }
+
+  100% {
+    opacity: 100%;
+  }
 }
 
 @keyframes detect-scroll {

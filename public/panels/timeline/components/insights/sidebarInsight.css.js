@@ -123,11 +123,15 @@ dd.dl-title {
 }
 
 .element-img {
-  max-width: 90%;
+  max-width: 20%;
+  max-height: 20%;
+  padding-inline: var(--sys-size-3);
 }
 
 .element-img-details {
   font: var(--sys-typescale-body4-regular);
+  display: flex;
+  flex-direction: column;
 
   .element-img-details-size {
     color: var(--color-text-secondary);
@@ -140,6 +144,7 @@ dd.dl-title {
 
 .insight-savings {
   font-weight: var(--ref-typeface-weight-bold);
+  color: var(--sys-color-green);
 }
 
 ul.insight-icon-results {
@@ -160,17 +165,6 @@ ul.insight-icon-results {
   }
 }
 
-ul.url-list {
-  list-style-position: inside;
-  padding: 0;
-
-  li {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
 .devtools-link {
   cursor: pointer;
   text-decoration: underline;
@@ -179,6 +173,20 @@ ul.url-list {
 
 .devtools-link.invalid-link {
   color: var(--sys-color-state-disabled);
+}
+
+.lcp-element {
+  display: inline-flex;
+  align-items: center;
+}
+
+.insight-results:not(:last-child) {
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding-bottom: var(--sys-size-5);
+}
+
+.lcp-element:not(:empty) {
+  padding: inherit;
 }
 
 /*# sourceURL=sidebarInsight.css */

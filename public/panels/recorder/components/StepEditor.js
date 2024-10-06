@@ -411,7 +411,7 @@ let RecorderSelectorPickerButton = class RecorderSelectorPickerButton extends Li
     }
 };
 __decorate([
-    property()
+    property({ type: Boolean })
 ], RecorderSelectorPickerButton.prototype, "disabled", void 0);
 RecorderSelectorPickerButton = __decorate([
     customElement('devtools-recorder-selector-picker-button')
@@ -1010,10 +1010,10 @@ __decorate([
     state()
 ], StepEditor.prototype, "error", void 0);
 __decorate([
-    property()
+    property({ type: Boolean })
 ], StepEditor.prototype, "isTypeEditable", void 0);
 __decorate([
-    property()
+    property({ type: Boolean })
 ], StepEditor.prototype, "disabled", void 0);
 StepEditor = __decorate([
     customElement('devtools-recorder-step-editor')

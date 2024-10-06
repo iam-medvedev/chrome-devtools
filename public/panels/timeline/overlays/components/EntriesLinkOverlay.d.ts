@@ -13,6 +13,8 @@ export declare class EntriesLinkOverlay extends HTMLElement {
         height: number;
     }, linkCreationNotStartedState: Trace.Types.File.EntriesLinkState);
     set canvasRect(rect: DOMRect | null);
+    entryFromWrapper(): HTMLElement | null;
+    entryToWrapper(): HTMLElement | null;
     connectedCallback(): void;
     /**
      * If one entry that is linked is in a collapsed track, we show the outlines

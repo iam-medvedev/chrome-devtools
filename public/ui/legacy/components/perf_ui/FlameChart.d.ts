@@ -226,6 +226,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * 3.2 click -> update highlight (handle in other functions)
      */
     private onClick;
+    setLinkSelectionAnnotationIsInProgress(inProgress: boolean): void;
     private deselectAllGroups;
     private deselectAllEntries;
     private isGroupFocused;
@@ -252,6 +253,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
         visibleEntries: Set<number>;
     } | null;
     private handleKeyboardGroupNavigation;
+    /**
+     * Used when the user presses "enter" when a group is selected, so that we
+     * move their selection into an event in the group.
+     */
     private selectFirstEntryInCurrentGroup;
     private selectPreviousGroup;
     private selectNextGroup;

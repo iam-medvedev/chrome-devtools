@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 /**
  * Below the network track there is a resize bar the user can click and drag.
@@ -401,7 +402,7 @@ export class Overlays extends EventTarget {
      * existing overlays will have their positions changed to ensure they are
      * rendered in the right place.
      */
-    update() {
+    async update() {
         const timeRangeOverlays = [];
         for (const [overlay, existingElement] of this.#overlaysToElements) {
             const element = existingElement || this.#createElementForNewOverlay(overlay);
@@ -410,10 +411,15 @@ export class Overlays extends EventTarget {
                 this.#overlaysToElements.set(overlay, element);
                 this.#overlaysContainer.appendChild(element);
             }
+            // A chance to update the overlay before we re-position it. If an
+            // overlay's data changed, this is where we can pass that data into the
+            // overlay's component so it has the latest data.
+            this.#updateOverlayBeforePositioning(overlay, element);
             // Now we position the overlay on the timeline.
             this.#positionOverlay(overlay, element);
-            // And now we give every overlay a chance to react to its new position, if it needs to
-            this.#updateOverlayElementAfterPositioning(overlay, element);
+            // And now we give every overlay a chance to react to its new position,
+            // if it needs to
+            this.#updateOverlayAfterPositioning(overlay, element);
             if (overlay.type === 'TIME_RANGE') {
                 timeRangeOverlays.push(overlay);
             }
@@ -482,7 +488,7 @@ export class Overlays extends EventTarget {
                 const isVisible = this.entryIsVisibleOnChart(overlay.entry);
                 this.#setOverlayElementVisibility(element, isVisible);
                 if (isVisible) {
-                    this.#positionEntryBorderOutlineType(overlay, element);
+                    this.#positionEntryBorderOutlineType(overlay.entry, element);
                 }
                 break;
             }
@@ -493,7 +499,7 @@ export class Overlays extends EventTarget {
                 const outlinedEntryIsSelected = Boolean(selectedOverlay && selectedOverlay.entry === overlay.entry);
                 if (!outlinedEntryIsSelected && this.entryIsVisibleOnChart(overlay.entry)) {
                     this.#setOverlayElementVisibility(element, true);
-                    this.#positionEntryBorderOutlineType(overlay, element);
+                    this.#positionEntryBorderOutlineType(overlay.entry, element);
                 }
                 else {
                     this.#setOverlayElementVisibility(element, false);
@@ -531,28 +537,7 @@ export class Overlays extends EventTarget {
                     this.#setOverlayElementVisibility(element, false);
                     break;
                 }
-                // If both entries are in collapsed tracks, we hide the overlay completely.
-                const fromEntryInCollapsedTrack = this.#entryIsInCollapsedTrack(entriesToConnect.entryFrom);
-                const toEntryInCollapsedTrack = entriesToConnect.entryTo && this.#entryIsInCollapsedTrack(entriesToConnect.entryTo);
-                const bothEntriesInCollapsedTrack = Boolean(fromEntryInCollapsedTrack && toEntryInCollapsedTrack);
-                if (bothEntriesInCollapsedTrack) {
-                    this.#setOverlayElementVisibility(element, false);
-                    return;
-                }
-                const isVisible = !annotationsAreHidden;
-                this.#setOverlayElementVisibility(element, isVisible);
-                if (isVisible) {
-                    this.#positionEntriesLinkOverlay(overlay, element, entriesToConnect);
-                    // If either entry (but not both) is in a track that the user has collapsed, we do not
-                    // show the connection at all, but we still show the borders around
-                    // the entry. So in this case we mark the overlay as visible, but
-                    // tell it to not draw the arrow.
-                    const hideArrow = Boolean(fromEntryInCollapsedTrack || toEntryInCollapsedTrack);
-                    const component = element.querySelector('devtools-entries-link-overlay');
-                    if (component) {
-                        component.hideArrow = hideArrow;
-                    }
-                }
+                this.#positionEntriesLinkOverlay(overlay, element, entriesToConnect);
                 break;
             }
             case 'TIMESPAN_BREAKDOWN': {
@@ -606,12 +591,11 @@ export class Overlays extends EventTarget {
         element.style.left = `${x}px`;
     }
     #positionTimespanBreakdownOverlay(overlay, element) {
-        const component = element.querySelector('devtools-timespan-breakdown-overlay');
-        const shadow = component?.shadowRoot;
-        const elementSections = shadow?.querySelectorAll('.timespan-breakdown-overlay-section');
         if (overlay.sections.length === 0) {
             return;
         }
+        const component = element.querySelector('devtools-timespan-breakdown-overlay');
+        const elementSections = component?.renderedSections() ?? [];
         // Handle horizontal positioning.
         const leftEdgePixel = this.#xPixelForMicroSeconds('main', overlay.sections[0].bounds.min);
         const rightEdgePixel = this.#xPixelForMicroSeconds('main', overlay.sections[overlay.sections.length - 1].bounds.max);
@@ -621,7 +605,7 @@ export class Overlays extends EventTarget {
         const rangeWidth = rightEdgePixel - leftEdgePixel;
         element.style.left = `${leftEdgePixel}px`;
         element.style.width = `${rangeWidth}px`;
-        if (!(elementSections?.length)) {
+        if (elementSections.length === 0) {
             return;
         }
         let count = 0;
@@ -638,25 +622,34 @@ export class Overlays extends EventTarget {
             count++;
         }
         // Handle vertical positioning based on the entry's vertical position.
-        if (overlay.entry) {
+        if (overlay.entry && (overlay.renderLocation === 'BELOW_EVENT' || overlay.renderLocation === 'ABOVE_EVENT')) {
+            // Max height for the overlay box when attached to an entry.
+            const MAX_BOX_HEIGHT = 50;
+            element.style.maxHeight = `${MAX_BOX_HEIGHT}px`;
             const y = this.yPixelForEventOnChart(overlay.entry);
             if (y === null) {
                 return;
             }
-            // Max height for the overlay box.
-            const MAX_BOX_HEIGHT = 50;
-            // Some padding so the box hovers just on top.
-            const PADDING = 7;
-            // Where the timespan breakdown should sit. Slightly on top of the entry.
-            const bottom = y - PADDING;
-            // Available space between the bottom of the overlay and top of the chart.
-            const minSpace = Math.max(bottom, 0);
-            // Contrain height to available space.
-            const height = Math.min(MAX_BOX_HEIGHT, minSpace);
-            elementSections[0].style.maxHeight = `${MAX_BOX_HEIGHT}px`;
-            elementSections[0].style.height = `${height}px`;
-            const top = bottom - height;
-            element.style.top = `${top}px`;
+            const eventHeight = this.pixelHeightForEventOnChart(overlay.entry);
+            if (eventHeight === null) {
+                return;
+            }
+            if (overlay.renderLocation === 'BELOW_EVENT') {
+                const top = y + eventHeight;
+                element.style.top = `${top}px`;
+            }
+            else {
+                // Some padding so the box hovers just on top.
+                const PADDING = 7;
+                // Where the timespan breakdown should sit. Slightly on top of the entry.
+                const bottom = y - PADDING;
+                // Available space between the bottom of the overlay and top of the chart.
+                const minSpace = Math.max(bottom, 0);
+                // Contrain height to available space.
+                const height = Math.min(MAX_BOX_HEIGHT, minSpace);
+                const top = bottom - height;
+                element.style.top = `${top}px`;
+            }
         }
     }
     /**
@@ -667,47 +660,61 @@ export class Overlays extends EventTarget {
     #positionEntriesLinkOverlay(overlay, element, entriesToConnect) {
         const component = element.querySelector('devtools-entries-link-overlay');
         if (component) {
+            const fromEntryInCollapsedTrack = this.#entryIsInCollapsedTrack(entriesToConnect.entryFrom);
+            const toEntryInCollapsedTrack = entriesToConnect.entryTo && this.#entryIsInCollapsedTrack(entriesToConnect.entryTo);
+            const bothEntriesInCollapsedTrack = Boolean(fromEntryInCollapsedTrack && toEntryInCollapsedTrack);
+            // If both entries are in collapsed tracks, we hide the overlay completely.
+            if (bothEntriesInCollapsedTrack) {
+                this.#setOverlayElementVisibility(element, false);
+                return;
+            }
+            // If either entry (but not both) is in a track that the user has collapsed, we do not
+            // show the connection at all, but we still show the borders around
+            // the entry. So in this case we mark the overlay as visible, but
+            // tell it to not draw the arrow.
+            const hideArrow = Boolean(fromEntryInCollapsedTrack || toEntryInCollapsedTrack);
+            component.hideArrow = hideArrow;
             const { entryFrom, entryTo, entryFromIsSource, entryToIsSource } = entriesToConnect;
-            const fromEntryStartX = this.xPixelForEventStartOnChart(entryFrom) ?? 0;
-            const fromEntryEndX = this.xPixelForEventEndOnChart(entryFrom) ?? 0;
-            const fromEntryLength = fromEntryEndX - fromEntryStartX;
-            const fromEntryHeight = this.pixelHeightForEventOnChart(entryFrom) ?? 0;
-            const entryFromVisibility = this.entryIsVisibleOnChart(entryFrom);
-            const entryToVisibility = entryTo ? this.entryIsVisibleOnChart(entryTo) : false;
+            const entryFromWrapper = component.entryFromWrapper();
+            // Should not happen, the 'from' wrapper should always exist. Something went wrong, return in this case.
+            if (!entryFromWrapper) {
+                return;
+            }
+            const { entryHeight: fromEntryHeight, entryWidth: fromEntryWidth, cutOffHeight: fromCutOffHeight = 0, x: fromEntryX, y: fromEntryY, } = this.#positionEntryBorderOutlineType(entriesToConnect.entryFrom, entryFromWrapper) || {};
+            const entryFromVisibility = this.entryIsVisibleOnChart(entryFrom) && !fromEntryInCollapsedTrack;
+            const entryToVisibility = entryTo ? this.entryIsVisibleOnChart(entryTo) && !toEntryInCollapsedTrack : false;
             // If `fromEntry` is not visible and the link creation is not started yet, meaning that
             // only the button to create the link is displayed, delete the whole overlay.
             if (!entryFromVisibility && overlay.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
                 this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
             }
             // If the 'from' entry is visible, set the entry Y as an arrow start coordinate. Ff not, get the canvas edge coordinate to for the arrow to start from.
-            const yPixelForFromArrow = (entryFromVisibility ? this.yPixelForEventOnChart(entryFrom) :
-                this.#yCoordinateForNotVisibleEntry(entryFrom)) ??
-                0;
+            const yPixelForFromArrow = (entryFromVisibility ? fromEntryY : this.#yCoordinateForNotVisibleEntry(entryFrom)) ?? 0;
             component.fromEntryIsSource = entryFromIsSource;
             component.toEntryIsSource = entryToIsSource;
             component.entriesVisibility = {
                 fromEntryVisibility: entryFromVisibility,
                 toEntryVisibility: entryToVisibility,
             };
-            component.fromEntryCoordinateAndDimentions =
-                { x: fromEntryStartX, y: yPixelForFromArrow, length: fromEntryLength, height: fromEntryHeight };
+            if (fromEntryHeight && fromEntryWidth && fromEntryX && fromEntryY) {
+                component.fromEntryCoordinateAndDimentions =
+                    { x: fromEntryX, y: yPixelForFromArrow, length: fromEntryWidth, height: fromEntryHeight - fromCutOffHeight };
+            }
+            const entryToWrapper = component.entryToWrapper();
             // If entryTo exists, pass the coordinates and dimentions of the entry that the arrow snaps to.
             // If it does not, the event tracking mouse coordinates updates 'to coordinates' so the arrow follows the mouse instead.
-            if (entryTo) {
-                const toEntryStartX = this.xPixelForEventStartOnChart(entryTo) ?? 0;
-                const toEntryEndX = this.xPixelForEventEndOnChart(entryTo) ?? 0;
-                const toEntryWidth = toEntryEndX - toEntryStartX;
-                const toEntryHeight = this.pixelHeightForEventOnChart(entryTo) ?? 0;
-                // If the 'to' entry is visible, set the entry Y as an arrow coordinate to point ot. Ff not, get the canvas edge coordate to point the arrow to.
-                const yPixelForToArrow = ((this.entryIsVisibleOnChart(entryTo)) ? this.yPixelForEventOnChart(entryTo) :
-                    this.#yCoordinateForNotVisibleEntry(entryTo)) ??
-                    0;
-                component.toEntryCoordinateAndDimentions = {
-                    x: toEntryStartX ?? 0,
-                    y: yPixelForToArrow,
-                    length: toEntryWidth,
-                    height: toEntryHeight,
-                };
+            if (entryTo && entryToWrapper) {
+                const { entryHeight: toEntryHeight, entryWidth: toEntryWidth, cutOffHeight: toCutOffHeight = 0, x: toEntryX, y: toEntryY, } = this.#positionEntryBorderOutlineType(entryTo, entryToWrapper) || {};
+                if (toEntryHeight && toEntryX) {
+                    // If the 'to' entry is visible, set the entry Y as an arrow coordinate to point ot. If not, get the canvas edge coordate to point the arrow to.
+                    const yPixelForToArrow = ((this.entryIsVisibleOnChart(entryTo)) ? toEntryY : this.#yCoordinateForNotVisibleEntry(entryTo)) ?? 0;
+                    component.toEntryCoordinateAndDimentions = {
+                        x: toEntryX,
+                        y: yPixelForToArrow,
+                        length: toEntryWidth,
+                        height: toEntryHeight - toCutOffHeight,
+                    };
+                }
             }
             else if (this.#lastMouseOffsetX && this.#lastMouseOffsetY) {
                 // The second coordinate for in progress link gets updated on mousemove
@@ -789,7 +796,7 @@ export class Overlays extends EventTarget {
         if (!entryWrapper) {
             return null;
         }
-        const { entryHeight, entryWidth, cutOffHeight = 0, x, y } = this.#positionEntryBorderOutlineType(overlay, entryWrapper) || {};
+        const { entryHeight, entryWidth, cutOffHeight = 0, x, y } = this.#positionEntryBorderOutlineType(overlay.entry, entryWrapper) || {};
         if (!entryHeight || !entryWidth || !x || !y) {
             return null;
         }
@@ -872,19 +879,19 @@ export class Overlays extends EventTarget {
      * @param overlay - the EntrySelected/EntryOutline/EntryLabel overlay that we need to position.
      * @param element - the DOM element representing the overlay
      */
-    #positionEntryBorderOutlineType(overlay, element) {
-        const chartName = chartForEntry(overlay.entry);
-        let x = this.xPixelForEventStartOnChart(overlay.entry);
-        let y = this.yPixelForEventOnChart(overlay.entry);
+    #positionEntryBorderOutlineType(entry, element) {
+        const chartName = chartForEntry(entry);
+        let x = this.xPixelForEventStartOnChart(entry);
+        let y = this.yPixelForEventOnChart(entry);
         if (x === null || y === null) {
             return null;
         }
-        const { endTime } = timingsForOverlayEntry(overlay.entry);
+        const { endTime } = timingsForOverlayEntry(entry);
         const endX = this.#xPixelForMicroSeconds(chartName, endTime);
         if (endX === null) {
             return null;
         }
-        const totalHeight = this.pixelHeightForEventOnChart(overlay.entry) ?? 0;
+        const totalHeight = this.pixelHeightForEventOnChart(entry) ?? 0;
         // We might modify the height we use when drawing the overlay, hence copying the totalHeight.
         let height = totalHeight;
         if (height === null) {
@@ -896,7 +903,7 @@ export class Overlays extends EventTarget {
         let widthPixels = endX - x;
         const provider = chartName === 'main' ? this.#charts.mainProvider : this.#charts.networkProvider;
         const chart = chartName === 'main' ? this.#charts.mainChart : this.#charts.networkChart;
-        const index = provider.indexForEvent?.(overlay.entry);
+        const index = provider.indexForEvent?.(entry);
         const customPos = chart.getCustomDrawnPositionForEntryIndex(index ?? -1);
         if (customPos) {
             // Some events like markers and layout shifts define their exact coordinates explicitly.
@@ -994,6 +1001,10 @@ export class Overlays extends EventTarget {
     #createElementForNewOverlay(overlay) {
         const div = document.createElement('div');
         div.classList.add('overlay-item', `overlay-type-${overlay.type}`);
+        const jslogContext = jsLogContext(overlay);
+        if (jslogContext) {
+            div.setAttribute('jslog', `${VisualLogging.item(jslogContext)}`);
+        }
         switch (overlay.type) {
             case 'ENTRY_LABEL': {
                 const shouldDrawLabelBelowEntry = Trace.Types.Events.isLegacyTimelineFrame(overlay.entry);
@@ -1053,6 +1064,7 @@ export class Overlays extends EventTarget {
                 const component = new Components.TimespanBreakdownOverlay.TimespanBreakdownOverlay();
                 component.sections = overlay.sections;
                 component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
+                component.isBelowEntry = overlay.renderLocation === 'BELOW_EVENT';
                 div.appendChild(component);
                 return div;
             }
@@ -1062,20 +1074,21 @@ export class Overlays extends EventTarget {
         }
     }
     /**
-     * Some of the HTML elements for overlays might need updating between each render
-     * (for example, if a time range has changed, we update its duration text)
+     * Some overlays store data in their components that needs to be updated
+     * before we position an overlay. Else, we might position an overlay based on
+     * stale data. This method is used to update an overlay BEFORE it is then
+     * positioned onto the canvas. It is the right place to ensure an overlay has
+     * the latest data it needs.
      */
-    #updateOverlayElementAfterPositioning(overlay, element) {
+    #updateOverlayBeforePositioning(overlay, element) {
         switch (overlay.type) {
             case 'ENTRY_SELECTED':
-                // Nothing to do here.
                 break;
             case 'TIME_RANGE': {
                 const component = element.querySelector('devtools-time-range-overlay');
                 if (component) {
                     component.duration = overlay.showDuration ? overlay.bounds.range : null;
                     component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
-                    component.updateLabelPositioning();
                 }
                 break;
             }
@@ -1093,12 +1106,44 @@ export class Overlays extends EventTarget {
                 if (component) {
                     component.sections = overlay.sections;
                     component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
-                    component.checkSectionLabelPositioning();
                 }
                 break;
             }
             case 'CURSOR_TIMESTAMP_MARKER':
-                // No contents within this that need updating.
+                break;
+            case 'CANDY_STRIPED_TIME_RANGE':
+                break;
+            default:
+                Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
+        }
+    }
+    /**
+     * Some overlays have custom logic within them to manage visibility of
+     * labels/etc that can be impacted if the positioning or size of the overlay
+     * has changed. This method can be used to run code after an overlay has
+     * been updated + repositioned on the timeline.
+     */
+    #updateOverlayAfterPositioning(overlay, element) {
+        switch (overlay.type) {
+            case 'ENTRY_SELECTED':
+                break;
+            case 'TIME_RANGE': {
+                const component = element.querySelector('devtools-time-range-overlay');
+                component?.updateLabelPositioning();
+                break;
+            }
+            case 'ENTRY_LABEL':
+                break;
+            case 'ENTRY_OUTLINE':
+                break;
+            case 'ENTRIES_LINK':
+                break;
+            case 'TIMESPAN_BREAKDOWN': {
+                const component = element.querySelector('devtools-timespan-breakdown-overlay');
+                component?.checkSectionLabelPositioning();
+                break;
+            }
+            case 'CURSOR_TIMESTAMP_MARKER':
                 break;
             case 'CANDY_STRIPED_TIME_RANGE':
                 break;
@@ -1354,5 +1399,46 @@ export function timingsForOverlayEntry(entry) {
         };
     }
     return Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
+}
+/**
+ * Defines if the overlay container `div` should have a jslog context attached.
+ * Note that despite some of the overlays being used currently exclusively
+ * for annotations, we log here with `overlays` to be generic as overlays can
+ * be used for insights, annotations or in the future, who knows...
+ */
+export function jsLogContext(overlay) {
+    switch (overlay.type) {
+        case 'ENTRY_SELECTED': {
+            // No jslog for this; it would be very noisy and not very useful.
+            return null;
+        }
+        case 'ENTRY_OUTLINE': {
+            return `timeline.overlays.entry-outline-${Platform.StringUtilities.toKebabCase(overlay.outlineReason)}`;
+        }
+        case 'ENTRY_LABEL': {
+            return 'timeline.overlays.entry-label';
+        }
+        case 'ENTRIES_LINK': {
+            // do not log impressions for incomplete entry links
+            if (overlay.state !== "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */) {
+                return null;
+            }
+            return 'timeline.overlays.entries-link';
+        }
+        case 'TIME_RANGE': {
+            return 'timeline.overlays.time-range';
+        }
+        case 'TIMESPAN_BREAKDOWN': {
+            return 'timeline.overlays.timespan-breakdown';
+        }
+        case 'CURSOR_TIMESTAMP_MARKER': {
+            return 'timeline.overlays.cursor-timestamp-marker';
+        }
+        case 'CANDY_STRIPED_TIME_RANGE': {
+            return 'timeline.overlays.candy-striped-time-range';
+        }
+        default:
+            Platform.assertNever(overlay, 'Unknown overlay type');
+    }
 }
 //# sourceMappingURL=OverlaysImpl.js.map

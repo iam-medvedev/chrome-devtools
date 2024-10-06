@@ -131,6 +131,9 @@
       "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/floating_button/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/highlighting/bundle-tsconfig.json"
     },
     {

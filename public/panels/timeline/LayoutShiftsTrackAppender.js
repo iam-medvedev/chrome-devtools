@@ -79,7 +79,7 @@ export class LayoutShiftsTrackAppender {
      */
     #appendLayoutShiftsAtLevel(currentLevel) {
         const allLayoutShifts = this.#parsedTrace.LayoutShifts.clusters.flatMap(cluster => cluster.events);
-        if (Root.Runtime.experiments.isEnabled("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */)) {
+        if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */)) {
             const allClusters = this.#parsedTrace.LayoutShifts.clusters;
             this.#compatibilityBuilder.appendEventsAtLevel(allClusters, currentLevel, this);
         }
@@ -129,7 +129,7 @@ export class LayoutShiftsTrackAppender {
         return { title, formattedTime: score.toFixed(4) };
     }
     getDrawOverride(event) {
-        if (!Root.Runtime.experiments.isEnabled("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */)) {
+        if (!Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */)) {
             // If the new CLS experience isn't on.. Continue to present that Shifts are 5ms long. (but now via drawOverrides)
             // TODO: Remove this when the experiment ships
             if (Trace.Types.Events.isLayoutShift(event)) {
@@ -137,9 +137,8 @@ export class LayoutShiftsTrackAppender {
                     const fakeDurMs = Trace.Helpers.Timing.microSecondsToMilliseconds(Trace.Types.Timing.MicroSeconds(event.ts + LAYOUT_SHIFT_SYNTHETIC_DURATION));
                     const barEnd = timeToPosition(fakeDurMs);
                     const barWidth = barEnd - x;
-                    context.rect(x, y, barWidth - 0.5, levelHeight - 1);
                     context.fillStyle = this.colorForEvent(event);
-                    context.fill();
+                    context.fillRect(x, y, barWidth - 0.5, levelHeight - 1);
                     return {
                         x,
                         width: barWidth,
@@ -163,6 +162,7 @@ export class LayoutShiftsTrackAppender {
                 const buffer = bufferScale * maxBuffer;
                 const boxSize = levelHeight;
                 const halfSize = boxSize / 2;
+                context.save();
                 context.beginPath();
                 context.moveTo(x, y + buffer);
                 context.lineTo(x + halfSize - buffer, y + halfSize);
@@ -171,6 +171,7 @@ export class LayoutShiftsTrackAppender {
                 context.closePath();
                 context.fillStyle = this.colorForEvent(event);
                 context.fill();
+                context.restore();
                 return {
                     x: x - halfSize,
                     width: boxSize,
@@ -182,8 +183,7 @@ export class LayoutShiftsTrackAppender {
                 const barHeight = levelHeight * 0.2;
                 const barY = y + (levelHeight - barHeight) / 2 + 0.5;
                 context.fillStyle = this.colorForEvent(event);
-                context.rect(x, barY, width - 0.5, barHeight - 1);
-                context.fill();
+                context.fillRect(x, barY, width - 0.5, barHeight - 1);
                 return { x, width, z: -1 };
             };
         }

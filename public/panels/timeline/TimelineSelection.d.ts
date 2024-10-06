@@ -11,7 +11,7 @@ export declare class TimelineSelection {
     static fromFrame(frame: Trace.Types.Events.LegacyTimelineFrame): TimelineSelection;
     static isSyntheticNetworkRequestDetailsEventSelection(object: PermittedObjectTypes): object is Trace.Types.Events.SyntheticNetworkRequest;
     static isNetworkEventSelection(object: PermittedObjectTypes): object is Trace.Types.Events.SyntheticNetworkRequest | Trace.Types.Events.WebSocketEvent;
-    static isSelection(object: PermittedObjectTypes): object is Trace.Types.Events.Event;
+    static isTraceEventSelection(object: PermittedObjectTypes): object is Trace.Types.Events.Event;
     static fromTraceEvent(event: Trace.Types.Events.Event): TimelineSelection;
     static isRangeSelection(object: PermittedObjectTypes): object is SelectionRange;
     static fromRange(startTime: number, endTime: number): TimelineSelection;

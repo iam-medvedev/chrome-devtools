@@ -42,6 +42,13 @@ import { DEFAULT_FONT_SIZE, getFontFamilyForCanvas } from './Font.js';
 import { TimelineGrid } from './TimelineGrid.js';
 const UIStrings = {
     /**
+     *@description Aria alert used to notify the user when an event has been selected because they tabbed into a group.
+     *@example {Paint} PH1
+     *@example {Main thread} PH2
+     *
+     */
+    eventSelectedFromGroup: 'Selected a {PH1} event within {PH2}. Press "enter" to focus this event.',
+    /**
      *@description Aria accessible name in Flame Chart of the Performance panel
      */
     flameChart: 'Flame Chart',
@@ -201,6 +208,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #searchResultEntryIndex;
     #searchResultHighlightElements = [];
     #inTrackConfigEditMode = false;
+    #linkSelectionAnnotationIsInProgress = false;
     // Stored because we cache this value to save extra lookups and layoffs.
     #canvasBoundingClientRect = null;
     #selectedElementOutlineEnabled = true;
@@ -457,7 +465,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const timeLeft = this.chartViewport.windowLeftTime();
         const timeRight = this.chartViewport.windowRightTime();
         const entryStartTime = timelineData.entryStartTimes[entryIndex];
-        const entryTotalTime = timelineData.entryTotalTimes[entryIndex];
+        let entryTotalTime = timelineData.entryTotalTimes[entryIndex];
+        // Marker entries have NaN durations; for the sake of the reveal logic
+        // let's pretend they have a 1ms duration so we can calculate a reasonable
+        // time window to reveal
+        if (Number.isNaN(entryTotalTime)) {
+            entryTotalTime = 1;
+        }
         const entryEndTime = entryStartTime + entryTotalTime;
         let minEntryTimeWindow = Math.min(entryTotalTime, timeRight - timeLeft);
         const level = timelineData.entryLevels[entryIndex];
@@ -755,6 +769,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
         }
     }
+    setLinkSelectionAnnotationIsInProgress(inProgress) {
+        this.#linkSelectionAnnotationIsInProgress = inProgress;
+    }
     #selectGroup(groupIndex) {
         if (groupIndex < 0 || this.selectedGroupIndex === groupIndex) {
             return;
@@ -767,7 +784,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         this.keyboardFocusedGroup = groupIndex;
-        this.scrollGroupIntoView(groupIndex);
+        // Do not scroll the track if the user is currently selecting an entry for a connection annotation.
+        // Scrolling the view when the entry is being selected results in creating a link with different entry from the one that was clicked on.
+        if (!this.#linkSelectionAnnotationIsInProgress) {
+            this.scrollGroupIntoView(groupIndex);
+        }
         const groupName = groups[groupIndex].name;
         if (!groups[groupIndex].selectable) {
             this.deselectAllGroups();
@@ -1083,7 +1104,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.dispatchEvent(event);
     }
     onKeyDown(e) {
-        if (!UI.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(e) || !this.timelineData()) {
+        if (UI.KeyboardShortcut.KeyboardShortcut.hasAtLeastOneModifier(e) || !this.timelineData()) {
             return;
         }
         if (e.key === ' ' && this.selectedEntryIndex > -1) {
@@ -1145,7 +1166,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const filteredTitleIndices = titleIndices.filter(entryIndexIsInTrack);
         this.drawEventTitles(context, timelineData, filteredTitleIndices, canvasWidth);
         context.restore();
-        return { top: groupOffsets[trackIndex], height: nextOffset - groupTop, visibleEntries: new Set(allFilteredIndexes) };
+        return {
+            top: groupOffsets[trackIndex],
+            height: nextOffset - groupTop,
+            visibleEntries: new Set(allFilteredIndexes),
+        };
     }
     handleKeyboardGroupNavigation(event) {
         const keyboardEvent = event;
@@ -1182,6 +1207,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         return handled;
     }
+    /**
+     * Used when the user presses "enter" when a group is selected, so that we
+     * move their selection into an event in the group.
+     */
     selectFirstEntryInCurrentGroup() {
         if (!this.rawTimelineData) {
             return false;
@@ -1207,9 +1236,32 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!this.timelineLevels) {
             return false;
         }
-        // Get first (default) entry in startLevel of selected group
-        const firstEntryIndex = this.timelineLevels[startLevelInGroup][0];
+        const timelineData = this.timelineData();
+        if (!timelineData) {
+            return false;
+        }
+        // Get the first entry within the group that is at least 1ms long.
+        // Otherwise the panel can select a tiny event which is really hard to see
+        // even at maximum zoom. We hedge our bets that the user probably doesn't
+        // care for such a tiny event, at least not by default. Better to take them
+        // to an event that is slightly more prominent in the UI.
+        const minDurationOfFirstEntry = Trace.Types.Timing.MilliSeconds(1);
+        let firstEntryIndex = this.timelineLevels[startLevelInGroup].find((i => {
+            const duration = timelineData.entryTotalTimes[i];
+            return !Number.isNaN(duration) && duration >= minDurationOfFirstEntry;
+        }));
+        if (typeof firstEntryIndex === 'undefined') {
+            // If we didn't find a 1ms+ event, fallback to the first, regardless of duration.
+            firstEntryIndex = this.timelineLevels[startLevelInGroup][0];
+        }
         this.expandGroup(this.keyboardFocusedGroup, true /* setExpanded */);
+        const eventName = this.dataProvider.entryTitle(firstEntryIndex);
+        if (eventName) {
+            UI.ARIAUtils.alert(i18nString(UIStrings.eventSelectedFromGroup, {
+                PH1: eventName,
+                PH2: group.name,
+            }));
+        }
         this.setSelectedEntry(firstEntryIndex);
         return true;
     }
@@ -2237,19 +2289,22 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.restore();
     }
     #drawCustomSymbols(context, timelineData) {
-        const { entryStartTimes, entryLevels } = timelineData;
+        const { entryStartTimes, entryTotalTimes, entryLevels } = timelineData;
         this.customDrawnPositions.clear();
         context.save();
         // TODO: Don't draw if it's not in the viewport.
         const posArray = [];
         for (const [entryIndex, drawOverride] of this.#indexToDrawOverride.entries()) {
             const entryStartTime = entryStartTimes[entryIndex];
+            const entryTotalTime = entryTotalTimes[entryIndex];
             const level = entryLevels[entryIndex];
-            const x = this.timeToPositionClipped(entryStartTime);
+            const unclippedXStart = this.chartViewport.timeToPosition(entryStartTime);
+            const unclippedXEnd = this.chartViewport.timeToPosition(entryStartTime + entryTotalTime);
+            const x = unclippedXStart;
             const y = this.levelToOffset(level);
             const height = this.levelHeight(level);
-            const width = this.#eventBarWidth(timelineData, entryIndex);
-            const pos = drawOverride(context, x, y, width, height, time => this.timeToPositionClipped(time));
+            const width = unclippedXEnd - unclippedXStart;
+            const pos = drawOverride(context, x, y, width, height, time => this.chartViewport.timeToPosition(time));
             posArray.push({ entryIndex, pos });
         }
         // Place in z order so coordinatesToEntryIndex finds the highest z-index match first.

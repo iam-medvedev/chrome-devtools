@@ -81,7 +81,7 @@ export class Table extends HTMLElement {
             }
         }
         else {
-            this.#insight.toggleTemporaryOverlays(null);
+            this.#insight.toggleTemporaryOverlays(null, { updateTraceWindow: false });
         }
         this.#state.selectedRowEl?.classList.remove('selected');
         rowEl?.classList.add('selected');

@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 // Due to the way that DevTools throttling works we cannot see if server response took less than ~570ms.
 // We set our failure threshold to 600ms to avoid those false positives but we want devs to shoot for 100ms.
@@ -11,12 +12,13 @@ const IGNORE_THRESHOLD_IN_BYTES = 1400;
 export function deps() {
     return ['Meta', 'NetworkRequests'];
 }
-function getServerTiming(request) {
+function getServerResponseTime(request) {
     const timing = request.args.data.timing;
     if (!timing) {
         return null;
     }
-    return Types.Timing.MilliSeconds(Math.round(timing.receiveHeadersStart - timing.sendEnd));
+    const ms = Helpers.Timing.microSecondsToMilliseconds(request.args.data.syntheticData.waiting);
+    return Math.round(ms);
 }
 function getCompressionSavings(request) {
     // Check from headers if compression was already applied.
@@ -87,7 +89,7 @@ export function generateInsight(parsedTrace, context) {
     if (!documentRequest) {
         throw new Error('missing document request');
     }
-    const serverResponseTime = getServerTiming(documentRequest);
+    const serverResponseTime = getServerResponseTime(documentRequest);
     if (serverResponseTime === null) {
         throw new Error('missing document request timing');
     }

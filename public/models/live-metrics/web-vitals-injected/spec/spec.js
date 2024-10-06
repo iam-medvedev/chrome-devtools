@@ -17,4 +17,7 @@ export function getUniqueInteractionId(entries) {
     });
     return `interaction-${longestEntry.interactionId}-${longestEntry.startTime}`;
 }
+export function getUniqueLayoutShiftId(entry) {
+    return `layout-shift-${entry.value}-${entry.startTime}`;
+}
 //# sourceMappingURL=spec.js.map

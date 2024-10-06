@@ -182,7 +182,6 @@ const DEFAULT_METADATA = {
  * Component for user agent client hints form, it is used in device settings panel
  * and network conditions panel. It is customizable through showMobileCheckbox and showSubmitButton.
  */
-// eslint-disable-next-line rulesdir/custom_element_definitions_location
 export class UserAgentClientHintsForm extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-user-agent-client-hints-form`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -703,7 +702,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
           class="tree-title"
           role="button"
           @click=${this.#handleTreeClick}
-          tabindex="0"
+          tabindex=${this.#isFormDisabled ? '-1' : '0'}
           @keydown=${this.#handleTreeExpand}
           aria-expanded=${this.#isFormOpened}
           aria-controls="form-container"
@@ -731,7 +730,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
             class='info-icon',
           ></${IconButton.Icon.Icon.litTagName}>
           <x-link
-           tabindex="0"
+           tabindex=${this.#isFormDisabled ? '-1' : '0'}
            href="https://web.dev/user-agent-client-hints/"
            target="_blank"
            class="link"

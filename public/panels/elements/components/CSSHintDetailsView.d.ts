@@ -1,3 +1,4 @@
+import '../../../ui/legacy/legacy.js';
 interface Hint {
     getMessage(): string;
     getPossibleFixMessage(): string | null;

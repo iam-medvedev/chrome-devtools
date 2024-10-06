@@ -65,6 +65,7 @@ style.setProperty('--image-file-brush-filled', 'url(\"' + new URL('./src/brush-f
 style.setProperty('--image-file-brush', 'url(\"' + new URL('./src/brush.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bug', 'url(\"' + new URL('./src/bug.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bundle', 'url(\"' + new URL('./src/bundle.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-button-magic', 'url(\"' + new URL('./src/button-magic.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-calendar-today', 'url(\"' + new URL('./src/calendar-today.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-check-circle', 'url(\"' + new URL('./src/check-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-check-double', 'url(\"' + new URL('./src/check-double.svg', import.meta.url).toString() + '\")');
@@ -234,7 +235,6 @@ style.setProperty('--image-file-small-status-dot', 'url(\"' + new URL('./src/sma
 style.setProperty('--image-file-smart-assistant', 'url(\"' + new URL('./src/smart-assistant.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-snippet', 'url(\"' + new URL('./src/snippet.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-spark-info', 'url(\"' + new URL('./src/spark-info.svg', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-spark', 'url(\"' + new URL('./src/spark.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-star', 'url(\"' + new URL('./src/star.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-step-into', 'url(\"' + new URL('./src/step-into.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-step-out', 'url(\"' + new URL('./src/step-out.svg', import.meta.url).toString() + '\")');

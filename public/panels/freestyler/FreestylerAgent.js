@@ -6,7 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { ResponseType } from './AiAgent.js';
+import { AiAgent, debugLog, isDebugMode, ResponseType, } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
@@ -141,31 +141,21 @@ const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
  */
-export class FreestylerAgent {
-    static buildRequest(opts) {
+export class FreestylerAgent extends AiAgent {
+    preamble = preamble;
+    clientFeature = Host.AidaClient.ClientFeature.CHROME_FREESTYLER;
+    get userTier() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsFreestylerDogfood?.temperature;
-        const request = {
-            input: opts.input,
-            preamble: opts.preamble,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            chat_history: opts.chatHistory,
-            client: Host.AidaClient.CLIENT_NAME,
-            options: {
-                ...(temperature !== undefined && temperature >= 0) && { temperature },
-                model_id: config.devToolsFreestylerDogfood?.modelId ?? undefined,
-            },
-            metadata: {
-                disable_user_content_logging: !(opts.serverSideLoggingEnabled ?? false),
-                string_session_id: opts.sessionId,
-                user_tier: Host.AidaClient.convertToUserTierEnum(config.devToolsFreestylerDogfood?.userTier),
-            },
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            functionality_type: Host.AidaClient.FunctionalityType.CHAT,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            client_feature: Host.AidaClient.ClientFeature.CHROME_FREESTYLER,
+        return config.devToolsFreestyler?.userTier;
+    }
+    get options() {
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        const temperature = AiAgent.validTemperature(config.devToolsFreestyler?.temperature);
+        const modelId = config.devToolsFreestyler?.modelId;
+        return {
+            temperature,
+            model_id: modelId,
         };
-        return request;
     }
     static parseResponse(response) {
         // We're returning an empty answer to denote the erroneous case.
@@ -227,8 +217,13 @@ export class FreestylerAgent {
                     }
                     i++;
                 }
-                // TODO: perhaps trying to parse with a Markdown parser would
-                // yield more reliable results.
+                // Sometimes the LLM puts the STOP response to the last line of the code block.
+                // Here, we check whether the last line ends with STOP keyword and if so, remove it
+                // from the last line.
+                const lastActionLine = actionLines[actionLines.length - 1];
+                if (lastActionLine && lastActionLine.endsWith('STOP')) {
+                    actionLines[actionLines.length - 1] = lastActionLine.substring(0, lastActionLine.length - 'STOP'.length);
+                }
                 action = actionLines.join('\n').replaceAll('```', '').replaceAll('``', '').trim();
             }
             else if (trimmed.startsWith('ANSWER:') && !answer) {
@@ -249,6 +244,7 @@ export class FreestylerAgent {
             }
             else if (trimmed.startsWith('SUGGESTIONS:')) {
                 try {
+                    // TODO: Do basic validation this is an array with strings
                     suggestions = JSON.parse(trimmed.substring('SUGGESTIONS:'.length).trim());
                 }
                 catch (err) {
@@ -286,46 +282,25 @@ export class FreestylerAgent {
             suggestions,
         };
     }
-    #aidaClient;
-    #chatHistory = new Map();
-    #serverSideLoggingEnabled;
     #execJs;
     #confirmSideEffect;
-    #sessionId = crypto.randomUUID();
     #changes;
     #createExtensionScope;
     constructor(opts) {
-        this.#aidaClient = opts.aidaClient;
+        super({
+            aidaClient: opts.aidaClient,
+            serverSideLoggingEnabled: opts.serverSideLoggingEnabled,
+        });
         this.#changes = opts.changeManager || new ChangeManager();
         this.#execJs = opts.execJs ?? executeJsCode;
         this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
             return new ExtensionScope(changes);
         });
-        this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
         this.#confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     }
     onPrimaryPageChanged() {
         void this.#changes.clear();
-    }
-    get #getHistoryEntry() {
-        return [...this.#chatHistory.values()].flat();
-    }
-    get chatHistoryForTesting() {
-        return this.#getHistoryEntry;
-    }
-    async #aidaFetch(request, options) {
-        let rawResponse = undefined;
-        let response = '';
-        let rpcId;
-        for await (rawResponse of this.#aidaClient.fetch(request, options)) {
-            response = rawResponse.explanation;
-            rpcId = rawResponse.metadata.rpcGlobalId ?? rpcId;
-            if (rawResponse.metadata.attributionMetadata?.some(meta => meta.attributionAction === Host.AidaClient.RecitationAction.BLOCK)) {
-                throw new Error('Attribution action does not allow providing the response');
-            }
-        }
-        return { response, rpcId, rawResponse };
     }
     async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, }) {
         const actionExpression = `{
@@ -436,38 +411,66 @@ export class FreestylerAgent {
         }
         return output;
     }
+    async *handleAction(action, rpcId) {
+        debugLog(`Action to execute: ${action}`);
+        const scope = this.#createExtensionScope(this.#changes);
+        await scope.install();
+        try {
+            let result = await this.#generateObservation(action, { throwOnSideEffect: true });
+            debugLog(`Action result: ${JSON.stringify(result)}`);
+            if (result.sideEffect) {
+                const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
+                if (isDebugMode()) {
+                    window.dispatchEvent(new CustomEvent('freestylersideeffect', { detail: { confirm: sideEffectConfirmationPromiseWithResolvers.resolve } }));
+                }
+                yield {
+                    type: ResponseType.SIDE_EFFECT,
+                    code: action,
+                    confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
+                    rpcId,
+                };
+                result = await this.#generateObservation(action, {
+                    throwOnSideEffect: false,
+                    confirmExecJs: sideEffectConfirmationPromiseWithResolvers.promise,
+                });
+            }
+            return {
+                type: ResponseType.ACTION,
+                code: action,
+                output: result.observation,
+                canceled: result.canceled,
+                rpcId,
+            };
+        }
+        finally {
+            await scope.uninstall();
+        }
+    }
+    async enhanceQuery(query, selectedElement) {
+        const elementEnchantmentQuery = selectedElement ?
+            `# Inspected element\n\n${await FreestylerAgent.describeElement(selectedElement)}\n\n# User request\n\n` :
+            '';
+        return `${elementEnchantmentQuery}QUERY: ${query}`;
+    }
     #runId = 0;
     async *run(query, options) {
-        const structuredLog = [];
-        const elementEnchantmentQuery = options.selectedElement ?
-            `# Inspected element\n\n${await FreestylerAgent.describeElement(options.selectedElement)}\n\n# User request\n\n` :
-            '';
-        query = `${elementEnchantmentQuery}QUERY: ${query}`;
+        query = await this.enhanceQuery(query, options.selectedElement);
         const currentRunId = ++this.#runId;
         for (let i = 0; i < MAX_STEPS; i++) {
             yield {
                 type: ResponseType.QUERYING,
             };
-            const request = FreestylerAgent.buildRequest({
-                input: query,
-                preamble,
-                chatHistory: this.#chatHistory.size ? this.#getHistoryEntry : undefined,
-                serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-                sessionId: this.#sessionId,
-            });
             let response;
             let rpcId;
-            let rawResponse;
             try {
-                const fetchResult = await this.#aidaFetch(request, { signal: options.signal });
+                const fetchResult = await this.aidaFetch(query, { signal: options.signal });
                 response = fetchResult.response;
                 rpcId = fetchResult.rpcId;
-                rawResponse = fetchResult.rawResponse;
             }
             catch (err) {
                 debugLog('Error calling the AIDA API', err);
                 if (err instanceof Host.AidaClient.AidaAbortError) {
-                    this.#chatHistory.delete(currentRunId);
+                    this.removeHistoryRun(currentRunId);
                     yield {
                         type: ResponseType.ERROR,
                         error: "abort" /* ErrorType.ABORT */,
@@ -482,34 +485,15 @@ export class FreestylerAgent {
                 };
                 break;
             }
-            debugLog({
-                iteration: i,
-                request,
-                response: rawResponse,
-            });
-            structuredLog.push({
-                request: structuredClone(request),
-                response,
-            });
-            const addToHistory = (text) => {
-                this.#chatHistory.set(currentRunId, [
-                    ...currentRunEntries,
-                    {
-                        text: query,
-                        entity: Host.AidaClient.Entity.USER,
-                    },
-                    {
-                        text,
-                        entity: Host.AidaClient.Entity.SYSTEM,
-                    },
-                ]);
-            };
-            const currentRunEntries = this.#chatHistory.get(currentRunId) ?? [];
             const parsedResponse = FreestylerAgent.parseResponse(response);
             if ('answer' in parsedResponse) {
                 const { answer, suggestions, } = parsedResponse;
                 if (answer) {
-                    addToHistory(`ANSWER: ${answer}`);
+                    this.addToHistory({
+                        id: currentRunId,
+                        query,
+                        output: `ANSWER: ${answer}`,
+                    });
                     yield {
                         type: ResponseType.ANSWER,
                         text: answer,
@@ -535,11 +519,15 @@ export class FreestylerAgent {
                 };
             }
             if (thought) {
-                addToHistory(`THOUGHT: ${thought}
+                this.addToHistory({
+                    id: currentRunId,
+                    query,
+                    output: `THOUGHT: ${thought}
 TITLE: ${title}
 ACTION
 ${action}
-STOP`);
+STOP`,
+                });
                 yield {
                     type: ResponseType.THOUGHT,
                     thought,
@@ -547,45 +535,18 @@ STOP`);
                 };
             }
             else {
-                addToHistory(`ACTION
+                this.addToHistory({
+                    id: currentRunId,
+                    query,
+                    output: `ACTION
 ${action}
-STOP`);
+STOP`,
+                });
             }
             if (action) {
-                debugLog(`Action to execute: ${action}`);
-                const scope = this.#createExtensionScope(this.#changes);
-                await scope.install();
-                try {
-                    let result = await this.#generateObservation(action, { throwOnSideEffect: true });
-                    debugLog(`Action result: ${JSON.stringify(result)}`);
-                    if (result.sideEffect) {
-                        const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
-                        if (isDebugMode()) {
-                            window.dispatchEvent(new CustomEvent('freestylersideeffect', { detail: { confirm: sideEffectConfirmationPromiseWithResolvers.resolve } }));
-                        }
-                        yield {
-                            type: ResponseType.SIDE_EFFECT,
-                            code: action,
-                            confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
-                            rpcId,
-                        };
-                        result = await this.#generateObservation(action, {
-                            throwOnSideEffect: false,
-                            confirmExecJs: sideEffectConfirmationPromiseWithResolvers.promise,
-                        });
-                    }
-                    yield {
-                        type: ResponseType.ACTION,
-                        code: action,
-                        output: result.observation,
-                        canceled: result.canceled,
-                        rpcId,
-                    };
-                    query = `OBSERVATION: ${result.observation}`;
-                }
-                finally {
-                    await scope.uninstall();
-                }
+                const result = yield* this.handleAction(action, rpcId);
+                yield result;
+                query = `OBSERVATION: ${result.output}`;
             }
             if (i === MAX_STEPS - 1) {
                 yield {
@@ -596,29 +557,8 @@ STOP`);
             }
         }
         if (isDebugMode()) {
-            localStorage.setItem('freestylerStructuredLog', JSON.stringify(structuredLog));
             window.dispatchEvent(new CustomEvent('freestylerdone'));
         }
     }
 }
-function isDebugMode() {
-    return Boolean(localStorage.getItem('debugFreestylerEnabled'));
-}
-function debugLog(...log) {
-    if (!isDebugMode()) {
-        return;
-    }
-    // eslint-disable-next-line no-console
-    console.log(...log);
-}
-function setDebugFreestylerEnabled(enabled) {
-    if (enabled) {
-        localStorage.setItem('debugFreestylerEnabled', 'true');
-    }
-    else {
-        localStorage.removeItem('debugFreestylerEnabled');
-    }
-}
-// @ts-ignore
-globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;
 //# sourceMappingURL=FreestylerAgent.js.map

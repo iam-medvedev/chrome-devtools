@@ -126,6 +126,16 @@ export class ModificationsManager extends EventTarget {
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
     }
+    linkAnnotationBetweenEntriesExists(entryFrom, entryTo) {
+        for (const annotation of this.#overlayForAnnotation.keys()) {
+            if (annotation.type === 'ENTRIES_LINK' &&
+                ((annotation.entryFrom === entryFrom && annotation.entryTo === entryTo) ||
+                    (annotation.entryFrom === entryTo && annotation.entryTo === entryFrom))) {
+                return true;
+            }
+        }
+        return false;
+    }
     #findLabelOverlayForEntry(entry) {
         for (const [annotation, overlay] of this.#overlayForAnnotation.entries()) {
             if (annotation.type === 'ENTRY_LABEL' && annotation.entry === entry) {
@@ -163,7 +173,7 @@ export class ModificationsManager extends EventTarget {
     removeAnnotation(removedAnnotation) {
         const overlayToRemove = this.#overlayForAnnotation.get(removedAnnotation);
         if (!overlayToRemove) {
-            console.warn('Overlay for deleted Annotation does not exist');
+            console.warn('Overlay for deleted Annotation does not exist', removedAnnotation);
             return;
         }
         this.#overlayForAnnotation.delete(removedAnnotation);
@@ -172,11 +182,10 @@ export class ModificationsManager extends EventTarget {
     removeAnnotationOverlay(removedOverlay) {
         const annotationForRemovedOverlay = this.getAnnotationByOverlay(removedOverlay);
         if (!annotationForRemovedOverlay) {
-            console.warn('Annotation for deleted Overlay does not exist');
+            console.warn('Annotation for deleted Overlay does not exist', removedOverlay);
             return;
         }
-        this.#overlayForAnnotation.delete(annotationForRemovedOverlay);
-        this.dispatchEvent(new AnnotationModifiedEvent(removedOverlay, 'Remove'));
+        this.removeAnnotation(annotationForRemovedOverlay);
     }
     updateAnnotation(updatedAnnotation) {
         const overlay = this.#overlayForAnnotation.get(updatedAnnotation);

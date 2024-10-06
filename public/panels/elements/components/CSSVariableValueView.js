@@ -28,7 +28,7 @@ const i18nTemplate = LitHtml.i18nTemplate.bind(undefined, str_);
 const { render, html } = LitHtml;
 function getLinkSection(details) {
     return html `<div class="registered-property-links">
-            <span role="button" @click=${details?.goToDefinition} class="clickable underlined unbreakable-text"}>
+            <span role="button" @click=${details?.goToDefinition} class="clickable underlined unbreakable-text">
               ${i18nString(UIStrings.registeredPropertyLinkTitle)}
             </span>
           </div>`;

@@ -16,6 +16,7 @@ import { getAnnotationEntries, getAnnotationWindow } from './AnnotationHelpers.j
 import { CountersGraph } from './CountersGraph.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { ModificationsManager } from './ModificationsManager.js';
+import * as OverlayComponents from './overlays/components/components.js';
 import * as Overlays from './overlays/overlays.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
@@ -83,6 +84,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #gameTimeout = setTimeout(() => ({}), 0);
     #overlaysContainer = document.createElement('div');
     #overlays;
+    // Tracks the in-progress time range annotation when the user shift clicks + drags, or when the user uses the keyboard
     #timeRangeSelectionAnnotation = null;
     // Keep track of the link annotation that hasn't been fully selected yet.
     // We only store it here when only 'entryFrom' has been selected and
@@ -99,6 +101,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #loggableForGroupByLogContext = new Map();
     #onMainEntryInvoked;
     #onNetworkEntryInvoked;
+    #currentSelection = null;
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -131,7 +134,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.mainFlameChart.addEventListener("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LATEST_DRAW_DIMENSIONS */, dimensions => {
             this.#overlays.updateChartDimensions('main', dimensions.data.chart);
             this.#overlays.updateVisibleWindow(dimensions.data.traceWindow);
-            this.#overlays.update();
+            void this.#overlays.update();
         });
         this.networkFlameChartGroupExpansionSetting =
             Common.Settings.Settings.instance().createSetting('timeline-flamechart-network-view-group-expansion', {});
@@ -147,17 +150,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkFlameChart.addEventListener("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LATEST_DRAW_DIMENSIONS */, dimensions => {
             this.#overlays.updateChartDimensions('network', dimensions.data.chart);
             this.#overlays.updateVisibleWindow(dimensions.data.traceWindow);
-            this.#overlays.update();
+            void this.#overlays.update();
             // If the height of the network chart has changed, we need to tell the
             // main flame chart because its tooltips are positioned based in part on
             // the height of the network chart.
             this.mainFlameChart.setTooltipYPixelAdjustment(this.#overlays.networkChartOffsetHeight());
         });
         this.mainFlameChart.addEventListener("MouseMove" /* PerfUI.FlameChart.Events.MOUSE_MOVE */, event => {
-            this.#processFlameChartMouseMoveEvent(event.data);
+            void this.#processFlameChartMouseMoveEvent(event.data);
         });
         this.networkFlameChart.addEventListener("MouseMove" /* PerfUI.FlameChart.Events.MOUSE_MOVE */, event => {
-            this.#processFlameChartMouseMoveEvent(event.data);
+            void this.#processFlameChartMouseMoveEvent(event.data);
         });
         this.#overlays = new Overlays.Overlays.Overlays({
             container: this.#overlaysContainer,
@@ -196,6 +199,21 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             else if (action === 'Update') {
                 ModificationsManager.activeManager()?.updateAnnotationOverlay(overlay);
             }
+        });
+        this.element.addEventListener(OverlayComponents.EntriesLinkOverlay.EntryLinkStartCreating.eventName, () => {
+            /**
+             * When the user creates an entries link, they click on the arrow icon to
+             * begin creating it. At this point the arrow icon gets deleted. This
+             * causes the focus of the page by default to jump to the entire Timeline
+             * Panel. This is a bit aggressive; and problematic as it means we cannot
+             * use <ESC> to cancel the creation of the entry. So instead we focus the
+             * TimelineFlameChartView instead. This means that the user's <ESC> gets
+             * dealt with in its keydown.
+             * If the user goes ahead and creates the entry, they will end up
+             * focused on whichever target entry they pick, so this only matters for
+             * the case where the user hits <ESC> to cancel.
+             */
+            this.focus();
         });
         this.networkPane = new UI.Widget.VBox();
         this.networkPane.setMinimumSize(23, 23);
@@ -319,9 +337,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     setActiveInsight(insight) {
         this.#activeInsight = insight;
-        const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
         this.bulkRemoveOverlays(this.#currentInsightOverlays);
-        if (!this.#activeInsight || !traceBounds) {
+        if (!this.#activeInsight) {
             return;
         }
         this.setOverlays(this.#activeInsight.overlays, { updateTraceWindow: true });
@@ -346,7 +363,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             entryChart.toggleGroupExpand(groupIndex);
         }
     }
-    #processFlameChartMouseMoveEvent(data) {
+    async #processFlameChartMouseMoveEvent(data) {
         const { mouseEvent, timeInMicroSeconds } = data;
         // If the user is no longer holding shift, remove any existing marker.
         if (!mouseEvent.shiftKey) {
@@ -354,7 +371,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             if (removedCount > 0) {
                 // Don't trigger lots of updates on a mouse move if we didn't actually
                 // remove any overlays.
-                this.#overlays.update();
+                await this.#overlays.update();
             }
         }
         if (!mouseEvent.metaKey && mouseEvent.shiftKey) {
@@ -373,28 +390,140 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
          * (buttons === 2 indicates a right click)
          */
         if (event.buttons === 2 && this.#linkSelectionAnnotation) {
-            ModificationsManager.activeManager()?.removeAnnotation(this.#linkSelectionAnnotation);
-            this.#linkSelectionAnnotation = null;
+            this.#clearLinkSelectionAnnotation(true);
             event.stopPropagation();
+        }
+    }
+    #clearLinkSelectionAnnotation(deleteCurrentLink) {
+        if (this.#linkSelectionAnnotation === null) {
+            return;
+        }
+        // If the link in progress in cleared, make sure it's creation is complete. If not, delete it.
+        if (deleteCurrentLink || this.#linkSelectionAnnotation.state !== "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */) {
+            ModificationsManager.activeManager()?.removeAnnotation(this.#linkSelectionAnnotation);
+        }
+        this.mainFlameChart.setLinkSelectionAnnotationIsInProgress(false);
+        this.networkFlameChart.setLinkSelectionAnnotationIsInProgress(false);
+        this.#linkSelectionAnnotation = null;
+    }
+    #setLinkSelectionAnnotation(linkSelectionAnnotation) {
+        this.mainFlameChart.setLinkSelectionAnnotationIsInProgress(true);
+        this.networkFlameChart.setLinkSelectionAnnotationIsInProgress(true);
+        this.#linkSelectionAnnotation = linkSelectionAnnotation;
+    }
+    #createNewTimeRangeFromKeyboard(startTime, endTime) {
+        if (this.#timeRangeSelectionAnnotation) {
+            return;
+        }
+        this.#timeRangeSelectionAnnotation = {
+            bounds: Trace.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime),
+            type: 'TIME_RANGE',
+            label: '',
+        };
+        ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation);
+    }
+    /**
+     * Handles key presses that could impact the creation of a time range overlay with the keyboard.
+     * @returns `true` if the event should not be propogated + have its default behaviour stopped.
+     */
+    #handleTimeRangeKeyboardCreation(event) {
+        const visibleWindow = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.timelineTraceWindow;
+        if (!visibleWindow) {
+            return false;
+        }
+        // The amount we increment the time range by when using the arrow keys is
+        // 2% of the visible window.
+        const timeRangeIncrementValue = visibleWindow.range * 0.02;
+        switch (event.key) {
+            // ArrowLeft + ArrowRight adjusts the right hand bound (the max) of the time range
+            // Shift + ArrowRight also starts a range if there isn't one already
+            case 'ArrowRight': {
+                if (!this.#timeRangeSelectionAnnotation) {
+                    if (event.shiftKey) {
+                        let startTime = visibleWindow.min;
+                        // Prefer the start time of the selected event, if there is one.
+                        if (this.#currentSelection) {
+                            startTime = Trace.Helpers.Timing.millisecondsToMicroseconds(this.#currentSelection.startTime);
+                        }
+                        this.#createNewTimeRangeFromKeyboard(startTime, Trace.Types.Timing.MicroSeconds(startTime + timeRangeIncrementValue));
+                        return true;
+                    }
+                    return false;
+                }
+                // Grow the RHS of the range, but limit it to the visible window.
+                this.#timeRangeSelectionAnnotation.bounds.max = Trace.Types.Timing.MicroSeconds(Math.min(this.#timeRangeSelectionAnnotation.bounds.max + timeRangeIncrementValue, visibleWindow.max));
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
+                return true;
+            }
+            case 'ArrowLeft': {
+                if (!this.#timeRangeSelectionAnnotation) {
+                    return false;
+                }
+                this.#timeRangeSelectionAnnotation.bounds.max = Trace.Types.Timing.MicroSeconds(
+                // Shrink the RHS of the range, but make sure it cannot go below the min value.
+                Math.max(this.#timeRangeSelectionAnnotation.bounds.max - timeRangeIncrementValue, this.#timeRangeSelectionAnnotation.bounds.min + 1));
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
+                return true;
+            }
+            // ArrowDown + ArrowUp adjusts the left hand bound (the min) of the time range
+            case 'ArrowUp': {
+                if (!this.#timeRangeSelectionAnnotation) {
+                    return false;
+                }
+                this.#timeRangeSelectionAnnotation.bounds.min = Trace.Types.Timing.MicroSeconds(
+                // Increase the LHS of the range, but make sure it cannot go above the max value.
+                Math.min(this.#timeRangeSelectionAnnotation.bounds.min + timeRangeIncrementValue, this.#timeRangeSelectionAnnotation.bounds.max - 1));
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
+                return true;
+            }
+            case 'ArrowDown': {
+                if (!this.#timeRangeSelectionAnnotation) {
+                    return false;
+                }
+                this.#timeRangeSelectionAnnotation.bounds.min = Trace.Types.Timing.MicroSeconds(
+                // Decrease the LHS, but make sure it cannot go beyond the minimum visible window.
+                Math.max(this.#timeRangeSelectionAnnotation.bounds.min - timeRangeIncrementValue, visibleWindow.min));
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
+                return true;
+            }
+            default: {
+                // If we get any other key, we take that as a sign the user is done. Most likely the keys come from them typing into the label :)
+                // If they do not type into the label, then the time range is not created.
+                this.#timeRangeSelectionAnnotation = null;
+                return false;
+            }
         }
     }
     #keydownHandler(event) {
         const keyCombo = 'fixme';
         // `CREATION_NOT_STARTED` is only true in the state when both empty label and button to create connection are
         // created at the same time. If any key is typed in that state, it means that the label is in focus and the key
-        // is typed into the label. In that case, delete the connection.
+        // is typed into the label. This tells us that the user chose to create the
+        // label, not the connection. In that case, delete the connection.
         if (this.#linkSelectionAnnotation &&
             this.#linkSelectionAnnotation.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
-            ModificationsManager.activeManager()?.removeAnnotation(this.#linkSelectionAnnotation);
+            this.#clearLinkSelectionAnnotation(true);
+            // We have dealt with the keypress as the user is typing into the label, so do not let it propogate up.
+            // This also ensures that if the user uses "Escape" they don't toggle the DevTools drawer.
+            event.stopPropagation();
         }
         /**
          * If the user is in the middle of creating an entry link and hits Esc,
          * cancel and clear out the pending annotation.
          */
         if (event.key === 'Escape' && this.#linkSelectionAnnotation) {
-            ModificationsManager.activeManager()?.removeAnnotation(this.#linkSelectionAnnotation);
-            this.#linkSelectionAnnotation = null;
+            this.#clearLinkSelectionAnnotation(true);
             event.stopPropagation();
+        }
+        const eventHandledByKeyboardTimeRange = this.#handleTimeRangeKeyboardCreation(event);
+        if (eventHandledByKeyboardTimeRange) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
         if (event.key === keyCombo[this.#gameKeyMatches]) {
             this.#gameKeyMatches++;
@@ -520,9 +649,12 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.#updateFlameCharts();
     }
     setInsights(insights) {
-        if (this.#traceInsightsSets !== insights) {
-            this.#traceInsightsSets = insights;
+        if (this.#traceInsightsSets === insights) {
+            return;
         }
+        this.#traceInsightsSets = insights;
+        // The DetailsView is provided with the InsightSets, so make sure we update it.
+        this.#updateDetailViews();
     }
     #reset() {
         if (this.networkDataProvider.isEmpty()) {
@@ -581,11 +713,21 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     // If an entry is hovered over and a creation of link annotation is in progress, update that annotation with a hovered entry.
     updateLinkSelectionAnnotationWithToEntry(dataProvider, entryIndex) {
-        if (!this.#linkSelectionAnnotation) {
+        if (!this.#linkSelectionAnnotation ||
+            this.#linkSelectionAnnotation.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
             return;
         }
         const toSelectionObject = this.#selectionIfTraceEvent(entryIndex, dataProvider);
         if (toSelectionObject) {
+            // Prevent the user from creating a link that connects an entry to itself.
+            if (toSelectionObject === this.#linkSelectionAnnotation.entryFrom) {
+                return;
+            }
+            // Prevent the user from creating a link that connects an entry it's already connected to.
+            const linkBetweenEntriesExists = ModificationsManager.activeManager()?.linkAnnotationBetweenEntriesExists(this.#linkSelectionAnnotation.entryFrom, toSelectionObject);
+            if (linkBetweenEntriesExists) {
+                return;
+            }
             this.#linkSelectionAnnotation.state = "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */;
             this.#linkSelectionAnnotation.entryTo = toSelectionObject;
         }
@@ -647,10 +789,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     revealEvent(event) {
         const mainIndex = this.mainDataProvider.indexForEvent(event);
         const networkIndex = this.networkDataProvider.indexForEvent(event);
-        if (mainIndex) {
+        if (mainIndex !== null) {
             this.mainFlameChart.revealEntry(mainIndex);
         }
-        else if (networkIndex) {
+        else if (networkIndex !== null) {
             this.networkFlameChart.revealEntry(networkIndex);
         }
     }
@@ -658,14 +800,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     revealEventVertically(event) {
         const mainIndex = this.mainDataProvider.indexForEvent(event);
         const networkIndex = this.networkDataProvider.indexForEvent(event);
-        if (mainIndex) {
+        if (mainIndex !== null) {
             this.mainFlameChart.revealEntryVertically(mainIndex);
         }
-        else if (networkIndex) {
+        else if (networkIndex !== null) {
             this.networkFlameChart.revealEntryVertically(networkIndex);
         }
     }
     setSelectionAndReveal(selection) {
+        this.#currentSelection = selection;
         const mainIndex = this.mainDataProvider.entryIndexForSelection(selection);
         const networkIndex = this.networkDataProvider.entryIndexForSelection(selection);
         this.mainFlameChart.setSelectedEntry(mainIndex);
@@ -675,7 +818,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         // If:
         // 1. There is no selection, or the selection is not a range selection
         // AND 2. we have an active time range selection overlay
-        // AND 3. The label of the selection is not empty
+        // AND 3. The label of the selection is empty
         // then we need to remove it.
         if ((selection === null || !TimelineSelection.isRangeSelection(selection.object)) &&
             this.#timeRangeSelectionAnnotation && !this.#timeRangeSelectionAnnotation.label) {
@@ -692,7 +835,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
         // Create the entry selected overlay if the selection represents a frame or trace event (either network, or anything else)
         if (selection &&
-            (TimelineSelection.isSelection(selection.object) ||
+            (TimelineSelection.isTraceEventSelection(selection.object) ||
                 TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
                 TimelineSelection.isLegacyTimelineFrame(selection.object))) {
             this.addOverlay({
@@ -702,7 +845,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
         if (this.#linkSelectionAnnotation &&
             this.#linkSelectionAnnotation.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
-            ModificationsManager.activeManager()?.removeAnnotation(this.#linkSelectionAnnotation);
+            this.#clearLinkSelectionAnnotation(true);
         }
     }
     /**
@@ -712,11 +855,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         for (const overlay of overlays) {
             this.#overlays.add(overlay);
         }
-        this.#overlays.update();
+        void this.#overlays.update();
     }
     addOverlay(newOverlay) {
         const overlay = this.#overlays.add(newOverlay);
-        this.#overlays.update();
+        void this.#overlays.update();
         return overlay;
     }
     bulkRemoveOverlays(overlays) {
@@ -726,15 +869,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         for (const overlay of overlays) {
             this.#overlays.remove(overlay);
         }
-        this.#overlays.update();
+        void this.#overlays.update();
     }
     removeOverlay(removedOverlay) {
         this.#overlays.remove(removedOverlay);
-        this.#overlays.update();
+        void this.#overlays.update();
     }
     updateExistingOverlay(existingOverlay, newData) {
         this.#overlays.updateExisting(existingOverlay, newData);
-        this.#overlays.update();
+        void this.#overlays.update();
     }
     enterLabelEditMode(overlay) {
         this.#overlays.enterLabelEditMode(overlay);
@@ -742,7 +885,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     onAddEntryLabelAnnotation(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data.entryIndex);
         if (selection &&
-            (TimelineSelection.isSelection(selection.object) ||
+            (TimelineSelection.isTraceEventSelection(selection.object) ||
                 TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
                 TimelineSelection.isLegacyTimelineFrame(selection.object))) {
             this.setSelectionAndReveal(selection);
@@ -759,13 +902,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     onEntriesLinkAnnotationCreate(dataProvider, entryFromIndex, linkCreateButton) {
         const fromSelectionObject = (entryFromIndex) ? this.#selectionIfTraceEvent(entryFromIndex, dataProvider) : null;
         if (fromSelectionObject) {
-            this.#linkSelectionAnnotation = {
+            this.#setLinkSelectionAnnotation({
                 type: 'ENTRIES_LINK',
                 entryFrom: fromSelectionObject,
                 state: (linkCreateButton) ? "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */ :
                     "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */,
-            };
-            ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation);
+            });
+            if (this.#linkSelectionAnnotation) {
+                ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation);
+            }
         }
     }
     #selectionIfTraceEvent(index, dataProvider) {
@@ -773,7 +918,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (!selection) {
             return null;
         }
-        if (TimelineSelection.isSelection(selection.object) ||
+        if (TimelineSelection.isTraceEventSelection(selection.object) ||
             TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object)) {
             return selection.object;
         }
@@ -848,7 +993,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         // Regardless of if the link in progress was deleted or the clicked entry is the final selection,
         // set the link selection in progress to null so a new one is created if the an event to create
         // of update the current link is dispatched.
-        this.#linkSelectionAnnotation = null;
+        this.#clearLinkSelectionAnnotation(false);
     }
     resizeToPreferredHeights() {
         if (!this.isShowing()) {

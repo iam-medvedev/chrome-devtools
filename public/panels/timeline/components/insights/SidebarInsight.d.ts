@@ -5,7 +5,8 @@ export interface InsightDetails {
     description: string;
     internalName: string;
     expanded: boolean;
-    estimatedSavings?: number | undefined;
+    estimatedSavingsTime?: Trace.Types.Timing.MilliSeconds;
+    estimatedSavingsBytes?: number;
 }
 export declare class InsightActivated extends Event {
     name: string;

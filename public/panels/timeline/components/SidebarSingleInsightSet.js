@@ -6,7 +6,6 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Insights from './insights/insights.js';
-import { EventReferenceClick } from './Sidebar.js';
 import styles from './sidebarSingleInsightSet.css.js';
 export class SidebarSingleInsightSet extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-single-navigation`;
@@ -33,22 +32,13 @@ export class SidebarSingleInsightSet extends HTMLElement {
         }
         return label === this.#data.activeCategory;
     }
-    #onClickMetric(event, insightComponentName) {
-        const el = this.shadowRoot?.querySelector(insightComponentName);
-        if (el && this.#data.insightSetKey) {
-            this.dispatchEvent(new Insights.SidebarInsight.InsightActivated(el.internalName, this.#data.insightSetKey, el.getInitialOverlays()));
-        }
-        this.dispatchEvent(new EventReferenceClick(event));
+    #onClickMetric(traceEvent) {
+        this.dispatchEvent(new Insights.Helpers.EventReferenceClick(traceEvent));
     }
-    #renderMetricValue(label, value, classification, event) {
-        const insightComponentName = {
-            LCP: Insights.LCPPhases.LCPPhases.litTagName.value,
-            CLS: Insights.CLSCulprits.CLSCulprits.litTagName.value,
-            INP: Insights.InteractionToNextPaint.InteractionToNextPaint.litTagName.value,
-        }[label];
+    #renderMetricValue(label, value, classification, eventToSelectOnClick) {
         // clang-format off
         return this.#metricIsVisible(label) ? LitHtml.html `
-      <div class="metric" @click=${event ? this.#onClickMetric.bind(this, event, insightComponentName) : null}>
+      <div class="metric" @click=${eventToSelectOnClick ? this.#onClickMetric.bind(this, eventToSelectOnClick) : null}>
         <div class="metric-value metric-value-${classification}">${value}</div>
         <div class="metric-label">${label}</div>
       </div>
@@ -78,9 +68,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
             // This means this view will always display a CLS score.
             return { value: 0, worstShiftEvent: null };
         }
-        // TODO(crbug.com/366049346): buildLayoutShiftsClusters is dropping non-nav clusters,
-        //                            so `insight.clusters` is always empty for non-navs.
-        // TODO(cjamcl): the CLS insight be doing this for us.
+        // TODO(cjamcl): the CLS insight should be doing this for us.
         let maxScore = 0;
         let worstCluster;
         for (const cluster of insight.clusters) {
@@ -105,7 +93,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
     </div>
     `;
     }
-    #renderInsights(insights, insightSetKey) {
+    #renderInsights(insights, parsedTrace, insightSetKey) {
         // TODO(crbug.com/368135130): sort this in a smart way!
         const insightComponents = [
             Insights.InteractionToNextPaint.InteractionToNextPaint,
@@ -124,6 +112,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
             return LitHtml.html `<div data-single-insight-wrapper>
         <${component.litTagName}
           .insights=${insights}
+          .parsedTrace=${parsedTrace}
           .insightSetKey=${insightSetKey}
           .activeInsight=${this.#data.activeInsight}
           .activeCategory=${this.#data.activeCategory}>
@@ -142,7 +131,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         LitHtml.render(LitHtml.html `
       <div class="navigation">
         ${this.#renderMetrics(insightSetKey)}
-        ${this.#renderInsights(insights, insightSetKey)}
+        ${this.#renderInsights(insights, parsedTrace, insightSetKey)}
         </div>
       `, this.#shadow, { host: this });
         // clang-format on
