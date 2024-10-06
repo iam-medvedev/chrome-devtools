@@ -23,25 +23,43 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
             const { animationFailures } = insight;
+            const simpleAnimation = data.Animations.animations.find(animation => {
+                return animation.args.data.beginEvent.args.data.displayName === 'simple-animation';
+            });
+            const top = data.Animations.animations.find(animation => {
+                return animation.args.data.beginEvent.args.data.displayName === 'top';
+            });
             const expected = [
                 {
                     name: 'simple-animation',
                     failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
                     unsupportedProperties: ['color'],
+                    animation: simpleAnimation,
                 },
                 {
                     name: 'top',
-                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    failureReasons: [
+                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
+                        "UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+                    ],
                     unsupportedProperties: ['top'],
+                    animation: top,
                 },
             ];
             assert.deepStrictEqual(animationFailures, expected);
         });
-        it('gets the correct non composited animations for shift', async function () {
+        // Flaky test.
+        it.skip('[crbug.com/370382177]: gets the correct non composited animations for shift', async function () {
             const { data, insights } = await processTrace(this, 'non-composited-animation-shift.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CumulativeLayoutShift', insights, firstNav);
             const { shifts, animationFailures } = insight;
+            const simpleAnimation = data.Animations.animations.find(animation => {
+                return animation.args.data.beginEvent.args.data.displayName === 'simple-animation';
+            });
+            const top = data.Animations.animations.find(animation => {
+                return animation.args.data.beginEvent.args.data.displayName === 'top';
+            });
             const shiftAnimations = [];
             shifts?.forEach(entry => {
                 shiftAnimations.push(...entry.nonCompositedAnimations);
@@ -51,6 +69,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
                     name: 'simple-animation',
                     failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
                     unsupportedProperties: ['height', 'color', 'top'],
+                    animation: simpleAnimation,
                 },
             ];
             assert.deepStrictEqual(shiftAnimations, expectedWithShift);
@@ -59,11 +78,13 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
                     name: 'simple-animation',
                     failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
                     unsupportedProperties: ['height', 'color', 'top'],
+                    animation: simpleAnimation,
                 },
                 {
                     name: 'top',
                     failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* InsightRunners.CumulativeLayoutShift.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
                     unsupportedProperties: ['top'],
+                    animation: top,
                 },
             ];
             // animationFailures should include both root causes failures, and failures without associated shifts.
@@ -151,6 +172,20 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
             assert.exists(clusters);
             assert.exists(shifts);
             assert.strictEqual(clusters.length, 2);
+            for (const cluster of clusters) {
+                // Check that the cluster events exist in shifts map.
+                for (const shiftEvent of cluster.events) {
+                    assert.exists(shifts.get(shiftEvent));
+                }
+            }
+        });
+        it('returns clusters correctly for non-navigations', async function () {
+            const { insights } = await processTrace(this, 'cls-no-nav.json.gz');
+            const insight = getInsightOrError('CumulativeLayoutShift', insights);
+            const { shifts, clusters } = insight;
+            assert.exists(clusters);
+            assert.exists(shifts);
+            assert.strictEqual(clusters.length, 3);
             for (const cluster of clusters) {
                 // Check that the cluster events exist in shifts map.
                 for (const shiftEvent of cluster.events) {

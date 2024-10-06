@@ -30,6 +30,9 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         return frameManagerInstance;
     }
+    static removeInstance() {
+        frameManagerInstance = null;
+    }
     modelAdded(resourceTreeModel) {
         const addListener = resourceTreeModel.addEventListener(ResourceTreeModelEvents.FrameAdded, this.frameAdded, this);
         const detachListener = resourceTreeModel.addEventListener(ResourceTreeModelEvents.FrameDetached, this.frameDetached, this);

@@ -273,17 +273,6 @@ export class UserMetrics {
         }
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterItemSelected" /* EnumeratedHistogram.ResourceTypeFilterItemSelected */, resourceType, ResourceType.MAX_VALUE);
     }
-    networkPanelMoreFiltersNumberOfSelectedChanged(itemCount) {
-        const boundItemCount = Math.max(Math.min(itemCount, NetworkPanelMoreFilters.MAX_VALUE), 0);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelMoreFiltersNumberOfSelectedChanged" /* EnumeratedHistogram.NetworkPanelMoreFiltersNumberOfSelectedChanged */, boundItemCount, NetworkPanelMoreFilters.MAX_VALUE);
-    }
-    networkPanelMoreFiltersItemSelected(filterName) {
-        const filter = NetworkPanelMoreFilters[filterName];
-        if (filter === undefined) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelMoreFiltersItemSelected" /* EnumeratedHistogram.NetworkPanelMoreFiltersItemSelected */, filter, NetworkPanelMoreFilters.MAX_VALUE);
-    }
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
@@ -467,7 +456,8 @@ export var Action;
     Action[Action["InsightsReminderTeaserSettingsLinkClicked"] = 166] = "InsightsReminderTeaserSettingsLinkClicked";
     Action[Action["InsightsReminderTeaserAbortedInSettings"] = 167] = "InsightsReminderTeaserAbortedInSettings";
     Action[Action["GeneratingInsightWithoutDisclaimer"] = 168] = "GeneratingInsightWithoutDisclaimer";
-    Action[Action["MAX_VALUE"] = 169] = "MAX_VALUE";
+    Action[Action["FreestylerOpenedFromElementsPanelFloatingButton"] = 169] = "FreestylerOpenedFromElementsPanelFloatingButton";
+    Action[Action["MAX_VALUE"] = 170] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -904,11 +894,11 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
     DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-layout-shift-details"] = 99] = "timeline-layout-shift-details";
     DevtoolsExperiments[DevtoolsExperiments["extension-storage-viewer"] = 100] = "extension-storage-viewer";
+    DevtoolsExperiments[DevtoolsExperiments["floating-entry-points-for-ai-assistance"] = 101] = "floating-entry-points-for-ai-assistance";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 101] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 102] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;
@@ -1049,17 +1039,6 @@ export var ResourceType;
     /* eslint-enable @typescript-eslint/naming-convention */
     ResourceType[ResourceType["MAX_VALUE"] = 12] = "MAX_VALUE";
 })(ResourceType || (ResourceType = {}));
-export var NetworkPanelMoreFilters;
-(function (NetworkPanelMoreFilters) {
-    /* eslint-disable @typescript-eslint/naming-convention */
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["Hide data URLs"] = 0] = "Hide data URLs";
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["Hide extension URLs"] = 1] = "Hide extension URLs";
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["Blocked response cookies"] = 2] = "Blocked response cookies";
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["Blocked requests"] = 3] = "Blocked requests";
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["3rd-party requests"] = 4] = "3rd-party requests";
-    /* eslint-enable @typescript-eslint/naming-convention */
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["MAX_VALUE"] = 5] = "MAX_VALUE";
-})(NetworkPanelMoreFilters || (NetworkPanelMoreFilters = {}));
 export var Language;
 (function (Language) {
     /* eslint-disable @typescript-eslint/naming-convention */

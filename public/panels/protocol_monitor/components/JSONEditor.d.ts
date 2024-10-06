@@ -1,3 +1,4 @@
+import './Toolbar.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 declare const LitElement: typeof LitHtml.LitElement;

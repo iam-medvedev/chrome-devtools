@@ -123,9 +123,10 @@ styles.replaceSync(
 }
 
 .overlay-type-TIMESPAN_BREAKDOWN {
-  /* This overlay is shown at the bottom of the UI, not the top */
+  /* This overlay by default is shown at the bottom of the UI, not the top */
   top: unset;
   bottom: 0;
+  height: 100px;
 }
 
 /*# sourceURL=timelineFlameChartView.css */

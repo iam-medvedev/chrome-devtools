@@ -28,6 +28,7 @@ const jsonPropertyOptions = {
     hasChanged(value, oldValue) {
         return JSON.stringify(value) !== JSON.stringify(oldValue);
     },
+    attribute: false,
 };
 let EditableContent = class EditableContent extends HTMLElement {
     static get observedAttributes() {
@@ -299,7 +300,7 @@ __decorate([
     property(jsonPropertyOptions)
 ], SuggestionInput.prototype, "options", void 0);
 __decorate([
-    property()
+    property({ type: Boolean })
 ], SuggestionInput.prototype, "autocomplete", void 0);
 __decorate([
     property()
@@ -317,7 +318,7 @@ __decorate([
     property({ type: Boolean })
 ], SuggestionInput.prototype, "disabled", void 0);
 __decorate([
-    property()
+    property({ type: Boolean })
 ], SuggestionInput.prototype, "strikethrough", void 0);
 __decorate([
     property()

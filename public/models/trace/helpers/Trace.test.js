@@ -18,7 +18,7 @@ describeWithEnvironment('TraceModel helpers', function () {
             assert.strictEqual(origin, 'google.com');
         });
         it('returns null when no origin is found', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic.json.gz');
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'missing-url.json.gz');
             const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.Meta.mainFrameURL);
             assert.isNull(origin);
         });

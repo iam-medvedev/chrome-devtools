@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './entryLabelOverlay.css.js';
@@ -44,11 +43,15 @@ export class EntryLabelOverlay extends HTMLElement {
     static LABEL_AND_CONNECTOR_HEIGHT = EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
     // Set the max label length to avoid labels that could signicantly increase the file size.
     static MAX_LABEL_LENGTH = 100;
-    // Width of the icon next to the label input field. This is same as the width in CSS.
-    static USER_CREATED_ICON_WIDTH = 16;
     static litTagName = LitHtml.literal `devtools-entry-label-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
+    // Once a label is bound for deletion, we remove it from the DOM via events
+    // that are dispatched. But in the meantime the blur event of the input box
+    // can fire, and that triggers a second removal. So we set this flag after
+    // the first removal to avoid a duplicate event firing which is a no-op but
+    // causes errors when we try to delete an already deleted annotation.
+    #isPendingRemoval = false;
     // The label is set to editable when it is double clicked. If the user clicks away from the label box
     // element, the lable is set to not editable until it double clicked.s
     #isLabelEditable = true;
@@ -56,7 +59,6 @@ export class EntryLabelOverlay extends HTMLElement {
     #labelPartsWrapper = null;
     #entryHighlightWrapper = null;
     #inputField = null;
-    #labelBox = null;
     #connectorLineContainer = null;
     #label;
     #shouldDrawBelowEntry;
@@ -84,7 +86,6 @@ export class EntryLabelOverlay extends HTMLElement {
         this.#render();
         this.#shouldDrawBelowEntry = shouldDrawBelowEntry;
         this.#labelPartsWrapper = this.#shadow.querySelector('.label-parts-wrapper');
-        this.#labelBox = this.#labelPartsWrapper?.querySelector('.label-box') ?? null;
         this.#inputField = this.#labelPartsWrapper?.querySelector('.input-field') ?? null;
         this.#connectorLineContainer = this.#labelPartsWrapper?.querySelector('.connectorContainer') ?? null;
         this.#entryHighlightWrapper =
@@ -107,8 +108,8 @@ export class EntryLabelOverlay extends HTMLElement {
         return this.#entryHighlightWrapper;
     }
     #handleLabelInputKeyUp() {
-        // If the label changed on key up, dispatch label changed event
-        const labelBoxTextContent = this.#inputField?.textContent ?? '';
+        // If the label changed on key up, dispatch label changed event.
+        const labelBoxTextContent = this.#inputField?.textContent?.trim() ?? '';
         if (labelBoxTextContent !== this.#label) {
             this.#label = labelBoxTextContent;
             this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
@@ -129,10 +130,9 @@ export class EntryLabelOverlay extends HTMLElement {
         // Therefore, if the new key is `Enter` key, treat it
         // as the end of the label input and blur the input field.
         if (event.key === 'Enter' || event.key === 'Escape') {
-            // In DevTools, the `Escape` button will by default toggle the console
-            // drawer, which we don't want here, so we need to call
-            // `stopPropagation()`.
-            event.stopPropagation();
+            // Note that we do not stop the event propagating here; this is on
+            // purpose because we need it to bubble up into TimelineFlameChartView's
+            // handler. That updates the state and deals with the keydown.
             this.#inputField.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
             return false;
         }
@@ -223,8 +223,8 @@ export class EntryLabelOverlay extends HTMLElement {
         circle.setAttribute('fill', connectorColor);
     }
     #drawLabel(initialLabel) {
-        if (!this.#inputField || !this.#labelBox) {
-            console.error('`labelBox` or `labelBox` element is missing.');
+        if (!this.#inputField) {
+            console.error('`labelBox`element is missing.');
             return;
         }
         if (typeof initialLabel === 'string') {
@@ -235,13 +235,12 @@ export class EntryLabelOverlay extends HTMLElement {
         // PART 1: draw the label box
         if (this.#shouldDrawBelowEntry) {
             // Label is drawn below and slightly to the right.
-            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH - EntryLabelOverlay.USER_CREATED_ICON_WIDTH / 2;
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
         }
         else {
             // If the label is drawn above, the connector goes up and to the left, so
             // we pull the label back slightly to align it nicely.
-            xTranslation =
-                EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1 - EntryLabelOverlay.USER_CREATED_ICON_WIDTH / 2;
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
         }
         if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
             // Move the label down from above the entry to below it. The label is positioned by default quite far above the entry, hence why we add:
@@ -259,7 +258,7 @@ export class EntryLabelOverlay extends HTMLElement {
             transformString += `translateY(${yTranslation}px)`;
         }
         if (transformString.length) {
-            this.#labelBox.style.transform = transformString;
+            this.#inputField.style.transform = transformString;
         }
     }
     #focusInputBox() {
@@ -276,8 +275,12 @@ export class EntryLabelOverlay extends HTMLElement {
         if (editable) {
             this.#focusInputBox();
         }
+        // On MacOS when clearing the input box it is left with a new line, so we
+        // trim the string to remove any accidental trailing whitespace.
+        const newLabelText = this.#inputField?.textContent?.trim() ?? '';
         // If the label is empty when it is being navigated away from, dispatch an event to remove this entry overlay
-        if (!editable && this.#inputField?.innerText.length === 0) {
+        if (!editable && newLabelText.length === 0 && !this.#isPendingRemoval) {
+            this.#isPendingRemoval = true;
             this.dispatchEvent(new EmptyEntryLabelRemoveEvent());
         }
     }
@@ -285,20 +288,16 @@ export class EntryLabelOverlay extends HTMLElement {
         // clang-format off
         LitHtml.render(LitHtml.html `
         <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}>
-          <div class="label-box">
-            <${IconButton.Icon.Icon.litTagName} class='user-created-icon' name='profile'>
-            </${IconButton.Icon.Icon.litTagName}>
-            <span
-              class="input-field"
-              role="textbox"
-              @dblclick=${() => this.setLabelEditabilityAndRemoveEmptyLabel(true)}
-              @blur=${() => this.setLabelEditabilityAndRemoveEmptyLabel(false)}
-              @keydown=${this.#handleLabelInputKeyDown}
-              @paste=${this.#handleLabelInputPaste}
-              @keyup=${this.#handleLabelInputKeyUp}
-              contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
-            </span>
-          </div>
+          <span
+            class="input-field"
+            role="textbox"
+            @dblclick=${() => this.setLabelEditabilityAndRemoveEmptyLabel(true)}
+            @blur=${() => this.setLabelEditabilityAndRemoveEmptyLabel(false)}
+            @keydown=${this.#handleLabelInputKeyDown}
+            @paste=${this.#handleLabelInputPaste}
+            @keyup=${this.#handleLabelInputKeyUp}
+            contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
+          </span>
           <svg class="connectorContainer">
             <line/>
             <circle/>

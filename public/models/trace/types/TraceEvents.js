@@ -53,6 +53,7 @@ export function eventIsPageLoadEvent(event) {
 export function isTracingSessionIdForWorker(event) {
     return event.name === 'TracingSessionIdForWorker';
 }
+export const NO_NAVIGATION = 'NO_NAVIGATION';
 export function isScheduleStyleInvalidationTracking(event) {
     return event.name === "ScheduleStyleInvalidationTracking" /* Name.SCHEDULE_STYLE_INVALIDATION_TRACKING */;
 }

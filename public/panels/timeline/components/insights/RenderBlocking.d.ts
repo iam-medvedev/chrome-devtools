@@ -8,7 +8,6 @@ export declare class RenderBlockingRequests extends BaseInsight {
     internalName: string;
     userVisibleTitle: string;
     description: string;
-    connectedCallback(): void;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     render(): void;
 }

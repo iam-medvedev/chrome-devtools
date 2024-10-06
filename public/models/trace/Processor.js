@@ -112,14 +112,14 @@ export class TraceProcessor extends EventTarget {
         this.#insights = null;
         this.#status = "IDLE" /* Status.IDLE */;
     }
-    async parse(traceEvents, freshRecording = false) {
+    async parse(traceEvents, options) {
         if (this.#status !== "IDLE" /* Status.IDLE */) {
             throw new Error(`Trace processor can't start parsing when not idle. Current state: ${this.#status}`);
         }
         try {
             this.#status = "PARSING" /* Status.PARSING */;
-            await this.#computeParsedTrace(traceEvents, freshRecording);
-            if (this.#data) {
+            await this.#computeParsedTrace(traceEvents, Boolean(options.isFreshRecording));
+            if (this.#data && !options.isCPUProfile) { // We do not calculate insights for CPU Profiles.
                 this.#computeInsights(this.#data, traceEvents);
             }
             this.#status = "FINISHED_PARSING" /* Status.FINISHED_PARSING */;
@@ -277,19 +277,28 @@ export class TraceProcessor extends EventTarget {
             }
             Object.assign(data, { [name]: insightResult });
         }
-        let id, label, navigation;
+        let id, urlString, navigation;
         if (context.navigation) {
             id = context.navigationId;
-            label = context.navigation.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
+            urlString = context.navigation.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
             navigation = context.navigation;
         }
         else {
-            id = Insights.Types.NO_NAVIGATION;
-            label = parsedTrace.Meta.mainFrameURL;
+            id = Types.Events.NO_NAVIGATION;
+            urlString = parsedTrace.Meta.mainFrameURL;
+        }
+        let url;
+        try {
+            url = new URL(urlString);
+        }
+        catch {
+            // We're pretty sure this only happens for our test fixture: missing-url.json.gz. Shouldn't
+            // happen for real traces.
+            return;
         }
         const insightSets = {
             id,
-            label,
+            url,
             navigation,
             frameId: context.frameId,
             bounds: context.bounds,
@@ -332,7 +341,7 @@ export class TraceProcessor extends EventTarget {
             // The above filter guarantees these are present.
             const frameId = navigation.args.frame;
             const navigationId = navigation.args.data?.navigationId;
-            // The lantern sub-context is optional on NavigationInsightContext, so not setting it is OK.
+            // The lantern sub-context is optional on InsightSetContext, so not setting it is OK.
             // This is also a hedge against an error inside Lantern resulting in breaking the entire performance panel.
             // Additionally, many trace fixtures are too old to be processed by Lantern.
             let lantern;

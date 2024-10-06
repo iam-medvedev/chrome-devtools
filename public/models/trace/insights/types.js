@@ -9,5 +9,4 @@ export var InsightWarning;
     InsightWarning["NO_DOCUMENT_REQUEST"] = "NO_DOCUMENT_REQUEST";
     InsightWarning["NO_LAYOUT"] = "NO_LAYOUT";
 })(InsightWarning || (InsightWarning = {}));
-export const NO_NAVIGATION = 'NO_NAVIGATION';
 //# sourceMappingURL=types.js.map

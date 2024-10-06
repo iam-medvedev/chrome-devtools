@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Logs from '../../models/logs/logs.js';
-import { ResponseType, } from './AiAgent.js';
+import { AiAgent, debugLog, isDebugMode, ResponseType, } from './AiAgent.js';
 /* clang-format off */
 const preamble = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
@@ -85,95 +85,53 @@ const lockedString = i18n.i18n.lockedString;
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
  */
-export class DrJonesNetworkAgent {
-    static buildRequest(opts) {
+export class DrJonesNetworkAgent extends AiAgent {
+    preamble = preamble;
+    clientFeature = Host.AidaClient.ClientFeature.CHROME_FREESTYLER;
+    // TODO(b/369822364): use a feature param instead.
+    userTier = 'BETA';
+    get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsExplainThisResourceDogfood?.temperature;
-        const request = {
-            input: opts.input,
-            preamble: opts.preamble,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            chat_history: opts.chatHistory,
-            client: Host.AidaClient.CLIENT_NAME,
-            options: {
-                ...(temperature !== undefined && temperature >= 0) && { temperature },
-                model_id: config.devToolsExplainThisResourceDogfood?.modelId ?? undefined,
-            },
-            metadata: {
-                disable_user_content_logging: !(opts.serverSideLoggingEnabled ?? false),
-                string_session_id: opts.sessionId,
-                // TODO(b/369822364): use a feature param instead.
-                user_tier: Host.AidaClient.convertToUserTierEnum('BETA'),
-            },
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            functionality_type: Host.AidaClient.FunctionalityType.CHAT,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            client_feature: Host.AidaClient.ClientFeature.CHROME_FREESTYLER,
+        const temperature = AiAgent.validTemperature(config.devToolsExplainThisResourceDogfood?.temperature);
+        const modelId = config.devToolsExplainThisResourceDogfood?.modelId;
+        return {
+            temperature,
+            model_id: modelId,
         };
-        return request;
     }
-    #aidaClient;
-    #chatHistory = new Map();
-    #serverSideLoggingEnabled;
-    #sessionId = crypto.randomUUID();
-    constructor(opts) {
-        this.#aidaClient = opts.aidaClient;
-        this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+    *handleContextDetails(selectedNetworkRequest) {
+        yield {
+            type: ResponseType.TITLE,
+            title: lockedString(UIStringsNotTranslate.inspectingNetworkData),
+        };
+        yield {
+            type: ResponseType.THOUGHT,
+            thought: lockedString(UIStringsNotTranslate.dataUsedToGenerateThisResponse),
+            contextDetails: createContextDetailsForDrJonesNetworkAgent(selectedNetworkRequest),
+        };
     }
-    get #getHistoryEntry() {
-        return [...this.#chatHistory.values()].flat();
-    }
-    get chatHistoryForTesting() {
-        return this.#getHistoryEntry;
-    }
-    async #aidaFetch(request, options) {
-        let response = '';
-        let rpcId;
-        for await (const lastResult of this.#aidaClient.fetch(request, options)) {
-            response = lastResult.explanation;
-            rpcId = lastResult.metadata.rpcGlobalId ?? rpcId;
-            if (lastResult.metadata.attributionMetadata?.some(meta => meta.attributionAction === Host.AidaClient.RecitationAction.BLOCK)) {
-                throw new Error('Attribution action does not allow providing the response');
-            }
-        }
-        return { response, rpcId };
+    async enhanceQuery(query, selectedNetworkRequest) {
+        const networkEnchantmentQuery = selectedNetworkRequest ?
+            `# Selected network request \n${formatNetworkRequest(selectedNetworkRequest)}\n\n# User request\n\n` :
+            '';
+        return `${networkEnchantmentQuery}${query}`;
     }
     #runId = 0;
     async *run(query, options) {
-        const structuredLog = [];
-        query = `${options.selectedNetworkRequest ?
-            `# Selected network request \n${formatNetworkRequest(options.selectedNetworkRequest)}\n\n# User request\n\n` :
-            ''}${query}`;
+        yield* this.handleContextDetails(options.selectedNetworkRequest);
+        query = await this.enhanceQuery(query, options.selectedNetworkRequest);
         const currentRunId = ++this.#runId;
-        const request = DrJonesNetworkAgent.buildRequest({
-            input: query,
-            preamble,
-            chatHistory: this.#chatHistory.size ? this.#getHistoryEntry : undefined,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-            sessionId: this.#sessionId,
-        });
         let response;
         let rpcId;
         try {
-            yield {
-                type: ResponseType.TITLE,
-                title: lockedString(UIStringsNotTranslate.inspectingNetworkData),
-                rpcId,
-            };
-            yield {
-                type: ResponseType.THOUGHT,
-                thought: lockedString(UIStringsNotTranslate.dataUsedToGenerateThisResponse),
-                contextDetails: createContextDetailsForDrJonesNetworkAgent(options.selectedNetworkRequest),
-                rpcId,
-            };
-            const fetchResult = await this.#aidaFetch(request, { signal: options.signal });
+            const fetchResult = await this.aidaFetch(query, { signal: options.signal });
             response = fetchResult.response;
             rpcId = fetchResult.rpcId;
         }
         catch (err) {
             debugLog('Error calling the AIDA API', err);
             if (err instanceof Host.AidaClient.AidaAbortError) {
-                this.#chatHistory.delete(currentRunId);
+                this.removeHistoryRun(currentRunId);
                 yield {
                     type: ResponseType.ERROR,
                     error: "abort" /* ErrorType.ABORT */,
@@ -188,58 +146,19 @@ export class DrJonesNetworkAgent {
             };
             return;
         }
-        if (options.signal?.aborted) {
-            return;
-        }
-        debugLog('Request', request, 'Response', response);
-        structuredLog.push({
-            request: structuredClone(request),
-            response,
+        this.addToHistory({
+            id: currentRunId,
+            query,
+            output: response,
         });
-        const addToHistory = (text) => {
-            this.#chatHistory.set(currentRunId, [
-                ...currentRunEntries,
-                {
-                    text: query,
-                    entity: Host.AidaClient.Entity.USER,
-                },
-                {
-                    text,
-                    entity: Host.AidaClient.Entity.SYSTEM,
-                },
-            ]);
-        };
-        const currentRunEntries = this.#chatHistory.get(currentRunId) ?? [];
-        addToHistory(response);
         yield {
             type: ResponseType.ANSWER,
             text: response,
-            // TODO: Remove this need.
-            suggestions: [],
             rpcId,
         };
         if (isDebugMode()) {
-            localStorage.setItem('freestylerStructuredLog', JSON.stringify(structuredLog));
             window.dispatchEvent(new CustomEvent('freestylerdone'));
         }
-    }
-}
-function isDebugMode() {
-    return Boolean(localStorage.getItem('debugFreestylerEnabled'));
-}
-function debugLog(...log) {
-    if (!isDebugMode()) {
-        return;
-    }
-    // eslint-disable-next-line no-console
-    console.log(...log);
-}
-function setDebugFreestylerEnabled(enabled) {
-    if (enabled) {
-        localStorage.setItem('debugFreestylerEnabled', 'true');
-    }
-    else {
-        localStorage.removeItem('debugFreestylerEnabled');
     }
 }
 function formatLines(title, lines, maxLength) {
@@ -358,6 +277,4 @@ function createContextDetailsForDrJonesNetworkAgent(request) {
     }
     return [];
 }
-// @ts-ignore
-globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;
 //# sourceMappingURL=DrJonesNetworkAgent.js.map

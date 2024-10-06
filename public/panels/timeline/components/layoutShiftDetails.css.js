@@ -12,23 +12,23 @@ styles.replaceSync(
  */
 
 .insight-chip {
+  font: var(--sys-typescale-body4-regular);
   border: var(--sys-size-1) solid var(--sys-color-primary);
   border-radius: var(--sys-shape-corner-extra-small);
   display: flex;
-  margin-top: var(--sys-size-5);
-  margin-left: var(--sys-size-4);
-  padding: var(--sys-size-3);
+  margin-left: var(--sys-size-3);
+  padding: var(--sys-size-2) var(--sys-size-4) var(--sys-size-2) var(--sys-size-4);
   width: max-content;
+  white-space: pre;
 
   .insight-keyword {
     color: var(--sys-color-primary);
-    padding-inline: inherit;
   }
 }
 
 .layout-shift-details-title,
 .cluster-details-title {
-  padding: var(--sys-size-5);
+  padding-bottom: var(--sys-size-5);
   display: flex;
   align-items: center;
 
@@ -44,24 +44,23 @@ styles.replaceSync(
 }
 
 .layout-shift-details-table {
-  margin-left: var(--sys-size-5);
+  font: var(--sys-typescale-body4-regular);
+  margin-bottom: var(--sys-size-4);
   text-align: left;
   border-block: var(--sys-size-1) solid var(--sys-color-divider);
   border-collapse: collapse;
 
   th,
   td {
-    padding: 0 var(--sys-size-4);
-  }
-
-  tr {
-    width: 100%;
+    padding-right: var(--sys-size-4);
+    min-width: var(--sys-size-20);
+    max-width: var(--sys-size-24);
   }
 }
 
 .table-title {
   th {
-    font-weight: var(--ref-typeface-weight-medium);
+    font: var(--sys-typescale-body4-medium);
   }
 
   tr {
@@ -81,7 +80,6 @@ styles.replaceSync(
 
 .details-row {
   display: flex;
-  padding: 0 var(--sys-size-5);
   min-height: var(--sys-size-9);
 }
 
@@ -103,28 +101,15 @@ styles.replaceSync(
 
 .layout-shift-summary-details,
 .layout-shift-cluster-summary-details {
-  display: inline-flex;
+  font: var(--sys-typescale-body4-regular);
+  display: flex;
   flex-direction: row;
-}
-
-.event-details {
-  width: 70%;
+  padding: var(--sys-size-6) var(--sys-size-6) 0 var(--sys-size-6);
 }
 
 .culprits {
-  overflow: hidden;
-
-  .culprit {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .culprit-type {
-    display: flex;
-    justify-content: flex-start;
-  }
+  display: flex;
+  flex-direction: column;
 }
 
 /*# sourceURL=layoutShiftDetails.css */

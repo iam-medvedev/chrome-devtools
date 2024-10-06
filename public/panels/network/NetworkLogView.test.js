@@ -350,8 +350,6 @@ describeWithMockConnection('NetworkLogView', () => {
     });
     it('can filter requests with blocked response cookies from dropdown', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const umaCountSpy = sinon.spy(Host.userMetrics, 'networkPanelMoreFiltersNumberOfSelectedChanged');
-        const umaItemSpy = sinon.spy(Host.userMetrics, 'networkPanelMoreFiltersItemSelected');
         const request1 = createNetworkRequest('url1', { target });
         request1.blockedResponseCookies = () => [{
                 blockedReasons: ["SameSiteNoneInsecure" /* Protocol.Network.SetCookieBlockedReason.SameSiteNoneInsecure */],
@@ -377,13 +375,9 @@ describeWithMockConnection('NetworkLogView', () => {
             'url1',
         ]);
         dropdown.discard();
-        assert.isTrue(umaCountSpy.calledOnceWith(1));
-        assert.isTrue(umaItemSpy.calledOnceWith('Blocked response cookies'));
     });
     it('lists selected options in more filters tooltip', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
-        const umaCountSpy = sinon.spy(Host.userMetrics, 'networkPanelMoreFiltersNumberOfSelectedChanged');
-        const umaItemSpy = sinon.spy(Host.userMetrics, 'networkPanelMoreFiltersItemSelected');
         let filterBar;
         ({ filterBar, networkLogView } = createEnvironment());
         const dropdown = await openMoreTypesDropdown(filterBar, networkLogView);
@@ -396,10 +390,6 @@ describeWithMockConnection('NetworkLogView', () => {
         await selectMoreFiltersOption(softMenu, 'Hide extension URLs');
         assert.strictEqual(button.title, 'Hide extension URLs, Blocked response cookies');
         dropdown.discard();
-        assert.isTrue(umaCountSpy.calledOnceWith(2));
-        assert.isTrue(umaItemSpy.calledTwice);
-        assert.isTrue(umaItemSpy.calledWith('Hide extension URLs'));
-        assert.isTrue(umaItemSpy.calledWith('Blocked response cookies'));
     });
     it('updates tooltip to default when more filters option deselected', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);

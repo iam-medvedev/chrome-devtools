@@ -4,7 +4,7 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-import { Types } from './insights.js';
+import * as Trace from '../../trace/trace.js';
 export async function processTrace(testContext, traceFile) {
     const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
     if (!insights) {
@@ -15,7 +15,7 @@ export async function processTrace(testContext, traceFile) {
 describeWithEnvironment('RenderBlockingRequests', function () {
     it('finds render blocking requests', async () => {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
-        assert.deepStrictEqual([...insights.keys()], [Types.NO_NAVIGATION, '0BCFC23BC7D7BEDC9F93E912DCCEC1DA']);
+        assert.deepStrictEqual([...insights.keys()], [Trace.Types.Events.NO_NAVIGATION, '0BCFC23BC7D7BEDC9F93E912DCCEC1DA']);
         const insight = getInsightOrError('RenderBlocking', insights, data.Meta.navigationsByNavigationId.values().next().value);
         assert.strictEqual(insight.renderBlockingRequests.length, 2);
         assert.deepEqual(insight.renderBlockingRequests.map(r => r.args.data.url), [
@@ -33,7 +33,7 @@ describeWithEnvironment('RenderBlockingRequests', function () {
     });
     it('considers only the navigation specified by the context', async () => {
         const { data, insights } = await processTrace(this, 'multiple-navigations-render-blocking.json.gz');
-        assert.deepStrictEqual([...insights.keys()], [Types.NO_NAVIGATION, '8671F33ECE0C8DBAEFBC2F9A2D1D6107', '1AE2016BBCC48AA090FDAE2CBBA01900']);
+        assert.deepStrictEqual([...insights.keys()], [Trace.Types.Events.NO_NAVIGATION, '8671F33ECE0C8DBAEFBC2F9A2D1D6107', '1AE2016BBCC48AA090FDAE2CBBA01900']);
         const navigations = Array.from(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('RenderBlocking', insights, navigations[0]);
         assert(insight.renderBlockingRequests.length > 0, 'no render blocking requests found');

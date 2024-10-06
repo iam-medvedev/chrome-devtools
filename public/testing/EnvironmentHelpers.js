@@ -110,7 +110,6 @@ const REGISTERED_EXPERIMENTS = [
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
-    "timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */,
     "extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
@@ -235,6 +234,7 @@ export async function deinitializeGlobalVars() {
     await deinitializeGlobalLocaleVars();
     Logs.NetworkLog.NetworkLog.removeInstance();
     SDK.TargetManager.TargetManager.removeInstance();
+    SDK.FrameManager.FrameManager.removeInstance();
     Root.Runtime.Runtime.removeInstance();
     Common.Settings.Settings.removeInstance();
     Common.Revealer.RevealerRegistry.removeInstance();
@@ -396,11 +396,11 @@ export function getGetHostConfigStub(config) {
             temperature: -1,
             ...config.devToolsConsoleInsights,
         },
-        devToolsFreestylerDogfood: {
+        devToolsFreestyler: {
             modelId: '',
             temperature: -1,
             enabled: false,
-            ...config.devToolsFreestylerDogfood,
+            ...config.devToolsFreestyler,
         },
         devToolsExplainThisResourceDogfood: {
             modelId: '',

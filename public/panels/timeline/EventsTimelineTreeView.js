@@ -52,7 +52,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
     }
     updateContents(selection) {
         super.updateContents(selection);
-        if (TimelineSelection.isSelection(selection.object)) {
+        if (TimelineSelection.isTraceEventSelection(selection.object)) {
             this.selectEvent(selection.object, true);
         }
     }

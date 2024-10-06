@@ -11,9 +11,9 @@ export declare class CLSCulprits extends BaseInsight {
     description: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     /**
-     * getTopCulprits gets the top 3 shift root causes based on clusters.
+     * getTopCulprits gets the top 3 shift root causes based on worst cluster.
      */
-    getTopCulprits(clusters: Trace.Types.Events.SyntheticLayoutShiftCluster[], culpritsByShift: Map<Trace.Types.Events.LayoutShift, Trace.Insights.InsightRunners.CumulativeLayoutShift.LayoutShiftRootCausesData> | undefined): string[];
+    getTopCulprits(cluster: Trace.Types.Events.SyntheticLayoutShiftCluster, culpritsByShift: Map<Trace.Types.Events.LayoutShift, Trace.Insights.InsightRunners.CumulativeLayoutShift.LayoutShiftRootCausesData> | undefined): string[];
     render(): void;
 }
 declare global {

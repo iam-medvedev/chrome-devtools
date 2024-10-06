@@ -15,8 +15,45 @@ export function deps() {
  */
 const ACTIONABLE_FAILURE_REASONS = [
     {
-        flag: 1 << 13,
-        failure: "UNSUPPORTED_CSS_PROPERTY" /* AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+        flag: 1 << 0,
+        failure: "ACCELERATED_ANIMATIONS_DISABLED" /* AnimationFailureReasons.ACCELERATED_ANIMATIONS_DISABLED */,
+    },
+    {
+        flag: 1 << 1,
+        failure: "EFFECT_SUPPRESSED_BY_DEVTOOLS" /* AnimationFailureReasons.EFFECT_SUPPRESSED_BY_DEVTOOLS */,
+    },
+    {
+        flag: 1 << 2,
+        failure: "INVALID_ANIMATION_OR_EFFECT" /* AnimationFailureReasons.INVALID_ANIMATION_OR_EFFECT */,
+    },
+    {
+        flag: 1 << 3,
+        failure: "EFFECT_HAS_UNSUPPORTED_TIMING_PARAMS" /* AnimationFailureReasons.EFFECT_HAS_UNSUPPORTED_TIMING_PARAMS */,
+    },
+    {
+        flag: 1 << 4,
+        failure: "EFFECT_HAS_NON_REPLACE_COMPOSITE_MODE" /* AnimationFailureReasons.EFFECT_HAS_NON_REPLACE_COMPOSITE_MODE */,
+    },
+    {
+        flag: 1 << 5,
+        failure: "TARGET_HAS_INVALID_COMPOSITING_STATE" /* AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
+    },
+    {
+        flag: 1 << 6,
+        failure: "TARGET_HAS_INCOMPATIBLE_ANIMATIONS" /* AnimationFailureReasons.TARGET_HAS_INCOMPATIBLE_ANIMATIONS */,
+    },
+    {
+        flag: 1 << 7,
+        failure: "TARGET_HAS_CSS_OFFSET" /* AnimationFailureReasons.TARGET_HAS_CSS_OFFSET */,
+    },
+    // The failure 1 << 8 is marked as obsolete in Blink
+    {
+        flag: 1 << 9,
+        failure: "ANIMATION_AFFECTS_NON_CSS_PROPERTIES" /* AnimationFailureReasons.ANIMATION_AFFECTS_NON_CSS_PROPERTIES */,
+    },
+    {
+        flag: 1 << 10,
+        failure: "TRANSFORM_RELATED_PROPERTY_CANNOT_BE_ACCELERATED_ON_TARGET" /* AnimationFailureReasons.TRANSFORM_RELATED_PROPERTY_CANNOT_BE_ACCELERATED_ON_TARGET */,
     },
     {
         flag: 1 << 11,
@@ -24,19 +61,32 @@ const ACTIONABLE_FAILURE_REASONS = [
     },
     {
         flag: 1 << 12,
-        failure: "FILTER_MAY_MOVE_PIXELS" /* AnimationFailureReasons.FILTER_MAY_MOVE_PIXELS */,
+        failure: "FILTER_RELATED_PROPERTY_MAY_MOVE_PIXELS" /* AnimationFailureReasons.FILTER_RELATED_PROPERTY_MAY_MOVE_PIXELS */,
     },
     {
-        flag: 1 << 4,
-        failure: "NON_REPLACE_COMPOSITE_MODE" /* AnimationFailureReasons.NON_REPLACE_COMPOSITE_MODE */,
+        flag: 1 << 13,
+        failure: "UNSUPPORTED_CSS_PROPERTY" /* AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+    },
+    // The failure 1 << 14 is marked as obsolete in Blink
+    {
+        flag: 1 << 15,
+        failure: "MIXED_KEYFRAME_VALUE_TYPES" /* AnimationFailureReasons.MIXED_KEYFRAME_VALUE_TYPES */,
     },
     {
-        flag: 1 << 6,
-        failure: "INCOMPATIBLE_ANIMATIONS" /* AnimationFailureReasons.INCOMPATIBLE_ANIMATIONS */,
+        flag: 1 << 16,
+        failure: "TIMELINE_SOURCE_HAS_INVALID_COMPOSITING_STATE" /* AnimationFailureReasons.TIMELINE_SOURCE_HAS_INVALID_COMPOSITING_STATE */,
     },
     {
-        flag: 1 << 3,
-        failure: "UNSUPPORTED_TIMING_PARAMS" /* AnimationFailureReasons.UNSUPPORTED_TIMING_PARAMS */,
+        flag: 1 << 17,
+        failure: "ANIMATION_HAS_NO_VISIBLE_CHANGE" /* AnimationFailureReasons.ANIMATION_HAS_NO_VISIBLE_CHANGE */,
+    },
+    {
+        flag: 1 << 18,
+        failure: "AFFECTS_IMPORTANT_PROPERTY" /* AnimationFailureReasons.AFFECTS_IMPORTANT_PROPERTY */,
+    },
+    {
+        flag: 1 << 19,
+        failure: "SVG_TARGET_HAS_INDEPENDENT_TRANSFORM_PROPERTY" /* AnimationFailureReasons.SVG_TARGET_HAS_INDEPENDENT_TRANSFORM_PROPERTY */,
     },
 ];
 // 500ms window.
@@ -46,10 +96,10 @@ function isInInvalidationWindow(event, targetEvent) {
     const eventEnd = event.dur ? event.ts + event.dur : event.ts;
     return eventEnd < targetEvent.ts && eventEnd >= targetEvent.ts - INVALIDATION_WINDOW;
 }
-export function getNonCompositedFailure(event) {
+export function getNonCompositedFailure(animationEvent) {
     const failures = [];
-    const beginEvent = event.args.data.beginEvent;
-    const instantEvents = event.args.data.instantEvents || [];
+    const beginEvent = animationEvent.args.data.beginEvent;
+    const instantEvents = animationEvent.args.data.instantEvents || [];
     /**
      * Animation events containing composite information are ASYNC_NESTABLE_INSTANT ('n').
      * An animation may also contain multiple 'n' events, so we look through those with useful non-composited data.
@@ -57,7 +107,7 @@ export function getNonCompositedFailure(event) {
     for (const event of instantEvents) {
         const failureMask = event.args.data.compositeFailed;
         const unsupportedProperties = event.args.data.unsupportedProperties;
-        if (!failureMask || !unsupportedProperties) {
+        if (!failureMask) {
             continue;
         }
         const failureReasons = ACTIONABLE_FAILURE_REASONS.filter(reason => failureMask & reason.flag).map(reason => reason.failure);
@@ -65,6 +115,7 @@ export function getNonCompositedFailure(event) {
             name: beginEvent.args.data.displayName,
             failureReasons,
             unsupportedProperties,
+            animation: animationEvent,
         };
         failures.push(failure);
     }
@@ -214,19 +265,12 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
     return rootCausesByShift;
 }
 export function generateInsight(parsedTrace, context) {
-    // TODO(crbug.com/366049346): won't work without nav right now. See comment on clusterKey below.
-    if (!context.navigation) {
-        return {
-            clusters: [],
-        };
-    }
     const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
     const compositeAnimationEvents = parsedTrace.Animations.animations.filter(isWithinContext);
     const iframeEvents = parsedTrace.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinContext);
     const networkRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
     const domLoadingEvents = parsedTrace.LayoutShifts.domLoadingEvents.filter(isWithinContext);
-    // TODO(crbug.com/366049346): buildLayoutShiftsClusters is dropping non-nav clusters.
-    const clusterKey = context.navigation ? context.navigationId : '';
+    const clusterKey = context.navigation ? context.navigationId : Types.Events.NO_NAVIGATION;
     const clusters = parsedTrace.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
     const layoutShifts = clusters.flatMap(cluster => cluster.events);
     const prePaintEvents = parsedTrace.LayoutShifts.prePaintEvents.filter(isWithinContext);

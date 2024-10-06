@@ -107,10 +107,6 @@ export class BoundsManager extends EventTarget {
             return;
         }
         const existingWindow = this.#currentState.timelineTraceWindow;
-        if (newWindow.min === existingWindow.min && newWindow.max === existingWindow.max) {
-            // New bounds are identical to the old ones so no action required.
-            return;
-        }
         if (newWindow.range < 1_000) {
             // Minimum timeline visible window range is 1 millisecond.
             return;
@@ -121,6 +117,10 @@ export class BoundsManager extends EventTarget {
                 Trace.Types.Timing.MicroSeconds(Math.max(this.#currentState.minimapTraceBounds.min, newWindow.min));
             newWindow.max =
                 Trace.Types.Timing.MicroSeconds(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
+        }
+        if (newWindow.min === existingWindow.min && newWindow.max === existingWindow.max) {
+            // New bounds are identical to the old ones so no action required.
+            return;
         }
         this.#currentState.timelineTraceWindow = newWindow;
         this.dispatchEvent(new StateChangedEvent(this.state(), 'VISIBLE_WINDOW', { shouldAnimate: options.shouldAnimate }));

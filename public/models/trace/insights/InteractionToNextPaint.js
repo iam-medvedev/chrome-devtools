@@ -6,7 +6,7 @@ export function deps() {
     return ['UserInteractions'];
 }
 export function generateInsight(parsedTrace, context) {
-    const interactionEvents = parsedTrace.UserInteractions.interactionEvents.filter(event => {
+    const interactionEvents = parsedTrace.UserInteractions.interactionEventsWithNoNesting.filter(event => {
         return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
     if (!interactionEvents.length) {

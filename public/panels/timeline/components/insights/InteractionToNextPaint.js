@@ -61,22 +61,30 @@ export class InteractionToNextPaint extends BaseInsight {
         if (!event) {
             return [];
         }
+        return this.#createOverlaysForPhase(event);
+    }
+    // If `phase` is -1, then all phases are included. Otherwise it's just that phase index.
+    #createOverlaysForPhase(event, phase = -1) {
         const p1 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, (event.ts + event.inputDelay));
         const p2 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(p1.max, (p1.max + event.mainThreadHandling));
         const p3 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(p2.max, (p2.max + event.presentationDelay));
-        const sections = [
+        let sections = [
             { bounds: p1, label: i18nString(UIStrings.inputDelay), showDuration: true },
             { bounds: p2, label: i18nString(UIStrings.processingDuration), showDuration: true },
             { bounds: p3, label: i18nString(UIStrings.presentationDelay), showDuration: true },
         ];
+        if (phase !== -1) {
+            sections = [sections[phase]];
+        }
         return [
             {
                 type: 'TIMESPAN_BREAKDOWN',
                 sections,
+                renderLocation: 'BELOW_EVENT',
+                entry: event,
             },
             {
                 type: 'ENTRY_LABEL',
-                // TODO(b/351757537) why aren't annotations rendering for synthetic events?
                 entry: event,
                 label: i18nString(UIStrings.longestInteraction),
             },
@@ -100,9 +108,18 @@ export class InteractionToNextPaint extends BaseInsight {
             insight: this,
             headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
             rows: [
-                { values: [i18nString(UIStrings.inputDelay), time(event.inputDelay)] },
-                { values: [i18nString(UIStrings.processingDuration), time(event.mainThreadHandling)] },
-                { values: [i18nString(UIStrings.presentationDelay), time(event.presentationDelay)] },
+                {
+                    values: [i18nString(UIStrings.inputDelay), time(event.inputDelay)],
+                    overlays: this.#createOverlaysForPhase(event, 0),
+                },
+                {
+                    values: [i18nString(UIStrings.processingDuration), time(event.mainThreadHandling)],
+                    overlays: this.#createOverlaysForPhase(event, 1),
+                },
+                {
+                    values: [i18nString(UIStrings.presentationDelay), time(event.presentationDelay)],
+                    overlays: this.#createOverlaysForPhase(event, 2),
+                },
             ],
         }}>
                   </${Table.litTagName}>`}

@@ -75,7 +75,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         assertSelectionName('PrePaint');
         function assertSelectionName(name) {
             const selection = mockViewDelegate.selection;
-            if (!selection || !Timeline.TimelineSelection.TimelineSelection.isSelection(selection.object)) {
+            if (!selection || !Timeline.TimelineSelection.TimelineSelection.isTraceEventSelection(selection.object)) {
                 throw new Error('Selection is not present or not a Trace Event');
             }
             const object = selection.object;

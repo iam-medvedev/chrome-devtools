@@ -77,16 +77,13 @@ export const discardOutputStream = function (id) {
 export const streamWrite = function (id, chunk) {
     void _boundStreams[id].write(chunk);
 };
-export let load = function (url, headers, callback, allowRemoteFilePaths) {
+export const load = function (url, headers, callback, allowRemoteFilePaths) {
     const stream = new Common.StringOutputStream.StringOutputStream();
     loadAsStream(url, headers, stream, mycallback, allowRemoteFilePaths);
     function mycallback(success, headers, errorDescription) {
         callback(success, headers, stream.data(), errorDescription);
     }
 };
-export function setLoadForTest(newLoad) {
-    load = newLoad;
-}
 function getNetErrorCategory(netError) {
     if (netError > -100) {
         return i18nString(UIStrings.systemError);

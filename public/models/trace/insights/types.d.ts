@@ -30,15 +30,16 @@ export declare enum InsightWarning {
     NO_DOCUMENT_REQUEST = "NO_DOCUMENT_REQUEST",
     NO_LAYOUT = "NO_LAYOUT"
 }
+export interface MetricSavings {
+    FCP?: Types.Timing.MilliSeconds;
+    LCP?: Types.Timing.MilliSeconds;
+    TBT?: Types.Timing.MilliSeconds;
+    CLS?: number;
+    INP?: Types.Timing.MilliSeconds;
+}
 export type InsightResult<R extends Record<string, unknown>> = R & {
     warnings?: InsightWarning[];
-    metricSavings?: {
-        FCP?: number;
-        LCP?: number;
-        TBT?: number;
-        CLS?: number;
-        INP?: number;
-    };
+    metricSavings?: MetricSavings;
 };
 /**
  * Contains insights for a specific navigation. If a trace began after a navigation already started,
@@ -46,10 +47,10 @@ export type InsightResult<R extends Record<string, unknown>> = R & {
  * navigation (or the end of the trace).
  */
 export type InsightSets = {
-    /** If for a navigation, this is the navigationId. Else it is NO_NAVIGATION. */
-    id: string;
-    /** The URL. Shown in the accordion list. */
-    label: string;
+    /** If for a navigation, this is the navigationId. Else it is Trace.Types.Events.NO_NAVIGATION. */
+    id: Types.Events.NavigationId;
+    /** The URL to show in the accordion list. */
+    url: URL;
     frameId: string;
     bounds: Types.Timing.TraceWindowMicroSeconds;
     data: InsightResults;
@@ -65,11 +66,9 @@ export type InsightResults = {
  * Contains insights for the entire trace. Insights are mostly grouped by `navigationId`, with one exception:
  *
  * If the analyzed trace started after the navigation, and has meaningful work with that span, there is no
- * navigation to map it to. In this case NO_NAVIGATION is used for the key.
- * TODO(crbug.com/366049346): Consider using a symbol. Wait until no-navigation insights are shown in the panel.
+ * navigation to map it to. In this case `Types.Events.NO_NAVIGATION` is used for the key.
  */
-export type TraceInsightSets = Map<string, InsightSets>;
-export declare const NO_NAVIGATION = "NO_NAVIGATION";
+export type TraceInsightSets = Map<Types.Events.NavigationId, InsightSets>;
 /**
  * Represents the narrow set of dependencies defined by an insight's `deps()` function. `Meta` is always included regardless of `deps()`.
  */

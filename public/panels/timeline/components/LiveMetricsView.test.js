@@ -149,6 +149,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-1' },
                 { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
             ],
+            layoutShifts: [],
         });
         await coordinator.done();
         const interactionsEls = getInteractions(view);
@@ -185,6 +186,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
                 { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
             ],
+            layoutShifts: [],
         });
         await coordinator.done();
         const interactionsEls = getInteractions(view);
@@ -221,6 +223,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-1' },
                 { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
             ],
+            layoutShifts: [],
         });
         await coordinator.done();
         const inpInteractionLink = getInpInteractionLink(view);
@@ -248,6 +251,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             interactions: [
                 { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
             ],
+            layoutShifts: [],
         });
         await coordinator.done();
         const inpInteractionLink = getInpInteractionLink(view);
@@ -273,6 +277,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
                 { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
             ],
+            layoutShifts: [],
         });
         await coordinator.done();
         assert.lengthOf(getInteractions(view), 2);

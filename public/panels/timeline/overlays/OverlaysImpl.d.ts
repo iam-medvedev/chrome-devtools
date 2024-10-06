@@ -85,6 +85,7 @@ export interface TimespanBreakdown {
     type: 'TIMESPAN_BREAKDOWN';
     sections: Array<Components.TimespanBreakdownOverlay.EntryBreakdown>;
     entry?: Trace.Types.Events.Event;
+    renderLocation?: 'BOTTOM_OF_TIMELINE' | 'BELOW_EVENT' | 'ABOVE_EVENT';
 }
 export interface CursorTimestampMarker {
     type: 'CURSOR_TIMESTAMP_MARKER';
@@ -204,7 +205,7 @@ export declare class Overlays extends EventTarget {
      * existing overlays will have their positions changed to ensure they are
      * rendered in the right place.
      */
-    update(): void;
+    update(): Promise<void>;
     /**
      * @returns true if the entry is visible on chart, which means that both
      * horizontally and vertically it is at least partially in view.
@@ -259,4 +260,11 @@ export declare class Overlays extends EventTarget {
  * of entry.
  */
 export declare function timingsForOverlayEntry(entry: OverlayEntry): Trace.Helpers.Timing.EventTimingsData<Trace.Types.Timing.MicroSeconds>;
+/**
+ * Defines if the overlay container `div` should have a jslog context attached.
+ * Note that despite some of the overlays being used currently exclusively
+ * for annotations, we log here with `overlays` to be generic as overlays can
+ * be used for insights, annotations or in the future, who knows...
+ */
+export declare function jsLogContext(overlay: TimelineOverlay): string | null;
 export {};

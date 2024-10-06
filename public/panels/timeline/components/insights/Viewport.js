@@ -29,8 +29,8 @@ export class Viewport extends BaseInsight {
         // TODO(b/351757418): create overlay for synthetic input delay events
         return [];
     }
-    #render(data) {
-        const backendNodeId = data.viewportEvent?.args.data.node_id;
+    #render(insight) {
+        const backendNodeId = insight.viewportEvent?.args.data.node_id;
         // clang-format off
         return LitHtml.html `
         <div class="insights">
@@ -39,13 +39,14 @@ export class Viewport extends BaseInsight {
             description: this.description,
             expanded: this.isActive(),
             internalName: this.internalName,
+            estimatedSavingsTime: insight.metricSavings?.INP,
         }}
             @insighttoggleclick=${this.onSidebarClick}>
                 <div slot="insight-content" class="insight-section">
                   ${backendNodeId !== undefined ? LitHtml.html `<${NodeLink.litTagName}
                     .data=${{
             backendNodeId,
-            options: { tooltip: data.viewportEvent?.args.data.content },
+            options: { tooltip: insight.viewportEvent?.args.data.content },
         }}>
                   </${NodeLink.litTagName}>` : LitHtml.nothing}
                 </div>

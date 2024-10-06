@@ -77,6 +77,8 @@ export declare class TabbedPane extends TabbedPane_base {
     setTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
     setSuffixElement(id: string, suffixElement: HTMLElement | null): void;
     setTabEnabled(id: string, enabled: boolean): void;
+    tabIsDisabled(id: string): boolean;
+    tabIsEnabled(id: string): boolean;
     toggleTabClass(id: string, className: string, force?: boolean): void;
     private zoomChanged;
     private clearMeasuredWidths;

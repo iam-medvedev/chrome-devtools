@@ -369,6 +369,14 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             tab.tabElement.classList.toggle('disabled', !enabled);
         }
     }
+    tabIsDisabled(id) {
+        return !this.tabIsEnabled(id);
+    }
+    tabIsEnabled(id) {
+        const tab = this.tabsById.get(id);
+        const disabled = tab?.tabElement.classList.contains('disabled') ?? false;
+        return !disabled;
+    }
     toggleTabClass(id, className, force) {
         const tab = this.tabsById.get(id);
         if (tab && tab.toggleClass(className, force)) {

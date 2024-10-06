@@ -62,6 +62,9 @@
       "path": "../network/forward/bundle-tsconfig.json"
     },
     {
+      "path": "../utils/bundle-tsconfig.json"
+    },
+    {
       "path": "../../third_party/marked/bundle-tsconfig.json"
     },
     {

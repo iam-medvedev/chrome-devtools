@@ -54,6 +54,17 @@ describeWithEnvironment('FreestylerPanel', () => {
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "chat-view" /* Freestyler.State.CHAT_VIEW */ }));
         });
+        it('should render the consent view when the setting is disabled', async () => {
+            Common.Settings.moduleSetting('freestyler-enabled').set(true);
+            Common.Settings.moduleSetting('freestyler-enabled').setDisabled(true);
+            new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
+            Common.Settings.moduleSetting('freestyler-enabled').setDisabled(false);
+        });
     });
     describe('on rate click', () => {
         afterEach(() => {

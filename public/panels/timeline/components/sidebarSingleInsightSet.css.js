@@ -22,7 +22,6 @@ styles.replaceSync(
 }
 
 .metric {
-  margin-top: 10px;
   flex: 1;
   user-select: text;
   cursor: pointer;

@@ -25,21 +25,37 @@ function appendCodeBlock(data) {
     isIcon: false,
   });`;
     component.displayNotice = data.displayNotice;
-    component.displayToolbar = data.displayToolbar;
-    if (data.heading) {
-        component.heading = data.heading;
+    if (data.header) {
+        component.header = data.header;
+    }
+    if (data.showCopyButton) {
+        component.showCopyButton = data.showCopyButton;
     }
 }
-appendCodeBlock({ displayNotice: true, displayToolbar: true, heading: { text: 'Code executed', showCopyButton: false } });
-appendCodeBlock({ displayNotice: false, displayToolbar: true, heading: { text: 'Code executed', showCopyButton: false } });
-appendCodeBlock({ displayNotice: true, displayToolbar: false, heading: { text: 'Code executed', showCopyButton: false } });
-appendCodeBlock({ displayNotice: false, displayToolbar: false, heading: { text: 'Code executed', showCopyButton: false } });
-appendCodeBlock({ displayNotice: true, displayToolbar: true, heading: { text: 'Code executed', showCopyButton: true } });
-appendCodeBlock({ displayNotice: false, displayToolbar: true, heading: { text: 'Code executed', showCopyButton: true } });
-appendCodeBlock({ displayNotice: true, displayToolbar: false, heading: { text: 'Code executed', showCopyButton: true } });
-appendCodeBlock({ displayNotice: false, displayToolbar: false, heading: { text: 'Code executed', showCopyButton: true } });
-appendCodeBlock({ displayNotice: true, displayToolbar: true });
-appendCodeBlock({ displayNotice: false, displayToolbar: true });
-appendCodeBlock({ displayNotice: true, displayToolbar: false });
-appendCodeBlock({ displayNotice: false, displayToolbar: false });
+appendCodeBlock({
+    displayNotice: true,
+});
+appendCodeBlock({
+    displayNotice: false,
+});
+appendCodeBlock({
+    displayNotice: true,
+    header: 'Code executed',
+    showCopyButton: false,
+});
+appendCodeBlock({
+    displayNotice: false,
+    header: 'Code executed',
+    showCopyButton: false,
+});
+appendCodeBlock({
+    displayNotice: true,
+    header: 'Code executed',
+    showCopyButton: true,
+});
+appendCodeBlock({
+    displayNotice: false,
+    header: 'Code executed',
+    showCopyButton: true,
+});
 //# sourceMappingURL=code-block.js.map

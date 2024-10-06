@@ -32,6 +32,7 @@ export function generateInsight(parsedTrace, context) {
             return {
                 mobileOptimized: false,
                 viewportEvent,
+                metricSavings: { INP: 300 },
             };
         }
     }

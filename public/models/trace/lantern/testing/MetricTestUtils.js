@@ -10,7 +10,7 @@ function toLanternTrace(traceEvents) {
 }
 async function runTrace(trace) {
     const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
-    await processor.parse(trace.traceEvents);
+    await processor.parse(trace.traceEvents, { isCPUProfile: false, isFreshRecording: true });
     if (!processor.parsedTrace) {
         throw new Error('No data');
     }

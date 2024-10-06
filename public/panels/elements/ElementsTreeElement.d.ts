@@ -39,6 +39,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     expandAllButtonElement: UI.TreeOutline.TreeElement | null;
     selectionElement?: HTMLDivElement;
     private hintElement?;
+    private aiButtonContainer?;
     private contentElement;
     readonly tagTypeContext: TagTypeContext;
     constructor(node: SDK.DOMModel.DOMNode, isClosingTag?: boolean);
@@ -61,6 +62,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     createSlotLink(nodeShortcut: SDK.DOMModel.DOMNodeShortcut | null): void;
     private createSelection;
     private createHint;
+    private createAiButton;
     onbind(): void;
     onunbind(): void;
     onattach(): void;

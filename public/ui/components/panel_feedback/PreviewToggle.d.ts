@@ -1,3 +1,4 @@
+import '../../../ui/legacy/legacy.js';
 import * as Root from '../../../core/root/root.js';
 export interface PreviewToggleData {
     name: string;

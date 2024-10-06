@@ -92,10 +92,16 @@ export class FreestylerPanel extends UI.Panel.Panel {
             UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = aidaClient;
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
-        this.#selectedElement = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+        const selectedElementFilter = (maybeNode) => {
+            if (maybeNode) {
+                return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
+            }
+            return null;
+        };
+        this.#selectedElement = selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode));
         this.#selectedNetworkRequest = UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest);
         this.#viewProps = {
-            state: this.#freestylerEnabledSetting?.get() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
+            state: this.#freestylerEnabledSetting?.getIfNotDisabled() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
                 "consent-view" /* FreestylerChatUiState.CONSENT_VIEW */,
             aidaAvailability,
             messages: [],
@@ -125,7 +131,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             if (this.#viewProps.selectedElement === ev.data) {
                 return;
             }
-            this.#viewProps.selectedElement = Boolean(ev.data) && ev.data.nodeType() === Node.ELEMENT_NODE ? ev.data : null;
+            this.#viewProps.selectedElement = selectedElementFilter(ev.data);
             this.doUpdate();
         });
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, ev => {
@@ -210,6 +216,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
     }
     handleAction(actionId) {
         switch (actionId) {
+            case 'freestyler.elements-floating-button': {
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanelFloatingButton);
+                this.#viewProps.agentType = "freestyler" /* AgentType.FREESTYLER */;
+                this.doUpdate();
+                break;
+            }
             case 'freestyler.element-panel-context': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanel);
@@ -224,11 +237,21 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 this.doUpdate();
                 break;
             }
+            case 'drjones.performance-panel-context': {
+                // TODO(samiyac): Add actions and UMA
+                break;
+            }
+            case 'drjones.sources-panel-context': {
+                // TODO(samiyac): Add actions and UMA
+                break;
+            }
         }
     }
     #clearMessages() {
         this.#viewProps.messages = [];
         this.#viewProps.isLoading = false;
+        this.#freestylerAgent = this.#createFreestylerAgent();
+        this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
         this.#cancel();
         this.doUpdate();
     }
@@ -240,7 +263,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.doUpdate();
     }
     async #startConversation(text) {
-        // TODO(samiyac): Refactor startConversation
         this.#viewProps.messages.push({
             entity: "user" /* ChatMessageEntity.USER */,
             text,
@@ -248,23 +270,25 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#viewProps.isLoading = true;
         const systemMessage = {
             entity: "model" /* ChatMessageEntity.MODEL */,
-            suggestions: [],
             steps: [],
         };
         this.#viewProps.messages.push(systemMessage);
         this.doUpdate();
         this.#runAbortController = new AbortController();
         const signal = this.#runAbortController.signal;
+        let runner;
         if (this.#viewProps.agentType === "freestyler" /* AgentType.FREESTYLER */) {
-            await this.#conversationStepsForFreestylerAgent(text, signal, systemMessage);
+            runner = this.#freestylerAgent.run(text, { signal, selectedElement: this.#viewProps.selectedElement });
         }
         else if (this.#viewProps.agentType === "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */) {
-            await this.#conversationStepsForDrJonesNetworkAgent(text, signal, systemMessage);
+            runner =
+                this.#drJonesNetworkAgent.run(text, { signal, selectedNetworkRequest: this.#viewProps.selectedNetworkRequest });
         }
-    }
-    async #conversationStepsForFreestylerAgent(text, signal, systemMessage) {
+        if (!runner) {
+            return;
+        }
         let step = { isLoading: true };
-        for await (const data of this.#freestylerAgent.run(text, { signal, selectedElement: this.#viewProps.selectedElement })) {
+        for await (const data of runner) {
             step.sideEffect = undefined;
             switch (data.type) {
                 case ResponseType.QUERYING: {
@@ -284,6 +308,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 case ResponseType.THOUGHT: {
                     step.isLoading = false;
                     step.thought = data.thought;
+                    step.contextDetails = data.contextDetails;
                     if (systemMessage.steps.at(-1) !== step) {
                         systemMessage.steps.push(step);
                     }
@@ -311,7 +336,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     break;
                 }
                 case ResponseType.ANSWER: {
-                    systemMessage.suggestions = data.suggestions || [];
+                    systemMessage.suggestions = data.suggestions;
                     systemMessage.answer = data.text;
                     systemMessage.rpcId = data.rpcId;
                     // When there is an answer without any thinking steps, we don't want to show the thinking step.
@@ -323,56 +348,21 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     break;
                 }
                 case ResponseType.ERROR: {
-                    step.isLoading = false;
                     systemMessage.error = data.error;
                     systemMessage.suggestions = [];
                     systemMessage.rpcId = undefined;
                     this.#viewProps.isLoading = false;
-                    if (data.error === "abort" /* ErrorType.ABORT */) {
-                        const lastStep = systemMessage.steps.at(-1);
+                    const lastStep = systemMessage.steps.at(-1);
+                    if (lastStep) {
                         // Mark the last step as cancelled to make the UI feel better.
-                        if (lastStep) {
+                        if (data.error === "abort" /* ErrorType.ABORT */) {
                             lastStep.canceled = true;
+                            // If error happens while the step is still loading remove it.
+                        }
+                        else if (lastStep.isLoading) {
+                            systemMessage.steps.pop();
                         }
                     }
-                }
-            }
-            this.doUpdate();
-            this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
-        }
-    }
-    async #conversationStepsForDrJonesNetworkAgent(text, signal, systemMessage) {
-        // TODO(samiyac): Only display the thinking step with context details when it is the first message
-        const step = { isLoading: true };
-        for await (const data of this.#drJonesNetworkAgent.run(text, { signal, selectedNetworkRequest: this.#viewProps.selectedNetworkRequest })) {
-            switch (data.type) {
-                case ResponseType.TITLE: {
-                    step.title = data.title;
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case ResponseType.THOUGHT: {
-                    step.isLoading = false;
-                    step.thought = data.thought;
-                    step.contextDetails = data.contextDetails;
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case ResponseType.ANSWER: {
-                    systemMessage.answer = data.text;
-                    systemMessage.rpcId = data.rpcId;
-                    step.isLoading = false;
-                    this.#viewProps.isLoading = false;
-                    break;
-                }
-                case ResponseType.ERROR: {
-                    step.isLoading = false;
-                    systemMessage.error = "unknown" /* ErrorType.UNKNOWN */;
-                    this.#viewProps.isLoading = false;
                 }
             }
             this.doUpdate();
@@ -383,8 +373,11 @@ export class FreestylerPanel extends UI.Panel.Panel {
 export class ActionDelegate {
     handleAction(_context, actionId) {
         switch (actionId) {
+            case 'freestyler.elements-floating-button':
             case 'freestyler.element-panel-context':
-            case 'drjones.network-panel-context': {
+            case 'drjones.network-panel-context':
+            case 'drjones.performance-panel-context':
+            case 'drjones.sources-panel-context': {
                 void (async () => {
                     const view = UI.ViewManager.ViewManager.instance().view(FreestylerPanel.panelName);
                     if (view) {

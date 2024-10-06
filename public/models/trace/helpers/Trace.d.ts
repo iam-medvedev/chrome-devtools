@@ -18,7 +18,7 @@ export declare function stackTraceForEvent(event: Types.Events.Event): Types.Eve
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.Events.Event> = Map<Types.Events.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.Events.Event>(event: T, eventsInProcessThread: Map<Types.Events.ProcessID, EventsInThread<T>>): void;
-type TimeSpan = {
+export type TimeSpan = {
     ts: Types.Timing.MicroSeconds;
     dur?: Types.Timing.MicroSeconds;
 };

@@ -15,6 +15,7 @@ export declare class FrameManager extends Common.ObjectWrapper.ObjectWrapper<Eve
     static instance({ forceNew }?: {
         forceNew: boolean;
     }): FrameManager;
+    static removeInstance(): void;
     modelAdded(resourceTreeModel: ResourceTreeModel): void;
     modelRemoved(resourceTreeModel: ResourceTreeModel): void;
     private frameAdded;

@@ -20,8 +20,8 @@ styles.replaceSync(
 .insight-sets-wrapper {
   display: flex;
   flex-flow: column nowrap;
-  align-items: stretch;
-  height: 100%;
+  flex-grow: 1; /* so it fills the available vertical height in the sidebar */
+  margin-top: var(--sys-size-6);
 
   details {
     flex-grow: 0;
@@ -60,8 +60,33 @@ styles.replaceSync(
 
 .insights-category-select {
   width: max-content;
-  margin-top: 10px;
-  margin-left: 10px;
+  margin-top: var(--sys-size-6);
+  margin-left: var(--sys-size-6);
+}
+
+.feedback-wrapper {
+  position: relative;
+  padding: var(--sys-size-6);
+
+  .tooltip {
+    visibility: hidden;
+    transition-property: visibility;
+    position: absolute;
+    bottom: 35px; /* height of button + a little extra padding */
+    width: 90%;
+    max-width: 300px;
+    left: var(--sys-size-6);
+    z-index: 1;
+    box-sizing: border-box;
+    padding: var(--sys-size-5) var(--sys-size-6);
+    border-radius: var(--sys-shape-corner-small);
+    background-color: var(--sys-color-cdt-base-container);
+    box-shadow: var(--drop-shadow-depth-3);
+  }
+
+  devtools-button:hover + .tooltip {
+    visibility: visible;
+  }
 }
 
 /*# sourceURL=sidebarInsightsTab.css */

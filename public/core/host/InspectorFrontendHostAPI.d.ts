@@ -353,7 +353,5 @@ export declare const enum EnumeratedHistogram {
     LegacyResourceTypeFilterNumberOfSelectedChanged = "DevTools.LegacyResourceTypeFilterNumberOfSelectedChanged",
     LegacyResourceTypeFilterItemSelected = "DevTools.LegacyResourceTypeFilterItemSelected",
     ResourceTypeFilterNumberOfSelectedChanged = "DevTools.ResourceTypeFilterNumberOfSelectedChanged",
-    ResourceTypeFilterItemSelected = "DevTools.ResourceTypeFilterItemSelected",
-    NetworkPanelMoreFiltersNumberOfSelectedChanged = "DevTools.NetworkPanelMoreFiltersNumberOfSelectedChanged",
-    NetworkPanelMoreFiltersItemSelected = "DevTools.NetworkPanelMoreFiltersItemSelected"
+    ResourceTypeFilterItemSelected = "DevTools.ResourceTypeFilterItemSelected"
 }

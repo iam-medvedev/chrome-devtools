@@ -1,4 +1,4 @@
-import type * as Host from '../../core/host/host.js';
+import * as Host from '../../core/host/host.js';
 export declare enum ResponseType {
     TITLE = "title",
     THOUGHT = "thought",
@@ -17,7 +17,7 @@ export interface AnswerResponse {
     type: ResponseType.ANSWER;
     text: string;
     rpcId?: number;
-    suggestions: string[];
+    suggestions?: string[];
 }
 export interface ErrorResponse {
     type: ResponseType.ERROR;
@@ -56,17 +56,46 @@ export interface ContextDetail {
     title: string;
     text: string;
 }
-export interface AidaRequestOptions {
+export interface AidaBuildRequestOptions {
     input: string;
-    preamble?: string;
-    chatHistory?: Host.AidaClient.Chunk[];
-    /**
-     * @default false
-     */
-    serverSideLoggingEnabled?: boolean;
-    sessionId?: string;
 }
 export interface HistoryChunk {
     text: string;
     entity: Host.AidaClient.Entity;
 }
+export interface AidaRequestOptions {
+    temperature?: number;
+    model_id?: string;
+}
+type AgentOptions = {
+    aidaClient: Host.AidaClient.AidaClient;
+    serverSideLoggingEnabled?: boolean;
+};
+export declare abstract class AiAgent {
+    #private;
+    abstract readonly preamble: string;
+    abstract readonly options: AidaRequestOptions;
+    abstract readonly clientFeature: Host.AidaClient.ClientFeature;
+    abstract readonly userTier: string | undefined;
+    constructor(opts: AgentOptions);
+    get historyEntry(): Array<HistoryChunk>;
+    get chatHistoryForTesting(): Array<HistoryChunk>;
+    set chatHistoryForTesting(history: Map<number, HistoryChunk[]>);
+    removeHistoryRun(id: number): void;
+    addToHistory({ id, query, output, }: {
+        id: number;
+        query: string;
+        output: string;
+    }): void;
+    aidaFetch(input: string, options?: {
+        signal?: AbortSignal;
+    }): Promise<{
+        response: string;
+        rpcId: number | undefined;
+    }>;
+    buildRequest(opts: AidaBuildRequestOptions): Host.AidaClient.AidaRequest;
+    static validTemperature(temperature: number | undefined): number | undefined;
+}
+export declare function isDebugMode(): boolean;
+export declare function debugLog(...log: unknown[]): void;
+export {};

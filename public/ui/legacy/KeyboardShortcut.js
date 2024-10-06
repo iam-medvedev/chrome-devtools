@@ -119,6 +119,9 @@ export class KeyboardShortcut {
         const keyboardEvent = event;
         return !keyboardEvent.ctrlKey && !keyboardEvent.shiftKey && !keyboardEvent.altKey && !keyboardEvent.metaKey;
     }
+    static hasAtLeastOneModifier(event) {
+        return KeyboardShortcut.hasNoModifiers(event) === false;
+    }
     static makeDescriptor(key, modifiers) {
         return {
             key: KeyboardShortcut.makeKey(typeof key === 'string' ? key : key.code, modifiers),

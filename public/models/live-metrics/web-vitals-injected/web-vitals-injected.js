@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 import * as WebVitals from '../../../third_party/web-vitals/web-vitals.js';
 import * as OnEachInteraction from './OnEachInteraction.js';
+import * as OnEachLayoutShift from './OnEachLayoutShift.js';
 import * as Spec from './spec/spec.js';
 const { onLCP, onCLS, onINP } = WebVitals.Attribution;
 const { onEachInteraction } = OnEachInteraction;
+const { onEachLayoutShift } = OnEachLayoutShift;
 const windowListeners = [];
 const documentListeners = [];
 const observers = [];
@@ -102,6 +104,7 @@ function initialize() {
         const event = {
             name: 'CLS',
             value: metric.value,
+            clusterShiftIds: metric.entries.map(Spec.getUniqueLayoutShiftId),
         };
         sendEventToDevTools(event);
     }, { reportAllChanges: true });
@@ -130,6 +133,15 @@ function initialize() {
         if (node) {
             event.nodeIndex = establishNodeIndex(node);
         }
+        sendEventToDevTools(event);
+    });
+    onEachLayoutShift(layoutShift => {
+        const event = {
+            name: 'LayoutShift',
+            score: layoutShift.value,
+            uniqueLayoutShiftId: Spec.getUniqueLayoutShiftId(layoutShift.entry),
+            affectedNodeIndices: layoutShift.attribution.affectedNodes.map(establishNodeIndex),
+        };
         sendEventToDevTools(event);
     });
 }

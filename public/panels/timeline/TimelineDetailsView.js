@@ -77,7 +77,6 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     #filmStrip = null;
     #networkRequestDetails;
     #layoutShiftDetails;
-    #layoutShiftClusterDetails;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     constructor(delegate) {
         super();
@@ -107,7 +106,6 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
         this.#layoutShiftDetails = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
-        this.#layoutShiftClusterDetails = new TimelineComponents.LayoutShiftClusterDetails.LayoutShiftClusterDetails();
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
         this.lazySelectorStatsView = null;
@@ -259,18 +257,14 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget);
             this.setContent(this.#networkRequestDetails);
         }
-        else if (TimelineSelection.isSelection(selectionObject)) {
+        else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
             const event = selectionObject;
-            if (Root.Runtime.experiments.isEnabled("timeline-layout-shift-details" /* Root.Runtime.ExperimentName.TIMELINE_LAYOUT_SHIFT_DETAILS */)) {
-                if (Trace.Types.Events.isSyntheticLayoutShift(event)) {
-                    const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
-                    this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
-                    this.setContent(this.#layoutShiftDetails);
-                }
-                if (Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
-                    this.#layoutShiftClusterDetails.setData(event, this.#parsedTrace);
-                    this.setContent(this.#layoutShiftClusterDetails);
-                }
+            if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */) &&
+                (Trace.Types.Events.isSyntheticLayoutShift(event) ||
+                    Trace.Types.Events.isSyntheticLayoutShiftCluster(event))) {
+                const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
+                this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
+                this.setContent(this.#layoutShiftDetails);
             }
             else {
                 const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true);

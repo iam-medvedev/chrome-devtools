@@ -66,6 +66,22 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         assert.strictEqual(annotationEntryIdentifierElements[1].style['backgroundColor'], 'rgb(252, 3, 157)');
         assert.strictEqual(annotationEntryLabelElements[2].innerText, 'Labelled Time Range');
     });
+    it('gives the delete button accessible labels', async function () {
+        const component = new SidebarAnnotationsTab();
+        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+        renderElementIntoDOM(component);
+        const entryLabelAnnotation = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[0],
+            label: 'Entry Label 1',
+        };
+        component.annotations = [entryLabelAnnotation];
+        assert.isNotNull(component.shadowRoot);
+        await coordinator.done();
+        const deleteButton = component.shadowRoot.querySelector('.delete-button');
+        assert.isNotNull(deleteButton);
+        assert.strictEqual(deleteButton.getAttribute('aria-label'), 'Delete annotation: A "thread_name" event annotated with the text "Entry Label 1"');
+    });
     it('uses the URL for displaying network event labels and truncates it', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const event = parsedTrace.NetworkRequests.byTime.find(event => {
@@ -156,6 +172,57 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         assert.strictEqual(annotationLabelElements[0].innerText, 'New Entry Label 1');
         assert.strictEqual(annotationLabelElements[1].innerText, 'New Entry Label 2');
         assert.strictEqual(annotationLabelElements[2].innerText, 'Labelled Time Range');
+    });
+    it('does not display multiple not started annotations for one entry', async function () {
+        const component = new SidebarAnnotationsTab();
+        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+        renderElementIntoDOM(component);
+        // Create Empty Entry Label Annotation (considered not started)
+        const entryLabelAnnotation = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[0],
+            label: '',
+        };
+        // Create Entries link that only has 'to' entry (considered not started)
+        const entriesLink = {
+            type: 'ENTRIES_LINK',
+            entryFrom: defaultTraceEvents[0],
+            state: "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */,
+        };
+        component.annotations = [entryLabelAnnotation, entriesLink];
+        assert.isNotNull(component.shadowRoot);
+        await coordinator.done();
+        const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
+        assert.isNotNull(annotationsWrapperElement);
+        // Ensure there is only one annotation displayed
+        const annotationIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
+        assert.strictEqual(annotationIdentifierElements.length, 1);
+    });
+    it('displays multiple not started annotations if they are not different entries', async function () {
+        const component = new SidebarAnnotationsTab();
+        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+        renderElementIntoDOM(component);
+        // Create Empty Entry Label Annotation (considered not started)
+        const entryLabelAnnotation = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[0],
+            label: '',
+        };
+        // Create Entries link that only has 'to' entry (considered not started).
+        // Not started link is on a different entry than the other not started annotation
+        const entriesLink = {
+            type: 'ENTRIES_LINK',
+            entryFrom: defaultTraceEvents[1],
+            state: "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */,
+        };
+        component.annotations = [entryLabelAnnotation, entriesLink];
+        assert.isNotNull(component.shadowRoot);
+        await coordinator.done();
+        const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
+        assert.isNotNull(annotationsWrapperElement);
+        // Ensure both annotations are displayed
+        const annotationIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
+        assert.strictEqual(annotationIdentifierElements.length, 2);
     });
 });
 //# sourceMappingURL=SidebarAnnotationsTab.test.js.map

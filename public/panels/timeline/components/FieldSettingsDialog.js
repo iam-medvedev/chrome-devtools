@@ -409,7 +409,7 @@ export class FieldSettingsDialog extends HTMLElement {
                 placeholder="http://localhost:8080"
                 aria-label=${i18nString(UIStrings.developmentOriginValue, { PH1: value })}
                 style=${inputStyle}
-                title=${value}
+                title=${value || ''}
                 @keyup=${this.#onEditGridDevelopmentOriginChange}
                 @change=${this.#onEditGridDevelopmentOriginChange} />
             `,
@@ -425,7 +425,7 @@ export class FieldSettingsDialog extends HTMLElement {
                 placeholder="https://example.com"
                 aria-label=${i18nString(UIStrings.productionOriginValue, { PH1: value })}
                 style=${inputStyle}
-                title=${value}
+                title=${value || ''}
                 @keyup=${this.#onEditGridProductionOriginChange}
                 @change=${this.#onEditGridProductionOriginChange} />
             `,
@@ -506,7 +506,7 @@ export class FieldSettingsDialog extends HTMLElement {
         }}
           jslogContext=${'new-origin-mapping'}
         >${i18nString(UIStrings.new)}</${Buttons.Button.Button.litTagName}>
-      <div>
+      </div>
     `;
         // clang-format on
     }
@@ -555,12 +555,12 @@ export class FieldSettingsDialog extends HTMLElement {
                 class="devtools-text-input"
                 .disabled=${!this.#urlOverrideEnabled}
                 .value=${this.#urlOverride}
-                placeholder=${this.#urlOverrideEnabled ? i18nString(UIStrings.url) : undefined}
+                placeholder=${LitHtml.Directives.ifDefined(this.#urlOverrideEnabled ? i18nString(UIStrings.url) : undefined)}
               />
               ${this.#urlOverrideWarning
             ? html `<div class="warning" role="alert" aria-label=${this.#urlOverrideWarning}>${this.#urlOverrideWarning}</div>`
             : nothing}
-            <div>
+            </div>
           </details>
           <div class="buttons-section">
             ${this.#renderDisableButton()}

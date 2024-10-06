@@ -7,10 +7,12 @@ import { describeWithEnvironment, getGetHostConfigStub, } from '../../testing/En
 import * as Freestyler from './freestyler.js';
 const { FreestylerAgent } = Freestyler;
 describeWithEnvironment('FreestylerAgent', () => {
-    function mockHostConfig(modelId) {
+    function mockHostConfig(modelId, temperature, userTier) {
         getGetHostConfigStub({
-            devToolsFreestylerDogfood: {
+            devToolsFreestyler: {
                 modelId,
+                temperature,
+                userTier,
             },
         });
     }
@@ -108,6 +110,17 @@ c`;
                 thought: undefined,
             });
         });
+        it('parses an action where the last line of the code block ends with STOP keyword', async () => {
+            const payload = `const styles = window.getComputedStyle($0);
+        const data = {
+          styles
+        };`;
+            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP`), {
+                action: payload,
+                title: undefined,
+                thought: undefined,
+            });
+        });
         it('parses a thought and title', async () => {
             const payload = 'some response';
             const title = 'this is the title';
@@ -175,6 +188,42 @@ c`;
                 thought: thoughtPayload,
                 action: actionPayload,
                 title,
+            });
+        });
+        it('parses an action when STOP appearing in its last line and has ANSWER after that', async () => {
+            const answerPayload = 'answer';
+            const suggestions = ['suggestion'];
+            const payload = `const styles = window.getComputedStyle($0);
+        const data = {
+          styles
+        };`;
+            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
+                action: payload,
+                thought: undefined,
+                title: undefined,
+            });
+        });
+        it('parses an action when STOP appearing in its last line and has OBSERVATION after that', async () => {
+            const payload = `const styles = window.getComputedStyle($0);
+        const data = {
+          styles
+        };`;
+            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
+                action: payload,
+                thought: undefined,
+                title: undefined,
+            });
+        });
+        it('parses an action when STOP appearing in its last line and has THOUGHT after that', async () => {
+            const payload = `const styles = window.getComputedStyle($0);
+        const data = {
+          styles
+        };`;
+            const thoughtPayload = 'thought';
+            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
+                action: payload,
+                thought: thoughtPayload,
+                title: undefined,
             });
         });
         it('parses a response as an answer', async () => {
@@ -258,82 +307,58 @@ c`;
     });
     describe('buildRequest', () => {
         beforeEach(() => {
+            sinon.stub(crypto, 'randomUUID').returns('sessionId');
+        });
+        afterEach(() => {
             sinon.restore();
         });
         it('builds a request with a model id', async () => {
             mockHostConfig('test model');
-            assert.strictEqual(FreestylerAgent.buildRequest({ input: 'test input' }).options?.model_id, 'test model');
-        });
-        it('builds a request with logging', async () => {
-            mockHostConfig('test model');
-            assert.strictEqual(FreestylerAgent.buildRequest({ input: 'test input', serverSideLoggingEnabled: true })
-                .metadata?.disable_user_content_logging, false);
-        });
-        it('builds a request without logging', async () => {
-            mockHostConfig('test model');
-            assert.strictEqual(FreestylerAgent.buildRequest({ input: 'test input', serverSideLoggingEnabled: false })
-                .metadata?.disable_user_content_logging, true);
-        });
-        it('builds a request with input', async () => {
-            mockHostConfig();
-            const request = FreestylerAgent.buildRequest({ input: 'test input' });
-            assert.strictEqual(request.input, 'test input');
-            assert.strictEqual(request.preamble, undefined);
-            assert.strictEqual(request.chat_history, undefined);
-        });
-        it('builds a request with a sessionId', async () => {
-            mockHostConfig();
-            const request = FreestylerAgent.buildRequest({ input: 'test input', sessionId: 'sessionId' });
-            assert.strictEqual(request.metadata?.string_session_id, 'sessionId');
-        });
-        it('builds a request with preamble', async () => {
-            mockHostConfig();
-            const request = FreestylerAgent.buildRequest({ input: 'test input', preamble: 'preamble' });
-            assert.strictEqual(request.input, 'test input');
-            assert.strictEqual(request.preamble, 'preamble');
-            assert.strictEqual(request.chat_history, undefined);
-        });
-        it('builds a request with chat history', async () => {
-            mockHostConfig();
-            const request = FreestylerAgent.buildRequest({
-                input: 'test input',
-                chatHistory: [
-                    {
-                        text: 'test',
-                        entity: Host.AidaClient.Entity.USER,
-                    },
-                ],
+            const agent = new FreestylerAgent({
+                aidaClient: {},
             });
-            assert.strictEqual(request.input, 'test input');
-            assert.strictEqual(request.preamble, undefined);
-            assert.deepStrictEqual(request.chat_history, [
-                {
-                    text: 'test',
-                    entity: 1,
-                },
-            ]);
+            assert.strictEqual(agent.buildRequest({ input: 'test input' }).options?.model_id, 'test model');
+        });
+        it('builds a request with a temperature', async () => {
+            mockHostConfig('test model', 1);
+            const agent = new FreestylerAgent({
+                aidaClient: {},
+            });
+            assert.strictEqual(agent.buildRequest({ input: 'test input' }).options?.temperature, 1);
+        });
+        it('builds a request with a user tier', async () => {
+            mockHostConfig('test model', 1, 'PUBLIC');
+            const agent = new FreestylerAgent({
+                aidaClient: {},
+            });
+            assert.strictEqual(agent.buildRequest({ input: 'test input' }).metadata?.user_tier, 3);
         });
         it('structure matches the snapshot', () => {
             mockHostConfig('test model');
-            assert.deepStrictEqual(FreestylerAgent.buildRequest({
-                input: 'test input',
-                preamble: 'preamble',
-                chatHistory: [
-                    {
-                        text: 'first',
-                        entity: Host.AidaClient.Entity.UNKNOWN,
-                    },
-                    {
-                        text: 'second',
-                        entity: Host.AidaClient.Entity.SYSTEM,
-                    },
-                    {
-                        text: 'third',
-                        entity: Host.AidaClient.Entity.USER,
-                    },
-                ],
+            const agent = new FreestylerAgent({
+                aidaClient: {},
                 serverSideLoggingEnabled: true,
-                sessionId: 'sessionId',
+            });
+            sinon.stub(agent, 'preamble').value('preamble');
+            agent.chatHistoryForTesting = new Map([[
+                    0,
+                    [
+                        {
+                            text: 'first',
+                            entity: Host.AidaClient.Entity.UNKNOWN,
+                        },
+                        {
+                            text: 'second',
+                            entity: Host.AidaClient.Entity.SYSTEM,
+                        },
+                        {
+                            text: 'third',
+                            entity: Host.AidaClient.Entity.USER,
+                        },
+                    ],
+                ]]);
+            assert.deepStrictEqual(agent.buildRequest({
+                input: 'test input',
             }), {
                 input: 'test input',
                 client: 'CHROME_DEVTOOLS',
@@ -359,6 +384,7 @@ c`;
                 },
                 options: {
                     model_id: 'test model',
+                    temperature: undefined,
                 },
                 client_feature: 2,
                 functionality_type: 1,

@@ -322,7 +322,7 @@ export class InspectorFrontendHostStub {
                 temperature: -1,
                 enabled: false,
             },
-            devToolsFreestylerDogfood: {
+            devToolsFreestyler: {
                 modelId: '',
                 temperature: -1,
                 enabled: false,

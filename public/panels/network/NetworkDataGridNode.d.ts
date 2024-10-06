@@ -129,8 +129,6 @@ export declare class NetworkRequestNode extends NetworkNode {
     private openInNewTab;
     isFailed(): boolean;
     private renderPrimaryCell;
-    private createIconElement;
-    private getIcon;
     private renderStatusCell;
     private renderProtocolCell;
     private renderInitiatorCell;

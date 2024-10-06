@@ -2235,15 +2235,6 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
         UI.ARIAUtils.markAsMenuButton(this.dropDownButton.element);
         this.updateTooltip();
     }
-    emitUMA() {
-        if (this.hasChanged) {
-            const selectedFilters = this.selectedFilters();
-            Host.userMetrics.networkPanelMoreFiltersNumberOfSelectedChanged(selectedFilters.length);
-            for (const selectedFilter of selectedFilters) {
-                Host.userMetrics.networkPanelMoreFiltersItemSelected(selectedFilter);
-            }
-        }
-    }
     #onSettingChanged() {
         this.hasChanged = true;
         this.dispatchEventToListeners("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */);
@@ -2262,7 +2253,6 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             x: this.dropDownButton.element.getBoundingClientRect().left,
             y: this.dropDownButton.element.getBoundingClientRect().top +
                 this.dropDownButton.element.offsetHeight,
-            onSoftMenuClosed: this.emitUMA.bind(this),
         });
         this.contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.hideDataUrls), () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()), {
             checked: this.networkHideDataURLSetting.get(),

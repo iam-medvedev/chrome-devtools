@@ -60,6 +60,7 @@
       <include file="Images/brush.svg" name="IMAGES_BRUSH_SVG" resource_path="Images/brush.svg" type="BINDATA" compress="false"/>
       <include file="Images/bug.svg" name="IMAGES_BUG_SVG" resource_path="Images/bug.svg" type="BINDATA" compress="false"/>
       <include file="Images/bundle.svg" name="IMAGES_BUNDLE_SVG" resource_path="Images/bundle.svg" type="BINDATA" compress="false"/>
+      <include file="Images/button-magic.svg" name="IMAGES_BUTTON_MAGIC_SVG" resource_path="Images/button-magic.svg" type="BINDATA" compress="false"/>
       <include file="Images/calendar-today.svg" name="IMAGES_CALENDAR_TODAY_SVG" resource_path="Images/calendar-today.svg" type="BINDATA" compress="false"/>
       <include file="Images/check-circle.svg" name="IMAGES_CHECK_CIRCLE_SVG" resource_path="Images/check-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/check-double.svg" name="IMAGES_CHECK_DOUBLE_SVG" resource_path="Images/check-double.svg" type="BINDATA" compress="false"/>
@@ -237,7 +238,6 @@
       <include file="Images/smart-assistant.svg" name="IMAGES_SMART_ASSISTANT_SVG" resource_path="Images/smart-assistant.svg" type="BINDATA" compress="false"/>
       <include file="Images/snippet.svg" name="IMAGES_SNIPPET_SVG" resource_path="Images/snippet.svg" type="BINDATA" compress="false"/>
       <include file="Images/spark-info.svg" name="IMAGES_SPARK_INFO_SVG" resource_path="Images/spark-info.svg" type="BINDATA" compress="false"/>
-      <include file="Images/spark.svg" name="IMAGES_SPARK_SVG" resource_path="Images/spark.svg" type="BINDATA" compress="false"/>
       <include file="Images/star.svg" name="IMAGES_STAR_SVG" resource_path="Images/star.svg" type="BINDATA" compress="false"/>
       <include file="Images/step-into.svg" name="IMAGES_STEP_INTO_SVG" resource_path="Images/step-into.svg" type="BINDATA" compress="false"/>
       <include file="Images/step-out.svg" name="IMAGES_STEP_OUT_SVG" resource_path="Images/step-out.svg" type="BINDATA" compress="false"/>
@@ -679,6 +679,7 @@
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/diff_view.js" name="UI_COMPONENTS_DIFF_VIEW_DIFF_VIEW_JS" resource_path="ui/components/diff_view/diff_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandable_list.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLE_LIST_JS" resource_path="ui/components/expandable_list/expandable_list.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/floating_button/floating_button.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATING_BUTTON_JS" resource_path="ui/components/floating_button/floating_button.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/helpers.js" name="UI_COMPONENTS_HELPERS_HELPERS_JS" resource_path="ui/components/helpers/helpers.js" type="BINDATA" compress="false"/>
       <include file="ui/components/highlighting/highlighting.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTING_JS" resource_path="ui/components/highlighting/highlighting.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/icon_button.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_BUTTON_JS" resource_path="ui/components/icon_button/icon_button.js" type="BINDATA" compress="false"/>
@@ -976,6 +977,7 @@
       <include file="models/javascript_metadata/NativeFunctions.js" name="MODELS_JAVASCRIPT_METADATA_NATIVEFUNCTIONS_JS" resource_path="models/javascript_metadata/NativeFunctions.js" type="BINDATA" compress="false"/>
       <include file="models/live-metrics/LiveMetrics.js" name="MODELS_LIVE_METRICS_LIVEMETRICS_JS" resource_path="models/live-metrics/LiveMetrics.js" type="BINDATA" compress="false"/>
       <include file="models/live-metrics/web-vitals-injected/OnEachInteraction.js" name="MODELS_LIVE_METRICS_WEB_VITALS_INJECTED_ONEACHINTERACTION_JS" resource_path="models/live-metrics/web-vitals-injected/OnEachInteraction.js" type="BINDATA" compress="false"/>
+      <include file="models/live-metrics/web-vitals-injected/OnEachLayoutShift.js" name="MODELS_LIVE_METRICS_WEB_VITALS_INJECTED_ONEACHLAYOUTSHIFT_JS" resource_path="models/live-metrics/web-vitals-injected/OnEachLayoutShift.js" type="BINDATA" compress="false"/>
       <include file="models/live-metrics/web-vitals-injected/web-vitals-injected.js" name="MODELS_LIVE_METRICS_WEB_VITALS_INJECTED_WEB_VITALS_INJECTED_JS" resource_path="models/live-metrics/web-vitals-injected/web-vitals-injected.js" type="BINDATA" compress="false"/>
       <include file="models/logs/LogManager.js" name="MODELS_LOGS_LOGMANAGER_JS" resource_path="models/logs/LogManager.js" type="BINDATA" compress="false"/>
       <include file="models/logs/NetworkLog.js" name="MODELS_LOGS_NETWORKLOG_JS" resource_path="models/logs/NetworkLog.js" type="BINDATA" compress="false"/>
@@ -1781,7 +1783,6 @@
       <include file="panels/timeline/components/EntryStyles.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYSTYLES_JS" resource_path="panels/timeline/components/EntryStyles.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/FieldSettingsDialog.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_JS" resource_path="panels/timeline/components/FieldSettingsDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/InteractionBreakdown.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_JS" resource_path="panels/timeline/components/InteractionBreakdown.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/components/LayoutShiftClusterDetails.js" name="PANELS_TIMELINE_COMPONENTS_LAYOUTSHIFTCLUSTERDETAILS_JS" resource_path="panels/timeline/components/LayoutShiftClusterDetails.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/LayoutShiftDetails.js" name="PANELS_TIMELINE_COMPONENTS_LAYOUTSHIFTDETAILS_JS" resource_path="panels/timeline/components/LayoutShiftDetails.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/LiveMetricsView.js" name="PANELS_TIMELINE_COMPONENTS_LIVEMETRICSVIEW_JS" resource_path="panels/timeline/components/LiveMetricsView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/MetricCard.js" name="PANELS_TIMELINE_COMPONENTS_METRICCARD_JS" resource_path="panels/timeline/components/MetricCard.js" type="BINDATA" compress="false"/>
@@ -1811,7 +1812,6 @@
       <include file="panels/timeline/components/insights/Table.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TABLE_JS" resource_path="panels/timeline/components/insights/Table.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/ThirdParties.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_THIRDPARTIES_JS" resource_path="panels/timeline/components/insights/ThirdParties.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Viewport.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_VIEWPORT_JS" resource_path="panels/timeline/components/insights/Viewport.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/components/insights/lcpDiscovery.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_LCPDISCOVERY_CSS_JS" resource_path="panels/timeline/components/insights/lcpDiscovery.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/sidebarInsight.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_SIDEBARINSIGHT_CSS_JS" resource_path="panels/timeline/components/insights/sidebarInsight.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/table.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TABLE_CSS_JS" resource_path="panels/timeline/components/insights/table.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/types.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TYPES_JS" resource_path="panels/timeline/components/insights/types.js" type="BINDATA" compress="false"/>
@@ -2139,6 +2139,8 @@
       <include file="ui/components/diff_view/diffView.css.js" name="UI_COMPONENTS_DIFF_VIEW_DIFFVIEW_CSS_JS" resource_path="ui/components/diff_view/diffView.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/ExpandableList.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLELIST_JS" resource_path="ui/components/expandable_list/ExpandableList.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandableList.css.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLELIST_CSS_JS" resource_path="ui/components/expandable_list/expandableList.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/floating_button/FloatingButton.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATINGBUTTON_JS" resource_path="ui/components/floating_button/FloatingButton.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/floating_button/floatingButton.css.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATINGBUTTON_CSS_JS" resource_path="ui/components/floating_button/floatingButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/component-server-setup.js" name="UI_COMPONENTS_HELPERS_COMPONENT_SERVER_SETUP_JS" resource_path="ui/components/helpers/component-server-setup.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/directives.js" name="UI_COMPONENTS_HELPERS_DIRECTIVES_JS" resource_path="ui/components/helpers/directives.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/get-root-node.js" name="UI_COMPONENTS_HELPERS_GET_ROOT_NODE_JS" resource_path="ui/components/helpers/get-root-node.js" type="BINDATA" compress="false"/>

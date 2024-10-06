@@ -455,11 +455,14 @@ panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
+panels/timeline/components/Sidebar.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsightsTab.test.js
 panels/timeline/components/SidebarSingleInsightSet.test.js
+panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/SidebarInsight.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
+panels/timeline/overlays/components/TimespanBreakdownOverlay.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
 panels/timeline/track_appenders/AppenderUtils.test.js
 panels/timeline/track_appenders/CompatibilityTracksAppender.test.js

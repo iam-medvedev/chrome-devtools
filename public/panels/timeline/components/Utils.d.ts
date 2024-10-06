@@ -23,3 +23,12 @@ export declare function rateMetric(value: number, thresholds: MetricThresholds):
 export declare function renderMetricValue(jslogContext: string, value: number | undefined, thresholds: MetricThresholds, format: (value: number) => string, options?: {
     dim?: boolean;
 }): HTMLElement;
+/**
+ * Shortens URLs as much as possible while keeping important context.
+ *
+ * - Elides the host if the previous url is the same host+protocol
+ * - Always elide search param values
+ * - Always includes protocol/domain if there is a mix of protocols
+ * - First URL is elided fully to show just the pathname, unless there is a mix of protocols (see above)
+ */
+export declare function createUrlLabels(urls: URL[]): string[];

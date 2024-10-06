@@ -493,9 +493,12 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.#minimapComponent.clearBoundsHighlight();
             }
         });
-        this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.EventReferenceClick.eventName, event => {
-            const { metricEvent } = event;
-            this.flameChart.setSelectionAndReveal(TimelineSelection.fromTraceEvent(metricEvent));
+        this.flameChart.element.addEventListener(TimelineInsights.Helpers.EventReferenceClick.eventName, event => {
+            const fromTraceEvent = TimelineSelection.fromTraceEvent(event.event);
+            this.flameChart.setSelectionAndReveal(fromTraceEvent);
+        });
+        this.#sideBar.contentElement.addEventListener(TimelineInsights.Helpers.EventReferenceClick.eventName, event => {
+            this.select(TimelineSelection.fromTraceEvent(event.event));
         });
         this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
             const { removedAnnotation } = event;
@@ -1427,6 +1430,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     #ariaDebouncer = Common.Debouncer.debounce(() => {
         if (this.#pendingAriaMessage) {
             UI.ARIAUtils.alert(this.#pendingAriaMessage);
+            this.#pendingAriaMessage = null;
         }
     }, 1_000);
     #makeAriaAnnouncement(message) {
@@ -1561,10 +1565,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.updateTimelineControls();
         this.#setActiveInsight(null);
         const traceInsightsSets = this.#traceEngineModel.traceInsights(traceIndex);
-        if (traceInsightsSets) {
-            this.flameChart.setInsights(traceInsightsSets);
-            this.#sideBar.setInsights(traceInsightsSets);
-        }
+        this.#sideBar.setInsights(traceInsightsSets);
+        this.flameChart.setInsights(traceInsightsSets);
         this.#showSidebarIfRequired();
     }
     /**
@@ -1878,7 +1880,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object)) {
             return null;
         }
-        if (TimelineSelection.isSelection(selection.object)) {
+        if (TimelineSelection.isTraceEventSelection(selection.object)) {
             const parsedTrace = this.#traceEngineModel.parsedTrace(this.#viewMode.traceIndex);
             if (!parsedTrace) {
                 return null;

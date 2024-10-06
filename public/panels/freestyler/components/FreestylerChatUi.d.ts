@@ -27,8 +27,8 @@ export interface UserChatMessage {
 }
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
-    suggestions: string[];
     steps: Step[];
+    suggestions?: string[];
     answer?: string;
     error?: ErrorType;
     rpcId?: number;

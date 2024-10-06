@@ -23,14 +23,6 @@ export class RevealAnnotation extends Event {
         this.annotation = annotation;
     }
 }
-export class EventReferenceClick extends Event {
-    metricEvent;
-    static eventName = 'sidebarmetricclick';
-    constructor(metricEvent) {
-        super(EventReferenceClick.eventName, { bubbles: true, composed: true });
-        this.metricEvent = metricEvent;
-    }
-}
 export const DEFAULT_SIDEBAR_TAB = "insights" /* SidebarTabs.INSIGHTS */;
 export const DEFAULT_SIDEBAR_WIDTH_PX = 240;
 const MIN_SIDEBAR_WIDTH_PX = 170;
@@ -53,21 +45,29 @@ export class SidebarWidget extends UI.Widget.VBox {
     constructor() {
         super();
         this.setMinimumSize(MIN_SIDEBAR_WIDTH_PX, 0);
+        if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */)) {
+            this.#tabbedPane.appendTab("insights" /* SidebarTabs.INSIGHTS */, 'Insights', this.#insightsView, undefined, undefined, false, false, 0, 'timeline.insights-tab');
+        }
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
+            this.#tabbedPane.appendTab("annotations" /* SidebarTabs.ANNOTATIONS */, 'Annotations', this.#annotationsView, undefined, undefined, false, false, 1, 'timeline.annotations-tab');
+        }
+        // Default the selected tab to Insights. In wasShown() we will change this
+        // if this is a trace that has no insights.
+        this.#tabbedPane.selectTab("insights" /* SidebarTabs.INSIGHTS */);
     }
     wasShown() {
         this.#userHasOpenedSidebarOnce.set(true);
         this.#tabbedPane.show(this.element);
-        if (!this.#tabbedPane.hasTab("insights" /* SidebarTabs.INSIGHTS */) &&
-            Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */)) {
-            this.#tabbedPane.appendTab("insights" /* SidebarTabs.INSIGHTS */, 'Insights', this.#insightsView, undefined, undefined, false, false, 0, 'timeline.insights-tab');
+        this.#updateAnnotationsCountBadge();
+        // Swap to the Annotations tab if:
+        // 1. Insights is currently selected.
+        // 2. The Insights tab is disabled (which means we have no insights for this trace)
+        // 3. The annotations tab exists (we can remove this check once annotations
+        //    are non-experimental)
+        if (this.#tabbedPane.selectedTabId === "insights" /* SidebarTabs.INSIGHTS */ &&
+            this.#tabbedPane.tabIsDisabled("insights" /* SidebarTabs.INSIGHTS */) && this.#tabbedPane.hasTab("annotations" /* SidebarTabs.ANNOTATIONS */)) {
+            this.#tabbedPane.selectTab("annotations" /* SidebarTabs.ANNOTATIONS */);
         }
-        if (!this.#tabbedPane.hasTab("annotations" /* SidebarTabs.ANNOTATIONS */) &&
-            Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-            this.#tabbedPane.appendTab('annotations', 'Annotations', this.#annotationsView, undefined, undefined, false, false, 1, 'timeline.annotations-tab');
-            this.#updateAnnotationsCountBadge();
-        }
-        // TODO: automatically select the right tab depending on what content is
-        // available to us.
     }
     setAnnotations(updatedAnnotations, annotationEntryToColorMap) {
         this.#annotationsView.setAnnotations(updatedAnnotations, annotationEntryToColorMap);
@@ -93,6 +93,7 @@ export class SidebarWidget extends UI.Widget.VBox {
     }
     setInsights(insights) {
         this.#insightsView.setInsights(insights);
+        this.#tabbedPane.setTabEnabled("insights" /* SidebarTabs.INSIGHTS */, insights !== null);
     }
     setActiveInsight(activeInsight) {
         this.#insightsView.setActiveInsight(activeInsight);

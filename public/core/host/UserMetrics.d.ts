@@ -49,8 +49,6 @@ export declare class UserMetrics {
     legacyResourceTypeFilterItemSelected(resourceTypeName: string): void;
     resourceTypeFilterNumberOfSelectedChanged(itemCount: number): void;
     resourceTypeFilterItemSelected(resourceTypeName: string): void;
-    networkPanelMoreFiltersNumberOfSelectedChanged(itemCount: number): void;
-    networkPanelMoreFiltersItemSelected(filterName: string): void;
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
@@ -229,7 +227,8 @@ export declare enum Action {
     InsightsReminderTeaserSettingsLinkClicked = 166,
     InsightsReminderTeaserAbortedInSettings = 167,
     GeneratingInsightWithoutDisclaimer = 168,
-    MAX_VALUE = 169
+    FreestylerOpenedFromElementsPanelFloatingButton = 169,
+    MAX_VALUE = 170
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -654,9 +653,9 @@ export declare enum DevtoolsExperiments {
     'timeline-rpp-sidebar' = 95,
     'timeline-observations' = 96,
     'timeline-server-timings' = 98,
-    'timeline-layout-shift-details' = 99,
     'extension-storage-viewer' = 100,
-    MAX_VALUE = 101
+    'floating-entry-points-for-ai-assistance' = 101,
+    MAX_VALUE = 102
 }
 export declare const enum ColorPickerOpenedFrom {
     SOURCES_PANEL = 0,
@@ -817,14 +816,6 @@ export declare enum ResourceType {
     WebAssembly = 10,
     Other = 11,
     MAX_VALUE = 12
-}
-export declare enum NetworkPanelMoreFilters {
-    'Hide data URLs' = 0,
-    'Hide extension URLs' = 1,
-    'Blocked response cookies' = 2,
-    'Blocked requests' = 3,
-    '3rd-party requests' = 4,
-    MAX_VALUE = 5
 }
 export declare enum Language {
     'af' = 1,

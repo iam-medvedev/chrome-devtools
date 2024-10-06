@@ -1,3 +1,4 @@
+import '../../../ui/legacy/legacy.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../forward/forward.js';
 export interface RequestHeaderSectionData {

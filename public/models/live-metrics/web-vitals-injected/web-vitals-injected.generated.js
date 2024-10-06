@@ -2013,6 +2013,37 @@
     // Copyright 2024 The Chromium Authors. All rights reserved.
     // Use of this source code is governed by a BSD-style license that can be
     // found in the LICENSE file.
+    function onEachLayoutShift$1(callback) {
+        const eventObserver = new PerformanceObserver(list => {
+            const entries = list.getEntries().filter((entry) => 'hadRecentInput' in entry);
+            for (const entry of entries) {
+                if (entry.hadRecentInput) {
+                    continue;
+                }
+                const affectedNodes = entry.sources.map(source => source.node).filter(node => node instanceof Node);
+                callback({
+                    attribution: {
+                        affectedNodes,
+                    },
+                    entry,
+                    value: entry.value,
+                });
+            }
+        });
+        eventObserver.observe({
+            type: 'layout-shift',
+            buffered: true,
+        });
+    }
+
+    var OnEachLayoutShift = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        onEachLayoutShift: onEachLayoutShift$1
+    });
+
+    // Copyright 2024 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
     const INTERNAL_KILL_SWITCH = '__chromium_devtools_kill_live_metrics';
     /**
@@ -2029,10 +2060,14 @@
         });
         return `interaction-${longestEntry.interactionId}-${longestEntry.startTime}`;
     }
+    function getUniqueLayoutShiftId(entry) {
+        return `layout-shift-${entry.value}-${entry.startTime}`;
+    }
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
     const { onLCP, onCLS, onINP } = index;
     const { onEachInteraction } = OnEachInteraction;
+    const { onEachLayoutShift } = OnEachLayoutShift;
     const windowListeners = [];
     const documentListeners = [];
     const observers = [];
@@ -2129,6 +2164,7 @@
             const event = {
                 name: 'CLS',
                 value: metric.value,
+                clusterShiftIds: metric.entries.map(getUniqueLayoutShiftId),
             };
             sendEventToDevTools(event);
         }, { reportAllChanges: true });
@@ -2157,6 +2193,15 @@
             if (node) {
                 event.nodeIndex = establishNodeIndex(node);
             }
+            sendEventToDevTools(event);
+        });
+        onEachLayoutShift(layoutShift => {
+            const event = {
+                name: 'LayoutShift',
+                score: layoutShift.value,
+                uniqueLayoutShiftId: getUniqueLayoutShiftId(layoutShift.entry),
+                affectedNodeIndices: layoutShift.attribution.affectedNodes.map(establishNodeIndex),
+            };
             sendEventToDevTools(event);
         });
     }

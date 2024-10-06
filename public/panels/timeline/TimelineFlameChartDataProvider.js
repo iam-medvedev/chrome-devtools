@@ -191,6 +191,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return;
         }
         const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.performance-panel-context')) {
+            contextMenu.headerSection().appendAction('drjones.performance-panel-context');
+        }
         const hideEntryOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
             this.modifyTree("MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entryIndex);
         }, {
@@ -1003,7 +1006,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // If the index is -1 and the selection is a TraceEvent, it might be
         // the case that this Entry is hidden by the Context Menu action.
         // Try revealing the entry and getting the index again.
-        if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isSelection(selection.object)) {
+        if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
             if (this.timelineDataInternal?.selectedGroup) {
                 ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.object);
                 this.timelineData(true);

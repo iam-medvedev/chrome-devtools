@@ -39,6 +39,9 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/formatter/bundle-tsconfig.json"
     },
     {

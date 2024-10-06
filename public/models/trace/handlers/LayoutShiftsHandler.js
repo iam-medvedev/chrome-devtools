@@ -219,7 +219,13 @@ async function buildLayoutShiftsClusters() {
             // If this cluster happened after a navigation, set the navigationId to
             // the current navigation. This lets us easily group clusters by
             // navigation.
-            const navigationId = currentShiftNavigation === null ? undefined : navigations[currentShiftNavigation].args.data?.navigationId;
+            const navigationId = currentShiftNavigation === null ?
+                Types.Events.NO_NAVIGATION :
+                navigations[currentShiftNavigation].args.data?.navigationId;
+            // TODO: `navigationId` is `string | undefined`, but the undefined portion
+            // comes from `data.navigationId`. I don't think that is possible for this
+            // event type. Can we make this typing stronger? In the meantime, we allow
+            // `navigationId` to include undefined values.
             clusters.push({
                 name: 'SyntheticLayoutShiftCluster',
                 events: [],

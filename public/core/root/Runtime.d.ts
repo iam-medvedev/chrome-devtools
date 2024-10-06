@@ -81,8 +81,8 @@ export declare const enum ExperimentName {
     TIMELINE_OBSERVATIONS = "timeline-observations",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     TIMELINE_SERVER_TIMINGS = "timeline-server-timings",
-    TIMELINE_LAYOUT_SHIFT_DETAILS = "timeline-layout-shift-details",
-    EXTENSION_STORAGE_VIEWER = "extension-storage-viewer"
+    EXTENSION_STORAGE_VIEWER = "extension-storage-viewer",
+    FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance"
 }
 export interface AidaAvailability {
     enabled: boolean;
@@ -96,7 +96,7 @@ export interface HostConfigConsoleInsights {
     temperature: number;
     enabled: boolean;
 }
-export interface HostConfigFreestylerDogfood {
+export interface HostConfigFreestyler {
     modelId: string;
     temperature: number;
     enabled: boolean;
@@ -106,6 +106,19 @@ export interface HostConfigExplainThisResourceDogfood {
     modelId: string;
     temperature: number;
     enabled: boolean;
+    userTier: string;
+}
+export interface HostConfigAiAssistancePerformanceAgentDogfood {
+    modelId: string;
+    temperature: number;
+    enabled: boolean;
+    userTier: string;
+}
+export interface HostConfigAiAssistanceFileAgentDogfood {
+    modelId: string;
+    temperature: number;
+    enabled: boolean;
+    userTier: string;
 }
 export interface HostConfigVeLogging {
     enabled: boolean;
@@ -117,8 +130,10 @@ export interface HostConfigPrivacyUI {
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
-    devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
+    devToolsFreestyler: HostConfigFreestyler;
     devToolsExplainThisResourceDogfood: HostConfigExplainThisResourceDogfood;
+    devToolsAiAssistancePerformanceAgentDogfood: HostConfigAiAssistancePerformanceAgentDogfood;
+    devToolsAiAssistanceFileAgentDogfood: HostConfigAiAssistanceFileAgentDogfood;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsPrivacyUI: HostConfigPrivacyUI;
     /**

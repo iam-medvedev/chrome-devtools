@@ -51,6 +51,7 @@ export class LCPPhases extends BaseInsight {
     internalName = 'lcp-by-phase';
     userVisibleTitle = i18nString(UIStrings.title);
     description = i18nString(UIStrings.description);
+    #overlay = null;
     #getPhaseData(insights, navigationId) {
         if (!insights || !navigationId) {
             return [];
@@ -102,6 +103,7 @@ export class LCPPhases extends BaseInsight {
         return phaseData;
     }
     createOverlays() {
+        this.#overlay = null;
         if (!this.data.insights || !this.data.insightSetKey) {
             return [];
         }
@@ -140,13 +142,23 @@ export class LCPPhases extends BaseInsight {
             const ttfb = Trace.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, loadDelayStart);
             sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte), showDuration: true }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay), showDuration: true }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadDuration), showDuration: true }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay), showDuration: true });
         }
-        return [{
-                type: 'TIMESPAN_BREAKDOWN',
-                sections,
-            }];
+        this.#overlay = {
+            type: 'TIMESPAN_BREAKDOWN',
+            sections,
+        };
+        return [this.#overlay];
     }
     #renderLCPPhases(phaseData) {
-        const rows = phaseData.map(({ phase, percent }) => ({ values: [phase, percent] }));
+        const rows = phaseData.map(({ phase, percent }) => {
+            const section = this.#overlay?.sections.find(section => phase === section.label);
+            return {
+                values: [phase, percent],
+                overlays: section && [{
+                        type: 'TIMESPAN_BREAKDOWN',
+                        sections: [section],
+                    }],
+            };
+        });
         // clang-format off
         return LitHtml.html `
     <div class="insights">
