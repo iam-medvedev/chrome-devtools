@@ -97,18 +97,18 @@ export declare class ServiceWorkerVersion {
 }
 export declare namespace ServiceWorkerVersion {
     const RunningStatus: {
-        running: () => Common.UIString.LocalizedString;
-        starting: () => Common.UIString.LocalizedString;
-        stopped: () => Common.UIString.LocalizedString;
-        stopping: () => Common.UIString.LocalizedString;
+        running: () => Platform.UIString.LocalizedString;
+        starting: () => Platform.UIString.LocalizedString;
+        stopped: () => Platform.UIString.LocalizedString;
+        stopping: () => Platform.UIString.LocalizedString;
     };
     const Status: {
-        activated: () => Common.UIString.LocalizedString;
-        activating: () => Common.UIString.LocalizedString;
-        installed: () => Common.UIString.LocalizedString;
-        installing: () => Common.UIString.LocalizedString;
-        new: () => Common.UIString.LocalizedString;
-        redundant: () => Common.UIString.LocalizedString;
+        activated: () => Platform.UIString.LocalizedString;
+        activating: () => Platform.UIString.LocalizedString;
+        installed: () => Platform.UIString.LocalizedString;
+        installing: () => Platform.UIString.LocalizedString;
+        new: () => Platform.UIString.LocalizedString;
+        redundant: () => Platform.UIString.LocalizedString;
     };
     const enum Modes {
         INSTALLING = "installing",

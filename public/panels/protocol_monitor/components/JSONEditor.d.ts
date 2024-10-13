@@ -1,4 +1,6 @@
 import './Toolbar.js';
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/components/menus/menus.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 declare const LitElement: typeof LitHtml.LitElement;

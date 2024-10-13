@@ -773,8 +773,13 @@ export class DebuggerModel extends SDKModel {
     removeBreakpointListener(breakpointId, listener, thisObject) {
         this.#breakpointResolvedEventTarget.removeEventListener(breakpointId, listener, thisObject);
     }
-    async setBlackboxPatterns(patterns) {
-        const response = await this.agent.invoke_setBlackboxPatterns({ patterns });
+    async setBlackboxPatterns(patterns, skipAnonymous) {
+        const response = await this.agent.invoke_setBlackboxPatterns({ patterns, skipAnonymous });
+        const error = response.getError();
+        return !error;
+    }
+    async setBlackboxExecutionContexts(uniqueIds) {
+        const response = await this.agent.invoke_setBlackboxExecutionContexts({ uniqueIds });
         const error = response.getError();
         return !error;
     }

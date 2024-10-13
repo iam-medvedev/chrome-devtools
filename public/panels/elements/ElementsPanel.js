@@ -381,11 +381,12 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
     }
     focus() {
-        if (this.treeOutlines.size) {
-            this.treeOutlines.values().next().value.focus();
+        const firstTreeOutline = this.treeOutlines.values().next();
+        if (firstTreeOutline.done) {
+            this.domTreeContainer.focus();
         }
         else {
-            this.domTreeContainer.focus();
+            firstTreeOutline.value.focus();
         }
     }
     searchableView() {

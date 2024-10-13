@@ -1,6 +1,6 @@
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
 import * as Types from '../types/types.js';
-import { type InsightResult, type InsightSetContext, type RequiredData } from './types.js';
+import type { InsightResult, InsightSetContext, RequiredData } from './types.js';
 export declare function deps(): ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
 export type Entity = typeof ThirdPartyWeb.ThirdPartyWeb.entities[number];
 export interface Summary {

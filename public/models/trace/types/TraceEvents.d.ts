@@ -1,5 +1,5 @@
 import type * as Protocol from '../../../generated/protocol.js';
-import { type MicroSeconds, type MilliSeconds, type Seconds, type TraceWindowMicroSeconds } from './Timing.js';
+import type { MicroSeconds, MilliSeconds, Seconds, TraceWindowMicroSeconds } from './Timing.js';
 export declare const enum Phase {
     BEGIN = "B",
     END = "E",
@@ -582,6 +582,8 @@ export interface MainFrameViewport extends Instant {
     args: {
         data: ArgsData & {
             viewport_rect: number[];
+            /** Device Pixel Ratio. Added in m128 */
+            dpr: number;
         };
     };
 }
@@ -638,7 +640,9 @@ type LayoutShiftData = ArgsData & {
     is_main_frame: boolean;
     overall_max_distance: number;
     region_rects: TraceRect[];
+    /** @deprecated This value will incorrectly overreport for shifts within an iframe. */
     score: number;
+    /** This is the preferred "score", used for CLS. If `is_main_frame` is true, `score` and `weighted_score_delta` will be equal. But if the shift is from an iframe, `weighted_score_delta` will be appropriately reduced to account for the viewport size of that iframe. https://wicg.github.io/layout-instability/#subframe-weighting-factor and b/275509162 */
     weighted_score_delta: number;
     navigationId?: string;
 };
@@ -655,7 +659,11 @@ interface LayoutShiftSessionWindowData {
     id: number;
 }
 export interface LayoutShiftParsedData {
-    screenshotSource?: string;
+    /** screenshot taken before and after this shift. Before *should* always exist, but after might not at the end of a trace. */
+    screenshots: {
+        before: SyntheticScreenshot | null;
+        after: SyntheticScreenshot | null;
+    };
     timeFromNavigation?: MicroSeconds;
     cumulativeWeightedScoreInWindow: number;
     sessionWindowData: LayoutShiftSessionWindowData;
@@ -702,7 +710,7 @@ export interface SyntheticLayoutShiftCluster {
     tid: ThreadID;
 }
 export type FetchPriorityHint = 'low' | 'high' | 'auto';
-export type RenderBlocking = 'blocking' | 'non_blocking' | 'in_body_parser_blocking' | 'potentially_blocking';
+export type RenderBlocking = 'blocking' | 'non_blocking' | 'in_body_parser_blocking' | 'potentially_blocking' | 'dynamically_injected_non_blocking';
 export interface Initiator {
     type: Protocol.Network.InitiatorType;
     fetchType: string;

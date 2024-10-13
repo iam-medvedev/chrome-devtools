@@ -5,14 +5,15 @@ import * as ComponentHelpers from '../../../../../front_end/ui/components/helper
 import * as FrontendHelpers from '../../../../testing/EnvironmentHelpers.js'; // eslint-disable-line rulesdir/es_modules_import
 import * as Dialogs from '../../../../ui/components/dialogs/dialogs.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
+const { html } = LitHtml;
 await ComponentHelpers.ComponentServerSetup.setup();
 await FrontendHelpers.initializeGlobalVars();
 // Disabled until https://crbug.com/1079231 is fixed.
 // clang-format off
-const iconDialog = LitHtml.html `
+const iconDialog = html `
 Hello...
 
-<${Dialogs.IconDialog.IconDialog.litTagName}
+<devtools-icon-dialog
   .data=${{
     iconData: {
         iconName: 'info',
@@ -33,7 +34,7 @@ Hello...
       This is a dialog describing some additional information.
     </div>
   </div>
-</${Dialogs.IconDialog.IconDialog.litTagName}>
+</devtools-icon-dialog>
 `;
 // clang-format on
 const container = document.getElementById('container');

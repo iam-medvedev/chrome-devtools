@@ -19,6 +19,8 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     customizedContextMenu(event: MouseEvent, eventIndex: number, _groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     indexForEvent(event: Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
     eventByIndex(entryIndex: number): Trace.Types.Events.SyntheticNetworkRequest | Trace.Types.Events.WebSocketEvent | null;
+    entryHasAnnotations(entryIndex: number): boolean;
+    deleteAnnotationsForEntry(entryIndex: number): void;
     entryIndexForSelection(selection: TimelineSelection | null): number;
     groupForEvent(_entryIndex: number): PerfUI.FlameChart.Group | null;
     entryColor(index: number): string;

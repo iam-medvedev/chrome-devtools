@@ -25,8 +25,8 @@ export class GenericIssueDetailsView extends AffectedResourcesView {
     }
     #appendDetails(genericIssues) {
         const header = document.createElement('tr');
-        const sampleIssueDetails = genericIssues.values().next().value.details();
-        if (sampleIssueDetails.frameId) {
+        const sampleIssueDetails = genericIssues.values().next().value?.details();
+        if (sampleIssueDetails?.frameId) {
             this.appendColumnTitle(header, i18nString(UIStrings.frameId));
         }
         // Only some `GenericIssueDetails` have information for the 'affected

@@ -1,10 +1,10 @@
 import * as Protocol from '../../generated/protocol.js';
 import { CSSWideKeyword } from './CSSMetadata.js';
-import { type CSSModel } from './CSSModel.js';
+import type { CSSModel } from './CSSModel.js';
 import { CSSProperty } from './CSSProperty.js';
 import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
-import { type DOMNode } from './DOMModel.js';
+import type { DOMNode } from './DOMModel.js';
 export interface CSSMatchedStylesPayload {
     cssModel: CSSModel;
     node: DOMNode;
@@ -20,6 +20,7 @@ export interface CSSMatchedStylesPayload {
     propertyRules: Protocol.CSS.CSSPropertyRule[];
     cssPropertyRegistrations: Protocol.CSS.CSSPropertyRegistration[];
     fontPaletteValuesRule: Protocol.CSS.CSSFontPaletteValuesRule | undefined;
+    activePositionFallbackIndex: number;
 }
 export declare class CSSRegisteredProperty {
     #private;
@@ -63,6 +64,7 @@ export declare class CSSMatchedStyles {
     fontPaletteValuesRule(): CSSFontPaletteValuesRule | undefined;
     keyframes(): CSSKeyframesRule[];
     positionTryRules(): CSSPositionTryRule[];
+    activePositionFallbackIndex(): number;
     pseudoStyles(pseudoType: Protocol.DOM.PseudoType): CSSStyleDeclaration[];
     pseudoTypes(): Set<Protocol.DOM.PseudoType>;
     customHighlightPseudoStyles(highlightName: string): CSSStyleDeclaration[];

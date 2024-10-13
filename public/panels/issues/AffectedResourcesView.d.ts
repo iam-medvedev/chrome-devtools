@@ -5,8 +5,8 @@ import type * as IssuesManager from '../../models/issues_manager/issues_manager.
 import * as Logs from '../../models/logs/logs.js';
 import type * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type AggregatedIssue } from './IssueAggregator.js';
-import { type IssueView } from './IssueView.js';
+import type { AggregatedIssue } from './IssueAggregator.js';
+import type { IssueView } from './IssueView.js';
 export declare const enum AffectedItem {
     COOKIE = "Cookie",
     DIRECTIVE = "Directive",

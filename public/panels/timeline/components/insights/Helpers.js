@@ -1,15 +1,16 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../../ui/components/markdown_view/markdown_view.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Marked from '../../../../third_party/marked/marked.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
-import * as MarkdownView from '../../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import sidebarInsightStyles from './sidebarInsight.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 export function shouldRenderForCategory(options) {
     return options.activeCategory === Category.ALL || options.activeCategory === options.insightCategory;
 }
@@ -18,9 +19,12 @@ export function insightIsActive(options) {
         options.activeInsight.insightSetKey === options.insightSetKey;
     return Boolean(active);
 }
+// TODO(crbug.com/371615739): BaseInsight, SidebarInsight should be combined.
 // This is an abstract base class so the component naming rules do not apply.
-// eslint-disable-next-line rulesdir/check_component_naming
 export class BaseInsight extends HTMLElement {
+    // So we can use the TypeScript BaseInsight class without getting warnings
+    // about litTagName. Every child should overrwrite this.
+    static litTagName = LitHtml.literal ``;
     shadow = this.attachShadow({ mode: 'open' });
     data = {
         insights: null,
@@ -29,12 +33,14 @@ export class BaseInsight extends HTMLElement {
         activeInsight: null,
         activeCategory: Category.ALL,
     };
-    #boundRender = this.render.bind(this);
+    // eslint-disable-next-line rulesdir/no_bound_component_methods
+    #boundRender = this.#baseRender.bind(this);
     sharedTableState = {
         selectedRowEl: null,
         selectionIsSticky: false,
     };
     #initialOverlays = null;
+    #hasRegisteredRelatedEvents = false;
     scheduleRender() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
@@ -43,6 +49,14 @@ export class BaseInsight extends HTMLElement {
         this.setAttribute('jslog', `${VisualLogging.section(`timeline.insights.${this.internalName}`)}`);
         // Used for unit test purposes when querying the DOM.
         this.dataset.insightName = this.internalName;
+        // TODO(crbug.com/371615739): this should be moved to model/trace/insights
+        if (!this.#hasRegisteredRelatedEvents) {
+            this.#hasRegisteredRelatedEvents = true;
+            const events = this.getRelatedEvents();
+            if (events.length) {
+                this.dispatchEvent(new SidebarInsight.InsightProvideRelatedEvents(this.userVisibleTitle, events, this.#dispatchInsightActivatedEvent.bind(this)));
+            }
+        }
     }
     set insights(insights) {
         this.data.insights = insights;
@@ -69,6 +83,9 @@ export class BaseInsight extends HTMLElement {
             this.dispatchEvent(new SidebarInsight.InsightDeactivated());
             return;
         }
+        this.#dispatchInsightActivatedEvent();
+    }
+    #dispatchInsightActivatedEvent() {
         if (!this.data.insightSetKey) {
             // Shouldn't happen, but needed to satisfy TS.
             return;
@@ -100,6 +117,16 @@ export class BaseInsight extends HTMLElement {
         this.#initialOverlays = this.createOverlays();
         return this.#initialOverlays;
     }
+    // Should be overrided by subclasses.
+    getRelatedEvents() {
+        return [];
+    }
+    #baseRender() {
+        this.render();
+        if (this.isActive()) {
+            requestAnimationFrame(() => requestAnimationFrame(() => this.scrollIntoViewIfNeeded()));
+        }
+    }
     isActive() {
         return insightIsActive({
             activeInsight: this.data.activeInsight,
@@ -107,24 +134,11 @@ export class BaseInsight extends HTMLElement {
             insightSetKey: this.data.insightSetKey,
         });
     }
-}
-// TODO(crbug.com/368170718): consider better treatments for shortening URLs.
-export function shortenUrl(url) {
-    const maxLength = 20;
-    // TODO(crbug.com/368170718): This is something that should only be done if the origin is the same
-    // as the insight set's origin.
-    const elideOrigin = false;
-    if (elideOrigin) {
-        try {
-            url = new URL(url).pathname;
-        }
-        catch {
-        }
+    getInsightSetUrl() {
+        const url = this.data.insights?.get(this.data.insightSetKey ?? '')?.url;
+        Platform.TypeScriptUtilities.assertNotNullOrUndefined(url, 'Expected url for insight set');
+        return new URL(url);
     }
-    if (url.length <= maxLength) {
-        return url;
-    }
-    return Platform.StringUtilities.trimMiddle(url.split('/').at(-1) ?? '', maxLength);
 }
 /**
  * Returns a rendered MarkdownView component.
@@ -133,62 +147,8 @@ export function shortenUrl(url) {
  */
 export function md(markdown) {
     const tokens = Marked.Marked.lexer(markdown);
-    return LitHtml.html `<${MarkdownView.MarkdownView.MarkdownView.litTagName}
+    return html `<devtools-markdown-view
     .data=${{ tokens }}>
-  </${MarkdownView.MarkdownView.MarkdownView.litTagName}>`;
+  </devtools-markdown-view>`;
 }
-export class EventReferenceClick extends Event {
-    event;
-    static eventName = 'eventreferenceclick';
-    constructor(event) {
-        super(EventReferenceClick.eventName, { bubbles: true, composed: true });
-        this.event = event;
-    }
-}
-class EventRef extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-event-ref`;
-    #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
-    #baseInsight = null;
-    #text = null;
-    #event = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sidebarInsightStyles];
-    }
-    set text(text) {
-        this.#text = text;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set baseInsight(baseInsight) {
-        this.#baseInsight = baseInsight;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set event(event) {
-        this.#event = event;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    #render() {
-        if (!this.#baseInsight || !this.#text || !this.#event) {
-            return;
-        }
-        // clang-format off
-        LitHtml.render(LitHtml.html `
-      <span class=devtools-link @click=${(e) => {
-            e.stopPropagation();
-            if (this.#baseInsight && this.#event) {
-                this.#baseInsight.dispatchEvent(new EventReferenceClick(this.#event));
-            }
-        }}>${this.#text}</span>
-    `, this.#shadow, { host: this });
-        // clang-format on
-    }
-}
-export function eventRef(baseInsight, event, text) {
-    return LitHtml.html `<${EventRef.litTagName}
-    .baseInsight=${baseInsight}
-    .event=${event}
-    .text=${text}
-  ></${EventRef.litTagName}>`;
-}
-customElements.define('devtools-performance-event-ref', EventRef);
 //# sourceMappingURL=Helpers.js.map

@@ -1,6 +1,6 @@
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { type EventDescriptor, type EventTargetEvent, type GenericEvents } from './EventTarget.js';
+import type { EventDescriptor, EventTargetEvent, GenericEvents } from './EventTarget.js';
 import { ObjectWrapper } from './Object.js';
 import { getLocalizedSettingsCategory, type LearnMore, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType } from './SettingRegistration.js';
 export declare class Settings {

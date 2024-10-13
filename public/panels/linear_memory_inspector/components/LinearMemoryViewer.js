@@ -25,7 +25,6 @@ export class ResizeEvent extends Event {
 const BYTE_GROUP_MARGIN = 8;
 const BYTE_GROUP_SIZE = 4;
 export class LinearMemoryViewer extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-linear-memory-inspector-viewer`;
     #shadow = this.attachShadow({ mode: 'open' });
     #resizeObserver = new ResizeObserver(() => this.#resize());
     #isObservingResize = false;

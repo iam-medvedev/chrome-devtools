@@ -1,16 +1,15 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/spinners/spinners.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
-import * as Spinners from '../../../ui/components/spinners/spinners.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -177,7 +176,7 @@ export class ConsoleInsight extends HTMLElement {
             case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */: {
                 if (this.#consoleInsightsEnabledSetting?.disabled()) {
                     this.#state = {
-                        type: "setting-disabled" /* State.SETTING_DISABLED */,
+                        type: "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */,
                     };
                     break;
                 }
@@ -256,7 +255,7 @@ export class ConsoleInsight extends HTMLElement {
         if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true) {
             this.#getOnboardingCompletedSetting().set(true);
         }
-        if (this.#state.type === "setting-disabled" /* State.SETTING_DISABLED */ &&
+        if (this.#state.type === "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */ &&
             this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true) {
             this.#transitionTo({
                 type: "loading" /* State.LOADING */,
@@ -289,7 +288,7 @@ export class ConsoleInsight extends HTMLElement {
         }
         if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() !== true) {
             this.#transitionTo({
-                type: "setting-disabled" /* State.SETTING_DISABLED */,
+                type: "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */,
             });
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOptInTeaserShown);
             return;
@@ -454,7 +453,7 @@ export class ConsoleInsight extends HTMLElement {
     }
     #renderSearchButton() {
         // clang-format off
-        return html `<${Buttons.Button.Button.litTagName}
+        return html `<devtools-button
       @click=${this.#onSearch}
       class="search-button"
       .data=${{
@@ -463,7 +462,7 @@ export class ConsoleInsight extends HTMLElement {
         }}
     >
       ${i18nString(UIStrings.search)}
-    </${Buttons.Button.Button.litTagName}>`;
+    </devtools-button>`;
         // clang-format on
     }
     #renderLearnMoreAboutInsights() {
@@ -492,13 +491,13 @@ export class ConsoleInsight extends HTMLElement {
             case "insight" /* State.INSIGHT */:
                 return html `
         <main jslog=${jslog}>
-          ${this.#state.validMarkdown ? html `<${MarkdownView.MarkdownView.MarkdownView.litTagName}
+          ${this.#state.validMarkdown ? html `<devtools-markdown-view
               .data=${{ tokens: this.#state.tokens, renderer: this.#renderer }}>
-            </${MarkdownView.MarkdownView.MarkdownView.litTagName}>` : this.#state.explanation}
+            </devtools-markdown-view>` : this.#state.explanation}
           <details style="--list-height: ${(this.#state.sources.length + (this.#state.isPageReloadRecommended ? 1 : 0)) * 20}px;" jslog=${VisualLogging.expand('sources').track({ click: true })}>
             <summary>${i18nString(UIStrings.inputData)}</summary>
-            <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources} .isPageReloadRecommended=${this.#state.isPageReloadRecommended}>
-            </${ConsoleInsightSourcesList.litTagName}>
+            <devtools-console-insight-sources-list .sources=${this.#state.sources} .isPageReloadRecommended=${this.#state.isPageReloadRecommended}>
+            </devtools-console-insight-sources-list>
           </details>
           <div class="buttons">
             ${this.#renderSearchButton()}
@@ -515,21 +514,21 @@ export class ConsoleInsight extends HTMLElement {
             <h3>Things to consider</h3>
             <div class="reminder-items">
               <div>
-                <${IconButton.Icon.Icon.litTagName} .data=${{
+                <devtools-icon .data=${{
                     iconName: 'google',
                     width: 'var(--sys-size-8)',
                     height: 'var(--sys-size-8)',
                 }}>
-                </${IconButton.Icon.Icon.litTagName}>
+                </devtools-icon>
               </div>
               <div>The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature. Avoid sharing sensitive or personal information.</div>
               <div>
-                <${IconButton.Icon.Icon.litTagName} .data=${{
+                <devtools-icon .data=${{
                     iconName: 'policy',
                     width: 'var(--sys-size-8)',
                     height: 'var(--sys-size-8)',
                 }}>
-                </${IconButton.Icon.Icon.litTagName}>
+                </devtools-icon>
               </div>
               <div>Use of this feature is subject to the
                 <x-link
@@ -545,12 +544,12 @@ export class ConsoleInsight extends HTMLElement {
                 >Google Privacy Policy</x-link>
               </div>
               <div>
-                <${IconButton.Icon.Icon.litTagName} .data=${{
+                <devtools-icon .data=${{
                     iconName: 'warning',
                     width: 'var(--sys-size-8)',
                     height: 'var(--sys-size-8)',
                 }}>
-                </${IconButton.Icon.Icon.litTagName}>
+                </devtools-icon>
               </div>
               <div>
                 <x-link
@@ -562,7 +561,7 @@ export class ConsoleInsight extends HTMLElement {
             </div>
           </main>
         `;
-            case "setting-disabled" /* State.SETTING_DISABLED */: {
+            case "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */: {
                 const settingsLink = document.createElement('button');
                 settingsLink.textContent = i18nString(UIStrings.settingsLink);
                 settingsLink.classList.add('link');
@@ -574,12 +573,12 @@ export class ConsoleInsight extends HTMLElement {
                 settingsLink.setAttribute('jslog', `${VisualLogging.action('open-ai-settings').track({ click: true })}`);
                 return html `<main class="opt-in-teaser" jslog=${jslog}>
           <div class="badge">
-            <${IconButton.Icon.Icon.litTagName} .data=${{
+            <devtools-icon .data=${{
                     iconName: 'lightbulb-spark',
                     width: 'var(--sys-size-8)',
                     height: 'var(--sys-size-8)',
                 }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            </devtools-icon>
           </div>
           <div>
             ${i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnInSettings, { PH1: settingsLink })}
@@ -603,7 +602,7 @@ export class ConsoleInsight extends HTMLElement {
     }
     #renderDisclaimer() {
         // clang-format off
-        return LitHtml.html `<span>
+        return html `<span>
       AI tools may generate inaccurate info that doesn't represent Google's views. Data sent to Google may be seen by human reviewers to improve this feature.
       <button class="link" role="link" @click=${() => UI.ViewManager.ViewManager.instance().showView('chrome-ai')}
         jslog=${VisualLogging.action('open-ai-settings').track({ click: true })}
@@ -619,7 +618,7 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format off
         switch (this.#state.type) {
             case "loading" /* State.LOADING */:
-            case "setting-disabled" /* State.SETTING_DISABLED */:
+            case "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */:
                 return LitHtml.nothing;
             case "error" /* State.ERROR */:
             case "offline" /* State.OFFLINE */:
@@ -633,7 +632,7 @@ export class ConsoleInsight extends HTMLElement {
                 return html `<footer jslog=${VisualLogging.section('footer')}>
         <div class="filler"></div>
         <div>
-          <${Buttons.Button.Button.litTagName}
+          <devtools-button
             @click=${this.#onGoToChromeSettings}
             .data=${{
                     variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
@@ -641,14 +640,14 @@ export class ConsoleInsight extends HTMLElement {
                 }}
           >
             ${UIStrings.updateSettings}
-          </${Buttons.Button.Button.litTagName}>
+          </devtools-button>
         </div>
       </footer>`;
             case "consent-reminder" /* State.CONSENT_REMINDER */:
                 return html `<footer jslog=${VisualLogging.section('footer')}>
           <div class="filler"></div>
           <div class="buttons">
-            <${Buttons.Button.Button.litTagName}
+            <devtools-button
               @click=${() => {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserSettingsLinkClicked);
                     void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
@@ -660,8 +659,8 @@ export class ConsoleInsight extends HTMLElement {
                 }}
             >
               Settings
-            </${Buttons.Button.Button.litTagName}>
-            <${Buttons.Button.Button.litTagName}
+            </devtools-button>
+            <devtools-button
               class='continue-button'
               @click=${this.#onConsentReminderConfirmed}
               .data=${{
@@ -671,7 +670,7 @@ export class ConsoleInsight extends HTMLElement {
                 }}
               >
               Continue
-            </${Buttons.Button.Button.litTagName}>
+            </devtools-button>
           </div>
         </footer>`;
             case "insight" /* State.INSIGHT */:
@@ -682,7 +681,7 @@ export class ConsoleInsight extends HTMLElement {
         <div class="filler"></div>
         <div class="rating">
           ${showThumbsUpDownButtons ? html `
-            <${Buttons.Button.Button.litTagName}
+            <devtools-button
               data-rating=${'true'}
               .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -693,8 +692,8 @@ export class ConsoleInsight extends HTMLElement {
                     jslogContext: 'thumbs-up',
                 }}
               @click=${this.#onRating}
-            ></${Buttons.Button.Button.litTagName}>
-            <${Buttons.Button.Button.litTagName}
+            ></devtools-button>
+            <devtools-button
               data-rating=${'false'}
               .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -705,9 +704,9 @@ export class ConsoleInsight extends HTMLElement {
                     jslogContext: 'thumbs-down',
                 }}
               @click=${this.#onRating}
-            ></${Buttons.Button.Button.litTagName}>
+            ></devtools-button>
           ` : LitHtml.nothing}
-          <${Buttons.Button.Button.litTagName}
+          <devtools-button
             .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
@@ -716,7 +715,7 @@ export class ConsoleInsight extends HTMLElement {
                     jslogContext: 'report',
                 }}
             @click=${this.#onReport}
-          ></${Buttons.Button.Button.litTagName}>
+          ></devtools-button>
         </div>
 
       </footer>`;
@@ -738,20 +737,20 @@ export class ConsoleInsight extends HTMLElement {
                 return i18nString(UIStrings.error);
             case "consent-reminder" /* State.CONSENT_REMINDER */:
                 return 'Understand console messages with AI';
-            case "setting-disabled" /* State.SETTING_DISABLED */:
+            case "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */:
                 return ''; // not reached
         }
     }
     #renderSpinner() {
         // clang-format off
         if (this.#state.type === "insight" /* State.INSIGHT */ && !this.#state.completed) {
-            return html `<${Spinners.Spinner.Spinner.litTagName}></${Spinners.Spinner.Spinner.litTagName}>`;
+            return html `<devtools-spinner></devtools-spinner>`;
         }
         return LitHtml.nothing;
         // clang-format on
     }
     #renderHeader() {
-        if (this.#state.type === "setting-disabled" /* State.SETTING_DISABLED */) {
+        if (this.#state.type === "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */) {
             return LitHtml.nothing;
         }
         const hasIcon = this.#state.type === "consent-reminder" /* State.CONSENT_REMINDER */;
@@ -760,12 +759,12 @@ export class ConsoleInsight extends HTMLElement {
       <header>
         ${hasIcon ? html `
           <div class="header-icon-container">
-            <${IconButton.Icon.Icon.litTagName} .data=${{
+            <devtools-icon .data=${{
             iconName: 'lightbulb-spark',
             width: '18px',
             height: '18px',
         }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            </devtools-icon>
           </div>`
             : LitHtml.nothing}
         <div class="filler">
@@ -775,7 +774,7 @@ export class ConsoleInsight extends HTMLElement {
           ${this.#renderSpinner()}
         </div>
         <div class="close-button">
-          <${Buttons.Button.Button.litTagName}
+          <devtools-button
             .data=${{
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
@@ -784,7 +783,7 @@ export class ConsoleInsight extends HTMLElement {
         }}
             jslog=${VisualLogging.close().track({ click: true })}
             @click=${this.#onClose}
-          ></${Buttons.Button.Button.litTagName}>
+          ></devtools-button>
         </div>
       </header>
     `;
@@ -821,12 +820,12 @@ class ConsoleInsightSourcesList extends HTMLElement {
       <ul>
         ${Directives.repeat(this.#sources, item => item.value, item => {
             return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href="data:text/plain,${encodeURIComponent(item.value)}" jslog=${VisualLogging.link('source-' + item.type).track({ click: true })}>
-            <${IconButton.Icon.Icon.litTagName} name="open-externally"></${IconButton.Icon.Icon.litTagName}>
+            <devtools-icon name="open-externally"></devtools-icon>
             ${localizeType(item.type)}
           </x-link></li>`;
         })}
-        ${this.#isPageReloadRecommended ? LitHtml.html `<li class="source-disclaimer">
-          <${IconButton.Icon.Icon.litTagName} name="warning"></${IconButton.Icon.Icon.litTagName}>
+        ${this.#isPageReloadRecommended ? html `<li class="source-disclaimer">
+          <devtools-icon name="warning"></devtools-icon>
           ${i18nString(UIStrings.reloadRecommendation)}</li>` : LitHtml.nothing}
       </ul>
     `, this.#shadow, {

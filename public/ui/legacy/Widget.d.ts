@@ -1,10 +1,20 @@
 import '../../core/dom_extension/dom_extension.js';
+import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { Constraints } from './Geometry.js';
+export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
+    widgetClass?: new (...args: any[]) => WidgetT;
+    widgetParams: unknown[];
+    createWidget(): WidgetT;
+    connectedCallback(): void;
+}
+type Constructor<T, Args extends unknown[]> = {
+    new (...args: Args): T;
+};
+export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof LitHtml.Directives.ref>;
 export declare class Widget {
-    readonly element: HTMLDivElement;
-    contentElement: HTMLDivElement;
+    readonly element: HTMLElement;
+    contentElement: HTMLElement;
     private shadowRoot;
-    private readonly isWebComponent;
     protected visibleInternal: boolean;
     private isRoot;
     private isShowingInternal;
@@ -19,7 +29,7 @@ export declare class Widget {
     private constraintsInternal?;
     private invalidationsRequested?;
     private externallyManaged?;
-    constructor(isWebComponent?: boolean, delegatesFocus?: boolean);
+    constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
     /**
      * Returns the {@link Widget} whose element is the given `node`, or `undefined`
      * if the `node` is not an element for a widget.
@@ -28,6 +38,7 @@ export declare class Widget {
      * @returns the {@link Widget} that is attached to the `node` or `undefined`.
      */
     static get(node: Node): Widget | undefined;
+    static getOrCreateWidget(element: HTMLElement): Widget;
     markAsRoot(): void;
     parentWidget(): Widget | null;
     children(): Widget[];
@@ -84,7 +95,7 @@ export declare class Widget {
     markAsExternallyManaged(): void;
 }
 export declare class VBox extends Widget {
-    constructor(isWebComponent?: boolean, delegatesFocus?: boolean);
+    constructor(isWebComponent?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
     calculateConstraints(): Constraints;
 }
 export declare class HBox extends Widget {
@@ -102,3 +113,4 @@ export declare class WidgetFocusRestorer {
     constructor(widget: Widget);
     restore(): void;
 }
+export {};

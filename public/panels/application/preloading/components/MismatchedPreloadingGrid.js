@@ -1,11 +1,11 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../../ui/components/data_grid/data_grid.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Diff from '../../../../third_party/diff/diff.js';
-import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as PreloadingString from './PreloadingString.js';
@@ -78,7 +78,6 @@ class PreloadingUIUtils {
 const { render, html } = LitHtml;
 // Grid component to show prerendering attempts.
 export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    static litTagName = LitHtml.literal `devtools-resources-mismatched-preloading-grid`;
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
     connectedCallback() {
@@ -126,8 +125,8 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
-      <${DataGrid.DataGridController.DataGridController.litTagName} .data=${reportsGridData}>
-      </${DataGrid.DataGridController.DataGridController.litTagName}>
+      <devtools-data-grid-controller .data=${reportsGridData}>
+      </devtools-data-grid-controller>
     `, this.#shadow, { host: this });
         // clang-format on
     }
@@ -136,7 +135,7 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
             function span(additionalProps, s) {
                 // Don't insert spaces to prevent spaces for inline blocks.
                 // clang-format off
-                return LitHtml.html `<span style=${LitHtml.Directives.styleMap(additionalProps)}>${s}</span>`;
+                return html `<span style=${LitHtml.Directives.styleMap(additionalProps)}>${s}</span>`;
                 // clang-format on
             }
             const diffs = Diff.Diff.DiffWrapper.charDiff(url, pageURL);
@@ -155,7 +154,7 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
                         throw new Error('unreachable');
                 }
             }, LitHtml.nothing);
-            return LitHtml.html `<div>${contents}</div>`;
+            return html `<div>${contents}</div>`;
         }
         assertNotNullOrUndefined(this.#data);
         const pageURL = this.#data.pageURL;

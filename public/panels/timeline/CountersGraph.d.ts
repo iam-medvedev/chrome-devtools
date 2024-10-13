@@ -1,7 +1,7 @@
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type TimelineModeViewDelegate } from './TimelinePanel.js';
+import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 export declare class CountersGraph extends UI.Widget.VBox {
     #private;
     private readonly delegate;

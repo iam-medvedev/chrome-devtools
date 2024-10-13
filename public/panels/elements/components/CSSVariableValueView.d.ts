@@ -5,12 +5,10 @@ export interface RegisteredPropertyDetails {
 }
 export declare class CSSVariableParserError extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(details: RegisteredPropertyDetails);
 }
 export declare class CSSVariableValueView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     readonly variableName: string;
     readonly value: string | undefined;
     readonly details: RegisteredPropertyDetails | undefined;

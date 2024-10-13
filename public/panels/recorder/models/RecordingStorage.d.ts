@@ -1,4 +1,4 @@
-import { type UserFlow } from './Schema.js';
+import type { UserFlow } from './Schema.js';
 interface IdGenerator {
     next(): string;
 }

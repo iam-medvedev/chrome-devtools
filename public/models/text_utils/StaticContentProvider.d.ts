@@ -1,7 +1,7 @@
 import type * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import { type ContentDataOrError } from './ContentData.js';
-import { type ContentProvider, type DeferredContent, type SearchMatch } from './ContentProvider.js';
+import type { ContentProvider, DeferredContent, SearchMatch } from './ContentProvider.js';
 export declare class StaticContentProvider implements ContentProvider {
     #private;
     constructor(contentURL: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType, lazyContent: () => Promise<ContentDataOrError>);

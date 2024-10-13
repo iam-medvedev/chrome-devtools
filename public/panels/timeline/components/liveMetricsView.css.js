@@ -137,13 +137,20 @@ styles.replaceSync(
   min-width: 0;
 }
 
-.interactions-section {
+.logs-section {
   margin-top: 24px;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-  min-height: min-content;
+  flex: 1 0 300px;
+  overflow: auto;
+  max-height: max-content;
+
+  --app-color-toolbar-background: transparent;
+}
+
+.logs-section-header {
+  display: flex;
+  align-items: center;
 }
 
 .interactions-clear {
@@ -151,28 +158,25 @@ styles.replaceSync(
   vertical-align: sub;
 }
 
-.interactions-list {
+.log {
   padding: 0;
   margin: 0;
   overflow: auto;
-  flex: 1 1 300px;
-  max-height: max-content;
+}
+
+.log-item {
+  border: none;
+  border-bottom: 1px solid var(--sys-color-divider);
+
+  &.highlight {
+    animation: highlight-fadeout 2s;
+  }
 }
 
 .interaction {
   display: flex;
   align-items: center;
   padding: 7px 0;
-  border: none;
-  border-bottom: 1px solid var(--sys-color-divider);
-
-  &.highlight {
-    animation: interaction-highlight-fadeout 2s;
-  }
-}
-
-.interaction:first-child {
-  border-top: 1px solid var(--sys-color-divider);
 }
 
 .interaction-type {
@@ -206,6 +210,32 @@ styles.replaceSync(
   width: max-content;
   flex-shrink: 0;
   font-weight: var(--ref-typeface-weight-medium);
+}
+
+.layout-shift {
+  display: flex;
+  align-items: flex-start;
+}
+
+.layout-shift-score {
+  margin-right: 16px;
+  padding: 7px 0;
+  width: 150px;
+  box-sizing: border-box;
+}
+
+.layout-shift-nodes {
+  flex: 1;
+  min-width: 0;
+}
+
+.layout-shift-node {
+  border-bottom: 1px solid var(--sys-color-divider);
+  padding: 7px 0;
+
+  &:last-child {
+    border: none;
+  }
 }
 
 .record-action {
@@ -276,7 +306,7 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   padding-left: 20px;
 }
 
-.link-to-interaction {
+.link-to-log {
   padding: unset;
   background: unset;
   border: unset;
@@ -286,7 +316,7 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   cursor: pointer;
 }
 
-@keyframes interaction-highlight-fadeout {
+@keyframes highlight-fadeout {
   from {
     background-color: var(--sys-color-yellow-container);
   }

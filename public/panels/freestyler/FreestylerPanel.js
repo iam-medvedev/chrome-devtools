@@ -5,26 +5,30 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Trace from '../../models/trace/trace.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { ResponseType } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { FreestylerChatUi, } from './components/FreestylerChatUi.js';
+import { DrJonesFileAgent, } from './DrJonesFileAgent.js';
 import { DrJonesNetworkAgent, } from './DrJonesNetworkAgent.js';
+import { DrJonesPerformanceAgent } from './DrJonesPerformanceAgent.js';
 import { FreestylerAgent } from './FreestylerAgent.js';
 import freestylerPanelStyles from './freestylerPanel.css.js';
-// Bug for the send feed back link
-// const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393' as Platform.DevToolsPath.UrlString;
+const { html } = LitHtml;
+const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://goo.gle/devtools-ai-assistance';
 /*
 * Strings that don't need to be translated at this time.
 */
 const UIStringsNotTranslate = {
     /**
-     *@description AI assistance UI text for clearing messages.
+     *@description AI assistance UI text for clearing the chat.
      */
-    clearMessages: 'Clear messages',
+    clearChat: 'Clear chat',
     /**
      *@description AI assistance UI tooltip text for the help button.
      */
@@ -33,6 +37,22 @@ const UIStringsNotTranslate = {
      *@description AI assistant UI tooltip text for the settings button (gear icon).
      */
     settings: 'Settings',
+    /**
+     *@description AI assistant UI tooltip sending feedback.
+     */
+    sendFeedback: 'Send feedback',
+    /**
+     *@description Announcement text for screen readers when the chat is cleared.
+     */
+    chatCleared: 'Chat cleared',
+    /**
+     *@description Announcement text for screen readers when the conversation starts.
+     */
+    answerLoading: 'Answer loading',
+    /**
+     *@description Announcement text for screen readers when the answer comes.
+     */
+    answerReady: 'Answer ready',
 };
 const lockedString = i18n.i18n.lockedString;
 // TODO(ergunsh): Use the WidgetElement instead of separately creating the toolbar.
@@ -40,9 +60,15 @@ function createToolbar(target, { onClearClick }) {
     const toolbarContainer = target.createChild('div', 'freestyler-toolbar-container');
     const leftToolbar = new UI.Toolbar.Toolbar('', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('freestyler-right-toolbar', toolbarContainer);
-    const clearButton = new UI.Toolbar.ToolbarButton(lockedString(UIStringsNotTranslate.clearMessages), 'clear', undefined, 'freestyler.clear');
+    const clearButton = new UI.Toolbar.ToolbarButton(lockedString(UIStringsNotTranslate.clearChat), 'clear', undefined, 'freestyler.clear');
     clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, onClearClick);
     leftToolbar.appendToolbarItem(clearButton);
+    const link = UI.XLink.XLink.create(AI_ASSISTANCE_SEND_FEEDBACK, lockedString(UIStringsNotTranslate.sendFeedback), undefined, undefined, 'freestyler.send-feedback');
+    link.style.setProperty('display', null);
+    link.style.setProperty('text-decoration', 'none');
+    link.style.setProperty('padding', '0 var(--sys-size-3)');
+    const linkItem = new UI.Toolbar.ToolbarItem(link);
+    rightToolbar.appendToolbarItem(linkItem);
     rightToolbar.appendSeparator();
     const helpButton = new UI.Toolbar.ToolbarButton(lockedString(UIStringsNotTranslate.help), 'help', undefined, 'freestyler.help');
     helpButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
@@ -57,13 +83,13 @@ function createToolbar(target, { onClearClick }) {
 }
 function defaultView(input, output, target) {
     // clang-format off
-    LitHtml.render(LitHtml.html `
-    <${FreestylerChatUi.litTagName} .props=${input} ${LitHtml.Directives.ref((el) => {
+    LitHtml.render(html `
+    <devtools-freestyler-chat-ui .props=${input} ${LitHtml.Directives.ref((el) => {
         if (!el || !(el instanceof FreestylerChatUi)) {
             return;
         }
         output.freestylerChatUi = el;
-    })}></${FreestylerChatUi.litTagName}>
+    })}></devtools-freestyler-chat-ui>
   `, target, { host: input }); // eslint-disable-line rulesdir/lit_html_host_this
     // clang-format on
 }
@@ -73,11 +99,15 @@ export class FreestylerPanel extends UI.Panel.Panel {
     static panelName = 'freestyler';
     #toggleSearchElementAction;
     #selectedElement;
+    #selectedFile;
     #selectedNetworkRequest;
+    #selectedStackTrace;
     #contentContainer;
     #aidaClient;
     #freestylerAgent;
+    #drJonesFileAgent;
     #drJonesNetworkAgent;
+    #drJonesPerformanceAgent;
     #viewProps;
     #viewOutput = {};
     #serverSideLoggingEnabled = isFreestylerServerSideLoggingEnabled();
@@ -86,7 +116,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(FreestylerPanel.panelName);
         this.view = view;
-        this.#freestylerEnabledSetting = this.#getFreestylerEnabledSetting();
+        this.#freestylerEnabledSetting = this.#getAiAssistanceEnabledSetting();
         createToolbar(this.contentElement, { onClearClick: this.#clearMessages.bind(this) });
         this.#toggleSearchElementAction =
             UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
@@ -100,6 +130,8 @@ export class FreestylerPanel extends UI.Panel.Panel {
         };
         this.#selectedElement = selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode));
         this.#selectedNetworkRequest = UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest);
+        this.#selectedStackTrace = UI.Context.Context.instance().flavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI);
+        this.#selectedFile = UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode);
         this.#viewProps = {
             state: this.#freestylerEnabledSetting?.getIfNotDisabled() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
                 "consent-view" /* FreestylerChatUiState.CONSENT_VIEW */,
@@ -108,12 +140,15 @@ export class FreestylerPanel extends UI.Panel.Panel {
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
             selectedElement: this.#selectedElement,
             selectedNetworkRequest: this.#selectedNetworkRequest,
+            selectedStackTrace: this.#selectedStackTrace,
+            selectedFile: this.#selectedFile,
             isLoading: false,
             onTextSubmit: this.#startConversation.bind(this),
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
             onFeedbackSubmit: this.#handleFeedbackSubmit.bind(this),
             onCancelClick: this.#cancel.bind(this),
             onSelectedNetworkRequestClick: this.#handleSelectedNetworkRequestClick.bind(this),
+            onSelectedFileRequestClick: this.#handleSelectedFileClick.bind(this),
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
             userInfo: {
                 accountImage: syncInfo.accountImage,
@@ -126,7 +161,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.doUpdate();
         });
         this.#freestylerAgent = this.#createFreestylerAgent();
+        this.#drJonesFileAgent = this.#createDrJonesFileAgent();
         this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
+        this.#drJonesPerformanceAgent = this.#createDrJonesPerformanceAgent();
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, ev => {
             if (this.#viewProps.selectedElement === ev.data) {
                 return;
@@ -141,11 +178,25 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.#viewProps.selectedNetworkRequest = Boolean(ev.data) ? ev.data : null;
             this.doUpdate();
         });
+        UI.Context.Context.instance().addFlavorChangeListener(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, ev => {
+            if (this.#viewProps.selectedStackTrace === ev.data) {
+                return;
+            }
+            this.#viewProps.selectedStackTrace = Boolean(ev.data) ? ev.data : null;
+            this.doUpdate();
+        });
+        UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, ev => {
+            if (this.#viewProps.selectedFile === ev.data) {
+                return;
+            }
+            this.#viewProps.selectedFile = Boolean(ev.data) ? ev.data : null;
+            this.doUpdate();
+        });
         this.doUpdate();
     }
-    #getFreestylerEnabledSetting() {
+    #getAiAssistanceEnabledSetting() {
         try {
-            return Common.Settings.moduleSetting('freestyler-enabled');
+            return Common.Settings.moduleSetting('ai-assistance-enabled');
         }
         catch {
             return;
@@ -158,8 +209,20 @@ export class FreestylerPanel extends UI.Panel.Panel {
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
         });
     }
+    #createDrJonesFileAgent() {
+        return new DrJonesFileAgent({
+            aidaClient: this.#aidaClient,
+            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
+        });
+    }
     #createDrJonesNetworkAgent() {
         return new DrJonesNetworkAgent({
+            aidaClient: this.#aidaClient,
+            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
+        });
+    }
+    #createDrJonesPerformanceAgent() {
+        return new DrJonesPerformanceAgent({
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
         });
@@ -214,6 +277,11 @@ export class FreestylerPanel extends UI.Panel.Panel {
             return Common.Revealer.reveal(requestLocation);
         }
     }
+    #handleSelectedFileClick() {
+        if (this.#viewProps.selectedFile) {
+            return Common.Revealer.reveal(this.#viewProps.selectedFile.uiLocation(0, 0));
+        }
+    }
     handleAction(actionId) {
         switch (actionId) {
             case 'freestyler.elements-floating-button': {
@@ -238,11 +306,17 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 break;
             }
             case 'drjones.performance-panel-context': {
-                // TODO(samiyac): Add actions and UMA
+                // TODO(samiyac): Add UMA
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
+                this.#viewProps.agentType = "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */;
+                this.doUpdate();
                 break;
             }
             case 'drjones.sources-panel-context': {
-                // TODO(samiyac): Add actions and UMA
+                // TODO(samiyac): Add UMA
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
+                this.#viewProps.agentType = "drjones-file" /* AgentType.DRJONES_FILE */;
+                this.doUpdate();
                 break;
             }
         }
@@ -251,9 +325,11 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#viewProps.messages = [];
         this.#viewProps.isLoading = false;
         this.#freestylerAgent = this.#createFreestylerAgent();
+        this.#drJonesFileAgent = this.#createDrJonesFileAgent();
         this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
         this.#cancel();
         this.doUpdate();
+        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.chatCleared));
     }
     #runAbortController = new AbortController();
     #cancel() {
@@ -280,14 +356,22 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (this.#viewProps.agentType === "freestyler" /* AgentType.FREESTYLER */) {
             runner = this.#freestylerAgent.run(text, { signal, selectedElement: this.#viewProps.selectedElement });
         }
+        else if (this.#viewProps.agentType === "drjones-file" /* AgentType.DRJONES_FILE */) {
+            runner = this.#drJonesFileAgent.run(text, { signal, selectedFile: this.#viewProps.selectedFile });
+        }
         else if (this.#viewProps.agentType === "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */) {
             runner =
                 this.#drJonesNetworkAgent.run(text, { signal, selectedNetworkRequest: this.#viewProps.selectedNetworkRequest });
+        }
+        else if (this.#viewProps.agentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */) {
+            runner =
+                this.#drJonesPerformanceAgent.run(text, { signal, selectedStackTrace: this.#viewProps.selectedStackTrace });
         }
         if (!runner) {
             return;
         }
         let step = { isLoading: true };
+        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerLoading));
         for await (const data of runner) {
             step.sideEffect = undefined;
             switch (data.type) {
@@ -368,6 +452,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.doUpdate();
             this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }
+        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
     }
 }
 export class ActionDelegate {

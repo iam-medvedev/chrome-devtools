@@ -35,8 +35,11 @@ export function extensionEntryColor(event) {
         case 'tertiary-dark':
             themeColor = '--ref-palette-tertiary60';
             break;
+        case 'warning':
+            themeColor = '--ref-palette-yellow70';
+            break;
         case 'error':
-            themeColor = '--ref-palette-error50';
+            themeColor = '--ref-palette-error60';
             break;
     }
     return ThemeSupport.ThemeSupport.instance().getComputedValue(themeColor);

@@ -1,6 +1,6 @@
+import '../../../ui/components/menus/menus.js';
 export declare class NetworkThrottlingSelector extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
     disconnectedCallback(): void;

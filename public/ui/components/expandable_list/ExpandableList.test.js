@@ -5,14 +5,15 @@ import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { withMutations } from '../../../testing/MutationHelpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ExpandableList from './expandable_list.js';
+const { html } = LitHtml;
 describe('ExpandableList', () => {
     it('can be expanded', async () => {
         const list = new ExpandableList.ExpandableList.ExpandableList();
         renderElementIntoDOM(list);
         list.data = {
             rows: [
-                LitHtml.html `<div class="row">row 1</div>`,
-                LitHtml.html `<div class="row">row 2</div>`,
+                html `<div class="row">row 1</div>`,
+                html `<div class="row">row 2</div>`,
             ],
         };
         assert.isNotNull(list.shadowRoot);
@@ -50,7 +51,7 @@ describe('ExpandableList', () => {
         renderElementIntoDOM(list);
         list.data = {
             rows: [
-                LitHtml.html `<div class="row">row 1</div>`,
+                html `<div class="row">row 1</div>`,
             ],
         };
         assert.isNotNull(list.shadowRoot);

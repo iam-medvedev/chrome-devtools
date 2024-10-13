@@ -1,9 +1,10 @@
 import * as Types from '../types/types.js';
-import { type InsightResult, type InsightSetContext, type RequiredData } from './types.js';
+import type { InsightResult, InsightSetContext, RequiredData } from './types.js';
 export type CLSInsightResult = InsightResult<{
-    animationFailures?: readonly NoncompositedAnimationFailure[];
-    shifts?: Map<Types.Events.LayoutShift, LayoutShiftRootCausesData>;
+    animationFailures: readonly NoncompositedAnimationFailure[];
+    shifts: Map<Types.Events.SyntheticLayoutShift, LayoutShiftRootCausesData>;
     clusters: Types.Events.SyntheticLayoutShiftCluster[];
+    worstCluster: Types.Events.SyntheticLayoutShiftCluster | undefined;
 }>;
 export declare function deps(): ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
 export declare const enum AnimationFailureReasons {

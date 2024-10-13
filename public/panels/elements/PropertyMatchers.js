@@ -237,11 +237,11 @@ export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
 export class LinkableNameMatch {
     text;
     node;
-    properyName;
-    constructor(text, node, properyName) {
+    propertyName;
+    constructor(text, node, propertyName) {
         this.text = text;
         this.node = node;
-        this.properyName = properyName;
+        this.propertyName = propertyName;
     }
 }
 // clang-format off
@@ -455,6 +455,45 @@ export class LengthMatcher extends matcherBase(LengthMatch) {
             return null;
         }
         return new LengthMatch(match[0], node);
+    }
+}
+export class FlexGridMatch {
+    text;
+    node;
+    isFlex;
+    constructor(text, node, isFlex) {
+        this.text = text;
+        this.node = node;
+        this.isFlex = isFlex;
+    }
+}
+// clang-format off
+export class FlexGridMatcher extends matcherBase(FlexGridMatch) {
+    // clang-format on
+    static FLEX = ['flex', 'inline-flex', 'block flex', 'inline flex'];
+    static GRID = ['grid', 'inline-grid', 'block grid', 'inline grid'];
+    accepts(propertyName) {
+        return propertyName === 'display';
+    }
+    matches(node, matching) {
+        if (node.name !== 'Declaration') {
+            return null;
+        }
+        const valueNodes = ASTUtils.siblings(ASTUtils.declValue(node));
+        if (valueNodes.length < 1) {
+            return null;
+        }
+        const values = valueNodes.filter(node => node.name !== 'Important')
+            .map(node => matching.getComputedText(node).trim())
+            .filter(value => value);
+        const text = values.join(' ');
+        if (FlexGridMatcher.FLEX.includes(text)) {
+            return new FlexGridMatch(matching.ast.text(node), node, true);
+        }
+        if (FlexGridMatcher.GRID.includes(text)) {
+            return new FlexGridMatch(matching.ast.text(node), node, false);
+        }
+        return null;
     }
 }
 export class GridTemplateMatch {
@@ -677,6 +716,48 @@ export class CSSWideKeywordMatcher extends matcherBase(CSSWideKeywordMatch) {
             return null;
         }
         return new CSSWideKeywordMatch(text, node, this.property, this.matchedStyles);
+    }
+}
+export class PositionTryMatch {
+    text;
+    node;
+    preamble;
+    fallbacks;
+    constructor(text, node, preamble, fallbacks) {
+        this.text = text;
+        this.node = node;
+        this.preamble = preamble;
+        this.fallbacks = fallbacks;
+    }
+}
+// clang-format off
+export class PositionTryMatcher extends matcherBase(PositionTryMatch) {
+    // clang-format on
+    accepts(propertyName) {
+        return propertyName === "position-try" /* LinkableNameProperties.POSITION_TRY */ ||
+            propertyName === "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */;
+    }
+    matches(node, matching) {
+        if (node.name !== 'Declaration') {
+            return null;
+        }
+        let preamble = [];
+        const valueNodes = ASTUtils.siblings(ASTUtils.declValue(node));
+        const fallbacks = ASTUtils.split(valueNodes);
+        if (matching.ast.propertyName === "position-try" /* LinkableNameProperties.POSITION_TRY */) {
+            for (const [i, n] of fallbacks[0].entries()) {
+                const computedText = matching.getComputedText(n);
+                if (SDK.CSSMetadata.CSSMetadata.isCSSWideKeyword(computedText)) {
+                    return null;
+                }
+                if (SDK.CSSMetadata.CSSMetadata.isPositionTryOrderKeyword(computedText)) {
+                    preamble = fallbacks[0].splice(0, i + 1);
+                    break;
+                }
+            }
+        }
+        const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
+        return new PositionTryMatch(valueText, node, preamble, fallbacks);
     }
 }
 //# sourceMappingURL=PropertyMatchers.js.map

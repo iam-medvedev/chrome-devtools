@@ -25,6 +25,7 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/ViewManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const defaultOptionsForTabs = {
     security: true,
+    freestyler: true,
 };
 export class PreRegisteredView {
     viewRegistration;

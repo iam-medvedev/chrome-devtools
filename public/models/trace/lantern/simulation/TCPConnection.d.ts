@@ -1,4 +1,4 @@
-import { type ConnectionTiming } from './SimulationTimingMap.js';
+import type { ConnectionTiming } from './SimulationTimingMap.js';
 interface DownloadOptions {
     dnsResolutionTime?: number;
     timeAlreadyElapsed?: number;

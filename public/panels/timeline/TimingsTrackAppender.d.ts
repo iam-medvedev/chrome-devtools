@@ -1,7 +1,7 @@
 import type * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
-import { type TimelineMarkerStyle } from './TimelineUIUtils.js';
+import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
 /**
  * This defines the order these markers will be rendered if they are at the
  * same timestamp. The smaller number will be shown first - e.g. so if MarkFCP,

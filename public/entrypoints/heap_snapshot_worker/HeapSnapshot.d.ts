@@ -1,6 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
-import { type HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
+import type { HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
 export interface HeapSnapshotItem {
     itemIndex(): number;
     serialize(): Object;
@@ -317,7 +317,7 @@ export declare abstract class HeapSnapshot {
     calculateFlags(): void;
     calculateStatistics(): void;
     userObjectsMapAndFlag(): {
-        map: Uint32Array;
+        map: Uint8Array;
         flag: number;
     } | null;
     calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: {
@@ -412,7 +412,7 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     calculateDistances(isForRetainersView: boolean): void;
     isUserRoot(node: HeapSnapshotNode): boolean;
     userObjectsMapAndFlag(): {
-        map: Uint32Array;
+        map: Uint8Array;
         flag: number;
     } | null;
     flagsOfNode(node: HeapSnapshotNode): number;

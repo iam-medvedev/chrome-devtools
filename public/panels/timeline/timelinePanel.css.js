@@ -182,6 +182,7 @@ styles.replaceSync(
   position: relative;
   background-color: var(--sys-color-cdt-base-container);
   user-select: text;
+  display: block;
 }
 
 .timeline-details-view-block {
@@ -367,7 +368,6 @@ styles.replaceSync(
 }
 
 .timeline-filmstrip-preview > img {
-  margin-top: 5px;
   max-width: 500px;
   max-height: 300px;
   cursor: pointer;
@@ -539,7 +539,7 @@ styles.replaceSync(
 
   .timeline-tree-view .data-grid tr.selected span.percent-column,
   .timeline-tree-view .data-grid tr.selected div.background-percent-bar span,
-  .timeline-tree-view .data-grid tr.selected .name-container .activity-link .devtools-link {
+  .timeline-tree-view .data-grid tr.selected .name-container .activity-link .devtools-link .timeline-link {
     color: HighlightText;
   }
 
@@ -594,14 +594,6 @@ styles.replaceSync(
 .status-pane-container > .small-dialog {
   width: 100%;
   height: 100%;
-}
-
-.timeline-concurrency-input {
-  width: 50px;
-}
-
-.timeline-concurrency-hidden {
-  visibility: hidden;
 }
 
 devtools-feedback-button {

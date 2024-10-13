@@ -29,6 +29,7 @@ export function generateInsight(parsedTrace, context) {
     // See https://source.chromium.org/chromium/chromium/src/+/main:components/page_load_metrics/browser/responsiveness_metrics_normalization.cc;l=45-59;drc=cb0f9c8b559d9c7c3cb4ca94fc1118cc015d38ad
     const highPercentileIndex = Math.min(9, Math.floor(normalizedInteractionEvents.length / 50));
     return {
+        relatedEvents: [normalizedInteractionEvents[0]],
         longestInteractionEvent: normalizedInteractionEvents[0],
         highPercentileInteractionEvent: normalizedInteractionEvents[highPercentileIndex],
     };

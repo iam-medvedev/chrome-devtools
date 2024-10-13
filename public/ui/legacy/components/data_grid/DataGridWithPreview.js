@@ -61,9 +61,12 @@ export class DataGridWithPreview {
         this.#dataGrid = new DataGridImpl({
             displayName: this.#messages.title,
             columns,
-            editCallback: this.#editingCallback.bind(this),
-            deleteCallback: this.#deleteCallback.bind(this),
             refreshCallback: this.#callbacks.refreshItems,
+            ...(this.#callbacks.edit ? {
+                editCallback: this.#editingCallback.bind(this),
+                deleteCallback: this.#deleteCallback.bind(this),
+            } :
+                {}),
         });
         this.#dataGrid.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, event => {
             void this.#previewEntry(event.data);
@@ -149,6 +152,7 @@ export class DataGridWithPreview {
                 continue;
             }
             selectedKey = node.data.key;
+            void this.#previewEntry(node);
             break;
         }
         rootNode.removeChildren();
@@ -183,13 +187,13 @@ export class DataGridWithPreview {
     #editingCallback(editingNode, columnIdentifier, oldText, newText) {
         if (columnIdentifier === 'key') {
             if (typeof oldText === 'string') {
-                this.#callbacks.removeItem(oldText);
+                this.#callbacks.edit?.removeItem(oldText);
             }
-            this.#callbacks.setItem(newText, editingNode.data.value || '');
+            this.#callbacks.edit?.setItem(newText, editingNode.data.value || '');
             this.#removeDupes(editingNode);
         }
         else {
-            this.#callbacks.setItem(editingNode.data.key || '', newText);
+            this.#callbacks.edit?.setItem(editingNode.data.key || '', newText);
         }
     }
     #removeDupes(masterNode) {
@@ -206,7 +210,7 @@ export class DataGridWithPreview {
         if (!node || node.isCreationNode) {
             return;
         }
-        this.#callbacks.removeItem(node.data.key);
+        this.#callbacks.edit?.removeItem(node.data.key);
         ARIAUtils.alert(this.#messages.itemDeleted);
     }
     showPreview(preview, value) {
@@ -235,6 +239,9 @@ export class DataGridWithPreview {
         else {
             this.showPreview(null, value);
         }
+    }
+    detach() {
+        this.#splitWidget.detach();
     }
 }
 //# sourceMappingURL=DataGridWithPreview.js.map

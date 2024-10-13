@@ -25,10 +25,17 @@ styles.replaceSync(
   flex: 1;
   user-select: text;
   cursor: pointer;
+  /* metric container is a button for a11y reasons, so remove default styles
+   * */
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
+  text-align: left;
 }
 
 .metric-value {
-  font-size: 20px;
+  font-size: var(--sys-size-11);
 }
 
 .metric-value-bad {
@@ -48,8 +55,16 @@ styles.replaceSync(
 }
 
 .metric-label {
-  font-size: 12px;
-  font-weight: bold;
+  font: var(--sys-typescale-body4-medium);
+}
+
+.number-with-unit {
+  white-space: nowrap;
+
+  .unit {
+    font-size: 14px;
+    padding: 0 1px;
+  }
 }
 
 /*# sourceURL=sidebarSingleInsightSet.css */

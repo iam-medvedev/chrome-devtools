@@ -111,6 +111,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */,
+    "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -128,6 +129,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'java-script-disabled', false),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-content-scripts', true),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'automatically-ignore-list-known-third-party-scripts', true),
+        createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-anonymous-scripts', false),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'enable-ignore-listing', true),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-stack-frames-pattern', '/node_modules/|/bower_components/', "regex" /* Common.Settings.SettingType.REGEX */),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'navigator-group-by-folder', true),
@@ -202,7 +204,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-trace-expand', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-mouse-wheel-action', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
-        createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'freestyler-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
@@ -407,6 +409,18 @@ export function getGetHostConfigStub(config) {
             temperature: -1,
             enabled: false,
             ...config.devToolsExplainThisResourceDogfood,
+        },
+        devToolsAiAssistanceFileAgentDogfood: {
+            modelId: '',
+            temperature: -1,
+            enabled: false,
+            ...config.devToolsAiAssistanceFileAgentDogfood,
+        },
+        devToolsAiAssistancePerformanceAgentDogfood: {
+            modelId: '',
+            temperature: -1,
+            enabled: false,
+            ...config.devToolsAiAssistancePerformanceAgentDogfood,
         },
         devToolsVeLogging: {
             enabled: true,

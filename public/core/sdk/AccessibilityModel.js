@@ -40,7 +40,7 @@ export class AccessibilityNode {
         this.#descriptionInternal = payload.description || null;
         this.#valueInternal = payload.value || null;
         this.#propertiesInternal = payload.properties || null;
-        this.#childIds = [...new Set(payload.childIds)] || null;
+        this.#childIds = [...new Set(payload.childIds)];
         this.#parentId = payload.parentId || null;
         if (payload.frameId && !payload.parentId) {
             this.#frameId = payload.frameId;

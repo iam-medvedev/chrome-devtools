@@ -1,10 +1,11 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/data_grid/data_grid.js';
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
-import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import reportingApiGridStyles from './reportingApiGrid.css.js';
@@ -34,7 +35,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/application/components/ReportsG
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html } = LitHtml;
 export class ReportsGridStatusHeader extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-resources-reports-grid-status-header`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [reportingApiGridStyles];
@@ -47,19 +47,18 @@ export class ReportsGridStatusHeader extends HTMLElement {
       ${i18nString(UIStrings.status)}
       <x-link href="https://web.dev/reporting-api/#report-status"
       jslog=${VisualLogging.link('report-status').track({ click: true })}>
-        <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
+        <devtools-icon class="inline-icon" .data=${{
             iconName: 'help',
             color: 'var(--icon-link)',
             width: '16px',
             height: '16px',
-        }}></${IconButton.Icon.Icon.litTagName}>
+        }}></devtools-icon>
       </x-link>
     `, this.#shadow, { host: this });
         // clang-format on
     }
 }
 export class ReportsGrid extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-resources-reports-grid`;
     #shadow = this.attachShadow({ mode: 'open' });
     #reports = [];
     #protocolMonitorExperimentEnabled = false;
@@ -96,7 +95,7 @@ export class ReportsGrid extends HTMLElement {
                     hideable: false,
                     visible: true,
                     titleElement: html `
-          <${ReportsGridStatusHeader.litTagName}></${ReportsGridStatusHeader.litTagName}>
+          <devtools-resources-reports-grid-status-header></devtools-resources-reports-grid-status-header>
           `,
                 },
                 {
@@ -132,8 +131,8 @@ export class ReportsGrid extends HTMLElement {
       <div class="reporting-container" jslog=${VisualLogging.section('reports')}>
         <div class="reporting-header">${i18n.i18n.lockedString('Reports')}</div>
         ${this.#reports.length > 0 ? html `
-          <${DataGrid.DataGridController.DataGridController.litTagName} .data=${reportsGridData}>
-          </${DataGrid.DataGridController.DataGridController.litTagName}>
+          <devtools-data-grid-controller .data=${reportsGridData}>
+          </devtools-data-grid-controller>
         ` : html `
           <div class="reporting-placeholder">
             <div>${i18nString(UIStrings.noReportsToDisplay)}</div>

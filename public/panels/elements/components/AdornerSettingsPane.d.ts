@@ -1,4 +1,4 @@
-import { type AdornerSettingsMap } from './AdornerManager.js';
+import type { AdornerSettingsMap } from './AdornerManager.js';
 export declare class AdornerSettingUpdatedEvent extends Event {
     static readonly eventName = "adornersettingupdated";
     data: {
@@ -13,7 +13,6 @@ export interface AdornerSettingsPaneData {
 }
 export declare class AdornerSettingsPane extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: AdornerSettingsPaneData);
     show(): void;

@@ -1446,7 +1446,7 @@ export class TimelineUIUtils {
                 if (!layoutShiftEventData) {
                     break;
                 }
-                contentHelper.appendTextRow(i18nString(UIStrings.score), layoutShiftEventData['score'].toPrecision(4));
+                contentHelper.appendTextRow(i18nString(UIStrings.score), layoutShiftEventData.weighted_score_delta.toPrecision(4));
                 contentHelper.appendTextRow(i18nString(UIStrings.cumulativeScore), layoutShiftEventData['cumulative_score'].toPrecision(4));
                 contentHelper.appendTextRow(i18nString(UIStrings.currentClusterId), layoutShift.parsedData.sessionWindowData.id);
                 contentHelper.appendTextRow(i18nString(UIStrings.currentClusterScore), layoutShift.parsedData.sessionWindowData.cumulativeWindowScore.toPrecision(4));
@@ -1706,7 +1706,7 @@ export class TimelineUIUtils {
         // Check if it is in the hidden array
         const isEntryHidden = ModificationsManager.activeManager()?.getEntriesFilter().entryIsInvisible(entry);
         if (!isEntryOutsideBreadcrumb) {
-            link.classList.add('devtools-link');
+            link.classList.add('timeline-link');
             UI.ARIAUtils.markAsLink(link);
             link.tabIndex = 0;
             link.addEventListener('click', () => {
@@ -1960,6 +1960,7 @@ export class TimelineUIUtils {
         if (filmStrip && filmStripFrame) {
             const filmStripPreview = document.createElement('div');
             filmStripPreview.classList.add('timeline-filmstrip-preview');
+            // TODO(paulirish): Adopt Util.ImageCache
             void UI.UIUtils.loadImage(filmStripFrame.screenshotEvent.args.dataUri)
                 .then(image => image && filmStripPreview.appendChild(image));
             contentHelper.appendElementRow('', filmStripPreview);

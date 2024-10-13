@@ -200,6 +200,7 @@
       <include file="Images/pause-circle.svg" name="IMAGES_PAUSE_CIRCLE_SVG" resource_path="Images/pause-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/pause.svg" name="IMAGES_PAUSE_SVG" resource_path="Images/pause.svg" type="BINDATA" compress="false"/>
       <include file="Images/pen-spark.svg" name="IMAGES_PEN_SPARK_SVG" resource_path="Images/pen-spark.svg" type="BINDATA" compress="false"/>
+      <include file="Images/performance-panel-delete-annotation.svg" name="IMAGES_PERFORMANCE_PANEL_DELETE_ANNOTATION_SVG" resource_path="Images/performance-panel-delete-annotation.svg" type="BINDATA" compress="false"/>
       <include file="Images/performance-panel-diagram.svg" name="IMAGES_PERFORMANCE_PANEL_DIAGRAM_SVG" resource_path="Images/performance-panel-diagram.svg" type="BINDATA" compress="false"/>
       <include file="Images/performance-panel-entry-label.svg" name="IMAGES_PERFORMANCE_PANEL_ENTRY_LABEL_SVG" resource_path="Images/performance-panel-entry-label.svg" type="BINDATA" compress="false"/>
       <include file="Images/performance-panel-time-range.svg" name="IMAGES_PERFORMANCE_PANEL_TIME_RANGE_SVG" resource_path="Images/performance-panel-time-range.svg" type="BINDATA" compress="false"/>
@@ -1131,6 +1132,7 @@
       <include file="panels/application/CookieItemsView.js" name="PANELS_APPLICATION_COOKIEITEMSVIEW_JS" resource_path="panels/application/CookieItemsView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/DOMStorageItemsView.js" name="PANELS_APPLICATION_DOMSTORAGEITEMSVIEW_JS" resource_path="panels/application/DOMStorageItemsView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/DOMStorageModel.js" name="PANELS_APPLICATION_DOMSTORAGEMODEL_JS" resource_path="panels/application/DOMStorageModel.js" type="BINDATA" compress="false"/>
+      <include file="panels/application/ExtensionStorageItemsView.js" name="PANELS_APPLICATION_EXTENSIONSTORAGEITEMSVIEW_JS" resource_path="panels/application/ExtensionStorageItemsView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/ExtensionStorageModel.js" name="PANELS_APPLICATION_EXTENSIONSTORAGEMODEL_JS" resource_path="panels/application/ExtensionStorageModel.js" type="BINDATA" compress="false"/>
       <include file="panels/application/IndexedDBModel.js" name="PANELS_APPLICATION_INDEXEDDBMODEL_JS" resource_path="panels/application/IndexedDBModel.js" type="BINDATA" compress="false"/>
       <include file="panels/application/IndexedDBViews.js" name="PANELS_APPLICATION_INDEXEDDBVIEWS_JS" resource_path="panels/application/IndexedDBViews.js" type="BINDATA" compress="false"/>
@@ -1380,7 +1382,9 @@
       <include file="panels/explain/components/consoleInsightSourcesList.css.js" name="PANELS_EXPLAIN_COMPONENTS_CONSOLEINSIGHTSOURCESLIST_CSS_JS" resource_path="panels/explain/components/consoleInsightSourcesList.css.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/AiAgent.js" name="PANELS_FREESTYLER_AIAGENT_JS" resource_path="panels/freestyler/AiAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/ChangeManager.js" name="PANELS_FREESTYLER_CHANGEMANAGER_JS" resource_path="panels/freestyler/ChangeManager.js" type="BINDATA" compress="false"/>
+      <include file="panels/freestyler/DrJonesFileAgent.js" name="PANELS_FREESTYLER_DRJONESFILEAGENT_JS" resource_path="panels/freestyler/DrJonesFileAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/DrJonesNetworkAgent.js" name="PANELS_FREESTYLER_DRJONESNETWORKAGENT_JS" resource_path="panels/freestyler/DrJonesNetworkAgent.js" type="BINDATA" compress="false"/>
+      <include file="panels/freestyler/DrJonesPerformanceAgent.js" name="PANELS_FREESTYLER_DRJONESPERFORMANCEAGENT_JS" resource_path="panels/freestyler/DrJonesPerformanceAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/ExtensionScope.js" name="PANELS_FREESTYLER_EXTENSIONSCOPE_JS" resource_path="panels/freestyler/ExtensionScope.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/FreestylerAgent.js" name="PANELS_FREESTYLER_FREESTYLERAGENT_JS" resource_path="panels/freestyler/FreestylerAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/FreestylerEvaluateAction.js" name="PANELS_FREESTYLER_FREESTYLEREVALUATEACTION_JS" resource_path="panels/freestyler/FreestylerEvaluateAction.js" type="BINDATA" compress="false"/>
@@ -1497,6 +1501,7 @@
       <include file="panels/network/NetworkSearchScope.js" name="PANELS_NETWORK_NETWORKSEARCHSCOPE_JS" resource_path="panels/network/NetworkSearchScope.js" type="BINDATA" compress="false"/>
       <include file="panels/network/NetworkTimeCalculator.js" name="PANELS_NETWORK_NETWORKTIMECALCULATOR_JS" resource_path="panels/network/NetworkTimeCalculator.js" type="BINDATA" compress="false"/>
       <include file="panels/network/NetworkWaterfallColumn.js" name="PANELS_NETWORK_NETWORKWATERFALLCOLUMN_JS" resource_path="panels/network/NetworkWaterfallColumn.js" type="BINDATA" compress="false"/>
+      <include file="panels/network/RequestBinaryResponseView.js" name="PANELS_NETWORK_REQUESTBINARYRESPONSEVIEW_JS" resource_path="panels/network/RequestBinaryResponseView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestCookiesView.js" name="PANELS_NETWORK_REQUESTCOOKIESVIEW_JS" resource_path="panels/network/RequestCookiesView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestHTMLView.js" name="PANELS_NETWORK_REQUESTHTMLVIEW_JS" resource_path="panels/network/RequestHTMLView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestInitiatorView.js" name="PANELS_NETWORK_REQUESTINITIATORVIEW_JS" resource_path="panels/network/RequestInitiatorView.js" type="BINDATA" compress="false"/>
@@ -1790,6 +1795,7 @@
       <include file="panels/timeline/components/NetworkRequestDetails.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTDETAILS_JS" resource_path="panels/timeline/components/NetworkRequestDetails.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/NetworkRequestTooltip.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTTOOLTIP_JS" resource_path="panels/timeline/components/NetworkRequestTooltip.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/NetworkThrottlingSelector.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKTHROTTLINGSELECTOR_JS" resource_path="panels/timeline/components/NetworkThrottlingSelector.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/RelatedInsightChips.js" name="PANELS_TIMELINE_COMPONENTS_RELATEDINSIGHTCHIPS_JS" resource_path="panels/timeline/components/RelatedInsightChips.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Sidebar.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBAR_JS" resource_path="panels/timeline/components/Sidebar.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/SidebarAnnotationsTab.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_JS" resource_path="panels/timeline/components/SidebarAnnotationsTab.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/SidebarInsightsTab.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHTSTAB_JS" resource_path="panels/timeline/components/SidebarInsightsTab.js" type="BINDATA" compress="false"/>
@@ -1800,6 +1806,7 @@
       <include file="panels/timeline/components/fieldSettingsDialog.css.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_CSS_JS" resource_path="panels/timeline/components/fieldSettingsDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/CLSCulprits.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_CLSCULPRITS_JS" resource_path="panels/timeline/components/insights/CLSCulprits.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/DocumentLatency.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DOCUMENTLATENCY_JS" resource_path="panels/timeline/components/insights/DocumentLatency.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/EventRef.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_EVENTREF_JS" resource_path="panels/timeline/components/insights/EventRef.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/FontDisplay.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_FONTDISPLAY_JS" resource_path="panels/timeline/components/insights/FontDisplay.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Helpers.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_HELPERS_JS" resource_path="panels/timeline/components/insights/Helpers.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/InteractionToNextPaint.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_INTERACTIONTONEXTPAINT_JS" resource_path="panels/timeline/components/insights/InteractionToNextPaint.js" type="BINDATA" compress="false"/>
@@ -1823,6 +1830,7 @@
       <include file="panels/timeline/components/networkRequestDetails.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTDETAILS_CSS_JS" resource_path="panels/timeline/components/networkRequestDetails.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/networkRequestTooltip.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTTOOLTIP_CSS_JS" resource_path="panels/timeline/components/networkRequestTooltip.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/networkThrottlingSelector.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKTHROTTLINGSELECTOR_CSS_JS" resource_path="panels/timeline/components/networkThrottlingSelector.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/relatedInsightChips.css.js" name="PANELS_TIMELINE_COMPONENTS_RELATEDINSIGHTCHIPS_CSS_JS" resource_path="panels/timeline/components/relatedInsightChips.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarAnnotationsTab.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_CSS_JS" resource_path="panels/timeline/components/sidebarAnnotationsTab.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarInsightsTab.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHTSTAB_CSS_JS" resource_path="panels/timeline/components/sidebarInsightsTab.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarSingleInsightSet.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARSINGLEINSIGHTSET_CSS_JS" resource_path="panels/timeline/components/sidebarSingleInsightSet.css.js" type="BINDATA" compress="false"/>
@@ -1844,7 +1852,9 @@
       <include file="panels/timeline/timelinePaintProfiler.css.js" name="PANELS_TIMELINE_TIMELINEPAINTPROFILER_CSS_JS" resource_path="panels/timeline/timelinePaintProfiler.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelinePanel.css.js" name="PANELS_TIMELINE_TIMELINEPANEL_CSS_JS" resource_path="panels/timeline/timelinePanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineStatusDialog.css.js" name="PANELS_TIMELINE_TIMELINESTATUSDIALOG_CSS_JS" resource_path="panels/timeline/timelineStatusDialog.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/utils/Helpers.js" name="PANELS_TIMELINE_UTILS_HELPERS_JS" resource_path="panels/timeline/utils/Helpers.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/IgnoreList.js" name="PANELS_TIMELINE_UTILS_IGNORELIST_JS" resource_path="panels/timeline/utils/IgnoreList.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/utils/ImageCache.js" name="PANELS_TIMELINE_UTILS_IMAGECACHE_JS" resource_path="panels/timeline/utils/ImageCache.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/NetworkRequest.js" name="PANELS_TIMELINE_UTILS_NETWORKREQUEST_JS" resource_path="panels/timeline/utils/NetworkRequest.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/SourceMapsResolver.js" name="PANELS_TIMELINE_UTILS_SOURCEMAPSRESOLVER_JS" resource_path="panels/timeline/utils/SourceMapsResolver.js" type="BINDATA" compress="false"/>
       <include file="panels/web_audio/AudioContextContentBuilder.js" name="PANELS_WEB_AUDIO_AUDIOCONTEXTCONTENTBUILDER_JS" resource_path="panels/web_audio/AudioContextContentBuilder.js" type="BINDATA" compress="false"/>

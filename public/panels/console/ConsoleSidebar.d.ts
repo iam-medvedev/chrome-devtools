@@ -3,7 +3,7 @@ import type * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ConsoleFilter } from './ConsoleFilter.js';
-import { type ConsoleViewMessage } from './ConsoleViewMessage.js';
+import type { ConsoleViewMessage } from './ConsoleViewMessage.js';
 declare const ConsoleSidebar_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends Events.FILTER_SELECTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;

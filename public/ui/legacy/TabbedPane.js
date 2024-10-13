@@ -1055,6 +1055,7 @@ export class TabbedPaneTab {
         }
         else {
             tabElement.addEventListener('click', this.tabClicked.bind(this), false);
+            tabElement.addEventListener('keydown', this.tabKeyDown.bind(this), false);
             tabElement.addEventListener('auxclick', this.tabClicked.bind(this), false);
             tabElement.addEventListener('mousedown', this.tabMouseDown.bind(this), false);
             tabElement.addEventListener('mouseup', this.tabMouseUp.bind(this), false);
@@ -1095,6 +1096,18 @@ export class TabbedPaneTab {
     isCloseIconClicked(element) {
         return element?.classList.contains('tabbed-pane-close-button') ||
             element?.parentElement?.classList.contains('tabbed-pane-close-button') || false;
+    }
+    tabKeyDown(ev) {
+        const event = ev;
+        switch (event.key) {
+            case 'Enter':
+            case ' ':
+                if (this.isCloseIconClicked(event.target)) {
+                    this.closeTabs([this.id]);
+                    ev.consume(true);
+                    return;
+                }
+        }
     }
     tabClicked(ev) {
         const event = ev;

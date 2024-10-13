@@ -7,6 +7,7 @@ import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import bezierSwatchStyles from './bezierSwatch.css.js';
 import cssShadowSwatchStyles from './cssShadowSwatch.css.js';
+const { html } = LitHtml;
 export class BezierSwatch extends HTMLSpanElement {
     iconElementInternal;
     textElement;
@@ -55,7 +56,7 @@ export class CSSShadowSwatch extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [
             cssShadowSwatchStyles,
         ];
-        LitHtml.render(LitHtml.html `<${IconButton.Icon.Icon.litTagName} name="shadow" class="shadow-swatch-icon"></${IconButton.Icon.Icon.litTagName}><slot></slot>`, this.#shadow, { host: this });
+        LitHtml.render(html `<devtools-icon name="shadow" class="shadow-swatch-icon"></devtools-icon><slot></slot>`, this.#shadow, { host: this });
         this.#icon = this.#shadow.querySelector(IconButton.Icon.Icon.litTagName.value);
     }
     model() {

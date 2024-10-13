@@ -66,6 +66,10 @@ export class AiAgent {
                 throw new Error('Attribution action does not allow providing the response');
             }
         }
+        debugLog({
+            request,
+            response: rawResponse,
+        });
         this.#structuredLog.push({
             request: structuredClone(request),
             response,

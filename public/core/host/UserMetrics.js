@@ -273,6 +273,12 @@ export class UserMetrics {
         }
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterItemSelected" /* EnumeratedHistogram.ResourceTypeFilterItemSelected */, resourceType, ResourceType.MAX_VALUE);
     }
+    freestylerQueryLength(numberOfCharacters) {
+        InspectorFrontendHostInstance.recordCountHistogram('DevTools.Freestyler.QueryLength', numberOfCharacters, 0, 100_000, 100);
+    }
+    freestylerEvalResponseSize(bytes) {
+        InspectorFrontendHostInstance.recordCountHistogram('DevTools.Freestyler.EvalResponseSize', bytes, 0, 100_000, 100);
+    }
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
@@ -896,9 +902,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
     DevtoolsExperiments[DevtoolsExperiments["extension-storage-viewer"] = 100] = "extension-storage-viewer";
     DevtoolsExperiments[DevtoolsExperiments["floating-entry-points-for-ai-assistance"] = 101] = "floating-entry-points-for-ai-assistance";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 102] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 103] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

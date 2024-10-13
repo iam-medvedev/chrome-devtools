@@ -532,12 +532,11 @@ export class Overlays extends EventTarget {
                 // chart, so we figure out the best visible entry pairs to draw
                 // between.
                 const entriesToConnect = this.#calculateFromAndToForEntriesLink(overlay);
-                if (entriesToConnect === null) {
-                    // Unexpected situation: hide the overlay and move on
-                    this.#setOverlayElementVisibility(element, false);
-                    break;
+                const isVisible = entriesToConnect !== null && !annotationsAreHidden;
+                this.#setOverlayElementVisibility(element, isVisible);
+                if (isVisible) {
+                    this.#positionEntriesLinkOverlay(overlay, element, entriesToConnect);
                 }
-                this.#positionEntriesLinkOverlay(overlay, element, entriesToConnect);
                 break;
             }
             case 'TIMESPAN_BREAKDOWN': {
@@ -759,7 +758,7 @@ export class Overlays extends EventTarget {
                 return 0;
             }
             // The event is off the bottom of the network chart. In this case return the bottom of the network chart.
-            if (y > this.#dimensions.charts.network.heightPixels ?? 0) {
+            if (y > this.#dimensions.charts.network.heightPixels) {
                 return this.#dimensions.charts.network.heightPixels;
             }
         }
@@ -1237,7 +1236,7 @@ export class Overlays extends EventTarget {
                 // want any overlays to treat themselves as visible too.
                 return false;
             }
-            if (y > this.#dimensions.charts.network.heightPixels ?? 0) {
+            if (y > this.#dimensions.charts.network.heightPixels) {
                 // The event is off the bottom of the network chart.
                 return false;
             }

@@ -4,7 +4,7 @@ import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { DebuggerLanguagePluginManager } from './DebuggerLanguagePlugins.js';
 import { type LiveLocation, type LiveLocationPool, LiveLocationWithPool } from './LiveLocation.js';
-import { type ResourceMapping } from './ResourceMapping.js';
+import type { ResourceMapping } from './ResourceMapping.js';
 import { type ResourceScriptFile } from './ResourceScriptMapping.js';
 export declare class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObserver<SDK.DebuggerModel.DebuggerModel> {
     #private;

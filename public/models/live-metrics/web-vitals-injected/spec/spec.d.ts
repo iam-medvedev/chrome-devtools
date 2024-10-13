@@ -1,4 +1,4 @@
-import { type INPAttribution, type MetricType } from '../../../../third_party/web-vitals/web-vitals.js';
+import type { INPAttribution, MetricType } from '../../../../third_party/web-vitals/web-vitals.js';
 export declare const EVENT_BINDING_NAME = "__chromium_devtools_metrics_reporter";
 export declare const INTERNAL_KILL_SWITCH = "__chromium_devtools_kill_live_metrics";
 export type MetricChangeEvent = Pick<MetricType, 'name' | 'value'>;

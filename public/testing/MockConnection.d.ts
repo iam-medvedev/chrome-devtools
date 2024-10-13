@@ -1,5 +1,5 @@
 import type * as SDK from '../core/sdk/sdk.js';
-import { type ProtocolMapping } from '../generated/protocol-mapping.js';
+import type { ProtocolMapping } from '../generated/protocol-mapping.js';
 export type ProtocolCommand = keyof ProtocolMapping.Commands;
 export type ProtocolCommandParams<C extends ProtocolCommand> = ProtocolMapping.Commands[C]['paramsType'];
 export type ProtocolResponse<C extends ProtocolCommand> = ProtocolMapping.Commands[C]['returnType'];

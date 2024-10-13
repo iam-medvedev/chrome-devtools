@@ -3,7 +3,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import type * as Platform from '../platform/platform.js';
 import { PrimaryPageChangeType, type ResourceTreeFrame } from './ResourceTreeModel.js';
-import { type Target } from './Target.js';
+import type { Target } from './Target.js';
 export interface ExtensionInitiator {
     target: null;
     frameId: null;

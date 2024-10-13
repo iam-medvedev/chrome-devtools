@@ -272,6 +272,8 @@ export function generateInsight(parsedTrace, context) {
     const domLoadingEvents = parsedTrace.LayoutShifts.domLoadingEvents.filter(isWithinContext);
     const clusterKey = context.navigation ? context.navigationId : Types.Events.NO_NAVIGATION;
     const clusters = parsedTrace.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
+    const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
+    const worstCluster = clustersByScore.at(0);
     const layoutShifts = clusters.flatMap(cluster => cluster.events);
     const prePaintEvents = parsedTrace.LayoutShifts.prePaintEvents.filter(isWithinContext);
     // Get root causes.
@@ -284,10 +286,16 @@ export function generateInsight(parsedTrace, context) {
     getIframeRootCauses(iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
     getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
     const animationFailures = getNonCompositedFailureRootCauses(compositeAnimationEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
+    const relatedEvents = [...layoutShifts];
+    if (worstCluster) {
+        relatedEvents.push(worstCluster);
+    }
     return {
+        relatedEvents,
         animationFailures,
         shifts: rootCausesByShift,
         clusters,
+        worstCluster,
     };
 }
 //# sourceMappingURL=CumulativeLayoutShift.js.map

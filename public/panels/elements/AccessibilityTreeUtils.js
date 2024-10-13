@@ -1,9 +1,10 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './components/components.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as ElementsComponents from './components/components.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
+const { html } = LitHtml;
 function isLeafNode(node) {
     return node.numChildren() === 0 && node.role()?.value !== 'Iframe';
 }
@@ -93,14 +94,13 @@ export async function sdkNodeToAXTreeNodes(sdkNode) {
         }];
 }
 export function accessibilityNodeRenderer(node) {
-    const tag = ElementsComponents.AccessibilityTreeNode.AccessibilityTreeNode.litTagName;
     const sdkNode = node.treeNodeData;
     const name = sdkNode.name()?.value || '';
     const role = sdkNode.role()?.value || '';
     const properties = sdkNode.properties() || [];
     const ignored = sdkNode.ignored();
     const id = getNodeId(sdkNode);
-    return LitHtml.html `<${tag} .data=${{ name, role, ignored, properties, id }}></${tag}>`;
+    return html `<devtools-accessibility-tree-node .data=${{ name, role, ignored, properties, id }}></devtools-accessibility-tree-node>`;
 }
 export function getNodeId(node) {
     return node.getFrameId() + '#' + node.id();

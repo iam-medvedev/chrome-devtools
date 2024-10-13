@@ -28,7 +28,7 @@ const UIStrings = {
      *@description Text of a tooltip to redirect to the AI assistance panel with
      * the current element as context
      */
-    askAiAssistance: 'Ask AI assistance',
+    askAi: 'Ask AI',
     /**
      * @description Message shown to the user if the DevTools locale is not
      * supported.
@@ -52,7 +52,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/freestyler/freestyler-meta.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-const setting = 'freestyler-enabled';
+const setting = 'ai-assistance-enabled';
 function isLocaleRestricted() {
     const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
     return !devtoolsLocale.locale.startsWith('en-');
@@ -134,7 +134,7 @@ UI.ActionRegistration.registerActionExtension({
     },
     experiment: "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStrings.askAiAssistance),
+    title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
@@ -147,7 +147,7 @@ UI.ActionRegistration.registerActionExtension({
         return [];
     },
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStrings.askAiAssistance),
+    title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
@@ -160,7 +160,7 @@ UI.ActionRegistration.registerActionExtension({
         return [];
     },
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStrings.askAiAssistance),
+    title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
@@ -174,7 +174,7 @@ UI.ActionRegistration.registerActionExtension({
     },
     setting,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStrings.askAiAssistance),
+    title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
@@ -188,7 +188,7 @@ UI.ActionRegistration.registerActionExtension({
     },
     setting,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStrings.askAiAssistance),
+    title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();

@@ -3,13 +3,29 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AiAgent, debugLog, isDebugMode, ResponseType, } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
+/*
+* Strings that don't need to be translated at this time.
+*/
+const UIStringsNotTranslate = {
+    /**
+     *@description Title for context details for Freestyler.
+     */
+    analyzingThePrompt: 'Analyzing the prompt',
+    /**
+     *@description Heading text for context details of Freestyler agent.
+     */
+    dataUsed: 'Data used',
+};
+const lockedString = i18n.i18n.lockedString;
 /* clang-format off */
 const preamble = `You are the most advanced CSS debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
@@ -105,7 +121,6 @@ ANSWER: Even though the popup itself has a z-index of 3, its parent container ha
 SUGGESTIONS: ["What is a stacking context?", "How can I change the stacking order?"]
 `;
 /* clang-format on */
-export const FIX_THIS_ISSUE_PROMPT = 'Fix this issue using JavaScript code execution';
 async function executeJsCode(code, { throwOnSideEffect }) {
     const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
@@ -147,6 +162,10 @@ export class FreestylerAgent extends AiAgent {
     get userTier() {
         const config = Common.Settings.Settings.instance().getHostConfig();
         return config.devToolsFreestyler?.userTier;
+    }
+    get executionMode() {
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        return config.devToolsFreestyler?.executionMode ?? Root.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
     }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
@@ -192,9 +211,18 @@ export class FreestylerAgent extends AiAgent {
         while (i < lines.length) {
             const trimmed = lines[i].trim();
             if (trimmed.startsWith('THOUGHT:') && !thought) {
-                // TODO: multiline thoughts.
-                thought = trimmed.substring('THOUGHT:'.length).trim();
+                // Start with the initial `THOUGHT: text` line and move forward by one line.
+                const thoughtLines = [trimmed.substring('THOUGHT:'.length).trim()];
                 i++;
+                // Move until we see a new instruction, otherwise we're still inside the `THOUGHT` block.
+                while (i < lines.length && !isInstructionStart(lines[i])) {
+                    const trimmedLine = lines[i].trim();
+                    if (trimmedLine) {
+                        thoughtLines.push(trimmedLine);
+                    }
+                    i++;
+                }
+                thought = thoughtLines.join('\n');
             }
             else if (trimmed.startsWith('TITLE:')) {
                 title = trimmed.substring('TITLE:'.length).trim();
@@ -321,6 +349,7 @@ export class FreestylerAgent extends AiAgent {
             }
             const result = await this.#execJs(actionExpression, { throwOnSideEffect });
             const byteCount = Platform.StringUtilities.countWtf8Bytes(result);
+            Host.userMetrics.freestylerEvalResponseSize(byteCount);
             if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
                 throw new Error('Output exceeded the maximum allowed length.');
             }
@@ -416,9 +445,27 @@ export class FreestylerAgent extends AiAgent {
         const scope = this.#createExtensionScope(this.#changes);
         await scope.install();
         try {
+            if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+                return {
+                    type: ResponseType.ACTION,
+                    code: action,
+                    output: 'Error: JavaScript execution is currently disabled.',
+                    canceled: true,
+                    rpcId,
+                };
+            }
             let result = await this.#generateObservation(action, { throwOnSideEffect: true });
             debugLog(`Action result: ${JSON.stringify(result)}`);
             if (result.sideEffect) {
+                if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
+                    return {
+                        type: ResponseType.ACTION,
+                        code: action,
+                        output: 'Error: JavaScript execution that modifies the page is currently disabled.',
+                        canceled: true,
+                        rpcId,
+                    };
+                }
                 const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
                 if (isDebugMode()) {
                     window.dispatchEvent(new CustomEvent('freestylersideeffect', { detail: { confirm: sideEffectConfirmationPromiseWithResolvers.resolve } }));
@@ -446,6 +493,22 @@ export class FreestylerAgent extends AiAgent {
             await scope.uninstall();
         }
     }
+    async *handleContextDetails(selectedElement) {
+        if (!selectedElement) {
+            return;
+        }
+        yield {
+            type: ResponseType.TITLE,
+            title: lockedString(UIStringsNotTranslate.analyzingThePrompt),
+        };
+        yield {
+            type: ResponseType.THOUGHT,
+            contextDetails: [{
+                    title: lockedString(UIStringsNotTranslate.dataUsed),
+                    text: await FreestylerAgent.describeElement(selectedElement),
+                }],
+        };
+    }
     async enhanceQuery(query, selectedElement) {
         const elementEnchantmentQuery = selectedElement ?
             `# Inspected element\n\n${await FreestylerAgent.describeElement(selectedElement)}\n\n# User request\n\n` :
@@ -454,8 +517,10 @@ export class FreestylerAgent extends AiAgent {
     }
     #runId = 0;
     async *run(query, options) {
+        yield* this.handleContextDetails(options.selectedElement);
         query = await this.enhanceQuery(query, options.selectedElement);
         const currentRunId = ++this.#runId;
+        Host.userMetrics.freestylerQueryLength(query.length);
         for (let i = 0; i < MAX_STEPS; i++) {
             yield {
                 type: ResponseType.QUERYING,

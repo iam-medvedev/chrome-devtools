@@ -1,10 +1,10 @@
+import '../../../ui/components/data_grid/data_grid.js';
 export declare class ShowDialog extends Event {
     static readonly eventName = "showdialog";
     constructor();
 }
 export declare class FieldSettingsDialog extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
     disconnectedCallback(): void;

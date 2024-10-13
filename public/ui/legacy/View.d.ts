@@ -1,6 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
-import { type TabbedPane } from './TabbedPane.js';
-import { type ToolbarItem, type ToolbarMenuButton } from './Toolbar.js';
+import type { TabbedPane } from './TabbedPane.js';
+import type { ToolbarItem, ToolbarMenuButton } from './Toolbar.js';
 import { VBox, type Widget } from './Widget.js';
 export interface View {
     viewId(): string;

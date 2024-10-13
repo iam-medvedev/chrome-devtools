@@ -10,7 +10,6 @@ export type EntryBreakdown = {
 };
 export declare class TimespanBreakdownOverlay extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set isBelowEntry(isBelow: boolean);
     set canvasRect(rect: DOMRect | null);

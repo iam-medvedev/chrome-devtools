@@ -6,7 +6,7 @@ import * as Platform from '../../../core/platform/platform.js';
 // Cache film strips based on:
 // 1. The trace parsed data object
 // 2. The start time.
-const filmStripCache = new Map();
+const filmStripCache = new WeakMap();
 export function fromParsedTrace(parsedTrace, customZeroTime) {
     const frames = [];
     const zeroTime = typeof customZeroTime !== 'undefined' ? customZeroTime : parsedTrace.Meta.traceBounds.min;
@@ -15,7 +15,7 @@ export function fromParsedTrace(parsedTrace, customZeroTime) {
     if (fromCache) {
         return fromCache;
     }
-    for (const screenshotEvent of parsedTrace.Screenshots) {
+    for (const screenshotEvent of parsedTrace.Screenshots.all) {
         if (screenshotEvent.ts < zeroTime) {
             continue;
         }

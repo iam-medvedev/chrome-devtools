@@ -29,6 +29,7 @@ export type MetaHandlerData = {
     mainFrameNavigations: Types.Events.NavigationStart[];
     gpuThreadId?: Types.Events.ThreadID;
     viewportRect?: DOMRect;
+    devicePixelRatio?: number;
 };
 export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, {
     frame: Types.Events.TraceFrame;

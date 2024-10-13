@@ -1,7 +1,7 @@
+import '../../../ui/components/icon_button/icon_button.js';
 import * as Trace from '../../../models/trace/trace.js';
 export declare class NetworkRequestTooltip extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set networkRequest(networkRequest: Trace.Types.Events.SyntheticNetworkRequest);
 }

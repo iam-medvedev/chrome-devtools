@@ -105,6 +105,7 @@ export function generateInsight(parsedTrace, context) {
         LCP: overallSavingsMs,
     };
     return {
+        relatedEvents: [documentRequest],
         data: {
             serverResponseTime,
             serverResponseTooSlow,

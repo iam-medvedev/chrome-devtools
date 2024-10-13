@@ -1,3 +1,5 @@
+import '../../../../ui/components/data_grid/data_grid.js';
+import '../../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../../core/common/common.js';
 import type * as Platform from '../../../../core/platform/platform.js';
 import * as Protocol from '../../../../generated/protocol.js';
@@ -14,7 +16,6 @@ export interface RuleSetGridRow {
 }
 export declare class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     update(data: RuleSetGridData): void;
 }

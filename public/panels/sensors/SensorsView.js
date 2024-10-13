@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import sensorsStyles from './sensors.css.js';
 const UIStrings = {
     /**
@@ -211,6 +212,8 @@ export class SensorsView extends UI.Widget.VBox {
         this.appendTouchControl();
         this.createPanelSeparator();
         this.appendIdleEmulator();
+        this.createPanelSeparator();
+        this.createHardwareConcurrencySection();
         this.createPanelSeparator();
     }
     wasShown() {
@@ -643,6 +646,14 @@ export class SensorsView extends UI.Widget.VBox {
         if (control) {
             container.appendChild(control);
         }
+    }
+    createHardwareConcurrencySection() {
+        const container = this.contentElement.createChild('div', 'concurrency-section');
+        const { checkbox, numericInput, reset, warning } = MobileThrottling.ThrottlingManager.throttlingManager().createHardwareConcurrencySelector();
+        const div = document.createElement('div');
+        div.classList.add('concurrency-details');
+        div.append(numericInput.element, reset.element, warning.element);
+        container.append(checkbox, div);
     }
 }
 export const NonPresetOptions = {

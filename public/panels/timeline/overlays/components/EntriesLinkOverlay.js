@@ -1,11 +1,12 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
      *@description Accessible label used to explain to a user that they are viewing an arrow representing a link between two entries.
@@ -15,6 +16,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/EntriesLinkOverlay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 import styles from './entriesLinkOverlay.css.js';
+const { html } = LitHtml;
 export class EntryLinkStartCreating extends Event {
     static eventName = 'entrylinkstartcreating';
     constructor() {
@@ -22,7 +24,6 @@ export class EntryLinkStartCreating extends Event {
     }
 }
 export class EntriesLinkOverlay extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-entries-link-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     #coordinateFrom;
     #fromEntryDimentions;
@@ -262,7 +263,7 @@ export class EntriesLinkOverlay extends HTMLElement {
     #render() {
         const arrowColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
           <svg class="connectorContainer" width="100%" height="100%" role="region" aria-label=${i18nString(UIStrings.diagram)}>
             <defs>
               <linearGradient
@@ -313,11 +314,12 @@ export class EntriesLinkOverlay extends HTMLElement {
           <div class="entry-wrapper from-highlight-wrapper ${this.#fromEntryIsSource ? '' : 'entry-is-not-source'}"></div>
           <div class="entry-wrapper to-highlight-wrapper ${this.#toEntryIsSource ? '' : 'entry-is-not-source'}"></div>
           <div class="create-link-box ${this.#linkState ? 'visible' : 'hidden'}">
-            <${IconButton.Icon.Icon.litTagName}
+            <devtools-icon
               class='create-link-icon'
+              jslog=${VisualLogging.action('timeline.annotations.create-entry-link').track({ click: true })}
               @click=${this.#startCreatingConnection}
               name='arrow-right-circle'>
-            </${IconButton.Icon.Icon.litTagName}>
+            </devtools-icon>
           </div>
         `, this.#shadow, { host: this });
         // clang-format on

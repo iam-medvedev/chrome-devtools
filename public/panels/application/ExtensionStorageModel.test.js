@@ -98,6 +98,10 @@ describeWithMockConnection('ExtensionStorageModel', () => {
         assert.isTrue(clearSpy.calledOnceWithExactly({ id: initId, storageArea: initStorageArea }));
     });
     it('adds/removes ExtensionStorage on Runtime events', async () => {
+        sinon.stub(extensionStorageModel.agent, 'invoke_getStorageItems').resolves({
+            data: {},
+            getError: () => undefined,
+        });
         extensionStorageModel.enable();
         assert.isEmpty(extensionStorageModel.storages());
         const runtime = target.model(SDK.RuntimeModel.RuntimeModel);
@@ -122,6 +126,10 @@ describeWithMockConnection('ExtensionStorageModel', () => {
         assert.isEmpty(extensionStorageModel.storages());
     });
     it('does not add ExtensionStorage if origin already added', async () => {
+        sinon.stub(extensionStorageModel.agent, 'invoke_getStorageItems').resolves({
+            data: {},
+            getError: () => undefined,
+        });
         extensionStorageModel.enable();
         assert.isEmpty(extensionStorageModel.storages());
         // Each extension adds four associated storage areas.
@@ -137,6 +145,10 @@ describeWithMockConnection('ExtensionStorageModel', () => {
         assert.strictEqual(4, extensionStorageModel.storages().length);
     });
     it('removes ExtensionStorage when last ExecutionContext is removed', async () => {
+        sinon.stub(extensionStorageModel.agent, 'invoke_getStorageItems').resolves({
+            data: {},
+            getError: () => undefined,
+        });
         extensionStorageModel.enable();
         assert.isEmpty(extensionStorageModel.storages());
         // Each extension adds four associated storage areas.

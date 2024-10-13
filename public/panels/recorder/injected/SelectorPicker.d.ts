@@ -1,4 +1,4 @@
-import { type AccessibilityBindings } from './selectors/ARIASelector.js';
+import type { AccessibilityBindings } from './selectors/ARIASelector.js';
 declare global {
     interface Window {
         captureSelectors(data: string): void;

@@ -38,7 +38,6 @@ export class TypeToggleEvent extends Event {
     }
 }
 export class ValueInterpreterSettings extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-linear-memory-inspector-interpreter-settings`;
     #shadow = this.attachShadow({ mode: 'open' });
     #valueTypes = new Set();
     connectedCallback() {

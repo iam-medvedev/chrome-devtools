@@ -1,11 +1,11 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as CSSOverviewComponents from './components/components.js';
-import cssOverviewStyles from './cssOverview.css.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as CSSOverviewComponents from './components/components.js';
+import cssOverviewStyles from './cssOverview.css.js';
 import { CSSOverviewCompletedView } from './CSSOverviewCompletedView.js';
 import { CSSOverviewModel } from './CSSOverviewModel.js';
 import { CSSOverviewProcessingView } from './CSSOverviewProcessingView.js';

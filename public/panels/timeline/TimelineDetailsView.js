@@ -74,10 +74,13 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     lazySelectorStatsView;
     #parsedTrace = null;
     #traceInsightsSets = null;
+    /* eslint-disable-next-line no-unused-private-class-members */
+    #eventToRelatedInsightsMap = null;
     #filmStrip = null;
     #networkRequestDetails;
     #layoutShiftDetails;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
+    #relatedInsightChips = new TimelineComponents.RelatedInsightChips.RelatedInsightChips();
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-details');
@@ -136,21 +139,25 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             }
         }
     }
-    async setModel(parsedTrace, selectedEvents, traceInsightsSets) {
-        if (this.#parsedTrace !== parsedTrace) {
+    async setModel(data) {
+        if (this.#parsedTrace !== data.parsedTrace) {
             // Clear the selector stats view, so the next time the user views it we
             // reconstruct it with the new trace data.
             this.lazySelectorStatsView = null;
-            this.#parsedTrace = parsedTrace;
+            this.#parsedTrace = data.parsedTrace;
         }
-        if (parsedTrace) {
-            this.#filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace);
+        if (data.parsedTrace) {
+            this.#filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
         }
-        this.#selectedEvents = selectedEvents;
-        this.#traceInsightsSets = traceInsightsSets;
+        this.#selectedEvents = data.selectedEvents;
+        this.#traceInsightsSets = data.traceInsightsSets;
+        this.#eventToRelatedInsightsMap = data.eventToRelatedInsightsMap;
+        if (data.eventToRelatedInsightsMap) {
+            this.#relatedInsightChips.eventToRelatedInsightsMap = data.eventToRelatedInsightsMap;
+        }
         this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
         for (const view of this.rangeDetailViews.values()) {
-            view.setModelWithEvents(selectedEvents, parsedTrace);
+            view.setModelWithEvents(data.selectedEvents, data.parsedTrace);
         }
         this.lazyPaintProfilerView = null;
         this.lazyLayersView = null;
@@ -165,6 +172,9 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         }
         this.defaultDetailsContentElement.removeChildren();
         this.defaultDetailsContentElement.appendChild(node);
+        if (this.#relatedInsightChips) {
+            this.defaultDetailsContentElement.appendChild(this.#relatedInsightChips);
+        }
     }
     updateContents() {
         const view = this.rangeDetailViews.get(this.tabbedPane.selectedTabId || '');
@@ -244,6 +254,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         }
         this.detailsLinkifier.reset();
         this.selection = selection;
+        this.#relatedInsightChips.activeEvent = null;
         if (!this.selection) {
             // Update instantly using forceImmediateUpdate, since we are only
             // making a single call and don't need to debounce.
@@ -255,10 +266,18 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             const networkRequest = selectionObject;
             const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
             await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget);
+            this.#relatedInsightChips.activeEvent = networkRequest;
+            if (this.#eventToRelatedInsightsMap) {
+                this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+            }
             this.setContent(this.#networkRequestDetails);
         }
         else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
             const event = selectionObject;
+            this.#relatedInsightChips.activeEvent = event;
+            if (this.#eventToRelatedInsightsMap) {
+                this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+            }
             if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */) &&
                 (Trace.Types.Events.isSyntheticLayoutShift(event) ||
                     Trace.Types.Events.isSyntheticLayoutShiftCluster(event))) {

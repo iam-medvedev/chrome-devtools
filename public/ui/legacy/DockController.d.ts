@@ -1,6 +1,6 @@
 import * as Common from '../../core/common/common.js';
-import { type ActionDelegate } from './ActionRegistration.js';
-import { type Context } from './Context.js';
+import type { ActionDelegate } from './ActionRegistration.js';
+import type { Context } from './Context.js';
 import { type Provider, ToolbarButton, type ToolbarItem } from './Toolbar.js';
 export declare class DockController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     private canDockInternal;

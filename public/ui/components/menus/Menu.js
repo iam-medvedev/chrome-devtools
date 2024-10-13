@@ -10,6 +10,7 @@ import * as Dialogs from '../dialogs/dialogs.js';
 import menuStyles from './menu.css.js';
 import menuGroupStyles from './menuGroup.css.js';
 import menuItemStyles from './menuItem.css.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {
@@ -306,8 +307,8 @@ export class Menu extends HTMLElement {
             throw new Error('Menu render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
-      <${Dialogs.Dialog.Dialog.litTagName}
+        LitHtml.render(html `
+      <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
         @forceddialogclose=${this.#closeDialog}
         .position=${this.position}
@@ -324,7 +325,7 @@ export class Menu extends HTMLElement {
           <slot @click=${this.#handleItemClick}>
           </slot>
         </span>
-      </${Dialogs.Dialog.Dialog.litTagName}>
+      </devtools-dialog>
     `, this.#shadow, { host: this });
         // clang-format on
     }
@@ -369,7 +370,7 @@ export class MenuItem extends HTMLElement {
             throw new Error('MenuItem render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <span class=${LitHtml.Directives.classMap({
             'menu-item': true,
             'is-selected-item': this.selected,
@@ -404,7 +405,7 @@ export class MenuGroup extends HTMLElement {
             throw new Error('MenuGroup render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <span class="menu-group">
         <span class="menu-group-label">${this.name}</span>
         <slot></slot>

@@ -1,3 +1,4 @@
+import '../../ui/components/linkifier/linkifier.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class TimelineSelectorStatsView extends UI.Widget.VBox {

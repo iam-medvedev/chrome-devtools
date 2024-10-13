@@ -1,4 +1,4 @@
-import { type AnimationTimingModel } from './AnimationTimingModel.js';
+import type { AnimationTimingModel } from './AnimationTimingModel.js';
 export declare class PresetUI {
     #private;
     constructor();

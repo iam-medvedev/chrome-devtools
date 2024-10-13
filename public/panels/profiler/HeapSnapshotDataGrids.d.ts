@@ -5,9 +5,9 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type HeapSnapshotGridNode, HeapSnapshotObjectNode, HeapSnapshotRetainingObjectNode } from './HeapSnapshotGridNodes.js';
-import { type HeapSnapshotProxy } from './HeapSnapshotProxy.js';
-import { type HeapProfileHeader } from './HeapSnapshotView.js';
-import { type DataDisplayDelegate } from './ProfileHeader.js';
+import type { HeapSnapshotProxy } from './HeapSnapshotProxy.js';
+import type { HeapProfileHeader } from './HeapSnapshotView.js';
+import type { DataDisplayDelegate } from './ProfileHeader.js';
 declare class HeapSnapshotSortableDataGridBase extends DataGrid.DataGrid.DataGridImpl<HeapSnapshotGridNode> {
 }
 declare const HeapSnapshotSortableDataGrid_base: (new (...args: any[]) => {

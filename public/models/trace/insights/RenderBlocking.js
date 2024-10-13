@@ -120,7 +120,7 @@ export function generateInsight(parsedTrace, context) {
         if (req.args.data.frame !== context.frameId) {
             continue;
         }
-        if (req.args.data.renderBlocking !== 'blocking' && req.args.data.renderBlocking !== 'in_body_parser_blocking') {
+        if (!Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(req)) {
             continue;
         }
         if (req.args.data.syntheticData.finishTime > firstPaintTs) {
@@ -151,6 +151,7 @@ export function generateInsight(parsedTrace, context) {
         return b.dur - a.dur;
     });
     return {
+        relatedEvents: renderBlockingRequests,
         renderBlockingRequests,
         ...savings,
     };

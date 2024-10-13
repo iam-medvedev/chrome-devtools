@@ -1,4 +1,4 @@
-import { type FlameChart } from './FlameChart.js';
+import type { FlameChart } from './FlameChart.js';
 export declare class BrickBreaker extends HTMLElement {
     #private;
     private timelineFlameChart;

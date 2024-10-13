@@ -1,6 +1,6 @@
-import { type SelectorType } from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
-import { type AccessibilityBindings } from './selectors/ARIASelector.js';
-import { type Selector } from './selectors/Selector.js';
+import type { SelectorType } from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+import type { AccessibilityBindings } from './selectors/ARIASelector.js';
+import type { Selector } from './selectors/Selector.js';
 declare global {
     interface Window {
         stopShortcut(payload: string): void;

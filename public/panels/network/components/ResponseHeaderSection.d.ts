@@ -1,4 +1,4 @@
-import { type NameValue } from '../../../core/sdk/NetworkRequest.js';
+import type { NameValue } from '../../../core/sdk/NetworkRequest.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import { type HeaderDetailsDescriptor } from './HeaderSectionRow.js';
@@ -19,12 +19,10 @@ declare class ResponseHeaderSectionBase extends HTMLElement {
 }
 export declare class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: ResponseHeaderSectionData);
 }
 export declare class ResponseHeaderSection extends ResponseHeaderSectionBase {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: ResponseHeaderSectionData);
 }
 declare global {

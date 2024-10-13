@@ -173,10 +173,6 @@ const UIStrings = {
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
-    HardwareConcurrencyIsEnabled: '- Hardware concurrency override is enabled',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
-     */
     SignificantOverheadDueToPaint: '- Significant overhead due to paint instrumentation',
     /**
      *@description Text in Timeline Panel of the Performance panel
@@ -394,6 +390,7 @@ export class TimelinePanel extends UI.Panel.Panel {
      * overwhelm.
      */
     #pendingAriaMessage = null;
+    #eventToRelatedInsights = new Map();
     constructor() {
         super('timeline');
         const adornerContent = document.createElement('span');
@@ -412,11 +409,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         };
         this.brickBreakerToolbarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.fixMe), adorner);
         this.brickBreakerToolbarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.#onBrickBreakerEasterEggClick());
-        const config = Trace.Types.Configuration.defaults();
-        config.showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
-        config.includeRuntimeCallStats = Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
-        config.debugMode = Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */);
-        this.#traceEngineModel = Trace.TraceModel.Model.createWithAllHandlers(config);
+        this.#traceEngineModel = this.#instantiateNewModel();
         this.#listenForProcessingProgress();
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
         this.dropTarget = new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI], i18nString(UIStrings.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
@@ -463,6 +456,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
         this.flameChart = new TimelineFlameChartView(this);
         this.#onChartPlayableStateChangeBound = this.#onChartPlayableStateChange.bind(this);
+        this.element.addEventListener('toggle-popover', event => this.flameChart.togglePopover(event.detail));
         this.flameChart.getMainFlameChart().addEventListener("ChartPlayableStateChange" /* PerfUI.FlameChart.Events.CHART_PLAYABLE_STATE_CHANGED */, this.#onChartPlayableStateChangeBound, this);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this.flameChart, null);
         this.searchableViewInternal.setMinimumSize(0, 100);
@@ -478,6 +472,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightDeactivated.eventName, () => {
             this.#setActiveInsight(null);
         });
+        // TODO(crbug.com/372946179): when clicking on an insight chip, this event never fires if the insight tab
+        // is not on the DOM. That only happens when the sidebar tabbed pane component is set to Annotations.
+        // In that case, clicking on the insight chip will do nothing.
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightActivated.eventName, event => {
             const { name, insightSetKey, overlays } = event;
             this.#setActiveInsight({ name, insightSetKey, overlays });
@@ -493,11 +490,22 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.#minimapComponent.clearBoundsHighlight();
             }
         });
-        this.flameChart.element.addEventListener(TimelineInsights.Helpers.EventReferenceClick.eventName, event => {
+        this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideRelatedEvents.eventName, event => {
+            const relatedInsight = {
+                insightLabel: event.label,
+                activateInsight: event.activateInsight,
+            };
+            for (const traceEvent of event.events) {
+                const relatedInsights = this.#eventToRelatedInsights.get(traceEvent) ?? [];
+                relatedInsights.push(relatedInsight);
+                this.#eventToRelatedInsights.set(traceEvent, relatedInsights);
+            }
+        });
+        this.flameChart.element.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
             const fromTraceEvent = TimelineSelection.fromTraceEvent(event.event);
             this.flameChart.setSelectionAndReveal(fromTraceEvent);
         });
-        this.#sideBar.contentElement.addEventListener(TimelineInsights.Helpers.EventReferenceClick.eventName, event => {
+        this.#sideBar.contentElement.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
             this.select(TimelineSelection.fromTraceEvent(event.event));
         });
         this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
@@ -546,6 +554,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         });
     }
     #setActiveInsight(insight) {
+        if (insight && this.#panelSidebarEnabled()) {
+            this.#splitWidget.showBoth();
+        }
         this.#sideBar.setActiveInsight(insight);
         this.flameChart.setActiveInsight(insight);
     }
@@ -556,6 +567,13 @@ export class TimelinePanel extends UI.Panel.Panel {
             timelinePanelInstance = new TimelinePanel();
         }
         return timelinePanelInstance;
+    }
+    #instantiateNewModel() {
+        const config = Trace.Types.Configuration.defaults();
+        config.showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
+        config.includeRuntimeCallStats = Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
+        config.debugMode = Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */);
+        return Trace.TraceModel.Model.createWithAllHandlers(config);
     }
     static extensionDataVisibilitySetting() {
         // Calling this multiple times doesn't recreate the setting.
@@ -882,7 +900,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled', 'timeline-settings-toggle');
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.updateShowSettingsToolbarButton, this);
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.updateShowSettingsToolbarButton, this);
-        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("HardwareConcurrencyChanged" /* SDK.CPUThrottlingManager.Events.HARDWARE_CONCURRENCY_CHANGED */, this.updateShowSettingsToolbarButton, this);
         this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureSelectorStatsSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
@@ -907,21 +924,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         networkThrottlingToolbar.appendText(i18nString(UIStrings.network));
         this.networkThrottlingSelect = this.createNetworkConditionsSelect();
         networkThrottlingToolbar.appendToolbarItem(this.networkThrottlingSelect);
-        const hardwareConcurrencyPane = new UI.Widget.VBox();
-        hardwareConcurrencyPane.element.classList.add('flex-auto');
-        hardwareConcurrencyPane.show(this.settingsPane.element);
-        const thirdPartyToolbar = new UI.Toolbar.Toolbar('', this.settingsPane.element);
-        thirdPartyToolbar.element.classList.add('flex-auto');
+        const thirdPartyToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
         thirdPartyToolbar.makeVertical();
         thirdPartyToolbar.appendToolbarItem(this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString(UIStrings.showDataAddedByExtensions)));
-        const { toggle, input, reset, warning } = MobileThrottling.ThrottlingManager.throttlingManager().createHardwareConcurrencySelector();
-        const concurrencyThrottlingToolbar = new UI.Toolbar.Toolbar('', hardwareConcurrencyPane.element);
-        concurrencyThrottlingToolbar.registerCSSFiles([timelinePanelStyles]);
-        input.element.classList.add('timeline-concurrency-input');
-        concurrencyThrottlingToolbar.appendToolbarItem(toggle);
-        concurrencyThrottlingToolbar.appendToolbarItem(input);
-        concurrencyThrottlingToolbar.appendToolbarItem(reset);
-        concurrencyThrottlingToolbar.appendToolbarItem(warning);
         this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));
         this.updateSettingsPaneVisibility();
     }
@@ -1127,9 +1132,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         const messages = [];
         if (SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate() !== 1) {
             messages.push(i18nString(UIStrings.CpuThrottlingIsEnabled));
-        }
-        if (MobileThrottling.ThrottlingManager.throttlingManager().hardwareConcurrencyOverrideEnabled) {
-            messages.push(i18nString(UIStrings.HardwareConcurrencyIsEnabled));
         }
         if (SDK.NetworkManager.MultitargetNetworkManager.instance().isThrottling()) {
             messages.push(i18nString(UIStrings.NetworkThrottlingIsEnabled));
@@ -1403,6 +1405,11 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     onClearButton() {
         this.#historyManager.clear();
+        this.#traceEngineModel = this.#instantiateNewModel();
+        ModificationsManager.reset();
+        this.#uninstallSourceMapsResolver();
+        this.flameChart.getMainDataProvider().reset(true);
+        this.flameChart.reset();
         this.#changeView({ mode: 'LANDING_PAGE' });
     }
     #hasActiveTrace() {
@@ -1564,9 +1571,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 90);
         this.updateTimelineControls();
         this.#setActiveInsight(null);
+        this.#eventToRelatedInsights.clear();
         const traceInsightsSets = this.#traceEngineModel.traceInsights(traceIndex);
+        this.flameChart.setInsights(traceInsightsSets, this.#eventToRelatedInsights);
         this.#sideBar.setInsights(traceInsightsSets);
-        this.flameChart.setInsights(traceInsightsSets);
         this.#showSidebarIfRequired();
     }
     /**

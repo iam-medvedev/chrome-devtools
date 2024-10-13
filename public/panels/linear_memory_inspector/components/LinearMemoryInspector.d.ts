@@ -1,5 +1,8 @@
-import { type DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
-import { type HighlightInfo } from './LinearMemoryViewerUtils.js';
+import './LinearMemoryValueInterpreter.js';
+import type { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
+import './LinearMemoryHighlightChipList.js';
+import './LinearMemoryViewer.js';
+import type { HighlightInfo } from './LinearMemoryViewerUtils.js';
 import { Endianness, type ValueType, type ValueTypeMode } from './ValueInterpreterDisplayUtils.js';
 export interface LinearMemoryInspectorData {
     memory: Uint8Array;
@@ -10,6 +13,7 @@ export interface LinearMemoryInspectorData {
     valueTypeModes?: Map<ValueType, ValueTypeMode>;
     endianness?: Endianness;
     highlightInfo?: HighlightInfo;
+    hideValueInspector?: boolean;
 }
 export type Settings = {
     valueTypes: Set<ValueType>;
@@ -37,7 +41,6 @@ export declare class SettingsChangedEvent extends Event {
 }
 export declare class LinearMemoryInspector extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: LinearMemoryInspectorData);
 }

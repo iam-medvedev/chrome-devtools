@@ -1,3 +1,7 @@
+import '../../../../ui/components/icon_button/icon_button.js';
+import '../../../../ui/components/report_view/report_view.js';
+import './PreloadingMismatchedHeadersGrid.js';
+import './MismatchedPreloadingGrid.js';
 import type * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
@@ -17,7 +21,6 @@ export declare const enum UsedKind {
 }
 export declare class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: UsedPreloadingViewData);
 }

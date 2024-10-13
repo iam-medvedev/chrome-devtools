@@ -1,7 +1,7 @@
-import { type Node } from './BaseNode.js';
+import type * as Lantern from '../types/types.js';
+import type { Node } from './BaseNode.js';
 import { CPUNode } from './CPUNode.js';
 import { NetworkNode } from './NetworkNode.js';
-import type * as Lantern from '../types/types.js';
 interface NetworkNodeOutput {
     nodes: Array<NetworkNode>;
     idToNodeMap: Map<string, NetworkNode>;

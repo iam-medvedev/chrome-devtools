@@ -6,7 +6,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type OverviewController, type PopulateNodesEventNodes, type PopulateNodesEventNodeTypes } from './CSSOverviewController.js';
-import { type UnusedDeclaration } from './CSSOverviewUnusedDeclarations.js';
+import type { UnusedDeclaration } from './CSSOverviewUnusedDeclarations.js';
 export type NodeStyleStats = Map<string, Set<number>>;
 export interface ContrastIssue {
     nodeId: Protocol.DOM.BackendNodeId;

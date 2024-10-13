@@ -60,7 +60,8 @@ styles.replaceSync(
   padding: 0 3px;
 }
 
-.devtools-link {
+.devtools-link,
+.timeline-link {
   color: var(--text-link);
   text-decoration: underline;
   outline-offset: 2px;

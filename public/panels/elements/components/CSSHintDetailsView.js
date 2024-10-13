@@ -15,7 +15,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/elements/components/CSSHintDeta
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html, Directives } = LitHtml;
 export class CSSHintDetailsView extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-hint-details-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #authoringHint;
     constructor(authoringHint) {

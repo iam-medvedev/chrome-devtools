@@ -1,27 +1,23 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
-import * as SidebarInsight from './SidebarInsight.js';
-import { Table } from './Table.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description Text to tell the user about the longest user interaction.
      */
-    description: 'Optimize user responsiveness by [improving the Interaction to Next Paint metric](https://web.dev/articles/optimize-inp).',
+    description: 'Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS.',
     /**
      * @description Title for the performance insight "INP by phase", which shows a breakdown of INP by phases / sections.
      */
     title: 'INP by phase',
-    /**
-     *@description Label used to denote the longest user interaction.
-     */
-    longestInteraction: 'Longest interaction',
     /**
      *@description Label used for the phase/component/stage/section of a larger duration.
      */
@@ -83,19 +79,14 @@ export class InteractionToNextPaint extends BaseInsight {
                 renderLocation: 'BELOW_EVENT',
                 entry: event,
             },
-            {
-                type: 'ENTRY_LABEL',
-                entry: event,
-                label: i18nString(UIStrings.longestInteraction),
-            },
         ];
     }
     #render(event) {
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
-        return LitHtml.html `
+        return html `
         <div class="insights">
-            <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+            <devtools-performance-sidebar-insight .data=${{
             title: this.userVisibleTitle,
             description: this.description,
             internalName: this.internalName,
@@ -103,7 +94,7 @@ export class InteractionToNextPaint extends BaseInsight {
         }}
             @insighttoggleclick=${this.onSidebarClick}>
                 <div slot="insight-content" class="insight-section">
-                  ${LitHtml.html `<${Table.litTagName}
+                  ${html `<devtools-performance-table
                     .data=${{
             insight: this,
             headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
@@ -122,11 +113,15 @@ export class InteractionToNextPaint extends BaseInsight {
                 },
             ],
         }}>
-                  </${Table.litTagName}>`}
+                  </devtools-performance-table>`}
                 </div>
-            </${SidebarInsight.SidebarInsight}>
+            </devtools-performance-sidebar-insight>
         </div>`;
         // clang-format on
+    }
+    getRelatedEvents() {
+        const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);
+        return insight?.relatedEvents ?? [];
     }
     render() {
         const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);

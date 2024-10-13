@@ -1,8 +1,8 @@
 import type * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
-import { type Edit } from './CSSModel.js';
-import { type CSSStyleDeclaration } from './CSSStyleDeclaration.js';
+import type { Edit } from './CSSModel.js';
+import type { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 export declare class CSSProperty {
     #private;
     ownerStyle: CSSStyleDeclaration;

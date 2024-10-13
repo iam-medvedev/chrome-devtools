@@ -1364,6 +1364,9 @@
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsForVia": {
     "message": "[{PH1}] Loading debug symbols for {PH2} (via {PH3})..."
   },
+  "models/bindings/IgnoreListManager.ts | addAllAnonymousScriptsToIgnoreList": {
+    "message": "Add all anonymous scripts to ignore list"
+  },
   "models/bindings/IgnoreListManager.ts | addAllContentScriptsToIgnoreList": {
     "message": "Add all extension scripts to ignore list"
   },
@@ -2231,8 +2234,20 @@
   "panels/application/ApplicationPanelSidebar.ts | documentNotAvailable": {
     "message": "Document not available"
   },
+  "panels/application/ApplicationPanelSidebar.ts | extensionLocalStorage": {
+    "message": "Local"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | extensionManagedStorage": {
+    "message": "Managed"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | extensionSessionStorage": {
+    "message": "Session"
+  },
   "panels/application/ApplicationPanelSidebar.ts | extensionStorage": {
     "message": "Extension storage"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | extensionSyncStorage": {
+    "message": "Sync"
   },
   "panels/application/ApplicationPanelSidebar.ts | frames": {
     "message": "Frames"
@@ -3546,6 +3561,24 @@
     "message": "Key"
   },
   "panels/application/DOMStorageItemsView.ts | value": {
+    "message": "Value"
+  },
+  "panels/application/ExtensionStorageItemsView.ts | extensionStorage": {
+    "message": "Extension Storage"
+  },
+  "panels/application/ExtensionStorageItemsView.ts | extensionStorageItemDeleted": {
+    "message": "The storage item was deleted."
+  },
+  "panels/application/ExtensionStorageItemsView.ts | extensionStorageItems": {
+    "message": "Extension Storage Items"
+  },
+  "panels/application/ExtensionStorageItemsView.ts | extensionStorageItemsCleared": {
+    "message": "Extension Storage Items cleared"
+  },
+  "panels/application/ExtensionStorageItemsView.ts | key": {
+    "message": "Key"
+  },
+  "panels/application/ExtensionStorageItemsView.ts | value": {
     "message": "Value"
   },
   "panels/application/IndexedDBViews.ts | clearObjectStore": {
@@ -6500,8 +6533,8 @@
   "panels/freestyler/freestyler-meta.ts | aiAssistance": {
     "message": "AI assistance"
   },
-  "panels/freestyler/freestyler-meta.ts | askAiAssistance": {
-    "message": "Ask AI assistance"
+  "panels/freestyler/freestyler-meta.ts | askAi": {
+    "message": "Ask AI"
   },
   "panels/freestyler/freestyler-meta.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
@@ -7691,11 +7724,8 @@
   "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrency": {
     "message": "Hardware concurrency"
   },
-  "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrencyIsEnabled": {
-    "message": "Hardware concurrency override is enabled"
-  },
-  "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrencySettingTooltip": {
-    "message": "Override the value reported by navigator.hardwareConcurrency on the page"
+  "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrencySettingLabel": {
+    "message": "Override the value reported by navigator.hardwareConcurrency"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | noThrottling": {
     "message": "No throttling"
@@ -10973,6 +11003,12 @@
   "panels/settings/AISettingsTab.ts | explainStyling": {
     "message": "Understand CSS styles with AI-powered insights"
   },
+  "panels/settings/AISettingsTab.ts | explainStylingAndNetworkRequest": {
+    "message": "Understand CSS styles, and network activity with AI-powered insights"
+  },
+  "panels/settings/AISettingsTab.ts | explainStylingNetworkAndFile": {
+    "message": "Understand CSS styles, network activity, and file origins with AI-powered insights"
+  },
   "panels/settings/AISettingsTab.ts | freestylerSendsData": {
     "message": "Any data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature. Don’t use on pages with personal or sensitive information."
   },
@@ -10981,6 +11017,12 @@
   },
   "panels/settings/AISettingsTab.ts | helpUnderstandStyling": {
     "message": "Get help with understanding CSS styles"
+  },
+  "panels/settings/AISettingsTab.ts | helpUnderstandStylingAndNetworkRequest": {
+    "message": "Get help with understanding CSS styles and network requests"
+  },
+  "panels/settings/AISettingsTab.ts | helpUnderstandStylingNetworkAndFile": {
+    "message": "Get help with understanding CSS styles, network requests, and files"
   },
   "panels/settings/AISettingsTab.ts | learnMore": {
     "message": "Learn more"
@@ -11185,6 +11227,9 @@
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | generalExclusionRules": {
     "message": "General exclusion rules:"
+  },
+  "panels/settings/FrameworkIgnoreListSettingsTab.ts | ignoreListAnonymousScripts": {
+    "message": "Anonymous scripts from eval or console"
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | ignoreListContentScripts": {
     "message": "Content scripts injected by extensions"
@@ -12884,6 +12929,12 @@
   "panels/timeline/components/insights/CLSCulprits.ts | worstLayoutShiftCluster": {
     "message": "Worst layout shift cluster"
   },
+  "panels/timeline/components/insights/DocumentLatency.ts | description": {
+    "message": "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression."
+  },
+  "panels/timeline/components/insights/DocumentLatency.ts | failedAriaLabel": {
+    "message": "Insight check failed: {PH1}"
+  },
   "panels/timeline/components/insights/DocumentLatency.ts | failedRedirects": {
     "message": "Had redirects"
   },
@@ -12908,6 +12959,9 @@
   "panels/timeline/components/insights/DocumentLatency.ts | serverResponseTimeLabel": {
     "message": "Server response time"
   },
+  "panels/timeline/components/insights/DocumentLatency.ts | successAriaLabel": {
+    "message": "Insight check passed: {PH1}"
+  },
   "panels/timeline/components/insights/DocumentLatency.ts | title": {
     "message": "Document request latency"
   },
@@ -12915,7 +12969,7 @@
     "message": "Uncompressed download"
   },
   "panels/timeline/components/insights/FontDisplay.ts | description": {
-    "message": "Consider using a [font-display](https://developer.chrome.com/blog/font-display) of swap or optional to ensure text is consistently visible."
+    "message": "Consider using a [font-display](https://developer.chrome.com/blog/font-display) of swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
   },
   "panels/timeline/components/insights/FontDisplay.ts | fontColumn": {
     "message": "Font"
@@ -12927,16 +12981,13 @@
     "message": "Wasted time"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | description": {
-    "message": "Optimize user responsiveness by [improving the Interaction to Next Paint metric](https://web.dev/articles/optimize-inp)."
+    "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
     "message": "Duration"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | inputDelay": {
     "message": "Input delay"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | longestInteraction": {
-    "message": "Longest interaction"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | phase": {
     "message": "Phase"
@@ -12950,6 +13001,12 @@
   "panels/timeline/components/insights/InteractionToNextPaint.ts | title": {
     "message": "INP by phase"
   },
+  "panels/timeline/components/insights/LCPDiscovery.ts | description": {
+    "message": "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)"
+  },
+  "panels/timeline/components/insights/LCPDiscovery.ts | failedAriaLabel": {
+    "message": "Insight check failed: {PH1}"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | fetchPriorityApplied": {
     "message": "fetchpriority=high applied"
   },
@@ -12962,11 +13019,14 @@
   "panels/timeline/components/insights/LCPDiscovery.ts | requestDiscoverable": {
     "message": "Request is discoverable in initial document"
   },
+  "panels/timeline/components/insights/LCPDiscovery.ts | successAriaLabel": {
+    "message": "Insight check passed: {PH1}"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | title": {
     "message": "LCP request discovery"
   },
   "panels/timeline/components/insights/LCPPhases.ts | description": {
-    "message": "Learn about the [strategies for improving each phase of LCP](https://web.dev/articles/optimize-lcp#lcp-breakdown). Pages with great LCP have minimal durations for \"Resource load delay\" and \"Element render delay\"."
+    "message": "Each [phase has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays."
   },
   "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
     "message": "Element render delay"
@@ -13001,17 +13061,17 @@
   "panels/timeline/components/insights/RenderBlocking.ts | title": {
     "message": "Render blocking requests"
   },
-  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavingsJustBytes": {
-    "message": "Est savings: {PH1}"
-  },
-  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavingsJustTime": {
+  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavings": {
     "message": "Est savings: {PH1}"
   },
   "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavingsTimingAndBytes": {
     "message": "Est savings: {PH1} && {PH2}"
   },
+  "panels/timeline/components/insights/SidebarInsight.ts | viewDetails": {
+    "message": "View details for {PH1}"
+  },
   "panels/timeline/components/insights/SlowCSSSelector.ts | description": {
-    "message": "Learn how to [assess the performance of CSS selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats)."
+    "message": "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs."
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | elapsed": {
     "message": "Elapsed time"
@@ -13023,7 +13083,7 @@
     "message": "Match count"
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | title": {
-    "message": "Slow CSS selectors"
+    "message": "CSS Selector costs"
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | topSelectors": {
     "message": "Top selectors"
@@ -13041,16 +13101,16 @@
     "message": "Transfer size"
   },
   "panels/timeline/components/insights/ThirdParties.ts | description": {
-    "message": "Third party code can significantly impact load performance. Assess and reduce the [amount of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) on the page, and try to load what you can after the page has finished loading the main content."
+    "message": "Third party code can significantly impact load performance. [Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page's content."
   },
   "panels/timeline/components/insights/ThirdParties.ts | title": {
     "message": "Third parties"
   },
   "panels/timeline/components/insights/Viewport.ts | description": {
-    "message": "A viewport meta element not only optimizes your app for mobile screen sizes, but also [prevents a 300 millisecond delay to user input](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
+    "message": "The page's viewport is not mobile-optimized, so tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
   },
   "panels/timeline/components/insights/Viewport.ts | title": {
-    "message": "Mobile-optimized viewport"
+    "message": "Viewport not optimized for mobile"
   },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
@@ -13070,9 +13130,6 @@
   "panels/timeline/components/LayoutShiftDetails.ts | culprit": {
     "message": "Culprit"
   },
-  "panels/timeline/components/LayoutShiftDetails.ts | duration": {
-    "message": "Duration"
-  },
   "panels/timeline/components/LayoutShiftDetails.ts | elementsShifted": {
     "message": "Elements shifted"
   },
@@ -13082,11 +13139,8 @@
   "panels/timeline/components/LayoutShiftDetails.ts | injectedIframe": {
     "message": "Injected iframe"
   },
-  "panels/timeline/components/LayoutShiftDetails.ts | insight": {
-    "message": "Insight"
-  },
-  "panels/timeline/components/LayoutShiftDetails.ts | layoutShiftCulprits": {
-    "message": "Layout shift culprits"
+  "panels/timeline/components/LayoutShiftDetails.ts | layoutShift": {
+    "message": "Layout shift @ {PH1}"
   },
   "panels/timeline/components/LayoutShiftDetails.ts | nonCompositedAnimation": {
     "message": "Non-composited animation"
@@ -13100,14 +13154,17 @@
   "panels/timeline/components/LayoutShiftDetails.ts | startTime": {
     "message": "Start time"
   },
+  "panels/timeline/components/LayoutShiftDetails.ts | total": {
+    "message": "Total"
+  },
   "panels/timeline/components/LiveMetricsView.ts | allDevices": {
     "message": "All devices"
   },
   "panels/timeline/components/LiveMetricsView.ts | auto": {
     "message": "Auto ({PH1})"
   },
-  "panels/timeline/components/LiveMetricsView.ts | clearInteractionsLog": {
-    "message": "Clear interactions log"
+  "panels/timeline/components/LiveMetricsView.ts | clearCurrentLog": {
+    "message": "Clear the current log"
   },
   "panels/timeline/components/LiveMetricsView.ts | collectionPeriod": {
     "message": "Collection period:"
@@ -13133,6 +13190,9 @@
   "panels/timeline/components/LiveMetricsView.ts | environmentSettings": {
     "message": "Environment settings"
   },
+  "panels/timeline/components/LiveMetricsView.ts | eventLogs": {
+    "message": "Interaction and layout shift logs section"
+  },
   "panels/timeline/components/LiveMetricsView.ts | fieldData": {
     "message": "Field data"
   },
@@ -13141,6 +13201,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | inpInteraction": {
     "message": "The INP interaction is at the 98th percentile of interaction delays."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | inpInteractionLink": {
+    "message": "INP interaction"
   },
   "panels/timeline/components/LiveMetricsView.ts | inputDelay": {
     "message": "Input delay"
@@ -13151,8 +13214,11 @@
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Interactions"
   },
+  "panels/timeline/components/LiveMetricsView.ts | layoutShifts": {
+    "message": "Layout shifts"
+  },
   "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
-    "message": "LCP Element"
+    "message": "LCP element"
   },
   "panels/timeline/components/LiveMetricsView.ts | loadingOption": {
     "message": "{PH1} - Loading…"
@@ -13184,6 +13250,9 @@
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
   },
+  "panels/timeline/components/LiveMetricsView.ts | numShifts": {
+    "message": "{shiftCount, plural,\n    =1 {{shiftCount} shift}\n    other {{shiftCount} shifts}\n  }"
+  },
   "panels/timeline/components/LiveMetricsView.ts | originOption": {
     "message": "Origin"
   },
@@ -13207,6 +13276,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | seeHowYourLocalMetricsCompare": {
     "message": "See how your local metrics compare to real user data in the {PH1}."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | showClsCluster": {
+    "message": "Go to worst layout shift cluster."
   },
   "panels/timeline/components/LiveMetricsView.ts | showFieldDataForDevice": {
     "message": "Show field data for device type: {PH1}"
@@ -13246,6 +13318,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | useDeviceToolbar": {
     "message": "Use the device toolbar to {PH1}."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | worstCluster": {
+    "message": "Worst cluster"
   },
   "panels/timeline/components/MetricCard.ts | betweenRange": {
     "message": "({PH1}-{PH2})"
@@ -13475,8 +13550,17 @@
   "panels/timeline/components/NetworkThrottlingSelector.ts | presets": {
     "message": "Presets"
   },
+  "panels/timeline/components/RelatedInsightChips.ts | insightKeyword": {
+    "message": "Insight"
+  },
   "panels/timeline/components/SidebarAnnotationsTab.ts | annotationGetStarted": {
     "message": "Annotate a trace for yourself and others"
+  },
+  "panels/timeline/components/SidebarAnnotationsTab.ts | deleteAnnotationTutorialDescription": {
+    "message": "Hover over the list in the sidebar with Annotations tab selected to access the delete function."
+  },
+  "panels/timeline/components/SidebarAnnotationsTab.ts | deleteAnnotationTutorialTitle": {
+    "message": "Delete an annotation"
   },
   "panels/timeline/components/SidebarAnnotationsTab.ts | deleteButton": {
     "message": "Delete annotation: {PH1}"
@@ -13513,6 +13597,15 @@
   },
   "panels/timeline/components/SidebarInsightsTab.ts | feedbackTooltip": {
     "message": "Insights is an experimental feature. Your feedback will help us improve it."
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
+    "message": "{PH1}: {PH2} {PH3} score"
+  },
+  "panels/timeline/components/Utils.ts | fms": {
+    "message": "{PH1}[ms]()"
+  },
+  "panels/timeline/components/Utils.ts | fs": {
+    "message": "{PH1}[s]()"
   },
   "panels/timeline/CountersGraph.ts | documents": {
     "message": "Documents"
@@ -13883,9 +13976,6 @@
   "panels/timeline/TimelinePanel.ts | frameSelected": {
     "message": "Frame selected"
   },
-  "panels/timeline/TimelinePanel.ts | HardwareConcurrencyIsEnabled": {
-    "message": "- Hardware concurrency override is enabled"
-  },
   "panels/timeline/TimelinePanel.ts | hideSidebar": {
     "message": "Hide sole sidebar"
   },
@@ -14001,7 +14091,7 @@
     "message": "% of slow-path non-matches"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | rejectPercentageExplanation": {
-    "message": "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn't be quickly ruled out by the bloom filter. Lower is better."
+    "message": "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn't be quickly ruled out by the bloom filter due to high selector complexity. Lower is better."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selector": {
     "message": "Selector"
@@ -15220,6 +15310,9 @@
   },
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Screenshot for {PH1} - select to view preceding requests."
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | deleteAnnotations": {
+    "message": "Delete annotations"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
     "message": "Configure tracks…"

@@ -16,7 +16,6 @@ export interface ReplaySectionData {
 }
 export declare class ReplaySection extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: ReplaySectionData);
     get disabled(): boolean;
     set disabled(disabled: boolean);

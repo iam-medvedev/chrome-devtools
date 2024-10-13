@@ -197,6 +197,7 @@ style.setProperty('--image-file-open-externally', 'url(\"' + new URL(new URL('op
 style.setProperty('--image-file-pause-circle', 'url(\"' + new URL(new URL('pause-circle.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL(new URL('pause.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pen-spark', 'url(\"' + new URL(new URL('pen-spark.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-performance-panel-delete-annotation', 'url(\"' + new URL(new URL('performance-panel-delete-annotation.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance-panel-diagram', 'url(\"' + new URL(new URL('performance-panel-diagram.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance-panel-entry-label', 'url(\"' + new URL(new URL('performance-panel-entry-label.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance-panel-time-range', 'url(\"' + new URL(new URL('performance-panel-time-range.svg', import.meta.url).href, import.meta.url).toString() + '\")');

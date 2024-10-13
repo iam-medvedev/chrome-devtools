@@ -1,3 +1,4 @@
+import './SettingDeprecationWarning.js';
 import type * as Common from '../../../core/common/common.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 export interface SettingCheckboxData {

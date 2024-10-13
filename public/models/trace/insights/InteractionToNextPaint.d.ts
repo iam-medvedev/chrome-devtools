@@ -1,5 +1,5 @@
-import { type SyntheticInteractionPair } from '../types/TraceEvents.js';
-import { type InsightResult, type InsightSetContext, type RequiredData } from './types.js';
+import type { SyntheticInteractionPair } from '../types/TraceEvents.js';
+import type { InsightResult, InsightSetContext, RequiredData } from './types.js';
 export declare function deps(): ['UserInteractions'];
 export type INPInsightResult = InsightResult<{
     longestInteractionEvent?: SyntheticInteractionPair;

@@ -8,7 +8,6 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import cssQueryStyles from './cssQuery.css.js';
 const { render, html } = LitHtml;
 export class CSSQuery extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-query`;
     #shadow = this.attachShadow({ mode: 'open' });
     #queryPrefix = '';
     #queryName;

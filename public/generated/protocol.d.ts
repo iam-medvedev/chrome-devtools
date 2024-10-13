@@ -1124,7 +1124,7 @@ export declare namespace Audits {
         ThirdPartyCookiesBlocked = "ThirdPartyCookiesBlocked",
         NotSignedInWithIdp = "NotSignedInWithIdp",
         MissingTransientUserActivation = "MissingTransientUserActivation",
-        ReplacedByButtonMode = "ReplacedByButtonMode",
+        ReplacedByActiveMode = "ReplacedByActiveMode",
         InvalidFieldsSpecified = "InvalidFieldsSpecified",
         RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque",
         TypeNotMatching = "TypeNotMatching"
@@ -15595,6 +15595,17 @@ export declare namespace WebAuthn {
          * defaultBackupState value.
          */
         backupState?: boolean;
+        /**
+         * The credential's user.name property. Equivalent to empty if not set.
+         * https://w3c.github.io/webauthn/#dom-publickeycredentialentity-name
+         */
+        userName?: string;
+        /**
+         * The credential's user.displayName property. Equivalent to empty if
+         * not set.
+         * https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-displayname
+         */
+        userDisplayName?: string;
     }
     interface EnableRequest {
         /**
@@ -15675,6 +15686,22 @@ export declare namespace WebAuthn {
      * Triggered when a credential is added to an authenticator.
      */
     interface CredentialAddedEvent {
+        authenticatorId: AuthenticatorId;
+        credential: Credential;
+    }
+    /**
+     * Triggered when a credential is deleted, e.g. through
+     * PublicKeyCredential.signalUnknownCredential().
+     */
+    interface CredentialDeletedEvent {
+        authenticatorId: AuthenticatorId;
+        credentialId: binary;
+    }
+    /**
+     * Triggered when a credential is updated, e.g. through
+     * PublicKeyCredential.signalCurrentUserDetails().
+     */
+    interface CredentialUpdatedEvent {
         authenticatorId: AuthenticatorId;
         credential: Credential;
     }
@@ -16010,7 +16037,9 @@ export declare namespace Preload {
         AllPrerenderingCanceled = "AllPrerenderingCanceled",
         WindowClosed = "WindowClosed",
         SlowNetwork = "SlowNetwork",
-        OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated"
+        OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated",
+        V8OptimizerDisabled = "V8OptimizerDisabled",
+        PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

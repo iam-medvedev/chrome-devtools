@@ -1,3 +1,5 @@
+import './Table.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsight } from './Helpers.js';
@@ -11,6 +13,7 @@ export declare class SlowCSSSelector extends BaseInsight {
     description: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderSlowCSSSelector(): LitHtml.LitTemplate;
+    getRelatedEvents(): Trace.Types.Events.Event[];
     render(): void;
 }
 declare global {

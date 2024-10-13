@@ -1,21 +1,20 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './NodeLink.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
-import { NodeLink } from './NodeLink.js';
-import * as SidebarInsight from './SidebarInsight.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 const UIStrings = {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
-    title: 'Mobile-optimized viewport',
+    title: 'Viewport not optimized for mobile',
     /**
-     * @description Text to tell the user how a viewport meta element can improve performance.
+     * @description Text to tell the user how a viewport meta element can improve performance. \xa0 is a non-breaking space
      */
-    description: 'A viewport meta element not only optimizes your app for mobile screen sizes, ' +
-        'but also [prevents a 300 millisecond delay to user input](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/).',
+    description: 'The page\'s viewport is not mobile-optimized, so tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/).',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Viewport.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -32,9 +31,9 @@ export class Viewport extends BaseInsight {
     #render(insight) {
         const backendNodeId = insight.viewportEvent?.args.data.node_id;
         // clang-format off
-        return LitHtml.html `
+        return html `
         <div class="insights">
-            <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+            <devtools-performance-sidebar-insight .data=${{
             title: this.userVisibleTitle,
             description: this.description,
             expanded: this.isActive(),
@@ -42,15 +41,13 @@ export class Viewport extends BaseInsight {
             estimatedSavingsTime: insight.metricSavings?.INP,
         }}
             @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-content" class="insight-section">
-                  ${backendNodeId !== undefined ? LitHtml.html `<${NodeLink.litTagName}
-                    .data=${{
+              ${backendNodeId !== undefined ? html `<devtools-performance-node-link
+                .data=${{
             backendNodeId,
             options: { tooltip: insight.viewportEvent?.args.data.content },
         }}>
-                  </${NodeLink.litTagName}>` : LitHtml.nothing}
-                </div>
-            </${SidebarInsight.SidebarInsight}>
+              </devtools-performance-node-link>` : LitHtml.nothing}
+            </devtools-performance-sidebar-insight>
         </div>`;
         // clang-format on
     }

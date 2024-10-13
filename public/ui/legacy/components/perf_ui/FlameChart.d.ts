@@ -46,10 +46,15 @@ export declare const enum HoverType {
     OUTSIDE_TRACKS = "OUTSIDE_TRACKS",
     ERROR = "ERROR"
 }
-export declare class FlameChartDelegate {
+export interface FlameChartDelegate {
     windowChanged(_startTime: number, _endTime: number, _animate: boolean): void;
     updateRangeSelection(_startTime: number, _endTime: number): void;
     updateSelectedGroup(_flameChart: FlameChart, _group: Group | null): void;
+    /**
+     * Returns the element that the FlameChart has been rendered into. Used to
+     * provide element references for attaching to Visual Element logs.
+     */
+    containingElement?: () => HTMLElement;
 }
 interface GroupExpansionState {
     [groupName: string]: boolean;
@@ -570,12 +575,15 @@ export interface FlameChartDataProvider {
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly Trace.Types.Events.NavigationStart[];
     hasTrackConfigurationMode(): boolean;
-    eventByIndex?(entryIndex: number): Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame | null;
+    eventByIndex?(entryIndex: number): Trace.Types.Events.Event | null;
     indexForEvent?(event: Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame): number | null;
     buildFlowForInitiator?(index: number): unknown;
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
+    getTraceEntryTreeForAIFromEntryIndex?(entryIndex: number): Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
+    entryHasAnnotations?(entryIndex: number): boolean;
+    deleteAnnotationsForEntry?(entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     groupForEvent?(entryIndex: number): Group | null;

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import timelineSectionStyles from './timelineSection.css.js';
+const { html } = LitHtml;
 export class TimelineSection extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-timeline-section`;
     #isEndOfGroup = false;
     #isStartOfGroup = false;
     #isFirstSection = false;
@@ -36,7 +36,7 @@ export class TimelineSection extends HTMLElement {
             'is-selected': this.#isSelected,
         };
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <div class=${LitHtml.Directives.classMap(classes)}>
         <div class="overlay"></div>
         <div class="icon"><slot name="icon"></slot></div>

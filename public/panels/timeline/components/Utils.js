@@ -1,9 +1,28 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+const UIStrings = {
+    /**
+     *@description ms is the short form of milli-seconds and the placeholder is a decimal number.
+     * The shortest form or abbreviation of milliseconds should be used, as there is
+     * limited room in this UI.
+     *@example {2.14} PH1
+     */
+    fms: '{PH1}[ms]()',
+    /**
+     *@description s is short for seconds and the placeholder is a decimal number
+     * The shortest form or abbreviation of seconds should be used, as there is
+     * limited room in this UI.
+     *@example {2.14} PH1
+     */
+    fs: '{PH1}[s]()',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/Utils.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export var NetworkCategory;
 (function (NetworkCategory) {
     NetworkCategory["DOC"] = "Doc";
@@ -122,60 +141,87 @@ export function renderMetricValue(jslogContext, value, thresholds, format, optio
     }
     return metricValueEl;
 }
-function createTrimmedUrlSearch(url) {
-    const maxSearchValueLength = 8;
-    let search = '';
-    for (const [key, value] of url.searchParams) {
-        if (search) {
-            search += '&';
-        }
-        if (value) {
-            search += `${key}=${Platform.StringUtilities.trimEndWithMaxLength(value, maxSearchValueLength)}`;
-        }
-        else {
-            search += key;
-        }
-    }
-    if (search) {
-        search = '?' + search;
-    }
-    return search;
-}
 /**
- * Shortens URLs as much as possible while keeping important context.
+ * These methods format numbers with units in a way that allows the unit portion to be styled specifically.
+ * They return a text string (the usual string resulting from formatting a number), and an HTMLSpanElement.
+ * The element contains the formatted number, with a nested span element for the unit portion: `.unit`.
  *
- * - Elides the host if the previous url is the same host+protocol
- * - Always elide search param values
- * - Always includes protocol/domain if there is a mix of protocols
- * - First URL is elided fully to show just the pathname, unless there is a mix of protocols (see above)
+ * This formatting is locale-aware. This is accomplished by utilizing the fact that UIStrings passthru
+ * markdown link syntax: `[text that will be translated](not translated)`. The result
+ * is a translated string like this: `[t̂éx̂t́ t̂h́ât́ ŵíl̂ĺ b̂é t̂ŕâńŝĺât́êd́](not translated)`. This is used within
+ * insight components to localize markdown content. But here, we utilize it to parse a localized string.
+ *
+ * If the parsing fails, we fallback to i18n.TimeUtilities, and there will be no `.unit` element.
+ *
+ * As of this writing, our only locale where the unit comes before the number is `sw`, ex: `Sek {PH1}`.
+ *
+    new Intl.NumberFormat('sw', {
+      style: 'unit',
+      unit: 'millisecond',
+      unitDisplay: 'narrow'
+    }).format(10); // 'ms 10'
+ *
  */
-export function createUrlLabels(urls) {
-    const labels = [];
-    const isAllHttps = urls.every(url => url.protocol === 'https:');
-    for (const [index, url] of urls.entries()) {
-        const previousUrl = urls[index - 1];
-        const sameHostAndProtocol = previousUrl && url.host === previousUrl.host && url.protocol === previousUrl.protocol;
-        let elideHost = sameHostAndProtocol;
-        let elideProtocol = isAllHttps;
-        // For the first URL, show just the pathname and search - this will be relative to the domain as seen in the
-        // trace dropdown selector. Exception is if there are non-https protocols, in which case we're only going to elide
-        // parts of the query string.
-        if (index === 0 && isAllHttps) {
-            elideHost = true;
-            elideProtocol = true;
+export var NumberWithUnit;
+(function (NumberWithUnit) {
+    function parse(text) {
+        const startBracket = text.indexOf('[');
+        const endBracket = startBracket !== -1 && text.indexOf(']', startBracket);
+        const startParen = endBracket && text.indexOf('(', endBracket);
+        const endParen = startParen && text.indexOf(')', startParen);
+        if (!endParen || endParen === -1) {
+            return null;
         }
-        const search = createTrimmedUrlSearch(url);
-        if (!elideProtocol) {
-            labels.push(`${url.protocol}//${url.host}${url.pathname}${search}`);
-        }
-        else if (!elideHost) {
-            labels.push(`${url.host}${url.pathname}${search}`);
-        }
-        else {
-            labels.push(`${url.pathname}${search}`);
-        }
+        const firstPart = text.substring(0, startBracket);
+        const unitPart = text.substring(startBracket + 1, endBracket);
+        const lastPart = text.substring(endParen + 1); // skips `]()`
+        return { firstPart, unitPart, lastPart };
     }
-    // Lastly, remove any trailing `/`.
-    return labels.map(label => label.length > 1 && label.endsWith('/') ? label.substring(0, label.length - 1) : label);
-}
+    NumberWithUnit.parse = parse;
+    function formatMicroSecondsAsSeconds(time) {
+        const element = document.createElement('span');
+        element.classList.add('number-with-unit');
+        const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
+        const seconds = Platform.Timing.milliSecondsToSeconds(milliseconds);
+        const text = i18nString(UIStrings.fs, { PH1: (seconds).toFixed(2) });
+        const result = parse(text);
+        if (!result) {
+            // Some sort of problem with parsing, so fallback to not marking up the unit.
+            element.textContent = i18n.TimeUtilities.formatMicroSecondsAsSeconds(time);
+            return { text, element };
+        }
+        const { firstPart, unitPart, lastPart } = result;
+        if (firstPart) {
+            element.append(firstPart);
+        }
+        element.createChild('span', 'unit').textContent = unitPart;
+        if (lastPart) {
+            element.append(lastPart);
+        }
+        return { text: element.textContent ?? '', element };
+    }
+    NumberWithUnit.formatMicroSecondsAsSeconds = formatMicroSecondsAsSeconds;
+    function formatMicroSecondsAsMillisFixed(time, fractionDigits = 0) {
+        const element = document.createElement('span');
+        element.classList.add('number-with-unit');
+        const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
+        const text = i18nString(UIStrings.fms, { PH1: (milliseconds).toFixed(fractionDigits) });
+        const result = parse(text);
+        if (!result) {
+            // Some sort of problem with parsing, so fallback to not marking up the unit.
+            element.textContent = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(time);
+            return { text, element };
+        }
+        const { firstPart, unitPart, lastPart } = result;
+        if (firstPart) {
+            element.append(firstPart);
+        }
+        element.createChild('span', 'unit').textContent = unitPart;
+        if (lastPart) {
+            element.append(lastPart);
+        }
+        return { text: element.textContent ?? '', element };
+    }
+    NumberWithUnit.formatMicroSecondsAsMillisFixed = formatMicroSecondsAsMillisFixed;
+})(NumberWithUnit || (NumberWithUnit = {}));
 //# sourceMappingURL=Utils.js.map

@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, CSSWideKeywordMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, ShadowMatcher, } from './PropertyMatchers.js';
+import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, CSSWideKeywordMatcher, FlexGridMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, } from './PropertyMatchers.js';
 import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
@@ -93,6 +93,29 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const parentMap = new WeakMap();
+export class FlexGridRenderer {
+    #treeElement;
+    constructor(treeElement) {
+        this.#treeElement = treeElement;
+    }
+    matcher() {
+        return new FlexGridMatcher();
+    }
+    render(match, context) {
+        const key = `${this.#treeElement.section().getSectionIdx()}_${this.#treeElement.section().nextEditorTriggerButtonIdx}`;
+        const button = StyleEditorWidget.createTriggerButton(this.#treeElement.parentPane(), this.#treeElement.section(), match.isFlex ? FlexboxEditor : GridEditor, match.isFlex ? i18nString(UIStrings.flexboxEditorButton) : i18nString(UIStrings.gridEditorButton), key);
+        button.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context(match.isFlex ? 'flex' : 'grid')}`);
+        this.#treeElement.section().nextEditorTriggerButtonIdx++;
+        button.addEventListener('click', () => {
+            Host.userMetrics.swatchActivated(match.isFlex ? 6 /* Host.UserMetrics.SwatchType.FLEX */ : 5 /* Host.UserMetrics.SwatchType.GRID */);
+        });
+        const helper = this.#treeElement.parentPane().swatchPopoverHelper();
+        if (helper.isShowing(StyleEditorWidget.instance()) && StyleEditorWidget.instance().getTriggerKey() === key) {
+            helper.setAnchorElement(button);
+        }
+        return [...Renderer.render(ASTUtils.siblings(ASTUtils.declValue(match.node)), context).nodes, button];
+    }
+}
 export class CSSWideKeywordRenderer {
     #treeElement;
     constructor(treeElement) {
@@ -544,7 +567,7 @@ export class LinkableNameRenderer {
         this.#treeElement = treeElement;
     }
     #getLinkData(match) {
-        switch (match.properyName) {
+        switch (match.propertyName) {
             case "animation" /* LinkableNameProperties.ANIMATION */:
             case "animation-name" /* LinkableNameProperties.ANIMATION_NAME */:
                 return {
@@ -1004,6 +1027,34 @@ export class PositionAnchorRenderer {
         return new PositionAnchorMatcher();
     }
 }
+export class PositionTryRenderer {
+    #treeElement;
+    constructor(treeElement) {
+        this.#treeElement = treeElement;
+    }
+    render(match, context) {
+        const content = [];
+        if (match.preamble.length > 0) {
+            const { nodes } = Renderer.render(match.preamble, context);
+            content.push(...nodes);
+        }
+        for (const [i, fallback] of match.fallbacks.entries()) {
+            const fallbackContent = document.createElement('span');
+            if (i > 0) {
+                fallbackContent.appendChild(document.createTextNode(', '));
+            }
+            if (i !== this.#treeElement.matchedStyles().activePositionFallbackIndex()) {
+                fallbackContent.style.textDecoration = 'line-through';
+            }
+            Renderer.renderInto(fallback, context, fallbackContent);
+            content.push(fallbackContent);
+        }
+        return content;
+    }
+    matcher() {
+        return new PositionTryMatcher();
+    }
+}
 export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     style;
     matchedStylesInternal;
@@ -1373,6 +1424,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 new LinearGradientRenderer(),
                 new AnchorFunctionRenderer(this),
                 new PositionAnchorRenderer(this),
+                new FlexGridRenderer(this),
+                new PositionTryRenderer(this),
                 new FontRenderer(this),
             ] :
             [];
@@ -1410,25 +1463,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             semicolon.onmouseup = this.mouseUp.bind(this);
             if (this.property.disabled) {
                 UI.UIUtils.createTextChild(this.listItemElement.createChild('span', 'styles-clipboard-only'), ' */');
-            }
-        }
-        if (this.valueElement && this.#parentSection.editable && this.property.name === 'display') {
-            const propertyValue = this.property.trimmedValueWithoutImportant();
-            const isFlex = propertyValue === 'flex' || propertyValue === 'inline-flex';
-            const isGrid = propertyValue === 'grid' || propertyValue === 'inline-grid';
-            if (isFlex || isGrid) {
-                const key = `${this.#parentSection.getSectionIdx()}_${this.#parentSection.nextEditorTriggerButtonIdx}`;
-                const button = StyleEditorWidget.createTriggerButton(this.parentPaneInternal, this.#parentSection, isFlex ? FlexboxEditor : GridEditor, isFlex ? i18nString(UIStrings.flexboxEditorButton) : i18nString(UIStrings.gridEditorButton), key);
-                button.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context(isFlex ? 'flex' : 'grid')}`);
-                this.#parentSection.nextEditorTriggerButtonIdx++;
-                button.addEventListener('click', () => {
-                    Host.userMetrics.swatchActivated(isFlex ? 6 /* Host.UserMetrics.SwatchType.FLEX */ : 5 /* Host.UserMetrics.SwatchType.GRID */);
-                });
-                this.listItemElement.appendChild(button);
-                const helper = this.parentPaneInternal.swatchPopoverHelper();
-                if (helper.isShowing(StyleEditorWidget.instance()) && StyleEditorWidget.instance().getTriggerKey() === key) {
-                    helper.setAnchorElement(button);
-                }
             }
         }
         if (this.property.parsedOk) {

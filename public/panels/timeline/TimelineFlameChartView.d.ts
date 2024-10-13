@@ -5,9 +5,9 @@ import type * as TimelineComponents from './components/components.js';
 import * as Overlays from './overlays/overlays.js';
 import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
-import { type TimelineModeViewDelegate } from './TimelinePanel.js';
+import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
-import { type TimelineMarkerStyle } from './TimelineUIUtils.js';
+import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
 export declare class TimelineFlameChartView extends UI.Widget.VBox implements PerfUI.FlameChart.FlameChartDelegate, UI.SearchableView.Searchable {
     #private;
     private readonly delegate;
@@ -40,6 +40,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private selectedSearchResult?;
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
+    containingElement(): HTMLElement;
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
@@ -61,7 +62,9 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
     setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace | null, isCpuProfile?: boolean): void;
-    setInsights(insights: Trace.Insights.Types.TraceInsightSets | null): void;
+    setInsights(insights: Trace.Insights.Types.TraceInsightSets | null, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
+    reset(): void;
+    setupWindowTimes(): void;
     updateLinkSelectionAnnotationWithToEntry(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryIndex: number): void;
     private onEntryHovered;
     highlightEvent(event: Trace.Types.Events.Event | null): void;
@@ -106,6 +109,10 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     getSearchResults(): PerfUI.FlameChart.DataProviderSearchResult[] | undefined;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
+    togglePopover({ event, show }: {
+        event: Trace.Types.Events.Event;
+        show: boolean;
+    }): void;
 }
 export declare class Selection {
     timelineSelection: TimelineSelection;

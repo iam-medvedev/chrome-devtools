@@ -413,7 +413,6 @@ input::placeholder {
   background-image: var(--image-file-arrow-drop-down-dark);
 }
 
-/* stylelint-disable no-descending-specificity */
 .chrome-select:enabled {
   &:hover {
     background-color: var(--sys-color-state-hover-on-subtle);

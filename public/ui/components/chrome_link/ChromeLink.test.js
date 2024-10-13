@@ -7,6 +7,7 @@ import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as ChromeLink from './chrome_link.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('ChromeLink', () => {
     it('renders a link when given a \'chrome://\' URL', async () => {
@@ -14,10 +15,10 @@ describeWithMockConnection('ChromeLink', () => {
         const spy = sinon.spy(target.targetAgent(), 'invoke_createTarget');
         const container = document.createElement('div');
         // clang-format off
-        LitHtml.render(LitHtml.html `
-        <${ChromeLink.ChromeLink.ChromeLink.litTagName} .href=${'chrome://settings'}>
+        LitHtml.render(html `
+        <devtools-chrome-link .href=${'chrome://settings'}>
           link text
-        </${ChromeLink.ChromeLink.ChromeLink.litTagName}>
+        </devtools-chrome-link>
       `, container, { host: this });
         // clang-format on
         renderElementIntoDOM(container);

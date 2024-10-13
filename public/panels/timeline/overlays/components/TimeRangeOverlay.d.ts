@@ -10,7 +10,6 @@ export declare class TimeRangeRemoveEvent extends Event {
 }
 export declare class TimeRangeOverlay extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     constructor(initialLabel: string);
     set canvasRect(rect: DOMRect | null);

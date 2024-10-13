@@ -4,6 +4,7 @@
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import elementsPanelLinkStyles from './elementsPanelLink.css.js';
+const { html } = LitHtml;
 export class ElementsPanelLink extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-elements-panel-link`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -24,7 +25,7 @@ export class ElementsPanelLink extends HTMLElement {
     }
     #render() {
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <span
         class="element-reveal-icon"
         jslog=${VisualLogging.link('elements-panel').track({ click: true })}

@@ -1,4 +1,4 @@
-import { type AidaClientResult } from './InspectorFrontendHostAPI.js';
+import type { AidaClientResult } from './InspectorFrontendHostAPI.js';
 export declare enum Entity {
     UNKNOWN = 0,
     USER = 1,
@@ -20,7 +20,10 @@ export declare enum FunctionalityType {
 export declare enum ClientFeature {
     CLIENT_FEATURE_UNSPECIFIED = 0,
     CHROME_CONSOLE_INSIGHTS = 1,
-    CHROME_FREESTYLER = 2
+    CHROME_FREESTYLER = 2,
+    CHROME_DRJONES_NETWORK_AGENT = 7,
+    CHROME_DRJONES_PERFORMANCE_AGENT = 8,
+    CHROME_DRJONES_FILE_AGENT = 9
 }
 export declare enum UserTier {
     USER_TIER_UNSPECIFIED = 0,

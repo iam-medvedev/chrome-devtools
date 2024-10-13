@@ -6,6 +6,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+const { html } = LitHtml;
 export class NodeLink extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-node-link`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -46,7 +47,7 @@ export class NodeLink extends HTMLElement {
     }
     async #render() {
         const relatedNodeEl = await this.#linkify();
-        LitHtml.render(LitHtml.html `<div class='node-link'>
+        LitHtml.render(html `<div class='node-link'>
         ${relatedNodeEl}
       </div>`, this.#shadow, { host: this });
     }

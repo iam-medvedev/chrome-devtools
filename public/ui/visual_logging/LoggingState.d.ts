@@ -1,4 +1,4 @@
-import { type Loggable } from './Loggable.js';
+import type { Loggable } from './Loggable.js';
 import { type LoggingConfig } from './LoggingConfig.js';
 export interface LoggingState {
     impressionLogged: boolean;

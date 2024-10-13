@@ -1,7 +1,7 @@
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import { Issue, IssueCategory, IssueKind } from './Issue.js';
-import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
+import type { MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare const enum IssueCode {
     INSECURE_PRIVATE_NETWORK = "CorsIssue::InsecurePrivateNetwork",
     INVALID_HEADER_VALUES = "CorsIssue::InvalidHeaders",

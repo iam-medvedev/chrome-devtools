@@ -4,26 +4,46 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Utils from './Utils.js';
 describeWithEnvironment('Utils', () => {
-    it('createUrlLabels', function () {
-        function fn(urls, expected) {
-            assert.deepEqual(Utils.createUrlLabels(urls.map(url => new URL(url))), expected);
-        }
-        fn([], []);
-        // Initial url is elided.
-        fn(['https://www.example.com'], ['/']);
-        fn(['https://www.example.com?k=1234567890&k2=1234567890&k3=0123'], ['/?k=1234567…&k2=1234567…&k3=0123']);
-        fn(['https://www.example.com/blah?test=me'], ['/blah?test=me']);
-        // Subsequent urls are elided if the same protocol+domain.
-        fn(['https://www.example.com', 'https://www.example.com/blah?test=me'], ['/', '/blah?test=me']);
-        // Subsequent urls are not elided if the protocol or the domain changes.
-        fn(['https://www.example.com', 'https://www.google.com'], ['/', 'www.google.com']);
-        fn(['https://www.example.com', 'https://www.google.com/search'], ['/', 'www.google.com/search']);
-        fn(['https://www.example.com', 'https://www.google.com/search', 'https://www.google.com/search2'], ['/', 'www.google.com/search', '/search2']);
-        // If only https protocol is present, elide protocol. Otherwise always show the full URL (but still elide the search params).
-        fn(['https://www.example.com', 'http://www.example.com'], ['https://www.example.com', 'http://www.example.com']);
-        fn(['http://www.example.com', 'https://www.example.com'], ['http://www.example.com', 'https://www.example.com']);
-        fn(['http://www.example.com?k=1234567890', 'https://www.example.com?k=1234567890'], ['http://www.example.com/?k=1234567…', 'https://www.example.com/?k=1234567…']);
-        fn(['https://www.example.com', 'https://www.example2.com'], ['/', 'www.example2.com']);
+    describe('NumberWithUnit', () => {
+        const { NumberWithUnit } = Utils;
+        it('renders number with unit (formatMicroSecondsAsSeconds)', () => {
+            const result = NumberWithUnit.formatMicroSecondsAsSeconds(100_000);
+            assert.strictEqual(result.text, '0.10s');
+            assert.strictEqual(result.element.textContent, '0.10s');
+            assert.strictEqual(result.element.querySelector('.unit')?.textContent, 's');
+        });
+        it('renders number with unit (formatMicroSecondsAsMillisFixed)', () => {
+            const result = NumberWithUnit.formatMicroSecondsAsMillisFixed(100_000);
+            assert.strictEqual(result.text, '100ms');
+            assert.strictEqual(result.element.textContent, '100ms');
+            assert.strictEqual(result.element.querySelector('.unit')?.textContent, 'ms');
+        });
+        it('parse', () => {
+            // en
+            assert.deepStrictEqual(NumberWithUnit.parse('100[s]()'), { firstPart: '100', unitPart: 's', lastPart: '' });
+            assert.deepStrictEqual(NumberWithUnit.parse('100 [s]()'), { firstPart: '100 ', unitPart: 's', lastPart: '' });
+            // Decimal separators
+            assert.deepStrictEqual(NumberWithUnit.parse('100.123[ms]()'), { firstPart: '100.123', unitPart: 'ms', lastPart: '' });
+            assert.deepStrictEqual(NumberWithUnit.parse('100,2[s]()'), { firstPart: '100,2', unitPart: 's', lastPart: '' });
+            // zh
+            assert.deepStrictEqual(NumberWithUnit.parse('100[毫秒]()'), { firstPart: '100', unitPart: '毫秒', lastPart: '' });
+            // zh-Hans-CN-u-nu-hanidec
+            assert.deepStrictEqual(NumberWithUnit.parse('一〇〇[毫秒]()'), { firstPart: '一〇〇', unitPart: '毫秒', lastPart: '' });
+            // ar-SA (RTL language, but the UIString still places the number first in the string)
+            assert.deepStrictEqual(NumberWithUnit.parse('١٠٠[ملي ثانية]()'), { firstPart: '١٠٠', unitPart: 'ملي ثانية', lastPart: '' });
+            // ar
+            assert.deepStrictEqual(NumberWithUnit.parse('100[ملي ثانية]()'), { firstPart: '100', unitPart: 'ملي ثانية', lastPart: '' });
+            // sw (only one that places unit first)
+            assert.deepStrictEqual(NumberWithUnit.parse('[Sek]()100'), { firstPart: '', unitPart: 'Sek', lastPart: '100' });
+            assert.deepStrictEqual(NumberWithUnit.parse('[Sek]() 100'), { firstPart: '', unitPart: 'Sek', lastPart: ' 100' });
+            // error cases
+            assert.deepStrictEqual(NumberWithUnit.parse(''), null);
+            assert.deepStrictEqual(NumberWithUnit.parse('100s'), null);
+            assert.deepStrictEqual(NumberWithUnit.parse('100[s]('), null);
+            assert.deepStrictEqual(NumberWithUnit.parse('100[s]'), null);
+            assert.deepStrictEqual(NumberWithUnit.parse('100[s'), null);
+            assert.deepStrictEqual(NumberWithUnit.parse('100 s]('), null);
+        });
     });
 });
 //# sourceMappingURL=Utils.test.js.map

@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import styles from './interactionBreakdown.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Text shown next to the interaction event's input delay time in the detail view.
@@ -22,7 +23,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/InteractionBreakdown.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class InteractionBreakdown extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-interaction-breakdown`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #entry = null;
@@ -43,7 +43,7 @@ export class InteractionBreakdown extends HTMLElement {
         const inputDelay = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(this.#entry.inputDelay);
         const mainThreadTime = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(this.#entry.mainThreadHandling);
         const presentationDelay = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(this.#entry.presentationDelay);
-        LitHtml.render(LitHtml.html `<ul class="breakdown">
+        LitHtml.render(html `<ul class="breakdown">
                      <li data-entry="input-delay">${i18nString(UIStrings.inputDelay)}<span class="value">${inputDelay}</span></li>
                      <li data-entry="processing-duration">${i18nString(UIStrings.processingDuration)}<span class="value">${mainThreadTime}</span></li>
                      <li data-entry="presentation-delay">${i18nString(UIStrings.presentationDelay)}<span class="value">${presentationDelay}</span></li>

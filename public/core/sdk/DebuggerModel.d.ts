@@ -2,7 +2,7 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
+import type { PageResourceLoadInitiator } from './PageResourceLoader.js';
 import { type RemoteObject, RemoteObjectProperty } from './RemoteObject.js';
 import { type EvaluationOptions, type EvaluationResult, type ExecutionContext, RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
@@ -95,7 +95,8 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     setVariableValue(scopeNumber: number, variableName: string, newValue: Protocol.Runtime.CallArgument, callFrameId: Protocol.Debugger.CallFrameId): Promise<string | undefined>;
     addBreakpointListener(breakpointId: string, listener: (arg0: Common.EventTarget.EventTargetEvent<Location>) => void, thisObject?: Object): void;
     removeBreakpointListener(breakpointId: string, listener: (arg0: Common.EventTarget.EventTargetEvent<Location>) => void, thisObject?: Object): void;
-    setBlackboxPatterns(patterns: string[]): Promise<boolean>;
+    setBlackboxPatterns(patterns: string[], skipAnonymous: boolean): Promise<boolean>;
+    setBlackboxExecutionContexts(uniqueIds: string[]): Promise<boolean>;
     dispose(): void;
     suspendModel(): Promise<void>;
     resumeModel(): Promise<void>;

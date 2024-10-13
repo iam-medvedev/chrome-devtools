@@ -3,16 +3,24 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, getGetHostConfigStub } from '../../testing/EnvironmentHelpers.js';
 import * as Switch from '../../ui/components/switch/switch.js';
 import * as Settings from './settings.js';
 describeWithEnvironment('AISettingsTab', () => {
+    function mockHostConfigWithExplainThisResourceEnabled() {
+        getGetHostConfigStub({
+            devToolsExplainThisResourceDogfood: {
+                enabled: true,
+                modelId: 'test',
+            },
+        });
+    }
     function isExpanded(details) {
         return details.classList.contains('open');
     }
     async function renderAISettings() {
         Common.Settings.moduleSetting('console-insights-enabled').set(false);
-        Common.Settings.moduleSetting('freestyler-enabled').set(true);
+        Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
         const view = new Settings.AISettingsTab.AISettingsTab();
         renderElementIntoDOM(view);
         await view.render();
@@ -23,11 +31,13 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(details.length, 2);
         const dropdownButtons = Array.from(view.shadowRoot.querySelectorAll('.dropdown devtools-button'));
         assert.strictEqual(dropdownButtons.length, 2);
-        return { switches, details, dropdownButtons };
+        const toggleContainers = Array.from(view.shadowRoot.querySelectorAll('.toggle-container'));
+        assert.strictEqual(toggleContainers.length, 2);
+        return { switches, details, dropdownButtons, toggleContainers };
     }
     it('renders', async () => {
         Common.Settings.moduleSetting('console-insights-enabled').set(true);
-        Common.Settings.moduleSetting('freestyler-enabled').set(true);
+        Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
         const view = new Settings.AISettingsTab.AISettingsTab();
         renderElementIntoDOM(view);
         await view.render();
@@ -37,6 +47,19 @@ describeWithEnvironment('AISettingsTab', () => {
         const settingCards = view.shadowRoot.querySelectorAll('.setting-card h2');
         const settingNames = Array.from(settingCards).map(element => element.textContent);
         assert.deepEqual(settingNames, ['Console Insights', 'AI assistance']);
+        const settingCardDesc = view.shadowRoot.querySelectorAll('.setting-description');
+        assert.strictEqual(settingCardDesc[1].textContent, 'Get help with understanding CSS styles');
+    });
+    it('renders with explain this resource enabled', async () => {
+        mockHostConfigWithExplainThisResourceEnabled();
+        Common.Settings.moduleSetting('console-insights-enabled').set(true);
+        Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+        const view = new Settings.AISettingsTab.AISettingsTab();
+        renderElementIntoDOM(view);
+        await view.render();
+        assert.isNotNull(view.shadowRoot);
+        const settingCardDesc = view.shadowRoot.querySelectorAll('.setting-description');
+        assert.strictEqual(settingCardDesc[1].textContent, 'Get help with understanding CSS styles and network requests');
     });
     it('can turn feature on, which automatically expands it', async () => {
         const { switches, details } = await renderAISettings();
@@ -60,10 +83,10 @@ describeWithEnvironment('AISettingsTab', () => {
     it('can turn feature off without collapsing it', async () => {
         const { switches, details, dropdownButtons } = await renderAISettings();
         dropdownButtons[1].click();
-        assert.isTrue(Common.Settings.moduleSetting('freestyler-enabled').get());
+        assert.isTrue(Common.Settings.moduleSetting('ai-assistance-enabled').get());
         assert.isTrue(isExpanded(details[1]));
         switches[1].parentElement.click();
-        assert.isFalse(Common.Settings.moduleSetting('freestyler-enabled').get());
+        assert.isFalse(Common.Settings.moduleSetting('ai-assistance-enabled').get());
         assert.isTrue(isExpanded(details[1]));
     });
     it('renders disabled switch component with reason', async () => {
@@ -75,19 +98,19 @@ describeWithEnvironment('AISettingsTab', () => {
                 return { disabled: true, reason: 'reason 1' };
             },
         });
-        Common.Settings.moduleSetting('freestyler-enabled').setRegistration({
-            settingName: 'freestyler-enabled',
+        Common.Settings.moduleSetting('ai-assistance-enabled').setRegistration({
+            settingName: 'ai-assistance-enabled',
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: true,
             disabledCondition: () => {
                 return { disabled: true, reason: 'reason 2' };
             },
         });
-        const { switches } = await renderAISettings();
+        const { switches, toggleContainers } = await renderAISettings();
         assert.isTrue(switches[0].disabled);
-        assert.strictEqual(switches[0].title, 'reason 1');
+        assert.strictEqual(toggleContainers[0].title, 'reason 1');
         assert.isTrue(switches[1].disabled);
-        assert.strictEqual(switches[1].title, 'reason 2');
+        assert.strictEqual(toggleContainers[1].title, 'reason 2');
     });
 });
 //# sourceMappingURL=AISettingsTab.test.js.map

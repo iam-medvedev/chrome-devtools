@@ -1,3 +1,4 @@
+import '../../../../ui/components/icon_button/icon_button.js';
 import * as Trace from '../../../../models/trace/trace.js';
 export declare class EntryLinkStartCreating extends Event {
     static readonly eventName = "entrylinkstartcreating";
@@ -5,7 +6,6 @@ export declare class EntryLinkStartCreating extends Event {
 }
 export declare class EntriesLinkOverlay extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     constructor(initialFromEntryCoordinateAndDimentions: {
         x: number;
         y: number;

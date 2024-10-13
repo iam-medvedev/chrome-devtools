@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { Dialog as DialogElement, } from './Dialog.js';
 import iconDialogStyles from './iconDialog.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description Title of close button for the shortcuts dialog.
@@ -64,10 +64,10 @@ export class IconDialog extends HTMLElement {
         if (this.#data.closeButton) {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
-            maybeCloseButton = LitHtml.html `
+            maybeCloseButton = html `
         <div id='close-button-container'>
           <div id='close-button-right-aligner'>
-            <${IconButton.Icon.Icon.litTagName}
+            <devtools-icon
               @click=${this.#closeDialog}
               .data=${{
                 iconName: 'cross',
@@ -77,21 +77,21 @@ export class IconDialog extends HTMLElement {
             }}
               jslog=${VisualLogging.close().track({ click: true })}
               title=${i18nString(UIStrings.close)}
-            ></${IconButton.Icon.Icon.litTagName}>
+            ></devtools-icon>
           </div>
         </div>
       `;
             // clang-format on
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
-      <${IconButton.Icon.Icon.litTagName}
+        LitHtml.render(html `
+      <devtools-icon
         @click=${this.#showDialog}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
             this.#icon = node;
         })}
         .data=${this.#data.iconData}
-      ></${IconButton.Icon.Icon.litTagName}>
+      ></devtools-icon>
       <${DialogElement.litTagName}
         @clickoutsidedialog=${this.#closeDialog}
         .showConnector=${true}

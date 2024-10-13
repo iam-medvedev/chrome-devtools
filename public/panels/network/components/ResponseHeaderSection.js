@@ -13,7 +13,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { compareHeaders, HeaderSectionRow, isValidHeaderName, } from './HeaderSectionRow.js';
+import { compareHeaders, isValidHeaderName, } from './HeaderSectionRow.js';
 import responseHeaderSectionStyles from './ResponseHeaderSection.css.js';
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -80,7 +80,6 @@ class ResponseHeaderSectionBase extends HTMLElement {
     }
 }
 export class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
-    static litTagName = LitHtml.literal `devtools-early-hints-header-section`;
     #request;
     set data(data) {
         this.#request = data.request;
@@ -96,9 +95,9 @@ export class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
         // clang-format off
         render(html `
       ${this.headerDetails.map(header => html `
-        <${HeaderSectionRow.litTagName} .data=${{
+        <devtools-header-section-row .data=${{
             header,
-        }}></${HeaderSectionRow.litTagName}>
+        }}></devtools-header-section-row>
       `)}
     `, this.shadow, { host: this });
         // clang-format on
@@ -106,7 +105,6 @@ export class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
 }
 customElements.define('devtools-early-hints-header-section', EarlyHintsHeaderSection);
 export class ResponseHeaderSection extends ResponseHeaderSectionBase {
-    static litTagName = LitHtml.literal `devtools-response-header-section`;
     #request;
     #headerEditors = [];
     #uiSourceCode = null;
@@ -453,24 +451,24 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
         // clang-format off
         render(html `
       ${headerDescriptors.map((header, index) => html `
-        <${HeaderSectionRow.litTagName}
+        <devtools-header-section-row
             .data=${{ header }}
             @headeredited=${this.#onHeaderEdited}
             @headerremoved=${this.#onHeaderRemoved}
             @enableheaderediting=${this.#onEnableHeaderEditingClick}
             data-index=${index}
             jslog=${VisualLogging.item('response-header')}
-        ></${HeaderSectionRow.litTagName}>
+        ></devtools-header-section-row>
       `)}
       ${this.#isEditingAllowed === 1 /* EditingAllowedStatus.ENABLED */ ? html `
-        <${Buttons.Button.Button.litTagName}
+        <devtools-button
           class="add-header-button"
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           .iconUrl=${plusIconUrl}
           @click=${this.#onAddHeaderClick}
           jslog=${VisualLogging.action('add-header').track({ click: true })}>
           ${i18nString(UIStrings.addHeader)}
-        </${Buttons.Button.Button.litTagName}>
+        </devtools-button>
       ` : LitHtml.nothing}
     `, this.shadow, { host: this });
         // clang-format on

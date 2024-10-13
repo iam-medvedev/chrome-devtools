@@ -11,8 +11,6 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-/* Linter does not work with CSS nesting correctly. */
-/* stylelint-disable no-descending-specificity */
 .tree-outline {
   li.storage-group-list-item,
   li.storage-group-list-item:not(:has(span[is="dt-checkbox"])) {
@@ -36,7 +34,6 @@ styles.replaceSync(
     margin-top: var(--sys-size-6);
   }
 }
-/* stylelint-enable no-descending-specificity */
 
 .icons-container devtools-icon.red-icon {
   color: var(--icon-error);

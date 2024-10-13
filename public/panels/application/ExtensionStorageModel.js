@@ -15,17 +15,33 @@ export class ExtensionStorage extends Common.ObjectWrapper.ObjectWrapper {
         this.#nameInternal = name;
         this.#storageAreaInternal = storageArea;
     }
+    get model() {
+        return this.#model;
+    }
     get extensionId() {
         return this.#extensionIdInternal;
     }
     get name() {
         return this.#nameInternal;
     }
+    // Returns a key that uniquely identifies this extension ID and storage area,
+    // but which is not unique across targets, so we can identify two identical
+    // storage areas across frames.
+    get key() {
+        return `${this.extensionId}-${this.storageArea}`;
+    }
     get storageArea() {
         return this.#storageAreaInternal;
     }
-    async getItems() {
-        const response = await this.#model.agent.invoke_getStorageItems({ id: this.#extensionIdInternal, storageArea: this.#storageAreaInternal });
+    async getItems(keys) {
+        const params = {
+            id: this.#extensionIdInternal,
+            storageArea: this.#storageAreaInternal,
+        };
+        if (keys) {
+            params.keys = keys;
+        }
+        const response = await this.#model.agent.invoke_getStorageItems(params);
         if (response.getError()) {
             throw new Error(response.getError());
         }
@@ -72,19 +88,38 @@ export class ExtensionStorageModel extends SDK.SDKModel.SDKModel {
         }
         this.#enabled = true;
     }
+    #getStoragesForExtension(id) {
+        const existingStorages = this.#storagesInternal.get(id);
+        if (existingStorages) {
+            return existingStorages;
+        }
+        const newStorages = new Map();
+        this.#storagesInternal.set(id, newStorages);
+        return newStorages;
+    }
     #addExtension(id, name) {
         for (const storageArea of ["session" /* Protocol.Extensions.StorageArea.Session */, "local" /* Protocol.Extensions.StorageArea.Local */,
             "sync" /* Protocol.Extensions.StorageArea.Sync */, "managed" /* Protocol.Extensions.StorageArea.Managed */]) {
-            const storages = this.#storagesInternal.get(id);
+            const storages = this.#getStoragesForExtension(id);
             const storage = new ExtensionStorage(this, id, name, storageArea);
-            if (!storages) {
-                this.#storagesInternal.set(id, new Map([[storageArea, storage]]));
-            }
-            else {
-                console.assert(!storages.get(storageArea));
+            console.assert(!storages.get(storageArea));
+            storage.getItems([])
+                .then(() => {
+                // The extension may have been removed in the meantime.
+                if (this.#storagesInternal.get(id) !== storages) {
+                    return;
+                }
+                // The storage area may have been added in the meantime.
+                if (storages.get(storageArea)) {
+                    return;
+                }
                 storages.set(storageArea, storage);
-            }
-            this.dispatchEventToListeners("ExtensionStorageAdded" /* Events.EXTENSION_STORAGE_ADDED */, storage);
+                this.dispatchEventToListeners("ExtensionStorageAdded" /* Events.EXTENSION_STORAGE_ADDED */, storage);
+            })
+                .catch(() => {
+                // Storage area is inaccessible (extension may have restricted access
+                // or not enabled the API).
+            });
         }
     }
     #removeExtension(id) {
@@ -93,8 +128,10 @@ export class ExtensionStorageModel extends SDK.SDKModel.SDKModel {
             return;
         }
         for (const [key, storage] of storages) {
-            this.dispatchEventToListeners("ExtensionStorageRemoved" /* Events.EXTENSION_STORAGE_REMOVED */, storage);
+            // Delete this before firing the event, since this matches the behavior
+            // of other models and meets expectations for a removed event.
             storages.delete(key);
+            this.dispatchEventToListeners("ExtensionStorageRemoved" /* Events.EXTENSION_STORAGE_REMOVED */, storage);
         }
         this.#storagesInternal.delete(id);
     }

@@ -1,5 +1,5 @@
 import type * as Common from '../../core/common/common.js';
-import { type Widget } from './Widget.js';
+import type { Widget } from './Widget.js';
 export declare class Infobar {
     #private;
     element: HTMLElement;

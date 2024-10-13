@@ -475,7 +475,9 @@ export function getBaseTraceParseModelData(overrides = {}) {
             entryToNode: new Map(),
             allTraceEntries: [],
         },
-        Screenshots: [],
+        Screenshots: {
+            all: [],
+        },
         Samples: {
             entryToNode: new Map(),
             profilesInProcess: new Map(),

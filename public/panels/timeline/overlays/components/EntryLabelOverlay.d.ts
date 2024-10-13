@@ -15,7 +15,6 @@ export declare class EntryLabelOverlay extends HTMLElement {
     static readonly LABEL_PADDING = 4;
     static readonly LABEL_AND_CONNECTOR_HEIGHT: number;
     static readonly MAX_LABEL_LENGTH = 100;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     /**
      * The entry label overlay consists of 3 parts - the label part with the label string inside,
      * the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.

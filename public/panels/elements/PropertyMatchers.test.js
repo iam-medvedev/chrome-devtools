@@ -392,6 +392,33 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             assert.isNull(match);
         });
     });
+    describe('PositionTryMatcher', () => {
+        it('should match `position-try[-fallbacks]` property with linkable names', () => {
+            {
+                const { match, text } = matchSingleValue('position-try', 'flip-block, --top, --bottom', new Elements.PropertyMatchers.PositionTryMatcher());
+                assert.exists(match, text);
+                assert.strictEqual(match.text, 'flip-block, --top, --bottom');
+                assert.strictEqual(match.preamble.length, 0);
+            }
+            {
+                const { ast, match, text } = matchSingleValue('position-try', '/* comment */ most-height --top, --bottom', new Elements.PropertyMatchers.PositionTryMatcher());
+                assert.exists(ast, text);
+                assert.exists(match, text);
+                assert.strictEqual(match.text, '/* comment */ most-height --top, --bottom');
+                assert.strictEqual(ast.textRange(match.preamble[0], match.preamble[match.preamble.length - 1]), '/* comment */ most-height');
+            }
+            {
+                const { match, text } = matchSingleValue('position-try-fallbacks', '/* comment */ flip-block, --top, /* comment */ --bottom', new Elements.PropertyMatchers.PositionTryMatcher());
+                assert.exists(match, text);
+                assert.strictEqual(match.text, '/* comment */ flip-block, --top, /* comment */ --bottom');
+                assert.strictEqual(match.preamble.length, 0);
+            }
+            {
+                const { match } = matchSingleValue('position-try', 'revert', new Elements.PropertyMatchers.PositionTryMatcher());
+                assert.isNull(match);
+            }
+        });
+    });
     it('matches lengths', () => {
         const { match, text } = matchSingleValue('min-width', '100px', new Elements.PropertyMatchers.LengthMatcher());
         assert.exists(match, text);
@@ -407,6 +434,30 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
         }
         const { match, text } = matchSingleValue('--property', '1px inherits', new Elements.PropertyMatchers.CSSWideKeywordMatcher(propertyStub, matchedStylesStub));
         assert.notExists(match, text);
+    });
+    it('match flex and grid values', () => {
+        const good = [
+            'flex',
+            'grid',
+            'inline-flex',
+            'inline-grid',
+            'block flex',
+            'block grid',
+            'inline   flex',
+            'inline grid',
+            'inline grid !important',
+            'grid /* comment */',
+        ];
+        const bad = ['flex block', 'grid inline', 'block', 'inline'];
+        for (const value of good) {
+            const { match, text } = matchSingleValue('display', value, new Elements.PropertyMatchers.FlexGridMatcher());
+            assert.exists(match, text);
+            assert.strictEqual(match.text.includes('flex'), match.isFlex);
+        }
+        for (const value of bad) {
+            const { match, text } = matchSingleValue('display', value, new Elements.PropertyMatchers.FlexGridMatcher());
+            assert.notExists(match, text);
+        }
     });
 });
 //# sourceMappingURL=PropertyMatchers.test.js.map

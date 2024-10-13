@@ -1,8 +1,8 @@
-import type * as Protocol from '../../generated/protocol.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 import { DeferredDOMNode, type DOMNode } from './DOMModel.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare const enum CoreAxPropertyName {
     NAME = "name",
     DESCRIPTION = "description",

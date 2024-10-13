@@ -63,7 +63,7 @@ styles.replaceSync(
 
 .overlay-type-CANDY_STRIPED_TIME_RANGE {
   --red-stripe-width: 2px;
-  --white-stripe-width: 10px;
+  --white-stripe-width: 7px;
 
   background-image:
     repeating-linear-gradient(

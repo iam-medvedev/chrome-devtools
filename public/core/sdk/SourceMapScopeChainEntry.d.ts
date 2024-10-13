@@ -1,6 +1,6 @@
-import { type CallFrame, type LocationRange, type ScopeChainEntry } from './DebuggerModel.js';
+import type { CallFrame, LocationRange, ScopeChainEntry } from './DebuggerModel.js';
 import { type RemoteObject, RemoteObjectProperty } from './RemoteObject.js';
-import { type GeneratedRange, type OriginalScope } from './SourceMapScopes.js';
+import type { GeneratedRange, OriginalScope } from './SourceMapScopes.js';
 export declare class SourceMapScopeChainEntry implements ScopeChainEntry {
     #private;
     /**

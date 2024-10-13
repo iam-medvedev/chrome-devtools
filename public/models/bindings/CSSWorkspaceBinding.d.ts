@@ -1,8 +1,8 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Workspace from '../workspace/workspace.js';
-import { LiveLocationWithPool, type LiveLocation as LiveLocationInterface, type LiveLocationPool } from './LiveLocation.js';
-import { type ResourceMapping } from './ResourceMapping.js';
+import { type LiveLocation as LiveLocationInterface, type LiveLocationPool, LiveLocationWithPool } from './LiveLocation.js';
+import type { ResourceMapping } from './ResourceMapping.js';
 export declare class CSSWorkspaceBinding implements SDK.TargetManager.SDKModelObserver<SDK.CSSModel.CSSModel> {
     #private;
     private constructor();

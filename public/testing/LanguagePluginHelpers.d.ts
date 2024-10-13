@@ -1,4 +1,4 @@
-import { type Chrome } from '../../extension-api/ExtensionAPI.js';
+import type { Chrome } from '../../extension-api/ExtensionAPI.js';
 import type * as SDK from '../core/sdk/sdk.js';
 import type * as Bindings from '../models/bindings/bindings.js';
 export declare class TestPlugin implements Bindings.DebuggerLanguagePlugins.DebuggerLanguagePlugin {

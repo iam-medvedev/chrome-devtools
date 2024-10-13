@@ -1,4 +1,4 @@
-import { type EnhancedTracesData } from './RehydratingObject.js';
+import type { EnhancedTracesData } from './RehydratingObject.js';
 export declare class EnhancedTracesParser {
     #private;
     static readonly enhancedTraceVersion: number;

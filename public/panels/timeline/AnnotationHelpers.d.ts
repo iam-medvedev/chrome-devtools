@@ -1,5 +1,5 @@
 import * as Trace from '../../models/trace/trace.js';
-import { type AnnotationModifiedEvent } from './ModificationsManager.js';
+import type { AnnotationModifiedEvent } from './ModificationsManager.js';
 import type * as Overlays from './overlays/overlays.js';
 export declare function getAnnotationEntries(annotation: Trace.Types.File.Annotation): Trace.Types.Events.Event[];
 /**

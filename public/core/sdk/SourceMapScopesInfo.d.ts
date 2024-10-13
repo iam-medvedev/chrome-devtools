@@ -1,5 +1,5 @@
-import { type CallFrame, type ScopeChainEntry } from './DebuggerModel.js';
-import { type SourceMap, type SourceMapV3Object } from './SourceMap.js';
+import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
+import type { SourceMap, SourceMapV3Object } from './SourceMap.js';
 import { type GeneratedRange, type OriginalPosition, type OriginalScope } from './SourceMapScopes.js';
 export declare class SourceMapScopesInfo {
     #private;

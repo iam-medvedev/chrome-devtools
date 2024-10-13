@@ -97,6 +97,9 @@ export class SidebarWidget extends UI.Widget.VBox {
     }
     setActiveInsight(activeInsight) {
         this.#insightsView.setActiveInsight(activeInsight);
+        if (activeInsight) {
+            this.#tabbedPane.selectTab("insights" /* SidebarTabs.INSIGHTS */);
+        }
     }
 }
 class InsightsView extends UI.Widget.VBox {

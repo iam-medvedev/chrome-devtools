@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Root from '../../../core/root/root.js';
 import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -58,6 +59,58 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'LCP request discovery',
             'Render blocking requests',
             'Document request latency',
+            'Third parties',
+        ]);
+    });
+    it('does not render experimental insights by default', async function () {
+        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
+        const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
+        renderElementIntoDOM(component);
+        const firstNavigation = parsedTrace.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
+        assert.isOk(firstNavigation);
+        component.data = {
+            parsedTrace,
+            insights,
+            insightSetKey: firstNavigation,
+            activeCategory: InsightComponents.Types.Category.ALL,
+            activeInsight: null,
+        };
+        await coordinator.done();
+        const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
+            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
+        });
+        // Does not include "font display", which is experimental.
+        assert.deepEqual(userVisibleTitles, [
+            'LCP by phase',
+            'Layout shift culprits',
+            'Document request latency',
+            'Third parties',
+        ]);
+    });
+    it('renders experimental insights if the experiment is turned on', async function () {
+        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
+        const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
+        Root.Runtime.experiments.enableForTest("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */);
+        renderElementIntoDOM(component);
+        const firstNavigation = parsedTrace.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
+        assert.isOk(firstNavigation);
+        component.data = {
+            parsedTrace,
+            insights,
+            insightSetKey: firstNavigation,
+            activeCategory: InsightComponents.Types.Category.ALL,
+            activeInsight: null,
+        };
+        await coordinator.done();
+        const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
+            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
+        });
+        // Does not include "font display", which is experimental.
+        assert.deepEqual(userVisibleTitles, [
+            'LCP by phase',
+            'Layout shift culprits',
+            'Document request latency',
+            'Font display',
             'Third parties',
         ]);
     });

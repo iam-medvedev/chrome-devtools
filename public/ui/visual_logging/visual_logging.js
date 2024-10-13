@@ -8,7 +8,7 @@ import * as NonDomState from './NonDomState.js';
 export { setVeDebugLoggingEnabled } from './Debugging.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions } from './LoggingEvents.js';
-export const logClick = (l, e) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(l, e);
+export const logClick = (loggable, event, options = {}) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(loggable, event, options);
 export const logResize = (l, s) => LoggingEvents.logResize(l, s);
 export const logKeyDown = async (l, e, context) => LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
 export { registerParentProvider, setMappedParent } from './LoggingState.js';

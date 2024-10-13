@@ -1,7 +1,7 @@
 import * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { type DOMModel } from './DOMModel.js';
+import type { DOMModel } from './DOMModel.js';
 export declare const enum HighlightType {
     FLEX = "FLEX",
     GRID = "GRID",

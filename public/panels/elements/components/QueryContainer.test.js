@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertNodeTextContent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import * as NodeText from '../../../ui/components/node_text/node_text.js';
 import * as ElementsComponents from './components.js';
 const nodeAttributes = new Map([
     ['id', 'container'],
@@ -24,7 +23,7 @@ const containerTemplate = {
     getAttribute: x => nodeAttributes.get(x) || '',
 };
 const assertContainerContent = (container, expectedContent) => {
-    const nodeText = container.shadowRoot.querySelector(`${NodeText.NodeText.NodeText.litTagName.value}`);
+    const nodeText = container.shadowRoot.querySelector('devtools-node-text');
     if (!nodeText || !nodeText.shadowRoot) {
         assert.fail('node text element and its shadowRoot should exist');
         return;

@@ -1,11 +1,12 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
-import * as IconButton from '../icon_button/icon_button.js';
 import surveyLinkStyles from './surveyLink.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Text shown when the link to open a survey is clicked but the survey has not yet appeared
@@ -92,9 +93,9 @@ export class SurveyLink extends HTMLElement {
         const ariaDisabled = this.#state !== "ShowLink" /* State.SHOW_LINK */;
         // clang-format off
         // eslint-disable-next-line rulesdir/ban_style_tags_in_lit_html
-        const output = LitHtml.html `
+        const output = html `
       <button class="link ${linkState}" tabindex=${ariaDisabled ? '-1' : '0'} .disabled=${ariaDisabled} aria-disabled=${ariaDisabled} @click=${this.#sendSurvey}>
-        <${IconButton.Icon.Icon.litTagName} class="link-icon" .data=${{ iconName: 'review', color: 'var(--sys-color-primary)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)' }}></${IconButton.Icon.Icon.litTagName}><!--
+        <devtools-icon class="link-icon" .data=${{ iconName: 'review', color: 'var(--sys-color-primary)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)' }}></devtools-icon><!--
       -->${linkText}
       </button>
     `;

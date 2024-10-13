@@ -1,12 +1,13 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/components/tree_outline/tree_outline.js';
 import * as Protocol from '../../../generated/protocol.js';
-import * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
+import type * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
 export interface BadgeData {
     badgeContent: string;
     style: 'error' | 'success' | 'secondary';
 }
 export declare class Badge extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: BadgeData);
     connectedCallback(): void;
 }
@@ -17,7 +18,6 @@ export interface OriginTrialTokenRowsData {
 }
 export declare class OriginTrialTokenRows extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: OriginTrialTokenRowsData);
     connectedCallback(): void;
 }
@@ -26,7 +26,6 @@ export interface OriginTrialTreeViewData {
 }
 export declare class OriginTrialTreeView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: OriginTrialTreeViewData);
     connectedCallback(): void;
 }

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 export * from './AiAgent.js';
 export * from './ChangeManager.js';
+export * from './DrJonesFileAgent.js';
 export * from './DrJonesNetworkAgent.js';
+export * from './DrJonesPerformanceAgent.js';
 export * from './components/FreestylerChatUi.js';
 export * from './components/ProvideFeedback.js';
 export * from './ExtensionScope.js';

@@ -1,6 +1,6 @@
 import type * as Protocol from '../../generated/protocol.js';
 import * as Trace from '../../models/trace/trace.js';
-import { type TimelineModelFilter } from './TimelineModelFilter.js';
+import type { TimelineModelFilter } from './TimelineModelFilter.js';
 export declare class Node {
     totalTime: number;
     selfTime: number;

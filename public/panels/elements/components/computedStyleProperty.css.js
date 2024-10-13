@@ -36,7 +36,8 @@ styles.replaceSync(
 }
 
 .computed-style-property.inherited {
-  opacity: 50%;
+  opacity: 75%;
+  font-style: italic;
 }
 
 .property-name,

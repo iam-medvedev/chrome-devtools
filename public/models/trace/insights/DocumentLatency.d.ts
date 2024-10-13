@@ -1,5 +1,5 @@
 import * as Types from '../types/types.js';
-import { type InsightResult, type InsightSetContext, type RequiredData } from './types.js';
+import type { InsightResult, InsightSetContext, RequiredData } from './types.js';
 export type DocumentLatencyInsightResult = InsightResult<{
     data?: {
         serverResponseTime: Types.Timing.MilliSeconds;

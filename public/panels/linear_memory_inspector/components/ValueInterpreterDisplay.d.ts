@@ -1,3 +1,4 @@
+import '../../../ui/components/icon_button/icon_button.js';
 import { Endianness, ValueType, ValueTypeMode } from './ValueInterpreterDisplayUtils.js';
 export interface ValueDisplayData {
     buffer: ArrayBuffer;
@@ -21,7 +22,6 @@ export declare class JumpToPointerAddressEvent extends Event {
 }
 export declare class ValueInterpreterDisplay extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
     set data(data: ValueDisplayData);

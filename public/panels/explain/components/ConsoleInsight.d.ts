@@ -1,3 +1,4 @@
+import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
 import { type PromptBuilder, type Source } from '../PromptBuilder.js';
 export declare class CloseEvent extends Event {

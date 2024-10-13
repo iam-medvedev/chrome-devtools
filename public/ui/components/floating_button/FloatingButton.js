@@ -1,9 +1,10 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../icon_button/icon_button.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
-import * as IconButton from '../icon_button/icon_button.js';
 import floatingButtonStyles from './floatingButton.css.js';
+const { html } = LitHtml;
 export class FloatingButton extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-floating-button`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -22,7 +23,7 @@ export class FloatingButton extends HTMLElement {
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(LitHtml.html `<button class="floating-button" .disabled=${this.#data.disabled}><${IconButton.Icon.Icon.litTagName} class="icon" name=${this.#data.iconName}></${IconButton.Icon.Icon.litTagName}></button>`, this.#shadow, { host: this });
+        LitHtml.render(html `<button class="floating-button" .disabled=${Boolean(this.#data.disabled)}><devtools-icon class="icon" name=${this.#data.iconName}></devtools-icon></button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

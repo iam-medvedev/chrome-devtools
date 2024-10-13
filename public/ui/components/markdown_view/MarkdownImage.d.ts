@@ -1,3 +1,4 @@
+import '../../components/icon_button/icon_button.js';
 export interface MarkdownImageData {
     key: string;
     title: string;

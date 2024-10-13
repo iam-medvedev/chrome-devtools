@@ -6,8 +6,8 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import hideIssuesMenuStyles from './hideIssuesMenu.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Title for the tooltip of the (3 dots) Hide Issues menu icon.
@@ -42,12 +42,12 @@ export class HideIssuesMenu extends HTMLElement {
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(LitHtml.html `
-    <${Buttons.Button.Button.litTagName}
+        LitHtml.render(html `
+    <devtools-button
       .data=${{ variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: 'dots-vertical', title: i18nString(UIStrings.tooltipTitle) }}
-      .jslogContext=${VisualLogging.dropDown('hide-issues').track({ click: true })}
+      .jslogContext=${'hide-issues'}
       class="hide-issues-menu-btn"
-      @click=${this.onMenuOpen.bind(this)}></${Buttons.Button.Button.litTagName}>
+      @click=${this.onMenuOpen.bind(this)}></devtools-button>
     `, this.#shadow, { host: this });
     }
 }

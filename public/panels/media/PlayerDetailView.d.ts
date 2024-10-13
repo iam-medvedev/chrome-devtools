@@ -1,7 +1,7 @@
-import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
-import { type TriggerHandler } from './MainView.js';
-import { type PlayerEvent } from './MediaModel.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import type { TriggerHandler } from './MainView.js';
+import type { PlayerEvent } from './MediaModel.js';
 export declare const enum PlayerDetailViewTabs {
     EVENTS = "events",
     PROPERTIES = "properties",

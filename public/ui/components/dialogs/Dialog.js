@@ -8,6 +8,7 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import dialogStyles from './dialog.css.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const IS_DIALOG_SUPPORTED = 'HTMLDialogElement' in globalThis;
 // Height in pixels of the dialog's connector. The connector is represented as
@@ -530,14 +531,14 @@ export class Dialog extends HTMLElement {
             // we have to explicitly render a slot and hide it with CSS.
             LitHtml.render(
             // clang-format off
-            LitHtml.html `
+            html `
         <slot></slot>
       `, this.#shadow, { host: this });
             // clang-format on
             return;
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel}
               jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: 'Escape' }).parent('mapped')}>
         <div id="content-wrap">

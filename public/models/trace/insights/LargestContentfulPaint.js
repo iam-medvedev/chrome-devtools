@@ -9,6 +9,15 @@ import { InsightWarning } from './types.js';
 export function deps() {
     return ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
 }
+function anyValuesNaN(...values) {
+    return values.some(v => Number.isNaN(v));
+}
+/**
+ * Calculates the 4 phases of an LCP and the timings of each.
+ * Will return `null` if any required values were missing. We don't ever expect
+ * them to be missing on newer traces, but old trace files may lack some of the
+ * data we rely on, so we want to handle that case.
+ */
 function breakdownPhases(nav, docRequest, lcpMs, lcpRequest) {
     const docReqTiming = docRequest.args.data.timing;
     if (!docReqTiming) {
@@ -20,6 +29,9 @@ function breakdownPhases(nav, docRequest, lcpMs, lcpRequest) {
     const ttfb = Helpers.Timing.microSecondsToMilliseconds(firstDocByteTiming);
     let renderDelay = Types.Timing.MilliSeconds(lcpMs - ttfb);
     if (!lcpRequest) {
+        if (anyValuesNaN(ttfb, renderDelay)) {
+            return null;
+        }
         return { ttfb, renderDelay };
     }
     const lcpStartTs = Types.Timing.MicroSeconds(lcpRequest.ts - nav.ts);
@@ -29,6 +41,9 @@ function breakdownPhases(nav, docRequest, lcpMs, lcpRequest) {
     const loadDelay = Types.Timing.MilliSeconds(requestStart - ttfb);
     const loadTime = Types.Timing.MilliSeconds(requestEnd - requestStart);
     renderDelay = Types.Timing.MilliSeconds(lcpMs - requestEnd);
+    if (anyValuesNaN(ttfb, loadDelay, loadTime, renderDelay)) {
+        return null;
+    }
     return {
         ttfb,
         loadDelay,
@@ -68,11 +83,15 @@ export function generateInsight(parsedTrace, context) {
             lcpMs,
             lcpTs,
             lcpEvent,
-            phases: breakdownPhases(context.navigation, docRequest, lcpMs, lcpRequest),
+            phases: breakdownPhases(context.navigation, docRequest, lcpMs, lcpRequest) ?? undefined,
         };
     }
+    const initiatorUrl = lcpRequest.args.data.initiator?.url;
+    // TODO(b/372319476): Explore using trace event HTMLDocumentParser::FetchQueuedPreloads to determine if the request
+    // is discovered by the preload scanner.
+    const initiatedByMainDoc = lcpRequest?.args.data.initiator?.type === 'parser' && docRequest.args.data.url === initiatorUrl;
+    const imgPreloadedOrFoundInHTML = lcpRequest?.args.data.isLinkPreload || initiatedByMainDoc;
     const imageLoadingAttr = lcpEvent.args.data?.loadingAttr;
-    const imagePreloaded = lcpRequest?.args.data.isLinkPreload || lcpRequest?.args.data.initiator?.type === 'preload';
     const imageFetchPriorityHint = lcpRequest?.args.data.fetchPriorityHint;
     // This is the earliest discovery time an LCP request could have - it's TTFB.
     const earliestDiscoveryTime = docRequest && docRequest.args.data.timing ?
@@ -83,10 +102,10 @@ export function generateInsight(parsedTrace, context) {
         lcpMs,
         lcpTs,
         lcpEvent,
-        phases: breakdownPhases(context.navigation, docRequest, lcpMs, lcpRequest),
+        phases: breakdownPhases(context.navigation, docRequest, lcpMs, lcpRequest) ?? undefined,
         shouldRemoveLazyLoading: imageLoadingAttr === 'lazy',
         shouldIncreasePriorityHint: imageFetchPriorityHint !== 'high',
-        shouldPreloadImage: !imagePreloaded,
+        shouldPreloadImage: !imgPreloadedOrFoundInHTML,
         lcpRequest,
         earliestDiscoveryTimeTs: earliestDiscoveryTime ? Types.Timing.MicroSeconds(earliestDiscoveryTime) : undefined,
     };

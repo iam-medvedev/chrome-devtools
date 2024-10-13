@@ -40,7 +40,6 @@ styles.replaceSync(
   padding: var(--sys-size-8) var(--sys-size-5) 0 var(--sys-size-5);
   max-width: var(--sys-size-36);
   width: 100%;
-  margin: 0 auto;
 }
 
 .chat-input-container {
@@ -112,8 +111,9 @@ styles.replaceSync(
 .messages-scroll-container {
   overflow: auto;
   flex-grow: 1;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable both-edges;
   scrollbar-width: thin;
+  width: 100%;
 }
 
 .messages-container {
@@ -236,6 +236,11 @@ styles.replaceSync(
   width: 100%;
 
   .resource-link {
+    cursor: pointer;
+  }
+
+  .resource-link,
+  .resource-task {
     padding: var(--sys-size-2) var(--sys-size-4);
     font: var(--sys-typescale-body4-size);
     border: var(--sys-size-1) solid var(--sys-color-divider);
@@ -244,7 +249,6 @@ styles.replaceSync(
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: var(--sys-size-32);
-    cursor: pointer;
 
     .icon {
       display: inline-flex;
@@ -252,6 +256,30 @@ styles.replaceSync(
       margin-right: var(--sys-size-3);
       width: var(--sys-size-9);
       height: var(--sys-size-9);
+    }
+
+    /*
+      CSS styling for \\'network-override-marker\\' is similar to
+      https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/panels/network/networkLogView.css;l=379.
+      There is a difference in \\'left\\' and \\'top\\' values to make sure
+      it is placed correctly for the network icon in assistance panel.
+    */
+    .network-override-marker {
+      position: relative;
+      float: left;
+    }
+
+    .network-override-marker::before {
+      content: var(--image-file-empty);
+      width: var(--sys-size-4);
+      height: var(--sys-size-4);
+      border-radius: 50%;
+      outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
+      left: 11px;
+      position: absolute;
+      top: 13px;
+      z-index: 1;
+      background-color: var(--sys-color-purple-bright);
     }
 
     .image.icon {
@@ -267,7 +295,8 @@ styles.replaceSync(
     }
   }
 
-  .resource-link.not-selected {
+  .resource-link.not-selected,
+  .resource-task.not-selected {
     color: var(--sys-color-state-disabled);
     border-color: var(--sys-color-neutral-outline);
   }
@@ -432,17 +461,25 @@ styles.replaceSync(
 .link {
   color: var(--text-link);
   text-decoration: underline;
+  cursor: pointer;
 }
 
 button.link {
   border: none;
   background: none;
-  cursor: pointer;
   font: inherit;
 }
 
 .select-an-element-text {
   margin-left: 2px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .empty-state-container {
@@ -451,7 +488,6 @@ button.link {
   justify-content: center;
   font: var(--sys-typescale-headline4);
   gap: var(--sys-size-11);
-  height: 100%;
   padding: var(--sys-size-3);
 
   .header {
@@ -478,7 +514,7 @@ button.link {
         );
     }
 
-    h2 {
+    h1 {
       font: var(--sys-typescale-headline4);
     }
   }
@@ -493,7 +529,7 @@ button.link {
   }
 }
 
-.opt-in {
+.disabled-view {
   border-radius: var(--sys-shape-corner-small);
   padding: var(--sys-size-6) var(--sys-size-8);
   box-shadow: var(--drop-shadow);
@@ -501,8 +537,9 @@ button.link {
   margin: var(--sys-size-8);
   max-width: var(--sys-size-34);
   display: flex;
+  text-wrap: pretty;
 
-  .opt-in-icon-container {
+  .disabled-view-icon-container {
     border-radius: var(--sys-shape-corner-extra-small);
     width: var(--sys-size-9);
     height: var(--sys-size-9);

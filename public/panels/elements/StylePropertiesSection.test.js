@@ -56,6 +56,7 @@ function setUpStyles(cssModel, origin, styleSheetId, header, payload) {
         propertyRules: [],
         cssPropertyRegistrations: [],
         fontPaletteValuesRule: undefined,
+        activePositionFallbackIndex: -1,
         ...payload,
     });
 }

@@ -1,3 +1,4 @@
+import '../../../ui/components/expandable_list/expandable_list.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
@@ -11,7 +12,6 @@ interface StackTraceRowData {
 }
 export declare class StackTraceRow extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: StackTraceRowData);
     connectedCallback(): void;
 }
@@ -22,13 +22,11 @@ interface StackTraceLinkButtonData {
 }
 export declare class StackTraceLinkButton extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: StackTraceLinkButtonData);
     connectedCallback(): void;
 }
 export declare class StackTrace extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: StackTraceData);
     createRowTemplates(): LitHtml.TemplateResult[];
 }

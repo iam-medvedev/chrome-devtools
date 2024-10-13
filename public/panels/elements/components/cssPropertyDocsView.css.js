@@ -42,8 +42,9 @@ styles.replaceSync(
   justify-content: space-between;
 }
 
-.dont-show input {
-  vertical-align: bottom;
+.dont-show {
+  display: inline-flex;
+  align-items: center;
 }
 
 /*# sourceURL=cssPropertyDocsView.css */

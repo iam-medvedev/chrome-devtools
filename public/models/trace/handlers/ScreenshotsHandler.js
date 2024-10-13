@@ -39,8 +39,9 @@ export async function finalize() {
             ph,
             pid,
             tid,
-            // `getPresentationTimestamp(snapshotEvent) - snapshotEvent.ts` is how many microsec the screenshot was adjusted to the right/later
-            ts: getPresentationTimestamp(snapshotEvent),
+            // TODO(paulirish, crbug.com/41363012): investigate why getPresentationTimestamp(snapshotEvent) seems less accurate. Resolve screenshot timing innaccuracy.
+            // `getPresentationTimestamp(snapshotEvent) - snapshotEvent.ts` is how many microsec the screenshot should be adjusted to the right/later
+            ts: snapshotEvent.ts,
             args: {
                 dataUri: `data:image/jpg;base64,${snapshotEvent.args.snapshot}`,
             },
@@ -54,6 +55,7 @@ export async function finalize() {
  * We match that up with the "PipelineReporter" trace events as they terminate at presentation.
  * Presentation == when the pixels hit the screen. AKA Swap on the GPU
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getPresentationTimestamp(screenshotEvent) {
     const frameSequence = parseInt(screenshotEvent.id, 16);
     // If it's 1, then it's an old trace (before https://crrev.com/c/4957973) and cannot be corrected.
@@ -73,7 +75,7 @@ function getPresentationTimestamp(screenshotEvent) {
 }
 // TODO(crbug/41484172): should be readonly
 export function data() {
-    return syntheticScreenshots;
+    return { all: syntheticScreenshots };
 }
 export function deps() {
     return ['Meta'];

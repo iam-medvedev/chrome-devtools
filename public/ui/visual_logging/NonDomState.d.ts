@@ -1,5 +1,5 @@
-import { type Loggable } from './Loggable.js';
-import { type LoggingConfig } from './LoggingConfig.js';
+import type { Loggable } from './Loggable.js';
+import type { LoggingConfig } from './LoggingConfig.js';
 interface LoggableRegistration {
     loggable: Loggable;
     config: LoggingConfig;

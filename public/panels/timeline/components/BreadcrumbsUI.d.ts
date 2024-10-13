@@ -11,7 +11,6 @@ export declare class BreadcrumbActivatedEvent extends Event {
 }
 export declare class BreadcrumbsUI extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: BreadcrumbsUIData);
 }

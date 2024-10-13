@@ -41,12 +41,12 @@ describeWithEnvironment('FreestylerPanel', () => {
             panel.markAsRoot();
             panel.show(document.body);
             sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
-            Common.Settings.moduleSetting('freestyler-enabled').set(true);
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             sinon.assert.calledWith(mockView, sinon.match({ state: "chat-view" /* Freestyler.State.CHAT_VIEW */ }));
             panel.detach();
         });
         it('should render chat view when the consent is given before', async () => {
-            Common.Settings.moduleSetting('freestyler-enabled').set(true);
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -55,15 +55,15 @@ describeWithEnvironment('FreestylerPanel', () => {
             sinon.assert.calledWith(mockView, sinon.match({ state: "chat-view" /* Freestyler.State.CHAT_VIEW */ }));
         });
         it('should render the consent view when the setting is disabled', async () => {
-            Common.Settings.moduleSetting('freestyler-enabled').set(true);
-            Common.Settings.moduleSetting('freestyler-enabled').setDisabled(true);
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(true);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                 syncInfo: getTestSyncInfo(),
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
-            Common.Settings.moduleSetting('freestyler-enabled').setDisabled(false);
+            Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(false);
         });
     });
     describe('on rate click', () => {

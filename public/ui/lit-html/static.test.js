@@ -4,6 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as i18nRaw from '../../third_party/i18n/i18n.js';
 import * as LitHtml from './lit-html.js';
+const { html } = LitHtml;
 const templateArray = (value) => {
     // We assume here it's okay to lose the `raw` value from the TemplateStringsArray
     // for the purposes of testing.
@@ -51,14 +52,14 @@ describe('Static', () => {
     });
     describe('rendering', () => {
         it('renders non-statics', () => {
-            const tmpl = LitHtml.html `Hello, world ${123}!`;
+            const tmpl = html `Hello, world ${123}!`;
             const target = document.createElement('div');
             LitHtml.render(tmpl, target, { host: this });
             assert.strictEqual(target.innerText, 'Hello, world 123!');
         });
         it('renders static tags', () => {
             const tag = LitHtml.literal `div`;
-            const tmpl = LitHtml.html `<${tag}>Hello, world!</${tag}>`;
+            const tmpl = html `<${tag}>Hello, world!</${tag}>`;
             const target = document.createElement('section');
             LitHtml.render(tmpl, target, { host: this });
             assert.strictEqual(target.innerText, 'Hello, world!');
@@ -67,7 +68,7 @@ describe('Static', () => {
         it('renders multiple', () => {
             const tag = LitHtml.literal `div`;
             const message = 'Hello, everyone!';
-            const tmpl = LitHtml.html `<${tag} .data={{x: 1}}>${1}${2}${3}, ${message}! ${'Static value'}!</${tag}>`;
+            const tmpl = html `<${tag} .data={{x: 1}}>${1}${2}${3}, ${message}! ${'Static value'}!</${tag}>`;
             const target = document.createElement('div');
             LitHtml.render(tmpl, target, { host: this });
             assert.strictEqual(target.innerText, '123, Hello, everyone!! Static value!');
@@ -77,7 +78,7 @@ describe('Static', () => {
             const tag1 = LitHtml.literal `div`;
             const tag2 = LitHtml.literal `p`;
             const tmpls = [tag1, tag2].map(tag => {
-                return LitHtml.html `<${tag}>I am ${tag.value}</${tag}>`;
+                return html `<${tag}>I am ${tag.value}</${tag}>`;
             });
             const target = document.createElement('div');
             LitHtml.render(tmpls, target, { host: this });
@@ -106,7 +107,7 @@ describe('Static', () => {
         it('localizes lit templates', () => {
             const strings = i18nInstance.registerFileStrings('test.ts', uiStrings);
             setLocale('en-US');
-            const result = LitHtml.i18nTemplate(strings, uiStrings.placeholder, { string: 'STRING', template: LitHtml.html `TEMPLATE` });
+            const result = LitHtml.i18nTemplate(strings, uiStrings.placeholder, { string: 'STRING', template: html `TEMPLATE` });
             const element = LitHtml.render(result, document.createElement('div'), { host: this });
             assert.deepStrictEqual(element.parentNode.innerText, 'a message with a STRING and TEMPLATE placeholder');
         });
@@ -114,7 +115,7 @@ describe('Static', () => {
             i18nInstance.registerLocaleData('de', { 'test.ts | placeholder': { message: 'a message with a {template} and {string} placeholder' } });
             const strings = i18nInstance.registerFileStrings('test.ts', uiStrings);
             setLocale('de');
-            const result = LitHtml.i18nTemplate(strings, uiStrings.placeholder, { string: 'STRING', template: LitHtml.html `TEMPLATE` });
+            const result = LitHtml.i18nTemplate(strings, uiStrings.placeholder, { string: 'STRING', template: html `TEMPLATE` });
             const element = LitHtml.render(result, document.createElement('div'), { host: this });
             assert.deepStrictEqual(element.parentNode.innerText, 'a message with a TEMPLATE and STRING placeholder');
         });

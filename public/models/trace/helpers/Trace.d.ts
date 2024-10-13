@@ -90,6 +90,8 @@ export declare function makeZeroBasedCallFrame(callFrame: Types.Events.CallFrame
 export declare function frameIDForEvent(event: Types.Events.Event): string | null;
 export declare function isTopLevelEvent(event: Types.Events.Event): boolean;
 export declare function findUpdateLayoutTreeEvents(events: Types.Events.Event[], startTime: Types.Timing.MicroSeconds, endTime?: Types.Timing.MicroSeconds): Types.Events.UpdateLayoutTree[];
+export declare function findNextEventAfterTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.MicroSeconds): T | null;
+export declare function findPreviousEventBeforeTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.MicroSeconds): T | null;
 export interface ForEachEventConfig {
     onStartEvent: (event: Types.Events.Event) => void;
     onEndEvent: (event: Types.Events.Event) => void;

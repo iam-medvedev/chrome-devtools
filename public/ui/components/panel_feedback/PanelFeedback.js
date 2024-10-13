@@ -1,13 +1,14 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import * as IconButton from '../icon_button/icon_button.js';
 import panelFeedbackStyles from './panelFeedback.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Introduction sentence to convey the feature is being actively worked on and we are looking for feedback.
@@ -51,15 +52,15 @@ export class PanelFeedback extends HTMLElement {
             throw new Error('PanelFeedback render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <div class="preview">
         <h2 class="flex">
-          <${IconButton.Icon.Icon.litTagName} .data=${{
+          <devtools-icon .data=${{
             iconPath: previewFeatureUrl,
             width: '20px',
             height: '20px',
             color: 'var(--icon-primary)',
-        }}></${IconButton.Icon.Icon.litTagName}> ${i18nString(UIStrings.previewFeature)}
+        }}></devtools-icon> ${i18nString(UIStrings.previewFeature)}
         </h2>
         <p>${i18nString(UIStrings.previewText)} <x-link href=${this.#props.feedbackUrl} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.previewTextFeedbackLink)}</x-link></p>
         <div class="video">

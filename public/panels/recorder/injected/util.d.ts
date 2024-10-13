@@ -1,4 +1,4 @@
-import { type Schema } from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+import type { Schema } from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
 export declare function assert<Condition>(condition: Condition): asserts condition;
 export declare const haultImmediateEvent: (event: Event) => void;
 export declare const getMouseEventOffsets: (event: MouseEvent, target: Element) => {

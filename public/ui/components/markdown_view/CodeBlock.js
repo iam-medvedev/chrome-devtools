@@ -10,6 +10,7 @@ import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import styles from './codeBlock.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description The header text if not present and language is not set.
@@ -99,7 +100,7 @@ export class CodeBlock extends HTMLElement {
     }
     #renderNotice() {
         // clang-format off
-        return LitHtml.html `<p class="notice">
+        return html `<p class="notice">
       <x-link class="link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({
             click: true,
         })}>
@@ -109,47 +110,45 @@ export class CodeBlock extends HTMLElement {
         // clang-format on
     }
     #renderCopyButton() {
-        const copyButtonClasses = LitHtml.Directives.classMap({
-            copied: this.#copied,
-            'copy-button': true,
-        });
         // clang-format off
-        return LitHtml.html `<div>${this.#copied
-            ? LitHtml.html `<${Buttons.Button.Button.litTagName}
-            class=${copyButtonClasses}
-            .data=${{
-                variant: "text" /* Buttons.Button.Variant.TEXT */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                jslogContext: 'copy',
-                iconName: 'copy',
-                title: i18nString(UIStrings.copy),
-            }}
-            >${i18nString(UIStrings.copied)}</${Buttons.Button.Button.litTagName}>`
-            : LitHtml.html `<${Buttons.Button.Button.litTagName}
-                class=${copyButtonClasses}
-                .data=${{
-                variant: "icon" /* Buttons.Button.Variant.ICON */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                jslogContext: 'copy',
-                iconName: 'copy',
-            }}
-                @click=${this.#onCopy}
-              ></${Buttons.Button.Button.litTagName}>`}
-          </div>`;
+        return html `
+      <div class="copy-button-container">
+        <devtools-button
+          .data=${{
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            jslogContext: 'copy',
+            iconName: 'copy',
+            title: i18nString(UIStrings.copy),
+        }}
+          @click=${this.#onCopy}
+        ></devtools-button>
+        ${this.#copied ? html `<span>${i18nString(UIStrings.copied)}</span>` : LitHtml.nothing}
+      </div>`;
+        // clang-format on
+    }
+    #renderTextEditor() {
+        if (!this.#editorState) {
+            throw new Error('Unexpected: trying to render the text editor without editorState');
+        }
+        // clang-format off
+        return html `
+      <div class="code">
+        <devtools-text-editor .state=${this.#editorState}></devtools-text-editor>
+      </div>
+    `;
         // clang-format on
     }
     #render() {
         const header = (this.#header ?? this.#codeLang) || i18nString(UIStrings.code);
         // clang-format off
-        LitHtml.render(LitHtml.html `<div class='codeblock' jslog=${VisualLogging.section('code')}>
+        LitHtml.render(html `<div class='codeblock' jslog=${VisualLogging.section('code')}>
       <div class="editor-wrapper">
         <div class="heading">
           <h4 class="heading-text">${header}</h4>
           ${this.#showCopyButton ? this.#renderCopyButton() : LitHtml.nothing}
         </div>
-        <div class="code">
-          <${TextEditor.TextEditor.TextEditor.litTagName} .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
-        </div>
+        ${this.#renderTextEditor()}
       </div>
       ${this.#displayNotice ? this.#renderNotice() : LitHtml.nothing}
     </div>`, this.#shadow, {

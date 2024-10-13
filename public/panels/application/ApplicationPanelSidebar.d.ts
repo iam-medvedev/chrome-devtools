@@ -13,7 +13,7 @@ import { InterestGroupTreeElement } from './InterestGroupTreeElement.js';
 import type * as PreloadingHelper from './preloading/helper/helper.js';
 import { PreloadingSummaryTreeElement } from './PreloadingTreeElement.js';
 import { ReportingApiTreeElement } from './ReportingApiTreeElement.js';
-import { type ResourcesPanel } from './ResourcesPanel.js';
+import type { ResourcesPanel } from './ResourcesPanel.js';
 import { ServiceWorkerCacheTreeElement } from './ServiceWorkerCacheTreeElement.js';
 import { SharedStorageListTreeElement } from './SharedStorageListTreeElement.js';
 import { StorageBucketsTreeParentElement } from './StorageBucketsTreeElement.js';
@@ -56,6 +56,8 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     preloadingSummaryTreeElement: PreloadingSummaryTreeElement | undefined;
     private readonly resourcesSection;
     private domStorageTreeElements;
+    private extensionIdToStorageTreeParentElement;
+    private extensionStorageModels;
     private extensionStorageTreeElements;
     private sharedStorageTreeElements;
     private domains;
@@ -91,6 +93,8 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private domStorageRemoved;
     private removeDOMStorage;
     private extensionStorageAdded;
+    private useTreeViewForExtensionStorage;
+    private getExtensionStorageAreaParent;
     private addExtensionStorage;
     private extensionStorageRemoved;
     private removeExtensionStorage;
@@ -234,10 +238,16 @@ export declare class DOMStorageTreeElement extends ApplicationPanelTreeElement {
 export declare class ExtensionStorageTreeElement extends ApplicationPanelTreeElement {
     private readonly extensionStorage;
     constructor(storagePanel: ResourcesPanel, extensionStorage: ExtensionStorage);
+    get storageArea(): Protocol.Extensions.StorageArea;
     get itemURL(): Platform.DevToolsPath.UrlString;
     onselect(selectedByUser?: boolean): boolean;
     onattach(): void;
     private handleContextMenuEvent;
+}
+export declare class ExtensionStorageTreeParentElement extends ApplicationPanelTreeElement {
+    private readonly extensionId;
+    constructor(storagePanel: ResourcesPanel, extensionId: string, extensionName: string);
+    get itemURL(): Platform.DevToolsPath.UrlString;
 }
 export declare class CookieTreeElement extends ApplicationPanelTreeElement {
     private readonly target;

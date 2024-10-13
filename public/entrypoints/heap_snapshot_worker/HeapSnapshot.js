@@ -680,8 +680,6 @@ export class HeapSnapshot {
         this.retainingEdges = new Uint32Array(this.#edgeCount);
         this.firstRetainerIndex = new Uint32Array(this.nodeCount + 1);
         this.nodeDistances = new Int32Array(this.nodeCount);
-        this.firstDominatedNodeIndex = new Uint32Array(this.nodeCount + 1);
-        this.dominatedNodes = new Uint32Array(this.nodeCount - 1);
         this.#progress.updateStatus('Building edge indexes…');
         this.buildEdgeIndexes();
         this.#progress.updateStatus('Building retainers…');
@@ -697,6 +695,8 @@ export class HeapSnapshot {
         this.#progress.updateStatus('Calculating retained sizes…');
         this.buildDominatorTreeAndCalculateRetainedSizes();
         this.#progress.updateStatus('Building dominated nodes…');
+        this.firstDominatedNodeIndex = new Uint32Array(this.nodeCount + 1);
+        this.dominatedNodes = new Uint32Array(this.nodeCount - 1);
         this.buildDominatedNodes();
         this.#progress.updateStatus('Calculating object names…');
         this.calculateObjectNames();
@@ -2528,7 +2528,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
     constructor(profile, progress) {
         super(profile, progress);
         this.nodeFlags = {
-            // bit flags
+            // bit flags in 8-bit value
             canBeQueried: 1,
             detachedDOMTreeNode: 2,
             pageObject: 4, // The idea is to track separately the objects owned by the page and the objects owned by debugger.
@@ -2555,7 +2555,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
         return filter;
     }
     calculateFlags() {
-        this.flags = new Uint32Array(this.nodeCount);
+        this.flags = new Uint8Array(this.nodeCount);
         this.markDetachedDOMTreeNodes();
         this.markQueriableHeapObjects();
         this.markPageOwnedNodes();

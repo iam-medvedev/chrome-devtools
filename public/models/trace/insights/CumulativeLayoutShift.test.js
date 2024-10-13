@@ -61,7 +61,7 @@ describeWithEnvironment('CumulativeLayoutShift', function () {
                 return animation.args.data.beginEvent.args.data.displayName === 'top';
             });
             const shiftAnimations = [];
-            shifts?.forEach(entry => {
+            shifts.forEach(entry => {
                 shiftAnimations.push(...entry.nonCompositedAnimations);
             });
             const expectedWithShift = [

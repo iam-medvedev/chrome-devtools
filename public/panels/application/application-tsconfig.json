@@ -39,6 +39,7 @@
     "../../../../../../front_end/panels/application/CookieItemsView.ts",
     "../../../../../../front_end/panels/application/DOMStorageItemsView.ts",
     "../../../../../../front_end/panels/application/DOMStorageModel.ts",
+    "../../../../../../front_end/panels/application/ExtensionStorageItemsView.ts",
     "../../../../../../front_end/panels/application/ExtensionStorageModel.ts",
     "../../../../../../front_end/panels/application/IndexedDBModel.ts",
     "../../../../../../front_end/panels/application/IndexedDBViews.ts",

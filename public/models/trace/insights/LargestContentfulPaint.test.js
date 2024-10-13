@@ -44,7 +44,7 @@ describeWithEnvironment('LargestContentfulPaint', function () {
         const insight = getInsightOrError('LargestContentfulPaint', insights, firstNav);
         const { shouldIncreasePriorityHint, shouldPreloadImage, shouldRemoveLazyLoading } = insight;
         assert.strictEqual(shouldRemoveLazyLoading, false);
-        assert.strictEqual(shouldPreloadImage, true);
+        assert.strictEqual(shouldPreloadImage, false);
         assert.strictEqual(shouldIncreasePriorityHint, true);
     });
     it('calculates the LCP optimal time as the document request download start time', async () => {
@@ -72,6 +72,13 @@ describeWithEnvironment('LargestContentfulPaint', function () {
             assert.strictEqual(insight.phases, undefined);
             assert.strictEqual(insight.warnings?.[0], 'NO_DOCUMENT_REQUEST');
         });
+    });
+    it('can handle old traces with missing data and return null for breakdowns of the phases', async () => {
+        const { data, insights } = await processTrace(this, 'multiple-navigations.json.gz');
+        const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
+        const insight = getInsightOrError('LargestContentfulPaint', insights, firstNav);
+        // This insight has invalid phase data, so we expect the value to be undefined.
+        assert.isUndefined(insight.phases);
     });
 });
 //# sourceMappingURL=LargestContentfulPaint.test.js.map

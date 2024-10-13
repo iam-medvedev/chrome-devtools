@@ -1,4 +1,5 @@
-import { type LocalizedString } from '../../../core/platform/UIString.js';
+import '../../../ui/components/menus/menus.js';
+import type { LocalizedString } from '../../../core/platform/UIString.js';
 import type * as Actions from '../recorder-actions/recorder-actions.js';
 export declare const enum Variant {
     PRIMARY = "primary",
@@ -38,7 +39,6 @@ export declare class SelectMenuSelectedEvent extends Event {
 }
 export declare class SelectButton extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     get disabled(): boolean;
     set disabled(disabled: boolean);

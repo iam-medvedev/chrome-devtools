@@ -4,11 +4,9 @@
 import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../forward/forward.js';
-import { HeaderSectionRow, } from './HeaderSectionRow.js';
 import requestHeaderSectionStyles from './RequestHeaderSection.css.js';
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -32,7 +30,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/network/components/RequestHeaderSection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RequestHeaderSection extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-request-header-section`;
     #shadow = this.attachShadow({ mode: 'open' });
     #request;
     #headers = [];
@@ -63,10 +60,10 @@ export class RequestHeaderSection extends HTMLElement {
         render(html `
       ${this.#maybeRenderProvisionalHeadersWarning()}
       ${this.#headers.map(header => html `
-        <${HeaderSectionRow.litTagName}
+        <devtools-header-section-row
           .data=${{ header }}
           jslog=${VisualLogging.item('request-header')}
-        ></${HeaderSectionRow.litTagName}>
+        ></devtools-header-section-row>
       `)}
     `, this.#shadow, { host: this });
         // clang-format on
@@ -90,13 +87,13 @@ export class RequestHeaderSection extends HTMLElement {
       <div class="call-to-action">
         <div class="call-to-action-body">
           <div class="explanation" title=${cautionTitle}>
-            <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
+            <devtools-icon class="inline-icon" .data=${{
             iconName: 'warning-filled',
             color: 'var(--icon-warning)',
             width: '16px',
             height: '16px',
         }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            </devtools-icon>
             ${cautionText} <x-link href="https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers" class="link">${i18nString(UIStrings.learnMore)}</x-link>
           </div>
         </div>

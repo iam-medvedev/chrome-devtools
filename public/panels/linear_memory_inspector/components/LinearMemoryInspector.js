@@ -6,11 +6,10 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import linearMemoryInspectorStyles from './linearMemoryInspector.css.js';
 const { render, html } = LitHtml;
-import { LinearMemoryNavigator, } from './LinearMemoryNavigator.js';
-import { LinearMemoryValueInterpreter, } from './LinearMemoryValueInterpreter.js';
-import { LinearMemoryHighlightChipList, } from './LinearMemoryHighlightChipList.js';
+import './LinearMemoryValueInterpreter.js';
+import './LinearMemoryHighlightChipList.js';
 import { formatAddress, parseAddress } from './LinearMemoryInspectorUtils.js';
-import { LinearMemoryViewer, } from './LinearMemoryViewer.js';
+import './LinearMemoryViewer.js';
 import { VALUE_INTEPRETER_MAX_NUM_BYTES, getDefaultValueTypeMapping, } from './ValueInterpreterDisplayUtils.js';
 const UIStrings = {
     /**
@@ -64,7 +63,6 @@ class AddressHistoryEntry {
     }
 }
 export class LinearMemoryInspector extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-linear-memory-inspector-inspector`;
     #shadow = this.attachShadow({ mode: 'open' });
     #history = new Common.SimpleHistoryManager.SimpleHistoryManager(10);
     #memory = new Uint8Array();
@@ -78,6 +76,7 @@ export class LinearMemoryInspector extends HTMLElement {
     #valueTypeModes = getDefaultValueTypeMapping();
     #valueTypes = new Set(this.#valueTypeModes.keys());
     #endianness = "Little Endian" /* Endianness.LITTLE */;
+    #hideValueInspector = false;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [linearMemoryInspectorStyles];
     }
@@ -103,6 +102,7 @@ export class LinearMemoryInspector extends HTMLElement {
         this.#valueTypes = data.valueTypes || this.#valueTypes;
         this.#endianness = data.endianness || this.#endianness;
         this.#highlightInfo = data.highlightInfo;
+        this.#hideValueInspector = data.hideValueInspector ?? this.#hideValueInspector;
         this.#setAddress(data.address);
         this.#render();
     }
@@ -121,17 +121,17 @@ export class LinearMemoryInspector extends HTMLElement {
         // clang-format off
         render(html `
       <div class="view">
-        <${LinearMemoryNavigator.litTagName}
+        <devtools-linear-memory-inspector-navigator
           .data=${{ address: navigatorAddressToShow, valid: navigatorAddressIsValid, mode: this.#currentNavigatorMode, error: errorMsg, canGoBackInHistory, canGoForwardInHistory }}
           @refreshrequested=${this.#onRefreshRequest}
           @addressinputchanged=${this.#onAddressChange}
           @pagenavigation=${this.#navigatePage}
-          @historynavigation=${this.#navigateHistory}></${LinearMemoryNavigator.litTagName}>
-          <${LinearMemoryHighlightChipList.litTagName}
+          @historynavigation=${this.#navigateHistory}></devtools-linear-memory-inspector-navigator>
+          <devtools-linear-memory-highlight-chip-list
           .data=${{ highlightInfos: highlightedMemoryAreas, focusedMemoryHighlight }}
           @jumptohighlightedmemory=${this.#onJumpToAddress}>
-          </${LinearMemoryHighlightChipList.litTagName}>
-        <${LinearMemoryViewer.litTagName}
+          </devtools-linear-memory-highlight-chip-list>
+        <devtools-linear-memory-inspector-viewer
           .data=${{
             memory: this.#memory.slice(start - this.#memoryOffset, end - this.#memoryOffset),
             address: this.#address, memoryOffset: start,
@@ -141,10 +141,11 @@ export class LinearMemoryInspector extends HTMLElement {
         }}
           @byteselected=${this.#onByteSelected}
           @resize=${this.#resize}>
-        </${LinearMemoryViewer.litTagName}>
+        </devtools-linear-memory-inspector-viewer>
       </div>
+      ${this.#hideValueInspector ? LitHtml.nothing : html `
       <div class="value-interpreter">
-        <${LinearMemoryValueInterpreter.litTagName}
+        <devtools-linear-memory-inspector-interpreter
           .data=${{
             value: this.#memory.slice(this.#address - this.#memoryOffset, this.#address + VALUE_INTEPRETER_MAX_NUM_BYTES).buffer,
             valueTypes: this.#valueTypes,
@@ -157,8 +158,8 @@ export class LinearMemoryInspector extends HTMLElement {
           @endiannesschanged=${this.#onEndiannessChanged}
           @jumptopointeraddress=${this.#onJumpToAddress}
           >
-        </${LinearMemoryValueInterpreter.litTagName}/>
-      </div>
+        </devtools-linear-memory-inspector-interpreter/>
+      </div>`}
       `, this.#shadow, {
             host: this,
         });

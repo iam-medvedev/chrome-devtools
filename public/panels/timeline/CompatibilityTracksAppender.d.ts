@@ -12,6 +12,7 @@ export type HighlightedEntryInfo = {
     title: string;
     formattedTime: string;
     warningElements?: HTMLSpanElement[];
+    additionalElement?: HTMLElement;
 };
 export declare function entryIsVisibleInTimeline(entry: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
 /**
@@ -113,8 +114,10 @@ export declare class CompatibilityTracksAppender {
      * system.
      */
     constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]);
+    reset(): void;
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
+    private onThemeChange;
     timingsTrackAppender(): TimingsTrackAppender;
     animationsTrackAppender(): AnimationsTrackAppender;
     interactionsTrackAppender(): InteractionsTrackAppender;

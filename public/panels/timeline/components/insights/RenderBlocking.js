@@ -1,14 +1,15 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, eventRef, shortenUrl, shouldRenderForCategory } from './Helpers.js';
-import * as SidebarInsight from './SidebarInsight.js';
-import { Table } from './Table.js';
+import { eventRef } from './EventRef.js';
+import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description Title of an insight that provides the user with the list of network requests that blocked and therefore slowed down the page rendering and becoming visible to the user.
@@ -56,35 +57,38 @@ export class RenderBlockingRequests extends BaseInsight {
         const MAX_REQUESTS = 3;
         const topRequests = insightResult.renderBlockingRequests.slice(0, MAX_REQUESTS);
         // clang-format off
-        return LitHtml.html `
+        return html `
         <div class="insights">
-          <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+          <devtools-performance-sidebar-insight .data=${{
             title: this.userVisibleTitle,
             description: this.description,
             internalName: this.internalName,
             expanded: this.isActive(),
             estimatedSavingsTime: estimatedSavings,
         }}
-          @insighttoggleclick=${this.onSidebarClick}
-        >
-          <div slot="insight-content" class="insight-section">
-            ${LitHtml.html `<${Table.litTagName}
-              .data=${{
+          @insighttoggleclick=${this.onSidebarClick} >
+            <div slot="insight-content" class="insight-section">
+              ${html `<devtools-performance-table
+                .data=${{
             insight: this,
             headers: [i18nString(UIStrings.renderBlockingRequest), i18nString(UIStrings.duration)],
             rows: topRequests.map(request => ({
                 values: [
-                    eventRef(this, request, shortenUrl(request.args.data.url)),
+                    eventRef(request),
                     i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(request.dur)),
                 ],
                 overlays: [this.#createOverlayForRequest(request)],
             })),
         }}>
-            </${Table.litTagName}>`}
-          </div>
-        </${SidebarInsight.SidebarInsight}>
+              </devtools-performance-table>`}
+            </div>
+          </devtools-performance-sidebar-insight>
       </div>`;
         // clang-format on
+    }
+    getRelatedEvents() {
+        const insight = Trace.Insights.Common.getInsight('RenderBlocking', this.data.insights, this.data.insightSetKey);
+        return insight?.relatedEvents ?? [];
     }
     render() {
         const insight = Trace.Insights.Common.getInsight('RenderBlocking', this.data.insights, this.data.insightSetKey);

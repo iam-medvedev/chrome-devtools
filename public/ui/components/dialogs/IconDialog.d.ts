@@ -1,4 +1,4 @@
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
+import type * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import { type DialogHorizontalAlignment, type DialogVerticalPosition } from './Dialog.js';
 declare global {
     interface HTMLElementTagNameMap {

@@ -1,7 +1,8 @@
+import './components/components.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import type * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import type * as Protocol from '../../generated/protocol.js';
 export type AXTreeNodeData = SDK.AccessibilityModel.AccessibilityNode;
 export type AXTreeNode = TreeOutline.TreeOutlineUtils.TreeNode<AXTreeNodeData>;
 export declare function getRootNode(frameId: Protocol.Page.FrameId): Promise<SDK.AccessibilityModel.AccessibilityNode>;

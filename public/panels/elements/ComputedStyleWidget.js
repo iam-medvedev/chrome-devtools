@@ -47,6 +47,7 @@ import { ColorMatcher } from './PropertyMatchers.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
 import { Renderer, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description Text for a checkbox setting that controls whether the user-supplied filter text
@@ -111,7 +112,7 @@ function renderPropertyContents(node, propertyName, propertyValue) {
 const createPropertyElement = (node, propertyName, propertyValue, traceable, inherited, activeProperty, onContextMenu) => {
     const { name, value } = renderPropertyContents(node, propertyName, propertyValue);
     // clang-format off
-    return LitHtml.html `<${ElementsComponents.ComputedStyleProperty.ComputedStyleProperty.litTagName}
+    return html `<devtools-computed-style-property
         .traceable=${traceable}
         .inherited=${inherited}
         @oncontextmenu=${onContextMenu}
@@ -122,7 +123,7 @@ const createPropertyElement = (node, propertyName, propertyValue, traceable, inh
     }}>
           ${name}
           ${value}
-      </${ElementsComponents.ComputedStyleProperty.ComputedStyleProperty.litTagName}>`;
+      </devtools-computed-style-property>`;
     // clang-format on
 };
 const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
@@ -387,9 +388,9 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
                 const isPropertyOverloaded = matchedStyles.propertyState(data.property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */;
                 const traceElement = createTraceElement(domNode, data.property, isPropertyOverloaded, matchedStyles, this.linkifier);
                 traceElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this, matchedStyles, data.property));
-                return LitHtml.html `${traceElement}`;
+                return html `${traceElement}`;
             }
-            return LitHtml.html `<span style="cursor: text; color: var(--sys-color-token-subtle);">${data.name}</span>`;
+            return html `<span style="cursor: text; color: var(--sys-color-token-subtle);">${data.name}</span>`;
         };
     }
     buildTreeNode(propertyTraces, propertyName, propertyValue, isInherited) {
