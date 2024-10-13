@@ -39,6 +39,7 @@ function createMatchedStyles(payload, node) {
         propertyRules: [],
         cssPropertyRegistrations: [],
         fontPaletteValuesRule: undefined,
+        activePositionFallbackIndex: -1,
         ...payload,
     });
 }

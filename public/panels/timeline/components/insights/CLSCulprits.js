@@ -4,9 +4,10 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, EventReferenceClick, shouldRenderForCategory } from './Helpers.js';
-import * as SidebarInsight from './SidebarInsight.js';
+import { EventReferenceClick } from './EventRef.js';
+import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 const UIStrings = {
     /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
     title: 'Layout shift culprits',
@@ -62,7 +63,7 @@ export class CLSCulprits extends BaseInsight {
         }
         const range = Trace.Types.Timing.MicroSeconds(worstCluster.dur ?? 0);
         const max = Trace.Types.Timing.MicroSeconds(worstCluster.ts + range);
-        const label = LitHtml.html `<div>${i18nString(UIStrings.worstLayoutShiftCluster)}</div>`;
+        const label = html `<div>${i18nString(UIStrings.worstLayoutShiftCluster)}</div>`;
         return [{
                 type: 'TIMESPAN_BREAKDOWN',
                 sections: [
@@ -77,9 +78,6 @@ export class CLSCulprits extends BaseInsight {
      * getTopCulprits gets the top 3 shift root causes based on worst cluster.
      */
     getTopCulprits(cluster, culpritsByShift) {
-        if (!culpritsByShift) {
-            return [];
-        }
         const MAX_TOP_CULPRITS = 3;
         const causes = [];
         if (causes.length === MAX_TOP_CULPRITS) {
@@ -117,9 +115,9 @@ export class CLSCulprits extends BaseInsight {
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // TODO(crbug.com/369102516): use Table for hover/click ux.
         // clang-format off
-        return LitHtml.html `
+        return html `
         <div class="insights">
-            <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+            <devtools-performance-sidebar-insight .data=${{
             title: this.userVisibleTitle,
             description: this.description,
             internalName: this.internalName,
@@ -127,33 +125,39 @@ export class CLSCulprits extends BaseInsight {
         }}
             @insighttoggleclick=${this.onSidebarClick}>
                 <div slot="insight-content" class="insight-section">
-                  <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <span class="devtools-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</span></span>
+                  <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <button type="button" class="timeline-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</button></span>
                     <p>${i18nString(UIStrings.topCulprits)}:</p>
                         ${culprits.map(culprit => {
-            return LitHtml.html `
+            return html `
                             <li>${culprit}</li>
                           `;
         })}
                 </div>
-            </${SidebarInsight.SidebarInsight}>
+            </devtools-performance-sidebar-insight>
         </div>`;
         // clang-format on
     }
+    getRelatedEvents() {
+        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
+        return insight?.relatedEvents ?? [];
+    }
     render() {
         const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
-        const culpritsByShift = insight?.shifts;
-        const clusters = insight?.clusters ?? [];
-        if (!clusters.length) {
+        if (!insight) {
             return;
         }
-        const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
-        const causes = this.getTopCulprits(clustersByScore[0], culpritsByShift);
+        const culpritsByShift = insight.shifts;
+        const clusters = insight.clusters ?? [];
+        if (!clusters.length || !insight.worstCluster) {
+            return;
+        }
+        const causes = this.getTopCulprits(insight.worstCluster, culpritsByShift);
         const hasCulprits = causes.length > 0;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,
         });
-        const output = hasCulprits && matchesCategory ? this.#render(causes, clustersByScore[0]) : LitHtml.nothing;
+        const output = hasCulprits && matchesCategory ? this.#render(causes, insight.worstCluster) : LitHtml.nothing;
         LitHtml.render(output, this.shadow, { host: this });
     }
 }

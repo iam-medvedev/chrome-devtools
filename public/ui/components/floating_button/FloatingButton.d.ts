@@ -1,3 +1,4 @@
+import '../icon_button/icon_button.js';
 interface FloatingButtonData {
     iconName: string;
     disabled?: boolean;

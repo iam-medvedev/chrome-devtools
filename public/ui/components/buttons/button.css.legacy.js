@@ -36,9 +36,6 @@ export default {
   align-items: center;
 }
 
-/* This specific nesting is incompatible with what stylelint requires as ordering of the rules. */
-/* stylelint-disable no-descending-specificity */
-
 button {
   --hover-layer-color: var(--sys-color-state-hover-on-subtle);
   --active-layer-color: var(--sys-color-state-ripple-neutral-on-subtle);
@@ -300,7 +297,6 @@ button {
     }
   }
 }
-/* stylelint-enable no-descending-specificity */
 
 .spinner {
   display: block;

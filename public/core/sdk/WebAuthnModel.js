@@ -38,6 +38,12 @@ export class WebAuthnModel extends SDKModel {
     credentialAsserted(params) {
         this.dispatchEventToListeners("CredentialAsserted" /* Events.CREDENTIAL_ASSERTED */, params);
     }
+    credentialDeleted(params) {
+        this.dispatchEventToListeners("CredentialDeleted" /* Events.CREDENTIAL_DELETED */, params);
+    }
+    credentialUpdated(params) {
+        this.dispatchEventToListeners("CredentialUpdated" /* Events.CREDENTIAL_UPDATED */, params);
+    }
 }
 class WebAuthnDispatcher {
     #model;
@@ -49,6 +55,12 @@ class WebAuthnDispatcher {
     }
     credentialAsserted(params) {
         this.#model.credentialAsserted(params);
+    }
+    credentialDeleted(params) {
+        this.#model.credentialDeleted(params);
+    }
+    credentialUpdated(params) {
+        this.#model.credentialUpdated(params);
     }
 }
 SDKModel.register(WebAuthnModel, { capabilities: 65536 /* Capability.WEB_AUTHN */, autostart: false });

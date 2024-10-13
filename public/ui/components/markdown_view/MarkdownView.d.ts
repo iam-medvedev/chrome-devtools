@@ -1,3 +1,6 @@
+import './CodeBlock.js';
+import './MarkdownImage.js';
+import './MarkdownLink.js';
 import type * as Marked from '../../../third_party/marked/marked.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 export interface MarkdownViewData {
@@ -37,5 +40,6 @@ export declare class MarkdownLitRenderer {
 export declare class MarkdownInsightRenderer extends MarkdownLitRenderer {
     renderToken(token: Marked.Marked.Token): LitHtml.TemplateResult;
     sanitizeUrl(maybeUrl: string): string | null;
-    templateForToken(token: Marked.Marked.Token): LitHtml.TemplateResult | null;
+    detectCodeLanguage(token: Marked.Marked.Tokens.Code): string;
+    templateForToken(token: Marked.Marked.MarkedToken): LitHtml.TemplateResult | null;
 }

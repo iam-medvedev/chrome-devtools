@@ -1,10 +1,10 @@
-import { type Chrome } from '../../../extension-api/ExtensionAPI.js';
+import type { Chrome } from '../../../extension-api/ExtensionAPI.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
-import { type DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
+import type { DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
 declare class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
     #private;
     variables: Chrome.DevTools.Variable[];

@@ -93,6 +93,9 @@ export class CSSMetadata {
     static isCSSWideKeyword(a) {
         return CSSWideKeywords.includes(a);
     }
+    static isPositionTryOrderKeyword(a) {
+        return PositionTryOrderKeywords.includes(a);
+    }
     static sortPrefixesAndCSSWideKeywordsToEnd(a, b) {
         const aIsCSSWideKeyword = CSSMetadata.isCSSWideKeyword(a);
         const bIsCSSWideKeyword = CSSMetadata.isCSSWideKeyword(b);
@@ -285,6 +288,13 @@ export const CSSWideKeywords = [
     "revert" /* CSSWideKeyword.REVERT */,
     "revert-layer" /* CSSWideKeyword.REVERT_LAYER */,
     "unset" /* CSSWideKeyword.UNSET */,
+];
+export const PositionTryOrderKeywords = [
+    "normal" /* PositionTryOrderKeyword.NORMAL */,
+    "most-height" /* PositionTryOrderKeyword.MOST_HEIGHT */,
+    "most-width" /* PositionTryOrderKeyword.MOST_WIDTH */,
+    "most-block-size" /* PositionTryOrderKeyword.MOST_BLOCK_SIZE */,
+    "most-inline-size" /* PositionTryOrderKeyword.MOST_INLINE_SIZE */,
 ];
 export const VariableNameRegex = /(\s*--.*?)/gs;
 export const VariableRegex = /(var\(\s*--.*?\))/gs;

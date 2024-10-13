@@ -1,4 +1,4 @@
-import { type Selector } from './Selector.js';
+import type { Selector } from './Selector.js';
 /**
  * Computes the pierce CSS selector for a node.
  *

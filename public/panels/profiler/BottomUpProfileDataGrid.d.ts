@@ -1,7 +1,7 @@
-import type * as UI from '../../ui/legacy/legacy.js';
-import { ProfileDataGridNode, ProfileDataGridTree, type Formatter } from './ProfileDataGrid.js';
-import { type TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
 import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
+import type * as UI from '../../ui/legacy/legacy.js';
+import { type Formatter, ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
+import type { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
 export interface NodeInfo {
     ancestor: CPUProfile.ProfileTreeModel.ProfileNode;
     focusNode: CPUProfile.ProfileTreeModel.ProfileNode;

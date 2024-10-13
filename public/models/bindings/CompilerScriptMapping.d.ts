@@ -2,7 +2,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
-import { type DebuggerSourceMapping, type DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
+import type { DebuggerSourceMapping, DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
 /**
  * The `CompilerScriptMapping` maps script entities from source maps to scripts and vice versa.
  * It is part of the {@link DebuggerWorkspaceBinding} and operates on top of the

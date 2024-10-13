@@ -1,5 +1,5 @@
 import * as Trace from '../../../../models/trace/trace.js';
-import { type Calculator } from './TimelineGrid.js';
+import type { Calculator } from './TimelineGrid.js';
 export declare class TimelineOverviewCalculator implements Calculator {
     #private;
     private workingArea;

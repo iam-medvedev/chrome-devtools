@@ -38,6 +38,7 @@ export interface MetricSavings {
     INP?: Types.Timing.MilliSeconds;
 }
 export type InsightResult<R extends Record<string, unknown>> = R & {
+    relatedEvents?: Types.Events.Event[];
     warnings?: InsightWarning[];
     metricSavings?: MetricSavings;
 };

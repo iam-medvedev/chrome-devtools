@@ -109,7 +109,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/MetricCard.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class MetricCard extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-metric-card`;
     #shadow = this.attachShadow({ mode: 'open' });
     constructor() {
         super();
@@ -225,11 +224,14 @@ export class MetricCard extends HTMLElement {
     #getFormatFn() {
         switch (this.#data.metric) {
             case 'LCP':
-                return v => i18n.TimeUtilities.millisToString(v);
+                return v => {
+                    const micro = (v * 1000);
+                    return i18n.TimeUtilities.formatMicroSecondsAsSeconds(micro);
+                };
             case 'CLS':
                 return v => v === 0 ? '0' : v.toFixed(2);
             case 'INP':
-                return v => i18n.TimeUtilities.millisToString(v);
+                return v => i18n.TimeUtilities.preciseMillisToString(v);
         }
     }
     #getLocalValue() {

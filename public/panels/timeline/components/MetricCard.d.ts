@@ -9,7 +9,6 @@ export interface MetricCardData {
 }
 export declare class MetricCard extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     set data(data: MetricCardData);
     connectedCallback(): void;

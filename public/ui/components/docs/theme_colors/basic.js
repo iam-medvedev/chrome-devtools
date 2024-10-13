@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../../helpers/helpers.js';
+const { html } = LitHtml;
 await ComponentHelpers.ComponentServerSetup.setup();
 const THEME_VARIABLES_NAMES = new Set([
     '--sys-color-base',
@@ -141,12 +142,12 @@ function appendStyles() {
             styles = { borderBottomColor: `var(${varName})` };
         }
         const style = LitHtml.Directives.styleMap(styles);
-        return LitHtml.html `
+        return html `
       <div style=${style}><code>${varName}: ${value}</code></div>
       <div style=${style} class='theme-with-dark-background'><code>${varName}: ${value}</code></div>
     `;
     });
-    LitHtml.render(LitHtml.html `${items}`, container);
+    LitHtml.render(html `${items}`, container);
 }
 appendStyles();
 //# sourceMappingURL=basic.js.map

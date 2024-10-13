@@ -11,21 +11,6 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-.insight-chip {
-  font: var(--sys-typescale-body4-regular);
-  border: var(--sys-size-1) solid var(--sys-color-primary);
-  border-radius: var(--sys-shape-corner-extra-small);
-  display: flex;
-  margin-left: var(--sys-size-3);
-  padding: var(--sys-size-2) var(--sys-size-4) var(--sys-size-2) var(--sys-size-4);
-  width: max-content;
-  white-space: pre;
-
-  .insight-keyword {
-    color: var(--sys-color-primary);
-  }
-}
-
 .layout-shift-details-title,
 .cluster-details-title {
   padding-bottom: var(--sys-size-5);
@@ -49,6 +34,7 @@ styles.replaceSync(
   text-align: left;
   border-block: var(--sys-size-1) solid var(--sys-color-divider);
   border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
 
   th,
   td {
@@ -68,13 +54,20 @@ styles.replaceSync(
   }
 }
 
-.devtools-link {
+/** TODO: This is duplicated in sidebarInsights.css. Should make a component. */
+.timeline-link {
   cursor: pointer;
   text-decoration: underline;
   color: var(--sys-color-primary);
+  /* for a11y reasons this is a button, so we have to remove some default
+   * styling */
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
 }
 
-.devtools-link.invalid-link {
+.timeline-link.invalid-link {
   color: var(--sys-color-state-disabled);
 }
 
@@ -103,13 +96,22 @@ styles.replaceSync(
 .layout-shift-cluster-summary-details {
   font: var(--sys-typescale-body4-regular);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  column-gap: var(--sys-size-4);
   padding: var(--sys-size-6) var(--sys-size-6) 0 var(--sys-size-6);
 }
 
 .culprits {
   display: flex;
   flex-direction: column;
+}
+
+.shift-row:not(:last-child) {
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+}
+
+.total-row {
+  font: var(--sys-typescale-body4-medium);
 }
 
 /*# sourceURL=layoutShiftDetails.css */

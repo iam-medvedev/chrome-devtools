@@ -202,6 +202,7 @@ export class CSSMatchedStyles {
     #styleToDOMCascade;
     #parentLayoutNodeId;
     #positionTryRules;
+    #activePositionFallbackIndex;
     #mainDOMCascade;
     #pseudoDOMCascades;
     #customHighlightPseudoDOMCascades;
@@ -211,7 +212,7 @@ export class CSSMatchedStyles {
         await cssMatchedStyles.init(payload);
         return cssMatchedStyles;
     }
-    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, }) {
+    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, activePositionFallbackIndex, }) {
         this.#cssModelInternal = cssModel;
         this.#nodeInternal = node;
         this.#addedStyles = new Map();
@@ -232,6 +233,7 @@ export class CSSMatchedStyles {
         this.#inheritedStyles = new Set();
         this.#styleToDOMCascade = new Map();
         this.#registeredPropertyMap = new Map();
+        this.#activePositionFallbackIndex = activePositionFallbackIndex;
     }
     async init({ matchedPayload, inheritedPayload, inlinePayload, attributesPayload, pseudoPayload, inheritedPseudoPayload, }) {
         matchedPayload = cleanUserAgentPayload(matchedPayload);
@@ -550,6 +552,9 @@ export class CSSMatchedStyles {
     }
     positionTryRules() {
         return this.#positionTryRules;
+    }
+    activePositionFallbackIndex() {
+        return this.#activePositionFallbackIndex;
     }
     pseudoStyles(pseudoType) {
         Platform.assertNotNullOrUndefined(this.#pseudoDOMCascades);

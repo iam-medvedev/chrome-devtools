@@ -36,6 +36,7 @@ export function generateInsight(parsedTrace, context) {
     fonts.sort((a, b) => b.wastedTime - a.wastedTime);
     const savings = Math.max(...fonts.map(f => f.wastedTime));
     return {
+        relatedEvents: fonts.map(f => f.request),
         fonts,
         metricSavings: { FCP: savings },
     };

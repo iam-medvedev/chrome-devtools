@@ -1,14 +1,15 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/components/linkifier/linkifier.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
-import * as Linkifier from '../../ui/components/linkifier/linkifier.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Label for selector stats data table
@@ -25,7 +26,7 @@ const UIStrings = {
     /**
      *@description Tooltip description '% of slow-path non-matches'
      */
-    rejectPercentageExplanation: 'The percentage of non-matching nodes (Match Attempts - Match Count) that couldn\'t be quickly ruled out by the bloom filter. Lower is better.',
+    rejectPercentageExplanation: 'The percentage of non-matching nodes (Match Attempts - Match Count) that couldn\'t be quickly ruled out by the bloom filter due to high selector complexity. Lower is better.',
     /**
      *@description Column name for count of elements that the engine attempted to match against a style rule
      */
@@ -137,7 +138,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                 {
                     id: SelectorTimingsKey.RejectPercentage,
                     title: i18nString(UIStrings.rejectPercentage),
-                    titleElement: LitHtml.html `<span title=${i18nString(UIStrings.rejectPercentageExplanation)}>${i18nString(UIStrings.rejectPercentage)}</span>`,
+                    titleElement: html `<span title=${i18nString(UIStrings.rejectPercentageExplanation)}>${i18nString(UIStrings.rejectPercentage)}</span>`,
                     sortable: true,
                     widthWeighting: 1,
                     visible: true,
@@ -351,7 +352,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                         columnId: SelectorTimingsKey.Elapsed,
                         value: elapsedTimeInMs,
                         renderer() {
-                            return LitHtml.html `${elapsedTimeInMs.toFixed(3)}`;
+                            return html `${elapsedTimeInMs.toFixed(3)}`;
                         },
                     },
                     { columnId: SelectorTimingsKey.MatchAttempts, value: x[SelectorTimingsKey.MatchAttempts] },
@@ -360,7 +361,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                         columnId: SelectorTimingsKey.RejectPercentage,
                         value: rejectPercentage,
                         renderer() {
-                            return LitHtml.html `${rejectPercentage.toFixed(1)}`;
+                            return html `${rejectPercentage.toFixed(1)}`;
                         },
                     },
                     {
@@ -373,23 +374,23 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                         value: x[SelectorTimingsKey.StyleSheetId],
                         renderer() {
                             if (locations === null) {
-                                return LitHtml.html `<span></span>`;
+                                return html `<span></span>`;
                             }
                             if (locations === undefined) {
-                                return LitHtml.html `<span title=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {
+                                return html `<span title=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {
                                     PH1: x[SelectorTimingsKey.StyleSheetId],
                                 })} aria-label=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {
                                     PH1: x[SelectorTimingsKey.StyleSheetId],
                                 })}>${i18nString(UIStrings.unableToLink)}</span>`;
                             }
-                            return LitHtml.html `
+                            return html `
               ${locations.map((location, itemIndex) => {
                                 if (itemIndex !== locations.length - 1) {
                                     // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
-                                    return LitHtml.html `<${Linkifier.Linkifier.Linkifier.litTagName} .data=${location}></${Linkifier.Linkifier.Linkifier.litTagName}>
+                                    return html `<devtools-linkifier .data=${location}></devtools-linkifier>
                     <a>, </a>`;
                                 }
-                                return LitHtml.html `<${Linkifier.Linkifier.Linkifier.litTagName} .data=${location}></${Linkifier.Linkifier.Linkifier.litTagName}>`;
+                                return html `<devtools-linkifier .data=${location}></devtools-linkifier>`;
                             })}
               `;
                         },

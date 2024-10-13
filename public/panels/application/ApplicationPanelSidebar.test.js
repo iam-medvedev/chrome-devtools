@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
@@ -34,6 +35,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
     const TEST_ORIGIN_A = 'http://www.example.com/';
     const TEST_ORIGIN_B = 'http://www.example.org/';
     const TEST_ORIGIN_C = 'http://www.example.net/';
+    const TEST_EXTENSION_NAME = 'Test Extension';
     const ID = 'AA';
     const EVENTS = [
         {
@@ -150,6 +152,64 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
             sharedStorageModel.dispatchEventToListeners("SharedStorageAccess" /* Application.SharedStorageModel.Events.SHARED_STORAGE_ACCESS */, event);
         }
         assert.deepEqual(sidebar.sharedStorageListTreeElement.view.getEventsForTesting(), EVENTS);
+    });
+    it('shows extension storage based on added models', async () => {
+        Root.Runtime.experiments.enableForTest("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */);
+        for (const useTreeView of [false, true]) {
+            Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+            const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
+            // Cast to any allows overriding private method.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sinon.stub(sidebar, 'useTreeViewForExtensionStorage').returns(useTreeView);
+            const extensionStorageModel = target.model(Application.ExtensionStorageModel.ExtensionStorageModel);
+            assert.exists(extensionStorageModel);
+            const makeFakeExtensionStorage = (storageArea) => new Application.ExtensionStorageModel.ExtensionStorage(extensionStorageModel, '', TEST_EXTENSION_NAME, storageArea);
+            const fakeModelLocal = makeFakeExtensionStorage("local" /* Protocol.Extensions.StorageArea.Local */);
+            const fakeModelSession = makeFakeExtensionStorage("session" /* Protocol.Extensions.StorageArea.Session */);
+            extensionStorageModel.dispatchEventToListeners("ExtensionStorageAdded" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_ADDED */, fakeModelLocal);
+            extensionStorageModel.dispatchEventToListeners("ExtensionStorageAdded" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_ADDED */, fakeModelSession);
+            if (useTreeView) {
+                assert.strictEqual(sidebar.extensionStorageListTreeElement.childCount(), 1);
+                assert.strictEqual(sidebar.extensionStorageListTreeElement.children()[0].title, TEST_EXTENSION_NAME);
+                assert.deepStrictEqual(sidebar.extensionStorageListTreeElement.children()[0].children().map(e => e.title), ['Session', 'Local']);
+            }
+            else {
+                assert.strictEqual(sidebar.extensionStorageListTreeElement.childCount(), 2);
+                assert.deepStrictEqual(sidebar.extensionStorageListTreeElement.children().map(e => e.title), ['Session', 'Local']);
+            }
+            extensionStorageModel.dispatchEventToListeners("ExtensionStorageRemoved" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_REMOVED */, fakeModelLocal);
+            extensionStorageModel.dispatchEventToListeners("ExtensionStorageRemoved" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_REMOVED */, fakeModelSession);
+            assert.strictEqual(sidebar.extensionStorageListTreeElement.childCount(), 0);
+        }
+    });
+    it('does not add extension storage if already added by another model', async () => {
+        Root.Runtime.experiments.enableForTest("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */);
+        Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+        const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
+        // Fakes adding an ExtensionStorage to the ExtensionStorageModel for
+        // `target`. Returns a function that can be used to trigger a removal.
+        const addFakeExtensionStorage = (target) => {
+            const model = target.model(Application.ExtensionStorageModel.ExtensionStorageModel);
+            assert.exists(model);
+            const extensionStorage = new Application.ExtensionStorageModel.ExtensionStorage(model, '', TEST_EXTENSION_NAME, "local" /* Protocol.Extensions.StorageArea.Local */);
+            const stub = sinon.stub(model, 'storageForIdAndArea').returns(extensionStorage);
+            model.dispatchEventToListeners("ExtensionStorageAdded" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_ADDED */, extensionStorage);
+            return () => {
+                stub.restore();
+                model.dispatchEventToListeners("ExtensionStorageRemoved" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_REMOVED */, extensionStorage);
+            };
+        };
+        // Add a fake extension storage to the main target. The UI should be updated.
+        addFakeExtensionStorage(target);
+        assert.strictEqual(sidebar.extensionStorageListTreeElement.children()[0].childCount(), 1);
+        // Add a fake extension storage using a non-main target (e.g, an iframe).
+        // Make sure we don't add a second entry to the UI.
+        const removeFrameStorage = addFakeExtensionStorage(createTarget({ type: SDK.Target.Type.FRAME, parentTarget: target }));
+        assert.strictEqual(sidebar.extensionStorageListTreeElement.children()[0].childCount(), 1);
+        // Removing the frame also shouldn't do anything, since the main frame
+        // still exists.
+        removeFrameStorage();
+        assert.strictEqual(sidebar.extensionStorageListTreeElement.children()[0].childCount(), 1);
     });
     async function getExpectedCall(expectedCall) {
         Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });

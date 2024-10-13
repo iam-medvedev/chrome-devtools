@@ -31,8 +31,8 @@ export interface TitleResponse {
 }
 export interface ThoughtResponse {
     type: ResponseType.THOUGHT;
-    thought: string;
-    contextDetails?: ContextDetail[];
+    thought?: string;
+    contextDetails?: [ContextDetail, ...ContextDetail[]];
     rpcId?: number;
 }
 export interface SideEffectResponse {
@@ -55,6 +55,7 @@ export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | Sid
 export interface ContextDetail {
     title: string;
     text: string;
+    codeLang?: string;
 }
 export interface AidaBuildRequestOptions {
     input: string;

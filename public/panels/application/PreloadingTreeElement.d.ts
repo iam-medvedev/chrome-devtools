@@ -3,7 +3,7 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import { ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import type * as PreloadingHelper from './preloading/helper/helper.js';
 import { PreloadingAttemptView, PreloadingRuleSetView } from './preloading/PreloadingView.js';
-import { type ResourcesPanel } from './ResourcesPanel.js';
+import type { ResourcesPanel } from './ResourcesPanel.js';
 declare class PreloadingTreeElementBase<View extends PreloadingRuleSetView | PreloadingAttemptView> extends ApplicationPanelTreeElement {
     #private;
     protected view?: View;

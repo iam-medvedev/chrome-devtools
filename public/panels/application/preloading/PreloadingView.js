@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/split_view/split_view.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -8,7 +9,6 @@ import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as SplitView from '../../../ui/components/split_view/split_view.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import emptyWidgetStyles from '../../../ui/legacy/emptyWidget.css.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -17,6 +17,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PreloadingComponents from './components/components.js';
 import preloadingViewStyles from './preloadingView.css.js';
 import preloadingViewDropDownStyles from './preloadingViewDropDown.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description DropDown title for filtering preloading attempts by rule set
@@ -191,8 +192,8 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
             this.shouldPrettyPrint = !this.shouldPrettyPrint;
             this.updateRuleSetDetails();
         };
-        LitHtml.render(LitHtml.html `
-        <${SplitView.SplitView.SplitView.litTagName} .horizontal=${true} style="--min-sidebar-size: max(100vh-200px, 0px)">
+        LitHtml.render(html `
+        <devtools-split-view .horizontal=${true} style="--min-sidebar-size: max(100vh-200px, 0px)">
           <div slot="main" class="overflow-auto" style="height: 100%">
             ${this.ruleSetGrid}
           </div>
@@ -200,9 +201,9 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
           jslog=${VisualLogging.section('rule-set-details')}>
             ${this.ruleSetDetails}
           </div>
-        </${SplitView.SplitView.SplitView.litTagName}>
+        </devtools-split-view>
         <div class="pretty-print-button" style="border-top: 1px solid var(--sys-color-divider)">
-        <${Buttons.Button.Button.litTagName}
+        <devtools-button
           .iconName=${'brackets'}
           .toggledIconName=${'brackets'}
           .toggled=${this.shouldPrettyPrint}
@@ -212,7 +213,7 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
           @click=${onPrettyPrintToggle}
           jslog=${VisualLogging.action().track({ click: true }).context('preloading-status-panel-pretty-print')}>
-        </${Buttons.Button.Button.litTagName}>
+        </devtools-button>
         </div>
         `, this.contentElement, { host: this });
         this.hsplit = this.contentElement.querySelector('devtools-split-view');
@@ -312,15 +313,15 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         this.ruleSetSelector = new PreloadingRuleSetSelector(() => this.render());
         toolbar.appendToolbarItem(this.ruleSetSelector.item());
         this.preloadingGrid.addEventListener('cellfocused', this.onPreloadingGridCellFocused.bind(this));
-        LitHtml.render(LitHtml.html `
-        <${SplitView.SplitView.SplitView.litTagName} .horizontal=${true} style="--min-sidebar-size: 0px">
+        LitHtml.render(html `
+        <devtools-split-view .horizontal=${true} style="--min-sidebar-size: 0px">
           <div slot="main" class="overflow-auto" style="height: 100%">
             ${this.preloadingGrid}
           </div>
           <div slot="sidebar" class="overflow-auto" style="height: 100%">
             ${this.preloadingDetails}
           </div>
-        </${SplitView.SplitView.SplitView.litTagName}>`, vbox.contentElement, { host: this });
+        </devtools-split-view>`, vbox.contentElement, { host: this });
         vbox.show(this.contentElement);
     }
     wasShown() {

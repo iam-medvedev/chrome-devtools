@@ -49,6 +49,8 @@ export declare class UserMetrics {
     legacyResourceTypeFilterItemSelected(resourceTypeName: string): void;
     resourceTypeFilterNumberOfSelectedChanged(itemCount: number): void;
     resourceTypeFilterItemSelected(resourceTypeName: string): void;
+    freestylerQueryLength(numberOfCharacters: number): void;
+    freestylerEvalResponseSize(bytes: number): void;
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
@@ -655,7 +657,8 @@ export declare enum DevtoolsExperiments {
     'timeline-server-timings' = 98,
     'extension-storage-viewer' = 100,
     'floating-entry-points-for-ai-assistance' = 101,
-    MAX_VALUE = 102
+    'timeline-experimental-insights' = 102,
+    MAX_VALUE = 103
 }
 export declare const enum ColorPickerOpenedFrom {
     SOURCES_PANEL = 0,

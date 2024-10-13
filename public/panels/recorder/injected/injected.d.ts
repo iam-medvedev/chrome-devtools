@@ -1,7 +1,7 @@
 import * as RecordingClient from './RecordingClient.js';
 import * as SelectorPicker from './SelectorPicker.js';
+import type { AccessibilityBindings } from './selectors/ARIASelector.js';
 import type * as Step from './Step.js';
-import { type AccessibilityBindings } from './selectors/ARIASelector.js';
 declare global {
     interface Window {
         stopShortcut(payload: string): void;

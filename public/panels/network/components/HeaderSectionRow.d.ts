@@ -1,7 +1,7 @@
 import '../../../ui/legacy/legacy.js';
 import * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
-import { EditableSpan } from './EditableSpan.js';
+import type { EditableSpan } from './EditableSpan.js';
 export declare const isValidHeaderName: (headerName: string) => boolean;
 export declare const compareHeaders: (first: string | null | undefined, second: string | null | undefined) => boolean;
 export declare class HeaderEditedEvent extends Event {
@@ -25,7 +25,6 @@ export interface HeaderSectionRowData {
 }
 export declare class HeaderSectionRow extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: HeaderSectionRowData);
     focus(): void;

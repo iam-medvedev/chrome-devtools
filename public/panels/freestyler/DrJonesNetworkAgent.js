@@ -42,6 +42,9 @@ const MAX_HEADERS_SIZE = 1000;
 * Strings that don't need to be translated at this time.
 */
 const UIStringsNotTranslate = {
+    /**
+     *@description Title for thinking step of DrJones Network agent.
+     */
     inspectingNetworkData: 'Inspecting network data',
     /**
      *@description Thought text for thinking step of DrJones Network agent.
@@ -87,7 +90,7 @@ const lockedString = i18n.i18n.lockedString;
  */
 export class DrJonesNetworkAgent extends AiAgent {
     preamble = preamble;
-    clientFeature = Host.AidaClient.ClientFeature.CHROME_FREESTYLER;
+    clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_NETWORK_AGENT;
     // TODO(b/369822364): use a feature param instead.
     userTier = 'BETA';
     get options() {
@@ -100,6 +103,9 @@ export class DrJonesNetworkAgent extends AiAgent {
         };
     }
     *handleContextDetails(selectedNetworkRequest) {
+        if (!selectedNetworkRequest) {
+            return;
+        }
         yield {
             type: ResponseType.TITLE,
             title: lockedString(UIStringsNotTranslate.inspectingNetworkData),
@@ -233,7 +239,6 @@ function formatRequestInitiatorChain(request) {
     return initiatorChain;
 }
 export function formatNetworkRequest(request) {
-    const formatHeaders = (title, headers) => formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
     // TODO: anything else that might be relavant?
     // TODO: handle missing headers
     return `Request: ${request.url()}
@@ -249,32 +254,29 @@ Request Timing:\n${formatNetworkRequestTiming(request)}
 Request Initiator Chain:\n${formatRequestInitiatorChain(request)}`;
 }
 function createContextDetailsForDrJonesNetworkAgent(request) {
-    if (request) {
-        const requestContextDetail = {
-            title: lockedString(UIStringsNotTranslate.request),
-            text: lockedString(UIStringsNotTranslate.requestUrl) + ': ' + request.url() + '\n\n' +
-                formatHeaders(lockedString(UIStringsNotTranslate.requestHeaders), request.requestHeaders()),
-        };
-        const responseContextDetail = {
-            title: lockedString(UIStringsNotTranslate.response),
-            text: lockedString(UIStringsNotTranslate.responseStatus) + ': ' + request.statusCode + ' ' + request.statusText +
-                '\n\n' + formatHeaders(lockedString(UIStringsNotTranslate.responseHeaders), request.responseHeaders),
-        };
-        const timingContextDetail = {
-            title: lockedString(UIStringsNotTranslate.timing),
-            text: formatNetworkRequestTiming(request),
-        };
-        const initiatorChainContextDetail = {
-            title: lockedString(UIStringsNotTranslate.requestInitiatorChain),
-            text: formatRequestInitiatorChain(request),
-        };
-        return [
-            requestContextDetail,
-            responseContextDetail,
-            timingContextDetail,
-            initiatorChainContextDetail,
-        ];
-    }
-    return [];
+    const requestContextDetail = {
+        title: lockedString(UIStringsNotTranslate.request),
+        text: lockedString(UIStringsNotTranslate.requestUrl) + ': ' + request.url() + '\n\n' +
+            formatHeaders(lockedString(UIStringsNotTranslate.requestHeaders), request.requestHeaders()),
+    };
+    const responseContextDetail = {
+        title: lockedString(UIStringsNotTranslate.response),
+        text: lockedString(UIStringsNotTranslate.responseStatus) + ': ' + request.statusCode + ' ' + request.statusText +
+            '\n\n' + formatHeaders(lockedString(UIStringsNotTranslate.responseHeaders), request.responseHeaders),
+    };
+    const timingContextDetail = {
+        title: lockedString(UIStringsNotTranslate.timing),
+        text: formatNetworkRequestTiming(request),
+    };
+    const initiatorChainContextDetail = {
+        title: lockedString(UIStringsNotTranslate.requestInitiatorChain),
+        text: formatRequestInitiatorChain(request),
+    };
+    return [
+        requestContextDetail,
+        responseContextDetail,
+        timingContextDetail,
+        initiatorChainContextDetail,
+    ];
 }
 //# sourceMappingURL=DrJonesNetworkAgent.js.map

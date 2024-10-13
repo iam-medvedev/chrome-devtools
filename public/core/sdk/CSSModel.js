@@ -264,6 +264,7 @@ export class CSSModel extends SDKModel {
             propertyRules: response.cssPropertyRules ?? [],
             cssPropertyRegistrations: response.cssPropertyRegistrations ?? [],
             fontPaletteValuesRule: response.cssFontPaletteValuesRule,
+            activePositionFallbackIndex: response.activePositionFallbackIndex ?? -1,
         });
     }
     async getClassNames(styleSheetId) {

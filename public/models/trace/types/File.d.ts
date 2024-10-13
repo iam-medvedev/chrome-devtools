@@ -1,6 +1,6 @@
 import type * as Protocol from '../../../generated/protocol.js';
-import { type TraceWindowMicroSeconds } from './Timing.js';
-import { type Event, type LegacyTimelineFrame, type ProcessID, type SampleIndex, type ThreadID } from './TraceEvents.js';
+import type { TraceWindowMicroSeconds } from './Timing.js';
+import type { Event, LegacyTimelineFrame, ProcessID, SampleIndex, ThreadID } from './TraceEvents.js';
 export type TraceFile = {
     traceEvents: readonly Event[];
     metadata: MetaData;

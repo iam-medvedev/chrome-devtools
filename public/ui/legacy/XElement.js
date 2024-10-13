@@ -1,7 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// eslint-disable-next-line rulesdir/check_component_naming
 export class XElement extends HTMLElement {
     static get observedAttributes() {
         return [

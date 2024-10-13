@@ -4,10 +4,10 @@ import * as Platform from '../platform/platform.js';
 import { CSSContainerQuery } from './CSSContainerQuery.js';
 import { CSSLayer } from './CSSLayer.js';
 import { CSSMedia } from './CSSMedia.js';
-import { type CSSModel, type Edit } from './CSSModel.js';
+import type { CSSModel, Edit } from './CSSModel.js';
 import { CSSScope } from './CSSScope.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
-import { type CSSStyleSheetHeader } from './CSSStyleSheetHeader.js';
+import type { CSSStyleSheetHeader } from './CSSStyleSheetHeader.js';
 import { CSSSupports } from './CSSSupports.js';
 export declare class CSSRule {
     readonly cssModelInternal: CSSModel;

@@ -4,6 +4,7 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import textPromptStyles from './textPrompt.css.js';
+const { html } = LitHtml;
 export class PromptInputEvent extends Event {
     static eventName = 'promptinputchanged';
     data;
@@ -97,7 +98,7 @@ export class TextPrompt extends HTMLElement {
         return this.#input().value || '';
     }
     #render() {
-        const output = LitHtml.html `
+        const output = html `
       <span class="prefix">${this.#prefixText} </span>
       <span class="text-prompt-input"><input class="input" aria-label=${this.#ariaLabelText} spellcheck="false" @input=${this.onInput} @keydown=${this.onKeyDown}/><input class="suggestion" aria-label=${this.#ariaLabelText + ' Suggestion'}></span>`;
         LitHtml.render(output, this.#shadow, { host: this });

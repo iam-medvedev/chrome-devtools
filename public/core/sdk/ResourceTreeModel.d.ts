@@ -2,7 +2,7 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Platform from '../platform/platform.js';
 import { type DeferredDOMNode, DOMModel, type DOMNode } from './DOMModel.js';
-import { type NetworkRequest } from './NetworkRequest.js';
+import type { NetworkRequest } from './NetworkRequest.js';
 import { Resource } from './Resource.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';

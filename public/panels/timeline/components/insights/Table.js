@@ -4,6 +4,7 @@
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import tableStyles from './table.css.js';
+const { html } = LitHtml;
 export class Table extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-table`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -25,6 +26,7 @@ export class Table extends HTMLElement {
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets.push(tableStyles);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     #onHoverRow(e) {
         if (!(e.target instanceof HTMLElement)) {
@@ -92,14 +94,14 @@ export class Table extends HTMLElement {
         if (!this.#headers || !this.#rows) {
             return;
         }
-        LitHtml.render(LitHtml.html `<table
+        LitHtml.render(html `<table
           class=${LitHtml.Directives.classMap({
             interactive: this.#interactive,
         })}
           @mouseleave=${this.#interactive ? this.#onMouseLeave : null}>
         <thead>
           <tr>
-          ${this.#headers.map(h => LitHtml.html `<th scope="col">${h}</th>`)}
+          ${this.#headers.map(h => html `<th scope="col">${h}</th>`)}
           </tr>
         </thead>
         <tbody
@@ -107,11 +109,11 @@ export class Table extends HTMLElement {
           @click=${this.#interactive ? this.#onClickRow : null}
         >
           ${this.#rows.map(row => {
-            const rowsEls = row.values.map((value, i) => i === 0 ? LitHtml.html `<th scope="row">${value}</th>` : LitHtml.html `<td>${value}</td>`);
-            return LitHtml.html `<tr>${rowsEls}</tr>`;
+            const rowsEls = row.values.map((value, i) => i === 0 ? html `<th scope="row">${value}</th>` : html `<td>${value}</td>`);
+            return html `<tr>${rowsEls}</tr>`;
         })}
         </tbody>
-      </div>`, this.#shadow, { host: this });
+      </table>`, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-performance-table', Table);

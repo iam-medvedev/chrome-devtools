@@ -1,3 +1,4 @@
+import '../../../ui/components/icon_button/icon_button.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-recording-list-view': RecordingListView;
@@ -32,7 +33,6 @@ interface Recording {
 }
 export declare class RecordingListView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
     set recordings(recordings: Recording[]);

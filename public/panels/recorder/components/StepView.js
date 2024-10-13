@@ -6,17 +6,19 @@
    do not define any host for LitHtml.render and the rule is not happy
    about it. */
 /* eslint-disable rulesdir/lit_html_host_this */
+import '../../../ui/components/icon_button/icon_button.js';
+import './StepEditor.js';
+import './TimelineSection.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import stepViewStyles from './stepView.css.js';
-import { TimelineSection, } from './TimelineSection.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Title for the step type that configures the viewport
@@ -198,7 +200,7 @@ export class RemoveBreakpointEvent extends Event {
 const COPY_ACTION_PREFIX = 'copy-step-as-';
 function getStepTypeTitle(input) {
     if (input.section) {
-        return input.section.title ? input.section.title : LitHtml.html `<span class="fallback">(No Title)</span>`;
+        return input.section.title ? input.section.title : html `<span class="fallback">(No Title)</span>`;
     }
     if (!input.step) {
         throw new Error('Missing both step and section');
@@ -266,8 +268,8 @@ function getSectionPreview(section) {
 }
 function renderStepActions(input) {
     // clang-format off
-    return LitHtml.html `
-    <${Buttons.Button.Button.litTagName}
+    return html `
+    <devtools-button
       class="step-actions"
       title=${i18nString(UIStrings.openStepActions)}
       aria-label=${i18nString(UIStrings.openStepActions)}
@@ -281,7 +283,7 @@ function renderStepActions(input) {
         iconName: 'dots-vertical',
         title: i18nString(UIStrings.openStepActions),
     }}
-    ></${Buttons.Button.Button.litTagName}>
+    ></devtools-button>
   `;
     // clang-format on
 }
@@ -308,8 +310,8 @@ function viewFunction(input, _output, target) {
     });
     const subtitle = input.step ? getSelectorPreview() : getSectionPreview();
     // clang-format off
-    LitHtml.render(LitHtml.html `
-    <${TimelineSection.litTagName} .data=${{
+    LitHtml.render(html `
+    <devtools-timeline-section .data=${{
         isFirstSection: input.isFirstSection,
         isLastSection: input.isLastSection,
         isStartOfGroup: input.isStartOfGroup,
@@ -334,11 +336,11 @@ function viewFunction(input, _output, target) {
           aria-label=${isExpandable ? 'Show details for step' : ''}
         >
           ${isExpandable
-        ? LitHtml.html `<${IconButton.Icon.Icon.litTagName}
+        ? html `<devtools-icon
                   class="chevron"
                   jslog=${VisualLogging.expand().track({ click: true })}
                   name="triangle-down">
-                </${IconButton.Icon.Icon.litTagName}>`
+                </devtools-icon>`
         : ''}
           <div class="title">
             <div class="main-title" title=${mainTitle}>${mainTitle}</div>
@@ -350,14 +352,14 @@ function viewFunction(input, _output, target) {
       </div>
       <div class="details">
         ${input.step &&
-        LitHtml.html `<devtools-recorder-step-editor
+        html `<devtools-recorder-step-editor
           class=${input.isSelected ? 'is-selected' : ''}
           .step=${input.step}
           .disabled=${input.isPlaying}
           @stepedited=${input.stepEdited}>
         </devtools-recorder-step-editor>`}
         ${input.section?.causingStep &&
-        LitHtml.html `<devtools-recorder-step-editor
+        html `<devtools-recorder-step-editor
           .step=${input.section.causingStep}
           .isTypeEditable=${false}
           .disabled=${input.isPlaying}
@@ -365,17 +367,16 @@ function viewFunction(input, _output, target) {
         </devtools-recorder-step-editor>`}
       </div>
       ${input.error &&
-        LitHtml.html `
+        html `
         <div class="error" role="alert">
           ${input.error.message}
         </div>
       `}
-    </${TimelineSection.litTagName}>
+    </devtools-timeline-section>
   `, target);
     // clang-format on
 }
 export class StepView extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-step-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #observer = new IntersectionObserver(result => {
         this.#viewInput.isVisible = result[0].isIntersecting;

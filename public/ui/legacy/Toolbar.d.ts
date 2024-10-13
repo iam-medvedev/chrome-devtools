@@ -6,7 +6,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
-import { type Suggestion } from './SuggestBox.js';
+import type { Suggestion } from './SuggestBox.js';
 export declare class Toolbar {
     private items;
     element: HTMLElement;
@@ -82,7 +82,6 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes>
     private adorner?;
     constructor(title: string, glyphOrAdorner?: string | Adorners.Adorner.Adorner, text?: string, jslogContext?: string);
     focus(): void;
-    pressed(pressed: boolean): void;
     checked(checked: boolean): void;
     toggleOnClick(toggleOnClick: boolean): void;
     isToggled(): boolean;
@@ -156,7 +155,6 @@ export declare class ToolbarToggle extends ToolbarButton {
     private readonly untoggledGlyph;
     private readonly toggledGlyph;
     constructor(title: string, glyph?: string, toggledGlyph?: string, jslogContext?: string, toggleOnClick?: boolean);
-    setPressed(pressed: boolean): void;
     setToggleOnClick(toggleOnClick: boolean): void;
     setToggled(toggled: boolean): void;
     setChecked(checked: boolean): void;
@@ -164,10 +162,12 @@ export declare class ToolbarToggle extends ToolbarButton {
     enableToggleWithRedColor(): void;
 }
 export declare class ToolbarMenuButton extends ToolbarCombobox {
+    #private;
     private readonly contextMenuHandler;
     private readonly useSoftMenu;
-    private triggerTimeout?;
+    private triggerTimeoutId?;
     constructor(contextMenuHandler: (arg0: ContextMenu) => void, isIconDropdown?: boolean, useSoftMenu?: boolean, jslogContext?: string, iconName?: string);
+    setTriggerDelay(x: number): void;
     mouseDown(event: MouseEvent): void;
     private trigger;
     clicked(event: Event): void;

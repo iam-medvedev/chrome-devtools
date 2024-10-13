@@ -22,7 +22,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/elements/components/CSSProperty
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html } = LitHtml;
 export class CSSPropertyDocsView extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-property-docs-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #cssProperty;
     constructor(cssProperty) {

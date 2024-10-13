@@ -1,3 +1,4 @@
+import '../icon_button/icon_button.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-button': Button;
@@ -84,7 +85,6 @@ export declare class Button extends HTMLElement {
     set toggled(toggled: boolean);
     get toggled(): boolean;
     set checked(checked: boolean);
-    set pressed(pressed: boolean);
     set active(active: boolean);
     get active(): boolean;
     set spinner(spinner: boolean);

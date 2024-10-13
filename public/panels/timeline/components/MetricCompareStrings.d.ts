@@ -1,4 +1,4 @@
-import { type MetricRating } from './Utils.js';
+import type { MetricRating } from './Utils.js';
 export type CompareRating = 'better' | 'worse' | 'similar';
 export declare function renderCompareText(options: {
     metric: string;

@@ -1,7 +1,8 @@
+import '../../../../ui/components/markdown_view/markdown_view.js';
 import type * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
-import { type TableState } from './Table.js';
+import type { TableState } from './Table.js';
 import { type ActiveInsight, Category } from './types.js';
 export declare function shouldRenderForCategory(options: {
     activeCategory: Category;
@@ -26,6 +27,7 @@ export declare abstract class BaseInsight extends HTMLElement {
     abstract insightCategory: Category;
     abstract userVisibleTitle: string;
     abstract description: string;
+    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     protected readonly shadow: ShadowRoot;
     protected data: BaseInsightData;
     readonly sharedTableState: TableState;
@@ -48,37 +50,15 @@ export declare abstract class BaseInsight extends HTMLElement {
      */
     toggleTemporaryOverlays(overlays: Overlays.Overlays.TimelineOverlay[] | null, options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     getInitialOverlays(): Overlays.Overlays.TimelineOverlay[];
+    protected getRelatedEvents(): Trace.Types.Events.Event[];
     protected abstract createOverlays(): Overlays.Overlays.TimelineOverlay[];
     abstract render(): void;
     protected isActive(): boolean;
+    getInsightSetUrl(): URL;
 }
-export declare function shortenUrl(url: string): string;
 /**
  * Returns a rendered MarkdownView component.
  *
  * This should not be used for markdown that is not guaranteed to be valid.
  */
 export declare function md(markdown: string): LitHtml.TemplateResult;
-export declare class EventReferenceClick extends Event {
-    event: Trace.Types.Events.Event;
-    static readonly eventName = "eventreferenceclick";
-    constructor(event: Trace.Types.Events.Event);
-}
-declare class EventRef extends HTMLElement {
-    #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    connectedCallback(): void;
-    set text(text: string);
-    set baseInsight(baseInsight: BaseInsight);
-    set event(event: Trace.Types.Events.Event);
-}
-export declare function eventRef(baseInsight: BaseInsight, event: Trace.Types.Events.Event, text: string): LitHtml.TemplateResult;
-declare global {
-    interface GlobalEventHandlersEventMap {
-        [EventReferenceClick.eventName]: EventReferenceClick;
-    }
-    interface HTMLElementTagNameMap {
-        'devtools-performance-event-ref': EventRef;
-    }
-}
-export {};

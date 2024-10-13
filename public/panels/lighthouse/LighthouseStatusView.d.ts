@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import { type LighthousePanel } from './LighthousePanel.js';
+import type { LighthousePanel } from './LighthousePanel.js';
 export declare class StatusView {
     private readonly panel;
     private statusView;

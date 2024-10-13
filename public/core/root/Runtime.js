@@ -204,6 +204,12 @@ export class Experiment {
 }
 // This must be constructed after the query parameters have been parsed.
 export const experiments = new ExperimentsSupport();
+export var HostConfigFreestylerExecutionMode;
+(function (HostConfigFreestylerExecutionMode) {
+    HostConfigFreestylerExecutionMode["ALL_SCRIPTS"] = "ALL_SCRIPTS";
+    HostConfigFreestylerExecutionMode["SIDE_EFFECT_FREE_SCRIPTS_ONLY"] = "SIDE_EFFECT_FREE_SCRIPTS_ONLY";
+    HostConfigFreestylerExecutionMode["NO_SCRIPTS"] = "NO_SCRIPTS";
+})(HostConfigFreestylerExecutionMode || (HostConfigFreestylerExecutionMode = {}));
 export const conditions = {
     canDock: () => Boolean(Runtime.queryParam('can_dock')),
 };

@@ -4,7 +4,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
-import { type SourceMapping } from './CSSWorkspaceBinding.js';
+import type { SourceMapping } from './CSSWorkspaceBinding.js';
 export declare class StylesSourceMapping implements SourceMapping {
     #private;
     constructor(cssModel: SDK.CSSModel.CSSModel, workspace: Workspace.Workspace.WorkspaceImpl);

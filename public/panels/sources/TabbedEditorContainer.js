@@ -434,7 +434,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             const savedScrollLineNumber = this.history.scrollLineNumber(historyItemKey(uiSourceCode));
             this.restoreEditorProperties(view, savedSelectionRange, savedScrollLineNumber);
         }
-        this.tabbedPane.appendTab(tabId, title, view, tooltip, userGesture, undefined, undefined, index);
+        this.tabbedPane.appendTab(tabId, title, view, tooltip, userGesture, undefined, undefined, index, 'editor');
         this.updateFileTitle(uiSourceCode);
         this.addUISourceCodeListeners(uiSourceCode);
         if (uiSourceCode.loadError()) {

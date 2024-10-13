@@ -112,14 +112,11 @@ export class CompatibilityTracksAppender {
         this.#allTrackAppenders.push(this.#serverTimingsTrackAppender);
         this.#addThreadAppenders();
         this.#addExtensionAppenders();
-        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
-            for (const group of this.#flameChartData.groups) {
-                // We only need to update the color here, because FlameChart will call `scheduleUpdate()` when theme is changed.
-                group.style.color = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-on-surface');
-                group.style.backgroundColor =
-                    ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
-            }
-        });
+        this.onThemeChange = this.onThemeChange.bind(this);
+        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.onThemeChange);
+    }
+    reset() {
+        ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.onThemeChange);
     }
     setFlameChartDataAndEntryData(flameChartData, entryData, legacyEntryTypeByLevel) {
         this.#trackForGroup.clear();
@@ -129,6 +126,14 @@ export class CompatibilityTracksAppender {
     }
     getFlameChartTimelineData() {
         return this.#flameChartData;
+    }
+    onThemeChange() {
+        for (const group of this.#flameChartData.groups) {
+            // We only need to update the color here, because FlameChart will call `scheduleUpdate()` when theme is changed.
+            group.style.color = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-on-surface');
+            group.style.backgroundColor =
+                ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
+        }
     }
     #addExtensionAppenders() {
         const tracks = ExtensionDataGatherer.instance().getExtensionData().extensionTrackData;
@@ -468,9 +473,10 @@ export class CompatibilityTracksAppender {
         const warningElements = TimelineComponents.DetailsView.buildWarningElementsForEvent(event, this.#parsedTrace);
         let title = this.titleForEvent(event, level);
         let formattedTime = getFormattedTime(event.dur);
+        let additionalElement;
         // If the track defines a custom highlight, call it and use its values.
         if (track.highlightedEntryInfo) {
-            const { title: customTitle, formattedTime: customFormattedTime, warningElements: extraWarningElements } = track.highlightedEntryInfo(event);
+            const { title: customTitle, formattedTime: customFormattedTime, warningElements: extraWarningElements, additionalElement: element, } = track.highlightedEntryInfo(event);
             if (customTitle) {
                 title = customTitle;
             }
@@ -480,11 +486,13 @@ export class CompatibilityTracksAppender {
             if (extraWarningElements) {
                 warningElements.push(...extraWarningElements);
             }
+            additionalElement = element;
         }
         return {
             title,
             formattedTime,
             warningElements,
+            additionalElement,
         };
     }
 }

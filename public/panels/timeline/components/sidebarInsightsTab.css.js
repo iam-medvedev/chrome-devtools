@@ -21,7 +21,6 @@ styles.replaceSync(
   display: flex;
   flex-flow: column nowrap;
   flex-grow: 1; /* so it fills the available vertical height in the sidebar */
-  margin-top: var(--sys-size-6);
 
   details {
     flex-grow: 0;
@@ -56,12 +55,6 @@ styles.replaceSync(
       border-top: 1px solid var(--sys-color-divider);
     }
   }
-}
-
-.insights-category-select {
-  width: max-content;
-  margin-top: var(--sys-size-6);
-  margin-left: var(--sys-size-6);
 }
 
 .feedback-wrapper {

@@ -1,12 +1,13 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './DataGrid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as UI from '../../legacy/legacy.js';
-import { DataGrid } from './DataGrid.js';
 import dataGridControllerStyles from './dataGridController.css.js';
 import { getRowEntryForColumnId, getStringifiedCellValues, } from './DataGridUtils.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Text announced when the column is sorted in ascending order
@@ -206,8 +207,8 @@ export class DataGridController extends HTMLElement {
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(LitHtml.html `
-      <${DataGrid.litTagName} .data=${{
+        LitHtml.render(html `
+      <devtools-data-grid .data=${{
             columns: this.#columns,
             rows: this.#rows,
             activeSort: this.#sortState,
@@ -221,7 +222,7 @@ export class DataGridController extends HTMLElement {
         @columnheaderclick=${this.#onColumnHeaderClick}
         @contextmenucolumnsortclick=${this.#onContextMenuColumnSortClick}
         @contextmenuheaderresetclick=${this.#onContextMenuHeaderResetClick}
-     ></${DataGrid.litTagName}>
+     ></devtools-data-grid>
     `, this.#shadow, {
             host: this,
         });

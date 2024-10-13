@@ -3,11 +3,11 @@ import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import { type DebuggerModel, Location } from './DebuggerModel.js';
-import { type FrameAssociated } from './FrameAssociated.js';
-import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
-import { type ExecutionContext } from './RuntimeModel.js';
-import { type SourceMap } from './SourceMap.js';
-import { type Target } from './Target.js';
+import type { FrameAssociated } from './FrameAssociated.js';
+import type { PageResourceLoadInitiator } from './PageResourceLoader.js';
+import type { ExecutionContext } from './RuntimeModel.js';
+import type { SourceMap } from './SourceMap.js';
+import type { Target } from './Target.js';
 export declare class Script implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
     #private;
     debuggerModel: DebuggerModel;

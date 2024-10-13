@@ -1,7 +1,7 @@
 import * as Protocol from '../../generated/protocol.js';
-import { type DOMPinnedWebIDLProp, type DOMPinnedWebIDLType } from '../common/JavaScriptMetaData.js';
-import { type DebuggerModel, type FunctionDetails } from './DebuggerModel.js';
-import { type RuntimeModel } from './RuntimeModel.js';
+import type { DOMPinnedWebIDLProp, DOMPinnedWebIDLType } from '../common/JavaScriptMetaData.js';
+import type { DebuggerModel, FunctionDetails } from './DebuggerModel.js';
+import type { RuntimeModel } from './RuntimeModel.js';
 export declare class RemoteObject {
     static fromLocalObject(value: unknown): RemoteObject;
     static type(remoteObject: RemoteObject): string;

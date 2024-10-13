@@ -20,11 +20,12 @@ export declare class ThrottlingManager {
     setCPUThrottlingRate(rate: number): void;
     onCPUThrottlingRateChangedOnSDK(rate: number): void;
     createCPUThrottlingSelector(): UI.Toolbar.ToolbarComboBox;
+    /** Hardware Concurrency doesn't store state in a setting. */
     createHardwareConcurrencySelector(): {
-        input: UI.Toolbar.ToolbarItem;
+        numericInput: UI.Toolbar.ToolbarItem;
         reset: UI.Toolbar.ToolbarButton;
         warning: UI.Toolbar.ToolbarItem;
-        toggle: UI.Toolbar.ToolbarItem;
+        checkbox: UI.UIUtils.CheckboxLabel;
     };
     setHardwareConcurrency(concurrency: number): void;
     private isDirty;

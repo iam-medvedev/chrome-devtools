@@ -18,9 +18,7 @@ import * as Emulation from '../../panels/emulation/emulation.js';
 import * as Timeline from '../../panels/timeline/timeline.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
-import * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -888,7 +886,7 @@ let RecorderController = class RecorderController extends LitElement {
         const recordings = this.#storage.getRecordings();
         // clang-format off
         return html `
-      <${Components.RecordingListView.RecordingListView.litTagName}
+      <devtools-recording-list-view
         .recordings=${recordings.map(recording => ({
             storageName: recording.storageName,
             name: recording.flow.title,
@@ -899,23 +897,23 @@ let RecorderController = class RecorderController extends LitElement {
         @openrecording=${this.#onRecordingSelected}
         @playrecording=${this.#onPlayRecordingByName}
         >
-      </${Components.RecordingListView.RecordingListView.litTagName}>
+      </devtools-recording-list-view>
     `;
         // clang-format on
     }
     #renderStartPage() {
         // clang-format off
         return html `
-      <${Components.StartView.StartView.litTagName}
+      <devtools-start-view
         @createrecording=${this.#onCreateNewRecording}
-      ></${Components.StartView.StartView.litTagName}>
+      ></devtools-start-view>
     `;
         // clang-format on
     }
     #renderRecordingPage() {
         // clang-format off
         return html `
-      <${Components.RecordingView.RecordingView.litTagName}
+      <devtools-recording-view
         .data=${{
             recording: this.currentRecording?.flow,
             replayState: this.#replayState,
@@ -950,20 +948,20 @@ let RecorderController = class RecorderController extends LitElement {
         @abortreplay=${this.#onAbortReplay}
         @recorderextensionviewclosed=${this.#onExtensionViewClosed}
         @addassertion=${this.#handleAddAssertionEvent}
-      ></${Components.RecordingView.RecordingView.litTagName}>
+      ></devtools-recording-view>
     `;
         // clang-format on
     }
     #renderCreateRecordingPage() {
         // clang-format off
         return html `
-      <${Components.CreateRecordingView.CreateRecordingView.litTagName}
+      <devtools-create-recording-view
         .data=${{
             recorderSettings: this.#recorderSettings,
         }}
         @recordingstarted=${this.#onRecordingStarted}
         @recordingcancelled=${this.#onRecordingCancelled}
-      ></${Components.CreateRecordingView.CreateRecordingView.litTagName}>
+      ></devtools-create-recording-view>
     `;
         // clang-format on
     }
@@ -1006,7 +1004,7 @@ let RecorderController = class RecorderController extends LitElement {
         return html `
         <div class="wrapper">
           <div class="header" jslog=${VisualLogging.toolbar()}>
-            <${Buttons.Button.Button.litTagName}
+            <devtools-button
               @click=${this.#onCreateNewRecording}
               .data=${{
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
@@ -1017,7 +1015,7 @@ let RecorderController = class RecorderController extends LitElement {
             title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */),
             jslogContext: "chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */,
         }}
-            ></${Buttons.Button.Button.litTagName}>
+            ></devtools-button>
             <div class="separator"></div>
             <select
               .disabled=${recordings.length === 0 ||
@@ -1033,7 +1031,7 @@ let RecorderController = class RecorderController extends LitElement {
         })}
             </select>
             <div class="separator"></div>
-            <${Buttons.Button.Button.litTagName}
+            <devtools-button
               @click=${this.#onImportRecording}
               .data=${{
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
@@ -1041,8 +1039,8 @@ let RecorderController = class RecorderController extends LitElement {
             title: i18nString(UIStrings.importRecording),
             jslogContext: 'import-recording',
         }}
-            ></${Buttons.Button.Button.litTagName}>
-            <${Buttons.Button.Button.litTagName}
+            ></devtools-button>
+            <devtools-button
               id='origin'
               @click=${this.#onExportRecording}
               on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
@@ -1055,8 +1053,8 @@ let RecorderController = class RecorderController extends LitElement {
             disabled: !this.currentRecording,
         }}
               jslog=${VisualLogging.dropDown('export-recording').track({ click: true })}
-            ></${Buttons.Button.Button.litTagName}>
-            <${Menus.Menu.Menu.litTagName}
+            ></devtools-button>
+            <devtools-menu
               @menucloserequest=${this.#onExportMenuClosed}
               @menuitemselected=${this.#onExportOptionSelected}
               .origin=${this.#getExportMenuButton}
@@ -1065,31 +1063,33 @@ let RecorderController = class RecorderController extends LitElement {
               .showConnector=${false}
               .open=${this.exportMenuExpanded}
             >
-              <${Menus.Menu.MenuGroup.litTagName} .name=${i18nString(UIStrings.export)}>
+              <devtools-menu-group .name=${i18nString(UIStrings.export)}>
                 ${LitHtml.Directives.repeat(this.#builtInConverters, converter => {
             return html `
-                    <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}
+                    <devtools-menu-item
+                      .value=${converter.getId()}
                       jslog=${VisualLogging.item(`converter-${Platform.StringUtilities.toKebabCase(converter.getId())}`).track({ click: true })}>
                       ${converter.getFormatName()}
-                    </${Menus.Menu.MenuItem.litTagName}>
+                    </devtools-menu-item>
                   `;
         })}
-              </${Menus.Menu.MenuGroup.litTagName}>
-              <${Menus.Menu.MenuGroup.litTagName} .name=${i18nString(UIStrings.exportViaExtensions)}>
+              </devtools-menu-group>
+              <devtools-menu-group .name=${i18nString(UIStrings.exportViaExtensions)}>
                 ${LitHtml.Directives.repeat(this.extensionConverters, converter => {
             return html `
-                    <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}
+                    <devtools-menu-item
+                     .value=${converter.getId()}
                       jslog=${VisualLogging.item('converter-extension').track({ click: true })}>
                     ${converter.getFormatName()}
-                    </${Menus.Menu.MenuItem.litTagName}>
+                    </devtools-menu-item>
                   `;
         })}
-                <${Menus.Menu.MenuItem.litTagName} .value=${GET_EXTENSIONS_MENU_ITEM}>
+                <devtools-menu-item .value=${GET_EXTENSIONS_MENU_ITEM}>
                   ${i18nString(UIStrings.getExtensions)}
-                </${Menus.Menu.MenuItem.litTagName}>
-              </${Menus.Menu.MenuGroup.litTagName}>
-            </${Menus.Menu.Menu.litTagName}>
-            <${Buttons.Button.Button.litTagName}
+                </devtools-menu-item>
+              </devtools-menu-group>
+            </devtools-menu>
+            <devtools-button
               @click=${this.#onDeleteRecording}
               .data=${{
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
@@ -1101,9 +1101,9 @@ let RecorderController = class RecorderController extends LitElement {
             title: i18nString(UIStrings.deleteRecording),
             jslogContext: 'delete-recording',
         }}
-            ></${Buttons.Button.Button.litTagName}>
+            ></devtools-button>
             <div class="separator"></div>
-            <${Buttons.Button.Button.litTagName}
+            <devtools-button
               @click=${() => this.recordingPlayer?.continue()}
               .data=${{
             variant: "primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */,
@@ -1113,8 +1113,8 @@ let RecorderController = class RecorderController extends LitElement {
             title: i18nString(UIStrings.continueReplay),
             jslogContext: 'continue-replay',
         }}
-            ></${Buttons.Button.Button.litTagName}>
-            <${Buttons.Button.Button.litTagName}
+            ></devtools-button>
+            <devtools-button
               @click=${() => this.recordingPlayer?.stepOver()}
               .data=${{
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
@@ -1124,16 +1124,16 @@ let RecorderController = class RecorderController extends LitElement {
             title: i18nString(UIStrings.stepOverReplay),
             jslogContext: 'step-over',
         }}
-            ></${Buttons.Button.Button.litTagName}>
+            ></devtools-button>
             <div class="feedback">
               <x-link class="x-link" href=${Components.StartView.FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
             </div>
             <div class="separator"></div>
-            <${Dialogs.ShortcutDialog.ShortcutDialog.litTagName}
+            <devtools-shortcut-dialog
               .data=${{
             shortcuts: this.#getShortcutsInfo(),
         }} jslog=${VisualLogging.action('show-shortcuts').track({ click: true })}
-            ></${Dialogs.ShortcutDialog.ShortcutDialog.litTagName}>
+            ></devtools-shortcut-dialog>
           </div>
           ${this.importError
             ? html `<div class='error'>Import error: ${this.importError.message}</div>`

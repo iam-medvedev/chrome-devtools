@@ -1,3 +1,4 @@
+import '../../../ui/components/data_grid/data_grid.js';
 import type * as Protocol from '../../../generated/protocol.js';
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export interface EndpointsGridData {
@@ -5,7 +6,6 @@ export interface EndpointsGridData {
 }
 export declare class EndpointsGrid extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: EndpointsGridData);
 }

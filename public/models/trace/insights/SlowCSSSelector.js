@@ -55,6 +55,8 @@ export function generateInsight(parsedTrace, context) {
         return b[SelectorTimingsKey.MatchAttempts] - a[SelectorTimingsKey.MatchAttempts];
     });
     return {
+        // TODO: should we identify UpdateLayout events as linked to this insight?
+        relatedEvents: [],
         totalElapsedMs: Types.Timing.MilliSeconds(totalElapsedUs / 1000.0),
         totalMatchAttempts,
         totalMatchCount,

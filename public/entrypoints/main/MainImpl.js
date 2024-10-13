@@ -302,6 +302,7 @@ export class MainImpl {
         Root.Runtime.experiments.register("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */, 'Performance panel: enable server timings in the timeline');
         Root.Runtime.experiments.register("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */, 'Extension storage in Application panel');
         Root.Runtime.experiments.register("floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */, 'Floating entry points for the AI assistance panel');
+        Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,

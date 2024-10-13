@@ -30,12 +30,20 @@ export declare class InsightProvideOverlays extends Event {
     static readonly eventName = "insightprovideoverlays";
     constructor(overlays: Array<Overlays.Overlays.TimelineOverlay>, options: Overlays.Overlays.TimelineOverlaySetOptions);
 }
+export declare class InsightProvideRelatedEvents extends Event {
+    label: string;
+    events: Array<Trace.Types.Events.Event>;
+    activateInsight: () => void;
+    static readonly eventName = "insightproviderelatedevents";
+    constructor(label: string, events: Array<Trace.Types.Events.Event>, activateInsight: () => void);
+}
 declare global {
     interface GlobalEventHandlersEventMap {
         [InsightActivated.eventName]: InsightActivated;
         [InsightDeactivated.eventName]: InsightDeactivated;
         [InsightSetHovered.eventName]: InsightSetHovered;
         [InsightProvideOverlays.eventName]: InsightProvideOverlays;
+        [InsightProvideRelatedEvents.eventName]: InsightProvideRelatedEvents;
     }
 }
 export declare class SidebarInsight extends HTMLElement {

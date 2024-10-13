@@ -112,5 +112,13 @@ export class InteractionsTrackAppender {
         }
         return this.#colorGenerator.colorForID(idForColorGeneration);
     }
+    highlightedEntryInfo(event) {
+        if (Trace.Types.Events.isSyntheticInteraction(event)) {
+            const breakdown = new Components.InteractionBreakdown.InteractionBreakdown();
+            breakdown.entry = event;
+            return { title: '', formattedTime: '', additionalElement: breakdown };
+        }
+        return { title: '', formattedTime: '' };
+    }
 }
 //# sourceMappingURL=InteractionsTrackAppender.js.map

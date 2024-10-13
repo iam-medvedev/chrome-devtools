@@ -4,6 +4,7 @@
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as ComponentHelpers from './helpers.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const TestElement = class extends HTMLElement {
     renderCount = 0;
@@ -36,13 +37,14 @@ describe('ComponentHelpers', () => {
                 const targetDiv = document.createElement('div');
                 const callback = sinon.spy();
                 function fakeComponentRender() {
+                    LitHtml.render(
                     // clang-format off
-                    const html = LitHtml.html `
-          <span on-render=${ComponentHelpers.Directives.nodeRenderedCallback(callback)}>
-           hello world
-          </span>`;
+                    html `
+              <span on-render=${ComponentHelpers.Directives.nodeRenderedCallback(callback)}>
+               hello world
+              </span>`, 
                     // clang-format on
-                    LitHtml.render(html, targetDiv, { host: this });
+                    targetDiv, { host: this });
                 }
                 fakeComponentRender.call(targetDiv);
                 assert.isNotEmpty(targetDiv.innerHTML);
@@ -52,13 +54,14 @@ describe('ComponentHelpers', () => {
                 const targetDiv = document.createElement('div');
                 const callback = sinon.spy();
                 function fakeComponentRender(output) {
+                    LitHtml.render(
                     // clang-format off
-                    const html = LitHtml.html `
-          <span on-render=${ComponentHelpers.Directives.nodeRenderedCallback(callback)}>
-           ${output}
-          </span>`;
+                    html `
+              <span on-render=${ComponentHelpers.Directives.nodeRenderedCallback(callback)}>
+               ${output}
+              </span>`, 
                     // clang-format on
-                    LitHtml.render(html, targetDiv, { host: this });
+                    targetDiv, { host: this });
                 }
                 fakeComponentRender.call(targetDiv, 'render one');
                 assert.strictEqual(callback.callCount, 1);

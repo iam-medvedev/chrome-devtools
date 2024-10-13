@@ -503,9 +503,6 @@ export class ToolbarButton extends ToolbarItem {
     focus() {
         this.element.focus();
     }
-    pressed(pressed) {
-        this.button.pressed = pressed;
-    }
     checked(checked) {
         this.button.checked = checked;
     }
@@ -781,7 +778,6 @@ export class ToolbarToggle extends ToolbarButton {
         this.setToggledIcon(this.toggledGlyph || '');
         this.setToggleType("primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */);
         this.toggled(false);
-        this.setPressed(false);
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context(jslogContext)}`);
         }
@@ -789,15 +785,11 @@ export class ToolbarToggle extends ToolbarButton {
             this.setToggleOnClick(toggleOnClick);
         }
     }
-    setPressed(pressed) {
-        this.pressed(pressed);
-    }
     setToggleOnClick(toggleOnClick) {
         this.toggleOnClick(toggleOnClick);
     }
     setToggled(toggled) {
         this.toggled(toggled);
-        this.setPressed(toggled);
     }
     setChecked(checked) {
         this.checked(checked);
@@ -817,7 +809,8 @@ export class ToolbarToggle extends ToolbarButton {
 export class ToolbarMenuButton extends ToolbarCombobox {
     contextMenuHandler;
     useSoftMenu;
-    triggerTimeout;
+    triggerTimeoutId;
+    #triggerDelay = 200;
     constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext, iconName) {
         super('', isIconDropdown, jslogContext, iconName);
         if (jslogContext) {
@@ -827,17 +820,23 @@ export class ToolbarMenuButton extends ToolbarCombobox {
         this.useSoftMenu = Boolean(useSoftMenu);
         ARIAUtils.markAsMenuButton(this.element);
     }
+    setTriggerDelay(x) {
+        this.#triggerDelay = x;
+    }
     mouseDown(event) {
+        if (!this.enabled) {
+            return;
+        }
         if (event.buttons !== 1) {
             super.mouseDown(event);
             return;
         }
-        if (!this.triggerTimeout) {
-            this.triggerTimeout = window.setTimeout(this.trigger.bind(this, event), 200);
+        if (!this.triggerTimeoutId) {
+            this.triggerTimeoutId = window.setTimeout(this.trigger.bind(this, event), this.#triggerDelay);
         }
     }
     trigger(event) {
-        delete this.triggerTimeout;
+        delete this.triggerTimeoutId;
         const contextMenu = new ContextMenu(event, {
             useSoftMenu: this.useSoftMenu,
             x: this.element.getBoundingClientRect().left,
@@ -851,8 +850,8 @@ export class ToolbarMenuButton extends ToolbarCombobox {
         void contextMenu.show();
     }
     clicked(event) {
-        if (this.triggerTimeout) {
-            clearTimeout(this.triggerTimeout);
+        if (this.triggerTimeoutId) {
+            clearTimeout(this.triggerTimeoutId);
         }
         this.trigger(event);
     }

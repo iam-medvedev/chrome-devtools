@@ -14,6 +14,27 @@ export interface TraceEntryNode {
     parent: TraceEntryNode | null;
     children: TraceEntryNode[];
 }
+/**
+ * Represents a node in a trace entry tree, simplified for AI Assistance processing.
+ */
+export declare class TraceEntryNodeForAI {
+    #private;
+    type: string;
+    start: Types.Timing.MilliSeconds;
+    end?: Types.Timing.MilliSeconds | undefined;
+    totalTime?: Types.Timing.MilliSeconds | undefined;
+    selfTime?: Types.Timing.MilliSeconds | undefined;
+    id?: TraceEntryNodeId;
+    domain?: string;
+    line?: number;
+    column?: number;
+    function?: string;
+    children?: TraceEntryNodeForAI[];
+    selected?: boolean;
+    constructor(type: string, start: Types.Timing.MilliSeconds, end?: Types.Timing.MilliSeconds | undefined, totalTime?: Types.Timing.MilliSeconds | undefined, selfTime?: Types.Timing.MilliSeconds | undefined);
+    static fromSelectedEntryNode(selectedEntryNode: TraceEntryNode): TraceEntryNodeForAI;
+    static getSelectedNodeForTraceEntryTreeForAI(node: TraceEntryNodeForAI): TraceEntryNodeForAI | null;
+}
 declare class TraceEntryNodeIdTag {
     #private;
 }

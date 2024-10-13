@@ -135,22 +135,13 @@ export class Model extends EventTarget {
      * If no index is given, the last stored parsed data is returned.
      */
     parsedTrace(index = this.#traces.length - 1) {
-        if (!this.#traces[index]) {
-            return null;
-        }
-        return this.#traces[index].parsedTrace;
+        return this.#traces.at(index)?.parsedTrace ?? null;
     }
     traceInsights(index = this.#traces.length - 1) {
-        if (!this.#traces[index]) {
-            return null;
-        }
-        return this.#traces[index].traceInsights;
+        return this.#traces.at(index)?.traceInsights ?? null;
     }
     metadata(index = this.#traces.length - 1) {
-        if (!this.#traces[index]) {
-            return null;
-        }
-        return this.#traces[index].metadata;
+        return this.#traces.at(index)?.metadata ?? null;
     }
     overrideModifications(index, newModifications) {
         if (this.#traces[index]) {
@@ -158,16 +149,10 @@ export class Model extends EventTarget {
         }
     }
     rawTraceEvents(index = this.#traces.length - 1) {
-        if (!this.#traces[index]) {
-            return null;
-        }
-        return this.#traces[index].traceEvents;
+        return this.#traces.at(index)?.traceEvents ?? null;
     }
     syntheticTraceEventsManager(index = this.#traces.length - 1) {
-        if (!this.#syntheticEventsManagerByTrace[index]) {
-            return null;
-        }
-        return this.#syntheticEventsManagerByTrace[index];
+        return this.#syntheticEventsManagerByTrace.at(index) ?? null;
     }
     size() {
         return this.#traces.length;

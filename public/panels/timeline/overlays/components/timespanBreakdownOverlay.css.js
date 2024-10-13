@@ -14,11 +14,7 @@ styles.replaceSync(
 .timespan-breakdown-overlay-section {
   border: solid;
   border-color: var(--sys-color-on-surface);
-  border-left-width: 1px;
-  border-right-width: 1px;
-  border-top-width: 4px;
-  /* stylelint mistakenly thinks this is invalid, but without this the bottom width is on by default */
-  border-bottom-width: 0; /* stylelint-disable-line declaration-block-no-redundant-longhand-properties */
+  border-width: 4px 1px 0;
   align-content: flex-start;
   text-align: center;
   overflow: hidden;
@@ -26,6 +22,21 @@ styles.replaceSync(
   background-image: linear-gradient(180deg, var(--sys-color-on-primary), transparent);
   height: 90%;
   box-sizing: border-box;
+  padding-top: var(--sys-size-2);
+
+  :host(.is-below) & {
+    border-top-width: 0;
+    border-bottom-width: 4px;
+    align-content: flex-end; /* anchor the text at the bottom */
+    padding-bottom: var(--sys-size-2);
+    padding-top: 0;
+
+    /* re-order so the timestamp is below label */
+    .timespan-breakdown-overlay-label {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+  }
 }
 
 :host {
@@ -53,11 +64,6 @@ styles.replaceSync(
 
 :host(.is-below) {
   align-items: flex-start;
-
-  .timespan-breakdown-overlay-section {
-    border-top-width: 0;
-    border-bottom-width: 4px;
-  }
 }
 
 /* Depending on if the number of sections is odd or even, we alternate the
@@ -100,6 +106,7 @@ styles.replaceSync(
   text-wrap: nowrap;
 
   .duration-text {
+    font-size: var(--sys-typescale-body4-size);
     text-overflow: ellipsis;
     overflow: hidden;
     text-wrap: nowrap;

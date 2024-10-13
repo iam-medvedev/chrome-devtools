@@ -2,8 +2,10 @@ import { Widget } from '../../legacy.js';
 import { type ColumnDescriptor, DataGridImpl } from './DataGrid.js';
 interface Callbacks {
     refreshItems: () => void;
-    removeItem: (key: string) => void;
-    setItem: (key: string, value: string) => void;
+    edit?: {
+        removeItem: (key: string) => void;
+        setItem: (key: string, value: string) => void;
+    };
     setCanDeleteSelected: (canSelect: boolean) => void;
     createPreview: (key: string, value: string) => Promise<Widget.Widget | null>;
 }
@@ -27,5 +29,6 @@ export declare class DataGridWithPreview {
     showItems(items: string[][]): void;
     deleteSelectedItem(): void;
     showPreview(preview: Widget.Widget | null, value: string | null): void;
+    detach(): void;
 }
 export {};

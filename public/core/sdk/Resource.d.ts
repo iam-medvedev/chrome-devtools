@@ -2,8 +2,8 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { type NetworkRequest } from './NetworkRequest.js';
-import { type ResourceTreeFrame, type ResourceTreeModel } from './ResourceTreeModel.js';
+import type { NetworkRequest } from './NetworkRequest.js';
+import type { ResourceTreeFrame, ResourceTreeModel } from './ResourceTreeModel.js';
 export declare class Resource implements TextUtils.ContentProvider.ContentProvider {
     #private;
     constructor(resourceTreeModel: ResourceTreeModel, request: NetworkRequest | null, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, type: Common.ResourceType.ResourceType, mimeType: string, lastModified: Date | null, contentSize: number | null);

@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+:host {
+  --markdown-link-text-decoration-style: underline;
+}
+
 .insight {
   display: block;
   position: relative;
@@ -25,6 +29,11 @@ styles.replaceSync(
   &.closed {
     background-color: var(--sys-color-surface3);
     border: none;
+
+    &:focus-within {
+      /* Ensure that if the user tabs to a closed insight, we outline it so they know it's focused. */
+      outline: var(--sys-size-1) solid var(--sys-color-primary);
+    }
   }
 
   header {
@@ -32,6 +41,12 @@ styles.replaceSync(
 
     h3 {
       font: var(--sys-typescale-body4-medium);
+    }
+  }
+
+  &:not(.closed) {
+    header {
+      padding-bottom: var(--sys-size-2);
     }
   }
 }
@@ -50,7 +65,9 @@ styles.replaceSync(
   opacity: 0%;
   transition: opacity 0.2s ease;
 
-  .insight:hover & {
+  /* Ensure that the icon appears when the user hovers, or focuses the header */
+  .insight:hover &,
+  header:focus-within & {
     opacity: 100%;
   }
 
@@ -74,16 +91,15 @@ styles.replaceSync(
 }
 
 .insight-section {
-  padding: var(--sys-size-5) 0;
+  padding-top: var(--sys-size-5);
 }
 
 .insight-description:not(:empty) {
   padding-bottom: var(--sys-size-5);
 }
 
-.insight-description:not(:empty),
-.insight-section:not(:last-child) {
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+.insight-section:not(:empty) {
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .insight-title {
@@ -123,15 +139,19 @@ dd.dl-title {
 }
 
 .element-img {
-  max-width: 20%;
-  max-height: 20%;
-  padding-inline: var(--sys-size-3);
+  width: var(--sys-size-13);
+  height: var(--sys-size-13);
+  object-fit: cover;
+  border: var(--sys-size-1) solid var(--sys-color-divider);
+  background: var(--sys-color-divider) -0.054px -12px / 100.239% 148.936% no-repeat;
+  margin-right: var(--sys-size-5);
 }
 
 .element-img-details {
   font: var(--sys-typescale-body4-regular);
   display: flex;
   flex-direction: column;
+  word-break: break-all;
 
   .element-img-details-size {
     color: var(--color-text-secondary);
@@ -143,7 +163,7 @@ dd.dl-title {
 }
 
 .insight-savings {
-  font-weight: var(--ref-typeface-weight-bold);
+  font: var(--sys-typescale-body4-medium);
   color: var(--sys-color-green);
 }
 
@@ -165,13 +185,19 @@ ul.insight-icon-results {
   }
 }
 
-.devtools-link {
+.timeline-link {
   cursor: pointer;
   text-decoration: underline;
   color: var(--sys-color-primary);
+  /* for a11y reasons this is a button, so we have to remove some default
+   * styling */
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
 }
 
-.devtools-link.invalid-link {
+.timeline-link.invalid-link {
   color: var(--sys-color-state-disabled);
 }
 

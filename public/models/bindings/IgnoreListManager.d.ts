@@ -1,7 +1,7 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';
-import { type DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
+import type { DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
 export type IgnoreListGeneralRules = {
     isContentScript?: boolean;
     isKnownThirdParty?: boolean;
@@ -19,9 +19,13 @@ export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObse
     removeChangeListener(listener: () => void): void;
     modelAdded(debuggerModel: SDK.DebuggerModel.DebuggerModel): void;
     modelRemoved(debuggerModel: SDK.DebuggerModel.DebuggerModel): void;
+    private isContentScript;
+    private onExecutionContextCreated;
+    private onExecutionContextDestroyed;
     private clearCacheIfNeeded;
     private getSkipStackFramesPatternSetting;
     private setIgnoreListPatterns;
+    private updateIgnoredExecutionContexts;
     private getGeneralRulesForUISourceCode;
     isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean;
     isUserIgnoreListedURL(url: Platform.DevToolsPath.UrlString | null, options?: IgnoreListGeneralRules): boolean;
@@ -35,9 +39,12 @@ export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObse
     get enableIgnoreListing(): boolean;
     set enableIgnoreListing(value: boolean);
     get skipContentScripts(): boolean;
+    get skipAnonymousScripts(): boolean;
     get automaticallyIgnoreListKnownThirdPartyScripts(): boolean;
     ignoreListContentScripts(): void;
     unIgnoreListContentScripts(): void;
+    ignoreListAnonymousScripts(): void;
+    unIgnoreListAnonymousScripts(): void;
     ignoreListThirdParty(): void;
     unIgnoreListThirdParty(): void;
     ignoreListURL(url: Platform.DevToolsPath.UrlString): void;

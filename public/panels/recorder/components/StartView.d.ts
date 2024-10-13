@@ -1,4 +1,6 @@
 import '../../../ui/legacy/legacy.js';
+import '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
+import '../../../ui/components/panel_feedback/panel_feedback.js';
 import type * as Platform from '../../../core/platform/platform.js';
 export declare const FEEDBACK_URL: Platform.DevToolsPath.UrlString;
 declare global {
@@ -12,7 +14,6 @@ export declare class CreateRecordingEvent extends Event {
 }
 export declare class StartView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
 }

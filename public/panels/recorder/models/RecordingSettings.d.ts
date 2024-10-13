@@ -1,4 +1,4 @@
-import { type SetViewportStep, type EmulateNetworkConditionsStep } from './Schema.js';
+import type { EmulateNetworkConditionsStep, SetViewportStep } from './Schema.js';
 export interface RecordingSettings {
     viewportSettings?: SetViewportStep;
     networkConditionsSettings?: EmulateNetworkConditionsStep & {

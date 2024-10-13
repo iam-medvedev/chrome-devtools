@@ -6,7 +6,6 @@ interface Hint {
 }
 export declare class CSSHintDetailsView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(authoringHint: Hint);
 }
 declare global {

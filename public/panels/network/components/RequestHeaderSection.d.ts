@@ -10,7 +10,6 @@ export interface RequestHeaderSectionData {
 }
 export declare class RequestHeaderSection extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: RequestHeaderSectionData);
 }

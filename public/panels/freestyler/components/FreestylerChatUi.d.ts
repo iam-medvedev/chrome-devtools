@@ -1,5 +1,9 @@
+import '../../../ui/components/spinners/spinners.js';
+import './ProvideFeedback.js';
 import * as Host from '../../../core/host/host.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
+import * as Trace from '../../../models/trace/trace.js';
+import type * as Workspace from '../../../models/workspace/workspace.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -12,7 +16,7 @@ export interface Step {
     output?: string;
     canceled?: boolean;
     sideEffect?: ConfirmSideEffectDialog;
-    contextDetails?: ContextDetail[];
+    contextDetails?: [ContextDetail, ...ContextDetail[]];
 }
 interface ConfirmSideEffectDialog {
     onAnswer: (result: boolean) => void;
@@ -40,7 +44,9 @@ export declare const enum State {
 }
 export declare const enum AgentType {
     FREESTYLER = "freestyler",
-    DRJONES_NETWORK_REQUEST = "drjones-network-request"
+    DRJONES_FILE = "drjones-file",
+    DRJONES_NETWORK_REQUEST = "drjones-network-request",
+    DRJONES_PERFORMANCE = "drjones-performance"
 }
 export interface Props {
     onTextSubmit: (text: string) => void;
@@ -48,19 +54,22 @@ export interface Props {
     onFeedbackSubmit: (rpcId: number, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onCancelClick: () => void;
     onSelectedNetworkRequestClick: () => void | Promise<void>;
+    onSelectedFileRequestClick: () => void | Promise<void>;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
     selectedElement: SDK.DOMModel.DOMNode | null;
+    selectedFile: Workspace.UISourceCode.UISourceCode | null;
     selectedNetworkRequest: SDK.NetworkRequest.NetworkRequest | null;
+    selectedStackTrace: Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;
     agentType: AgentType;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
-    templateForToken(token: Marked.Marked.Token): LitHtml.TemplateResult | null;
+    templateForToken(token: Marked.Marked.MarkedToken): LitHtml.TemplateResult | null;
 }
 export declare class FreestylerChatUi extends HTMLElement {
     #private;

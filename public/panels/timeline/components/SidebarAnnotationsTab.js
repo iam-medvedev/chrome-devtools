@@ -7,17 +7,17 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
-import * as Settings from '../../../ui/components/settings/settings.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { nameForEntry } from './EntryName.js';
 import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
+const { html } = LitHtml;
 const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
 const entryLabelImageUrl = new URL('../../../Images/performance-panel-entry-label.svg', import.meta.url).toString();
 const timeRangeImageUrl = new URL('../../../Images/performance-panel-time-range.svg', import.meta.url).toString();
+const deleteAnnotationImageUrl = new URL('../../../Images/performance-panel-delete-annotation.svg', import.meta.url).toString();
 const UIStrings = {
     /**
      * @description Title for entry label.
@@ -48,6 +48,14 @@ const UIStrings = {
      */
     timeRangeTutorialDescription: 'Shift-drag in the flamechart then type to create a time range annotation.',
     /**
+     * @description  Title for deleting annotations.
+     */
+    deleteAnnotationTutorialTitle: 'Delete an annotation',
+    /**
+     * @description Text for how to access an annotation delete function.
+     */
+    deleteAnnotationTutorialDescription: 'Hover over the list in the sidebar with Annotations tab selected to access the delete function.',
+    /**
      * @description Text used to describe the delete button to screen readers.
      * @example {"A paint event annotated with the text hello world"} PH1
      **/
@@ -74,7 +82,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/SidebarAnnotationsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SidebarAnnotationsTab extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-sidebar-annotations`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #annotations = [];
@@ -165,7 +172,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                 color: toTextColor,
             };
             // clang-format off
-            return LitHtml.html `
+            return html `
         <span class="annotation-identifier" style=${LitHtml.Directives.styleMap(styleForToAnnotationIdentifier)}>
           ${entryToName}
         </span>`;
@@ -194,7 +201,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                     backgroundColor,
                     color,
                 };
-                return LitHtml.html `
+                return html `
               <span class="annotation-identifier" style=${LitHtml.Directives.styleMap(styleForAnnotationIdentifier)}>
                 ${entryName}
               </span>
@@ -204,7 +211,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                 const minTraceBoundsMilli = TraceBounds.TraceBounds.BoundsManager.instance().state()?.milli.entireTraceBounds.min ?? 0;
                 const timeRangeStartInMs = Math.round(Trace.Helpers.Timing.microSecondsToMilliseconds(annotation.bounds.min) - minTraceBoundsMilli);
                 const timeRangeEndInMs = Math.round(Trace.Helpers.Timing.microSecondsToMilliseconds(annotation.bounds.max) - minTraceBoundsMilli);
-                return LitHtml.html `
+                return html `
               <span class="annotation-identifier time-range">
                 ${timeRangeStartInMs} - ${timeRangeEndInMs} ms
               </span>
@@ -219,18 +226,18 @@ export class SidebarAnnotationsTab extends HTMLElement {
                     color: fromTextColor,
                 };
                 // clang-format off
-                return LitHtml.html `
+                return html `
           <div class="entries-link">
-            <span class="annotation-identifier"  style=${LitHtml.Directives.styleMap(styleForFromAnnotationIdentifier)}">
+            <span class="annotation-identifier" style=${LitHtml.Directives.styleMap(styleForFromAnnotationIdentifier)}>
               ${entryFromName}
             </span>
-            <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
+            <devtools-icon class="inline-icon" .data=${{
                     iconName: 'arrow-forward',
                     color: 'var(--icon-default)',
                     width: '18px',
                     height: '18px',
                 }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            </devtools-icon>
             ${this.#renderEntryToIdentifier(annotation)}
           </div>
       `;
@@ -244,7 +251,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
         this.dispatchEvent(new RevealAnnotation(annotation));
     }
     #renderTutorialCard() {
-        return LitHtml.html `
+        return html `
       <div class="annotation-tutorial-container">
       ${i18nString(UIStrings.annotationGetStarted)}
         <div class="tutorial-card">
@@ -261,6 +268,11 @@ export class SidebarAnnotationsTab extends HTMLElement {
           <div class="tutorial-image"> <img src=${timeRangeImageUrl}></img></div>
           <div class="tutorial-title">${i18nString(UIStrings.timeRangeTutorialTitle)}</div>
           <div class="tutorial-description">${i18nString(UIStrings.timeRangeTutorialDescription)}</div>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-image"> <img src=${deleteAnnotationImageUrl}></img></div>
+          <div class="tutorial-title">${i18nString(UIStrings.deleteAnnotationTutorialTitle)}</div>
+          <div class="tutorial-description">${i18nString(UIStrings.deleteAnnotationTutorialDescription)}</div>
         </div>
       </div>
     `;
@@ -279,14 +291,14 @@ export class SidebarAnnotationsTab extends HTMLElement {
     }
     #render() {
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
         <span class="annotations">
           ${this.#annotations.length === 0 ?
             this.#renderTutorialCard() :
-            LitHtml.html `
+            html `
               ${this.#annotations.map(annotation => {
                 const label = detailedAriaDescriptionForAnnotation(annotation);
-                return LitHtml.html `
+                return html `
                   <div class="annotation-container"
                     @click=${() => this.#revealAnnotation(annotation)}
                     aria-label=${label}
@@ -305,7 +317,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                     event.stopPropagation();
                     this.dispatchEvent(new RemoveAnnotation(annotation));
                 }} jslog=${VisualLogging.action('timeline.annotation-sidebar.delete').track({ click: true })}>
-                      <${IconButton.Icon.Icon.litTagName}
+                      <devtools-icon
                         class="bin-icon"
                         .data=${{
                     iconName: 'bin',
@@ -313,16 +325,16 @@ export class SidebarAnnotationsTab extends HTMLElement {
                     width: '20px',
                     height: '20px',
                 }}
-                      >
+                      ></devtools-icon>
                     </button>
                   </div>`;
             })}
-              <${Settings.SettingCheckbox.SettingCheckbox.litTagName} class="visibility-setting" .data=${{
+              <setting-checkbox class="visibility-setting" .data=${{
                 setting: this.#annotationsHiddenSetting,
                 textOverride: 'Hide annotations',
             }}>
-              </${Settings.SettingCheckbox.SettingCheckbox.litTagName}>
-        </span>`}`, this.#shadow, { host: this });
+              </setting-checkbox>`}
+      </span>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

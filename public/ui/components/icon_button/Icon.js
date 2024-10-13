@@ -21,8 +21,8 @@ import iconStyles from './icon.css.legacy.js';
  *
  * // Use within a template:
  * LitHtml.html`
- *   <${IconButton.Icon.Icon.litTagName} name="bin">
- *   </${IconButton.Icon.Icon.litTagName}>
+ *   <devtools-icon name="bin">
+ *   </devtools-icon>
  * `;
  * ```
  *

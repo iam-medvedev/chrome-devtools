@@ -1,5 +1,7 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/components/node_text/node_text.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
-import { type DOMNode } from './Helper.js';
+import type { DOMNode } from './Helper.js';
 export declare class NodeSelectedEvent extends Event {
     static readonly eventName = "breadcrumbsnodeselected";
     legacyDomNode: SDK.DOMModel.DOMNode;
@@ -11,7 +13,6 @@ export interface ElementsBreadcrumbsData {
 }
 export declare class ElementsBreadcrumbs extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: ElementsBreadcrumbsData);
     disconnectedCallback(): void;

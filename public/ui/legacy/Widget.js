@@ -28,6 +28,7 @@
  */
 import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as Helpers from '../components/helpers/helpers.js';
 import { Constraints, Size } from './Geometry.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
@@ -43,6 +44,32 @@ function assert(condition, message) {
     if (!condition) {
         throw new Error(message);
     }
+}
+export class WidgetElement extends HTMLElement {
+    widgetClass;
+    widgetParams = [];
+    createWidget() {
+        if (!this.widgetClass) {
+            throw new Error('No widgetClass defined');
+        }
+        return new this.widgetClass(...this.widgetParams, this);
+    }
+    connectedCallback() {
+        Widget.getOrCreateWidget(this).show(this.parentElement);
+    }
+}
+customElements.define('devtools-widget', WidgetElement);
+export function widgetRef(type, callback) {
+    return LitHtml.Directives.ref((e) => {
+        if (!(e instanceof HTMLElement)) {
+            return;
+        }
+        const widget = Widget.getOrCreateWidget(e);
+        if (!(widget instanceof type)) {
+            throw new Error(`Expected an element with a widget of type ${type.name} but got ${e?.constructor?.name}`);
+        }
+        callback(widget);
+    });
 }
 const widgetCounterMap = new WeakMap();
 const widgetMap = new WeakMap();
@@ -65,7 +92,6 @@ export class Widget {
     element;
     contentElement;
     shadowRoot;
-    isWebComponent;
     visibleInternal;
     isRoot;
     isShowingInternal;
@@ -80,23 +106,23 @@ export class Widget {
     constraintsInternal;
     invalidationsRequested;
     externallyManaged;
-    constructor(isWebComponent, delegatesFocus) {
-        this.contentElement = document.createElement('div');
-        this.contentElement.classList.add('widget');
-        if (isWebComponent) {
-            this.element = document.createElement('div');
+    constructor(useShadowDom, delegatesFocus, element) {
+        this.element = element || document.createElement('div');
+        this.shadowRoot = this.element.shadowRoot || undefined;
+        if (useShadowDom && !this.shadowRoot) {
             this.element.classList.add('vbox');
             this.element.classList.add('flex-auto');
             this.shadowRoot = createShadowRootWithCoreStyles(this.element, {
                 cssFile: undefined,
                 delegatesFocus,
             });
+            this.contentElement = document.createElement('div');
             this.shadowRoot.appendChild(this.contentElement);
         }
         else {
-            this.element = this.contentElement;
+            this.contentElement = this.element;
         }
-        this.isWebComponent = isWebComponent;
+        this.contentElement.classList.add('widget');
         widgetMap.set(this.element, this);
         this.visibleInternal = false;
         this.isRoot = false;
@@ -117,6 +143,16 @@ export class Widget {
      */
     static get(node) {
         return widgetMap.get(node);
+    }
+    static getOrCreateWidget(element) {
+        const widget = Widget.get(element);
+        if (widget) {
+            return widget;
+        }
+        if (element instanceof WidgetElement) {
+            return element.createWidget();
+        }
+        return new Widget(undefined, undefined, element);
     }
     markAsRoot() {
         assert(!this.element.parentElement, 'Attempt to mark as root attached node');
@@ -410,7 +446,7 @@ export class Widget {
         this.doResize();
     }
     registerRequiredCSS(cssFile) {
-        if (this.isWebComponent) {
+        if (this.shadowRoot) {
             ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot, cssFile);
         }
         else {
@@ -419,7 +455,7 @@ export class Widget {
     }
     registerCSSFiles(cssFiles) {
         let root;
-        if (this.isWebComponent && this.shadowRoot !== undefined) {
+        if (this.shadowRoot) {
             root = this.shadowRoot;
         }
         else {
@@ -547,8 +583,8 @@ export class Widget {
 }
 const storedScrollPositions = new WeakMap();
 export class VBox extends Widget {
-    constructor(isWebComponent, delegatesFocus) {
-        super(isWebComponent, delegatesFocus);
+    constructor(isWebComponent, delegatesFocus, element) {
+        super(isWebComponent, delegatesFocus, element);
         this.contentElement.classList.add('vbox');
     }
     calculateConstraints() {

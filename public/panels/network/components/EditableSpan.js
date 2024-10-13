@@ -7,7 +7,6 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import editableSpanStyles from './EditableSpan.css.js';
 const { render, html } = LitHtml;
 export class EditableSpan extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-editable-span`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #value = '';

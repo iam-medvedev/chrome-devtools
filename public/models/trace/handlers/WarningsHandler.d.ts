@@ -1,5 +1,5 @@
 import * as Types from '../types/types.js';
-import { type HandlerName } from './types.js';
+import type { HandlerName } from './types.js';
 export interface WarningsData {
     perEvent: Map<Types.Events.Event, Warning[]>;
     perWarning: Map<Warning, Types.Events.Event[]>;

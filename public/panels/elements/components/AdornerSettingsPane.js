@@ -29,7 +29,6 @@ export class AdornerSettingUpdatedEvent extends Event {
     }
 }
 export class AdornerSettingsPane extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-adorner-settings-pane`;
     #shadow = this.attachShadow({ mode: 'open' });
     #settings = new Map();
     connectedCallback() {
@@ -86,13 +85,13 @@ export class AdornerSettingsPane extends HTMLElement {
         <div class="setting-list" @change=${this.#onChange}>
           ${settingTemplates}
         </div>
-        <${Buttons.Button.Button.litTagName} aria-label=${i18nString(UIStrings.closeButton)}
+        <devtools-button aria-label=${i18nString(UIStrings.closeButton)}
                                              .iconName=${'cross'}
                                              .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
                                              .title=${i18nString(UIStrings.closeButton)}
                                              .variant=${"icon" /* Buttons.Button.Variant.ICON */}
                                              jslog=${VisualLogging.close().track({ click: true })}
-                                             @click=${this.hide}></${Buttons.Button.Button.litTagName}>
+                                             @click=${this.hide}></devtools-button>
       </div>
     `, this.#shadow, {
             host: this,

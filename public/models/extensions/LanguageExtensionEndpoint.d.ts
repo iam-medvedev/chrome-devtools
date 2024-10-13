@@ -1,4 +1,4 @@
-import { type Chrome } from '../../../extension-api/ExtensionAPI.js';
+import type { Chrome } from '../../../extension-api/ExtensionAPI.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
 export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLanguagePlugins.DebuggerLanguagePlugin {

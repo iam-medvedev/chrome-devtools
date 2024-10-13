@@ -12,7 +12,6 @@ export interface TimelineSectionData {
 }
 export declare class TimelineSection extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     set data(data: TimelineSectionData);
     connectedCallback(): void;

@@ -10,6 +10,7 @@ import { html as xhtml } from './Fragment.js';
 import { Tooltip } from './Tooltip.js';
 import { addReferrerToURLIfNecessary, copyLinkAddressLabel, MaxLengthForDisplayedURLs, openLinkExternallyLabel, } from './UIUtils.js';
 import { XElement } from './XElement.js';
+const { html } = LitHtml;
 export class XLink extends XElement {
     hrefInternal;
     clickable;
@@ -134,5 +135,5 @@ export class ContextMenuProvider {
     }
 }
 customElements.define('x-link', XLink);
-export const sample = LitHtml.html `<p>Hello, <x-link>world!</x-link></p>`;
+export const sample = html `<p>Hello, <x-link>world!</x-link></p>`;
 //# sourceMappingURL=XLink.js.map

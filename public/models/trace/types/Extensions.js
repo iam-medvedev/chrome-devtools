@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const extensionPalette = [
+export const extensionPalette = [
     'primary',
     'primary-light',
     'primary-dark',
@@ -12,6 +12,7 @@ const extensionPalette = [
     'tertiary-light',
     'tertiary-dark',
     'error',
+    'warning',
 ];
 export function colorIsValid(color) {
     return extensionPalette.includes(color);

@@ -17,6 +17,7 @@ import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 import protocolMonitorStyles from './protocolMonitor.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Text for one or a group of functions
@@ -120,7 +121,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/protocol_monitor/ProtocolMonitor.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const timeRenderer = (value) => {
-    return LitHtml.html `${i18nString(UIStrings.sMs, { PH1: String(value) })}`;
+    return html `${i18nString(UIStrings.sMs, { PH1: String(value) })}`;
 };
 export const buildProtocolMetadata = (domains) => {
     const metadataByCommand = new Map();

@@ -1,3 +1,4 @@
+import './RequestHeaderSection.js';
 import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
@@ -5,7 +6,6 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 export declare class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     wasShown(): void;
     willHide(): void;
@@ -29,7 +29,6 @@ export interface CategoryData {
 }
 export declare class Category extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: CategoryData);
 }

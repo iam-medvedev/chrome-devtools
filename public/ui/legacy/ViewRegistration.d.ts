@@ -1,8 +1,8 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
-import { type ViewLocationResolver } from './View.js';
+import type { ViewLocationResolver } from './View.js';
 import { PreRegisteredView } from './ViewManager.js';
-import { type Widget } from './Widget.js';
+import type { Widget } from './Widget.js';
 export declare const enum ViewPersistence {
     CLOSEABLE = "closeable",
     PERMANENT = "permanent",

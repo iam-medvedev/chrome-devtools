@@ -61,7 +61,7 @@ styles.replaceSync(
   .try-rule-selector-element,
   .ancestor-rule-list,
   .ancestor-closing-braces {
-    color: var(--sys-color-token-meta);
+    color: var(--app-color-element-sidebar-subtitle);
   }
 
   .ancestor-rule-list,
@@ -198,7 +198,7 @@ styles.replaceSync(
   background-color: var(--sys-color-surface2);
   padding: 0 5px;
   border-bottom: 1px solid var(--sys-color-divider);
-  color: var(--sys-color-token-subtle);
+  color: var(--sys-color-on-surface-subtle);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

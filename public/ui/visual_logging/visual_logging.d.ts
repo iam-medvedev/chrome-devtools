@@ -4,7 +4,9 @@ export type Loggable = LoggableModule.Loggable;
 export { setVeDebugLoggingEnabled, DebugLoggingFormat } from './Debugging.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions } from './LoggingEvents.js';
-export declare const logClick: (l: Loggable, e: Event) => void;
+export declare const logClick: (loggable: Loggable, event: Event, options?: {
+    doubleClick?: boolean;
+}) => void;
 export declare const logResize: (l: Loggable, s: DOMRect) => void;
 export declare const logKeyDown: (l: Loggable | null, e: Event, context?: string) => Promise<void>;
 export { registerParentProvider, setMappedParent } from './LoggingState.js';

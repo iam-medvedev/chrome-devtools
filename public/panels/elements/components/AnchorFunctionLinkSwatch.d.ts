@@ -1,3 +1,5 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/legacy/components/inline_editor/inline_editor.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 export type AnchorFunctionLinkSwatchData = {
     onLinkActivate: () => void;
@@ -9,7 +11,6 @@ export type AnchorFunctionLinkSwatchData = {
 };
 export declare class AnchorFunctionLinkSwatch extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(data: AnchorFunctionLinkSwatchData);
     dataForTest(): AnchorFunctionLinkSwatchData;
     connectedCallback(): void;

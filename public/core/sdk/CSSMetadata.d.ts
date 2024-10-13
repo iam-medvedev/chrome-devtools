@@ -3,6 +3,7 @@ export declare class CSSMetadata {
     #private;
     constructor(properties: CSSPropertyDefinition[], aliasesFor: Map<string, string>);
     static isCSSWideKeyword(a: string): a is CSSWideKeyword;
+    static isPositionTryOrderKeyword(a: string): a is PositionTryOrderKeyword;
     private static sortPrefixesAndCSSWideKeywordsToEnd;
     allProperties(): string[];
     aliasesFor(): Map<string, string>;
@@ -45,6 +46,14 @@ export declare const enum CSSWideKeyword {
     UNSET = "unset"
 }
 export declare const CSSWideKeywords: CSSWideKeyword[];
+export declare const enum PositionTryOrderKeyword {
+    NORMAL = "normal",
+    MOST_HEIGHT = "most-height",
+    MOST_WIDTH = "most-width",
+    MOST_BLOCK_SIZE = "most-block-size",
+    MOST_INLINE_SIZE = "most-inline-size"
+}
+export declare const PositionTryOrderKeywords: PositionTryOrderKeyword[];
 export declare const VariableNameRegex: RegExp;
 export declare const VariableRegex: RegExp;
 export declare const CustomVariableRegex: RegExp;

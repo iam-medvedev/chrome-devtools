@@ -3,7 +3,7 @@ import * as NetworkForward from '../../panels/network/forward/forward.js';
 import type * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components/components.js';
-import { type NetworkTimeCalculator } from './NetworkTimeCalculator.js';
+import type { NetworkTimeCalculator } from './NetworkTimeCalculator.js';
 export declare class NetworkItemView extends UI.TabbedPane.TabbedPane {
     private requestInternal;
     private readonly resourceViewTabSetting;

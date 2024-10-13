@@ -5,10 +5,12 @@ import * as Protocol from '../../generated/protocol.js';
 export declare class ExtensionStorage extends Common.ObjectWrapper.ObjectWrapper<{}> {
     #private;
     constructor(model: ExtensionStorageModel, extensionId: string, name: string, storageArea: Protocol.Extensions.StorageArea);
+    get model(): ExtensionStorageModel;
     get extensionId(): string;
     get name(): string;
+    get key(): string;
     get storageArea(): Protocol.Extensions.StorageArea;
-    getItems(): Promise<{
+    getItems(keys?: string[]): Promise<{
         [key: string]: unknown;
     }>;
     setItem(key: string, value: string): Promise<void>;

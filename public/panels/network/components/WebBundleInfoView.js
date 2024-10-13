@@ -1,11 +1,11 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/data_grid/data_grid.js';
+import '../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import { PanelUtils } from '../../../panels/utils/utils.js';
-import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -20,7 +20,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/network/components/WebBundleInfoView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    static litTagName = LitHtml.literal `devtools-web-bundle-info`;
     #shadow = this.attachShadow({ mode: 'open' });
     #webBundleInfo;
     #webBundleName;
@@ -51,9 +50,9 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
                         renderer() {
                             return html `
                 <div style="display: flex;">
-                  <${IconButton.Icon.Icon.litTagName} class="icon"
+                  <devtools-icon class="icon"
                     .data=${{ ...iconData, width: '20px' }}>
-                  </${IconButton.Icon.Icon.litTagName}>
+                  </devtools-icon>
                   <span>${url}</span>
                 </div>`;
                         },
@@ -63,21 +62,21 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
         });
         render(html `
       <div class="header">
-        <${IconButton.Icon.Icon.litTagName} class="icon"
+        <devtools-icon class="icon"
           .data=${{ color: 'var(--icon-default)', iconName: 'bundle', width: '20px' }}>
-        </${IconButton.Icon.Icon.litTagName}>
+        </devtools-icon>
         <span>${this.#webBundleName}</span>
         <x-link href="https://web.dev/web-bundles/#explaining-web-bundles"
           jslog=${VisualLogging.link('webbundle-explainer').track({
             click: true,
         })}>
-          <${IconButton.Icon.Icon.litTagName} class="icon"
+          <devtools-icon class="icon"
             .data=${{ color: 'var(--icon-default)', iconName: 'help', width: '16px' }}>
-          </${IconButton.Icon.Icon.litTagName}>
+          </devtools-icon>
         </x-link>
       </div>
       <div>
-        <${DataGrid.DataGrid.DataGrid.litTagName}
+        <devtools-data-grid
           .data=${{
             columns: [
                 {
@@ -91,7 +90,7 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
             rows,
             activeSort: null,
         }}>
-        </${DataGrid.DataGrid.DataGrid.litTagName}>
+        </devtools-data-grid>
       </div>`, this.#shadow, { host: this });
     }
 }

@@ -3,7 +3,8 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ApplicationPanelSidebar } from './ApplicationPanelSidebar.js';
-import { type DOMStorage } from './DOMStorageModel.js';
+import type { DOMStorage } from './DOMStorageModel.js';
+import type { ExtensionStorage } from './ExtensionStorageModel.js';
 import type * as PreloadingHelper from './preloading/helper/helper.js';
 export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     private readonly resourcesLastSelectedItemSetting;
@@ -13,6 +14,7 @@ export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     storageViews: HTMLElement;
     private readonly storageViewToolbar;
     private domStorageView;
+    private extensionStorageView;
     private cookieView;
     private readonly emptyWidget;
     private readonly sidebar;
@@ -30,6 +32,7 @@ export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     scheduleShowView(viewPromise: Promise<UI.Widget.Widget>): Promise<UI.Widget.Widget | null>;
     showCategoryView(categoryName: string, categoryLink: Platform.DevToolsPath.UrlString | null): void;
     showDOMStorage(domStorage: DOMStorage): void;
+    showExtensionStorage(extensionStorage: ExtensionStorage): void;
     showCookies(cookieFrameTarget: SDK.Target.Target, cookieDomain: string): void;
     clearCookies(target: SDK.Target.Target, cookieDomain: string): void;
     wasShown(): void;

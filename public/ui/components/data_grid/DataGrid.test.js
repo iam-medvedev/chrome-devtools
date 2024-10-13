@@ -10,6 +10,7 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as DataGrid from './data_grid.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const createColumns = () => {
     return [
@@ -215,7 +216,7 @@ describe('DataGrid', () => {
                             columnId: 'key',
                             value: 'Hello World',
                             title: 'Hello World',
-                            renderer: value => LitHtml.html `<p>foo: ${value}</p>`,
+                            renderer: value => html `<p>foo: ${value}</p>`,
                         }],
                 }];
             const component = renderDataGrid({ columns, rows });

@@ -1,7 +1,7 @@
+import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
 import type * as Extension from '../extensions/extensions.js';
 import type * as Models from '../models/models.js';
-import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
-import { type Converter } from './Converter.js';
+import type { Converter } from './Converter.js';
 export declare const EXTENSION_PREFIX = "extension_";
 export declare class ExtensionConverter implements Converter {
     #private;

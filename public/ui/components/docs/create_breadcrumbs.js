@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as LitHtml from '../../lit-html/lit-html.js';
+const { html } = LitHtml;
 export function init() {
     const container = document.createElement('ul');
     // clang-format off
     // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
-    LitHtml.render(LitHtml.html `
+    LitHtml.render(html `
 
   <style>
     .docs-breadcrumbs {

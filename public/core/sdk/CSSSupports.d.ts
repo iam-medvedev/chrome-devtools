@@ -1,5 +1,5 @@
 import type * as Protocol from '../../generated/protocol.js';
-import { type CSSModel } from './CSSModel.js';
+import type { CSSModel } from './CSSModel.js';
 import { CSSQuery } from './CSSQuery.js';
 export declare class CSSSupports extends CSSQuery {
     #private;

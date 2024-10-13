@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as Trace from '../../models/trace/trace.js';
-import { type Client } from './TimelineController.js';
+import type { Client } from './TimelineController.js';
 /**
  * This class handles loading traces from file and URL, and from the Lighthouse panel
  * It also handles loading cpuprofiles from file, url and console.profileEnd()

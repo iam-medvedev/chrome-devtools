@@ -1,8 +1,8 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import linearMemoryNavigatorStyles from './linearMemoryNavigator.css.js';
@@ -34,7 +34,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/components/LinearMemoryNavigator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
+const { render, html, Directives: { ifDefined } } = LitHtml;
 export class AddressInputChangedEvent extends Event {
     static eventName = 'addressinputchanged';
     data;
@@ -66,7 +66,6 @@ export class RefreshRequestedEvent extends Event {
     }
 }
 export class LinearMemoryNavigator extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-linear-memory-inspector-navigator`;
     #shadow = this.attachShadow({ mode: 'open' });
     #address = '0';
     #error = undefined;
@@ -133,7 +132,7 @@ export class LinearMemoryNavigator extends HTMLElement {
         jslog=${VisualLogging.textField('linear-memory-inspector.address').track({
             change: true,
         })}
-        title=${this.#valid ? i18nString(UIStrings.enterAddress) : this.#error || ''} @change=${this.#onAddressChange.bind(this, "Submitted" /* Mode.SUBMITTED */)} @input=${this.#onAddressChange.bind(this, "Edit" /* Mode.EDIT */)}/>`;
+        title=${ifDefined(this.#valid ? i18nString(UIStrings.enterAddress) : this.#error)} @change=${this.#onAddressChange.bind(this, "Submitted" /* Mode.SUBMITTED */)} @input=${this.#onAddressChange.bind(this, "Edit" /* Mode.EDIT */)}/>`;
     }
     #onAddressChange(mode, event) {
         const addressInput = event.target;
@@ -145,7 +144,7 @@ export class LinearMemoryNavigator extends HTMLElement {
         jslog=${VisualLogging.action().track({ click: true, keydown: 'Enter' }).context(data.jslogContext)}
         data-button=${data.event.type} title=${data.title}
         @click=${this.dispatchEvent.bind(this, data.event)}>
-        <${IconButton.Icon.Icon.litTagName} name=${data.icon}></${IconButton.Icon.Icon.litTagName}>
+        <devtools-icon name=${data.icon}></devtools-icon>
       </button>`;
     }
 }

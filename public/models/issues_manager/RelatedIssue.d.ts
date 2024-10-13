@@ -1,5 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import { type Issue, type IssueCategory } from './Issue.js';
+import type { Issue, IssueCategory } from './Issue.js';
 export type IssuesAssociatable = Readonly<SDK.NetworkRequest.NetworkRequest> | SDK.Cookie.Cookie | string;
 /**
  * @throws In case obj has an unsupported type (i.e. not part of the IssuesAssociatble union).

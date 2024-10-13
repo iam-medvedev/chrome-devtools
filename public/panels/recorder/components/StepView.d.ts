@@ -1,7 +1,10 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import './StepEditor.js';
+import './TimelineSection.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import type * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
-import { type StepEditedEvent } from './StepEditor.js';
+import type { StepEditedEvent } from './StepEditor.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-step-view': StepView;
@@ -120,7 +123,6 @@ export type ViewOutput = unknown;
 declare function viewFunction(input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot): void;
 export declare class StepView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(view?: typeof viewFunction);
     set data(data: StepViewData);
     get step(): Models.Schema.Step | undefined;

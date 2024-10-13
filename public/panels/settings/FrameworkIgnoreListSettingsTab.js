@@ -24,6 +24,10 @@ const UIStrings = {
     /**
      *@description Text in Framework Ignore List Settings Tab of the Settings
      */
+    ignoreListAnonymousScripts: 'Anonymous scripts from eval or console',
+    /**
+     *@description Text in Framework Ignore List Settings Tab of the Settings
+     */
     automaticallyIgnoreListKnownThirdPartyScripts: 'Known third-party scripts from source maps',
     /**
      *@description Text in Framework Ignore List Settings Tab of the Settings
@@ -110,6 +114,8 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         };
         automaticallyIgnoreLinkButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('http://goo.gle/skip-third-party'));
         automaticallyIgnoreList.appendChild(automaticallyIgnoreLinkButton);
+        const ignoreListAnonymousScripts = generalExclusionGroup.createChild('div', 'ignore-list-option');
+        ignoreListAnonymousScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListAnonymousScripts), Common.Settings.Settings.instance().moduleSetting('skip-anonymous-scripts'), true));
         const customExclusionGroup = this.createSettingGroup(i18nString(UIStrings.customExclusionRules));
         ignoreListOptions.appendChild(customExclusionGroup);
         this.list = new UI.ListWidget.ListWidget(this);

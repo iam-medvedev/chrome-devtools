@@ -1,8 +1,8 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import reportingApiGridStyles from './reportingApiGrid.css.js';
@@ -17,7 +17,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/application/components/Endpoint
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html } = LitHtml;
 export class EndpointsGrid extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-resources-endpoints-grid`;
     #shadow = this.attachShadow({ mode: 'open' });
     #endpoints = new Map();
     connectedCallback() {
@@ -61,8 +60,8 @@ export class EndpointsGrid extends HTMLElement {
       <div class="reporting-container" jslog=${VisualLogging.section('endpoints')}>
         <div class="reporting-header">${i18n.i18n.lockedString('Endpoints')}</div>
         ${this.#endpoints.size > 0 ? html `
-          <${DataGrid.DataGridController.DataGridController.litTagName} .data=${endpointsGridData}>
-          </${DataGrid.DataGridController.DataGridController.litTagName}>
+          <devtools-data-grid-controller .data=${endpointsGridData}>
+          </devtools-data-grid-controller>
         ` : html `
           <div class="reporting-placeholder">
             <div>${i18nString(UIStrings.noEndpointsToDisplay)}</div>

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../../models/trace/trace.js';
+import * as Extensions from '../../../../panels/timeline/extensions/extensions.js';
 import * as EnvironmentHelpers from '../../../../testing/EnvironmentHelpers.js';
 import * as TraceHelpers from '../../../../testing/TraceHelpers.js';
 import * as PerfUI from '../../../legacy/components/perf_ui/perf_ui.js';
@@ -339,9 +340,49 @@ function renderInitiatorsExample() {
     flameChart.show(container);
     flameChart.update();
 }
+/**
+ * Used to test the color palette for extension events
+ */
+function renderExtensionTrackExample() {
+    const colorPalette = Trace.Types.Extensions.extensionPalette;
+    const paletteLength = colorPalette.length;
+    class FakeProviderWithExtensionColors extends TraceHelpers.FakeFlameChartProvider {
+        entryColor(entryIndex) {
+            const color = colorPalette[entryIndex % paletteLength];
+            return Extensions.ExtensionUI.extensionEntryColor({ args: { color } });
+        }
+        maxStackDepth() {
+            return paletteLength + 1;
+        }
+        timelineData() {
+            return PerfUI.FlameChart.FlameChartTimelineData.create({
+                entryLevels: colorPalette.map((_, i) => i),
+                entryStartTimes: colorPalette.map(() => 0),
+                entryTotalTimes: colorPalette.map(() => 100),
+                groups: [{
+                        name: 'Testing extension palette',
+                        startLevel: 0,
+                        style: defaultGroupStyle,
+                    }],
+            });
+        }
+    }
+    const container = document.querySelector('div#extension');
+    if (!container) {
+        throw new Error('No container');
+    }
+    const delegate = new TraceHelpers.MockFlameChartDelegate();
+    const dataProvider = new FakeProviderWithExtensionColors();
+    const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
+    flameChart.markAsRoot();
+    flameChart.setWindowTimes(0, 100);
+    flameChart.show(container);
+    flameChart.update();
+}
 renderBasicExample();
 renderDecorationExample();
 renderNestedExample();
 renderTrackCustomizationExample();
 renderInitiatorsExample();
+renderExtensionTrackExample();
 //# sourceMappingURL=flamechart.js.map

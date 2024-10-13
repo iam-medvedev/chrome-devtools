@@ -172,10 +172,6 @@ styles.replaceSync(
   color: var(--sys-color-error);
 }
 
-/* We are using a multitude of different selector specificity rules here, which
-   is incompatible with what stylelint requires as ordering of the rules. */
-/* stylelint-disable no-descending-specificity */
-
 .network-log-grid.data-grid tr.selected,
 .network-log-grid.data-grid tr.selected .network-cell-subtitle,
 .network-log-grid.data-grid tr.selected .network-dim-cell {
@@ -205,8 +201,6 @@ styles.replaceSync(
 .network-log-grid tr.highlighted-row {
   animation: network-row-highlight-fadeout 2s 0s;
 }
-/* See comment above why the rules were disabled */
-/* stylelint-enable no-descending-specificity */
 
 @keyframes network-row-highlight-fadeout {
   from {
@@ -219,8 +213,8 @@ styles.replaceSync(
 }
 
 /* Resource preview icons */
-/* These rules are grouped by type and therefore do not adhere to the ordering of stylelint */
-/* stylelint-disable no-descending-specificity, no-duplicate-selectors */
+/* These rules are grouped by type */
+/* stylelint-disable no-duplicate-selectors */
 
 .network-log-grid.data-grid .icon.image {
   position: relative;
@@ -278,10 +272,9 @@ styles.replaceSync(
 .network-log-grid.data-grid .trailing-link-icon {
   padding-left: 0.5ex;
 }
-/* stylelint-enable no-descending-specificity, no-duplicate-selectors */
+/* stylelint-enable no-duplicate-selectors */
 /* This is part of the large color block declared above, but should not be
    extracted out. */
-/* stylelint-disable-next-line no-descending-specificity */
 .network-dim-cell {
   color: var(--sys-color-token-subtle);
 }
@@ -363,8 +356,8 @@ styles.replaceSync(
   font-weight: normal;
   padding: 0 4px;
 }
+
 /* All network-waterfall-header rules are defined here instead of above */
-/* stylelint-disable-next-line no-descending-specificity */
 .network-waterfall-header .sort-order-icon-container {
   position: absolute;
   top: 1px;
@@ -417,9 +410,6 @@ styles.replaceSync(
     color: linktext;
   }
 
-  /* This is part of the large color block declared above, but should not be
-   extracted out. */
-  /* stylelint-disable no-descending-specificity */
   .network-log-grid.data-grid tbody tr.revealed.selected,
   .network-log-grid.data-grid:focus-within tbody tr.revealed.selected,
   .network-log-grid.data-grid:focus-within tr.selected .network-dim-cell,
@@ -429,7 +419,6 @@ styles.replaceSync(
   .network-waterfall-header:hover * {
     color: HighlightText;
   }
-  /* stylelint-enable no-descending-specificity */
 
   .network-log-grid {
     --color-grid-default: canvas;

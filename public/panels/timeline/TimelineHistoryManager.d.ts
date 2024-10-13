@@ -1,6 +1,6 @@
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type TimelineMiniMap } from './TimelineMiniMap.js';
+import type { TimelineMiniMap } from './TimelineMiniMap.js';
 /**
  * The dropdown works by returning an index which is the trace index; but we
  * also need a way to signify that the user picked the "Landing Page" option. We

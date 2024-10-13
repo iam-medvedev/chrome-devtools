@@ -129,6 +129,15 @@ function getSummaries(requests, entityByRequest, selfTimeByUrl) {
     }
     return { byEntity, byRequest, requestsByEntity };
 }
+function getRelatedEvents(summaries, firstPartyEntity) {
+    const events = [];
+    for (const [entity, requests] of summaries.requestsByEntity.entries()) {
+        if (entity !== firstPartyEntity) {
+            events.push(...requests);
+        }
+    }
+    return events;
+}
 export function generateInsight(parsedTrace, context) {
     const networkRequests = parsedTrace.NetworkRequests.byTime.filter(event => {
         if (!context.navigation) {
@@ -151,9 +160,10 @@ export function generateInsight(parsedTrace, context) {
     const selfTimeByUrl = getSelfTimeByUrl(parsedTrace, context);
     // TODO(crbug.com/352244718): re-work to still collect main thread activity if no request is present
     const summaries = getSummaries(networkRequests, entityByRequest, selfTimeByUrl);
-    const firstPartyUrl = context.navigation?.args.data?.url ?? parsedTrace.Meta.mainFrameURL;
+    const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) || makeUpEntity(madeUpEntityCache, firstPartyUrl);
     return {
+        relatedEvents: getRelatedEvents(summaries, firstPartyEntity),
         entityByRequest,
         requestsByEntity: summaries.requestsByEntity,
         summaryByRequest: summaries.byRequest,

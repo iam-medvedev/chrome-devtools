@@ -249,8 +249,10 @@ export class TraceProcessor extends EventTarget {
         const processedNavigation = LanternComputationData.createProcessedNavigation(parsedTrace, frameId, navigationId);
         const networkAnalysis = Lantern.Core.NetworkAnalyzer.analyze(requests);
         const simulator = Lantern.Simulation.Simulator.createSimulator({
+            // TODO(crbug.com/372674229): if devtools throttling was on, does this network analysis capture
+            // that? Do we need to set 'devtools' throttlingMethod?
             networkAnalysis,
-            throttlingMethod: 'simulate',
+            throttlingMethod: 'provided',
         });
         const computeData = { graph, simulator, processedNavigation };
         const fcpResult = Lantern.Metrics.FirstContentfulPaint.compute(computeData);

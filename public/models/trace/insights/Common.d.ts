@@ -1,6 +1,6 @@
 import type * as Handlers from '../handlers/handlers.js';
 import type * as Types from '../types/types.js';
-import { type InsightResults, type InsightSetContextWithNavigation, type TraceInsightSets } from './types.js';
+import type { InsightResults, InsightSetContextWithNavigation, TraceInsightSets } from './types.js';
 export declare function getInsight<InsightName extends keyof InsightResults>(insightName: InsightName, insights: TraceInsightSets | null, key: string | null): InsightResults[InsightName] | null;
 /**
  * Finds a network request given a navigation context and URL.

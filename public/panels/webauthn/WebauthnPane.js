@@ -358,6 +358,17 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         }
         node.data = event.credential;
     }
+    #deleteCredential(authenticatorId, { data: event, }) {
+        const dataGrid = this.dataGrids.get(authenticatorId);
+        if (!dataGrid) {
+            return;
+        }
+        const node = dataGrid.rootNode().children.find(node => node.data?.credentialId === event.credentialId);
+        if (!node) {
+            return;
+        }
+        node.remove();
+    }
     async #setVirtualAuthEnvEnabled(enable) {
         await this.#isEnabling;
         this.#isEnabling = new Promise(async (resolve) => {
@@ -583,6 +594,8 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         if (this.#model) {
             this.#model.addEventListener("CredentialAdded" /* SDK.WebAuthnModel.Events.CREDENTIAL_ADDED */, this.#addCredential.bind(this, authenticatorId));
             this.#model.addEventListener("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */, this.#updateCredential.bind(this, authenticatorId));
+            this.#model.addEventListener("CredentialUpdated" /* SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED */, this.#updateCredential.bind(this, authenticatorId));
+            this.#model.addEventListener("CredentialDeleted" /* SDK.WebAuthnModel.Events.CREDENTIAL_DELETED */, this.#deleteCredential.bind(this, authenticatorId));
         }
         return section;
     }

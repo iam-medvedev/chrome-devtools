@@ -422,6 +422,14 @@ export function findUpdateLayoutTreeEvents(events, startTime, endTime) {
     }
     return foundEvents;
 }
+export function findNextEventAfterTimestamp(candidates, ts) {
+    const index = Platform.ArrayUtilities.nearestIndexFromBeginning(candidates, candidate => ts < candidate.ts);
+    return index === null ? null : candidates[index];
+}
+export function findPreviousEventBeforeTimestamp(candidates, ts) {
+    const index = Platform.ArrayUtilities.nearestIndexFromEnd(candidates, candidate => candidate.ts < ts);
+    return index === null ? null : candidates[index];
+}
 /**
  * Iterates events in a tree hierarchically, from top to bottom,
  * calling back on every event's start and end in the order

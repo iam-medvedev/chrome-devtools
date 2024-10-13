@@ -1,5 +1,5 @@
 import type * as Platform from '../platform/platform.js';
-import { type NetworkRequest } from './NetworkRequest.js';
+import type { NetworkRequest } from './NetworkRequest.js';
 export declare class PageLoad {
     id: number;
     url: Platform.DevToolsPath.UrlString;

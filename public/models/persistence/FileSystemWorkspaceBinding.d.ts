@@ -3,7 +3,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
-import { type PlatformFileSystem } from './PlatformFileSystem.js';
+import type { PlatformFileSystem } from './PlatformFileSystem.js';
 export declare class FileSystemWorkspaceBinding {
     readonly isolatedFileSystemManager: IsolatedFileSystemManager;
     private readonly workspace;

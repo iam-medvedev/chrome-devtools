@@ -15,6 +15,7 @@
         "networkRequestDetails.css.js",
         "networkRequestTooltip.css.js",
         "networkThrottlingSelector.css.js",
+        "relatedInsightChips.css.js",
         "sidebarAnnotationsTab.css.js",
         "sidebarInsightsTab.css.js",
         "sidebarSingleInsightSet.css.js"

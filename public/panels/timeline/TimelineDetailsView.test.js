@@ -36,10 +36,11 @@ describeWithEnvironment('TimelineDetailsView', function () {
             throw new Error('Could not find expected network request.');
         }
         const selection = Timeline.TimelineSelection.TimelineSelection.fromTraceEvent(cssRequest);
-        await detailsView.setModel(parsedTrace, null, insights);
+        await detailsView.setModel({ parsedTrace, selectedEvents: null, traceInsightsSets: insights, eventToRelatedInsightsMap: null });
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
-        assert.strictEqual(detailsContentElement.childNodes.length, 1);
+        // NetworkRequestDetails and RelatedInsightsChips nodes.
+        assert.strictEqual(detailsContentElement.childNodes.length, 2);
         const detailsElementShadowRoot = detailsContentElement.childNodes[0].shadowRoot;
         if (!detailsElementShadowRoot) {
             throw new Error('Could not find expected element to test.');

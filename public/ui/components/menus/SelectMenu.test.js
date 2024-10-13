@@ -7,6 +7,7 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Dialogs from '../dialogs/dialogs.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Menus from './menus.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function createMenu() {
     const menuItems = [
@@ -70,7 +71,7 @@ describeWithLocale('SelectMenu', () => {
             return;
         }
         firsItem.selected = true;
-        menu.buttonTitle = () => LitHtml.html `Override Title`;
+        menu.buttonTitle = () => html `Override Title`;
         Helpers.renderElementIntoDOM(menu);
         await coordinator.done();
         assert.isNotNull(menu.shadowRoot);

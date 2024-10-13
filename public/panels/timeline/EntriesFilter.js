@@ -63,6 +63,17 @@ export class EntriesFilter {
         return possibleActions;
     }
     /**
+     * Returns the trace entry tree for the specified event, simplified for input to AI Assistance.
+     * The tree is rooted at the top-level task that contains the event, with the node for specified event marked as selected.
+     */
+    getTraceEntryTreeForAI(entry) {
+        const entryNode = this.#entryToNode.get(entry);
+        if (!entryNode) {
+            return null;
+        }
+        return Trace.Helpers.TreeHelpers.TraceEntryNodeForAI.fromSelectedEntryNode(entryNode);
+    }
+    /**
      * Returns the amount of entry descendants that belong to the hidden entries array.
      * */
     findHiddenDescendantsAmount(entry) {

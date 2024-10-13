@@ -1,3 +1,8 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/components/split_view/split_view.js';
+import './ExtensionView.js';
+import './ControlButton.js';
+import './ReplaySection.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import type * as PublicExtensions from '../../../models/extensions/extensions.js';
 import type * as Converters from '../converters/converters.js';
@@ -82,7 +87,6 @@ export declare class TimeoutChanged extends Event {
 }
 export declare class RecordingView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     set data(data: RecordingViewData);
     connectedCallback(): void;

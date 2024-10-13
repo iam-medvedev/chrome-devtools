@@ -4,7 +4,6 @@ export declare class NavigateToSourceEvent extends Event {
 }
 export declare class ComputedStyleProperty extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set inherited(inherited: boolean);
     set traceable(traceable: boolean);

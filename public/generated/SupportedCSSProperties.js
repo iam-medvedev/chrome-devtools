@@ -20,13 +20,6 @@ export const generatedProperties = [
         "name": "-alternative-animation-with-timeline"
     },
     {
-        "longhands": [
-            "position-try-order",
-            "position-try-fallbacks"
-        ],
-        "name": "-alternative-position-try"
-    },
-    {
         "inherited": true,
         "name": "-webkit-border-horizontal-spacing"
     },
@@ -423,6 +416,7 @@ export const generatedProperties = [
             "break-inside",
             "buffered-rendering",
             "caption-side",
+            "caret-animation",
             "caret-color",
             "clear",
             "clip",
@@ -626,7 +620,6 @@ export const generatedProperties = [
             "position-anchor",
             "position-area",
             "position-try-fallbacks",
-            "position-try-options",
             "position-try-order",
             "position-visibility",
             "prefix",
@@ -1531,6 +1524,14 @@ export const generatedProperties = [
             "bottom"
         ],
         "name": "caption-side"
+    },
+    {
+        "inherited": true,
+        "keywords": [
+            "auto",
+            "manual"
+        ],
+        "name": "caret-animation"
     },
     {
         "inherited": true,
@@ -3289,7 +3290,7 @@ export const generatedProperties = [
     {
         "longhands": [
             "position-try-order",
-            "position-try-options"
+            "position-try-fallbacks"
         ],
         "name": "position-try"
     },
@@ -3301,9 +3302,6 @@ export const generatedProperties = [
             "flip-start"
         ],
         "name": "position-try-fallbacks"
-    },
-    {
-        "name": "position-try-options"
     },
     {
         "keywords": [
@@ -4206,7 +4204,8 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "none"
+            "none",
+            "auto"
         ],
         "name": "view-transition-name"
     },
@@ -4784,6 +4783,12 @@ export const generatedPropertyValues = {
         "values": [
             "top",
             "bottom"
+        ]
+    },
+    "caret-animation": {
+        "values": [
+            "auto",
+            "manual"
         ]
     },
     "caret-color": {
@@ -6349,7 +6354,8 @@ export const generatedPropertyValues = {
     },
     "view-transition-name": {
         "values": [
-            "none"
+            "none",
+            "auto"
         ]
     },
     "visibility": {

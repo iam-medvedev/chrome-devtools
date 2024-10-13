@@ -1,6 +1,6 @@
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import { CategorizedBreakpoint } from './CategorizedBreakpoint.js';
-import { type EventListenerPausedDetailsAuxData } from './DebuggerModel.js';
+import type { EventListenerPausedDetailsAuxData } from './DebuggerModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 import { type SDKModelObserver } from './TargetManager.js';

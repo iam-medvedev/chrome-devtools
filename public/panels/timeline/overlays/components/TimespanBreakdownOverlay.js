@@ -4,8 +4,8 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './timespanBreakdownOverlay.css.js';
+const { html } = LitHtml;
 export class TimespanBreakdownOverlay extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-timespan-breakdown-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     #canvasRect = null;
     #sections = null;
@@ -124,14 +124,16 @@ export class TimespanBreakdownOverlay extends HTMLElement {
     }
     #renderSection(section) {
         // clang-format off
-        return LitHtml.html `
+        return html `
       <div class="timespan-breakdown-overlay-section">
         <div class="timespan-breakdown-overlay-label">
         ${section.showDuration ?
-            LitHtml.html `
+            html `
             <span class="duration-text">${i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(section.bounds.range)}</span>
           ` : LitHtml.nothing}
-          ${section.label}
+          <span class="section-label-text">
+            ${section.label}
+          </span>
         </div>
       </div>`;
         // clang-format on
@@ -141,7 +143,7 @@ export class TimespanBreakdownOverlay extends HTMLElement {
             this.classList.toggle('odd-number-of-sections', this.#sections.length % 2 === 1);
             this.classList.toggle('even-number-of-sections', this.#sections.length % 2 === 0);
         }
-        LitHtml.render(LitHtml.html `${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
+        LitHtml.render(html `${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
         this.checkSectionLabelPositioning();
     }
 }

@@ -39,7 +39,9 @@
   },
   "files": [
     "../../../../../../front_end/panels/freestyler/ChangeManager.test.ts",
+    "../../../../../../front_end/panels/freestyler/DrJonesFileAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.test.ts",
+    "../../../../../../front_end/panels/freestyler/DrJonesPerformanceAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerEvaluateAction.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerPanel.test.ts",
@@ -67,6 +69,9 @@
     },
     {
       "path": "../../generated/protocol-tsconfig.json"
+    },
+    {
+      "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"

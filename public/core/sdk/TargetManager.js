@@ -233,7 +233,10 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         return this.targets().find(target => target.id() === id) || null;
     }
     rootTarget() {
-        return this.#targetsInternal.size ? this.#targetsInternal.values().next().value : null;
+        if (this.#targetsInternal.size === 0) {
+            return null;
+        }
+        return this.#targetsInternal.values().next().value ?? null;
     }
     primaryPageTarget() {
         let target = this.rootTarget();

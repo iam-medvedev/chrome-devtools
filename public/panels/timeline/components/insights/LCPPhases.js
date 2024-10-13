@@ -1,13 +1,13 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
-import * as SidebarInsight from './SidebarInsight.js';
-import { Table } from './Table.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Title of an insight that provides details about the LCP metric, broken down by phases / parts.
@@ -17,7 +17,7 @@ const UIStrings = {
      * @description Description of a DevTools insight that presents a breakdown for the LCP metric by phases.
      * This is displayed after a user expands the section to see more. No character length limits.
      */
-    description: 'Learn about the [strategies for improving each phase of LCP](https://web.dev/articles/optimize-lcp#lcp-breakdown). Pages with great LCP have minimal durations for "Resource load delay" and "Element render delay".',
+    description: 'Each [phase has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays.',
     /**
      *@description Time to first byte title for the Largest Contentful Paint's phases timespan breakdown.
      */
@@ -160,9 +160,9 @@ export class LCPPhases extends BaseInsight {
             };
         });
         // clang-format off
-        return LitHtml.html `
+        return html `
     <div class="insights">
-      <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+      <devtools-performance-sidebar-insight .data=${{
             title: this.userVisibleTitle,
             description: this.description,
             internalName: this.internalName,
@@ -171,20 +171,31 @@ export class LCPPhases extends BaseInsight {
         @insighttoggleclick=${this.onSidebarClick}
       >
         <div slot="insight-content" class="insight-section">
-          ${LitHtml.html `<${Table.litTagName}
+          ${html `<devtools-performance-table
             .data=${{
             insight: this,
             headers: [i18nString(UIStrings.phase), i18nString(UIStrings.percentLCP)],
             rows,
         }}>
-          </${Table.litTagName}>`}
+          </devtools-performance-table>`}
         </div>
-      </${SidebarInsight}>
+      </devtools-performance-sidebar-insight>
     </div>`;
         // clang-format on
     }
     #hasDataToRender(phaseData) {
         return phaseData ? phaseData.length > 0 : false;
+    }
+    getRelatedEvents() {
+        const insight = Trace.Insights.Common.getInsight('LargestContentfulPaint', this.data.insights, this.data.insightSetKey);
+        if (!insight?.lcpEvent) {
+            return [];
+        }
+        const relatedEvents = [insight.lcpEvent];
+        if (insight.lcpRequest) {
+            relatedEvents.push(insight.lcpRequest);
+        }
+        return relatedEvents;
     }
     render() {
         const phaseData = this.#getPhaseData(this.data.insights, this.data.insightSetKey);

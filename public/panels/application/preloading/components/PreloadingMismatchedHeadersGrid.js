@@ -1,9 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../../ui/components/data_grid/data_grid.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
-import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import preloadingGridStyles from './preloadingGrid.css.js';
@@ -29,7 +29,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/application/preloading/componen
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html } = LitHtml;
 export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    static litTagName = LitHtml.literal `devtools-resources-preloading-mismatched-headers-grid`;
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
     connectedCallback() {
@@ -81,8 +80,8 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
         // clang-format off
         render(html `
         <div class="preloading-container">
-          <${DataGrid.DataGridController.DataGridController.litTagName} .data=${reportsGridData}>
-          </${DataGrid.DataGridController.DataGridController.litTagName}>
+          <devtools-data-grid-controller .data=${reportsGridData}>
+          </devtools-data-grid-controller>
         </div>
       `, this.#shadow, { host: this });
         // clang-format on

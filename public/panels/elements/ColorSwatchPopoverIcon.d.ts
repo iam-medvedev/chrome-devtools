@@ -1,9 +1,9 @@
 import * as Common from '../../core/common/common.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
-import { type StylePropertiesSection } from './StylePropertiesSection.js';
-import { type StylePropertyTreeElement } from './StylePropertyTreeElement.js';
-import { type StylesSidebarPane } from './StylesSidebarPane.js';
+import type { StylePropertiesSection } from './StylePropertiesSection.js';
+import type { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
+import type { StylesSidebarPane } from './StylesSidebarPane.js';
 interface BezierPopoverIconParams {
     treeElement: StylePropertyTreeElement;
     swatchPopoverHelper: InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;

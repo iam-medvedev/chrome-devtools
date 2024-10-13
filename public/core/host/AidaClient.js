@@ -27,6 +27,12 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_CONSOLE_INSIGHTS"] = 1] = "CHROME_CONSOLE_INSIGHTS";
     // Chrome freestyler.
     ClientFeature[ClientFeature["CHROME_FREESTYLER"] = 2] = "CHROME_FREESTYLER";
+    // Chrome DrJones Network Agent.
+    ClientFeature[ClientFeature["CHROME_DRJONES_NETWORK_AGENT"] = 7] = "CHROME_DRJONES_NETWORK_AGENT";
+    // Chrome DrJones Performance Agent.
+    ClientFeature[ClientFeature["CHROME_DRJONES_PERFORMANCE_AGENT"] = 8] = "CHROME_DRJONES_PERFORMANCE_AGENT";
+    // Chrome DrJones File Agent.
+    ClientFeature[ClientFeature["CHROME_DRJONES_FILE_AGENT"] = 9] = "CHROME_DRJONES_FILE_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {

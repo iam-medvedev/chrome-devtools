@@ -6,7 +6,6 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import styles from './serviceWorkerRouterView.css.js';
 const { html, render } = LitHtml;
 export class ServiceWorkerRouterView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    static litTagName = LitHtml.literal `devtools-service-worker-router-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #rules = [];
     connectedCallback() {

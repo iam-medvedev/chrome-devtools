@@ -1,4 +1,4 @@
-import { type Selector } from './Selector.js';
+import type { Selector } from './Selector.js';
 export interface AccessibilityBindings {
     getAccessibleName(node: Node): string;
     getAccessibleRole(node: Node): string;

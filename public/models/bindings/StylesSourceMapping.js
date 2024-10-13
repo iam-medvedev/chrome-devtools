@@ -263,23 +263,27 @@ export class StyleFile {
     }
     contentURL() {
         console.assert(this.headers.size > 0);
-        return this.headers.values().next().value.originalContentProvider().contentURL();
+        return this.#firstHeader().originalContentProvider().contentURL();
     }
     contentType() {
         console.assert(this.headers.size > 0);
-        return this.headers.values().next().value.originalContentProvider().contentType();
+        return this.#firstHeader().originalContentProvider().contentType();
     }
     requestContent() {
         console.assert(this.headers.size > 0);
-        return this.headers.values().next().value.originalContentProvider().requestContent();
+        return this.#firstHeader().originalContentProvider().requestContent();
     }
     requestContentData() {
         console.assert(this.headers.size > 0);
-        return this.headers.values().next().value.originalContentProvider().requestContentData();
+        return this.#firstHeader().originalContentProvider().requestContentData();
     }
     searchInContent(query, caseSensitive, isRegex) {
         console.assert(this.headers.size > 0);
-        return this.headers.values().next().value.originalContentProvider().searchInContent(query, caseSensitive, isRegex);
+        return this.#firstHeader().originalContentProvider().searchInContent(query, caseSensitive, isRegex);
+    }
+    #firstHeader() {
+        console.assert(this.headers.size > 0);
+        return this.headers.values().next().value;
     }
     static updateTimeout = 200;
     getHeaders() {

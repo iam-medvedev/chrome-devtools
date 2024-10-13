@@ -1,6 +1,6 @@
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LighthouseController } from './LighthouseController.js';
-import { type LighthousePanel } from './LighthousePanel.js';
+import type { LighthousePanel } from './LighthousePanel.js';
 export declare class StartView extends UI.Widget.Widget {
     private controller;
     private panel;

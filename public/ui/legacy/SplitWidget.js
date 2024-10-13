@@ -35,7 +35,7 @@ import { Constraints } from './Geometry.js';
 import { SimpleResizerWidget } from './ResizerWidget.js';
 import splitWidgetStyles from './splitWidget.css.legacy.js';
 import { ToolbarButton } from './Toolbar.js';
-import { Widget } from './Widget.js';
+import { Widget, WidgetElement } from './Widget.js';
 import { ZoomManager } from './ZoomManager.js';
 export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     sidebarElementInternal;
@@ -70,8 +70,8 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     savedHorizontalMainSize;
     showModeInternal;
     savedShowMode;
-    constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip) {
-        super(true);
+    constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
+        super(true, undefined, element);
         this.element.classList.add('split-widget');
         this.registerRequiredCSS(splitWidgetStyles);
         this.contentElement.classList.add('shadow-split-widget');
@@ -79,8 +79,24 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-sidebar vbox');
         this.mainElement =
             this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-main vbox');
-        this.mainElement.createChild('slot').name = 'insertion-point-main';
-        this.sidebarElementInternal.createChild('slot').name = 'insertion-point-sidebar';
+        const mainSlot = this.mainElement.createChild('slot');
+        mainSlot.name = 'main';
+        mainSlot.addEventListener('slotchange', (_) => {
+            const assignedNode = mainSlot.assignedNodes()[0];
+            const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
+            if (widget && widget !== this.mainWidgetInternal) {
+                this.setMainWidget(widget);
+            }
+        });
+        const sidebarSlot = this.sidebarElementInternal.createChild('slot');
+        sidebarSlot.name = 'sidebar';
+        sidebarSlot.addEventListener('slotchange', (_) => {
+            const assignedNode = sidebarSlot.assignedNodes()[0];
+            const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
+            if (widget && widget !== this.sidebarWidgetInternal) {
+                this.setSidebarWidget(widget);
+            }
+        });
         this.resizerElementInternal = this.contentElement.createChild('div', 'shadow-split-widget-resizer');
         this.resizerElementSize = null;
         this.resizerWidget = new SimpleResizerWidget();
@@ -167,7 +183,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         }
         this.mainWidgetInternal = widget;
         if (widget) {
-            widget.element.slot = 'insertion-point-main';
+            widget.element.slot = 'main';
             if (this.showModeInternal === "OnlyMain" /* ShowMode.ONLY_MAIN */ || this.showModeInternal === "Both" /* ShowMode.BOTH */) {
                 widget.show(this.element);
             }
@@ -184,7 +200,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         }
         this.sidebarWidgetInternal = widget;
         if (widget) {
-            widget.element.slot = 'insertion-point-sidebar';
+            widget.element.slot = 'sidebar';
             if (this.showModeInternal === "OnlySidebar" /* ShowMode.ONLY_SIDEBAR */ || this.showModeInternal === "Both" /* ShowMode.BOTH */) {
                 widget.show(this.element);
             }
@@ -771,6 +787,21 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         this.showHideSidebarButton.setTitle(sidebarHidden ? this.showSidebarButtonTitle : this.hideSidebarButtonTitle);
     }
 }
+export class SplitWidgetElement extends WidgetElement {
+    #options = {};
+    set options(options) {
+        this.#options = options;
+    }
+    createWidget() {
+        const { vertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, markAsRoot, } = this.#options;
+        const widget = new SplitWidget(Boolean(vertical), Boolean(secondIsSidebar), settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, this);
+        if (markAsRoot) {
+            widget.markAsRoot();
+        }
+        return widget;
+    }
+}
+customElements.define('devtools-split-widget', SplitWidgetElement);
 const MinPadding = 20;
 const suppressUnused = function (_value) { };
 //# sourceMappingURL=SplitWidget.js.map

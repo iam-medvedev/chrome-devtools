@@ -1,3 +1,4 @@
+import '../../../ui/components/icon_button/icon_button.js';
 import * as Platform from '../../../core/platform/platform.js';
 export interface ProtocolHandler {
     protocol: string;
@@ -9,7 +10,6 @@ export interface ProtocolHandlersData {
 }
 export declare class ProtocolHandlersView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: ProtocolHandlersData);
     connectedCallback(): void;
 }

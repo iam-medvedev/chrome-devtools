@@ -1,4 +1,5 @@
-import { type HighlightInfo } from './LinearMemoryViewerUtils.js';
+import '../../../ui/components/icon_button/icon_button.js';
+import type { HighlightInfo } from './LinearMemoryViewerUtils.js';
 export interface LinearMemoryHighlightChipListData {
     highlightInfos: Array<HighlightInfo>;
     focusedMemoryHighlight?: HighlightInfo;
@@ -15,7 +16,6 @@ export declare class JumpToHighlightedMemoryEvent extends Event {
 }
 export declare class LinearMemoryHighlightChipList extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: LinearMemoryHighlightChipListData);
 }

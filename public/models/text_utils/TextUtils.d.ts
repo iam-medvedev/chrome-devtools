@@ -1,6 +1,6 @@
 import { type ContentDataOrError } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
-import { type Text } from './Text.js';
+import type { Text } from './Text.js';
 export declare const Utils: {
     isSpaceChar: (char: string) => boolean;
     lineIndent: (line: string) => string;

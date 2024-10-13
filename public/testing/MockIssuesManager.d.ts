@@ -1,6 +1,6 @@
 import * as Common from '../core/common/common.js';
 import * as IssuesManager from '../models/issues_manager/issues_manager.js';
-import { type StubIssue } from './StubIssue.js';
+import type { StubIssue } from './StubIssue.js';
 export declare class MockIssuesManager extends Common.ObjectWrapper.ObjectWrapper<IssuesManager.IssuesManager.EventTypes> {
     private mockIssues;
     private issueCounts;

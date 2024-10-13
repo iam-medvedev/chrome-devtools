@@ -1,4 +1,4 @@
-import { type Selector } from './Selector.js';
+import type { Selector } from './Selector.js';
 /**
  * Computes the text selector for a node.
  *

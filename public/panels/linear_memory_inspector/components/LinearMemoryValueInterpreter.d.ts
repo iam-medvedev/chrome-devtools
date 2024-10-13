@@ -1,3 +1,6 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import './ValueInterpreterDisplay.js';
+import './ValueInterpreterSettings.js';
 import { Endianness, type ValueType, type ValueTypeMode } from './ValueInterpreterDisplayUtils.js';
 export declare class EndiannessChangedEvent extends Event {
     static readonly eventName = "endiannesschanged";
@@ -21,7 +24,6 @@ export interface LinearMemoryValueInterpreterData {
 }
 export declare class LinearMemoryValueInterpreter extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: LinearMemoryValueInterpreterData);
 }

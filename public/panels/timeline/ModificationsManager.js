@@ -104,6 +104,13 @@ export class ModificationsManager extends EventTarget {
     getTimelineBreadcrumbs() {
         return this.#timelineBreadcrumbs;
     }
+    deleteEmptyRangeAnnotations() {
+        for (const annotation of this.#overlayForAnnotation.keys()) {
+            if (annotation.type === 'TIME_RANGE' && annotation.label.length === 0) {
+                this.removeAnnotation(annotation);
+            }
+        }
+    }
     createAnnotation(newAnnotation, loadedFromFile = false) {
         // If a label already exists on an entry and a user is trying to create a new one, start editing an existing label instead.
         if (newAnnotation.type === 'ENTRY_LABEL') {
@@ -125,6 +132,25 @@ export class ModificationsManager extends EventTarget {
         const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
+    }
+    annotationsForEntry(entry) {
+        const annotationsForEntry = [];
+        for (const [annotation] of this.#overlayForAnnotation.entries()) {
+            if (annotation.type === 'ENTRY_LABEL' && annotation.entry === entry) {
+                annotationsForEntry.push(annotation);
+            }
+            else if (annotation.type === 'ENTRIES_LINK' && (annotation.entryFrom === entry || annotation.entryTo === entry)) {
+                annotationsForEntry.push(annotation);
+            }
+        }
+        return annotationsForEntry;
+    }
+    // Deletes all annotations associated with an entry
+    deleteEntryAnnotations(entry) {
+        const annotationsForEntry = this.annotationsForEntry(entry);
+        annotationsForEntry.forEach(annotation => {
+            this.removeAnnotation(annotation);
+        });
     }
     linkAnnotationBetweenEntriesExists(entryFrom, entryTo) {
         for (const annotation of this.#overlayForAnnotation.keys()) {

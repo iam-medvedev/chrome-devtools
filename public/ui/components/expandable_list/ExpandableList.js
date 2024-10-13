@@ -4,6 +4,7 @@
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import expandableListStyles from './expandableList.css.js';
+const { html, Directives: { ifDefined } } = LitHtml;
 export class ExpandableList extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-expandable-list`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -28,12 +29,12 @@ export class ExpandableList extends HTMLElement {
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
       <div class="expandable-list-container">
         <div>
           ${this.#rows.length > 1 ?
-            LitHtml.html `
-              <button title='${this.#title}' aria-label='${this.#title}' aria-expanded=${this.#expanded ? 'true' : 'false'} @click=${() => this.#onArrowClick()} class="arrow-icon-button">
+            html `
+              <button title='${ifDefined(this.#title)}' aria-label='${ifDefined(this.#title)}' aria-expanded=${this.#expanded ? 'true' : 'false'} @click=${() => this.#onArrowClick()} class="arrow-icon-button">
                 <span class="arrow-icon ${this.#expanded ? 'expanded' : ''}"
                 jslog=${VisualLogging.expand().track({ click: true })}></span>
               </button>
@@ -41,7 +42,7 @@ export class ExpandableList extends HTMLElement {
             : LitHtml.nothing}
         </div>
         <div class="expandable-list-items">
-          ${this.#rows.filter((_, index) => (this.#expanded || index === 0)).map(row => LitHtml.html `
+          ${this.#rows.filter((_, index) => (this.#expanded || index === 0)).map(row => html `
             ${row}
           `)}
         </div>

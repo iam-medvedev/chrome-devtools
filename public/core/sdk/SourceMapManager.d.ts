@@ -1,6 +1,6 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { type FrameAssociated } from './FrameAssociated.js';
+import type { FrameAssociated } from './FrameAssociated.js';
 import { SourceMap } from './SourceMap.js';
 import { type Target } from './Target.js';
 export declare class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {

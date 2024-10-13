@@ -31,6 +31,10 @@ styles.replaceSync(
   justify-content: center;
   align-items: center;
 
+  :host-context(.theme-with-dark-background) & {
+    border: 1px solid var(--sys-color-neutral-outline);
+  }
+
   & .icon {
     width: var(--sys-size-7);
     height: var(--sys-size-7);
@@ -56,8 +60,8 @@ styles.replaceSync(
   }
 
   &:focus-visible {
-    outline: 1px solid var(--sys-color-primary);
-    border-color: var(--sys-color-primary);
+    outline: 2px solid var(--sys-color-state-focus-ring);
+    outline-offset: 2px;
   }
 
   &:disabled .icon {

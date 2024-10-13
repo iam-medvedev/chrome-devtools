@@ -5,6 +5,7 @@ import * as Common from '../../../core/common/common.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import srgbOverlayStyles from './srgbOverlay.css.js';
+const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const SRGB_LABEL_HEIGHT = 10;
 const SRGB_LABEL_BOTTOM = 3;
@@ -76,7 +77,7 @@ export class SrgbOverlay extends HTMLElement {
             if (!closestPoint) {
                 return;
             }
-            LitHtml.render(LitHtml.html `
+            LitHtml.render(html `
           <span class="label" style="right: ${width - closestPoint.x}px">sRGB</span>
           <svg>
             <polyline points=${points.map(point => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ')} class="gamut-line" />

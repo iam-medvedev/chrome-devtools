@@ -12,7 +12,9 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     get inpValue(): INPValue | undefined;
     get interactions(): Interaction[];
     get layoutShifts(): LayoutShift[];
+    setStatusForTesting(status: StatusEvent): void;
     clearInteractions(): void;
+    clearLayoutShifts(): void;
     targetAdded(target: SDK.Target.Target): Promise<void>;
     targetRemoved(target: SDK.Target.Target): Promise<void>;
     enable(): Promise<void>;
@@ -40,12 +42,11 @@ export interface LayoutShift {
         node: SDK.DOMModel.DOMNode;
     }>;
 }
-export declare class Interaction {
+export interface Interaction {
     interactionType: Spec.InteractionEvent['interactionType'];
     duration: Spec.InteractionEvent['duration'];
     uniqueInteractionId: Spec.UniqueInteractionId;
     node?: SDK.DOMModel.DOMNode;
-    constructor(interactionEvent: Spec.InteractionEvent);
 }
 export interface StatusEvent {
     lcp?: LCPValue;

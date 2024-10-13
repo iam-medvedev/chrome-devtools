@@ -82,7 +82,8 @@ export declare const enum ExperimentName {
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     TIMELINE_SERVER_TIMINGS = "timeline-server-timings",
     EXTENSION_STORAGE_VIEWER = "extension-storage-viewer",
-    FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance"
+    FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance",
+    TIMELINE_EXPERIMENTAL_INSIGHTS = "timeline-experimental-insights"
 }
 export interface AidaAvailability {
     enabled: boolean;
@@ -96,11 +97,17 @@ export interface HostConfigConsoleInsights {
     temperature: number;
     enabled: boolean;
 }
+export declare enum HostConfigFreestylerExecutionMode {
+    ALL_SCRIPTS = "ALL_SCRIPTS",
+    SIDE_EFFECT_FREE_SCRIPTS_ONLY = "SIDE_EFFECT_FREE_SCRIPTS_ONLY",
+    NO_SCRIPTS = "NO_SCRIPTS"
+}
 export interface HostConfigFreestyler {
     modelId: string;
     temperature: number;
     enabled: boolean;
     userTier: string;
+    executionMode?: HostConfigFreestylerExecutionMode;
 }
 export interface HostConfigExplainThisResourceDogfood {
     modelId: string;

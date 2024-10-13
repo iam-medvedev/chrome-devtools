@@ -2,7 +2,7 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Platform from '../platform/platform.js';
 import { CategorizedBreakpoint, Category } from './CategorizedBreakpoint.js';
-import { type EventListenerPausedDetailsAuxData, type Location } from './DebuggerModel.js';
+import type { EventListenerPausedDetailsAuxData, Location } from './DebuggerModel.js';
 import { type DOMNode } from './DOMModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';

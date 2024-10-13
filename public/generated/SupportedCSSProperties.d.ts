@@ -227,6 +227,9 @@ export const generatedPropertyValues: {
     "caption-side": {
         values: string[];
     };
+    "caret-animation": {
+        values: string[];
+    };
     "caret-color": {
         values: string[];
     };

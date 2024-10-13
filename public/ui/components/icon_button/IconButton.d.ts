@@ -1,3 +1,4 @@
+import './Icon.js';
 export interface IconWithTextData {
     iconName: string;
     iconColor?: string;

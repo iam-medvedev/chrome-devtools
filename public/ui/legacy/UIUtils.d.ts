@@ -4,7 +4,7 @@ import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { Size } from './Geometry.js';
 import { type ToolbarButton } from './Toolbar.js';
-import { type TreeOutline } from './Treeoutline.js';
+import type { TreeOutline } from './Treeoutline.js';
 export declare const highlightedSearchResultClassName = "highlighted-search-result";
 export declare const highlightedCurrentSearchResultClassName = "current-search-result";
 export declare function installDragHandle(element: Element, elementDragStart: ((arg0: MouseEvent) => boolean) | null, elementDrag: (arg0: MouseEvent) => void, elementDragEnd: ((arg0: MouseEvent) => void) | null, cursor: string | null, hoverCursor?: string | null, startDelay?: number): void;

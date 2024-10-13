@@ -1,10 +1,10 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Input from '../../../ui/components/input/input.js';
@@ -113,7 +113,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/FieldSettingsDialog.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { html, nothing } = LitHtml;
+const { html, nothing, Directives: { ifDefined } } = LitHtml;
 export class ShowDialog extends Event {
     static eventName = 'showdialog';
     constructor() {
@@ -121,7 +121,6 @@ export class ShowDialog extends Event {
     }
 }
 export class FieldSettingsDialog extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-field-settings-dialog`;
     #shadow = this.attachShadow({ mode: 'open' });
     #dialog;
     #configSetting = CrUXManager.CrUXManager.instance().getConfigSetting();
@@ -216,7 +215,7 @@ export class FieldSettingsDialog extends HTMLElement {
         if (this.#configSetting.get().enabled) {
             // clang-format off
             return html `
-        <${Buttons.Button.Button.litTagName}
+        <devtools-button
           class="config-button"
           @click=${this.#showDialog}
           .data=${{
@@ -224,13 +223,13 @@ export class FieldSettingsDialog extends HTMLElement {
                 title: i18nString(UIStrings.configure),
             }}
         jslog=${VisualLogging.action('timeline.field-data.configure').track({ click: true })}
-        >${i18nString(UIStrings.configure)}</${Buttons.Button.Button.litTagName}>
+        >${i18nString(UIStrings.configure)}</devtools-button>
       `;
             // clang-format on
         }
         // clang-format off
         return html `
-      <${Buttons.Button.Button.litTagName}
+      <devtools-button
         class="setup-button"
         @click=${this.#showDialog}
         .data=${{
@@ -239,14 +238,14 @@ export class FieldSettingsDialog extends HTMLElement {
         }}
         jslog=${VisualLogging.action('timeline.field-data.setup').track({ click: true })}
         data-field-data-setup
-      >${i18nString(UIStrings.setUp)}</${Buttons.Button.Button.litTagName}>
+      >${i18nString(UIStrings.setUp)}</devtools-button>
     `;
         // clang-format on
     }
     #renderEnableButton() {
         // clang-format off
         return html `
-      <${Buttons.Button.Button.litTagName}
+      <devtools-button
         @click=${() => {
             void this.#submit(true);
         }}
@@ -256,7 +255,7 @@ export class FieldSettingsDialog extends HTMLElement {
         }}
         jslog=${VisualLogging.action('timeline.field-data.enable').track({ click: true })}
         data-field-data-enable
-      >${i18nString(UIStrings.ok)}</${Buttons.Button.Button.litTagName}>
+      >${i18nString(UIStrings.ok)}</devtools-button>
     `;
         // clang-format on
     }
@@ -264,7 +263,7 @@ export class FieldSettingsDialog extends HTMLElement {
         const label = this.#configSetting.get().enabled ? i18nString(UIStrings.optOut) : i18nString(UIStrings.cancel);
         // clang-format off
         return html `
-      <${Buttons.Button.Button.litTagName}
+      <devtools-button
         @click=${() => {
             void this.#submit(false);
         }}
@@ -274,7 +273,7 @@ export class FieldSettingsDialog extends HTMLElement {
         }}
         jslog=${VisualLogging.action('timeline.field-data.disable').track({ click: true })}
         data-field-data-disable
-      >${label}</${Buttons.Button.Button.litTagName}>
+      >${label}</devtools-button>
     `;
         // clang-format on
     }
@@ -376,7 +375,7 @@ export class FieldSettingsDialog extends HTMLElement {
                         // clang-format off
                         renderer: value => html `
               <div style="display: flex; align-items: center; justify-content: center;">
-                <${Buttons.Button.Button.litTagName}
+                <devtools-button
                   class="delete-mapping"
                   .data=${{
                             variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -386,7 +385,7 @@ export class FieldSettingsDialog extends HTMLElement {
                             jslogContext: 'delete-origin-mapping',
                         }}
                   @click=${() => this.#deleteOriginMapping(index)}
-                ></${Buttons.Button.Button.litTagName}>
+                ></devtools-button>
               </div>
             `,
                         // clang-format on
@@ -409,7 +408,7 @@ export class FieldSettingsDialog extends HTMLElement {
                 placeholder="http://localhost:8080"
                 aria-label=${i18nString(UIStrings.developmentOriginValue, { PH1: value })}
                 style=${inputStyle}
-                title=${value || ''}
+                title=${ifDefined(value)}
                 @keyup=${this.#onEditGridDevelopmentOriginChange}
                 @change=${this.#onEditGridDevelopmentOriginChange} />
             `,
@@ -425,7 +424,7 @@ export class FieldSettingsDialog extends HTMLElement {
                 placeholder="https://example.com"
                 aria-label=${i18nString(UIStrings.productionOriginValue, { PH1: value })}
                 style=${inputStyle}
-                title=${value || ''}
+                title=${ifDefined(value)}
                 @keyup=${this.#onEditGridProductionOriginChange}
                 @change=${this.#onEditGridProductionOriginChange} />
             `,
@@ -437,7 +436,7 @@ export class FieldSettingsDialog extends HTMLElement {
                         // clang-format off
                         renderer: value => html `
               <div style="display: flex; align-items: center; justify-content: center;">
-                <${Buttons.Button.Button.litTagName}
+                <devtools-button
                   id="add-mapping-button"
                   .data=${{
                             variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -448,7 +447,7 @@ export class FieldSettingsDialog extends HTMLElement {
                             jslogContext: 'add-origin-mapping',
                         }}
                   @click=${() => this.#addOriginMapping()}
-                ></${Buttons.Button.Button.litTagName}>
+                ></devtools-button>
               </div>
             `,
                         // clang-format on
@@ -488,15 +487,15 @@ export class FieldSettingsDialog extends HTMLElement {
         // clang-format off
         return html `
       <div>${i18nString(UIStrings.mapDevelopmentOrigins)}</div>
-      <${DataGrid.DataGridController.DataGridController.litTagName}
+      <devtools-data-grid-controller
         class="origin-mapping-grid"
         .data=${gridData}
-      ></${DataGrid.DataGridController.DataGridController.litTagName}>
+      ></devtools-data-grid-controller>
       ${this.#originMapWarning ? html `
         <div class="warning" role="alert" aria-label=${this.#originMapWarning}>${this.#originMapWarning}</div>
       ` : nothing}
       <div class="origin-mapping-button-section">
-        <${Buttons.Button.Button.litTagName}
+        <devtools-button
           @click=${this.#startEditingOriginMapping}
           .data=${{
             variant: "text" /* Buttons.Button.Variant.TEXT */,
@@ -505,7 +504,7 @@ export class FieldSettingsDialog extends HTMLElement {
             disabled: this.#isEditingOriginGrid,
         }}
           jslogContext=${'new-origin-mapping'}
-        >${i18nString(UIStrings.new)}</${Buttons.Button.Button.litTagName}>
+        >${i18nString(UIStrings.new)}</devtools-button>
       </div>
     `;
         // clang-format on
@@ -516,12 +515,12 @@ export class FieldSettingsDialog extends HTMLElement {
         // clang-format off
         const output = html `
       <div class="open-button-section">${this.#renderOpenButton()}</div>
-      <${Dialogs.Dialog.Dialog.litTagName}
+      <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
         .showConnector=${true}
         .position=${"auto" /* Dialogs.Dialog.DialogVerticalPosition.AUTO */}
         .horizontalAlignment=${"center" /* Dialogs.Dialog.DialogHorizontalAlignment.CENTER */}
-        .jslogContext=${VisualLogging.dialog('timeline.field-data.settings')}
+        .jslogContext=${'timeline.field-data.settings'}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
             this.#dialog = node;
         })}
@@ -555,7 +554,7 @@ export class FieldSettingsDialog extends HTMLElement {
                 class="devtools-text-input"
                 .disabled=${!this.#urlOverrideEnabled}
                 .value=${this.#urlOverride}
-                placeholder=${LitHtml.Directives.ifDefined(this.#urlOverrideEnabled ? i18nString(UIStrings.url) : undefined)}
+                placeholder=${ifDefined(this.#urlOverrideEnabled ? i18nString(UIStrings.url) : undefined)}
               />
               ${this.#urlOverrideWarning
             ? html `<div class="warning" role="alert" aria-label=${this.#urlOverrideWarning}>${this.#urlOverrideWarning}</div>`
@@ -567,7 +566,7 @@ export class FieldSettingsDialog extends HTMLElement {
             ${this.#renderEnableButton()}
           </div>
         </div>
-      </${Dialogs.Dialog.Dialog.litTagName}
+      </devtools-dialog>
     `;
         // clang-format on
         LitHtml.render(output, this.#shadow, { host: this });

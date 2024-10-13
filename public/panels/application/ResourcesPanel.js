@@ -10,6 +10,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ApplicationPanelSidebar, StorageCategoryView } from './ApplicationPanelSidebar.js';
 import { CookieItemsView } from './CookieItemsView.js';
 import { DOMStorageItemsView } from './DOMStorageItemsView.js';
+import { ExtensionStorageItemsView } from './ExtensionStorageItemsView.js';
 import resourcesPanelStyles from './resourcesPanel.css.js';
 import { StorageItemsView } from './StorageItemsView.js';
 let resourcesPanelInstance;
@@ -21,6 +22,7 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     storageViews;
     storageViewToolbar;
     domStorageView;
+    extensionStorageView;
     cookieView;
     emptyWidget;
     sidebar;
@@ -37,6 +39,7 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
         this.storageViewToolbar = new UI.Toolbar.Toolbar('resources-toolbar', mainContainer.element);
         this.splitWidget().setMainWidget(mainContainer);
         this.domStorageView = null;
+        this.extensionStorageView = null;
         this.cookieView = null;
         this.emptyWidget = null;
         this.sidebar = new ApplicationPanelSidebar(this);
@@ -126,6 +129,18 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
             this.domStorageView.setStorage(domStorage);
         }
         this.showView(this.domStorageView);
+    }
+    showExtensionStorage(extensionStorage) {
+        if (!extensionStorage) {
+            return;
+        }
+        if (!this.extensionStorageView) {
+            this.extensionStorageView = new ExtensionStorageItemsView(extensionStorage);
+        }
+        else {
+            this.extensionStorageView.setStorage(extensionStorage);
+        }
+        this.showView(this.extensionStorageView);
     }
     showCookies(cookieFrameTarget, cookieDomain) {
         const model = cookieFrameTarget.model(SDK.CookieModel.CookieModel);

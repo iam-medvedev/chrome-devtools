@@ -6,7 +6,7 @@ import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent } from './HeapTimelineOverview.js';
-import { type Formatter, type ProfileDataGridNode } from './ProfileDataGrid.js';
+import type { Formatter, ProfileDataGridNode } from './ProfileDataGrid.js';
 import { ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
 import { type ProfileHeader, ProfileType } from './ProfileHeader.js';
 import { ProfileView, WritableProfileHeader } from './ProfileView.js';

@@ -12,6 +12,7 @@ import { MockProtocolBackend } from '../../../testing/MockScopeChain.js';
 import { encodeSourceMap } from '../../../testing/SourceMapEncoder.js';
 import { loadBasicSourceMapExample } from '../../../testing/SourceMapHelpers.js';
 import { makeMockSamplesHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './utils.js';
 const MINIFIED_FUNCTION_NAME = 'minified';
 const AUTHORED_FUNCTION_NAME = 'someFunction';
@@ -147,6 +148,16 @@ describeWithMockConnection('SourceMapsResolver', () => {
             await resolver.install();
             sourceMappedURL = Utils.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(traceWithoutMappings, profileCallWithNoMappings);
             assert.strictEqual(sourceMappedURL, genScriptURL);
+        });
+    });
+    describe('unnecessary work detection', () => {
+        it('does not dispatch a SourceMappingsUpdated event if relevant mappings were not updated', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
+            const listener = sinon.spy();
+            const sourceMapsResolver = new Utils.SourceMapsResolver.SourceMapsResolver(parsedTrace);
+            sourceMapsResolver.addEventListener(Utils.SourceMapsResolver.SourceMappingsUpdated.eventName, listener);
+            await sourceMapsResolver.install();
+            assert.isTrue(listener.notCalled);
         });
     });
 });

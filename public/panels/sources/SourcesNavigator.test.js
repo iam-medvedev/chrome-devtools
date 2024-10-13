@@ -381,6 +381,7 @@ describeWithMockConnection('NetworkNavigatorView', () => {
                 }
             });
             setMockConnectionResponseHandler('Debugger.setBlackboxPatterns', () => ({}));
+            setMockConnectionResponseHandler('Debugger.setBlackboxExecutionContexts', () => ({}));
         });
         const updatePatternSetting = async (settingValue) => {
             const setting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');

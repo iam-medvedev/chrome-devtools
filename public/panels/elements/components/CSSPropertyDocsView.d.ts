@@ -9,7 +9,6 @@ interface CSSProperty {
 }
 export declare class CSSPropertyDocsView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(cssProperty: CSSProperty);
 }
 declare global {

@@ -37,11 +37,12 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     update() {
         this.clear();
         const issues = this.issue.getAttributionReportingIssues();
-        if (issues.size > 0) {
-            this.#appendDetails(issues.values().next().value.code(), issues);
+        const issue = issues.values().next();
+        if (issue.done) {
+            this.updateAffectedResourceCount(0);
         }
         else {
-            this.updateAffectedResourceCount(0);
+            this.#appendDetails(issue.value.code(), issues);
         }
     }
     #appendDetails(issueCode, issues) {

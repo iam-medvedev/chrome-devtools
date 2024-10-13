@@ -4,6 +4,7 @@
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import twoStatesCounterStyles from './twoStatesCounter.css.js';
+const { html, Directives: { ifDefined, classMap, styleMap } } = LitHtml;
 const isString = (value) => value !== undefined;
 export class TwoStatesCounter extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-two-states-counter`;
@@ -49,7 +50,7 @@ export class TwoStatesCounter extends HTMLElement {
             inactive: true,
         };
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
     <div class='counter'>
       ${this.#renderPart(this.#numActive, activeClassMap, this.#activeTitle)}
       ${this.#renderPart(this.#numInactive, inactiveClassMap, this.#inactiveTitle)}
@@ -63,8 +64,8 @@ export class TwoStatesCounter extends HTMLElement {
             height: this.#height,
         };
         // clang-format off
-        return count > 0 ? LitHtml.html `
-       <span class=${LitHtml.Directives.classMap(classInfo)} style=${LitHtml.Directives.styleMap(styles)} title=${title}>
+        return count > 0 ? html `
+       <span class=${classMap(classInfo)} style=${styleMap(styles)} title=${ifDefined(title)}>
           ${count}
        </span>
       ` : LitHtml.nothing;

@@ -393,6 +393,11 @@ export default {
   * Color for scrollable area shadow gradient
   */
   --app-color-scroll-area-shadow-start: color-mix(in sRGB, var(--ref-palette-neutral0) 30%, transparent);
+
+  /**
+   * Colors for element panel sidebar subtitle
+   */
+  --app-color-element-sidebar-subtitle: var(--ref-palette-neutral50);
 }
 
 :root.baseline-default {
@@ -767,6 +772,11 @@ export default {
   * Color for scrollable area shadow gradient
   */
   --app-color-scroll-area-shadow-start: color-mix(in sRGB, var(--ref-palette-neutral100) 30%, transparent);
+
+  /**
+   * Colors for element panel sidebar subtitle
+   */
+  --app-color-element-sidebar-subtitle: var(--sys-color-token-subtle);
 }
 
 /*# sourceURL=themeColors.css */

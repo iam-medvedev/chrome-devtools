@@ -1,3 +1,4 @@
+import '../../../ui/components/icon_button/icon_button.js';
 export declare const enum Navigation {
     BACKWARD = "Backward",
     FORWARD = "Forward"
@@ -39,7 +40,6 @@ export declare const enum Mode {
 }
 export declare class LinearMemoryNavigator extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: LinearMemoryNavigatorData);
 }

@@ -1,3 +1,4 @@
+import '../../../../ui/components/data_grid/data_grid.js';
 import type * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../../generated/protocol.js';
@@ -15,7 +16,6 @@ export interface MismatchedPreloadingGridData {
 }
 export declare class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: MismatchedPreloadingGridData);
 }

@@ -235,6 +235,7 @@ panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
 panels/application/BackgroundServiceView.test.js
 panels/application/DOMStorageModel.test.js
+panels/application/ExtensionStorageItemsView.test.js
 panels/application/ExtensionStorageModel.test.js
 panels/application/IndexedDBModel.test.js
 panels/application/IndexedDBViews.test.js
@@ -329,7 +330,9 @@ panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
 panels/freestyler/ChangeManager.test.js
+panels/freestyler/DrJonesFileAgent.test.js
 panels/freestyler/DrJonesNetworkAgent.test.js
+panels/freestyler/DrJonesPerformanceAgent.test.js
 panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
@@ -362,6 +365,7 @@ panels/network/NetworkLogView.test.js
 panels/network/NetworkOverview.test.js
 panels/network/NetworkPanel.test.js
 panels/network/NetworkSearchScope.test.js
+panels/network/RequestBinaryResponseView.test.js
 panels/network/RequestCookiesView.test.js
 panels/network/RequestHTMLView.test.js
 panels/network/RequestPayloadView.test.js
@@ -455,6 +459,7 @@ panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
+panels/timeline/components/RelatedInsightChips.test.js
 panels/timeline/components/Sidebar.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsightsTab.test.js
@@ -474,7 +479,9 @@ panels/timeline/track_appenders/NetworkTrackAppender.test.js
 panels/timeline/track_appenders/ServerTimingsTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
+panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
+panels/timeline/utils/ImageCache.test.js
 panels/timeline/utils/SourceMapsResolver.test.js
 panels/utils/utils.test.js
 panels/web_audio/web_audio.test.js
@@ -484,6 +491,7 @@ third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
 ui/components/adorners/Adorner.test.js
 ui/components/buttons/Button.test.js
+ui/components/cards/Card.test.js
 ui/components/chrome_link/ChromeLink.test.js
 ui/components/code_highlighter/CodeHighlighter.test.js
 ui/components/data_grid/DataGrid.test.js

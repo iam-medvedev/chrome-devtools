@@ -6,6 +6,7 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as MarkdownView from './markdown_view.js';
+const { html } = LitHtml;
 function getFakeToken(token) {
     return token;
 }
@@ -156,6 +157,48 @@ describeWithEnvironment('MarkdownView', () => {
             const result = renderer.renderToken({ type: 'html', raw: '<!DOCTYPE html>' });
             assert(result.values.join('').includes('<!DOCTYPE html>'));
         });
+        it('detects language but default to provided', () => {
+            let result = renderer.detectCodeLanguage({ text: 'const int foo = "bar"', lang: 'cpp' });
+            assert.strictEqual(result, 'cpp');
+            result = renderer.detectCodeLanguage({ text: '', lang: 'cpp' });
+            assert.strictEqual(result, 'cpp');
+        });
+        it('detects JavaScript language', () => {
+            let result = renderer.detectCodeLanguage({ text: 'const t = 2', lang: '' });
+            assert.strictEqual(result, 'js');
+            result = renderer.detectCodeLanguage({ text: 'let t = 2', lang: '' });
+            assert.strictEqual(result, 'js');
+            result = renderer.detectCodeLanguage({ text: 'var t = 2', lang: '' });
+            assert.strictEqual(result, 'js');
+            result = renderer.detectCodeLanguage({ text: 'function t(){}', lang: '' });
+            assert.strictEqual(result, 'js');
+            result = renderer.detectCodeLanguage({ text: 'async function t(){}', lang: '' });
+            assert.strictEqual(result, 'js');
+            result = renderer.detectCodeLanguage({ text: 'import puppeteer from "puppeteer-core"', lang: '' });
+            assert.strictEqual(result, 'js');
+        });
+        it('doesn`t detect JavaScript language', () => {
+            let result = renderer.detectCodeLanguage({ text: 'constant F', lang: '' });
+            assert.strictEqual(result, '');
+            result = renderer.detectCodeLanguage({ text: 'variable', lang: '' });
+            assert.strictEqual(result, '');
+            result = renderer.detectCodeLanguage({ text: 'functions are better then classes', lang: '' });
+            assert.strictEqual(result, '');
+            result = renderer.detectCodeLanguage({ text: 'asynchronous code it hard to understand', lang: '' });
+            assert.strictEqual(result, '');
+        });
+        it('detects CSS language', () => {
+            let result = renderer.detectCodeLanguage({ text: '.myClass {}', lang: '' });
+            assert.strictEqual(result, 'css');
+            result = renderer.detectCodeLanguage({ text: '.myClass{}', lang: '' });
+            assert.strictEqual(result, 'css');
+            result = renderer.detectCodeLanguage({ text: 'my-component {}', lang: '' });
+            assert.strictEqual(result, 'css');
+            result = renderer.detectCodeLanguage({ text: 'my-component::after {}', lang: '' });
+            assert.strictEqual(result, 'css');
+            result = renderer.detectCodeLanguage({ text: '.foo::[name="bar"] {}', lang: '' });
+            assert.strictEqual(result, 'css');
+        });
     });
     const paragraphText = 'Single paragraph with a sentence of text and some list items to test that the component works end-to-end.';
     const listItemTexts = ['Simple unordered list item 1', 'Simple unordered list item 2'];
@@ -196,7 +239,7 @@ console.log('test')
             const codeBlock = renderString('`console.log()`', 'code', new class extends MarkdownView.MarkdownView.MarkdownLitRenderer {
                 templateForToken(token) {
                     if (token.type === 'codespan') {
-                        return LitHtml.html `<code>overriden</code>`;
+                        return html `<code>overriden</code>`;
                     }
                     return super.templateForToken(token);
                 }

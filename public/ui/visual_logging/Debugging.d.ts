@@ -1,4 +1,4 @@
-import { type Loggable } from './Loggable.js';
+import type { Loggable } from './Loggable.js';
 import { type LoggingConfig } from './LoggingConfig.js';
 import { type LoggingState } from './LoggingState.js';
 export declare function processForDebugging(loggable: Loggable): void;

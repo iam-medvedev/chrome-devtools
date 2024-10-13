@@ -34,7 +34,6 @@ function getLinkSection(details) {
           </div>`;
 }
 export class CSSVariableParserError extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-variable-parser-error`;
     #shadow = this.attachShadow({ mode: 'open' });
     constructor(details) {
         super();
@@ -53,7 +52,6 @@ export class CSSVariableParserError extends HTMLElement {
     }
 }
 export class CSSVariableValueView extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-variable-value-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     variableName;
     value;

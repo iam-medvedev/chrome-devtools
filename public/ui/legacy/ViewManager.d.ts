@@ -1,11 +1,12 @@
 import * as Common from '../../core/common/common.js';
 import type * as Root from '../../core/root/root.js';
 import { type ToolbarItem } from './Toolbar.js';
-import { type TabbedViewLocation, type View, type ViewLocation } from './View.js';
+import type { TabbedViewLocation, View, ViewLocation } from './View.js';
 import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, type ViewRegistration } from './ViewRegistration.js';
 import { VBox, type Widget } from './Widget.js';
 export declare const defaultOptionsForTabs: {
     security: boolean;
+    freestyler: boolean;
 };
 export declare class PreRegisteredView implements View {
     private readonly viewRegistration;

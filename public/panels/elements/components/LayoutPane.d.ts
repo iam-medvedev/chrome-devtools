@@ -1,6 +1,7 @@
+import '../../../ui/components/node_text/node_text.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import { type LayoutElement, type Setting } from './LayoutPaneUtils.js';
+import type { LayoutElement, Setting } from './LayoutPaneUtils.js';
 export { LayoutElement };
 export interface LayoutPaneData {
     settings: Setting[];
@@ -9,7 +10,6 @@ export interface LayoutPaneData {
 }
 export declare class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     static instance(): LayoutPane;
     modelAdded(domModel: SDK.DOMModel.DOMModel): void;

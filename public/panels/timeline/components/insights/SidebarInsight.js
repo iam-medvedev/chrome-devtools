@@ -9,23 +9,25 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import { md } from './Helpers.js';
 import sidebarInsightStyles from './sidebarInsight.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
-     * @description Text to tell the user the estimated savings for this insight.
+     * @description Text to tell the user the estimated time or size savings for this insight.
      * @example {401 ms} PH1
-     */
-    estimatedSavingsJustTime: 'Est savings: {PH1}',
-    /**
-     * @description Text to tell the user the estimated savings for this insight.
      * @example {112 kB} PH1
      */
-    estimatedSavingsJustBytes: 'Est savings: {PH1}',
+    estimatedSavings: 'Est savings: {PH1}',
     /**
-     * @description Text to tell the user the estimated savings for this insight.
+     * @description Text to tell the user the estimated time and size savings for this insight.
      * @example {401 ms} PH1
      * @example {112 kB} PH2
      */
     estimatedSavingsTimingAndBytes: 'Est savings: {PH1} && {PH2}',
+    /**
+     * @description Used for screen-readers as a label on the button to expand an insight to view details
+     * @example {LCP by phase} PH1
+     */
+    viewDetails: 'View details for {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/SidebarInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -63,6 +65,18 @@ export class InsightProvideOverlays extends Event {
         super(InsightProvideOverlays.eventName, { bubbles: true, composed: true });
         this.overlays = overlays;
         this.options = options;
+    }
+}
+export class InsightProvideRelatedEvents extends Event {
+    label;
+    events;
+    activateInsight;
+    static eventName = 'insightproviderelatedevents';
+    constructor(label, events, activateInsight) {
+        super(InsightProvideRelatedEvents.eventName, { bubbles: true, composed: true });
+        this.label = label;
+        this.events = events;
+        this.activateInsight = activateInsight;
     }
 }
 export class SidebarInsight extends HTMLElement {
@@ -105,18 +119,29 @@ export class SidebarInsight extends HTMLElement {
             'insight-hover-icon': true,
             active: insightIsActive,
         });
-        return LitHtml.html `
-      <div class=${containerClasses} aria-hidden="true">
-        <${Buttons.Button.Button.litTagName} .data=${{
+        return html `
+      <div class=${containerClasses} inert>
+        <devtools-button .data=${{
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             iconName: 'chevron-down',
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
         }}
-      ></${Buttons.Button.Button.litTagName}>
+      ></devtools-button>
       </div>
 
     `;
         // clang-format on
+    }
+    /**
+     * Ensure that if the user presses enter or space on a header, we treat it
+     * like a click and toggle the insight.
+     */
+    #handleHeaderKeyDown(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            this.#dispatchInsightToggle();
+        }
     }
     #getEstimatedSavingsString() {
         let timeString, bytesString;
@@ -133,12 +158,12 @@ export class SidebarInsight extends HTMLElement {
             });
         }
         if (timeString) {
-            return i18nString(UIStrings.estimatedSavingsJustTime, {
+            return i18nString(UIStrings.estimatedSavings, {
                 PH1: timeString,
             });
         }
         if (bytesString) {
-            return i18nString(UIStrings.estimatedSavingsJustBytes, {
+            return i18nString(UIStrings.estimatedSavings, {
                 PH1: bytesString,
             });
         }
@@ -151,20 +176,27 @@ export class SidebarInsight extends HTMLElement {
         });
         const estimatedSavingsString = this.#getEstimatedSavingsString();
         // clang-format off
-        const output = LitHtml.html `
+        const output = html `
       <div class=${containerClasses}>
-        <header @click=${this.#dispatchInsightToggle} jslog=${VisualLogging.action(`timeline.toggle-insight.${this.#insightInternalName}`).track({ click: true })}>
+        <header @click=${this.#dispatchInsightToggle}
+          @keydown=${this.#handleHeaderKeyDown}
+          jslog=${VisualLogging.action(`timeline.toggle-insight.${this.#insightInternalName}`).track({ click: true })}
+          tabIndex="0"
+          role="button"
+          aria-expanded=${this.#expanded}
+          aria-label=${i18nString(UIStrings.viewDetails, { PH1: this.#insightTitle })}
+        >
           ${this.#renderHoverIcon(this.#expanded)}
           <h3 class="insight-title">${this.#insightTitle}</h3>
           ${estimatedSavingsString ?
-            LitHtml.html `
+            html `
             <slot name="insight-savings" class="insight-savings">
               ${estimatedSavingsString}
             </slot>
           </div>`
             : LitHtml.nothing}
         </header>
-        ${this.#expanded ? LitHtml.html `
+        ${this.#expanded ? html `
           <div class="insight-body">
             <div class="insight-description">${this.#insightDescription ? md(this.#insightDescription) : LitHtml.nothing}</div>
             <div class="insight-content">

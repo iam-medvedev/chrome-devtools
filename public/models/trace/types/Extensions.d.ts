@@ -1,6 +1,6 @@
-import { type Args, type Event, type Phase, type SyntheticBased } from './TraceEvents.js';
+import type { Args, Event, Phase, SyntheticBased } from './TraceEvents.js';
 export type ExtensionEntryType = 'track-entry' | 'marker';
-declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error"];
+export declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error", "warning"];
 export type ExtensionColorFromPalette = typeof extensionPalette[number];
 export declare function colorIsValid(color: string): boolean;
 export interface ExtensionDataPayloadBase {
@@ -49,4 +49,3 @@ export interface ExtensionTrackData {
         [x: string]: SyntheticExtensionTrackEntry[];
     };
 }
-export {};

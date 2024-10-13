@@ -1,4 +1,4 @@
-import { type HighlightInfo } from './LinearMemoryViewerUtils.js';
+import type { HighlightInfo } from './LinearMemoryViewerUtils.js';
 export interface LinearMemoryViewerData {
     memory: Uint8Array;
     address: number;
@@ -19,7 +19,6 @@ export declare class ResizeEvent extends Event {
 }
 export declare class LinearMemoryViewer extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: LinearMemoryViewerData);
     connectedCallback(): void;
     disconnectedCallback(): void;

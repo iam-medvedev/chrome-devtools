@@ -1,4 +1,6 @@
 import '../../../ui/legacy/legacy.js';
+import '../../../ui/components/icon_button/icon_button.js';
+import './ControlButton.js';
 import * as Models from '../models/models.js';
 declare global {
     interface HTMLElementTagNameMap {
@@ -25,7 +27,6 @@ export interface CreateRecordingViewData {
 }
 export declare class CreateRecordingView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
     set data(data: CreateRecordingViewData);

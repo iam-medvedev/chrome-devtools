@@ -1,6 +1,6 @@
-import type * as Protocol from '../../../generated/protocol.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { type Target, type FrameSelector } from './Schema.js';
+import type * as Protocol from '../../../generated/protocol.js';
+import type { FrameSelector, Target } from './Schema.js';
 interface Context {
     target: Target;
     frame: FrameSelector;

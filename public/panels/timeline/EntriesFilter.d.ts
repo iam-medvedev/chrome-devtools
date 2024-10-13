@@ -20,6 +20,11 @@ export declare class EntriesFilter {
      */
     findPossibleActions(entry: Trace.Types.Events.Event): PerfUI.FlameChart.PossibleFilterActions;
     /**
+     * Returns the trace entry tree for the specified event, simplified for input to AI Assistance.
+     * The tree is rooted at the top-level task that contains the event, with the node for specified event marked as selected.
+     */
+    getTraceEntryTreeForAI(entry: Trace.Types.Events.Event): Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
+    /**
      * Returns the amount of entry descendants that belong to the hidden entries array.
      * */
     findHiddenDescendantsAmount(entry: Trace.Types.Events.Event): number;

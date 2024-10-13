@@ -6,7 +6,6 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import computedStyleTraceStyles from './computedStyleTrace.css.js';
 const { render, html } = LitHtml;
 export class ComputedStyleTrace extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-computed-style-trace`;
     #shadow = this.attachShadow({ mode: 'open' });
     #selector = '';
     #active = false;

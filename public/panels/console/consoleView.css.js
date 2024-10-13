@@ -362,6 +362,10 @@ styles.replaceSync(
   word-break: break-all;
 }
 
+#console-messages .devtools-link:focus-visible {
+  background-color: transparent;
+}
+
 #console-messages .resource-links {
   margin-top: -1px;
   margin-bottom: -2px;
@@ -589,8 +593,6 @@ devtools-console-insight {
   vertical-align: 0;
 }
 
-/* It does not look like the linter works with CSS nesting correctly. */
-/* stylelint-disable no-descending-specificity */
 .console-message-wrapper:not(.has-insight) {
   &:hover,
   &:focus,
@@ -605,7 +607,6 @@ devtools-console-insight {
     }
   }
 }
-/* stylelint-enable no-descending-specificity */
 
 @media (forced-colors: active) {
   .console-message-expand-icon,

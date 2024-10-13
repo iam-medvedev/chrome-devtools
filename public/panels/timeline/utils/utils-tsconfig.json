@@ -29,7 +29,9 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.ts",
+    "../../../../../../../front_end/panels/timeline/utils/ImageCache.ts",
     "../../../../../../../front_end/panels/timeline/utils/NetworkRequest.ts",
     "../../../../../../../front_end/panels/timeline/utils/SourceMapsResolver.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",

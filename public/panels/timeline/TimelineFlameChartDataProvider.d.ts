@@ -24,7 +24,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private readonly screenshotsHeader;
     private entryData;
     private entryTypeByLevel;
-    private screenshotImageCache;
     private entryIndexToTitle;
     private lastInitiatorEntry;
     private lastInitiatorsData;
@@ -33,7 +32,10 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     hasTrackConfigurationMode(): boolean;
     getPossibleActions(entryIndex: number, groupIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     customizedContextMenu(event: MouseEvent, entryIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
+    entryHasAnnotations(entryIndex: number): boolean;
+    deleteAnnotationsForEntry(entryIndex: number): void;
     modifyTree(action: PerfUI.FlameChart.FilterAction, entryIndex: number): void;
+    getTraceEntryTreeForAIFromEntryIndex(entryIndex: number): Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
     findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
@@ -98,7 +100,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      * @returns if we should re-render the flame chart (canvas)
      */
     buildFlowForInitiator(entryIndex: number): boolean;
-    eventByIndex(entryIndex: number): Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame | null;
+    eventByIndex(entryIndex: number): Trace.Types.Events.Event | null;
 }
 export declare const InstantEventVisibleDurationMs: Trace.Types.Timing.MilliSeconds;
 export declare const enum Events {

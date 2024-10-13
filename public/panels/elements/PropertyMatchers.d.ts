@@ -114,8 +114,8 @@ declare const enum AnimationLonghandPart {
 export declare class LinkableNameMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
-    readonly properyName: LinkableNameProperties;
-    constructor(text: string, node: CodeMirror.SyntaxNode, properyName: LinkableNameProperties);
+    readonly propertyName: LinkableNameProperties;
+    constructor(text: string, node: CodeMirror.SyntaxNode, propertyName: LinkableNameProperties);
 }
 declare const LinkableNameMatcher_base: new () => {
     matchType: SDK.CSSPropertyParser.Constructor<LinkableNameMatch>;
@@ -202,6 +202,23 @@ declare const LengthMatcher_base: new () => {
 export declare class LengthMatcher extends LengthMatcher_base {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+export declare class FlexGridMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly isFlex: boolean;
+    constructor(text: string, node: CodeMirror.SyntaxNode, isFlex: boolean);
+}
+declare const FlexGridMatcher_base: new () => {
+    matchType: SDK.CSSPropertyParser.Constructor<FlexGridMatch>;
+    accepts(_propertyName: string): boolean;
+    matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
+};
+export declare class FlexGridMatcher extends FlexGridMatcher_base {
+    static readonly FLEX: string[];
+    static readonly GRID: string[];
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export declare class GridTemplateMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
@@ -265,6 +282,22 @@ export declare class CSSWideKeywordMatcher extends CSSWideKeywordMatcher_base {
     readonly property: SDK.CSSProperty.CSSProperty;
     readonly matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles;
     constructor(property: SDK.CSSProperty.CSSProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles);
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare class PositionTryMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly preamble: CodeMirror.SyntaxNode[];
+    readonly fallbacks: CodeMirror.SyntaxNode[][];
+    constructor(text: string, node: CodeMirror.SyntaxNode, preamble: CodeMirror.SyntaxNode[], fallbacks: CodeMirror.SyntaxNode[][]);
+}
+declare const PositionTryMatcher_base: new () => {
+    matchType: SDK.CSSPropertyParser.Constructor<PositionTryMatch>;
+    accepts(_propertyName: string): boolean;
+    matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
+};
+export declare class PositionTryMatcher extends PositionTryMatcher_base {
+    accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export {};

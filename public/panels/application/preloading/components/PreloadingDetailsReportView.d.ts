@@ -1,3 +1,5 @@
+import '../../../../ui/components/report_view/report_view.js';
+import '../../../../ui/components/request_link_icon/request_link_icon.js';
 import type * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Protocol from '../../../../generated/protocol.js';
@@ -13,7 +15,6 @@ interface PreloadingDetailsReportViewDataInternal {
 }
 export declare class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: PreloadingDetailsReportViewData);
 }

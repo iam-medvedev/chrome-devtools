@@ -6,7 +6,7 @@ import * as Logs from '../../models/logs/logs.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type ConsoleViewportElement } from './ConsoleViewport.js';
+import type { ConsoleViewportElement } from './ConsoleViewport.js';
 export declare const getMessageForElement: (element: Element) => ConsoleViewMessage | undefined;
 export declare class ConsoleViewMessage implements ConsoleViewportElement {
     #private;

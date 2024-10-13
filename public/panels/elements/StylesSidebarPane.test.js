@@ -49,6 +49,7 @@ describe('StylesSidebarPane', () => {
                     propertyRules: [],
                     cssPropertyRegistrations: [],
                     fontPaletteValuesRule: undefined,
+                    activePositionFallbackIndex: -1,
                 });
                 const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
                 assert.strictEqual(sectionBlocks.length, 2);
@@ -71,6 +72,7 @@ describe('StylesSidebarPane', () => {
                 animationsPayload: [],
                 parentLayoutNodeId: undefined,
                 positionTryRules: [],
+                activePositionFallbackIndex: -1,
                 propertyRules: [],
                 cssPropertyRegistrations: [],
                 fontPaletteValuesRule: {

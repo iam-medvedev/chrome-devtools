@@ -1,8 +1,8 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import { type FilesChangedData } from './FileSystemWorkspaceBinding.js';
+import type { FilesChangedData } from './FileSystemWorkspaceBinding.js';
 import { IsolatedFileSystem } from './IsolatedFileSystem.js';
-import { type PlatformFileSystem } from './PlatformFileSystem.js';
+import type { PlatformFileSystem } from './PlatformFileSystem.js';
 export declare class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     private readonly fileSystemsInternal;
     private readonly callbacks;

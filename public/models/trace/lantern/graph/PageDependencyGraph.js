@@ -1,9 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 import { CPUNode } from './CPUNode.js';
 import { NetworkNode } from './NetworkNode.js';
-import * as Core from '../core/core.js';
 // COMPAT: m71+ We added RunTask to `disabled-by-default-lighthouse`
 const SCHEDULABLE_TASK_TITLE_LH = 'RunTask';
 // m69-70 DoWork is different and we now need RunTask, see https://bugs.chromium.org/p/chromium/issues/detail?id=871204#c11

@@ -1,4 +1,4 @@
-import { type Brand } from './Brand.js';
+import type { Brand } from './Brand.js';
 /**
  * File paths in DevTools that are represented as URLs
  * @example

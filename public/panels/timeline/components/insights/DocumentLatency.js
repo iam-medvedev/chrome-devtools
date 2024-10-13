@@ -1,18 +1,22 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
-import * as SidebarInsight from './SidebarInsight.js';
 import { Category } from './types.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
      */
     title: 'Document request latency',
+    /**
+     *@description Description of an insight that provides a breakdown for how long it took to download the main document.
+     */
+    description: 'Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.',
     /**
      * @description Text to tell the user that the document request does not have redirects.
      */
@@ -49,6 +53,16 @@ const UIStrings = {
      * @description Text for a label describing a network request event as taking longer to download because it wasn't compressed.
      */
     uncompressedDownload: 'Uncompressed download',
+    /**
+     *@description Text for a screen-reader label to tell the user that the icon represents a successful insight check
+     *@example {Server response time} PH1
+     */
+    successAriaLabel: 'Insight check passed: {PH1}',
+    /**
+     *@description Text for a screen-reader label to tell the user that the icon represents an unsuccessful insight check
+     *@example {Server response time} PH1
+     */
+    failedAriaLabel: 'Insight check failed: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/DocumentLatency.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -57,14 +71,17 @@ export class DocumentLatency extends BaseInsight {
     insightCategory = Category.ALL;
     internalName = 'document-latency';
     userVisibleTitle = i18nString(UIStrings.title);
-    description = '';
+    description = i18nString(UIStrings.description);
     #check(didPass, good, bad) {
         const icon = didPass ? 'check-circle' : 'clear';
-        return LitHtml.html `
-      <${IconButton.Icon.Icon.litTagName}
+        const ariaLabel = didPass ? i18nString(UIStrings.successAriaLabel, { PH1: good }) :
+            i18nString(UIStrings.failedAriaLabel, { PH1: bad });
+        return html `
+      <devtools-icon
+        aria-label=${ariaLabel}
         name=${icon}
         class=${didPass ? 'metric-value-good' : 'metric-value-bad'}
-      ></${IconButton.Icon.Icon.litTagName}>
+      ></devtools-icon>
       <span>${didPass ? good : bad}</span>
     `;
     }
@@ -116,9 +133,9 @@ export class DocumentLatency extends BaseInsight {
             return LitHtml.nothing;
         }
         // clang-format off
-        return LitHtml.html `
+        return html `
     <div class="insights">
-      <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+      <devtools-performance-sidebar-insight .data=${{
             title: this.userVisibleTitle,
             description: this.description,
             expanded: this.isActive(),
@@ -141,9 +158,13 @@ export class DocumentLatency extends BaseInsight {
             </li>
           </ul>
         </div>
-      </${SidebarInsight.SidebarInsight}>
+      </devtools-performance-sidebar-insight>
     </div>`;
         // clang-format on
+    }
+    getRelatedEvents() {
+        const insight = Trace.Insights.Common.getInsight('DocumentLatency', this.data.insights, this.data.insightSetKey);
+        return insight?.relatedEvents ?? [];
     }
     render() {
         const insight = Trace.Insights.Common.getInsight('DocumentLatency', this.data.insights, this.data.insightSetKey);

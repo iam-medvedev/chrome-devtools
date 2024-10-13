@@ -300,6 +300,7 @@ export class TimelineHistoryManager {
         const titleWithSequenceNumber = i18nString(UIStrings.sD, { PH1: domain, PH2: sequenceNumber });
         this.nextNumberByDomain.set(domain, sequenceNumber + 1);
         const timeElement = document.createElement('span');
+        timeElement.classList.add('time');
         const preview = document.createElement('div');
         preview.classList.add('preview-item');
         preview.classList.add('vbox');
@@ -345,6 +346,7 @@ export class TimelineHistoryManager {
         if (!lastFrame) {
             return container;
         }
+        // TODO(paulirish): Adopt Util.ImageCache
         void UI.UIUtils.loadImage(lastFrame.screenshotEvent.args.dataUri).then(img => {
             if (img) {
                 container.appendChild(img);

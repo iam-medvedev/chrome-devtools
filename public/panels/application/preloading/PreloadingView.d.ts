@@ -1,3 +1,4 @@
+import '../../../ui/components/split_view/split_view.js';
 import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Protocol from '../../../generated/protocol.js';
@@ -21,7 +22,7 @@ export declare class PreloadingRuleSetView extends UI.Widget.VBox {
     private updateRuleSetDetails;
     render(): void;
     private onRuleSetsGridCellFocused;
-    getInfobarContainerForTest(): HTMLDivElement;
+    getInfobarContainerForTest(): HTMLElement;
     getRuleSetGridForTest(): PreloadingComponents.RuleSetGrid.RuleSetGrid;
     getRuleSetDetailsForTest(): PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView;
 }

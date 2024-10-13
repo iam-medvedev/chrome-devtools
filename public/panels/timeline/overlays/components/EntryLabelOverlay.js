@@ -5,7 +5,9 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import styles from './entryLabelOverlay.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description Accessible label used to explain to a user that they are viewing an entry label.
@@ -43,7 +45,6 @@ export class EntryLabelOverlay extends HTMLElement {
     static LABEL_AND_CONNECTOR_HEIGHT = EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
     // Set the max label length to avoid labels that could signicantly increase the file size.
     static MAX_LABEL_LENGTH = 100;
-    static litTagName = LitHtml.literal `devtools-entry-label-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     // Once a label is bound for deletion, we remove it from the DOM via events
@@ -286,7 +287,7 @@ export class EntryLabelOverlay extends HTMLElement {
     }
     #render() {
         // clang-format off
-        LitHtml.render(LitHtml.html `
+        LitHtml.render(html `
         <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}>
           <span
             class="input-field"
@@ -296,13 +297,14 @@ export class EntryLabelOverlay extends HTMLElement {
             @keydown=${this.#handleLabelInputKeyDown}
             @paste=${this.#handleLabelInputPaste}
             @keyup=${this.#handleLabelInputKeyUp}
-            contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
-          </span>
+            contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}
+            jslog=${VisualLogging.textField('timeline.annotations.entry-label-input').track({ keydown: true, click: true })}
+          ></span>
           <svg class="connectorContainer">
             <line/>
             <circle/>
           </svg>
-          <div class="entry-highlight-wrapper"/>
+          <div class="entry-highlight-wrapper"></div>
         </span>`, this.#shadow, { host: this });
         // clang-format on
     }

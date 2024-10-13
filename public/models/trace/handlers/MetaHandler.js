@@ -18,6 +18,7 @@ let browserThreadId = Types.Events.ThreadID(-1);
 let gpuProcessId = Types.Events.ProcessID(-1);
 let gpuThreadId = Types.Events.ThreadID(-1);
 let viewportRect = null;
+let devicePixelRatio = null;
 const processNames = new Map();
 const topLevelRendererIds = new Set();
 const traceBounds = {
@@ -159,6 +160,7 @@ export function handleEvent(event) {
         const viewportWidth = rectAsArray[2];
         const viewportHeight = rectAsArray[5];
         viewportRect = new DOMRect(viewportX, viewportY, viewportWidth, viewportHeight);
+        devicePixelRatio = event.args.data.dpr;
     }
     // The TracingStartedInBrowser event includes the data on which frames are
     // in scope at the start of the trace. We use this to identify the frame with
@@ -369,6 +371,7 @@ export function data() {
         gpuProcessId,
         gpuThreadId: gpuThreadId === Types.Events.ThreadID(-1) ? undefined : gpuThreadId,
         viewportRect: viewportRect || undefined,
+        devicePixelRatio: devicePixelRatio ?? undefined,
         mainFrameId,
         mainFrameURL,
         navigationsByFrameId,

@@ -3,11 +3,15 @@ import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 export declare const enum Events {
     CREDENTIAL_ADDED = "CredentialAdded",
-    CREDENTIAL_ASSERTED = "CredentialAsserted"
+    CREDENTIAL_ASSERTED = "CredentialAsserted",
+    CREDENTIAL_DELETED = "CredentialDeleted",
+    CREDENTIAL_UPDATED = "CredentialUpdated"
 }
 export type EventTypes = {
     [Events.CREDENTIAL_ADDED]: Protocol.WebAuthn.CredentialAddedEvent;
     [Events.CREDENTIAL_ASSERTED]: Protocol.WebAuthn.CredentialAssertedEvent;
+    [Events.CREDENTIAL_DELETED]: Protocol.WebAuthn.CredentialDeletedEvent;
+    [Events.CREDENTIAL_UPDATED]: Protocol.WebAuthn.CredentialUpdatedEvent;
 };
 export declare class WebAuthnModel extends SDKModel<EventTypes> {
     #private;
@@ -20,4 +24,6 @@ export declare class WebAuthnModel extends SDKModel<EventTypes> {
     removeCredential(authenticatorId: Protocol.WebAuthn.AuthenticatorId, credentialId: string): Promise<void>;
     credentialAdded(params: Protocol.WebAuthn.CredentialAddedEvent): void;
     credentialAsserted(params: Protocol.WebAuthn.CredentialAssertedEvent): void;
+    credentialDeleted(params: Protocol.WebAuthn.CredentialDeletedEvent): void;
+    credentialUpdated(params: Protocol.WebAuthn.CredentialUpdatedEvent): void;
 }

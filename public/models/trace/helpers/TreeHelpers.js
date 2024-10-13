@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Types from '../types/types.js';
-import { eventIsInBounds } from './Timing.js';
+import { eventIsInBounds, microSecondsToMilliseconds } from './Timing.js';
 let nodeIdCount = 0;
 export const makeTraceEntryNodeId = () => (++nodeIdCount);
 export const makeEmptyTraceEntryTree = () => ({
@@ -16,6 +16,87 @@ export const makeEmptyTraceEntryNode = (entry, id) => ({
     children: [],
     depth: 0,
 });
+/**
+ * Represents a node in a trace entry tree, simplified for AI Assistance processing.
+ */
+export class TraceEntryNodeForAI {
+    type;
+    start;
+    end;
+    totalTime;
+    selfTime;
+    id;
+    domain;
+    line;
+    column;
+    function;
+    children;
+    selected;
+    constructor(type, start, end, totalTime, selfTime) {
+        this.type = type;
+        this.start = start;
+        this.end = end;
+        this.totalTime = totalTime;
+        this.selfTime = selfTime;
+    }
+    static #fromTraceEvent(event) {
+        const start = microSecondsToMilliseconds(event.ts);
+        const duration = event.dur === undefined ? undefined : microSecondsToMilliseconds(event.dur);
+        const nodeForAI = new TraceEntryNodeForAI(event.name, start, duration);
+        if (Types.Events.isProfileCall(event)) {
+            nodeForAI.function = event.callFrame.functionName || '(anonymous)';
+            try {
+                const url = new URL(event.callFrame.url);
+                nodeForAI.domain = url.origin;
+                nodeForAI.line = event.callFrame.lineNumber;
+                nodeForAI.column = event.callFrame.columnNumber;
+            }
+            catch (e) {
+            }
+        }
+        return nodeForAI;
+    }
+    /**
+     * Builds a TraceEntryNodeForAI tree from a TraceEntryNode tree and marks the selected node.
+     */
+    static #fromTraceEntryTree(node, selectedEntryNode) {
+        const nodeForAI = TraceEntryNodeForAI.#fromTraceEvent(node.entry);
+        nodeForAI.id = node.id;
+        if (node === selectedEntryNode) {
+            nodeForAI.selected = true;
+        }
+        nodeForAI.selfTime = node.selfTime === undefined ? undefined : microSecondsToMilliseconds(node.selfTime);
+        for (const child of node.children) {
+            nodeForAI.children ??= [];
+            nodeForAI.children.push(TraceEntryNodeForAI.#fromTraceEntryTree(child, selectedEntryNode));
+        }
+        return nodeForAI;
+    }
+    static fromSelectedEntryNode(selectedEntryNode) {
+        function getRoot(node) {
+            if (node.parent) {
+                return getRoot(node.parent);
+            }
+            return node;
+        }
+        return TraceEntryNodeForAI.#fromTraceEntryTree(getRoot(selectedEntryNode), selectedEntryNode);
+    }
+    static getSelectedNodeForTraceEntryTreeForAI(node) {
+        if (node.selected) {
+            return node;
+        }
+        if (!node.children) {
+            return null;
+        }
+        for (const child of node.children) {
+            const returnedNode = TraceEntryNodeForAI.getSelectedNodeForTraceEntryTreeForAI(child);
+            if (returnedNode) {
+                return returnedNode;
+            }
+        }
+        return null;
+    }
+}
 class TraceEntryNodeIdTag {
     /* eslint-disable-next-line no-unused-private-class-members */
     #tag;

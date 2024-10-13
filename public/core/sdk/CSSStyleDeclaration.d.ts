@@ -1,9 +1,9 @@
 import type * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import { type CSSModel, type Edit } from './CSSModel.js';
+import type { CSSModel, Edit } from './CSSModel.js';
 import { CSSProperty } from './CSSProperty.js';
-import { type CSSRule } from './CSSRule.js';
-import { type Target } from './Target.js';
+import type { CSSRule } from './CSSRule.js';
+import type { Target } from './Target.js';
 export declare class CSSStyleDeclaration {
     #private;
     parentRule: CSSRule | null;

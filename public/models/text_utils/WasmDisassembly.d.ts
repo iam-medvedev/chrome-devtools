@@ -1,5 +1,5 @@
 import { ContentData } from './ContentData.js';
-import { type DeferredContent } from './ContentProvider.js';
+import type { DeferredContent } from './ContentProvider.js';
 interface FunctionBodyOffset {
     start: number;
     end: number;

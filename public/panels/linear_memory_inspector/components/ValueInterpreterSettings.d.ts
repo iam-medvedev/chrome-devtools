@@ -12,7 +12,6 @@ export declare class TypeToggleEvent extends Event {
 }
 export declare class ValueInterpreterSettings extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: ValueInterpreterSettingsData);
 }

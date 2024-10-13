@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import { Constraints } from './Geometry.js';
 import { ToolbarButton } from './Toolbar.js';
-import { Widget } from './Widget.js';
+import { Widget, WidgetElement } from './Widget.js';
 declare const SplitWidget_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -44,7 +44,7 @@ export declare class SplitWidget extends SplitWidget_base {
     private savedHorizontalMainSize;
     private showModeInternal;
     private savedShowMode;
-    constructor(isVertical: boolean, secondIsSidebar: boolean, settingName?: string, defaultSidebarWidth?: number, defaultSidebarHeight?: number, constraintsInDip?: boolean);
+    constructor(isVertical: boolean, secondIsSidebar: boolean, settingName?: string, defaultSidebarWidth?: number, defaultSidebarHeight?: number, constraintsInDip?: boolean, element?: SplitWidgetElement);
     isVertical(): boolean;
     setVertical(isVertical: boolean): void;
     private innerSetVertical;
@@ -111,6 +111,20 @@ export declare class SplitWidget extends SplitWidget_base {
      */
     toggleSidebar(): boolean;
     private updateShowHideSidebarButton;
+}
+interface SplitWidgetOptions {
+    vertical?: boolean;
+    secondIsSidebar?: boolean;
+    settingName?: string;
+    defaultSidebarWidth?: number;
+    defaultSidebarHeight?: number;
+    constraintsInDip?: boolean;
+    markAsRoot?: boolean;
+}
+export declare class SplitWidgetElement extends WidgetElement<SplitWidget> {
+    #private;
+    set options(options: SplitWidgetOptions);
+    createWidget(): SplitWidget;
 }
 export declare const enum ShowMode {
     BOTH = "Both",

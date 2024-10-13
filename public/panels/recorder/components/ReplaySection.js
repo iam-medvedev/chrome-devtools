@@ -6,7 +6,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { SelectButton, } from './SelectButton.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description Replay button label
@@ -99,7 +99,6 @@ export class StartReplayEvent extends Event {
 }
 const REPLAY_EXTENSION_PREFIX = 'extension';
 export class ReplaySection extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-replay-section`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #props = { disabled: false };
@@ -158,19 +157,19 @@ export class ReplaySection extends HTMLElement {
             });
         }
         // clang-format off
-        LitHtml.render(LitHtml.html `
-    <${SelectButton.litTagName}
+        LitHtml.render(html `
+    <devtools-select-button
       @selectmenuselected=${this.#handleSelectMenuSelected}
       @selectbuttonclick=${this.#handleSelectButtonClick}
       .variant=${"primary" /* SelectButtonVariant.PRIMARY */}
       .showItemDivider=${false}
       .disabled=${this.#props.disabled}
       .action=${"chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */}
-      .value=${this.#settings?.replayExtension || this.#settings?.speed}
+      .value=${this.#settings?.replayExtension || this.#settings?.speed || ''}
       .buttonLabel=${i18nString(UIStrings.Replay)}
       .groups=${groups}
       jslog=${VisualLogging.action("chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */).track({ click: true })}>
-    </${SelectButton.litTagName}>`, this.#shadow, { host: this });
+    </devtools-select-button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

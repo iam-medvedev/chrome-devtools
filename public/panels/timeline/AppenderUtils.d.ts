@@ -1,6 +1,6 @@
 import * as Trace from '../../models/trace/trace.js';
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import { type VisualLoggingTrackName } from './CompatibilityTracksAppender.js';
+import type { VisualLoggingTrackName } from './CompatibilityTracksAppender.js';
 /** An array, indexed by entry levels, where the values are the last timestamp (typically `endTime`) of data within that level. */
 export type LastTimestampByLevel = number[];
 /**

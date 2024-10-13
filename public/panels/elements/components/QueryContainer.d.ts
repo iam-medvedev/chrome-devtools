@@ -1,5 +1,7 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/components/node_text/node_text.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { type DOMNode } from './Helper.js';
+import type { DOMNode } from './Helper.js';
 export declare class QueriedSizeRequestedEvent extends Event {
     static readonly eventName = "queriedsizerequested";
     constructor();
@@ -11,7 +13,6 @@ export interface QueryContainerData {
 }
 export declare class QueryContainer extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: QueryContainerData);
     connectedCallback(): void;
     updateContainerQueriedSizeDetails(details: SDK.CSSContainerQuery.ContainerQueriedSizeDetails): void;

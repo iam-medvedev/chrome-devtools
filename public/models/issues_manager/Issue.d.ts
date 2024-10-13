@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
+import type { MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare const enum IssueCategory {
     CROSS_ORIGIN_EMBEDDER_POLICY = "CrossOriginEmbedderPolicy",
     GENERIC = "Generic",

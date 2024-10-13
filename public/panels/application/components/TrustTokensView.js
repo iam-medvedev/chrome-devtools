@@ -1,15 +1,16 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import trustTokensViewStyles from './trustTokensView.css.js';
+const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description Text for the issuer of an item
@@ -45,7 +46,6 @@ const coordinator = RenderCoordinator.RenderCoordinator.RenderCoordinator.instan
 /** Fetch the Trust Token data regularly from the backend while the panel is open */
 const REFRESH_INTERVAL_MS = 1000;
 export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    static litTagName = LitHtml.literal `devtools-trust-tokens-storage-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #deleteClickHandler(issuerOrigin) {
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -64,10 +64,10 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const { tokens } = await mainTarget.storageAgent().invoke_getTrustTokens();
         await coordinator.write('Render TrustTokensView', () => {
             // clang-format off
-            LitHtml.render(LitHtml.html `
+            LitHtml.render(html `
         <div>
           <span class="heading">${i18nString(UIStrings.trustTokens)}</span>
-          <${IconButton.Icon.Icon.litTagName} name="info" title=${i18nString(UIStrings.allStoredTrustTokensAvailableIn)}></${IconButton.Icon.Icon.litTagName}>
+          <devtools-icon name="info" title=${i18nString(UIStrings.allStoredTrustTokensAvailableIn)}></devtools-icon>
           ${this.#renderGridOrNoDataMessage(tokens)}
         </div>
       `, this.#shadow, { host: this });
@@ -79,7 +79,7 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderGridOrNoDataMessage(tokens) {
         if (tokens.length === 0) {
-            return LitHtml.html `<div class="no-tt-message">${i18nString(UIStrings.noTrustTokensStored)}</div>`;
+            return html `<div class="no-tt-message">${i18nString(UIStrings.noTrustTokensStored)}</div>`;
         }
         const gridData = {
             columns: [
@@ -114,8 +114,8 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 direction: "ASC" /* DataGrid.DataGridUtils.SortDirection.ASC */,
             },
         };
-        return LitHtml.html `
-      <${DataGrid.DataGridController.DataGridController.litTagName} .data=${gridData}></${DataGrid.DataGridController.DataGridController.litTagName}>
+        return html `
+      <devtools-data-grid-controller .data=${gridData}></devtools-data-grid-controller>
     `;
     }
     #buildRowsFromTokens(tokens) {
@@ -134,13 +134,13 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #deleteButtonRendererForDataGridCell(issuer) {
         // clang-format off
-        return LitHtml.html `
-      <${Buttons.Button.Button.litTagName} .iconName=${'bin'}
-                                           .jslogContext=${'delete-all'}
-                                           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-                                           .title=${i18nString(UIStrings.deleteTrustTokens, { PH1: issuer })}
-                                           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-                                           @click=${this.#deleteClickHandler.bind(this, issuer)}></${Buttons.Button.Button.litTagName}>
+        return html `
+      <devtools-button .iconName=${'bin'}
+                       .jslogContext=${'delete-all'}
+                       .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+                       .title=${i18nString(UIStrings.deleteTrustTokens, { PH1: issuer })}
+                       .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                       @click=${this.#deleteClickHandler.bind(this, issuer)}></devtools-button>
     `;
         // clang-format on
     }

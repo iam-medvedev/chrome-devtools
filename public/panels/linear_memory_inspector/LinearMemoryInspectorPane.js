@@ -71,13 +71,14 @@ export class LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(U
         this.dispatchEventToListeners("ViewClosed" /* Events.VIEW_CLOSED */, tabId);
     }
 }
-class LinearMemoryInspectorView extends UI.Widget.VBox {
+export class LinearMemoryInspectorView extends UI.Widget.VBox {
     #memoryWrapper;
     #address;
     #tabId;
     #inspector;
     firstTimeOpen;
-    constructor(memoryWrapper, address = 0, tabId) {
+    #hideValueInspector;
+    constructor(memoryWrapper, address = 0, tabId, hideValueInspector) {
         super(false);
         if (address < 0 || address >= memoryWrapper.length()) {
             throw new Error('Requested address is out of bounds.');
@@ -85,6 +86,7 @@ class LinearMemoryInspectorView extends UI.Widget.VBox {
         this.#memoryWrapper = memoryWrapper;
         this.#address = address;
         this.#tabId = tabId;
+        this.#hideValueInspector = Boolean(hideValueInspector);
         this.#inspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
         this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.MemoryRequestEvent.eventName, (event) => {
             this.#memoryRequested(event);
@@ -137,6 +139,7 @@ class LinearMemoryInspectorView extends UI.Widget.VBox {
                 valueTypeModes,
                 endianness,
                 highlightInfo: this.#getHighlightInfo(),
+                hideValueInspector: this.#hideValueInspector,
             };
         });
     }
@@ -152,6 +155,7 @@ class LinearMemoryInspectorView extends UI.Widget.VBox {
                 memoryOffset: start,
                 outerMemoryLength: this.#memoryWrapper.length(),
                 highlightInfo: this.#getHighlightInfo(),
+                hideValueInspector: this.#hideValueInspector,
             };
         });
     }

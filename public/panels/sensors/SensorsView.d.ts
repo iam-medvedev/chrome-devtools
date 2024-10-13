@@ -54,6 +54,7 @@ export declare class SensorsView extends UI.Widget.VBox {
     private calculateRadiusVector;
     private appendTouchControl;
     private appendIdleEmulator;
+    private createHardwareConcurrencySection;
 }
 export declare const enum DeviceOrientationModificationSource {
     USER_INPUT = "userInput",

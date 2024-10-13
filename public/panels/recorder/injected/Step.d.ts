@@ -1,4 +1,4 @@
-import { type Schema } from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+import type { Schema } from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
 export type ClickStep = Schema.ClickStep;
 export type KeyDownStep = Schema.KeyDownStep;
 export type KeyUpStep = Schema.KeyUpStep;

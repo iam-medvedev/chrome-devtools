@@ -9,10 +9,8 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as ClientVariations from '../../../third_party/chromium/client-variations/client-variations.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { EditableSpan } from './EditableSpan.js';
 import headerSectionRowStyles from './HeaderSectionRow.css.js';
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -97,7 +95,6 @@ export class EnableHeaderEditingEvent extends Event {
     }
 }
 export class HeaderSectionRow extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-header-section-row`;
     #shadow = this.attachShadow({ mode: 'open' });
     #header = null;
     #boundRender = this.#render.bind(this);
@@ -155,21 +152,21 @@ export class HeaderSectionRow extends HTMLElement {
             html `<div class="header-badge header-badge-text">${i18n.i18n.lockedString('not-set')}</div> ` :
             LitHtml.nothing}
           ${isHeaderNameEditable && !this.#isValidHeaderName ?
-            html `<${IconButton.Icon.Icon.litTagName} class="inline-icon disallowed-characters" title=${UIStrings.headerNamesOnlyLetters} .data=${{
+            html `<devtools-icon class="inline-icon disallowed-characters" title=${UIStrings.headerNamesOnlyLetters} .data=${{
                 iconName: 'cross-circle-filled',
                 width: '16px',
                 height: '16px',
                 color: 'var(--icon-error)',
             }}>
-            </${IconButton.Icon.Icon.litTagName}>` : LitHtml.nothing}
+            </devtools-icon>` : LitHtml.nothing}
           ${isHeaderNameEditable && !this.#header.isDeleted ?
-            html `<${EditableSpan.litTagName}
+            html `<devtools-editable-span
               @focusout=${this.#onHeaderNameFocusOut}
               @keydown=${this.#onKeyDown}
               @input=${this.#onHeaderNameEdit}
               @paste=${this.#onHeaderNamePaste}
               .data=${{ value: this.#header.name }}
-            ></${EditableSpan.litTagName}>` :
+            ></devtools-editable-span>` :
             this.#header.name}:
         </div>
         <div
@@ -179,13 +176,13 @@ export class HeaderSectionRow extends HTMLElement {
           ${this.#renderHeaderValue()}
         </div>
         ${showReloadInfoIcon ?
-            html `<${IconButton.Icon.Icon.litTagName} class="row-flex-icon flex-right" title=${UIStrings.reloadPrompt} .data=${{
+            html `<devtools-icon class="row-flex-icon flex-right" title=${UIStrings.reloadPrompt} .data=${{
                 iconName: 'info',
                 width: '16px',
                 height: '16px',
                 color: 'var(--icon-default)',
             }}>
-          </${IconButton.Icon.Icon.litTagName}>` : LitHtml.nothing}
+          </devtools-icon>` : LitHtml.nothing}
       </div>
       ${this.#maybeRenderBlockedDetails(this.#header.blockedDetails)}
     `, this.#shadow, { host: this });
@@ -209,7 +206,7 @@ export class HeaderSectionRow extends HTMLElement {
       ${this.#header.value || ''}
       ${this.#maybeRenderHeaderValueSuffix(this.#header)}
       ${showEditHeaderButton ? html `
-        <${Buttons.Button.Button.litTagName}
+        <devtools-button
           title=${i18nString(UIStrings.editHeader)}
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
           .iconUrl=${editIconUrl}
@@ -219,20 +216,20 @@ export class HeaderSectionRow extends HTMLElement {
             }}
           jslog=${VisualLogging.action('enable-header-overrides').track({ click: true })}
           class="enable-editing inline-button"
-        ></${Buttons.Button.Button.litTagName}>
+        ></devtools-button>
       ` : LitHtml.nothing}
     `;
         }
         return html `
-      <${EditableSpan.litTagName}
+      <devtools-editable-span
         @focusout=${this.#onHeaderValueFocusOut}
         @input=${this.#onHeaderValueEdit}
         @paste=${this.#onHeaderValueEdit}
         @keydown=${this.#onKeyDown}
         .data=${{ value: this.#header.value || '' }}
-      ></${EditableSpan.litTagName}>
+      ></devtools-editable-span>
       ${this.#maybeRenderHeaderValueSuffix(this.#header)}
-      <${Buttons.Button.Button.litTagName}
+      <devtools-button
         title=${i18nString(UIStrings.removeOverride)}
         .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
         .iconUrl=${trashIconUrl}
@@ -240,7 +237,7 @@ export class HeaderSectionRow extends HTMLElement {
         class="remove-header inline-button"
         @click=${this.#onRemoveOverrideClick}
         jslog=${VisualLogging.action('remove-header-override').track({ click: true })}
-      ></${Buttons.Button.Button.litTagName}>
+      ></devtools-button>
     `;
         // clang-format on
     }
@@ -267,13 +264,13 @@ export class HeaderSectionRow extends HTMLElement {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             return html `
-        <${IconButton.Icon.Icon.litTagName} class="row-flex-icon" title=${titleText} .data=${{
+        <devtools-icon class="row-flex-icon" title=${titleText} .data=${{
                 iconName: 'warning-filled',
                 color: 'var(--icon-warning)',
                 width: '16px',
                 height: '16px',
             }}>
-        </${IconButton.Icon.Icon.litTagName}>
+        </devtools-icon>
       `;
             // clang-format on
         }
@@ -309,13 +306,13 @@ export class HeaderSectionRow extends HTMLElement {
             // clang-format off
             return html `
         <div class="devtools-link" @click=${blockedDetails.reveal}>
-          <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
+          <devtools-icon class="inline-icon" .data=${{
                 iconName: 'issue-exclamation-filled',
                 color: 'var(--icon-warning)',
                 width: '16px',
                 height: '16px',
             }}>
-          </${IconButton.Icon.Icon.litTagName}
+          </devtools-icon
           >${i18nString(UIStrings.learnMoreInTheIssuesTab)}
         </div>
       `;
@@ -326,13 +323,13 @@ export class HeaderSectionRow extends HTMLElement {
             // clang-format off
             return html `
         <x-link href=${blockedDetails.link.url} class="link">
-          <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
+          <devtools-icon class="inline-icon" .data=${{
                 iconName: 'open-externally',
                 color: 'var(--icon-link)',
                 width: '20px',
                 height: '20px',
             }}>
-          </${IconButton.Icon.Icon.litTagName}
+          </devtools-icon
           >${i18nString(UIStrings.learnMore)}
         </x-link>
       `;

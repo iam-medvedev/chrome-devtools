@@ -14,7 +14,7 @@ styles.replaceSync(
 .devtools-link {
   color: var(--sys-color-primary);
   outline-offset: 2px;
-  text-decoration: none;
+  text-decoration: var(--markdown-link-text-decoration-style, none);
 }
 
 .devtools-link:hover {

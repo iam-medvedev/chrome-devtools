@@ -7,7 +7,6 @@ export interface CSSQueryData {
 }
 export declare class CSSQuery extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: CSSQueryData);
     connectedCallback(): void;
 }

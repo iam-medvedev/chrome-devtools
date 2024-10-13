@@ -1,3 +1,4 @@
+import './NodeLink.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsight } from './Helpers.js';
 import { Category } from './types.js';

@@ -47,5 +47,5 @@ export declare const enum Events {
 export type EventTypes = {
     [Events.PAINT_PROFILER_REQUESTED]: Selection;
 };
-export declare const slowScrollRectNames: Map<SDK.LayerTreeBase.Layer.ScrollRectType, () => Common.UIString.LocalizedString>;
+export declare const slowScrollRectNames: Map<SDK.LayerTreeBase.Layer.ScrollRectType, () => Platform.UIString.LocalizedString>;
 export {};
