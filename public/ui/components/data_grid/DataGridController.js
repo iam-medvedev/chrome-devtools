@@ -28,7 +28,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/components/data_grid/DataGridController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class DataGridController extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-data-grid-controller`;
     #shadow = this.attachShadow({ mode: 'open' });
     #hasRenderedAtLeastOnce = false;
     #columns = [];

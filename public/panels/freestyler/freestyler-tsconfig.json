@@ -70,7 +70,7 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
-      "path": "../network/forward/bundle-tsconfig.json"
+      "path": "../network/bundle-tsconfig.json"
     },
     {
       "path": "../utils/bundle-tsconfig.json"

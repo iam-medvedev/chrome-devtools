@@ -8,7 +8,6 @@ import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js'
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 const { html } = LitHtml;
 export class NodeLink extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-node-link`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #backendNodeId;

@@ -463,7 +463,12 @@ export var Action;
     Action[Action["InsightsReminderTeaserAbortedInSettings"] = 167] = "InsightsReminderTeaserAbortedInSettings";
     Action[Action["GeneratingInsightWithoutDisclaimer"] = 168] = "GeneratingInsightWithoutDisclaimer";
     Action[Action["FreestylerOpenedFromElementsPanelFloatingButton"] = 169] = "FreestylerOpenedFromElementsPanelFloatingButton";
-    Action[Action["MAX_VALUE"] = 170] = "MAX_VALUE";
+    Action[Action["DrJonesOpenedFromNetworkPanel"] = 170] = "DrJonesOpenedFromNetworkPanel";
+    Action[Action["DrJonesOpenedFromSourcesPanel"] = 171] = "DrJonesOpenedFromSourcesPanel";
+    Action[Action["DrJonesOpenedFromSourcesPanelFloatingButton"] = 172] = "DrJonesOpenedFromSourcesPanelFloatingButton";
+    Action[Action["DrJonesOpenedFromPerformancePanel"] = 173] = "DrJonesOpenedFromPerformancePanel";
+    Action[Action["DrJonesOpenedFromNetworkPanelFloatingButton"] = 174] = "DrJonesOpenedFromNetworkPanelFloatingButton";
+    Action[Action["MAX_VALUE"] = 175] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;

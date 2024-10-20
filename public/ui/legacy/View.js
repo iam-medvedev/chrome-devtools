@@ -7,8 +7,8 @@ import { VBox } from './Widget.js';
 export class SimpleView extends VBox {
     #title;
     #viewId;
-    constructor(title, isWebComponent, viewId) {
-        super(isWebComponent);
+    constructor(title, useShadowDom, viewId) {
+        super(useShadowDom);
         this.#title = title;
         if (viewId) {
             if (!Platform.StringUtilities.isExtendedKebabCase(viewId)) {

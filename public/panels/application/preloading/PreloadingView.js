@@ -192,6 +192,7 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
             this.shouldPrettyPrint = !this.shouldPrettyPrint;
             this.updateRuleSetDetails();
         };
+        // clang-format off
         LitHtml.render(html `
         <devtools-split-view .horizontal=${true} style="--min-sidebar-size: max(100vh-200px, 0px)">
           <div slot="main" class="overflow-auto" style="height: 100%">
@@ -210,12 +211,11 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
           .toggleType=${"primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */}
           .title=${i18nString(UIStrings.prettyPrint)}
           .variant=${"icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */}
-          .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+          .size=${"REGULAR" /* Buttons.Button.Size.REGULAR */}
           @click=${onPrettyPrintToggle}
-          jslog=${VisualLogging.action().track({ click: true }).context('preloading-status-panel-pretty-print')}>
-        </devtools-button>
-        </div>
-        `, this.contentElement, { host: this });
+          jslog=${VisualLogging.action().track({ click: true }).context('preloading-status-panel-pretty-print')}></devtools-button>
+        </div>`, this.contentElement, { host: this });
+        // clang-format on
         this.hsplit = this.contentElement.querySelector('devtools-split-view');
     }
     wasShown() {

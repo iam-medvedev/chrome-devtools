@@ -24,7 +24,6 @@ export interface DataGridControllerData {
 }
 export declare class DataGridController extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     get data(): DataGridControllerData;
     set data(data: DataGridControllerData);

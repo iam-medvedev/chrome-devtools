@@ -50,7 +50,6 @@ export declare const enum FilterOption {
 }
 export declare class TreeOutline<TreeNodeDataType> extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     static get observedAttributes(): string[];
     attributeChangedCallback(name: 'nowrap' | 'toplevelbordercolor', oldValue: string | null, newValue: string | null): void;
     connectedCallback(): void;

@@ -53,7 +53,6 @@ const UIStringsNotTranslate = {
 const lockedString = i18n.i18n.lockedString;
 const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504';
 export class ProvideFeedback extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-provide-feedback`;
     #shadow = this.attachShadow({ mode: 'open' });
     #props;
     #isShowingFeedbackForm = false;

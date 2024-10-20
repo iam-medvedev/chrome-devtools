@@ -26,7 +26,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // A link to a survey. The link is rendered aysnchronously because we need to first check if
 // canShowSurvey succeeds.
 export class SurveyLink extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-survey-link`;
     #shadow = this.attachShadow({ mode: 'open' });
     #trigger = '';
     #promptText = Common.UIString.LocalizedEmptyString;

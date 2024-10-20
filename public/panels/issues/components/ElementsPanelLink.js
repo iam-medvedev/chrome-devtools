@@ -6,7 +6,6 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import elementsPanelLinkStyles from './elementsPanelLink.css.js';
 const { html } = LitHtml;
 export class ElementsPanelLink extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-elements-panel-link`;
     #shadow = this.attachShadow({ mode: 'open' });
     #onElementRevealIconClick = () => { };
     #onElementRevealIconMouseEnter = () => { };

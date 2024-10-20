@@ -117,17 +117,29 @@ function initialize() {
                 processingDuration: metric.attribution.processingDuration,
                 presentationDelay: metric.attribution.presentationDelay,
             },
-            uniqueInteractionId: Spec.getUniqueInteractionId(metric.entries),
+            startTime: metric.entries[0].startTime,
+            entryGroupId: metric.entries[0].interactionId,
             interactionType: metric.attribution.interactionType,
         };
         sendEventToDevTools(event);
-    }, { reportAllChanges: true });
+    }, { reportAllChanges: true, durationThreshold: 0 });
     onEachInteraction(interaction => {
+        // Multiple `InteractionEntry` events can be emitted for the same `uniqueInteractionId`
+        // However, it is easier to combine these entries in the DevTools client rather than in
+        // this injected code.
         const event = {
-            name: 'Interaction',
+            name: 'InteractionEntry',
             duration: interaction.value,
-            uniqueInteractionId: Spec.getUniqueInteractionId(interaction.entries),
+            phases: {
+                inputDelay: interaction.attribution.inputDelay,
+                processingDuration: interaction.attribution.processingDuration,
+                presentationDelay: interaction.attribution.presentationDelay,
+            },
+            startTime: interaction.entries[0].startTime,
+            entryGroupId: interaction.entries[0].interactionId,
+            nextPaintTime: interaction.attribution.nextPaintTime,
             interactionType: interaction.attribution.interactionType,
+            eventName: interaction.entries[0].name,
         };
         const node = interaction.attribution.interactionTargetElement;
         if (node) {

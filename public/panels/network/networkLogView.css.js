@@ -162,14 +162,35 @@ styles.replaceSync(
   color: var(--sys-color-error) !important;
 }
 
+.network-warning-row,
+.network-warning-row .network-cell-subtitle {
+  color: var(--sys-color-yellow);
+}
+
 .network-log-grid.data-grid tr.selected.network-error-row,
 .network-log-grid.data-grid tr.selected.network-error-row .network-cell-subtitle,
-.network-log-grid.data-grid tr.selected.network-error-row .network-dim-cell,
-.network-log-grid.data-grid:focus-within tr.selected.network-error-row .devtools-link,
+.network-log-grid.data-grid tr.selected.network-error-row .network-dim-cell {
+  color: var(--sys-color-error);
+}
+
+.network-log-grid.data-grid tr.selected.network-warning-row,
+.network-log-grid.data-grid tr.selected.network-warning-row .network-cell-subtitle,
+.network-log-grid.data-grid tr.selected.network-warning-row .network-dim-cell {
+  color: var(--sys-color-yellow);
+}
+
 .network-log-grid.data-grid:focus-within tr.selected.network-error-row,
+.network-log-grid.data-grid:focus-within tr.selected.network-error-row .devtools-link,
 .network-log-grid.data-grid:focus-within tr.selected.network-error-row .network-cell-subtitle,
 .network-log-grid.data-grid:focus-within tr.selected.network-error-row .network-dim-cell {
   color: var(--sys-color-error);
+}
+
+.network-log-grid.data-grid:focus-within tr.selected.network-warning-row,
+.network-log-grid.data-grid:focus-within tr.selected.network-warning-row .devtools-link,
+.network-log-grid.data-grid:focus-within tr.selected.network-warning-row .network-cell-subtitle,
+.network-log-grid.data-grid:focus-within tr.selected.network-warning-row .network-dim-cell {
+  color: var(--sys-color-yellow);
 }
 
 .network-log-grid.data-grid tr.selected,
@@ -243,6 +264,15 @@ styles.replaceSync(
   width: 16px;
   height: 16px;
   vertical-align: sub;
+}
+
+.data-grid-data-grid-node .ai-button-container {
+  display: none;
+  float: right;
+}
+
+.data-grid-data-grid-node:hover .ai-button-container {
+  display: inline-flex;
 }
 
 .image-network-icon-preview {

@@ -586,7 +586,8 @@ class TabbedLocation extends Location {
                 }, { jslogContext: 'issues-pane' });
                 continue;
             }
-            contextMenu.defaultSection().appendItem(title, this.showView.bind(this, view, undefined, true), { jslogContext: view.viewId() });
+            const isPreviewFeature = view.isPreviewFeature();
+            contextMenu.defaultSection().appendItem(title, this.showView.bind(this, view, undefined, true), { isPreviewFeature, jslogContext: view.viewId() });
         }
     }
     appendTab(view, index) {

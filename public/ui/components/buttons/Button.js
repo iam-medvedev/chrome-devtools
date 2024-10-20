@@ -8,7 +8,6 @@ import buttonStyles from './button.css.legacy.js';
 const { html, Directives: { ifDefined, ref, classMap } } = LitHtml;
 export class Button extends HTMLElement {
     static formAssociated = true;
-    static litTagName = LitHtml.literal `devtools-button`;
     #shadow = this.attachShadow({ mode: 'open', delegatesFocus: true });
     #boundOnClick = this.#onClick.bind(this);
     #props = {

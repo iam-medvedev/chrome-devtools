@@ -6,6 +6,7 @@ export declare class Item {
     #private;
     private readonly typeInternal;
     protected readonly label: string | undefined;
+    protected readonly previewFeature: boolean;
     protected disabled: boolean | undefined;
     private readonly checked;
     protected contextMenu: ContextMenu | null;
@@ -13,9 +14,10 @@ export declare class Item {
     customElement?: Element;
     private shortcut?;
     protected jslogContext: string | undefined;
-    constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, disabled?: boolean, checked?: boolean, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string);
+    constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, isPreviewFeature?: boolean, disabled?: boolean, checked?: boolean, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string);
     id(): number;
     type(): string;
+    isPreviewFeature(): boolean;
     isEnabled(): boolean;
     setEnabled(enabled: boolean): void;
     buildDescriptor(): SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor;
@@ -26,6 +28,7 @@ export declare class Section {
     readonly items: Item[];
     constructor(contextMenu: ContextMenu | null);
     appendItem(label: string, handler: () => void, options?: {
+        isPreviewFeature?: boolean;
         disabled?: boolean;
         additionalElement?: Element;
         tooltip?: Platform.UIString.LocalizedString;

@@ -57,6 +57,9 @@
       "path": "../../../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../../../core/sdk/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../models/trace/bundle-tsconfig.json"
     },
     {
@@ -73,6 +76,9 @@
     },
     {
       "path": "../../../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../ui/components/linkifier/bundle-tsconfig.json"
     },
     {
       "path": "../../../../ui/components/markdown_view/bundle-tsconfig.json"

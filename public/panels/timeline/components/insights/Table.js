@@ -6,7 +6,6 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import tableStyles from './table.css.js';
 const { html } = LitHtml;
 export class Table extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-table`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #insight;

@@ -6,7 +6,6 @@ export declare class OverviewStartRequestedEvent extends Event {
 }
 export declare class CSSOverviewStartView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     show(): void;
     hide(): void;

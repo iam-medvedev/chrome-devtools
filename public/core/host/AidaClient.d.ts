@@ -1,3 +1,4 @@
+import * as Common from '../common/common.js';
 import type { AidaClientResult } from './InspectorFrontendHostAPI.js';
 export declare enum Entity {
     UNKNOWN = 0,
@@ -103,3 +104,17 @@ export declare class AidaClient {
     registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
 }
 export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;
+export declare class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
+    private constructor();
+    static instance(): HostConfigTracker;
+    addEventListener(eventType: Events, listener: Common.EventTarget.EventListener<EventTypes, Events>): Common.EventTarget.EventDescriptor<EventTypes>;
+    removeEventListener(eventType: Events, listener: Common.EventTarget.EventListener<EventTypes, Events>): void;
+    private pollAidaAvailability;
+}
+export declare const enum Events {
+    AIDA_AVAILABILITY_CHANGED = "aidaAvailabilityChanged"
+}
+export type EventTypes = {
+    [Events.AIDA_AVAILABILITY_CHANGED]: void;
+};

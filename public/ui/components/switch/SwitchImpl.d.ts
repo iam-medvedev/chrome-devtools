@@ -5,7 +5,6 @@ export declare class SwitchChangeEvent extends Event {
 }
 export declare class Switch extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set checked(isChecked: boolean);
     get checked(): boolean;

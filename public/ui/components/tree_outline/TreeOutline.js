@@ -39,7 +39,6 @@ export class ItemMouseOutEvent extends Event {
     }
 }
 export class TreeOutline extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-tree-outline`;
     #shadow = this.attachShadow({ mode: 'open' });
     #treeData = [];
     #nodeExpandedMap = new Map();

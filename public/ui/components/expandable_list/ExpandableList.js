@@ -6,7 +6,6 @@ import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import expandableListStyles from './expandableList.css.js';
 const { html, Directives: { ifDefined } } = LitHtml;
 export class ExpandableList extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-expandable-list`;
     #shadow = this.attachShadow({ mode: 'open' });
     #expanded = false;
     #rows = [];

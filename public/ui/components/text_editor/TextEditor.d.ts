@@ -6,7 +6,6 @@ declare global {
 }
 export declare class TextEditor extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     constructor(pendingState?: CodeMirror.EditorState);
     get editor(): CodeMirror.EditorView;
     dispatch(spec: CodeMirror.TransactionSpec): void;

@@ -41,6 +41,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as FloatingButton from '../../ui/components/floating_button/floating_button.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -309,16 +310,23 @@ export class NetworkNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
     }
     renderCell(_cell, _columnId) {
     }
-    isFailed() {
+    isError() {
+        return false;
+    }
+    isWarning() {
         return false;
     }
     backgroundColor() {
         const bgColors = _backgroundColors;
         const hasFocus = document.hasFocus();
         const isSelected = this.dataGrid && this.dataGrid.element === document.activeElement;
-        const isFailed = this.isFailed();
-        if (this.selected && hasFocus && isSelected && isFailed) {
+        const isWarning = this.isWarning();
+        const isError = this.isError();
+        if (this.selected && hasFocus && isSelected && isError) {
             return bgColors.FocusSelectedHasError;
+        }
+        if (this.selected && hasFocus && isSelected && isWarning) {
+            return bgColors.FocusSelectedHasWarning;
         }
         if (this.selected && hasFocus && isSelected) {
             return bgColors.FocusSelected;
@@ -440,6 +448,7 @@ export const _backgroundColors = {
     Selected: '--color-grid-selected',
     FocusSelected: '--color-grid-focus-selected',
     FocusSelectedHasError: '--network-grid-focus-selected-color-has-error',
+    FocusSelectedHasWarning: '--network-grid-focus-selected-color-has-warning',
     FromFrame: '--network-grid-from-frame-color',
 };
 export class NetworkRequestNode extends NetworkNode {
@@ -752,10 +761,20 @@ export class NetworkRequestNode extends NetworkNode {
     nodeSelfHeight() {
         return this.parentView().rowHeight();
     }
+    isPrefetch() {
+        return this.requestInternal.resourceType() === Common.ResourceType.resourceTypes.Prefetch;
+    }
+    isWarning() {
+        return this.isFailed() && this.isPrefetch();
+    }
+    isError() {
+        return this.isFailed() && !this.isPrefetch();
+    }
     createCells(element) {
         this.nameCell = null;
         this.initiatorCell = null;
-        element.classList.toggle('network-error-row', this.isFailed());
+        element.classList.toggle('network-warning-row', this.isWarning());
+        element.classList.toggle('network-error-row', this.isError());
         element.classList.toggle('network-navigation-row', this.isNavigationRequestInternal);
         super.createCells(element);
         this.updateBackgroundColor();
@@ -930,6 +949,11 @@ export class NetworkRequestNode extends NetworkNode {
             // render icons
             const iconElement = PanelUtils.getIconForNetworkRequest(this.requestInternal);
             cell.appendChild(iconElement);
+            // render Ask AI button
+            const aiButtonContainer = this.createAiButtonIfAvailable();
+            if (aiButtonContainer) {
+                cell.appendChild(aiButtonContainer);
+            }
         }
         if (columnId === 'name') {
             const webBundleInnerRequestInfo = this.requestInternal.webBundleInnerRequestInfo();
@@ -1277,6 +1301,26 @@ export class NetworkRequestNode extends NetworkNode {
             UI.Tooltip.Tooltip.install(subtitleElement, tooltipText);
         }
         cellElement.appendChild(subtitleElement);
+    }
+    createAiButtonIfAvailable() {
+        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.network-floating-button')) {
+            const action = UI.ActionRegistry.ActionRegistry.instance().getAction('drjones.network-floating-button');
+            const aiButtonContainer = document.createElement('span');
+            aiButtonContainer.classList.add('ai-button-container');
+            const floatingButton = new FloatingButton.FloatingButton.FloatingButton({
+                iconName: 'smart-assistant',
+            });
+            floatingButton.addEventListener('click', ev => {
+                ev.stopPropagation();
+                this.select();
+                void action.execute();
+            }, { capture: true });
+            floatingButton.addEventListener('mousedown', ev => {
+                ev.stopPropagation();
+            }, { capture: true });
+            aiButtonContainer.appendChild(floatingButton);
+            return aiButtonContainer;
+        }
     }
 }
 export class NetworkGroupNode extends NetworkNode {

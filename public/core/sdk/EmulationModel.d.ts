@@ -10,6 +10,8 @@ export declare class EmulationModel extends SDKModel<void> {
     resetPageScaleFactor(): Promise<void>;
     emulateDevice(metrics: Protocol.Page.SetDeviceMetricsOverrideRequest | null): Promise<void>;
     overlayModel(): OverlayModel | null;
+    setPressureSourceOverrideEnabled(enabled: boolean): Promise<void>;
+    setPressureStateOverride(pressureState: string): Promise<void>;
     emulateLocation(location: Location | null): Promise<void>;
     emulateDeviceOrientation(deviceOrientation: DeviceOrientation | null): Promise<void>;
     setIdleOverride(emulationParams: {

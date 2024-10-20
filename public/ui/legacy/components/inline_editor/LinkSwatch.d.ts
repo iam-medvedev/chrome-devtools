@@ -7,7 +7,6 @@ interface BaseLinkSwatchRenderData {
 }
 declare class BaseLinkSwatch extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     protected readonly shadow: ShadowRoot;
     protected onLinkActivate: (linkText: string, event: MouseEvent | KeyboardEvent) => void;
     connectedCallback(): void;
@@ -24,7 +23,6 @@ interface CSSVarSwatchRenderData {
 }
 export declare class CSSVarSwatch extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     protected readonly shadow: ShadowRoot;
     constructor();
     set data(data: CSSVarSwatchRenderData);
@@ -38,7 +36,6 @@ export interface LinkSwatchRenderData {
     jslogContext: string;
 }
 export declare class LinkSwatch extends HTMLElement {
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     protected readonly shadow: ShadowRoot;
     set data(data: LinkSwatchRenderData);
     protected render(data: LinkSwatchRenderData): void;

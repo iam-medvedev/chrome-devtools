@@ -101,7 +101,6 @@ export class HeadersView extends UI.View.SimpleView {
     }
 }
 export class HeadersViewComponent extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-sources-headers-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #headerOverrides = [];

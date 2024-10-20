@@ -14,7 +14,6 @@ export interface HeadersViewComponentData {
 }
 export declare class HeadersViewComponent extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     connectedCallback(): void;
     set data(data: HeadersViewComponentData);

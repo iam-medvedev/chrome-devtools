@@ -29,7 +29,6 @@ export const DIALOG_VERTICAL_PADDING = 3;
 export const DIALOG_PADDING_FROM_WINDOW = 3 * CONNECTOR_HEIGHT;
 export const MODAL = 'MODAL';
 export class Dialog extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-dialog`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #forceDialogCloseInDevToolsBound = this.#forceDialogCloseInDevToolsMutation.bind(this);

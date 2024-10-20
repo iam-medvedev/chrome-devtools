@@ -25,7 +25,6 @@ export interface RequestLinkIconData {
 export declare const extractShortPath: (path: Platform.DevToolsPath.UrlString) => string;
 export declare class RequestLinkIcon extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     set data(data: RequestLinkIconData);
     connectedCallback(): void;
     get data(): RequestLinkIconData;

@@ -6,7 +6,6 @@ import * as VisualElements from '../../visual_logging/visual_logging.js';
 import adornerStyles from './adorner.css.js';
 const { render, html } = LitHtml;
 export class Adorner extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-adorner`;
     name = '';
     #shadow = this.attachShadow({ mode: 'open' });
     #isToggle = false;

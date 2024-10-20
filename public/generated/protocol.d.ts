@@ -3516,8 +3516,6 @@ export declare namespace DOM {
         Placeholder = "placeholder",
         FileSelectorButton = "file-selector-button",
         DetailsContent = "details-content",
-        SelectFallbackButton = "select-fallback-button",
-        SelectFallbackButtonText = "select-fallback-button-text",
         Picker = "picker"
     }
     /**
@@ -11608,7 +11606,8 @@ export declare namespace Page {
         EmbedderExtensionMessaging = "EmbedderExtensionMessaging",
         EmbedderExtensionMessagingForOpenPort = "EmbedderExtensionMessagingForOpenPort",
         EmbedderExtensionSentMessageToCachedFrame = "EmbedderExtensionSentMessageToCachedFrame",
-        RequestedByWebViewClient = "RequestedByWebViewClient"
+        RequestedByWebViewClient = "RequestedByWebViewClient",
+        PostMessageByWebViewClient = "PostMessageByWebViewClient"
     }
     /**
      * Types of not restored reasons for back-forward cache.

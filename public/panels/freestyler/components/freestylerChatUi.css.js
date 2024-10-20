@@ -83,6 +83,7 @@ styles.replaceSync(
   &:disabled {
     color: var(--sys-color-state-disabled);
     background-color: var(--sys-color-state-disabled-container);
+    border-color: transparent;
   }
 }
 
@@ -250,7 +251,8 @@ styles.replaceSync(
     white-space: nowrap;
     max-width: var(--sys-size-32);
 
-    .icon {
+    .icon,
+    devtools-file-source-icon {
       display: inline-flex;
       vertical-align: top;
       margin-right: var(--sys-size-3);
@@ -299,6 +301,35 @@ styles.replaceSync(
   .resource-task.not-selected {
     color: var(--sys-color-state-disabled);
     border-color: var(--sys-color-neutral-outline);
+  }
+}
+
+.no-agent-message {
+  user-select: text;
+  cursor: initial;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-5);
+  width: 100%;
+  padding: var(--sys-size-7) var(--sys-size-5);
+  height: 100%;
+
+  .header {
+    display: flex;
+    align-items: center;
+    height: var(--sys-size-11);
+    gap: var(--sys-size-4);
+
+    h2 {
+      font: var(--sys-typescale-body4-bold);
+    }
+  }
+
+  .instructions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-6);
+    line-height: 18px;
   }
 }
 
@@ -534,7 +565,7 @@ main {
   padding: var(--sys-size-6) var(--sys-size-8);
   box-shadow: var(--drop-shadow);
   font: var(--sys-typescale-body4-regular);
-  margin: var(--sys-size-8);
+  margin: var(--sys-size-4) 0;
   max-width: var(--sys-size-34);
   display: flex;
   text-wrap: pretty;

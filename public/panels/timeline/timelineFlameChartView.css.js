@@ -47,6 +47,14 @@ styles.replaceSync(
   &.cut-off-bottom {
     border-bottom: none;
   }
+
+  &.cut-off-right {
+    border-right: none;
+  }
+
+  &.cut-off-left {
+    border-left: none;
+  }
 }
 
 .overlay-type-ENTRY_OUTLINE {
@@ -81,6 +89,14 @@ styles.replaceSync(
 
   &.cut-off-top {
     border-top: none;
+  }
+
+  &.cut-off-right {
+    border-right: none;
+  }
+
+  &.cut-off-left {
+    border-left: none;
   }
 }
 

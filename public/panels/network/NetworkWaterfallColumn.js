@@ -427,6 +427,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
                 return 13;
         }
     }
+    // Used when `network-color-code-resource-types` is true
     getSimplifiedBarRange(request, borderOffset) {
         const drawWidth = this.offsetWidth - this.leftPadding;
         const percentages = this.calculator.computeBarGraphPercentages(request);
@@ -436,6 +437,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
             end: this.leftPadding + Math.floor((percentages.end / 100) * drawWidth) + borderOffset,
         };
     }
+    // Used when `network-color-code-resource-types` is true
     buildSimplifiedBarLayers(context, node, y) {
         const request = node.request();
         if (!request) {

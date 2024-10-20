@@ -4,7 +4,6 @@ export interface FeedbackButtonData {
 }
 export declare class FeedbackButton extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     set data(data: FeedbackButtonData);
 }
 declare global {

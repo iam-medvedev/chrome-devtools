@@ -36,10 +36,12 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as FloatingButton from '../../ui/components/floating_button/floating_button.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Snippets from '../snippets/snippets.js';
+import { PanelUtils } from '../utils/utils.js';
 import navigatorTreeStyles from './navigatorTree.css.js';
 import navigatorViewStyles from './navigatorView.css.js';
 import { SearchSources } from './SearchSourcesView.js';
@@ -1155,6 +1157,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
     node;
     navigatorView;
     uiSourceCodeInternal;
+    aiButtonContainer;
     constructor(navigatorView, uiSourceCode, title, node) {
         super('', false, uiSourceCode.contentType().name());
         this.nodeType = Types.File;
@@ -1170,33 +1173,32 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         this.titleElement.setAttribute('jslog', `${VisualLogging.value('title').track({ change: true })}`);
     }
     updateIcon() {
-        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal);
-        const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
-        let iconType = 'document';
-        let iconStyles = [];
-        if (binding) {
-            if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(binding.fileSystem)) {
-                iconType = 'snippet';
-            }
-            const badgeIsPurple = networkPersistenceManager.project() === binding.fileSystem.project();
-            iconStyles = badgeIsPurple ? ['dot', 'purple'] : ['dot', 'green'];
-        }
-        else if (networkPersistenceManager.isActiveHeaderOverrides(this.uiSourceCode)) {
-            iconStyles = ['dot', 'purple'];
-        }
-        else {
-            if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.uiSourceCodeInternal)) {
-                iconType = 'snippet';
-            }
-        }
-        const icon = IconButton.Icon.create(iconType, iconStyles.join(' '));
-        if (binding) {
-            UI.Tooltip.Tooltip.install(icon, Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(this.uiSourceCodeInternal));
-        }
+        const icon = PanelUtils.getIconForSourceFile(this.uiSourceCodeInternal);
         this.setLeadingIcons([icon]);
     }
     updateAccessibleName() {
         UI.ARIAUtils.setLabel(this.listItemElement, `${this.uiSourceCodeInternal.name()}, ${this.nodeType}`);
+    }
+    createAiButton() {
+        if (!UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.sources-floating-button')) {
+            return;
+        }
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction('drjones.sources-floating-button');
+        if (!this.aiButtonContainer) {
+            this.aiButtonContainer = this.listItemElement.createChild('span', 'ai-button-container');
+            const floatingButton = new FloatingButton.FloatingButton.FloatingButton({
+                iconName: 'smart-assistant',
+            });
+            floatingButton.addEventListener('click', ev => {
+                ev.stopPropagation();
+                this.navigatorView.sourceSelected(this.uiSourceCode, false);
+                void action.execute();
+            }, { capture: true });
+            floatingButton.addEventListener('mousedown', ev => {
+                ev.stopPropagation();
+            }, { capture: true });
+            this.aiButtonContainer.appendChild(floatingButton);
+        }
     }
     get uiSourceCode() {
         return this.uiSourceCodeInternal;
@@ -1206,6 +1208,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.addEventListener('click', this.onclick.bind(this), false);
         this.listItemElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), false);
         this.listItemElement.addEventListener('dragstart', this.ondragstart.bind(this), false);
+        this.createAiButton();
     }
     shouldRenameOnMouseDown() {
         if (!this.uiSourceCodeInternal.canRename()) {

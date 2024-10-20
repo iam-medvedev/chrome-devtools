@@ -7,8 +7,8 @@ export class ThrottledWidget extends VBox {
     updateThrottler;
     updateWhenVisible;
     lastUpdatePromise = Promise.resolve();
-    constructor(isWebComponent, timeout) {
-        super(isWebComponent);
+    constructor(useShadowDom, timeout) {
+        super(useShadowDom);
         this.updateThrottler = new Common.Throttler.Throttler(timeout === undefined ? 100 : timeout);
         this.updateWhenVisible = false;
     }

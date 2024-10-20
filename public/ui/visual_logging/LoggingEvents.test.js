@@ -64,7 +64,7 @@ describe('LoggingEvents', () => {
     });
     it('calls UI binding to log a change of specific type', async () => {
         const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
-        VisualLogging.LoggingState.getLoggingState(element).lastInputEventType = 'instertText';
+        VisualLogging.LoggingState.getLoggingState(element).pendingChangeContext = 'instertText';
         await VisualLogging.LoggingEvents.logChange(element);
         assert.isTrue(recordChange.calledOnce);
         assert.deepStrictEqual(recordChange.firstCall.firstArg, { veid, context: 296063892 });

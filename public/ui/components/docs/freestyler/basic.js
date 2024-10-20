@@ -15,7 +15,6 @@ const messages = [
     },
     {
         entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
-        suggestions: [],
         steps: [
             {
                 isLoading: false,

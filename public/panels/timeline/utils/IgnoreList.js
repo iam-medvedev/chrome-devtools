@@ -10,10 +10,16 @@ export function isIgnoreListedEntry(entry) {
     }
     const rawUrl = entry.callFrame.url;
     const sourceMappedData = SourceMapsResolver.resolvedCodeLocationForEntry(entry);
-    const resolvedUrl = sourceMappedData?.devtoolsLocation?.uiSourceCode.url();
-    return resolvedUrl ? isIgnoreListedURL(resolvedUrl) : isIgnoreListedURL(rawUrl);
+    const script = sourceMappedData?.script;
+    const uiSourceCode = sourceMappedData?.devtoolsLocation?.uiSourceCode;
+    const resolvedUrl = uiSourceCode?.url();
+    const isKnownThirdParty = uiSourceCode?.isKnownThirdParty();
+    const isContentScript = script?.isContentScript();
+    const ignoreListOptions = { isContentScript, isKnownThirdParty };
+    const urlToUse = resolvedUrl || rawUrl;
+    return isIgnoreListedURL(urlToUse, ignoreListOptions);
 }
-export function isIgnoreListedURL(url) {
-    return Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url);
+export function isIgnoreListedURL(url, options) {
+    return Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
 }
 //# sourceMappingURL=IgnoreList.js.map

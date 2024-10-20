@@ -26,7 +26,6 @@ export interface CSSAngleData {
     containingPane: HTMLElement;
 }
 export declare class CSSAngle extends HTMLElement {
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     private readonly shadow;
     private angle;
     private displayedAngle;

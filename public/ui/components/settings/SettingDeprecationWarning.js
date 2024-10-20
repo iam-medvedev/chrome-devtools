@@ -7,7 +7,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import settingDeprecationWarning from './settingDeprecationWarning.css.js';
 const { html } = LitHtml;
 export class SettingDeprecationWarning extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-setting-deprecation-warning`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [settingDeprecationWarning];

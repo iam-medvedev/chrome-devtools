@@ -7,7 +7,6 @@ export declare class EventReferenceClick extends Event {
 }
 declare class EventRef extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set text(text: string);
     set event(event: Trace.Types.Events.Event);

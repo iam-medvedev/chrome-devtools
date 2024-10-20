@@ -35,7 +35,6 @@ type CSSLengthData = {
 };
 export declare class CSSLength extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     private readonly shadow;
     private readonly onDraggingValue;
     private value;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Input from '../../ui/components/input/input.js';
@@ -127,18 +128,31 @@ const UIStrings = {
      *@description Label for a toggle to enable the AI assistance feature
      */
     enableAiAssistance: 'Enable AI assistance',
+    /**
+     * @description Message shown to the user if the age check is not successful.
+     */
+    ageRestricted: 'This feature is only available to users who are 18 years of age or older',
+    /**
+     * @description The error message when the user is not logged in into Chrome.
+     */
+    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account.',
+    /**
+     * @description Message shown when the user is offline.
+     */
+    offline: 'This feature is only available with an active internet connection.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/AISettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const chevronDownIconUrl = new URL('../../Images/chevron-down.svg', import.meta.url).toString();
 const chevronUpIconUrl = new URL('../../Images/chevron-up.svg', import.meta.url).toString();
 export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    static litTagName = LitHtml.literal `devtools-settings-ai-settings-tab`;
     #shadow = this.attachShadow({ mode: 'open' });
     #consoleInsightsSetting;
     #aiAssistanceSetting;
     #isConsoleInsightsSettingExpanded = false;
     #isAiAssistanceSettingExpanded = false;
+    #aidaAvailability = "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */;
+    #boundOnAidaAvailabilityChange;
     constructor() {
         super();
         try {
@@ -153,9 +167,22 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         catch {
             this.#aiAssistanceSetting = undefined;
         }
+        this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, aiSettingsTabStyles];
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        void this.#onAidaAvailabilityChange();
+    }
+    disconnectedCallback() {
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+    }
+    async #onAidaAvailabilityChange() {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            void this.render();
+        }
     }
     #getAiAssistanceSettingDescription() {
         const config = Common.Settings.Settings.instance().getHostConfig();
@@ -282,12 +309,27 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     `;
         // clang-format on
     }
+    #getDisabledReason(setting) {
+        switch (this.#aidaAvailability) {
+            case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
+            case "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */:
+                return i18nString(UIStrings.notLoggedIn);
+            case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */:
+                return i18nString(UIStrings.offline);
+        }
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        if (config?.aidaAvailability?.blockedByAge === true) {
+            return i18nString(UIStrings.ageRestricted);
+        }
+        return setting?.disabledReason();
+    }
     #renderConsoleInsightsSetting() {
         const detailsClasses = {
             'whole-row': true,
             open: this.#isConsoleInsightsSettingExpanded,
         };
         const tabindex = this.#isConsoleInsightsSettingExpanded ? '0' : '-1';
+        const disabledReason = this.#getDisabledReason(this.#consoleInsightsSetting);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
@@ -313,15 +355,15 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
       </div>
       <div class="divider"></div>
       <div class="toggle-container centered"
-        title=${ifDefined(this.#consoleInsightsSetting?.disabledReason())}
+        title=${ifDefined(disabledReason)}
         @click=${this.#toggleConsoleInsightsSetting.bind(this)}
       >
         <devtools-switch
-          .checked=${Boolean(this.#consoleInsightsSetting?.get() && !this.#consoleInsightsSetting?.disabled())}
+          .checked=${Boolean(this.#consoleInsightsSetting?.get()) && !Boolean(disabledReason)}
           .jslogContext=${this.#consoleInsightsSetting?.name || ''}
-          .disabled=${Boolean(this.#consoleInsightsSetting?.disabled())}
+          .disabled=${Boolean(disabledReason)}
           @switchchange=${this.#toggleConsoleInsightsSetting.bind(this)}
-          aria-label=${this.#consoleInsightsSetting?.disabledReason() || i18nString(UIStrings.enableConsoleInsights)}
+          aria-label=${disabledReason || i18nString(UIStrings.enableConsoleInsights)}
         ></devtools-switch>
       </div>
       <div class=${classMap(detailsClasses)}>
@@ -354,6 +396,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             open: this.#isAiAssistanceSettingExpanded,
         };
         const tabindex = this.#isAiAssistanceSettingExpanded ? '0' : '-1';
+        const disabledReason = this.#getDisabledReason(this.#aiAssistanceSetting);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
@@ -379,15 +422,15 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
       </div>
       <div class="divider"></div>
       <div class="toggle-container centered"
-        title=${ifDefined(this.#aiAssistanceSetting?.disabledReason())}
+        title=${ifDefined(disabledReason)}
         @click=${this.#toggleAiAssistanceSetting.bind(this)}
       >
         <devtools-switch
-          .checked=${Boolean(this.#aiAssistanceSetting?.get() && !this.#aiAssistanceSetting?.disabled())}
+          .checked=${Boolean(this.#aiAssistanceSetting?.get()) && !Boolean(disabledReason)}
           .jslogContext=${this.#aiAssistanceSetting?.name || ''}
-          .disabled=${Boolean(this.#aiAssistanceSetting?.disabled())}
+          .disabled=${Boolean(disabledReason)}
           @switchchange=${this.#toggleAiAssistanceSetting.bind(this)}
-          aria-label=${this.#aiAssistanceSetting?.disabledReason() || i18nString(UIStrings.enableAiAssistance)}
+          aria-label=${disabledReason || i18nString(UIStrings.enableAiAssistance)}
         ></devtools-switch>
       </div>
       <div class=${classMap(detailsClasses)}>

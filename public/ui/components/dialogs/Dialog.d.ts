@@ -8,7 +8,6 @@ export declare const MODAL = "MODAL";
 export type DialogOrigin = DialogAnchor | null | (() => DialogAnchor) | typeof MODAL;
 export declare class Dialog extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     get showConnector(): boolean;
     set showConnector(showConnector: boolean);
     get origin(): DialogOrigin;

@@ -32,7 +32,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const previewFeatureUrl = new URL('../../../Images/experiment.svg', import.meta.url).toString();
 const videoThumbnailUrl = new URL('../../../Images/preview_feature_video_thumbnail.svg', import.meta.url).toString();
 export class PanelFeedback extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-panel-feedback`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #props = {

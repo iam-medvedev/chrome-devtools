@@ -13,7 +13,6 @@ const { html, Directives: { ifDefined } } = LitHtml;
  * A simple checkbox that is backed by a boolean setting.
  */
 export class SettingCheckbox extends HTMLElement {
-    static litTagName = LitHtml.literal `setting-checkbox`;
     #shadow = this.attachShadow({ mode: 'open' });
     #setting;
     #changeListenerDescriptor;

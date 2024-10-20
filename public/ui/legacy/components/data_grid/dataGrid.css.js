@@ -93,6 +93,10 @@ styles.replaceSync(
 .data-grid tbody tr {
   display: none;
   height: 20px;
+
+  &:has(td.show-more) {
+    height: var(--sys-size-13);
+  }
 }
 
 .data-grid tbody tr.revealed {
@@ -298,10 +302,13 @@ styles.replaceSync(
 
 .data-grid td.show-more {
   white-space: normal;
-  gap: 4px;
+  gap: var(--sys-size-3);
 
   devtools-button {
     margin-right: var(--sys-size-6);
+    position: relative;
+    margin-top: 3px;
+    margin-bottom: 3px;
   }
 }
 

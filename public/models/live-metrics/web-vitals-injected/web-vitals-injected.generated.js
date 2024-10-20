@@ -1959,49 +1959,26 @@
     });
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
-    // Use of this source code is governed by a BSD-style license that can be
-    // found in the LICENSE file.
-    function onEachInteraction$1(callback) {
-        const eventObserver = new PerformanceObserver(list => {
-            const entries = list.getEntries();
-            const interactions = new Map();
-            const performanceEventTimings = entries.filter((entry) => 'interactionId' in entry)
-                .filter(entry => entry.interactionId);
-            for (const entry of performanceEventTimings) {
-                const interaction = interactions.get(entry.interactionId) || [];
-                interaction.push(entry);
-                interactions.set(entry.interactionId, interaction);
-            }
-            // Will report as a single interaction even if parts are in separate frames.
-            // Consider splitting by animation frame.
-            for (const interaction of interactions.values()) {
-                const longestEntry = interaction.reduce((prev, curr) => prev.duration >= curr.duration ? prev : curr);
-                const value = longestEntry.duration;
-                const firstEntryWithTarget = interaction.find(entry => entry.target);
-                callback({
-                    attribution: {
-                        interactionTargetElement: firstEntryWithTarget?.target ?? null,
-                        interactionType: longestEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
-                    },
-                    entries: interaction,
-                    value,
-                });
-            }
-        });
-        eventObserver.observe({
-            type: 'first-input',
-            buffered: false,
-        });
-        eventObserver.observe({
-            type: 'event',
-            durationThreshold: 0,
-            // Interaction events can only be stored to the buffer if their duration is >=104ms.
-            // https://www.w3.org/TR/event-timing/#sec-events-exposed
-            //
-            // This means we can only collect a subset of interactions that happen before this observer is started.
-            // To avoid confusion, we only collect interactions that after this observer has started.
-            // Note: This DOES NOT affect the collection for the INP metric and so INP will still be restored from the buffer.
-            buffered: false,
+    function onEachInteraction$1(onReport) {
+        entryPreProcessingCallbacks.push((entry) => {
+            // Wait a microtask so this "pre" processing callback actually
+            // becomes a "post" processing callback.
+            void Promise.resolve().then(() => {
+                if (entry.interactionId) {
+                    const interaction = attributeINP({
+                        entries: [entry],
+                        // The only value we really need for `attributeINP` is `entries`
+                        // Everything else is included to fill out the type.
+                        name: 'INP',
+                        rating: 'good',
+                        value: entry.duration,
+                        delta: entry.duration,
+                        navigationType: 'navigate',
+                        id: 'N/A',
+                    });
+                    onReport(interaction);
+                }
+            });
         });
     }
 
@@ -2046,20 +2023,6 @@
     // found in the LICENSE file.
     const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
     const INTERNAL_KILL_SWITCH = '__chromium_devtools_kill_live_metrics';
-    /**
-     * An interaction can have multiple associated `PerformanceEventTiming`s.
-     * The `interactionId` available on `PerformanceEventTiming` isn't guaranteed to be unique. (e.g. a `keyup` event issued long after a `keydown` event will have the same `interactionId`).
-     * Double-keying with the start time of the longest entry should uniquely identify each interaction.
-     */
-    function getUniqueInteractionId(entries) {
-        const longestEntry = entries.reduce((prev, curr) => {
-            if (prev.duration === curr.duration) {
-                return prev.startTime < curr.startTime ? prev : curr;
-            }
-            return prev.duration > curr.duration ? prev : curr;
-        });
-        return `interaction-${longestEntry.interactionId}-${longestEntry.startTime}`;
-    }
     function getUniqueLayoutShiftId(entry) {
         return `layout-shift-${entry.value}-${entry.startTime}`;
     }
@@ -2177,17 +2140,29 @@
                     processingDuration: metric.attribution.processingDuration,
                     presentationDelay: metric.attribution.presentationDelay,
                 },
-                uniqueInteractionId: getUniqueInteractionId(metric.entries),
+                startTime: metric.entries[0].startTime,
+                entryGroupId: metric.entries[0].interactionId,
                 interactionType: metric.attribution.interactionType,
             };
             sendEventToDevTools(event);
-        }, { reportAllChanges: true });
+        }, { reportAllChanges: true, durationThreshold: 0 });
         onEachInteraction(interaction => {
+            // Multiple `InteractionEntry` events can be emitted for the same `uniqueInteractionId`
+            // However, it is easier to combine these entries in the DevTools client rather than in
+            // this injected code.
             const event = {
-                name: 'Interaction',
+                name: 'InteractionEntry',
                 duration: interaction.value,
-                uniqueInteractionId: getUniqueInteractionId(interaction.entries),
+                phases: {
+                    inputDelay: interaction.attribution.inputDelay,
+                    processingDuration: interaction.attribution.processingDuration,
+                    presentationDelay: interaction.attribution.presentationDelay,
+                },
+                startTime: interaction.entries[0].startTime,
+                entryGroupId: interaction.entries[0].interactionId,
+                nextPaintTime: interaction.attribution.nextPaintTime,
                 interactionType: interaction.attribution.interactionType,
+                eventName: interaction.entries[0].name,
             };
             const node = interaction.attribution.interactionTargetElement;
             if (node) {

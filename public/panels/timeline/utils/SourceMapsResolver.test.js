@@ -27,27 +27,53 @@ export async function loadCodeLocationResolvingScenario() {
         debuggerWorkspaceBinding,
     });
     const backend = new MockProtocolBackend();
+    // The following mock data creates a source mapping from two authored
+    // scripts to a single complied script. One of the sources
+    // (ignored.ts) is marked as ignore listed in the source map.
     const sourceRoot = 'http://example.com';
     const scriptInfo = {
         url: `${sourceRoot}/test.out.js`,
-        content: 'function f(x) {\n  console.log(x);\n}\n',
+        content: 'function f(x) {\n  console.log(x);\n}\nfunction ignore(y){\n console.log(y);\n}',
     };
-    const authoredScripName = 'test.ts';
-    const authoredScriptURL = `${sourceRoot}/${authoredScripName}`;
+    const authoredScriptName = 'test.ts';
+    const ignoredScriptName = 'ignored.ts';
+    const authoredScriptURL = `${sourceRoot}/${authoredScriptName}`;
+    const ignoreListedScriptURL = `${sourceRoot}/${ignoredScriptName}`;
+    const sourceMap = encodeSourceMap([
+        `0:9 => ${authoredScriptName}:0:1`,
+        `1:0 => ${authoredScriptName}:4:0`,
+        `1:2 => ${authoredScriptName}:4:2`,
+        `2:0 => ${authoredScriptName}:2:0`,
+        `3:0 => ${ignoredScriptName}:3:0`,
+    ], sourceRoot);
+    sourceMap.sources = [authoredScriptURL, ignoreListedScriptURL];
+    sourceMap.ignoreList = [1];
     const sourceMapInfo = {
         url: `${scriptInfo.url}.map`,
-        content: encodeSourceMap([
-            `0:9 => ${authoredScripName}:0:1`,
-            `1:0 => ${authoredScripName}:4:0`,
-            `1:2 => ${authoredScripName}:4:2`,
-            `2:0 => ${authoredScripName}:2:0`,
-        ], sourceRoot),
+        content: sourceMap,
     };
-    const [, script] = await Promise.all([
-        debuggerWorkspaceBinding.waitForUISourceCodeAdded(`${sourceRoot}/test.ts`, target),
+    // The following mock data creates content script
+    const contentScriptInfo = {
+        url: `${sourceRoot}/content-script.js`,
+        content: 'console.log("content script loaded");',
+        isContentScript: true,
+    };
+    // Load mock data in devtools
+    const [, , script, , contentScript] = await Promise.all([
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(authoredScriptURL, target),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(ignoreListedScriptURL, target),
         backend.addScript(target, scriptInfo, sourceMapInfo),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(contentScriptInfo.url, target),
+        backend.addScript(target, contentScriptInfo, null),
     ]);
-    return { authoredScriptURL, scriptId: script.scriptId, genScriptURL: scriptInfo.url };
+    return {
+        authoredScriptURL,
+        scriptId: script.scriptId,
+        genScriptURL: scriptInfo.url,
+        ignoreListedURL: ignoreListedScriptURL,
+        contentScriptURL: contentScriptInfo.url,
+        contentScriptId: contentScript.scriptId,
+    };
 }
 function parsedTraceFromProfileCalls(profileCalls) {
     const workersData = {

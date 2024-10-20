@@ -46,7 +46,7 @@ export function buildGroupStyle(extra) {
  * @param showStackContextMenu whether menu with options to merge/collapse entries in track is shown.
  * @returns the group that built from the give data
  */
-export function buildTrackHeader(jslogContext, startLevel, name, style, selectable, expanded, showStackContextMenu, legends) {
+export function buildTrackHeader(jslogContext, startLevel, name, style, selectable, expanded, showStackContextMenu) {
     const group = {
         startLevel,
         name: name,
@@ -54,7 +54,6 @@ export function buildTrackHeader(jslogContext, startLevel, name, style, selectab
         selectable,
         expanded,
         showStackContextMenu,
-        legends,
     };
     if (jslogContext !== null) {
         group.jslogContext = jslogContext;

@@ -28,7 +28,7 @@ function getFieldMetricValue(view, metric) {
     return card.shadowRoot.querySelector('#field-value .metric-value');
 }
 function getEnvironmentRecs(view) {
-    return Array.from(view.shadowRoot.querySelectorAll('.environment-recs li'));
+    return Array.from(view.shadowRoot.querySelectorAll('.environment-rec'));
 }
 function getInteractions(view) {
     const interactionsListEl = view.shadowRoot.querySelector('.log[slot="interactions-log-content"]');
@@ -120,6 +120,9 @@ function createMockFieldData() {
         },
     };
 }
+function createInteractionsMap(interactions) {
+    return new Map(interactions.map(interaction => [interaction.interactionId, interaction]));
+}
 describeWithMockConnection('LiveMetricsView', () => {
     const mockHandleAction = sinon.stub();
     beforeEach(async () => {
@@ -163,17 +166,38 @@ describeWithMockConnection('LiveMetricsView', () => {
                     processingDuration: 300,
                     presentationDelay: 100,
                 },
-                uniqueInteractionId: 'interaction-1-1',
+                interactionId: 'interaction-1-1',
             },
-            interactions: [
-                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-1' },
-                { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
-            ],
+            interactions: createInteractionsMap([
+                {
+                    duration: 500,
+                    startTime: 0,
+                    nextPaintTime: 500,
+                    interactionType: 'pointer',
+                    interactionId: 'interaction-1-1',
+                    eventNames: ['pointerup'],
+                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                },
+                {
+                    duration: 30,
+                    startTime: 0,
+                    nextPaintTime: 30,
+                    interactionType: 'keyboard',
+                    interactionId: 'interaction-1-2',
+                    eventNames: ['keyup'],
+                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                },
+            ]),
             layoutShifts: [],
         });
         await coordinator.done();
         const interactionsEls = getInteractions(view);
         assert.lengthOf(interactionsEls, 2);
+        // Click each interaction so we can test the expandable details.
+        for (const interactionEl of interactionsEls) {
+            interactionEl.querySelector('summary').click();
+        }
+        await coordinator.done();
         const typeEl1 = interactionsEls[0].querySelector('.interaction-type');
         assert.match(typeEl1.textContent, /pointer/);
         const inpChip1 = typeEl1.querySelector('.interaction-inp-chip');
@@ -181,6 +205,13 @@ describeWithMockConnection('LiveMetricsView', () => {
         const durationEl1 = interactionsEls[0].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl1.textContent, '500 ms');
         assert.strictEqual(durationEl1.className, 'metric-value needs-improvement dim');
+        const phases1 = Array.from(interactionsEls[0].querySelectorAll('.phase-table-row:not(.phase-table-header-row)'))
+            .map(el => el.innerText);
+        assert.deepStrictEqual(phases1, [
+            'Input delay\n100',
+            'Processing duration\n300',
+            'Presentation delay\n100',
+        ]);
         const typeEl2 = interactionsEls[1].querySelector('.interaction-type');
         assert.match(typeEl2.textContent, /keyboard/);
         const inpChip2 = typeEl2.querySelector('.interaction-inp-chip');
@@ -188,6 +219,13 @@ describeWithMockConnection('LiveMetricsView', () => {
         const durationEl2 = interactionsEls[1].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl2.textContent, '30 ms');
         assert.strictEqual(durationEl2.className, 'metric-value good dim');
+        const phases2 = Array.from(interactionsEls[1].querySelectorAll('.phase-table-row:not(.phase-table-header-row)'))
+            .map(el => el.innerText);
+        assert.deepStrictEqual(phases2, [
+            'Input delay\n10',
+            'Processing duration\n10',
+            'Presentation delay\n10',
+        ]);
     });
     it('should show help icon for interaction that is longer than INP', async () => {
         const view = renderLiveMetrics();
@@ -199,12 +237,28 @@ describeWithMockConnection('LiveMetricsView', () => {
                     processingDuration: 30,
                     presentationDelay: 10,
                 },
-                uniqueInteractionId: 'interaction-1-2',
+                interactionId: 'interaction-1-2',
             },
-            interactions: [
-                { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
-                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
-            ],
+            interactions: createInteractionsMap([
+                {
+                    duration: 50,
+                    startTime: 0,
+                    nextPaintTime: 50,
+                    interactionType: 'keyboard',
+                    interactionId: 'interaction-1-1',
+                    eventNames: ['keyup'],
+                    phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
+                },
+                {
+                    duration: 500,
+                    startTime: 0,
+                    nextPaintTime: 500,
+                    interactionType: 'pointer',
+                    interactionId: 'interaction-1-2',
+                    eventNames: ['pointerup'],
+                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                },
+            ]),
             layoutShifts: [],
         });
         await coordinator.done();
@@ -232,7 +286,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 value: 0.11,
                 clusterShiftIds: ['layout-shift-1-2', 'layout-shift-1-3'],
             },
-            interactions: [],
+            interactions: new Map(),
             layoutShifts: [
                 { score: 0.05, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
                 { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
@@ -257,7 +311,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 value: 0.11,
                 clusterShiftIds: [],
             },
-            interactions: [],
+            interactions: new Map(),
             layoutShifts: [
                 { score: 0.05, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
                 { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
@@ -274,7 +328,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 value: 0.11,
                 clusterShiftIds: ['layout-shift-2-0'],
             },
-            interactions: [],
+            interactions: new Map(),
             layoutShifts: [
                 { score: 0.05, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
                 { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
@@ -294,12 +348,28 @@ describeWithMockConnection('LiveMetricsView', () => {
                     processingDuration: 300,
                     presentationDelay: 100,
                 },
-                uniqueInteractionId: 'interaction-1-1',
+                interactionId: 'interaction-1-1',
             },
-            interactions: [
-                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-1' },
-                { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
-            ],
+            interactions: createInteractionsMap([
+                {
+                    duration: 500,
+                    startTime: 0,
+                    nextPaintTime: 500,
+                    interactionType: 'pointer',
+                    interactionId: 'interaction-1-1',
+                    eventNames: ['pointerup'],
+                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                },
+                {
+                    duration: 30,
+                    startTime: 0,
+                    nextPaintTime: 30,
+                    interactionType: 'keyboard',
+                    interactionId: 'interaction-1-2',
+                    eventNames: ['keyup'],
+                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                },
+            ]),
             layoutShifts: [],
         });
         await coordinator.done();
@@ -324,11 +394,19 @@ describeWithMockConnection('LiveMetricsView', () => {
                     processingDuration: 300,
                     presentationDelay: 100,
                 },
-                uniqueInteractionId: 'interaction-1-1',
+                interactionId: 'interaction-1-1',
             },
-            interactions: [
-                { duration: 30, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-2' },
-            ],
+            interactions: createInteractionsMap([
+                {
+                    duration: 30,
+                    startTime: 0,
+                    nextPaintTime: 30,
+                    interactionType: 'keyboard',
+                    interactionId: 'interaction-1-2',
+                    eventNames: ['keyup'],
+                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                },
+            ]),
             layoutShifts: [],
         });
         await coordinator.done();
@@ -348,12 +426,28 @@ describeWithMockConnection('LiveMetricsView', () => {
                     processingDuration: 30,
                     presentationDelay: 10,
                 },
-                uniqueInteractionId: 'interaction-1-2',
+                interactionId: 'interaction-1-2',
             },
-            interactions: [
-                { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
-                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
-            ],
+            interactions: createInteractionsMap([
+                {
+                    duration: 50,
+                    startTime: 0,
+                    nextPaintTime: 50,
+                    interactionType: 'keyboard',
+                    interactionId: 'interaction-1-1',
+                    eventNames: ['keyup'],
+                    phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
+                },
+                {
+                    duration: 500,
+                    startTime: 0,
+                    nextPaintTime: 500,
+                    interactionType: 'pointer',
+                    interactionId: 'interaction-1-2',
+                    eventNames: ['pointerup'],
+                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                },
+            ]),
             layoutShifts: [
                 { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
             ],
@@ -380,12 +474,28 @@ describeWithMockConnection('LiveMetricsView', () => {
                     processingDuration: 30,
                     presentationDelay: 10,
                 },
-                uniqueInteractionId: 'interaction-1-2',
+                interactionId: 'interaction-1-2',
             },
-            interactions: [
-                { duration: 50, interactionType: 'keyboard', uniqueInteractionId: 'interaction-1-1' },
-                { duration: 500, interactionType: 'pointer', uniqueInteractionId: 'interaction-1-2' },
-            ],
+            interactions: createInteractionsMap([
+                {
+                    duration: 50,
+                    startTime: 0,
+                    nextPaintTime: 50,
+                    interactionType: 'keyboard',
+                    interactionId: 'interaction-1-1',
+                    eventNames: ['keyup'],
+                    phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
+                },
+                {
+                    duration: 500,
+                    startTime: 0,
+                    nextPaintTime: 500,
+                    interactionType: 'pointer',
+                    interactionId: 'interaction-1-2',
+                    eventNames: ['pointerup'],
+                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                },
+            ]),
             layoutShifts: [
                 { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
             ],
@@ -487,9 +597,10 @@ describeWithMockConnection('LiveMetricsView', () => {
             });
             await coordinator.done();
             const envRecs = getEnvironmentRecs(view);
-            assert.lengthOf(envRecs, 0);
+            assert.strictEqual(envRecs[0].textContent, 'Not enough data');
+            assert.strictEqual(envRecs[1].textContent, 'Not enough data');
             const fieldMessage = getFieldMessage(view);
-            assert.isNull(fieldMessage);
+            assert.match(fieldMessage.textContent, /Not enough data/);
             const dataDescriptions = getDataDescriptions(view);
             assert.match(dataDescriptions.innerText, /local metrics/);
             assert.match(dataDescriptions.innerText, /field data/);
@@ -588,7 +699,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
                 assert.lengthOf(envRecs, 2);
-                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.match(envRecs[1].textContent, /Slow 4G/);
             });
             it('should hide if no RTT data', async () => {
@@ -597,8 +708,8 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = renderLiveMetrics();
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
-                assert.lengthOf(envRecs, 1);
-                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
+                assert.strictEqual(envRecs[1].textContent, 'Not enough data');
             });
             it('should suggest no throttling for very low latency', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -608,9 +719,8 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = renderLiveMetrics();
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
-                assert.lengthOf(envRecs, 2);
-                assert.match(envRecs[0].textContent, /60%.*desktop/);
-                assert.match(envRecs[1].textContent, /no throttling/);
+                assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
+                assert.match(envRecs[1].textContent, /too fast to simulate with throttling/);
             });
             it('should ignore presets that are generally too far off', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -620,8 +730,8 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = renderLiveMetrics();
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
-                assert.lengthOf(envRecs, 1);
-                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
+                assert.strictEqual(envRecs[1].textContent, 'Not enough data');
             });
         });
         describe('form factor recommendation', () => {
@@ -630,8 +740,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = renderLiveMetrics();
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
-                assert.lengthOf(envRecs, 2);
-                assert.match(envRecs[0].textContent, /60%.*desktop/);
+                assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.match(envRecs[1].textContent, /Slow 4G/);
             });
             it('should recommend mobile if it is the majority', async () => {
@@ -644,8 +753,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = renderLiveMetrics();
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
-                assert.lengthOf(envRecs, 2);
-                assert.match(envRecs[0].textContent, /80%.*mobile/);
+                assert.strictEqual(envRecs[0].textContent, '80% mobile, 10% desktop');
                 assert.match(envRecs[1].textContent, /Slow 4G/);
             });
             it('should recommend nothing if there is no majority', async () => {
@@ -658,8 +766,8 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const view = renderLiveMetrics();
                 await coordinator.done();
                 const envRecs = getEnvironmentRecs(view);
-                assert.lengthOf(envRecs, 1);
-                assert.match(envRecs[0].textContent, /Slow 4G/);
+                assert.strictEqual(envRecs[0].textContent, '49% mobile, 49% desktop');
+                assert.match(envRecs[1].textContent, /Slow 4G/);
             });
         });
     });

@@ -18,7 +18,6 @@ const str_ = i18n.i18n.registerUIStrings('ui/components/panel_feedback/FeedbackB
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const feedbackIconUrl = new URL('../../../Images/review.svg', import.meta.url).toString();
 export class FeedbackButton extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-feedback-button`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #props = {

@@ -65,7 +65,6 @@ export interface SelectMenuData {
 type TitleCallback = () => LitHtml.TemplateResult;
 export declare class SelectMenu extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     get buttonTitle(): string | TitleCallback;
     set buttonTitle(buttonTitle: string | TitleCallback);
     get position(): Dialogs.Dialog.DialogVerticalPosition;
@@ -98,7 +97,6 @@ export interface SelectMenuButtonData {
 }
 export declare class SelectMenuButton extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     get showArrow(): boolean;
     set showArrow(showArrow: boolean);

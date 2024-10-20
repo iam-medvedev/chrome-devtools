@@ -230,7 +230,12 @@ export declare enum Action {
     InsightsReminderTeaserAbortedInSettings = 167,
     GeneratingInsightWithoutDisclaimer = 168,
     FreestylerOpenedFromElementsPanelFloatingButton = 169,
-    MAX_VALUE = 170
+    DrJonesOpenedFromNetworkPanel = 170,
+    DrJonesOpenedFromSourcesPanel = 171,
+    DrJonesOpenedFromSourcesPanelFloatingButton = 172,
+    DrJonesOpenedFromPerformancePanel = 173,
+    DrJonesOpenedFromNetworkPanelFloatingButton = 174,
+    MAX_VALUE = 175
 }
 export declare enum PanelCodes {
     elements = 1,

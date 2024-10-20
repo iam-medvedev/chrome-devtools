@@ -10,6 +10,7 @@ export declare enum NetworkCategory {
     WASM = "Wasm",
     OTHER = "Other"
 }
+export declare function networkResourceCategory(request: Trace.Types.Events.SyntheticNetworkRequest): NetworkCategory;
 export declare function colorForNetworkCategory(category: NetworkCategory): string;
 export declare function colorForNetworkRequest(request: Trace.Types.Events.SyntheticNetworkRequest): string;
 export type MetricRating = 'good' | 'needs-improvement' | 'poor';

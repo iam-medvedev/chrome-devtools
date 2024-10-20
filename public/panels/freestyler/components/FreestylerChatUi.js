@@ -172,12 +172,48 @@ const UIStringsNotTranslate = {
      *@description Aria label for the cancel icon to be read by screen reader
      */
     canceled: 'Canceled',
+    /*
+     * @description Header text for instructions on how to use the AI assistance feature.
+     */
+    getStarted: 'Hi! Here’s how to get started:',
+    /**
+     * @description AI assistance for CSS.
+     */
+    cssHelp: 'CSS help:',
+    /**
+     * @description Explanation on how to use AI assistance for DOM elements.
+     */
+    cssHelpExplainer: 'Navigate to the Elements panel, right-click a DOM element, and select "Ask AI assistant". I’ll be happy to explain its styles or behavior.',
+    /**
+     * @description AI assistance for files.
+     */
+    fileHelp: 'File insights:',
+    /**
+     * @description Explanation on how to use AI assistance for files in the Sources panel.
+     */
+    fileHelpExplainer: 'Open the Sources panel, right-click a file, and select "Ask AI". I can provide insights into its purpose or origin.',
+    /**
+     * @description AI assistance for network requests.
+     */
+    networkHelp: 'Network request insights:',
+    /**
+     * @description Explanation on how to use AI assistance for network requests.
+     */
+    networkHelpExplainer: 'In the Network panel, right-click any request and select "Ask AI assistant". I’ll help break down what’s happening with each request.',
+    /**
+     * @description AI assistance for performance traces.
+     */
+    performanceHelp: 'Performance analysis:',
+    /**
+     * @description Explanation on how to use AI assistance for performance traces.
+     */
+    performanceHelpExplainer: 'In the Performance panel, run a trace. Then, right-click any function in the timeline and select "Ask AI". I’ll help you analyze its performance impact and suggest improvements.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
-function getInputPlaceholderString(agentType, state) {
-    if (state === "consent-view" /* State.CONSENT_VIEW */) {
+function getInputPlaceholderString(state, agentType) {
+    if (state === "consent-view" /* State.CONSENT_VIEW */ || !agentType) {
         return i18nString(UIStrings.followTheSteps);
     }
     switch (agentType) {
@@ -214,7 +250,6 @@ class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownIn
     }
 }
 export class FreestylerChatUi extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-freestyler-chat-ui`;
     #shadow = this.attachShadow({ mode: 'open' });
     #markdownRenderer = new MarkdownRendererWithCodeBlock();
     #scrollTop;
@@ -276,7 +311,7 @@ export class FreestylerChatUi extends HTMLElement {
         return (this.#props.agentType === "freestyler" /* AgentType.FREESTYLER */ && isInputDisabledCheckForFreestylerAgent) ||
             (this.#props.agentType === "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */ && isInputDisabledCheckForDrJonesNetworkAgent) ||
             (this.#props.agentType === "drjones-file" /* AgentType.DRJONES_FILE */ && isInputDisabledCheckForDrJonesFileAgent) ||
-            !isAidaAvailable || isConsentView;
+            !isAidaAvailable || isConsentView || !this.#props.agentType;
     };
     #handleScroll = (ev) => {
         if (!ev.target || !(ev.target instanceof HTMLElement)) {
@@ -473,7 +508,11 @@ export class FreestylerChatUi extends HTMLElement {
         if (!step.sideEffect) {
             return LitHtml.nothing;
         }
-        const sideEffectAction = step.sideEffect.onAnswer;
+        const sideEffectAction = (answer) => {
+            step.sideEffect?.onAnswer(answer);
+            step.sideEffect = undefined;
+            this.#render();
+        };
         // clang-format off
         return html `<div
       class="side-effect-confirmation"
@@ -540,7 +579,7 @@ export class FreestylerChatUi extends HTMLElement {
       </section>`;
             // clang-format on
         }
-        const shouldShowSuggestions = (isLast && !this.#props.isLoading && message.suggestions && message.suggestions?.length > 0);
+        const shouldShowSuggestions = (isLast && !this.#props.isLoading && message.suggestions);
         // clang-format off
         return html `
       <section class="chat-message answer" jslog=${VisualLogging.section('answer')}>
@@ -582,6 +621,9 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     };
     #renderSelection() {
+        if (!this.#props.agentType) {
+            return LitHtml.nothing;
+        }
         switch (this.#props.agentType) {
             case "freestyler" /* AgentType.FREESTYLER */:
                 return this.#renderSelectAnElement();
@@ -601,12 +643,12 @@ export class FreestylerChatUi extends HTMLElement {
         if (!this.#props.selectedFile) {
             return html `${LitHtml.nothing}`;
         }
-        // TODO(b/371947238): Add icon
+        const icon = PanelUtils.getIconForSourceFile(this.#props.selectedFile);
         // clang-format off
         return html `<div class="select-element">
     <div role=button class=${resourceClass}
     @click=${this.#props.onSelectedFileRequestClick}>
-      ${this.#props.selectedFile?.displayName()}
+      ${icon}${this.#props.selectedFile?.displayName()}
     </div></div>`;
         // clang-format on
     }
@@ -698,7 +740,7 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     };
     #renderEmptyState = () => {
-        const suggestions = this.#getSuggestions();
+        const suggestions = this.#getEmptyStateSuggestions();
         // clang-format off
         return html `<div class="empty-state-container messages-scroll-container">
       <div class="header">
@@ -727,25 +769,34 @@ export class FreestylerChatUi extends HTMLElement {
     </div>`;
         // clang-format on
     };
-    #getSuggestions = () => {
+    #getEmptyStateSuggestions = () => {
+        if (!this.#props.agentType) {
+            return [];
+        }
         switch (this.#props.agentType) {
             case "freestyler" /* AgentType.FREESTYLER */:
                 return [
+                    'What can you help me with?',
                     'Why isn’t this element visible?',
-                    'Why does this element overlap another?',
                     'How do I center this element?',
                 ];
             case "drjones-file" /* AgentType.DRJONES_FILE */:
                 return [
-                    'What are the key functions in this file and what are they doing?',
+                    'What does this script do?',
+                    'Is the script optimized for performance?',
+                    'Does the script handle user input safely?',
                 ];
             case "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */:
                 return [
-                    'Why is this network request taking longer to complete?',
+                    'Why is this network request taking so long?',
+                    'Are there any security headers present?',
+                    'Why is the request failing?',
                 ];
             case "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */:
                 return [
-                    'Is this item on the critical rendering path?',
+                    'Identify performance issues in this call stack',
+                    'Where is most of the time being spent in this call stack?',
+                    'How can I reduce the time of this call stack?',
                 ];
         }
     };
@@ -757,7 +808,7 @@ export class FreestylerChatUi extends HTMLElement {
           .disabled=${this.#isTextInputDisabled()}
           wrap="hard"
           @keydown=${this.#handleTextAreaKeyDown}
-          placeholder=${getInputPlaceholderString(this.#props.agentType, this.#props.state)}
+          placeholder=${getInputPlaceholderString(this.#props.state, this.#props.agentType)}
           jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}></textarea>
           ${this.#props.isLoading
             ? html `<devtools-button
@@ -790,7 +841,7 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format on
     };
     #getDisclaimerText = () => {
-        if (this.#props.state === "consent-view" /* State.CONSENT_VIEW */) {
+        if (this.#props.state === "consent-view" /* State.CONSENT_VIEW */ || !this.#props.agentType) {
             return i18nString(UIStrings.inputDisclaimerForEmptyState);
         }
         switch (this.#props.agentType) {
@@ -850,12 +901,47 @@ export class FreestylerChatUi extends HTMLElement {
     `;
         // clang-format on
     }
+    #renderNoAgentState() {
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        // clang-format off
+        return html `
+      <main class="messages-scroll-container" @scroll=${this.#handleScroll}>
+        <div class="messages-container">
+          <section class="no-agent-message" jslog=${VisualLogging.section('no-agent-entrypoint')}>
+            <div class="header">
+              <devtools-icon name="smart-assistant"></devtools-icon>
+              <h2>${lockedString(UIStringsNotTranslate.ai)}</h2>
+            </div>
+            <div class="instructions">
+              <p>${lockedString(UIStringsNotTranslate.getStarted)}</p>
+              ${config.devToolsFreestyler?.enabled ? html `
+                <p><strong>${lockedString(UIStringsNotTranslate.cssHelp)}</strong> ${lockedString(UIStringsNotTranslate.cssHelpExplainer)}</p>
+              ` : LitHtml.nothing}
+              ${config.devToolsAiAssistanceFileAgentDogfood?.enabled ? html `
+                <p><strong>${lockedString(UIStringsNotTranslate.fileHelp)}</strong> ${lockedString(UIStringsNotTranslate.fileHelpExplainer)}</p>
+              ` : LitHtml.nothing}
+              ${config.devToolsExplainThisResourceDogfood?.enabled ? html `
+                <p><strong>${lockedString(UIStringsNotTranslate.networkHelp)}</strong> ${lockedString(UIStringsNotTranslate.networkHelpExplainer)}</p>
+              ` : LitHtml.nothing}
+              ${config.devToolsAiAssistancePerformanceAgentDogfood?.enabled ? html `
+                <p><strong>${lockedString(UIStringsNotTranslate.performanceHelp)}</strong> ${lockedString(UIStringsNotTranslate.performanceHelpExplainer)}</p>
+              ` : LitHtml.nothing}
+            </div>
+          </section>
+        </div>
+      </main>
+    `;
+        // clang-format on
+    }
     #renderMainContents() {
         if (this.#props.state === "consent-view" /* State.CONSENT_VIEW */) {
             return this.#renderDisabledState(this.#getConsentViewContents());
         }
         if (this.#props.aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
             return this.#renderDisabledState(this.#getUnavailableAidaAvailabilityContents(this.#props.aidaAvailability));
+        }
+        if (!this.#props.agentType) {
+            return this.#renderNoAgentState();
         }
         if (this.#props.messages.length > 0) {
             return this.#renderMessages();

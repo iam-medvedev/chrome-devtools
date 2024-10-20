@@ -10,7 +10,6 @@ export declare class PromptInputEvent extends Event {
 }
 export declare class TextPrompt extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: TextPromptData);
     get data(): TextPromptData;

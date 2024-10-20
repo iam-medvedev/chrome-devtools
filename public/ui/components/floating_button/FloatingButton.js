@@ -6,7 +6,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import floatingButtonStyles from './floatingButton.css.js';
 const { html } = LitHtml;
 export class FloatingButton extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-floating-button`;
     #shadow = this.attachShadow({ mode: 'open' });
     #data;
     constructor(data) {

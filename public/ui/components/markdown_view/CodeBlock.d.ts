@@ -5,7 +5,6 @@ export interface Heading {
 }
 export declare class CodeBlock extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set code(value: string);
     get code(): string;

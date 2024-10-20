@@ -58,7 +58,7 @@ export class Importer {
         else {
             request.setRequestFormData(false, null);
         }
-        request.connectionId = entry.connection || '';
+        request.connectionId = entry.customAsString('connectionId') || '';
         request.requestMethod = entry.request.method;
         request.setRequestHeaders(entry.request.headers);
         // Response data.
@@ -100,7 +100,7 @@ export class Importer {
         // Timing data.
         Importer.setupTiming(request, issueTime, entry.time, entry.timings);
         // Meta data.
-        request.setRemoteAddress(entry.serverIPAddress || '', 80); // Har does not support port numbers.
+        request.setRemoteAddress(entry.serverIPAddress || '', Number(entry.connection) || 80);
         request.setResourceType(Importer.getResourceType(request, entry, pageLoad));
         const priority = entry.customAsString('priority');
         // @ts-expect-error This accesses the globalThis['Protocol'] where the enum is an actual JS object and not just a TS const enum.

@@ -538,7 +538,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         filterBar.addFilter(this.invertFilterUI);
         filterBar.addDivider();
         const filterItems = Object.entries(Common.ResourceType.resourceCategories).map(([key, category]) => ({
-            name: category.title(),
+            name: category.name,
             label: () => category.shortTitle(),
             title: category.title(),
             jslogContext: Platform.StringUtilities.toKebabCase(key),
@@ -1512,7 +1512,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsNodejsFetch) : i18nString(UIStrings.copyAllAsNodejsFetch), this.copyAllFetchCall.bind(this, 1 /* FetchStyle.NODE_JS */), { jslogContext: 'copy-all-as-nodejs-fetch' });
         }
         copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsHarSanitized) : i18nString(UIStrings.copyAllAsHarSanitized), this.copyAllAsHAR.bind(this, { sanitize: true }), { jslogContext: 'copy-all-as-har' });
-        if (this.networkShowOptionsToGenerateHarWithSensitiveData) {
+        if (this.networkShowOptionsToGenerateHarWithSensitiveData.get()) {
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsHarWithSensitiveData) :
                 i18nString(UIStrings.copyAllAsHarWithSensitiveData), this.copyAllAsHAR.bind(this, { sanitize: false }), { jslogContext: 'copy-all-as-har-with-sensitive-data' });
         }

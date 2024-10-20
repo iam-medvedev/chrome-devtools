@@ -31,6 +31,14 @@ styles.replaceSync(
   &.cut-off-bottom {
     border-bottom: none;
   }
+
+  &.cut-off-right {
+    border-right: none;
+  }
+
+  &.cut-off-left {
+    border-left: none;
+  }
 }
 
 .entry-is-not-source {

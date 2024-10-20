@@ -4,7 +4,11 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Formatter from '../../models/formatter/formatter.js';
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as DiffView from '../../ui/components/diff_view/diff_view.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as Snippets from '../snippets/snippets.js';
 const UIStrings = {
     /**
      *@description Tooltip to explain the resource's overridden status
@@ -61,10 +65,20 @@ export class PanelUtils {
         let type = request.resourceType();
         let iconElement;
         if (PanelUtils.isFailedNetworkRequest(request)) {
-            const iconData = {
-                iconName: 'cross-circle-filled',
-                color: 'var(--icon-error)',
-            };
+            let iconData = undefined;
+            // Failed prefetch network requests are displayed as warnings instead of errors.
+            if (request.resourceType() === Common.ResourceType.resourceTypes.Prefetch) {
+                iconData = {
+                    iconName: 'warning-filled',
+                    color: 'var(--icon-warning)',
+                };
+            }
+            else {
+                iconData = {
+                    iconName: 'cross-circle-filled',
+                    color: 'var(--icon-error)',
+                };
+            }
             iconElement = PanelUtils.createIconElement(iconData, type.title());
             iconElement.classList.add('icon');
             return iconElement;
@@ -182,6 +196,39 @@ export class PanelUtils {
             return { iconName: 'file-fetch-xhr', color: 'var(--icon-default)' };
         }
         return { iconName: 'file-generic', color: 'var(--icon-default)' };
+    }
+    static getIconForSourceFile(uiSourceCode) {
+        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
+        const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+        let iconType = 'document';
+        let hasDotBadge = false;
+        let isDotPurple = false;
+        if (binding) {
+            if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(binding.fileSystem)) {
+                iconType = 'snippet';
+            }
+            hasDotBadge = true;
+            isDotPurple = networkPersistenceManager.project() === binding.fileSystem.project();
+        }
+        else if (networkPersistenceManager.isActiveHeaderOverrides(uiSourceCode)) {
+            hasDotBadge = true;
+            isDotPurple = true;
+        }
+        else {
+            if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
+                iconType = 'snippet';
+            }
+        }
+        const icon = new IconButton.FileSourceIcon.FileSourceIcon(iconType);
+        icon.data = {
+            contentType: uiSourceCode.contentType().name(),
+            hasDotBadge,
+            isDotPurple,
+        };
+        if (binding) {
+            UI.Tooltip.Tooltip.install(icon, Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode));
+        }
+        return icon;
     }
     static async formatCSSChangesFromDiff(diff) {
         const indent = '  ';

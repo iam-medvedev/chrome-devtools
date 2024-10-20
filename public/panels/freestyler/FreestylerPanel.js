@@ -21,10 +21,7 @@ import freestylerPanelStyles from './freestylerPanel.css.js';
 const { html } = LitHtml;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://goo.gle/devtools-ai-assistance';
-/*
-* Strings that don't need to be translated at this time.
-*/
-const UIStringsNotTranslate = {
+const UIStrings = {
     /**
      *@description AI assistance UI text for clearing the chat.
      */
@@ -45,6 +42,11 @@ const UIStringsNotTranslate = {
      *@description Announcement text for screen readers when the chat is cleared.
      */
     chatCleared: 'Chat cleared',
+};
+/*
+* Strings that don't need to be translated at this time.
+*/
+const UIStringsNotTranslate = {
     /**
      *@description Announcement text for screen readers when the conversation starts.
      */
@@ -54,28 +56,36 @@ const UIStringsNotTranslate = {
      */
     answerReady: 'Answer ready',
 };
+const str_ = i18n.i18n.registerUIStrings('panels/freestyler/FreestylerPanel.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
+function selectedElementFilter(maybeNode) {
+    if (maybeNode) {
+        return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
+    }
+    return null;
+}
 // TODO(ergunsh): Use the WidgetElement instead of separately creating the toolbar.
 function createToolbar(target, { onClearClick }) {
     const toolbarContainer = target.createChild('div', 'freestyler-toolbar-container');
     const leftToolbar = new UI.Toolbar.Toolbar('', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('freestyler-right-toolbar', toolbarContainer);
-    const clearButton = new UI.Toolbar.ToolbarButton(lockedString(UIStringsNotTranslate.clearChat), 'clear', undefined, 'freestyler.clear');
+    const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearChat), 'clear', undefined, 'freestyler.clear');
     clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, onClearClick);
     leftToolbar.appendToolbarItem(clearButton);
-    const link = UI.XLink.XLink.create(AI_ASSISTANCE_SEND_FEEDBACK, lockedString(UIStringsNotTranslate.sendFeedback), undefined, undefined, 'freestyler.send-feedback');
+    const link = UI.XLink.XLink.create(AI_ASSISTANCE_SEND_FEEDBACK, i18nString(UIStrings.sendFeedback), undefined, undefined, 'freestyler.send-feedback');
     link.style.setProperty('display', null);
     link.style.setProperty('text-decoration', 'none');
     link.style.setProperty('padding', '0 var(--sys-size-3)');
     const linkItem = new UI.Toolbar.ToolbarItem(link);
     rightToolbar.appendToolbarItem(linkItem);
     rightToolbar.appendSeparator();
-    const helpButton = new UI.Toolbar.ToolbarButton(lockedString(UIStringsNotTranslate.help), 'help', undefined, 'freestyler.help');
+    const helpButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.help), 'help', undefined, 'freestyler.help');
     helpButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(AI_ASSISTANCE_HELP);
     });
     rightToolbar.appendToolbarItem(helpButton);
-    const settingsButton = new UI.Toolbar.ToolbarButton(lockedString(UIStringsNotTranslate.settings), 'gear', undefined, 'freestyler.settings');
+    const settingsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.settings), 'gear', undefined, 'freestyler.settings');
     settingsButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
         void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
     });
@@ -98,10 +108,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
     view;
     static panelName = 'freestyler';
     #toggleSearchElementAction;
-    #selectedElement;
-    #selectedFile;
-    #selectedNetworkRequest;
-    #selectedStackTrace;
     #contentContainer;
     #aidaClient;
     #freestylerAgent;
@@ -122,26 +128,11 @@ export class FreestylerPanel extends UI.Panel.Panel {
             UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = aidaClient;
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
-        const selectedElementFilter = (maybeNode) => {
-            if (maybeNode) {
-                return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
-            }
-            return null;
-        };
-        this.#selectedElement = selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode));
-        this.#selectedNetworkRequest = UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest);
-        this.#selectedStackTrace = UI.Context.Context.instance().flavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI);
-        this.#selectedFile = UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode);
         this.#viewProps = {
-            state: this.#freestylerEnabledSetting?.getIfNotDisabled() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
-                "consent-view" /* FreestylerChatUiState.CONSENT_VIEW */,
+            state: this.#getChatUiState(),
             aidaAvailability,
             messages: [],
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
-            selectedElement: this.#selectedElement,
-            selectedNetworkRequest: this.#selectedNetworkRequest,
-            selectedStackTrace: this.#selectedStackTrace,
-            selectedFile: this.#selectedFile,
             isLoading: false,
             onTextSubmit: this.#startConversation.bind(this),
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
@@ -154,45 +145,21 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 accountImage: syncInfo.accountImage,
                 accountFullName: syncInfo.accountFullName,
             },
-            agentType: "freestyler" /* AgentType.FREESTYLER */,
+            selectedElement: null,
+            selectedFile: null,
+            selectedNetworkRequest: null,
+            selectedStackTrace: null,
         };
-        this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, ev => {
-            this.#viewProps.inspectElementToggled = ev.data;
-            this.doUpdate();
-        });
         this.#freestylerAgent = this.#createFreestylerAgent();
         this.#drJonesFileAgent = this.#createDrJonesFileAgent();
         this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
         this.#drJonesPerformanceAgent = this.#createDrJonesPerformanceAgent();
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, ev => {
-            if (this.#viewProps.selectedElement === ev.data) {
-                return;
-            }
-            this.#viewProps.selectedElement = selectedElementFilter(ev.data);
-            this.doUpdate();
-        });
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, ev => {
-            if (this.#viewProps.selectedNetworkRequest === ev.data) {
-                return;
-            }
-            this.#viewProps.selectedNetworkRequest = Boolean(ev.data) ? ev.data : null;
-            this.doUpdate();
-        });
-        UI.Context.Context.instance().addFlavorChangeListener(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, ev => {
-            if (this.#viewProps.selectedStackTrace === ev.data) {
-                return;
-            }
-            this.#viewProps.selectedStackTrace = Boolean(ev.data) ? ev.data : null;
-            this.doUpdate();
-        });
-        UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, ev => {
-            if (this.#viewProps.selectedFile === ev.data) {
-                return;
-            }
-            this.#viewProps.selectedFile = Boolean(ev.data) ? ev.data : null;
-            this.doUpdate();
-        });
-        this.doUpdate();
+    }
+    #getChatUiState() {
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        const blockedByAge = config.aidaAvailability?.blockedByAge === true;
+        return (this.#freestylerEnabledSetting?.getIfNotDisabled() && !blockedByAge) ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
+            "consent-view" /* FreestylerChatUiState.CONSENT_VIEW */;
     }
     #getAiAssistanceEnabledSetting() {
         try {
@@ -230,9 +197,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
     static async instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
         if (!freestylerPanelInstance || forceNew) {
-            const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
             const aidaClient = new Host.AidaClient.AidaClient();
-            const syncInfo = await new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => resolve(syncInfo)));
+            const syncInfoPromise = new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
+            const [aidaAvailability, syncInfo] = await Promise.all([Host.AidaClient.AidaClient.checkAccessPreconditions(), syncInfoPromise]);
             freestylerPanelInstance = new FreestylerPanel(defaultView, { aidaClient, aidaAvailability, syncInfo });
         }
         return freestylerPanelInstance;
@@ -241,16 +208,91 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.registerCSSFiles([freestylerPanelStyles]);
         this.#viewOutput.freestylerChatUi?.restoreScrollPosition();
         this.#viewOutput.freestylerChatUi?.focusTextInput();
+        void this.#handleAidaAvailabilityChange();
+        void this
+            .#handleFreestylerEnabledSettingChanged(); // If the setting was switched on/off while the FreestylerPanel was not shown.
+        this.#viewProps = {
+            ...this.#viewProps,
+            inspectElementToggled: this.#toggleSearchElementAction.toggled(),
+            selectedElement: selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)),
+            selectedNetworkRequest: UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest),
+            selectedStackTrace: UI.Context.Context.instance().flavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI),
+            selectedFile: UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode),
+        };
+        this.doUpdate();
         this.#freestylerEnabledSetting?.addChangeListener(this.#handleFreestylerEnabledSettingChanged, this);
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
+        this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.#handleSearchElementActionToggled);
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, this.#handleTraceEntryNodeFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     }
     willHide() {
         this.#freestylerEnabledSetting?.removeChangeListener(this.#handleFreestylerEnabledSettingChanged, this);
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
+        this.#toggleSearchElementAction.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.#handleSearchElementActionToggled);
+        UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, this.#handleTraceEntryNodeFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     }
-    #handleFreestylerEnabledSettingChanged() {
-        this.#viewProps.state =
-            this.#freestylerEnabledSetting?.get() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ : "consent-view" /* FreestylerChatUiState.CONSENT_VIEW */;
+    #handleAidaAvailabilityChange = async () => {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#viewProps.aidaAvailability) {
+            this.#viewProps.aidaAvailability = currentAidaAvailability;
+            const syncInfo = await new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
+            this.#viewProps.userInfo = {
+                accountImage: syncInfo.accountImage,
+                accountFullName: syncInfo.accountFullName,
+            };
+            this.#viewProps.state = this.#getChatUiState();
+            this.doUpdate();
+        }
+    };
+    #handleSearchElementActionToggled = (ev) => {
+        if (this.#viewProps.inspectElementToggled === ev.data) {
+            return;
+        }
+        this.#viewProps.inspectElementToggled = ev.data;
         this.doUpdate();
-    }
+    };
+    #handleDOMNodeFlavorChange = (ev) => {
+        if (this.#viewProps.selectedElement === ev.data) {
+            return;
+        }
+        this.#viewProps.selectedElement = selectedElementFilter(ev.data);
+        this.doUpdate();
+    };
+    #handleNetworkRequestFlavorChange = (ev) => {
+        if (this.#viewProps.selectedNetworkRequest === ev.data) {
+            return;
+        }
+        this.#viewProps.selectedNetworkRequest = Boolean(ev.data) ? ev.data : null;
+        this.doUpdate();
+    };
+    #handleTraceEntryNodeFlavorChange = (ev) => {
+        if (this.#viewProps.selectedStackTrace === ev.data) {
+            return;
+        }
+        this.#viewProps.selectedStackTrace = Boolean(ev.data) ? ev.data : null;
+        this.doUpdate();
+    };
+    #handleUISourceCodeFlavorChange = (ev) => {
+        if (this.#viewProps.selectedFile === ev.data) {
+            return;
+        }
+        this.#viewProps.selectedFile = Boolean(ev.data) ? ev.data : null;
+        this.doUpdate();
+    };
+    #handleFreestylerEnabledSettingChanged = () => {
+        const nextChatUiState = this.#getChatUiState();
+        if (this.#viewProps.state === nextChatUiState) {
+            return;
+        }
+        this.#viewProps.state = nextChatUiState;
+        this.doUpdate();
+    };
     doUpdate() {
         this.view(this.#viewProps, this.#viewOutput, this.#contentContainer);
     }
@@ -298,23 +340,37 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 this.doUpdate();
                 break;
             }
-            case 'drjones.network-panel-context': {
-                // TODO(samiyac): Add UMA
+            case 'drjones.network-floating-button': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromNetworkPanelFloatingButton);
+                this.#viewProps.agentType = "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */;
+                this.doUpdate();
+                break;
+            }
+            case 'drjones.network-panel-context': {
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromNetworkPanel);
                 this.#viewProps.agentType = "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */;
                 this.doUpdate();
                 break;
             }
             case 'drjones.performance-panel-context': {
-                // TODO(samiyac): Add UMA
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromPerformancePanel);
                 this.#viewProps.agentType = "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */;
                 this.doUpdate();
                 break;
             }
-            case 'drjones.sources-panel-context': {
-                // TODO(samiyac): Add UMA
+            case 'drjones.sources-floating-button': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromSourcesPanelFloatingButton);
+                this.#viewProps.agentType = "drjones-file" /* AgentType.DRJONES_FILE */;
+                this.doUpdate();
+                break;
+            }
+            case 'drjones.sources-panel-context': {
+                this.#viewOutput.freestylerChatUi?.focusTextInput();
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromSourcesPanel);
                 this.#viewProps.agentType = "drjones-file" /* AgentType.DRJONES_FILE */;
                 this.doUpdate();
                 break;
@@ -329,7 +385,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
         this.#cancel();
         this.doUpdate();
-        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.chatCleared));
+        UI.ARIAUtils.alert(i18nString(UIStrings.chatCleared));
     }
     #runAbortController = new AbortController();
     #cancel() {
@@ -354,18 +410,16 @@ export class FreestylerPanel extends UI.Panel.Panel {
         const signal = this.#runAbortController.signal;
         let runner;
         if (this.#viewProps.agentType === "freestyler" /* AgentType.FREESTYLER */) {
-            runner = this.#freestylerAgent.run(text, { signal, selectedElement: this.#viewProps.selectedElement });
+            runner = this.#freestylerAgent.run(text, { signal, selected: this.#viewProps.selectedElement });
         }
         else if (this.#viewProps.agentType === "drjones-file" /* AgentType.DRJONES_FILE */) {
-            runner = this.#drJonesFileAgent.run(text, { signal, selectedFile: this.#viewProps.selectedFile });
+            runner = this.#drJonesFileAgent.run(text, { signal, selected: this.#viewProps.selectedFile });
         }
         else if (this.#viewProps.agentType === "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */) {
-            runner =
-                this.#drJonesNetworkAgent.run(text, { signal, selectedNetworkRequest: this.#viewProps.selectedNetworkRequest });
+            runner = this.#drJonesNetworkAgent.run(text, { signal, selected: this.#viewProps.selectedNetworkRequest });
         }
         else if (this.#viewProps.agentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */) {
-            runner =
-                this.#drJonesPerformanceAgent.run(text, { signal, selectedStackTrace: this.#viewProps.selectedStackTrace });
+            runner = this.#drJonesPerformanceAgent.run(text, { signal, selected: this.#viewProps.selectedStackTrace });
         }
         if (!runner) {
             return;
@@ -382,6 +436,15 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                     break;
                 }
+                case ResponseType.CONTEXT: {
+                    step.title = data.title;
+                    step.contextDetails = data.details;
+                    step.isLoading = false;
+                    if (systemMessage.steps.at(-1) !== step) {
+                        systemMessage.steps.push(step);
+                    }
+                    break;
+                }
                 case ResponseType.TITLE: {
                     step.title = data.title;
                     if (systemMessage.steps.at(-1) !== step) {
@@ -392,7 +455,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 case ResponseType.THOUGHT: {
                     step.isLoading = false;
                     step.thought = data.thought;
-                    step.contextDetails = data.contextDetails;
                     if (systemMessage.steps.at(-1) !== step) {
                         systemMessage.steps.push(step);
                     }
@@ -433,7 +495,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 }
                 case ResponseType.ERROR: {
                     systemMessage.error = data.error;
-                    systemMessage.suggestions = [];
                     systemMessage.rpcId = undefined;
                     this.#viewProps.isLoading = false;
                     const lastStep = systemMessage.steps.at(-1);
@@ -460,8 +521,10 @@ export class ActionDelegate {
         switch (actionId) {
             case 'freestyler.elements-floating-button':
             case 'freestyler.element-panel-context':
+            case 'drjones.network-floating-button':
             case 'drjones.network-panel-context':
             case 'drjones.performance-panel-context':
+            case 'drjones.sources-floating-button':
             case 'drjones.sources-panel-context': {
                 void (async () => {
                     const view = UI.ViewManager.ViewManager.instance().view(FreestylerPanel.panelName);

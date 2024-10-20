@@ -726,8 +726,10 @@ export interface ResourceSendRequest extends Instant {
             requestId: string;
             url: string;
             priority: Protocol.Network.ResourcePriority;
-            resourceType: Protocol.Network.ResourceType;
-            fetchPriorityHint: FetchPriorityHint;
+            /** Added Feb 2024. https://crrev.com/c/5277583 */
+            resourceType?: Protocol.Network.ResourceType;
+            /** Added Feb 2024. https://crrev.com/c/5297615 */
+            fetchPriorityHint?: FetchPriorityHint;
             requestMethod?: string;
             renderBlocking?: RenderBlocking;
             initiator?: Initiator;

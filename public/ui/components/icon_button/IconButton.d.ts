@@ -16,7 +16,6 @@ export interface IconButtonData {
 }
 export declare class IconButton extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     set data(data: IconButtonData);
     get data(): IconButtonData;
     connectedCallback(): void;

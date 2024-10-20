@@ -12,7 +12,6 @@ const { html, Directives: { ifDefined } } = LitHtml;
  * This makes sure that all icons/images are accounted for in markdown.
  */
 export class MarkdownImage extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-markdown-image`;
     #shadow = this.attachShadow({ mode: 'open' });
     #imageData;
     #imageTitle;

@@ -32,7 +32,7 @@ export interface UserChatMessage {
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
     steps: Step[];
-    suggestions?: string[];
+    suggestions?: [string, ...string[]];
     answer?: string;
     error?: ErrorType;
     rpcId?: number;
@@ -66,14 +66,13 @@ export interface Props {
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;
-    agentType: AgentType;
+    agentType?: AgentType;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
     templateForToken(token: Marked.Marked.MarkedToken): LitHtml.TemplateResult | null;
 }
 export declare class FreestylerChatUi extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(props: Props);
     set props(props: Props);
     connectedCallback(): void;

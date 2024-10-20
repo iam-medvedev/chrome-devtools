@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import { AiAgent, debugLog, isDebugMode, ResponseType, } from './AiAgent.js';
+import { AiAgent, ResponseType, } from './AiAgent.js';
 const preamble = `You are a highly skilled software engineer with expertise in various programming languages and frameworks.
 You are provided with the content of a file from the Chrome DevTools Sources panel.
 
@@ -44,10 +44,6 @@ const UIStringsNotTranslate = {
      *@description Title for thinking step of DrJones File agent.
      */
     analyzingFile: 'Analyzing file',
-    /**
-     *@description Thought text for thinking step of DrJones File agent.
-     */
-    dataUsedToGenerateThisResponse: 'Data used to generate this response',
 };
 const lockedString = i18n.i18n.lockedString;
 const MAX_FILE_SIZE = 50000;
@@ -58,8 +54,10 @@ const MAX_FILE_SIZE = 50000;
 export class DrJonesFileAgent extends AiAgent {
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_FILE_AGENT;
-    // TODO(b/369822364): use a feature param instead.
-    userTier = 'BETA';
+    get userTier() {
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        return config.devToolsAiAssistanceFileAgentDogfood?.userTier;
+    }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
         const temperature = AiAgent.validTemperature(config.devToolsAiAssistanceFileAgentDogfood?.temperature);
@@ -69,67 +67,24 @@ export class DrJonesFileAgent extends AiAgent {
             model_id: modelId,
         };
     }
-    *handleContextDetails(selectedFile) {
+    async *handleContextDetails(selectedFile) {
         if (!selectedFile) {
             return;
         }
         yield {
-            type: ResponseType.TITLE,
+            type: ResponseType.CONTEXT,
             title: lockedString(UIStringsNotTranslate.analyzingFile),
-        };
-        yield {
-            type: ResponseType.THOUGHT,
-            thought: lockedString(UIStringsNotTranslate.dataUsedToGenerateThisResponse),
-            contextDetails: createContextDetailsForDrJonesFileAgent(selectedFile),
+            details: createContextDetailsForDrJonesFileAgent(selectedFile),
         };
     }
     async enhanceQuery(query, selectedFile) {
         const fileEnchantmentQuery = selectedFile ? `# Selected file\n${formatFile(selectedFile)}\n\n# User request\n\n` : '';
         return `${fileEnchantmentQuery}${query}`;
     }
-    #runId = 0;
-    async *run(query, options) {
-        yield* this.handleContextDetails(options.selectedFile);
-        query = await this.enhanceQuery(query, options.selectedFile);
-        const currentRunId = ++this.#runId;
-        let response;
-        let rpcId;
-        try {
-            const fetchResult = await this.aidaFetch(query, { signal: options.signal });
-            response = fetchResult.response;
-            rpcId = fetchResult.rpcId;
-        }
-        catch (err) {
-            debugLog('Error calling the AIDA API', err);
-            if (err instanceof Host.AidaClient.AidaAbortError) {
-                this.removeHistoryRun(currentRunId);
-                yield {
-                    type: ResponseType.ERROR,
-                    error: "abort" /* ErrorType.ABORT */,
-                    rpcId,
-                };
-                return;
-            }
-            yield {
-                type: ResponseType.ERROR,
-                error: "unknown" /* ErrorType.UNKNOWN */,
-                rpcId,
-            };
-            return;
-        }
-        this.addToHistory({
-            id: currentRunId,
-            query,
-            output: response,
-        });
-        yield {
-            type: ResponseType.ANSWER,
-            text: response,
-            rpcId,
+    parseResponse(response) {
+        return {
+            answer: response,
         };
-        if (isDebugMode()) {
-            window.dispatchEvent(new CustomEvent('freestylerdone'));
-        }
     }
 }
 function createContextDetailsForDrJonesFileAgent(selectedFile) {

@@ -5,7 +5,6 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import nodeTextStyles from './nodeText.css.js';
 const { render, html } = LitHtml;
 export class NodeText extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-node-text`;
     #shadow = this.attachShadow({ mode: 'open' });
     #nodeTitle = '';
     #nodeId = '';

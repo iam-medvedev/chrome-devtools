@@ -19,7 +19,6 @@ function isColorInSrgbGamut(hsv) {
     return srgb.every(val => val + EPSILON >= 0 && val - EPSILON <= 1);
 }
 export class SrgbOverlay extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-spectrum-srgb-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     constructor() {
         super();

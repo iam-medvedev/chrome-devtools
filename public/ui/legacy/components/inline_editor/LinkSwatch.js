@@ -18,7 +18,6 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/inline_editor/Lin
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html, Directives: { ifDefined, classMap } } = LitHtml;
 class BaseLinkSwatch extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-base-link-swatch`;
     shadow = this.attachShadow({ mode: 'open' });
     onLinkActivate = () => undefined;
     #linkElement;
@@ -62,7 +61,6 @@ class BaseLinkSwatch extends HTMLElement {
     }
 }
 export class CSSVarSwatch extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-var-swatch`;
     shadow = this.attachShadow({ mode: 'open' });
     #link;
     constructor() {
@@ -102,7 +100,6 @@ export class CSSVarSwatch extends HTMLElement {
     }
 }
 export class LinkSwatch extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-link-swatch`;
     shadow = this.attachShadow({ mode: 'open' });
     set data(data) {
         this.render(data);

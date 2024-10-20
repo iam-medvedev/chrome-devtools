@@ -3,16 +3,9 @@
 // found in the LICENSE file.
 import * as UI from '../../ui/legacy/legacy.js';
 export class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
-    securityPanel;
-    constructor(securityPanel, title = '', expandable = false) {
+    constructor(title = '', expandable = false) {
         super(title, expandable);
-        this.securityPanel = securityPanel;
         UI.ARIAUtils.setLabel(this.listItemElement, title);
-    }
-    showView(view) {
-        if (this.securityPanel) {
-            this.securityPanel.setVisibleView(view);
-        }
     }
 }
 //# sourceMappingURL=SecurityPanelSidebarTreeElement.js.map

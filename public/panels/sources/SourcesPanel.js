@@ -764,10 +764,6 @@ export class SourcesPanel extends UI.Panel.Panel {
     appendApplicableItems(event, contextMenu, target) {
         if (target instanceof Workspace.UISourceCode.UISourceCode) {
             this.appendUISourceCodeItems(event, contextMenu, target);
-            if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.sources-panel-context')) {
-                UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, target);
-                contextMenu.headerSection().appendAction('drjones.sources-panel-context');
-            }
             return;
         }
         if (target instanceof UISourceCodeFrame) {
@@ -796,6 +792,13 @@ export class SourcesPanel extends UI.Panel.Panel {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSidebar), this.revealInNavigator.bind(this, uiSourceCode), {
                 jslogContext: 'sources.reveal-in-navigator-sidebar',
             });
+        }
+        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.sources-panel-context')) {
+            const editorElement = this.element.querySelector('devtools-text-editor');
+            if (!eventTarget.isSelfOrDescendant(editorElement)) {
+                UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
+                contextMenu.headerSection().appendAction('drjones.sources-panel-context');
+            }
         }
         // Ignore list only works for JavaScript debugging.
         if (uiSourceCode.contentType().hasScripts() &&

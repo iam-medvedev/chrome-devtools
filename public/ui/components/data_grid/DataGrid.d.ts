@@ -20,7 +20,6 @@ export interface DataGridData {
 }
 export declare class DataGrid extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     get data(): DataGridData;
     set data(data: DataGridData);

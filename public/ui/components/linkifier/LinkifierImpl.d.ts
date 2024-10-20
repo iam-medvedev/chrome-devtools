@@ -4,6 +4,7 @@ export interface LinkifierData {
     lineNumber?: number;
     columnNumber?: number;
     linkText?: string;
+    title?: string;
 }
 export declare class LinkifierClick extends Event {
     data: LinkifierData;
@@ -12,7 +13,6 @@ export declare class LinkifierClick extends Event {
 }
 export declare class Linkifier extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     set data(data: LinkifierData);
     connectedCallback(): void;
 }

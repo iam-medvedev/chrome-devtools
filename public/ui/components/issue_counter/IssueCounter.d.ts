@@ -20,7 +20,6 @@ export interface IssueCounterData {
 export declare function getIssueCountsEnumeration(issuesManager: IssuesManager.IssuesManager.IssuesManager, omitEmpty?: boolean): string;
 export declare class IssueCounter extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     scheduleUpdate(): void;
     connectedCallback(): void;
     set data(data: IssueCounterData);

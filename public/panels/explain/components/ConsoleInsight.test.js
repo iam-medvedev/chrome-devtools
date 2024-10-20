@@ -7,7 +7,9 @@ import { dispatchClickEvent, getCleanTextContentFromElements, renderElementIntoD
 import { describeWithEnvironment, getGetHostConfigStub } from '../../../testing/EnvironmentHelpers.js';
 import * as Explain from '../explain.js';
 describeWithEnvironment('ConsoleInsight', () => {
+    let component;
     afterEach(() => {
+        component?.remove();
         Common.Settings.settingForTest('console-insights-enabled').set(true);
         Common.Settings.settingForTest('console-insights-onboarding-finished').set(true);
     });
@@ -41,15 +43,48 @@ describeWithEnvironment('ConsoleInsight', () => {
     async function drainMicroTasks() {
         await new Promise(resolve => setTimeout(resolve, 0));
     }
-    it('shows opt-in teaser when setting is disabled', async () => {
+    it('shows opt-in teaser when setting is turned off', async () => {
         Common.Settings.settingForTest('console-insights-enabled').set(false);
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         assert.isNotNull(component.shadowRoot);
         assert.deepEqual(getCleanTextContentFromElements(component.shadowRoot, 'main'), [
             'Turn on Console insights in Settings to receive AI assistance for understanding and addressing console warnings and errors. Learn more',
         ]);
+    });
+    it('shows opt-in teaser when blocked by age', async () => {
+        const stub = getGetHostConfigStub({
+            aidaAvailability: {
+                blockedByAge: true,
+            },
+            devToolsConsoleInsights: {
+                enabled: true,
+            },
+        });
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        renderElementIntoDOM(component);
+        await drainMicroTasks();
+        assert.isNotNull(component.shadowRoot);
+        assert.deepEqual(getCleanTextContentFromElements(component.shadowRoot, 'main'), [
+            'Turn on Console insights in Settings to receive AI assistance for understanding and addressing console warnings and errors. Learn more',
+        ]);
+        stub.restore();
+    });
+    it('generates an explanation when the user logs in', async () => {
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        renderElementIntoDOM(component);
+        await drainMicroTasks();
+        assert.isNotNull(component.shadowRoot);
+        assert.deepEqual(getCleanTextContentFromElements(component.shadowRoot, 'main'), [
+            'This feature is only available when you sign into Chrome with your Google account.',
+        ]);
+        const stub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions')
+            .returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        await drainMicroTasks();
+        assert.deepEqual(getCleanTextContentFromElements(component.shadowRoot, 'h2'), ['Explanation']);
+        stub.restore();
     });
     it('shows opt-in teaser when setting is disabled via disabledCondition', async () => {
         const setting = Common.Settings.settingForTest('console-insights-enabled');
@@ -61,7 +96,7 @@ describeWithEnvironment('ConsoleInsight', () => {
                 return { disabled: true, reason: 'disabled for test' };
             },
         });
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         assert.isNotNull(component.shadowRoot);
@@ -76,7 +111,7 @@ describeWithEnvironment('ConsoleInsight', () => {
     });
     it('shows reminder on first run of console insights', async () => {
         Common.Settings.settingForTest('console-insights-onboarding-finished').set(false);
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         assert.isNotNull(component.shadowRoot);
@@ -93,7 +128,7 @@ describeWithEnvironment('ConsoleInsight', () => {
         const stub = getGetHostConfigStub({});
         const actionTaken = sinon.stub(Host.userMetrics, 'actionTaken');
         const aidaClient = getTestAidaClient();
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), aidaClient, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), aidaClient, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         dispatchClickEvent(component.shadowRoot.querySelector(`.rating [data-rating=${positive}]`), {
@@ -127,7 +162,7 @@ describeWithEnvironment('ConsoleInsight', () => {
                 enabled: true,
             },
         });
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         const thumbsUpButton = component.shadowRoot.querySelector('.rating [data-rating="true"]');
@@ -137,14 +172,14 @@ describeWithEnvironment('ConsoleInsight', () => {
         stub.restore();
     });
     it('report if the user is not logged in', async () => {
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         const content = component.shadowRoot.querySelector('main').innerText.trim();
         assert.strictEqual(content, 'This feature is only available when you sign into Chrome with your Google account.');
     });
     it('report if the navigator is offline', async () => {
-        const component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
         renderElementIntoDOM(component);
         await drainMicroTasks();
         const content = component.shadowRoot.querySelector('main').innerText.trim();

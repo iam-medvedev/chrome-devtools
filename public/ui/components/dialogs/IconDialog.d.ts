@@ -1,5 +1,7 @@
+import '../../../ui/components/icon_button/icon_button.js';
+import './Dialog.js';
 import type * as IconButton from '../../../ui/components/icon_button/icon_button.js';
-import { type DialogHorizontalAlignment, type DialogVerticalPosition } from './Dialog.js';
+import type { DialogHorizontalAlignment, DialogVerticalPosition } from './Dialog.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-icon-dialog': IconDialog;
@@ -19,7 +21,6 @@ export interface IconDialogData {
 }
 export declare class IconDialog extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: IconDialogData);
 }

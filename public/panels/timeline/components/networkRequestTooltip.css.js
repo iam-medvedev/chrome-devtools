@@ -20,11 +20,24 @@ styles.replaceSync(
   margin-right: 5px;
 }
 
-.priority {
+.url--host {
+  color: var(--sys-color-token-subtle);
+}
+
+.priority-row {
   margin-left: 15px;
 }
 
-.priority > devtools-icon {
+.network-category-chip {
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--sys-color-divider);
+  display: inline-block;
+  margin-right: 4px;
+}
+
+devtools-icon.priority {
   height: 13px;
   width: 13px;
   color: var(--sys-color-on-surface-subtle);
@@ -40,15 +53,11 @@ styles.replaceSync(
   margin: 5px 0;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-li {
+.timings-row {
+  align-self: start;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .indicator {
@@ -60,7 +69,8 @@ li {
 }
 
 .whisker-left {
-  display: flex;
+  align-self: center;
+  display: inline-flex;
   width: 10px;
   height: 6px;
   margin-right: 5px;
@@ -68,7 +78,8 @@ li {
 }
 
 .whisker-right {
-  display: flex;
+  align-self: center;
+  display: inline-flex;
   width: 10px;
   height: 6px;
   margin-right: 5px;
@@ -85,6 +96,18 @@ li {
 .time {
   /* Push the time to right. */
   margin-left: auto;
+  display: inline-block;
+  padding-left: 10px;
+}
+
+.timings-row--duration {
+  .indicator {
+    border-color: transparent;
+  }
+
+  .time {
+    font-weight: var(--ref-typeface-weight-medium);
+  }
 }
 
 /*# sourceURL=networkRequestTooltip.css */

@@ -11,7 +11,6 @@ export interface SurveyLinkData {
 }
 export declare class SurveyLink extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: SurveyLinkData);
 }

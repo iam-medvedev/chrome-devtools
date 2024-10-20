@@ -12,6 +12,7 @@ export class EmulationModel extends SDKModel {
     #cssModel;
     #overlayModelInternal;
     #mediaConfiguration;
+    #cpuPressureEnabled;
     #touchEnabled;
     #touchMobile;
     #touchEmulationAllowed;
@@ -47,6 +48,20 @@ export class EmulationModel extends SDKModel {
             }
             const emulationParams = JSON.parse(settingValue);
             await this.setIdleOverride(emulationParams);
+        });
+        const cpuPressureDetectionSetting = Common.Settings.Settings.instance().moduleSetting('emulation.cpu-pressure');
+        cpuPressureDetectionSetting.addChangeListener(async () => {
+            const settingValue = cpuPressureDetectionSetting.get();
+            if (settingValue === 'none') {
+                await this.setPressureSourceOverrideEnabled(false);
+                this.#cpuPressureEnabled = false;
+                return;
+            }
+            if (!this.#cpuPressureEnabled) {
+                this.#cpuPressureEnabled = true;
+                await this.setPressureSourceOverrideEnabled(true);
+            }
+            await this.setPressureStateOverride(settingValue);
         });
         const mediaTypeSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media');
         const mediaFeatureColorGamutSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-color-gamut');
@@ -142,6 +157,7 @@ export class EmulationModel extends SDKModel {
         if (avifFormatDisabledSetting.get() || webpFormatDisabledSetting.get()) {
             updateDisabledImageFormats();
         }
+        this.#cpuPressureEnabled = false;
         this.#touchEmulationAllowed = true;
         this.#touchEnabled = false;
         this.#touchMobile = false;
@@ -170,6 +186,15 @@ export class EmulationModel extends SDKModel {
     }
     overlayModel() {
         return this.#overlayModelInternal;
+    }
+    async setPressureSourceOverrideEnabled(enabled) {
+        await this.#emulationAgent.invoke_setPressureSourceOverrideEnabled({ source: "cpu" /* Protocol.Emulation.PressureSource.Cpu */, enabled });
+    }
+    async setPressureStateOverride(pressureState) {
+        await this.#emulationAgent.invoke_setPressureStateOverride({
+            source: "cpu" /* Protocol.Emulation.PressureSource.Cpu */,
+            state: pressureState,
+        });
     }
     async emulateLocation(location) {
         if (!location) {

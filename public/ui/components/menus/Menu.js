@@ -14,7 +14,6 @@ const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-menu`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #dialog = null;
@@ -331,7 +330,6 @@ export class Menu extends HTMLElement {
     }
 }
 export class MenuItem extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-menu-item`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     connectedCallback() {
@@ -384,7 +382,6 @@ export class MenuItem extends HTMLElement {
     }
 }
 export class MenuGroup extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-menu-group`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     connectedCallback() {

@@ -10,7 +10,6 @@ import reportSectionHeaderStyles from './reportSectionHeader.css.js';
 import reportValueStyles from './reportValue.css.js';
 const { html } = LitHtml;
 export class Report extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-report`;
     #shadow = this.attachShadow({ mode: 'open' });
     #reportTitle = '';
     set data({ reportTitle }) {
@@ -34,7 +33,6 @@ export class Report extends HTMLElement {
     }
 }
 export class ReportSection extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-report-section`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [reportSectionStyles];
@@ -52,7 +50,6 @@ export class ReportSection extends HTMLElement {
     }
 }
 export class ReportSectionHeader extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-report-section-header`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [reportSectionHeaderStyles];
@@ -70,7 +67,6 @@ export class ReportSectionHeader extends HTMLElement {
     }
 }
 export class ReportSectionDivider extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-report-divider`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [reportSectionDividerStyles];
@@ -87,7 +83,6 @@ export class ReportSectionDivider extends HTMLElement {
     }
 }
 export class ReportKey extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-report-key`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [reportKeyStyles];
@@ -103,7 +98,6 @@ export class ReportKey extends HTMLElement {
     }
 }
 export class ReportValue extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-report-value`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [reportValueStyles];

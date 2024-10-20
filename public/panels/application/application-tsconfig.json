@@ -120,6 +120,9 @@
       "path": "../network/forward/bundle-tsconfig.json"
     },
     {
+      "path": "../../third_party/json5/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {

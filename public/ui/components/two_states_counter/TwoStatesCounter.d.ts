@@ -8,7 +8,6 @@ export interface TwoStatesCounterData {
 }
 export declare class TwoStatesCounter extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: TwoStatesCounterData);
 }

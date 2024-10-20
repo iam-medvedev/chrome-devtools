@@ -5,7 +5,6 @@ export interface ExpandableListData {
 }
 export declare class ExpandableList extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     set data(data: ExpandableListData);
     connectedCallback(): void;
 }

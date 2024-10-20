@@ -5,7 +5,6 @@ export interface HiddenIssuesMenuData {
 }
 export declare class HideIssuesMenu extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: HiddenIssuesMenuData);
     connectedCallback(): void;
     onMenuOpen(event: Event): void;

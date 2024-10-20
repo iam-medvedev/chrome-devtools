@@ -74,15 +74,8 @@ export class NetworkTrackAppender {
             useFirstLineForOverview: false,
             useDecoratorsForOverview: true,
         });
-        const legends = [];
-        for (const category of Object.values(Components.Utils.NetworkCategory)) {
-            legends.push({
-                color: Components.Utils.colorForNetworkCategory(category),
-                category,
-            });
-        }
         this.#group = buildTrackHeader("network" /* VisualLoggingTrackName.NETWORK */, 0, i18nString(UIStrings.network), style, /* selectable= */ true, expanded, 
-        /* showStackContextMenu= */ false, legends);
+        /* showStackContextMenu= */ false);
         this.#flameChartData.groups.push(this.#group);
     }
     /**

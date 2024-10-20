@@ -422,6 +422,9 @@ export declare const NotRestoredReasonDescription: {
     RequestedByWebViewClient: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    PostMessageByWebViewClient: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
     WebViewSettingsChanged: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };

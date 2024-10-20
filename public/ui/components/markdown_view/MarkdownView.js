@@ -10,7 +10,6 @@ import markdownViewStyles from './markdownView.css.js';
 const html = LitHtml.html;
 const render = LitHtml.render;
 export class MarkdownView extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-markdown-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #tokenData = [];
     #renderer = new MarkdownLitRenderer();

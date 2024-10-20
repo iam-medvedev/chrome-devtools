@@ -150,7 +150,6 @@ async function executeJsCode(code, { throwOnSideEffect }) {
         throw err;
     }
 }
-const MAX_STEPS = 10;
 const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
 /**
  * One agent instance handles one conversation. Create a new agent
@@ -176,17 +175,17 @@ export class FreestylerAgent extends AiAgent {
             model_id: modelId,
         };
     }
-    static parseResponse(response) {
+    parseResponse(response) {
         // We're returning an empty answer to denote the erroneous case.
         if (!response) {
-            return { answer: '', suggestions: [] };
+            return { answer: '' };
         }
         const lines = response.split('\n');
         let thought;
         let title;
         let action;
         let answer;
-        let suggestions = [];
+        let suggestions;
         let i = 0;
         // If one of these is present, it means we're going to follow the instruction tags
         // to parse the response. If none of these is present, we'll assume the whole `response`
@@ -206,7 +205,7 @@ export class FreestylerAgent extends AiAgent {
         // The block below ensures that the response we parse always contains a defining instruction tag.
         const hasDefiningInstruction = lines.some(line => isDefiningInstructionStart(line));
         if (!hasDefiningInstruction) {
-            return FreestylerAgent.parseResponse(`ANSWER: ${response}`);
+            return this.parseResponse(`ANSWER: ${response}`);
         }
         while (i < lines.length) {
             const trimmed = lines[i].trim();
@@ -275,8 +274,7 @@ export class FreestylerAgent extends AiAgent {
                     // TODO: Do basic validation this is an array with strings
                     suggestions = JSON.parse(trimmed.substring('SUGGESTIONS:'.length).trim());
                 }
-                catch (err) {
-                    suggestions = [];
+                catch {
                 }
                 i++;
             }
@@ -438,22 +436,22 @@ export class FreestylerAgent extends AiAgent {
                 }
             }
         }
-        return output;
+        return output.trim();
     }
     async *handleAction(action, rpcId) {
         debugLog(`Action to execute: ${action}`);
+        if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+            return {
+                type: ResponseType.ACTION,
+                code: action,
+                output: 'Error: JavaScript execution is currently disabled.',
+                canceled: true,
+                rpcId,
+            };
+        }
         const scope = this.#createExtensionScope(this.#changes);
         await scope.install();
         try {
-            if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
-                return {
-                    type: ResponseType.ACTION,
-                    code: action,
-                    output: 'Error: JavaScript execution is currently disabled.',
-                    canceled: true,
-                    rpcId,
-                };
-            }
             let result = await this.#generateObservation(action, { throwOnSideEffect: true });
             debugLog(`Action result: ${JSON.stringify(result)}`);
             if (result.sideEffect) {
@@ -498,12 +496,9 @@ export class FreestylerAgent extends AiAgent {
             return;
         }
         yield {
-            type: ResponseType.TITLE,
+            type: ResponseType.CONTEXT,
             title: lockedString(UIStringsNotTranslate.analyzingThePrompt),
-        };
-        yield {
-            type: ResponseType.THOUGHT,
-            contextDetails: [{
+            details: [{
                     title: lockedString(UIStringsNotTranslate.dataUsed),
                     text: await FreestylerAgent.describeElement(selectedElement),
                 }],
@@ -515,115 +510,16 @@ export class FreestylerAgent extends AiAgent {
             '';
         return `${elementEnchantmentQuery}QUERY: ${query}`;
     }
-    #runId = 0;
-    async *run(query, options) {
-        yield* this.handleContextDetails(options.selectedElement);
-        query = await this.enhanceQuery(query, options.selectedElement);
-        const currentRunId = ++this.#runId;
-        Host.userMetrics.freestylerQueryLength(query.length);
-        for (let i = 0; i < MAX_STEPS; i++) {
-            yield {
-                type: ResponseType.QUERYING,
-            };
-            let response;
-            let rpcId;
-            try {
-                const fetchResult = await this.aidaFetch(query, { signal: options.signal });
-                response = fetchResult.response;
-                rpcId = fetchResult.rpcId;
-            }
-            catch (err) {
-                debugLog('Error calling the AIDA API', err);
-                if (err instanceof Host.AidaClient.AidaAbortError) {
-                    this.removeHistoryRun(currentRunId);
-                    yield {
-                        type: ResponseType.ERROR,
-                        error: "abort" /* ErrorType.ABORT */,
-                        rpcId,
-                    };
-                    break;
-                }
-                yield {
-                    type: ResponseType.ERROR,
-                    error: "unknown" /* ErrorType.UNKNOWN */,
-                    rpcId,
-                };
-                break;
-            }
-            const parsedResponse = FreestylerAgent.parseResponse(response);
-            if ('answer' in parsedResponse) {
-                const { answer, suggestions, } = parsedResponse;
-                if (answer) {
-                    this.addToHistory({
-                        id: currentRunId,
-                        query,
-                        output: `ANSWER: ${answer}`,
-                    });
-                    yield {
-                        type: ResponseType.ANSWER,
-                        text: answer,
-                        rpcId,
-                        suggestions,
-                    };
-                }
-                else {
-                    yield {
-                        type: ResponseType.ERROR,
-                        error: "unknown" /* ErrorType.UNKNOWN */,
-                        rpcId,
-                    };
-                }
-                break;
-            }
-            const { title, thought, action, } = parsedResponse;
-            if (title) {
-                yield {
-                    type: ResponseType.TITLE,
-                    title,
-                    rpcId,
-                };
-            }
-            if (thought) {
-                this.addToHistory({
-                    id: currentRunId,
-                    query,
-                    output: `THOUGHT: ${thought}
-TITLE: ${title}
-ACTION
-${action}
-STOP`,
-                });
-                yield {
-                    type: ResponseType.THOUGHT,
-                    thought,
-                    rpcId,
-                };
-            }
-            else {
-                this.addToHistory({
-                    id: currentRunId,
-                    query,
-                    output: `ACTION
-${action}
-STOP`,
-                });
-            }
-            if (action) {
-                const result = yield* this.handleAction(action, rpcId);
-                yield result;
-                query = `OBSERVATION: ${result.output}`;
-            }
-            if (i === MAX_STEPS - 1) {
-                yield {
-                    type: ResponseType.ERROR,
-                    error: "max-steps" /* ErrorType.MAX_STEPS */,
-                };
-                break;
-            }
+    addToHistory(options) {
+        const response = options.response;
+        if ('answer' in response) {
+            const answer = `ANSWER: ${response.answer}`;
+            return super.addToHistory({
+                ...options,
+                response: { answer },
+            });
         }
-        if (isDebugMode()) {
-            window.dispatchEvent(new CustomEvent('freestylerdone'));
-        }
+        return super.addToHistory(options);
     }
 }
 //# sourceMappingURL=FreestylerAgent.js.map

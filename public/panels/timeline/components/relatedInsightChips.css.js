@@ -13,7 +13,7 @@ styles.replaceSync(
 
 :host {
   display: block;
-  padding: var(--sys-size-6);
+  padding: var(--sys-size-4);
 }
 
 ul {

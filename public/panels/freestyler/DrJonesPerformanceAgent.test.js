@@ -92,7 +92,7 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
                     model_id: 'test model',
                     temperature: undefined,
                 },
-                client_feature: 2,
+                client_feature: 8,
                 functionality_type: 1,
             });
         });
@@ -129,16 +129,12 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
             });
             // Select node3
             node3.selected = true;
-            const responses = await Array.fromAsync(agent.run('test', { selectedStackTrace: rootNodeEntry }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: rootNodeEntry }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: ResponseType.TITLE,
+                    type: ResponseType.CONTEXT,
                     title: 'Analyzing stack trace',
-                },
-                {
-                    type: ResponseType.THOUGHT,
-                    thought: 'Data used to generate this response',
-                    contextDetails: [
+                    details: [
                         {
                             title: 'Selected stack trace',
                             text: JSON.stringify(rootNodeEntry),
@@ -146,8 +142,12 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
                     ],
                 },
                 {
+                    type: ResponseType.QUERYING,
+                },
+                {
                     type: ResponseType.ANSWER,
                     text: 'This is the answer',
+                    suggestions: undefined,
                     rpcId: 123,
                 },
             ]);

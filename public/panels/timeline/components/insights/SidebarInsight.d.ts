@@ -24,6 +24,11 @@ export declare class InsightSetHovered extends Event {
     static readonly eventName = "insightsethovered";
     constructor(bounds?: Trace.Types.Timing.TraceWindowMicroSeconds | undefined);
 }
+export declare class InsightSetZoom extends Event {
+    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
+    static readonly eventName = "insightsetzoom";
+    constructor(bounds: Trace.Types.Timing.TraceWindowMicroSeconds);
+}
 export declare class InsightProvideOverlays extends Event {
     overlays: Array<Overlays.Overlays.TimelineOverlay>;
     options: Overlays.Overlays.TimelineOverlaySetOptions;
@@ -42,13 +47,13 @@ declare global {
         [InsightActivated.eventName]: InsightActivated;
         [InsightDeactivated.eventName]: InsightDeactivated;
         [InsightSetHovered.eventName]: InsightSetHovered;
+        [InsightSetZoom.eventName]: InsightSetZoom;
         [InsightProvideOverlays.eventName]: InsightProvideOverlays;
         [InsightProvideRelatedEvents.eventName]: InsightProvideRelatedEvents;
     }
 }
 export declare class SidebarInsight extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     set data(data: InsightDetails);
     connectedCallback(): void;
 }

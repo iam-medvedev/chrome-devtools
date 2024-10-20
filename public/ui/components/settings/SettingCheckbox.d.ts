@@ -10,7 +10,6 @@ export interface SettingCheckboxData {
  */
 export declare class SettingCheckbox extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: SettingCheckboxData);
     icon(): LitHtml.TemplateResult | undefined;

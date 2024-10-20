@@ -74,7 +74,7 @@ export async function logChange(loggable) {
     const loggingState = getLoggingState(loggable);
     assertNotNullOrUndefined(loggingState);
     const changeEvent = { veid: loggingState.veid };
-    const context = loggingState.lastInputEventType;
+    const context = loggingState.pendingChangeContext;
     if (context) {
         changeEvent.context = await contextAsNumber(context);
     }

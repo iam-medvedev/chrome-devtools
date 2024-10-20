@@ -9,7 +9,6 @@ export interface MarkdownViewData {
 }
 export declare class MarkdownView extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: MarkdownViewData);
 }

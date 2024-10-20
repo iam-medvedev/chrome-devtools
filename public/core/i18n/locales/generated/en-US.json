@@ -6479,9 +6479,6 @@
   "panels/explain/components/ConsoleInsight.ts | updateSettings": {
     "message": "Update Settings"
   },
-  "panels/explain/explain-meta.ts | ageRestricted": {
-    "message": "This feature is only available to users who are 18 years of age or older"
-  },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
     "message": "Understand console messages with AI"
   },
@@ -6501,7 +6498,7 @@
     "message": "This setting is managed by your administrator"
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
-    "message": "To use this feature, update your Language preference in DevTools Settings to English"
+    "message": "To use this feature, set your language preference to English in DevTools settings"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | followTheSteps": {
     "message": "Follow the steps above to ask a question"
@@ -6527,9 +6524,6 @@
   "panels/freestyler/components/FreestylerChatUi.ts | turnOnForStylesAndRequests": {
     "message": "Turn on {PH1} to get help with styles and network requests"
   },
-  "panels/freestyler/freestyler-meta.ts | ageRestricted": {
-    "message": "This feature is only available to users who are 18 years of age or older"
-  },
   "panels/freestyler/freestyler-meta.ts | aiAssistance": {
     "message": "AI assistance"
   },
@@ -6549,7 +6543,22 @@
     "message": "Show AI assistance"
   },
   "panels/freestyler/freestyler-meta.ts | wrongLocale": {
-    "message": "To use this feature, set your Language preference to English in DevTools Settings"
+    "message": "To use this feature, set your language preference to English in DevTools settings"
+  },
+  "panels/freestyler/FreestylerPanel.ts | chatCleared": {
+    "message": "Chat cleared"
+  },
+  "panels/freestyler/FreestylerPanel.ts | clearChat": {
+    "message": "Clear chat"
+  },
+  "panels/freestyler/FreestylerPanel.ts | help": {
+    "message": "Help"
+  },
+  "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
+    "message": "Send feedback"
+  },
+  "panels/freestyler/FreestylerPanel.ts | settings": {
+    "message": "Settings"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
@@ -10436,33 +10445,6 @@
   "panels/security/security-meta.ts | showSecurityAndPrivacy": {
     "message": "Show Security and Privacy"
   },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | mainOrigin": {
-    "message": "Main origin"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | mainOriginNonsecure": {
-    "message": "Main origin (non-secure)"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | mainOriginSecure": {
-    "message": "Main origin (secure)"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | nonsecureOrigins": {
-    "message": "Non-secure origins"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | overview": {
-    "message": "Overview"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | reloadToViewDetails": {
-    "message": "Reload to view details"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | secureOrigins": {
-    "message": "Secure origins"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | security": {
-    "message": "Security"
-  },
-  "panels/security/SecurityAndPrivacyPanelSidebar.ts | unknownCanceled": {
-    "message": "Unknown / canceled"
-  },
   "panels/security/SecurityModel.ts | cipherWithMAC": {
     "message": "{PH1} with {PH2}"
   },
@@ -10763,6 +10745,39 @@
   "panels/security/SecurityPanel.ts | yourPageRequestedNonsecure": {
     "message": "Your page requested non-secure resources that were blocked."
   },
+  "panels/security/SecurityPanelSidebar.ts | cookieReport": {
+    "message": "Third-party cookies"
+  },
+  "panels/security/SecurityPanelSidebar.ts | mainOrigin": {
+    "message": "Main origin"
+  },
+  "panels/security/SecurityPanelSidebar.ts | mainOriginNonsecure": {
+    "message": "Main origin (non-secure)"
+  },
+  "panels/security/SecurityPanelSidebar.ts | mainOriginSecure": {
+    "message": "Main origin (secure)"
+  },
+  "panels/security/SecurityPanelSidebar.ts | nonsecureOrigins": {
+    "message": "Non-secure origins"
+  },
+  "panels/security/SecurityPanelSidebar.ts | overview": {
+    "message": "Overview"
+  },
+  "panels/security/SecurityPanelSidebar.ts | privacy": {
+    "message": "Privacy"
+  },
+  "panels/security/SecurityPanelSidebar.ts | reloadToViewDetails": {
+    "message": "Reload to view details"
+  },
+  "panels/security/SecurityPanelSidebar.ts | secureOrigins": {
+    "message": "Secure origins"
+  },
+  "panels/security/SecurityPanelSidebar.ts | security": {
+    "message": "Security"
+  },
+  "panels/security/SecurityPanelSidebar.ts | unknownCanceled": {
+    "message": "Unknown / canceled"
+  },
   "panels/sensors/LocationsSettingsTab.ts | addLocation": {
     "message": "Add location..."
   },
@@ -10823,6 +10838,12 @@
   "panels/sensors/sensors-meta.ts | accelerometer": {
     "message": "accelerometer"
   },
+  "panels/sensors/sensors-meta.ts | cpuPressure": {
+    "message": "CPU Pressure"
+  },
+  "panels/sensors/sensors-meta.ts | critical": {
+    "message": "Critical"
+  },
   "panels/sensors/sensors-meta.ts | devicebased": {
     "message": "Device-based"
   },
@@ -10831,6 +10852,9 @@
   },
   "panels/sensors/sensors-meta.ts | emulateIdleDetectorState": {
     "message": "Emulate Idle Detector state"
+  },
+  "panels/sensors/sensors-meta.ts | fair": {
+    "message": "Fair"
   },
   "panels/sensors/sensors-meta.ts | forceEnabled": {
     "message": "Force enabled"
@@ -10850,8 +10874,17 @@
   "panels/sensors/sensors-meta.ts | noIdleEmulation": {
     "message": "No idle emulation"
   },
+  "panels/sensors/sensors-meta.ts | nominal": {
+    "message": "Nominal"
+  },
+  "panels/sensors/sensors-meta.ts | noPressureEmulation": {
+    "message": "No override"
+  },
   "panels/sensors/sensors-meta.ts | sensors": {
     "message": "Sensors"
+  },
+  "panels/sensors/sensors-meta.ts | serious": {
+    "message": "Serious"
   },
   "panels/sensors/sensors-meta.ts | showLocations": {
     "message": "Show Locations"
@@ -10906,6 +10939,9 @@
   },
   "panels/sensors/SensorsView.ts | forcesSelectedIdleStateEmulation": {
     "message": "Forces selected idle state emulation"
+  },
+  "panels/sensors/SensorsView.ts | forcesSelectedPressureStateEmulation": {
+    "message": "Forces selected pressure state emulation"
   },
   "panels/sensors/SensorsView.ts | forcesTouchInsteadOfClick": {
     "message": "Forces touch instead of click"
@@ -10979,6 +11015,9 @@
   "panels/settings/AISettingsTab.ts | adminSettings": {
     "message": "Depending on your Google account management and/or region, Google may refrain from data collection. Depending on your organization’s settings, features available to managed users may vary."
   },
+  "panels/settings/AISettingsTab.ts | ageRestricted": {
+    "message": "This feature is only available to users who are 18 years of age or older"
+  },
   "panels/settings/AISettingsTab.ts | aiInnovations": {
     "message": "AI innovations"
   },
@@ -11026,6 +11065,12 @@
   },
   "panels/settings/AISettingsTab.ts | learnMore": {
     "message": "Learn more"
+  },
+  "panels/settings/AISettingsTab.ts | notLoggedIn": {
+    "message": "This feature is only available when you sign into Chrome with your Google account."
+  },
+  "panels/settings/AISettingsTab.ts | offline": {
+    "message": "This feature is only available with an active internet connection."
   },
   "panels/settings/AISettingsTab.ts | privacyNotice": {
     "message": "Google Privacy Policy"
@@ -12969,7 +13014,7 @@
     "message": "Uncompressed download"
   },
   "panels/timeline/components/insights/FontDisplay.ts | description": {
-    "message": "Consider using a [font-display](https://developer.chrome.com/blog/font-display) of swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
+    "message": "Consider setting [font-display](https://developer.chrome.com/blog/font-display) to swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
   },
   "panels/timeline/components/insights/FontDisplay.ts | fontColumn": {
     "message": "Font"
@@ -13056,7 +13101,7 @@
     "message": "Duration"
   },
   "panels/timeline/components/insights/RenderBlocking.ts | renderBlockingRequest": {
-    "message": "Render-blocking request"
+    "message": "Request"
   },
   "panels/timeline/components/insights/RenderBlocking.ts | title": {
     "message": "Render blocking requests"
@@ -13065,7 +13110,7 @@
     "message": "Est savings: {PH1}"
   },
   "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavingsTimingAndBytes": {
-    "message": "Est savings: {PH1} && {PH2}"
+    "message": "Est savings: {PH1} & {PH2}"
   },
   "panels/timeline/components/insights/SidebarInsight.ts | viewDetails": {
     "message": "View details for {PH1}"
@@ -13167,10 +13212,7 @@
     "message": "Clear the current log"
   },
   "panels/timeline/components/LiveMetricsView.ts | collectionPeriod": {
-    "message": "Collection period:"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | considerRealUser": {
-    "message": "Consider real user environments"
+    "message": "Collection period: {PH1}"
   },
   "panels/timeline/components/LiveMetricsView.ts | dateRange": {
     "message": "{PH1} - {PH2}"
@@ -13235,20 +13277,20 @@
   "panels/timeline/components/LiveMetricsView.ts | mobile": {
     "message": "Mobile"
   },
-  "panels/timeline/components/LiveMetricsView.ts | mostUsersDesktop": {
-    "message": "{PH1} of users are on desktop."
-  },
-  "panels/timeline/components/LiveMetricsView.ts | mostUsersMobile": {
-    "message": "{PH1} of users are on mobile."
-  },
   "panels/timeline/components/LiveMetricsView.ts | needsDataOption": {
     "message": "{PH1} - No data"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | network": {
+    "message": "Network: {PH1}"
   },
   "panels/timeline/components/LiveMetricsView.ts | networkCacheExplanation": {
     "message": "Disabling the network cache will simulate a network experience similar to a first time visitor."
   },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | notEnoughData": {
+    "message": "Not enough data"
   },
   "panels/timeline/components/LiveMetricsView.ts | numShifts": {
     "message": "{shiftCount, plural,\n    =1 {{shiftCount} shift}\n    other {{shiftCount} shifts}\n  }"
@@ -13259,14 +13301,17 @@
   "panels/timeline/components/LiveMetricsView.ts | originOptionWithKey": {
     "message": "Origin: {PH1}"
   },
-  "panels/timeline/components/LiveMetricsView.ts | percentage": {
-    "message": "{PH1}%"
+  "panels/timeline/components/LiveMetricsView.ts | percentDevices": {
+    "message": "{PH1}% mobile, {PH2}% desktop"
   },
   "panels/timeline/components/LiveMetricsView.ts | presentationDelay": {
     "message": "Presentation delay"
   },
   "panels/timeline/components/LiveMetricsView.ts | processingDuration": {
     "message": "Processing duration"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | realUserEnvironments": {
+    "message": "Real user environments"
   },
   "panels/timeline/components/LiveMetricsView.ts | resourceLoadDelay": {
     "message": "Resource load delay"
@@ -13305,10 +13350,10 @@
     "message": "Time to first byte"
   },
   "panels/timeline/components/LiveMetricsView.ts | tryDisablingThrottling": {
-    "message": "The 75th percentile of real users experienced network latencies similar to a connection with no throttling."
+    "message": "75th percentile is too fast to simulate with throttling"
   },
   "panels/timeline/components/LiveMetricsView.ts | tryUsingThrottling": {
-    "message": "The 75th percentile of real users experienced network latencies similar to {PH1} throttling."
+    "message": "75th percentile is similar to {PH1} throttling"
   },
   "panels/timeline/components/LiveMetricsView.ts | urlOption": {
     "message": "URL"
@@ -13451,14 +13496,11 @@
   "panels/timeline/components/MetricCompareStrings.ts | poorWorseCompare": {
     "message": "Your local {PH1} value of {PH2} is poor, but is significantly worse than your users’ experience."
   },
-  "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
-    "message": "Content downloading"
+  "panels/timeline/components/NetworkRequestDetails.ts | blocking": {
+    "message": "Blocking"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | decodedBody": {
     "message": "Decoded body"
-  },
-  "panels/timeline/components/NetworkRequestDetails.ts | duration": {
-    "message": "Duration"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | encodedData": {
     "message": "Encoded data"
@@ -13478,8 +13520,8 @@
   "panels/timeline/components/NetworkRequestDetails.ts | FromServiceWorker": {
     "message": " (from service worker)"
   },
-  "panels/timeline/components/NetworkRequestDetails.ts | initialPriority": {
-    "message": "Initial priority"
+  "panels/timeline/components/NetworkRequestDetails.ts | inBodyParserBlocking": {
+    "message": "In-body parser blocking"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | initiatedBy": {
     "message": "Initiated by"
@@ -13499,23 +13541,20 @@
   "panels/timeline/components/NetworkRequestDetails.ts | priority": {
     "message": "Priority"
   },
-  "panels/timeline/components/NetworkRequestDetails.ts | queuingAndConnecting": {
-    "message": "Queuing and connecting"
+  "panels/timeline/components/NetworkRequestDetails.ts | renderBlocking": {
+    "message": "Render blocking"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | requestMethod": {
     "message": "Request method"
-  },
-  "panels/timeline/components/NetworkRequestDetails.ts | requestSentAndWaiting": {
-    "message": "Request sent and waiting"
-  },
-  "panels/timeline/components/NetworkRequestDetails.ts | waitingOnMainThread": {
-    "message": "Waiting on main thread"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | yes": {
     "message": "Yes"
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | contentDownloading": {
     "message": "Content downloading"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | duration": {
+    "message": "Duration"
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | priority": {
     "message": "Priority"
@@ -13977,13 +14016,16 @@
     "message": "Frame selected"
   },
   "panels/timeline/TimelinePanel.ts | hideSidebar": {
-    "message": "Hide sole sidebar"
+    "message": "Hide sidebar"
   },
   "panels/timeline/TimelinePanel.ts | initializingProfiler": {
     "message": "Initializing profiler…"
   },
   "panels/timeline/TimelinePanel.ts | JavascriptSamplingIsDisabled": {
     "message": "- JavaScript sampling is disabled"
+  },
+  "panels/timeline/TimelinePanel.ts | learnMore": {
+    "message": "Learn more"
   },
   "panels/timeline/TimelinePanel.ts | loadingProfile": {
     "message": "Loading profile…"
@@ -15502,6 +15544,9 @@
   },
   "ui/legacy/components/source_frame/SourceFrame.ts | allowPasting": {
     "message": "allow pasting"
+  },
+  "ui/legacy/components/source_frame/SourceFrame.ts | binaryContentError": {
+    "message": "Editor can't show binary data. Use the \"Response\" tab in the \"Network\" panel to inspect this resource."
   },
   "ui/legacy/components/source_frame/SourceFrame.ts | bytecodePositionXs": {
     "message": "Bytecode position 0x{PH1}"

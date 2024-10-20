@@ -116,6 +116,10 @@ const UIStrings = {
      */
     forcesSelectedIdleStateEmulation: 'Forces selected idle state emulation',
     /**
+     *@description Description of the Emulate CPU Pressure State select in Sensors tab
+     */
+    forcesSelectedPressureStateEmulation: 'Forces selected pressure state emulation',
+    /**
      *@description Title for a group of configuration options in a drop-down input.
      */
     presets: 'Presets',
@@ -214,6 +218,8 @@ export class SensorsView extends UI.Widget.VBox {
         this.appendIdleEmulator();
         this.createPanelSeparator();
         this.createHardwareConcurrencySection();
+        this.createPanelSeparator();
+        this.createPressureSection();
         this.createPanelSeparator();
     }
     wasShown() {
@@ -444,6 +450,13 @@ export class SensorsView extends UI.Widget.VBox {
         this.enableOrientationFields(true);
         this.setBoxOrientation(this.deviceOrientation, false);
     }
+    createPressureSection() {
+        const container = this.contentElement.createChild('div', 'pressure-section');
+        const control = UI.SettingsUI.createControlForSetting(Common.Settings.Settings.instance().moduleSetting('emulation.cpu-pressure'), i18nString(UIStrings.forcesSelectedPressureStateEmulation));
+        if (control) {
+            container.appendChild(control);
+        }
+    }
     enableOrientationFields(disable) {
         if (disable) {
             this.deviceOrientationFieldset.disabled = true;
@@ -656,6 +669,13 @@ export class SensorsView extends UI.Widget.VBox {
         container.append(checkbox, div);
     }
 }
+export const PressureOptions = {
+    NoOverride: 'no-override',
+    Nominal: 'nominal',
+    Fair: 'fair',
+    Serious: 'serious',
+    Critical: 'critical',
+};
 export const NonPresetOptions = {
     NoOverride: 'noOverride',
     Custom: 'custom',
