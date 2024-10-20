@@ -4,6 +4,7 @@
 import * as Host from '../../core/host/host.js';
 export var ResponseType;
 (function (ResponseType) {
+    ResponseType["CONTEXT"] = "context";
     ResponseType["TITLE"] = "title";
     ResponseType["THOUGHT"] = "thought";
     ResponseType["ACTION"] = "action";
@@ -12,7 +13,11 @@ export var ResponseType;
     ResponseType["ERROR"] = "error";
     ResponseType["QUERYING"] = "querying";
 })(ResponseType || (ResponseType = {}));
+const MAX_STEP = 10;
 export class AiAgent {
+    static validTemperature(temperature) {
+        return typeof temperature === 'number' && temperature >= 0 ? temperature : undefined;
+    }
     #sessionId = crypto.randomUUID();
     #aidaClient;
     #serverSideLoggingEnabled;
@@ -37,7 +42,39 @@ export class AiAgent {
     removeHistoryRun(id) {
         this.#chatHistory.delete(id);
     }
-    addToHistory({ id, query, output, }) {
+    addToHistory(options) {
+        const response = options.response;
+        if ('answer' in response) {
+            this.#storeHistoryEntries({
+                id: options.id,
+                query: options.query,
+                output: response.answer,
+            });
+            return;
+        }
+        const { title, thought, action, } = response;
+        if (thought) {
+            this.#storeHistoryEntries({
+                id: options.id,
+                query: options.query,
+                output: `THOUGHT: ${thought}
+TITLE: ${title}
+ACTION
+${action}
+STOP`,
+            });
+        }
+        else {
+            this.#storeHistoryEntries({
+                id: options.id,
+                query: options.query,
+                output: `ACTION
+${action}
+STOP`,
+            });
+        }
+    }
+    #storeHistoryEntries({ id, query, output, }) {
         const currentRunEntries = this.#chatHistory.get(id) ?? [];
         this.#chatHistory.set(id, [
             ...currentRunEntries,
@@ -98,8 +135,108 @@ export class AiAgent {
         };
         return request;
     }
-    static validTemperature(temperature) {
-        return typeof temperature === 'number' && temperature >= 0 ? temperature : undefined;
+    handleAction(_action, _rpcId) {
+        throw new Error('Unexpected action found');
+    }
+    async enhanceQuery(query) {
+        return query;
+    }
+    parseResponse(response) {
+        return {
+            answer: response,
+        };
+    }
+    #runId = 0;
+    async *run(query, options) {
+        yield* this.handleContextDetails(options.selected);
+        query = await this.enhanceQuery(query, options.selected);
+        const currentRunId = ++this.#runId;
+        for (let i = 0; i < MAX_STEP; i++) {
+            yield {
+                type: ResponseType.QUERYING,
+            };
+            let response;
+            let rpcId;
+            try {
+                const fetchResult = await this.aidaFetch(query, { signal: options.signal });
+                response = fetchResult.response;
+                rpcId = fetchResult.rpcId;
+            }
+            catch (err) {
+                debugLog('Error calling the AIDA API', err);
+                if (err instanceof Host.AidaClient.AidaAbortError) {
+                    this.removeHistoryRun(currentRunId);
+                    yield {
+                        type: ResponseType.ERROR,
+                        error: "abort" /* ErrorType.ABORT */,
+                        rpcId,
+                    };
+                    break;
+                }
+                yield {
+                    type: ResponseType.ERROR,
+                    error: "unknown" /* ErrorType.UNKNOWN */,
+                    rpcId,
+                };
+                break;
+            }
+            const parsedResponse = this.parseResponse(response);
+            this.addToHistory({
+                id: currentRunId,
+                query,
+                response: parsedResponse,
+            });
+            if ('answer' in parsedResponse) {
+                const { answer, suggestions, } = parsedResponse;
+                if (answer) {
+                    yield {
+                        type: ResponseType.ANSWER,
+                        text: answer,
+                        rpcId,
+                        suggestions,
+                    };
+                }
+                else {
+                    this.removeHistoryRun(currentRunId);
+                    yield {
+                        type: ResponseType.ERROR,
+                        error: "unknown" /* ErrorType.UNKNOWN */,
+                        rpcId,
+                    };
+                }
+                break;
+            }
+            const { title, thought, action, } = parsedResponse;
+            if (title) {
+                yield {
+                    type: ResponseType.TITLE,
+                    title,
+                    rpcId,
+                };
+            }
+            if (thought) {
+                yield {
+                    type: ResponseType.THOUGHT,
+                    thought,
+                    rpcId,
+                };
+            }
+            if (action) {
+                const result = yield* this.handleAction(action, rpcId);
+                yield result;
+                query = `OBSERVATION: ${result.output}`;
+            }
+            if (i === MAX_STEP - 1) {
+                yield {
+                    type: ResponseType.ERROR,
+                    error: "max-steps" /* ErrorType.MAX_STEPS */,
+                };
+                break;
+            }
+        }
+        if (isDebugMode()) {
+            window.dispatchEvent(new CustomEvent('freestylerdone'));
+        }
     }
 }
 export function isDebugMode() {

@@ -8,7 +8,6 @@ import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import colorMixSwatchStyles from './colorMixSwatch.css.js';
 const { html } = LitHtml;
 export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement) {
-    static litTagName = LitHtml.literal `devtools-color-mix-swatch`;
     shadow = this.attachShadow({ mode: 'open' });
     colorMixText = ''; // color-mix(in srgb, hotpink, white)
     firstColorText = ''; // hotpink

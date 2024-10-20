@@ -13,9 +13,10 @@ export declare class ExtensionStorage extends Common.ObjectWrapper.ObjectWrapper
     getItems(keys?: string[]): Promise<{
         [key: string]: unknown;
     }>;
-    setItem(key: string, value: string): Promise<void>;
+    setItem(key: string, value: unknown): Promise<void>;
     removeItem(key: string): Promise<void>;
     clear(): Promise<void>;
+    matchesTarget(target: SDK.Target.Target | undefined): boolean;
 }
 export declare class ExtensionStorageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     #private;

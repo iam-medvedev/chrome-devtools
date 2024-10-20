@@ -13,7 +13,6 @@ const { html } = LitHtml;
 // Use this component to render links to 'chrome://...'-URLs
 // (for which regular <x-link>s do not work).
 export class ChromeLink extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-chrome-link`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #href = '';

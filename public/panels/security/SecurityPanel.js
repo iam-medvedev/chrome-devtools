@@ -8,12 +8,14 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import lockIconStyles from './lockIcon.css.js';
 import mainViewStyles from './mainView.css.js';
+import { ShowOriginEvent } from './OriginTreeElement.js';
 import originViewStyles from './originView.css.js';
-import { SecurityAndPrivacyPanelSidebar } from './SecurityAndPrivacyPanelSidebar.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
+import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 const UIStrings = {
     /**
      *@description Summary div text content in Security Panel of the Security panel
@@ -488,7 +490,9 @@ export function createHighlightedUrl(url, securityState) {
     highlightedUrl.createChild('span').textContent = content;
     return highlightedUrl;
 }
-export class SecurityPanel extends UI.Panel.PanelWithSidebar {
+const { render, html } = LitHtml;
+export class SecurityPanel extends UI.Panel.Panel {
+    view;
     mainView;
     sidebar;
     lastResponseReceivedForLoaderId;
@@ -497,12 +501,41 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
     visibleView;
     eventListeners;
     securityModel;
-    constructor() {
+    splitWidget;
+    constructor(view = (input, output, target) => {
+        // clang-format off
+        render(html `
+    <devtools-split-widget
+    .options=${{ vertical: true, settingName: 'security' }}
+    ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, e => { output.splitWidget = e; })}>
+          <devtools-widget
+          slot="main"
+          .widgetClass=${SecurityMainView}
+          .widgetParams=${[input.panel]}
+          ${UI.Widget.widgetRef(SecurityMainView, e => { output.mainView = e; })}>
+        </devtools-widget>
+        <devtools-widget
+          slot="sidebar"
+          .widgetClass=${SecurityPanelSidebar}
+          ${UI.Widget.widgetRef(SecurityPanelSidebar, e => { output.sidebar = e; })}>
+        </devtools-widget>
+    </devtools-split-widget>`, target, { host: this });
+        // clang-format on
+    }) {
         super('security');
-        this.mainView = new SecurityMainView(this);
-        this.sidebar =
-            new SecurityAndPrivacyPanelSidebar(this.showOrigin.bind(this), this.setVisibleView.bind(this, this.mainView));
-        this.sidebar.show(this.panelSidebarElement());
+        this.view = view;
+        this.doUpdate();
+        this.sidebar.setMinimumSize(100, 25);
+        this.sidebar.element.classList.add('panel-sidebar');
+        this.sidebar.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
+        this.element.addEventListener(ShowOriginEvent.eventName, (event) => {
+            if (event.origin) {
+                this.showOrigin(event.origin);
+            }
+            else {
+                this.setVisibleView(this.mainView);
+            }
+        });
         this.lastResponseReceivedForLoaderId = new Map();
         this.origins = new Map();
         this.filterRequestCounts = new Map();
@@ -537,6 +570,9 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         }, { className: 'origin-button', jslogContext: 'security.view-certificate' });
         UI.ARIAUtils.markAsButton(certificateButton);
         return certificateButton;
+    }
+    doUpdate() {
+        this.view({ panel: this }, this, this.contentElement);
     }
     updateVisibleSecurityState(visibleSecurityState) {
         this.sidebar.securityOverviewElement.setSecurityState(visibleSecurityState.securityState);
@@ -577,7 +613,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         }
         this.visibleView = view;
         if (view) {
-            this.splitWidget().setMainWidget(view);
+            this.splitWidget.setMainWidget(view);
         }
     }
     onResponseReceived(event) {
@@ -734,8 +770,8 @@ export class SecurityMainView extends UI.Widget.VBox {
     summaryText;
     explanations;
     securityState;
-    constructor(panel) {
-        super(true);
+    constructor(panel, element) {
+        super(undefined, undefined, element);
         this.element.setAttribute('jslog', `${VisualLogging.pane('security.main-view')}`);
         this.setMinimumSize(200, 100);
         this.contentElement.classList.add('security-main-view');

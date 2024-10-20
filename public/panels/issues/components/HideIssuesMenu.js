@@ -17,7 +17,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/issues/components/HideIssuesMenu.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class HideIssuesMenu extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-hide-issues-menu`;
     #shadow = this.attachShadow({ mode: 'open' });
     #menuItemLabel = Common.UIString.LocalizedEmptyString;
     #menuItemAction = () => { };

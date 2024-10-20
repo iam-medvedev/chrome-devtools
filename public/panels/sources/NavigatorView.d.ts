@@ -127,9 +127,11 @@ export declare class NavigatorSourceTreeElement extends UI.TreeOutline.TreeEleme
     readonly node: NavigatorUISourceCodeTreeNode;
     private readonly navigatorView;
     uiSourceCodeInternal: Workspace.UISourceCode.UISourceCode;
+    private aiButtonContainer?;
     constructor(navigatorView: NavigatorView, uiSourceCode: Workspace.UISourceCode.UISourceCode, title: string, node: NavigatorUISourceCodeTreeNode);
     updateIcon(): void;
     updateAccessibleName(): void;
+    private createAiButton;
     get uiSourceCode(): Workspace.UISourceCode.UISourceCode;
     onattach(): void;
     private shouldRenameOnMouseDown;

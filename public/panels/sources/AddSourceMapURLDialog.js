@@ -25,7 +25,7 @@ export class AddDebugInfoURLDialog extends UI.Widget.HBox {
     dialog;
     callback;
     constructor(label, jslogContext, callback) {
-        super(/* isWebComponent */ true);
+        super(/* useShadowDom */ true);
         this.contentElement.createChild('label').textContent = label;
         this.input = UI.UIUtils.createInput('add-source-map', 'text', 'url');
         this.input.addEventListener('keydown', this.onKeyDown.bind(this), false);

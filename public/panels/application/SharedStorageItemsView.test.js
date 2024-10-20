@@ -4,6 +4,7 @@
 import { dispatchClickEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, raf, } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { getCellElementFromNodeAndColumnId, selectNodeByKey } from '../../testing/StorageItemsViewHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
@@ -83,20 +84,6 @@ class SharedStorageItemsListener {
             await this.#dispatcher.once("ItemEdited" /* View.SharedStorageItemsDispatcher.Events.ITEM_EDITED */);
         }
     }
-}
-function selectNodeByKey(dataGrid, key) {
-    for (const node of dataGrid.rootNode().children) {
-        if (node?.data?.key === key) {
-            node.select();
-            return node;
-        }
-    }
-    return null;
-}
-function getCellElementFromNodeAndColumnId(dataGrid, node, columnId) {
-    const column = dataGrid.columns[columnId];
-    const cellIndex = dataGrid.visibleColumnsArray.indexOf(column);
-    return node.element()?.children[cellIndex] || null;
 }
 describeWithMockConnection('SharedStorageItemsView', function () {
     let target;

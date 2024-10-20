@@ -11,7 +11,6 @@ export declare class ClickEvent extends Event {
     constructor();
 }
 export declare class ColorSwatch extends HTMLElement {
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     private readonly shadow;
     private tooltip;
     private color;

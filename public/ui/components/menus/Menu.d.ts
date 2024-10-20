@@ -46,7 +46,6 @@ export interface MenuData {
 }
 export declare class Menu extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     get origin(): Dialogs.Dialog.DialogOrigin;
     set origin(origin: Dialogs.Dialog.DialogOrigin);
     get open(): boolean;
@@ -67,7 +66,6 @@ export declare class Menu extends HTMLElement {
 }
 export declare class MenuItem extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     get preventMenuCloseOnSelection(): boolean;
     set preventMenuCloseOnSelection(preventMenuCloseOnSelection: boolean);
@@ -78,7 +76,6 @@ export declare class MenuItem extends HTMLElement {
 }
 export declare class MenuGroup extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     get name(): string | null;
     set name(name: string | null);

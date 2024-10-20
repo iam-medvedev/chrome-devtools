@@ -173,6 +173,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'dom-word-wrap', true),
         createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.touch', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.idle-detection', '', "enum" /* Common.Settings.SettingType.ENUM */),
+        createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.cpu-pressure', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-line-labels', 'none', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'extend-grid-lines', true),
         createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-areas', true),

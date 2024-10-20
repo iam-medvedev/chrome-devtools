@@ -34,7 +34,6 @@ export const extractShortPath = (path) => {
     return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
 };
 export class RequestLinkIcon extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-request-link-icon`;
     #shadow = this.attachShadow({ mode: 'open' });
     #linkToPreflight;
     // The value `null` indicates that the request is not available,

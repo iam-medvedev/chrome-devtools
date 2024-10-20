@@ -328,6 +328,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     lineNumber: range.startLine,
                     columnNumber: range.startColumn,
                     linkText: i18nString(UIStrings.lineNumber, { PH1: range.startLine + 1, PH2: range.startColumn + 1 }),
+                    title: `${styleSheetHeader.id} line ${range.startLine + 1}:${range.startColumn + 1}`,
                 };
             });
             return linkData;
@@ -385,12 +386,8 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                             }
                             return html `
               ${locations.map((location, itemIndex) => {
-                                if (itemIndex !== locations.length - 1) {
-                                    // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
-                                    return html `<devtools-linkifier .data=${location}></devtools-linkifier>
-                    <a>, </a>`;
-                                }
-                                return html `<devtools-linkifier .data=${location}></devtools-linkifier>`;
+                                const divider = itemIndex !== locations.length - 1 ? ', ' : '';
+                                return html `<devtools-linkifier .data=${location}></devtools-linkifier>${divider}`;
                             })}
               `;
                         },

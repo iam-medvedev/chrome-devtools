@@ -6,7 +6,6 @@ export interface AdornerData {
 }
 export declare class Adorner extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     name: string;
     set data(data: AdornerData);
     connectedCallback(): void;

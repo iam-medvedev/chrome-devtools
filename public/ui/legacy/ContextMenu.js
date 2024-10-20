@@ -37,6 +37,7 @@ import { deepElementFromEvent } from './UIUtils.js';
 export class Item {
     typeInternal;
     label;
+    previewFeature;
     disabled;
     checked;
     contextMenu;
@@ -45,9 +46,10 @@ export class Item {
     shortcut;
     #tooltip;
     jslogContext;
-    constructor(contextMenu, type, label, disabled, checked, tooltip, jslogContext) {
+    constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, tooltip, jslogContext) {
         this.typeInternal = type;
         this.label = label;
+        this.previewFeature = Boolean(isPreviewFeature);
         this.disabled = disabled;
         this.checked = checked;
         this.contextMenu = contextMenu;
@@ -67,6 +69,9 @@ export class Item {
     type() {
         return this.typeInternal;
     }
+    isPreviewFeature() {
+        return this.previewFeature;
+    }
     isEnabled() {
         return !this.disabled;
     }
@@ -80,6 +85,7 @@ export class Item {
                     type: 'item',
                     id: this.idInternal,
                     label: this.label,
+                    isExperimentalFeature: this.previewFeature,
                     enabled: !this.disabled,
                     checked: undefined,
                     subItems: undefined,
@@ -135,7 +141,7 @@ export class Section {
         this.items = [];
     }
     appendItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'item', label, options?.disabled, undefined, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'item', label, options?.isPreviewFeature, options?.disabled, undefined, options?.tooltip, options?.jslogContext);
         if (options?.additionalElement) {
             item.customElement = options?.additionalElement;
         }
@@ -146,7 +152,7 @@ export class Section {
         return item;
     }
     appendCustomItem(element, jslogContext) {
-        const item = new Item(this.contextMenu, 'item', undefined, undefined, undefined, undefined, jslogContext);
+        const item = new Item(this.contextMenu, 'item', undefined, undefined, undefined, undefined, undefined, jslogContext);
         item.customElement = element;
         this.items.push(item);
         return item;
@@ -180,7 +186,7 @@ export class Section {
         return item;
     }
     appendCheckboxItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'checkbox', label, options?.disabled, options?.checked, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'checkbox', label, undefined, options?.disabled, options?.checked, options?.tooltip, options?.jslogContext);
         this.items.push(item);
         if (this.contextMenu) {
             this.contextMenu.setHandler(item.id(), handler);
@@ -195,7 +201,7 @@ export class SubMenu extends Item {
     sections;
     sectionList;
     constructor(contextMenu, label, disabled, jslogContext) {
-        super(contextMenu, 'subMenu', label, disabled, undefined, undefined, jslogContext);
+        super(contextMenu, 'subMenu', label, undefined, disabled, undefined, undefined, jslogContext);
         this.sections = new Map();
         this.sectionList = [];
     }
@@ -256,6 +262,7 @@ export class SubMenu extends Item {
         const result = {
             type: 'subMenu',
             label: this.label,
+            isExperimentalFeature: this.previewFeature,
             enabled: !this.disabled,
             subItems: [],
             id: undefined,

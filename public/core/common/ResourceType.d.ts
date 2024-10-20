@@ -32,9 +32,10 @@ export declare class ResourceType {
     canonicalMimeType(): string;
 }
 export declare class ResourceCategory {
+    readonly name: string;
     title: () => Platform.UIString.LocalizedString;
     shortTitle: () => Platform.UIString.LocalizedString;
-    constructor(title: () => Platform.UIString.LocalizedString, shortTitle: () => Platform.UIString.LocalizedString);
+    constructor(name: string, title: () => Platform.UIString.LocalizedString, shortTitle: () => Platform.UIString.LocalizedString);
     static categoryByTitle(title: string): ResourceCategory | null;
 }
 export declare const resourceCategories: {

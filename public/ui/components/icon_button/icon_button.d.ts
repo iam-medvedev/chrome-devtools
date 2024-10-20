@@ -1,3 +1,4 @@
+import * as FileSourceIcon from './FileSourceIcon.js';
 import * as Icon from './Icon.js';
 import * as IconButton from './IconButton.js';
-export { Icon, IconButton, };
+export { FileSourceIcon, Icon, IconButton, };

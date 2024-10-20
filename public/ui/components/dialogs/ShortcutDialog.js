@@ -6,7 +6,6 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { Dialog as DialogElement, } from './Dialog.js';
 import shortcutDialogStyles from './shortcutDialog.css.js';
 const { html } = LitHtml;
 const UIStrings = {
@@ -32,7 +31,6 @@ export class ShowDialog extends Event {
     }
 }
 export class ShortcutDialog extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-shortcut-dialog`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #dialog = null;
@@ -84,7 +82,7 @@ export class ShortcutDialog extends HTMLElement {
             title: i18nString(UIStrings.showShortcutTitle),
         }}
       ></devtools-button>
-      <${DialogElement.litTagName}
+      <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
         .showConnector=${true}
         .origin=${() => {
@@ -127,7 +125,7 @@ export class ShortcutDialog extends HTMLElement {
                 `)}
               </li>`)}
         </ul>
-      </${DialogElement.litTagName}>
+      </devtools-dialog>
       `, this.#shadow, { host: this });
         // clang-format on
         if (this.#openOnRender) {

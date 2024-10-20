@@ -14,7 +14,6 @@ const { html } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const deployMenuArrow = new URL('../../../Images/triangle-down.svg', import.meta.url).toString();
 export class SelectMenu extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-select-menu`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #button = null;
@@ -210,7 +209,6 @@ export class SelectMenu extends HTMLElement {
     }
 }
 export class SelectMenuButton extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-select-menu-button`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #showButton = null;

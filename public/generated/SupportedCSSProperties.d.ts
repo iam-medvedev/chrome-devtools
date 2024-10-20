@@ -860,6 +860,9 @@ export const generatedPropertyValues: {
     "vertical-align": {
         values: string[];
     };
+    "view-transition-capture-mode": {
+        values: string[];
+    };
     "view-transition-class": {
         values: string[];
     };

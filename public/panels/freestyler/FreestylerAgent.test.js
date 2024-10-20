@@ -27,61 +27,64 @@ describeWithEnvironment('FreestylerAgent', () => {
         };
     }
     describe('parseResponse', () => {
+        const agent = new FreestylerAgent({
+            aidaClient: {},
+        });
         it('parses a thought', async () => {
             const payload = 'some response';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`THOUGHT: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`   THOUGHT: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`   THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`Something\n   THOUGHT: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`Something\n   THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
         });
         it('parses a answer', async () => {
             const payload = 'some response';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`   ANSWER: ${payload}`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`Something\n   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`Something\n   ANSWER: ${payload}`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
         });
         it('parses a multiline answer', async () => {
             const payload = `a
 b
 c`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`   ANSWER: ${payload}`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`Something\n   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`Something\n   ANSWER: ${payload}`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
+            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
+            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
                 answer: payload,
-                suggestions: [],
+                suggestions: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
                 action: 'action',
                 title: undefined,
                 thought: undefined,
@@ -91,22 +94,22 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}\nSTOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n\n${payload}\n\nSTOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\n${payload}\n\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n\n${payload}\n\nANSWER: answer`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\n${payload}\n\nANSWER: answer`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -117,7 +120,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -126,7 +129,7 @@ c`;
         it('parses a thought and title', async () => {
             const payload = 'some response';
             const title = 'this is the title';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`THOUGHT: ${payload}\nTITLE: ${title}`), {
+            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${payload}\nTITLE: ${title}`), {
                 thought: payload,
                 title,
             });
@@ -135,7 +138,7 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n\`\`\`\n${payload}\n\`\`\`\nSTOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\`\`\`\n${payload}\n\`\`\`\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -145,7 +148,7 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n\`\`\`\`\`\njs\n${payload}\n\`\`\`\`\`\nSTOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\`\`\`\`\`\njs\n${payload}\n\`\`\`\`\`\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -156,7 +159,7 @@ c`;
   someKey: "value",
 }`;
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`THOUGHT:${thoughtPayload}\nACTION\n${actionPayload}\nSTOP`), {
+            assert.deepStrictEqual(agent.parseResponse(`THOUGHT:${thoughtPayload}\nACTION\n${actionPayload}\nSTOP`), {
                 action: actionPayload,
                 title: undefined,
                 thought: thoughtPayload,
@@ -165,16 +168,16 @@ c`;
         it('parses a thought and an answer', async () => {
             const answerPayload = 'answer';
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`THOUGHT:${thoughtPayload}\nANSWER:${answerPayload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`THOUGHT:${thoughtPayload}\nANSWER:${answerPayload}`), {
                 answer: answerPayload,
-                suggestions: [],
+                suggestions: undefined,
             });
         });
         it('parses an answer and suggestions', async () => {
             const answerPayload = 'answer';
             const suggestions = ['suggestion'];
             const suggestionsText = JSON.stringify(suggestions);
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER:${answerPayload}\nSUGGESTIONS: ${suggestionsText}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ANSWER:${answerPayload}\nSUGGESTIONS: ${suggestionsText}`), {
                 answer: answerPayload,
                 suggestions,
             });
@@ -186,7 +189,7 @@ c`;
   someKey: "value",
 }`;
             const title = 'title';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`THOUGHT: ${thoughtPayload}\nTITLE: ${title}\nACTION\n${actionPayload}\nSTOP\nANSWER:${answerPayload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${thoughtPayload}\nTITLE: ${title}\nACTION\n${actionPayload}\nSTOP\nANSWER:${answerPayload}`), {
                 thought: thoughtPayload,
                 action: actionPayload,
                 title,
@@ -199,7 +202,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
                 action: payload,
                 thought: undefined,
                 title: undefined,
@@ -210,7 +213,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
                 action: payload,
                 thought: undefined,
                 title: undefined,
@@ -222,27 +225,27 @@ c`;
           styles
         };`;
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
+            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
                 action: payload,
                 thought: thoughtPayload,
                 title: undefined,
             });
         });
         it('parses a response as an answer', async () => {
-            assert.deepStrictEqual(FreestylerAgent.parseResponse('This is also an answer'), {
+            assert.deepStrictEqual(agent.parseResponse('This is also an answer'), {
                 answer: 'This is also an answer',
-                suggestions: [],
+                suggestions: undefined,
             });
         });
         it('parses a response with no instruction tags as an answer and correctly parses suggestions', async () => {
-            assert.deepStrictEqual(FreestylerAgent.parseResponse('This is also an answer\nSUGGESTIONS: [\"suggestion\"]'), {
+            assert.deepStrictEqual(agent.parseResponse('This is also an answer\nSUGGESTIONS: [\"suggestion\"]'), {
                 answer: 'This is also an answer',
                 suggestions: ['suggestion'],
             });
         });
         it('parses multi line thoughts', () => {
             const thoughtText = 'first line\nsecond line';
-            assert.deepStrictEqual(FreestylerAgent.parseResponse(`THOUGHT: ${thoughtText}`), {
+            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${thoughtText}`), {
                 thought: thoughtText,
                 title: undefined,
             });
@@ -444,7 +447,7 @@ c`;
                     execJs,
                 });
                 promise.resolve(true);
-                await Array.fromAsync(agent.run('test', { selectedElement: element }));
+                await Array.fromAsync(agent.run('test', { selected: element }));
                 sinon.assert.match(execJs.getCall(0).args[1], sinon.match({ throwOnSideEffect: true }));
             });
             it('calls execJs with allowing side effects when confirmSideEffect resolves to true', async () => {
@@ -480,7 +483,7 @@ c`;
                     execJs,
                 });
                 promise.resolve(true);
-                await Array.fromAsync(agent.run('test', { selectedElement: element }));
+                await Array.fromAsync(agent.run('test', { selected: element }));
                 assert.strictEqual(execJs.getCalls().length, 2);
                 sinon.assert.match(execJs.getCall(1).args[1], sinon.match({ throwOnSideEffect: false }));
             });
@@ -516,7 +519,7 @@ c`;
                     execJs,
                 });
                 promise.resolve(false);
-                const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: element }));
                 const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
                 assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
                 assert.strictEqual(execJs.getCalls().length, 1);
@@ -550,7 +553,7 @@ c`;
                     createExtensionScope,
                     execJs,
                 });
-                const result = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+                const result = await Array.fromAsync(agent.run('test', { selected: element }));
                 const actionSteps = result.filter(step => {
                     return step.type === Freestyler.ResponseType.ACTION;
                 });
@@ -572,15 +575,12 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs,
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.TITLE,
+                    type: Freestyler.ResponseType.CONTEXT,
                     title: 'Analyzing the prompt',
-                },
-                {
-                    type: Freestyler.ResponseType.THOUGHT,
-                    contextDetails: [
+                    details: [
                         {
                             text: '* Its selector is `undefined`',
                             title: 'Data used',
@@ -593,8 +593,8 @@ c`;
                 {
                     type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the answer',
+                    suggestions: undefined,
                     rpcId: undefined,
-                    suggestions: [],
                 },
             ]);
             sinon.assert.notCalled(execJs);
@@ -623,15 +623,12 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs: sinon.spy(),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.TITLE,
+                    type: Freestyler.ResponseType.CONTEXT,
                     title: 'Analyzing the prompt',
-                },
-                {
-                    type: Freestyler.ResponseType.THOUGHT,
-                    contextDetails: [
+                    details: [
                         {
                             text: '* Its selector is `undefined`',
                             title: 'Data used',
@@ -644,8 +641,8 @@ c`;
                 {
                     type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the answer',
+                    suggestions: undefined,
                     rpcId: 123,
-                    suggestions: [],
                 },
             ]);
         });
@@ -667,15 +664,12 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs: sinon.spy(),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.TITLE,
+                    type: Freestyler.ResponseType.CONTEXT,
                     title: 'Analyzing the prompt',
-                },
-                {
-                    type: Freestyler.ResponseType.THOUGHT,
-                    contextDetails: [
+                    details: [
                         {
                             text: '* Its selector is `undefined`',
                             title: 'Data used',
@@ -710,15 +704,12 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs: sinon.spy(),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.TITLE,
+                    type: Freestyler.ResponseType.CONTEXT,
                     title: 'Analyzing the prompt',
-                },
-                {
-                    type: Freestyler.ResponseType.THOUGHT,
-                    contextDetails: [
+                    details: [
                         {
                             text: '* Its selector is `undefined`',
                             title: 'Data used',
@@ -731,8 +722,8 @@ c`;
                 {
                     type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the answer',
+                    suggestions: undefined,
                     rpcId: 123,
-                    suggestions: [],
                 },
             ]);
         });
@@ -749,15 +740,12 @@ c`;
                 aidaClient: mockAidaClient(generateNothing),
                 execJs,
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.TITLE,
+                    type: Freestyler.ResponseType.CONTEXT,
                     title: 'Analyzing the prompt',
-                },
-                {
-                    type: Freestyler.ResponseType.THOUGHT,
-                    contextDetails: [
+                    details: [
                         {
                             text: '* Its selector is `undefined`',
                             title: 'Data used',
@@ -807,15 +795,12 @@ ANSWER: this is the answer`,
                 createExtensionScope,
                 execJs,
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.TITLE,
+                    type: Freestyler.ResponseType.CONTEXT,
                     title: 'Analyzing the prompt',
-                },
-                {
-                    type: Freestyler.ResponseType.THOUGHT,
-                    contextDetails: [
+                    details: [
                         {
                             text: '* Its selector is `undefined`',
                             title: 'Data used',
@@ -843,8 +828,8 @@ ANSWER: this is the answer`,
                 {
                     type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the actual answer',
+                    suggestions: undefined,
                     rpcId: undefined,
-                    suggestions: [],
                 },
             ]);
             sinon.assert.calledOnce(execJs);
@@ -873,7 +858,7 @@ ANSWER: this is the answer`,
                 createExtensionScope,
                 execJs,
             });
-            await Array.fromAsync(agent.run('test', { selectedElement: element }));
+            await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
                     entity: 1,
@@ -938,7 +923,7 @@ ANSWER: this is the answer`,
             });
             const controller = new AbortController();
             controller.abort();
-            await Array.fromAsync(agent.run('test', { selectedElement: element, signal: controller.signal }));
+            await Array.fromAsync(agent.run('test', { selected: element, signal: controller.signal }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, []);
         });
     });
@@ -981,7 +966,7 @@ ANSWER: this is the answer`,
                     createExtensionScope,
                     execJs,
                 });
-                const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: element }));
                 const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution is currently disabled.');
                 assert.strictEqual(execJs.getCalls().length, 0);
@@ -998,7 +983,7 @@ ANSWER: this is the answer`,
                     createExtensionScope,
                     execJs,
                 });
-                const responses = await Array.fromAsync(agent.run('test', { selectedElement: element }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: element }));
                 const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution that modifies the page is currently disabled.');
                 assert.strictEqual(execJs.getCalls().length, 1);

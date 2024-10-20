@@ -46,7 +46,6 @@ export class BezierSwatch extends HTMLSpanElement {
     static constructorInternal = null;
 }
 export class CSSShadowSwatch extends HTMLElement {
-    static litTagName = LitHtml.literal `css-shadow-swatch`;
     #shadow = this.attachShadow({ mode: 'open' });
     #icon;
     #model;
@@ -57,7 +56,7 @@ export class CSSShadowSwatch extends HTMLElement {
             cssShadowSwatchStyles,
         ];
         LitHtml.render(html `<devtools-icon name="shadow" class="shadow-swatch-icon"></devtools-icon><slot></slot>`, this.#shadow, { host: this });
-        this.#icon = this.#shadow.querySelector(IconButton.Icon.Icon.litTagName.value);
+        this.#icon = this.#shadow.querySelector('devtools-icon');
     }
     model() {
         return this.#model;

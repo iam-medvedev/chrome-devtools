@@ -1,10 +1,12 @@
 import type * as Platform from '../../../core/platform/platform.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 type ResolvedCodeLocationData = {
     name: string | null;
     devtoolsLocation: Workspace.UISourceCode.UILocation | null;
+    script: SDK.Script.Script | null;
 };
 export declare class SourceMappingsUpdated extends Event {
     static readonly eventName = "sourcemappingsupdated";

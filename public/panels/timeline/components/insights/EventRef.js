@@ -17,7 +17,6 @@ export class EventReferenceClick extends Event {
     }
 }
 class EventRef extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-event-ref`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #text = null;

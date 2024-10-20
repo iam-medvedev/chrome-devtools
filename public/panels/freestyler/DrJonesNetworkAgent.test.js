@@ -4,9 +4,14 @@
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
-import { describeWithEnvironment, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
+import { getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
+import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import { DrJonesNetworkAgent, ResponseType } from './freestyler.js';
-describeWithEnvironment('DrJonesNetworkAgent', () => {
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
+describeWithMockConnection('DrJonesNetworkAgent', () => {
+    let networkPanel;
     function mockHostConfig(modelId, temperature) {
         getGetHostConfigStub({
             devToolsExplainThisResourceDogfood: {
@@ -15,6 +20,13 @@ describeWithEnvironment('DrJonesNetworkAgent', () => {
             },
         });
     }
+    beforeEach(async () => {
+        networkPanel = await createNetworkPanelForMockConnection();
+    });
+    afterEach(async () => {
+        await coordinator.done();
+        networkPanel.detach();
+    });
     describe('buildRequest', () => {
         beforeEach(() => {
             sinon.restore();
@@ -167,16 +179,12 @@ describeWithEnvironment('DrJonesNetworkAgent', () => {
             const agent = new DrJonesNetworkAgent({
                 aidaClient: mockAidaClient(generateAnswer),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selectedNetworkRequest }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: selectedNetworkRequest }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: ResponseType.TITLE,
+                    type: ResponseType.CONTEXT,
                     title: 'Inspecting network data',
-                },
-                {
-                    type: ResponseType.THOUGHT,
-                    thought: 'Data used to generate this response',
-                    contextDetails: [
+                    details: [
                         {
                             title: 'Request',
                             text: 'Request URL: https://www.example.com\n\nRequest Headers\nfoo1: bar1',
@@ -187,35 +195,24 @@ describeWithEnvironment('DrJonesNetworkAgent', () => {
                         },
                         {
                             title: 'Timing',
-                            text: `Request start time: 500
-Request end time: -1
-Receiving response headers start time: 1000
-Receiving response headers end time: 0
-Proxy negotiation start time: 0
-Proxy negotiation end time: 0
-DNS lookup start time: 0
-DNS lookup end time: 0
-TCP start time: 0
-TCP end time: 0
-SSL start time: 0
-SSL end time: 0
-Sending start: 800
-Sending end: 900
-`,
+                            text: 'Queued at (timestamp): 0 μs\nStarted at (timestamp): 8.3 min\nQueueing (duration): 8.3 min\nConnection start (stalled) (duration): 800.00 ms\nRequest sent (duration): 100.00 ms\nDuration (duration): 8.3 min',
                         },
                         {
                             title: 'Request Initiator Chain',
                             text: `- URL: https://www.initiator.com
 \t- URL: https://www.example.com
 \t\t- URL: https://www.example.com/1
-\t\t- URL: https://www.example.com/2
-`,
+\t\t- URL: https://www.example.com/2`,
                         },
                     ],
                 },
                 {
+                    type: ResponseType.QUERYING,
+                },
+                {
                     type: ResponseType.ANSWER,
                     text: 'This is the answer',
+                    suggestions: undefined,
                     rpcId: 123,
                 },
             ]);
@@ -233,28 +230,18 @@ foo3: bar3
 
 Response status: 200 \n
 Request Timing:
-Request start time: 500
-Request end time: -1
-Receiving response headers start time: 1000
-Receiving response headers end time: 0
-Proxy negotiation start time: 0
-Proxy negotiation end time: 0
-DNS lookup start time: 0
-DNS lookup end time: 0
-TCP start time: 0
-TCP end time: 0
-SSL start time: 0
-SSL end time: 0
-Sending start: 800
-Sending end: 900
-
+Queued at (timestamp): 0 μs
+Started at (timestamp): 8.3 min
+Queueing (duration): 8.3 min
+Connection start (stalled) (duration): 800.00 ms
+Request sent (duration): 100.00 ms
+Duration (duration): 8.3 min
 
 Request Initiator Chain:
 - URL: https://www.initiator.com
 \t- URL: https://www.example.com
 \t\t- URL: https://www.example.com/1
 \t\t- URL: https://www.example.com/2
-
 
 # User request
 

@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
+export type InteractionMap = Map<InteractionId, Interaction>;
 export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.Observer {
     #private;
     private constructor();
@@ -10,7 +11,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     get lcpValue(): LCPValue | undefined;
     get clsValue(): CLSValue | undefined;
     get inpValue(): INPValue | undefined;
-    get interactions(): Interaction[];
+    get interactions(): InteractionMap;
     get layoutShifts(): LayoutShift[];
     setStatusForTesting(status: StatusEvent): void;
     clearInteractions(): void;
@@ -23,6 +24,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
 export declare const enum Events {
     STATUS = "status"
 }
+export type InteractionId = `interaction-${number}-${number}`;
 export type MetricValue = Pick<Spec.MetricChangeEvent, 'value'>;
 export interface LCPValue extends MetricValue {
     phases: Spec.LCPPhases;
@@ -30,7 +32,7 @@ export interface LCPValue extends MetricValue {
 }
 export interface INPValue extends MetricValue {
     phases: Spec.INPPhases;
-    uniqueInteractionId: Spec.UniqueInteractionId;
+    interactionId: InteractionId;
 }
 export interface CLSValue extends MetricValue {
     clusterShiftIds: Spec.UniqueLayoutShiftId[];
@@ -43,16 +45,20 @@ export interface LayoutShift {
     }>;
 }
 export interface Interaction {
-    interactionType: Spec.InteractionEvent['interactionType'];
-    duration: Spec.InteractionEvent['duration'];
-    uniqueInteractionId: Spec.UniqueInteractionId;
+    interactionId: InteractionId;
+    interactionType: Spec.InteractionEntryEvent['interactionType'];
+    eventNames: string[];
+    duration: number;
+    startTime: number;
+    nextPaintTime: number;
+    phases: Spec.INPPhases;
     node?: SDK.DOMModel.DOMNode;
 }
 export interface StatusEvent {
     lcp?: LCPValue;
     cls?: CLSValue;
     inp?: INPValue;
-    interactions: Interaction[];
+    interactions: InteractionMap;
     layoutShifts: LayoutShift[];
 }
 type EventTypes = {

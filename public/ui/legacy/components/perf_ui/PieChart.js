@@ -19,7 +19,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // the correct initial size. This avoids a layout shift when the slices are
 // later populated.
 export class PieChart extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-perf-piechart`;
     shadow = this.attachShadow({ mode: 'open' });
     chartName = '';
     size = 0;

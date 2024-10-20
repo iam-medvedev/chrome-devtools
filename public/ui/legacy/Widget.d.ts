@@ -95,11 +95,11 @@ export declare class Widget {
     markAsExternallyManaged(): void;
 }
 export declare class VBox extends Widget {
-    constructor(isWebComponent?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
+    constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
     calculateConstraints(): Constraints;
 }
 export declare class HBox extends Widget {
-    constructor(isWebComponent?: boolean);
+    constructor(useShadowDom?: boolean);
     calculateConstraints(): Constraints;
 }
 export declare class VBoxWithResizeCallback extends VBox {

@@ -271,9 +271,9 @@ const UIStrings = {
      */
     showSidebar: 'Show sidebar',
     /**
-     * @description Tooltip for the the sole sidebar toggle in the Performance panel. Command to close the sidebar.
+     * @description Tooltip for the the sidebar toggle in the Performance panel. Command to close the sidebar.
      */
-    hideSidebar: 'Hide sole sidebar',
+    hideSidebar: 'Hide sidebar',
     /**
      * @description Screen reader announcement when the sidebar is shown in the Performance panel.
      */
@@ -295,6 +295,10 @@ const UIStrings = {
      * @example {Paint} PH1
      */
     eventSelected: 'Event {PH1} selected',
+    /**
+     *@description Text of a hyperlink to documentation.
+     */
+    learnMore: 'Learn more',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -522,6 +526,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             else {
                 this.#minimapComponent.clearBoundsHighlight();
             }
+        });
+        this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightSetZoom.eventName, event => {
+            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(event.bounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
         });
         this.onModeChanged();
         this.populateToolbar();
@@ -926,7 +933,11 @@ export class TimelinePanel extends UI.Panel.Panel {
         networkThrottlingToolbar.appendToolbarItem(this.networkThrottlingSelect);
         const thirdPartyToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
         thirdPartyToolbar.makeVertical();
-        thirdPartyToolbar.appendToolbarItem(this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString(UIStrings.showDataAddedByExtensions)));
+        const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString(UIStrings.showDataAddedByExtensions));
+        const localLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/performance/extension', i18nString(UIStrings.learnMore));
+        localLink.style.paddingLeft = '5px';
+        thirdPartyCheckbox.element.shadowRoot?.appendChild(localLink);
+        thirdPartyToolbar.appendToolbarItem(thirdPartyCheckbox);
         this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));
         this.updateSettingsPaneVisibility();
     }
@@ -1584,6 +1595,10 @@ export class TimelinePanel extends UI.Panel.Panel {
      * We also check that the experiments are enabled, else we reveal an entirely empty sidebar.
      */
     #showSidebarIfRequired() {
+        if (Root.Runtime.Runtime.queryParam('disable-auto-performance-sidebar-reveal') !== null) {
+            // Used in interaction tests & screenshot tests.
+            return;
+        }
         const needToRestore = this.#restoreSidebarVisibilityOnTraceLoad;
         const userHasSeenSidebar = this.#sideBar.userHasOpenedSidebarOnce();
         const experimentsEnabled = this.#panelSidebarEnabled();

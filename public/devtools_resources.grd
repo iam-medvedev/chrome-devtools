@@ -62,6 +62,7 @@
       <include file="Images/bundle.svg" name="IMAGES_BUNDLE_SVG" resource_path="Images/bundle.svg" type="BINDATA" compress="false"/>
       <include file="Images/button-magic.svg" name="IMAGES_BUTTON_MAGIC_SVG" resource_path="Images/button-magic.svg" type="BINDATA" compress="false"/>
       <include file="Images/calendar-today.svg" name="IMAGES_CALENDAR_TODAY_SVG" resource_path="Images/calendar-today.svg" type="BINDATA" compress="false"/>
+      <include file="Images/center-focus-weak.svg" name="IMAGES_CENTER_FOCUS_WEAK_SVG" resource_path="Images/center-focus-weak.svg" type="BINDATA" compress="false"/>
       <include file="Images/check-circle.svg" name="IMAGES_CHECK_CIRCLE_SVG" resource_path="Images/check-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/check-double.svg" name="IMAGES_CHECK_DOUBLE_SVG" resource_path="Images/check-double.svg" type="BINDATA" compress="false"/>
       <include file="Images/checker.svg" name="IMAGES_CHECKER_SVG" resource_path="Images/checker.svg" type="BINDATA" compress="false"/>
@@ -663,6 +664,7 @@
       <include file="third_party/diff/diff.js" name="THIRD_PARTY_DIFF_DIFF_JS" resource_path="third_party/diff/diff.js" type="BINDATA" compress="false"/>
       <include file="third_party/i18n/i18n.js" name="THIRD_PARTY_I18N_I18N_JS" resource_path="third_party/i18n/i18n.js" type="BINDATA" compress="false"/>
       <include file="third_party/intl-messageformat/intl-messageformat.js" name="THIRD_PARTY_INTL_MESSAGEFORMAT_INTL_MESSAGEFORMAT_JS" resource_path="third_party/intl-messageformat/intl-messageformat.js" type="BINDATA" compress="false"/>
+      <include file="third_party/json5/json5.js" name="THIRD_PARTY_JSON5_JSON5_JS" resource_path="third_party/json5/json5.js" type="BINDATA" compress="false"/>
       <include file="third_party/lighthouse/lighthouse-dt-bundle.js" name="THIRD_PARTY_LIGHTHOUSE_LIGHTHOUSE_DT_BUNDLE_JS" resource_path="third_party/lighthouse/lighthouse-dt-bundle.js" type="BINDATA" compress="false"/>
       <include file="third_party/lighthouse/report/report.js" name="THIRD_PARTY_LIGHTHOUSE_REPORT_REPORT_JS" resource_path="third_party/lighthouse/report/report.js" type="BINDATA" compress="false"/>
       <include file="third_party/lit/lit.js" name="THIRD_PARTY_LIT_LIT_JS" resource_path="third_party/lit/lit.js" type="BINDATA" compress="false"/>
@@ -1655,10 +1657,11 @@
       <include file="panels/search/SearchView.js" name="PANELS_SEARCH_SEARCHVIEW_JS" resource_path="panels/search/SearchView.js" type="BINDATA" compress="false"/>
       <include file="panels/search/searchResultsPane.css.js" name="PANELS_SEARCH_SEARCHRESULTSPANE_CSS_JS" resource_path="panels/search/searchResultsPane.css.js" type="BINDATA" compress="false"/>
       <include file="panels/search/searchView.css.js" name="PANELS_SEARCH_SEARCHVIEW_CSS_JS" resource_path="panels/search/searchView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/security/CookieReportTreeElement.js" name="PANELS_SECURITY_COOKIEREPORTTREEELEMENT_JS" resource_path="panels/security/CookieReportTreeElement.js" type="BINDATA" compress="false"/>
       <include file="panels/security/OriginTreeElement.js" name="PANELS_SECURITY_ORIGINTREEELEMENT_JS" resource_path="panels/security/OriginTreeElement.js" type="BINDATA" compress="false"/>
-      <include file="panels/security/SecurityAndPrivacyPanelSidebar.js" name="PANELS_SECURITY_SECURITYANDPRIVACYPANELSIDEBAR_JS" resource_path="panels/security/SecurityAndPrivacyPanelSidebar.js" type="BINDATA" compress="false"/>
       <include file="panels/security/SecurityModel.js" name="PANELS_SECURITY_SECURITYMODEL_JS" resource_path="panels/security/SecurityModel.js" type="BINDATA" compress="false"/>
       <include file="panels/security/SecurityPanel.js" name="PANELS_SECURITY_SECURITYPANEL_JS" resource_path="panels/security/SecurityPanel.js" type="BINDATA" compress="false"/>
+      <include file="panels/security/SecurityPanelSidebar.js" name="PANELS_SECURITY_SECURITYPANELSIDEBAR_JS" resource_path="panels/security/SecurityPanelSidebar.js" type="BINDATA" compress="false"/>
       <include file="panels/security/SecurityPanelSidebarTreeElement.js" name="PANELS_SECURITY_SECURITYPANELSIDEBARTREEELEMENT_JS" resource_path="panels/security/SecurityPanelSidebarTreeElement.js" type="BINDATA" compress="false"/>
       <include file="panels/security/lockIcon.css.js" name="PANELS_SECURITY_LOCKICON_CSS_JS" resource_path="panels/security/lockIcon.css.js" type="BINDATA" compress="false"/>
       <include file="panels/security/mainView.css.js" name="PANELS_SECURITY_MAINVIEW_CSS_JS" resource_path="panels/security/mainView.css.js" type="BINDATA" compress="false"/>
@@ -1898,6 +1901,8 @@
       <include file="third_party/i18n/i18n-impl.js" name="THIRD_PARTY_I18N_I18N_IMPL_JS" resource_path="third_party/i18n/i18n-impl.js" type="BINDATA" compress="false"/>
       <include file="third_party/i18n/localized-string-set.js" name="THIRD_PARTY_I18N_LOCALIZED_STRING_SET_JS" resource_path="third_party/i18n/localized-string-set.js" type="BINDATA" compress="false"/>
       <include file="third_party/intl-messageformat/package/intl-messageformat.esm.js" name="THIRD_PARTY_INTL_MESSAGEFORMAT_PACKAGE_INTL_MESSAGEFORMAT_ESM_JS" resource_path="third_party/intl-messageformat/package/intl-messageformat.esm.js" type="BINDATA" compress="false"/>
+      <include file="third_party/json5/lib/index.js" name="THIRD_PARTY_JSON5_LIB_INDEX_JS" resource_path="third_party/json5/lib/index.js" type="BINDATA" compress="false"/>
+      <include file="third_party/json5/package/lib/index.js" name="THIRD_PARTY_JSON5_PACKAGE_LIB_INDEX_JS" resource_path="third_party/json5/package/lib/index.js" type="BINDATA" compress="false"/>
       <include file="third_party/lighthouse/report-assets/report-generator.mjs" name="THIRD_PARTY_LIGHTHOUSE_REPORT_ASSETS_REPORT_GENERATOR_MJS" resource_path="third_party/lighthouse/report-assets/report-generator.mjs" type="BINDATA" compress="false"/>
       <include file="third_party/lighthouse/report/bundle.js" name="THIRD_PARTY_LIGHTHOUSE_REPORT_BUNDLE_JS" resource_path="third_party/lighthouse/report/bundle.js" type="BINDATA" compress="false"/>
       <include file="third_party/lit/lib/decorators.js" name="THIRD_PARTY_LIT_LIB_DECORATORS_JS" resource_path="third_party/lit/lib/decorators.js" type="BINDATA" compress="false"/>
@@ -2157,8 +2162,10 @@
       <include file="ui/components/helpers/scheduled-render.js" name="UI_COMPONENTS_HELPERS_SCHEDULED_RENDER_JS" resource_path="ui/components/helpers/scheduled-render.js" type="BINDATA" compress="false"/>
       <include file="ui/components/highlighting/HighlightManager.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTMANAGER_JS" resource_path="ui/components/highlighting/HighlightManager.js" type="BINDATA" compress="false"/>
       <include file="ui/components/highlighting/highlighting.css.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTING_CSS_JS" resource_path="ui/components/highlighting/highlighting.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/icon_button/FileSourceIcon.js" name="UI_COMPONENTS_ICON_BUTTON_FILESOURCEICON_JS" resource_path="ui/components/icon_button/FileSourceIcon.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/Icon.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_JS" resource_path="ui/components/icon_button/Icon.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/IconButton.js" name="UI_COMPONENTS_ICON_BUTTON_ICONBUTTON_JS" resource_path="ui/components/icon_button/IconButton.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/icon_button/fileSourceIcon.css.js" name="UI_COMPONENTS_ICON_BUTTON_FILESOURCEICON_CSS_JS" resource_path="ui/components/icon_button/fileSourceIcon.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/icon.css.legacy.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_CSS_LEGACY_JS" resource_path="ui/components/icon_button/icon.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/iconButton.css.js" name="UI_COMPONENTS_ICON_BUTTON_ICONBUTTON_CSS_JS" resource_path="ui/components/icon_button/iconButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/input/checkbox.css.js" name="UI_COMPONENTS_INPUT_CHECKBOX_CSS_JS" resource_path="ui/components/input/checkbox.css.js" type="BINDATA" compress="false"/>

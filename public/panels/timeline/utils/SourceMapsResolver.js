@@ -144,12 +144,13 @@ export class SourceMapsResolver extends EventTarget {
                     updatedMappings ||= Boolean(resolvedFunctionName);
                     node.setFunctionName(resolvedFunctionName);
                     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+                    const script = debuggerModel?.scriptForId(node.scriptId) || null;
                     const location = debuggerModel &&
                         new SDK.DebuggerModel.Location(debuggerModel, node.callFrame.scriptId, node.callFrame.lineNumber, node.callFrame.columnNumber);
                     const uiLocation = location &&
                         await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
                     updatedMappings ||= Boolean(uiLocation);
-                    SourceMapsResolver.storeResolvedNodeDataForEntry(pid, tid, node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation });
+                    SourceMapsResolver.storeResolvedNodeDataForEntry(pid, tid, node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
                 }
             }
         }

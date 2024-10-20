@@ -42,4 +42,8 @@ export interface WindowFitsInsideBounds {
     window: Types.Timing.TraceWindowMicroSeconds;
     bounds: Types.Timing.TraceWindowMicroSeconds;
 }
+/**
+ * Returns true if the window fits entirely within the bounds.
+ * Note that if the window is equivalent to the bounds, that is considered to fit
+ */
 export declare function windowFitsInsideBounds(data: WindowFitsInsideBounds): boolean;

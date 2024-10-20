@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { SecurityPanelSidebarTreeElement } from './SecurityPanelSidebarTreeElement.js';
+export class ShowOriginEvent extends Event {
+    static eventName = 'showorigin';
+    origin;
+    constructor(origin) {
+        super(ShowOriginEvent.eventName, { bubbles: true, composed: true });
+        this.origin = origin;
+    }
+}
 export class OriginTreeElement extends SecurityPanelSidebarTreeElement {
     #securityStateInternal;
-    #onSelect;
     #renderTreeElement;
     #originInternal = null;
-    constructor(className, onSelect, renderTreeElement, origin = null, securityPanel = undefined) {
-        super(securityPanel);
-        this.#onSelect = onSelect;
+    constructor(className, renderTreeElement, origin = null) {
+        super();
         this.#renderTreeElement = renderTreeElement;
         this.#originInternal = origin;
         this.listItemElement.classList.add(className);
@@ -27,7 +33,7 @@ export class OriginTreeElement extends SecurityPanelSidebarTreeElement {
         return this.#originInternal;
     }
     onselect() {
-        this.#onSelect();
+        this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#originInternal));
         return true;
     }
 }

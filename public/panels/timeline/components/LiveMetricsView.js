@@ -68,6 +68,15 @@ const UIStrings = {
      */
     showFieldDataForDevice: 'Show field data for device type: {PH1}',
     /**
+     * @description Text indicating that there is not enough data to report real user statistics.
+     */
+    notEnoughData: 'Not enough data',
+    /**
+     * @description Label for a text block that describes the network connections of real users.
+     * @example {75th percentile is similar to Slow 4G throttling} PH1
+     */
+    network: 'Network: {PH1}',
+    /**
      * @description Label for an select box that selects which device type field data be shown for (e.g. desktop/mobile/all devices/etc).
      * @example {Mobile} PH1
      */
@@ -127,29 +136,20 @@ const UIStrings = {
      */
     showFieldDataForPage: 'Show field data for {PH1}',
     /**
-     * @description Tooltip text explaining that real user connections are similar to a test environment with no throttling. "latencies" refers to the time it takes for a website server to respond. "throttling" is when the network is intentionally slowed down to simulate a slower connection.
+     * @description Tooltip text explaining that real user connections are similar to a test environment with no throttling. "throttling" is when the network is intentionally slowed down to simulate a slower connection.
      */
-    tryDisablingThrottling: 'The 75th percentile of real users experienced network latencies similar to a connection with no throttling.',
+    tryDisablingThrottling: '75th percentile is too fast to simulate with throttling',
     /**
-     * @description Tooltip text explaining that real user connections are similar to a specif network throttling setup. "latencies" refers to the time it takes for a website server to respond. "throttling" is when the network is intentionally slowed down to simulate a slower connection.
+     * @description Tooltip text explaining that real user connections are similar to a specif network throttling setup. "throttling" is when the network is intentionally slowed down to simulate a slower connection.
      * @example {Slow 4G} PH1
      */
-    tryUsingThrottling: 'The 75th percentile of real users experienced network latencies similar to {PH1} throttling.',
+    tryUsingThrottling: '75th percentile is similar to {PH1} throttling',
     /**
-     * @description Tooltip text explaining that a majority of users are using a mobile form factor with the specific percentage.
+     * @description Text block listing what percentage of real users are on different device form factors.
      * @example {60%} PH1
+     * @example {30%} PH2
      */
-    mostUsersMobile: '{PH1} of users are on mobile.',
-    /**
-     * @description Tooltip text explaining that a majority of users are using a desktop form factor with the specific percentage.
-     * @example {60%} PH1
-     */
-    mostUsersDesktop: '{PH1} of users are on desktop.',
-    /**
-     * @description Text for a percentage value.
-     * @example {60} PH1
-     */
-    percentage: '{PH1}%',
+    percentDevices: '{PH1}% mobile, {PH2}% desktop',
     /**
      * @description Text block explaining how to simulate different mobile and desktop devices. The placeholder at the end will be a link with the text "simulate different devices" translated separately.
      * @example {simulate different devices} PH1
@@ -189,8 +189,9 @@ const UIStrings = {
   }`,
     /**
      * @description Label for a a range of dates that represents the period of time a set of field data is collected from.
+     * @example {Oct 1, 2024 - Nov 1, 2024} PH1
      */
-    collectionPeriod: 'Collection period:',
+    collectionPeriod: 'Collection period: {PH1}',
     /**
      * @description Text showing a range of dates meant to represent a period of time.
      * @example {Oct 1, 2024} PH1
@@ -229,9 +230,9 @@ const UIStrings = {
      */
     clearCurrentLog: 'Clear the current log',
     /**
-     * @description Title for an expandable section that contains more information about real user environments. This message is meant to prompt the user to understand the conditions experienced by real users.
+     * @description Title for a section that contains more information about real user environments. This message is meant to prompt the user to understand the conditions experienced by real users.
      */
-    considerRealUser: 'Consider real user environments',
+    realUserEnvironments: 'Real user environments',
     /**
      * @description Title for a page load phase that measures the time between when the page load starts and the time when the first byte of the initial document is downloaded.
      */
@@ -280,7 +281,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     #lcpValue;
     #clsValue;
     #inpValue;
-    #interactions = [];
+    #interactions = new Map();
     #layoutShifts = [];
     #cruxPageResult;
     #fieldDeviceOption = 'AUTO';
@@ -303,8 +304,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         this.#inpValue = event.data.inp;
         const hasNewLS = this.#layoutShifts.length < event.data.layoutShifts.length;
         this.#layoutShifts = [...event.data.layoutShifts];
-        const hasNewInteraction = this.#interactions.length < event.data.interactions.length;
-        this.#interactions = [...event.data.interactions];
+        const hasNewInteraction = this.#interactions.size < event.data.interactions.size;
+        this.#interactions = new Map(event.data.interactions);
         const renderPromise = ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
         if (hasNewInteraction && this.#interactionsListEl) {
             this.#keepScrolledToBottom(renderPromise, this.#interactionsListEl);
@@ -452,7 +453,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     #renderInpCard() {
         const fieldData = this.#getFieldMetricData('interaction_to_next_paint');
         const phases = this.#inpValue?.phases;
-        const interaction = this.#interactions.find(interaction => interaction.uniqueInteractionId === this.#inpValue?.uniqueInteractionId);
+        const interaction = this.#inpValue && this.#interactions.get(this.#inpValue.interactionId);
         // clang-format off
         return html `
       <devtools-metric-card .data=${{
@@ -544,34 +545,31 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (!fractions) {
             return null;
         }
-        if (fractions.desktop > 0.5) {
-            const percentage = i18nString(UIStrings.percentage, { PH1: Math.round(fractions.desktop * 100) });
-            return i18nString(UIStrings.mostUsersDesktop, { PH1: percentage });
-        }
-        if (fractions.phone > 0.5) {
-            const percentage = i18nString(UIStrings.percentage, { PH1: Math.round(fractions.phone * 100) });
-            return i18nString(UIStrings.mostUsersMobile, { PH1: percentage });
-        }
-        return null;
+        return i18nString(UIStrings.percentDevices, {
+            PH1: Math.round(fractions.phone * 100),
+            PH2: Math.round(fractions.desktop * 100),
+        });
     }
     #renderRecordingSettings() {
-        const envRecs = [
-            this.#getDeviceRec(),
-            this.#getNetworkRec(),
-        ].filter(rec => rec !== null);
+        const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
         const deviceLinkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/device-mode', i18nString(UIStrings.simulateDifferentDevices));
         const deviceMessage = i18n.i18n.getFormatLocalizedString(str_, UIStrings.useDeviceToolbar, { PH1: deviceLinkEl });
+        const deviceRecEl = document.createElement('span');
+        deviceRecEl.classList.add('environment-rec');
+        deviceRecEl.textContent = this.#getDeviceRec() || i18nString(UIStrings.notEnoughData);
+        const networkRecEl = document.createElement('span');
+        networkRecEl.classList.add('environment-rec');
+        networkRecEl.textContent = this.#getNetworkRec() || i18nString(UIStrings.notEnoughData);
         // clang-format off
         return html `
       <h3 class="card-title">${i18nString(UIStrings.environmentSettings)}</h3>
       <div class="device-toolbar-description">${deviceMessage}</div>
-      ${envRecs.length > 0 ? html `
-        <details class="environment-recs">
-          <summary>${i18nString(UIStrings.considerRealUser)}</summary>
-          <ul class="environment-recs-list">
-            ${envRecs.map(rec => html `<li>${rec}</li>`)}
-          </ul>
-        </details>
+      ${fieldEnabled ? html `
+        <div class="environment-recs-title">${i18nString(UIStrings.realUserEnvironments)}</div>
+        <ul class="environment-recs-list">
+          <li>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.device, { PH1: deviceRecEl })}</li>
+          <li>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.network, { PH1: networkRecEl })}</li>
+        </ul>
       ` : nothing}
       <div class="environment-option">
         <devtools-cpu-throttling-selector></devtools-cpu-throttling-selector>
@@ -735,10 +733,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
         // clang-format on
     }
-    #renderCollectionPeriod() {
+    #getCollectionPeriodRange() {
         const selectedResponse = this.#getSelectedFieldResponse();
         if (!selectedResponse) {
-            return LitHtml.nothing;
+            return null;
         }
         const { firstDate, lastDate } = selectedResponse.record.collectionPeriod;
         const formattedFirstDate = new Date(firstDate.year, 
@@ -752,17 +750,21 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             month: 'short',
             day: 'numeric',
         };
-        const dateEl = document.createElement('span');
-        dateEl.classList.add('collection-period-range');
-        dateEl.textContent = i18nString(UIStrings.dateRange, {
+        return i18nString(UIStrings.dateRange, {
             PH1: formattedFirstDate.toLocaleDateString(undefined, options),
             PH2: formattedLastDate.toLocaleDateString(undefined, options),
         });
+    }
+    #renderCollectionPeriod() {
+        const range = this.#getCollectionPeriodRange();
+        const dateEl = document.createElement('span');
+        dateEl.classList.add('collection-period-range');
+        dateEl.textContent = range || i18nString(UIStrings.notEnoughData);
+        const message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.collectionPeriod, {
+            PH1: dateEl,
+        });
         return html `
-      <div class="field-data-message">
-        ${i18nString(UIStrings.collectionPeriod)}
-        ${dateEl}
-      </div>
+      <div class="field-data-message">${message}</div>
     `;
     }
     #renderFieldDataMessage() {
@@ -805,7 +807,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format on
     }
     async #revealInteraction(interaction) {
-        const interactionEl = this.#shadow.getElementById(interaction.uniqueInteractionId);
+        const interactionEl = this.#shadow.getElementById(interaction.interactionId);
         if (!interactionEl || !this.#logsEl) {
             return;
         }
@@ -822,7 +824,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         });
     }
     #renderInteractionsLog() {
-        if (!this.#interactions.length) {
+        if (!this.#interactions.size) {
             return LitHtml.nothing;
         }
         // clang-format off
@@ -833,25 +835,47 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             this.#interactionsListEl = node;
         })}
       >
-        ${this.#interactions.map(interaction => {
+        ${this.#interactions.values().map(interaction => {
             const metricValue = renderMetricValue('timeline.landing.interaction-event-timing', interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.preciseMillisToString(v), { dim: true });
             const isP98Excluded = this.#inpValue && this.#inpValue.value < interaction.duration;
-            const isInp = this.#inpValue?.uniqueInteractionId === interaction.uniqueInteractionId;
+            const isInp = this.#inpValue?.interactionId === interaction.interactionId;
             return html `
-            <li id=${interaction.uniqueInteractionId} class="log-item interaction" tabindex="-1">
-              <span class="interaction-type">
-                ${interaction.interactionType}
-                ${isInp ?
+            <li id=${interaction.interactionId} class="log-item interaction" tabindex="-1">
+              <details>
+                <summary>
+                  <span class="interaction-type">
+                    ${interaction.interactionType}
+                    ${isInp ?
                 html `<span class="interaction-inp-chip" title=${i18nString(UIStrings.inpInteraction)}>INP</span>`
                 : nothing}
-              </span>
-              <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
-              ${isP98Excluded ? html `<devtools-icon
-                class="interaction-info"
-                name="info"
-                title=${i18nString(UIStrings.interactionExcluded)}
-              ></devtools-icon>` : nothing}
-              <span class="interaction-duration">${metricValue}</span>
+                  </span>
+                  <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
+                  ${isP98Excluded ? html `<devtools-icon
+                    class="interaction-info"
+                    name="info"
+                    title=${i18nString(UIStrings.interactionExcluded)}
+                  ></devtools-icon>` : nothing}
+                  <span class="interaction-duration">${metricValue}</span>
+                </summary>
+                <div class="phase-table" role="table">
+                  <div class="phase-table-row phase-table-header-row" role="row">
+                    <div role="columnheader">Phase</div>
+                    <div role="columnheader">Local time (ms)</div>
+                  </div>
+                  <div class="phase-table-row" role="row">
+                    <div role="cell">${i18nString(UIStrings.inputDelay)}</div>
+                    <div role="cell">${Math.round(interaction.phases.inputDelay)}</div>
+                  </div>
+                  <div class="phase-table-row" role="row">
+                    <div role="cell">${i18nString(UIStrings.processingDuration)}</div>
+                    <div role="cell">${Math.round(interaction.phases.processingDuration)}</div>
+                  </div>
+                  <div class="phase-table-row" role="row">
+                    <div role="cell">${i18nString(UIStrings.presentationDelay)}</div>
+                    <div role="cell">${Math.round(interaction.phases.presentationDelay)}</div>
+                  </div>
+                </div>
+              </details>
             </li>
           `;
         })}

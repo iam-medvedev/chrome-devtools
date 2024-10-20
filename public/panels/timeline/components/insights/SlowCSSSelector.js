@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './Table.js';
+import '../../../../ui/components/linkifier/linkifier.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
@@ -48,10 +50,61 @@ export class SlowCSSSelector extends BaseInsight {
     userVisibleTitle = i18nString(UIStrings.title);
     description = i18nString(UIStrings.description);
     #slowCSSSelector = null;
+    #selectorLocations = new Map();
     createOverlays() {
         return [];
     }
+    async toSourceFileLocation(cssModel, selector) {
+        if (!cssModel) {
+            return undefined;
+        }
+        const styleSheetHeader = cssModel.styleSheetHeaderForId(selector.style_sheet_id);
+        if (!styleSheetHeader || !styleSheetHeader.resourceURL()) {
+            return undefined;
+        }
+        // get the locations from cache if available
+        const key = JSON.stringify({ selectorText: selector.selector, styleSheetId: selector.style_sheet_id });
+        let ranges = this.#selectorLocations.get(key);
+        if (!ranges) {
+            const result = await cssModel.agent.invoke_getLocationForSelector({ selectorText: selector.selector, styleSheetId: selector.style_sheet_id });
+            if (result.getError() || !result.ranges) {
+                return undefined;
+            }
+            ranges = result.ranges;
+            this.#selectorLocations.set(key, ranges);
+        }
+        const locations = ranges.map((range, itemIndex) => {
+            return {
+                url: styleSheetHeader.resourceURL(),
+                lineNumber: range.startLine,
+                columnNumber: range.startColumn,
+                linkText: `[${itemIndex + 1}]`,
+                title: `${styleSheetHeader.id} line ${range.startLine + 1}:${range.startColumn + 1}`,
+            };
+        });
+        return locations;
+    }
+    async getSelectorLinks(cssModel, selector) {
+        if (!cssModel) {
+            return LitHtml.nothing;
+        }
+        if (!selector.style_sheet_id) {
+            return LitHtml.nothing;
+        }
+        const locations = await this.toSourceFileLocation(cssModel, selector);
+        if (!locations) {
+            return LitHtml.nothing;
+        }
+        const links = html `
+    ${locations.map((location, itemIndex) => {
+            const divider = itemIndex !== locations.length - 1 ? ', ' : '';
+            return html `<devtools-linkifier .data=${location}></devtools-linkifier>${divider}`;
+        })}`;
+        return links;
+    }
     renderSlowCSSSelector() {
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const cssModel = target?.model(SDK.CSSModel.CSSModel);
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
         return this.#slowCSSSelector ? html `
@@ -63,9 +116,10 @@ export class SlowCSSSelector extends BaseInsight {
             expanded: this.isActive(),
         }}
           @insighttoggleclick=${this.onSidebarClick} >
-          <div slot="insight-content" class="insight-section">
-            ${html `<devtools-performance-table
-              .data=${{
+          <div slot="insight-content">
+            <div class="insight-section">
+              ${html `<devtools-performance-table
+                .data=${{
             insight: this,
             headers: [i18nString(UIStrings.total), ''],
             rows: [
@@ -74,29 +128,40 @@ export class SlowCSSSelector extends BaseInsight {
                 { values: [i18nString(UIStrings.matchCount), this.#slowCSSSelector.totalMatchCount] },
             ],
         }}>
-            </devtools-performance-table>`}
-            ${html `<devtools-performance-table
-              .data=${{
+              </devtools-performance-table>`}
+            </div>
+            <div class="insight-section">
+              ${html `<devtools-performance-table
+                .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.elapsed)],
             rows: this.#slowCSSSelector.topElapsedMs.map(selector => {
                 return {
-                    values: [selector.selector, time(Trace.Types.Timing.MicroSeconds(selector['elapsed (us)']))],
+                    values: [
+                        html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
+                        time(Trace.Types.Timing.MicroSeconds(selector['elapsed (us)']))
+                    ],
                 };
             }),
         }}>
-            </devtools-performance-table>`}
-            ${html `<devtools-performance-table
-              .data=${{
+              </devtools-performance-table>`}
+            </div>
+            <div class="insight-section">
+              ${html `<devtools-performance-table
+                .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.matchAttempts)],
             rows: this.#slowCSSSelector.topMatchAttempts.map(selector => {
                 return {
-                    values: [selector.selector, selector['match_attempts']],
+                    values: [
+                        html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
+                        selector['match_attempts']
+                    ],
                 };
             }),
         }}>
-            </devtools-performance-table>`}
+              </devtools-performance-table>`}
+            </div>
           </div>
         </devtools-performance-sidebar-insight>
       </div>` : LitHtml.nothing;

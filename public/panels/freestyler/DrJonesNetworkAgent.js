@@ -5,7 +5,8 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Logs from '../../models/logs/logs.js';
-import { AiAgent, debugLog, isDebugMode, ResponseType, } from './AiAgent.js';
+import * as Network from '../../panels/network/network.js';
+import { AiAgent, ResponseType, } from './AiAgent.js';
 /* clang-format off */
 const preamble = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
@@ -47,10 +48,6 @@ const UIStringsNotTranslate = {
      */
     inspectingNetworkData: 'Inspecting network data',
     /**
-     *@description Thought text for thinking step of DrJones Network agent.
-     */
-    dataUsedToGenerateThisResponse: 'Data used to generate this response',
-    /**
      *@description Heading text for the block that shows the network request details.
      */
     request: 'Request',
@@ -91,8 +88,10 @@ const lockedString = i18n.i18n.lockedString;
 export class DrJonesNetworkAgent extends AiAgent {
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_NETWORK_AGENT;
-    // TODO(b/369822364): use a feature param instead.
-    userTier = 'BETA';
+    get userTier() {
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        return config.devToolsExplainThisResourceDogfood?.userTier;
+    }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
         const temperature = AiAgent.validTemperature(config.devToolsExplainThisResourceDogfood?.temperature);
@@ -102,18 +101,14 @@ export class DrJonesNetworkAgent extends AiAgent {
             model_id: modelId,
         };
     }
-    *handleContextDetails(selectedNetworkRequest) {
+    async *handleContextDetails(selectedNetworkRequest) {
         if (!selectedNetworkRequest) {
             return;
         }
         yield {
-            type: ResponseType.TITLE,
+            type: ResponseType.CONTEXT,
             title: lockedString(UIStringsNotTranslate.inspectingNetworkData),
-        };
-        yield {
-            type: ResponseType.THOUGHT,
-            thought: lockedString(UIStringsNotTranslate.dataUsedToGenerateThisResponse),
-            contextDetails: createContextDetailsForDrJonesNetworkAgent(selectedNetworkRequest),
+            details: createContextDetailsForDrJonesNetworkAgent(selectedNetworkRequest),
         };
     }
     async enhanceQuery(query, selectedNetworkRequest) {
@@ -122,49 +117,10 @@ export class DrJonesNetworkAgent extends AiAgent {
             '';
         return `${networkEnchantmentQuery}${query}`;
     }
-    #runId = 0;
-    async *run(query, options) {
-        yield* this.handleContextDetails(options.selectedNetworkRequest);
-        query = await this.enhanceQuery(query, options.selectedNetworkRequest);
-        const currentRunId = ++this.#runId;
-        let response;
-        let rpcId;
-        try {
-            const fetchResult = await this.aidaFetch(query, { signal: options.signal });
-            response = fetchResult.response;
-            rpcId = fetchResult.rpcId;
-        }
-        catch (err) {
-            debugLog('Error calling the AIDA API', err);
-            if (err instanceof Host.AidaClient.AidaAbortError) {
-                this.removeHistoryRun(currentRunId);
-                yield {
-                    type: ResponseType.ERROR,
-                    error: "abort" /* ErrorType.ABORT */,
-                    rpcId,
-                };
-                return;
-            }
-            yield {
-                type: ResponseType.ERROR,
-                error: "unknown" /* ErrorType.UNKNOWN */,
-                rpcId,
-            };
-            return;
-        }
-        this.addToHistory({
-            id: currentRunId,
-            query,
-            output: response,
-        });
-        yield {
-            type: ResponseType.ANSWER,
-            text: response,
-            rpcId,
+    parseResponse(response) {
+        return {
+            answer: response,
         };
-        if (isDebugMode()) {
-            window.dispatchEvent(new CustomEvent('freestylerdone'));
-        }
     }
 }
 function formatLines(title, lines, maxLength) {
@@ -197,22 +153,50 @@ export function formatHeaders(title, headers) {
     return formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
 }
 export function formatNetworkRequestTiming(request) {
-    const timing = request.timing;
-    return `Request start time: ${request.startTime}
-Request end time: ${request.endTime}
-Receiving response headers start time: ${timing?.receiveHeadersStart}
-Receiving response headers end time: ${timing?.receiveHeadersEnd}
-Proxy negotiation start time: ${timing?.proxyStart}
-Proxy negotiation end time: ${timing?.proxyEnd}
-DNS lookup start time: ${timing?.dnsStart}
-DNS lookup end time: ${timing?.dnsEnd}
-TCP start time: ${timing?.connectStart}
-TCP end time: ${timing?.connectEnd}
-SSL start time: ${timing?.sslStart}
-SSL end time: ${timing?.sslEnd}
-Sending start: ${timing?.sendStart}
-Sending end: ${timing?.sendEnd}
-`;
+    const calculator = Network.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
+    const results = Network.RequestTimingView.RequestTimingView.calculateRequestTimeRanges(request, calculator.minimumBoundary());
+    function getDuration(name) {
+        const result = results.find(r => r.name === name);
+        if (!result) {
+            return;
+        }
+        return i18n.TimeUtilities.secondsToString(result.end - result.start, true);
+    }
+    const labels = [
+        {
+            label: 'Queued at (timestamp)',
+            value: calculator.formatValue(request.issueTime(), 2),
+        },
+        {
+            label: 'Started at (timestamp)',
+            value: calculator.formatValue(request.startTime, 2),
+        },
+        {
+            label: 'Queueing (duration)',
+            value: getDuration('queueing'),
+        },
+        {
+            label: 'Connection start (stalled) (duration)',
+            value: getDuration('blocking'),
+        },
+        {
+            label: 'Request sent (duration)',
+            value: getDuration('sending'),
+        },
+        {
+            label: 'Waiting for server response (duration)',
+            value: getDuration('waiting'),
+        },
+        {
+            label: 'Content download (duration)',
+            value: getDuration('receiving'),
+        },
+        {
+            label: 'Duration (duration)',
+            value: getDuration('total'),
+        },
+    ];
+    return labels.filter(label => Boolean(label.value)).map(label => `${label.label}: ${label.value}`).join('\n');
 }
 function formatRequestInitiated(request, initiatorChain, lineStart) {
     const initiated = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(request).initiated;
@@ -236,7 +220,7 @@ function formatRequestInitiatorChain(request) {
             break;
         }
     }
-    return initiatorChain;
+    return initiatorChain.trim();
 }
 export function formatNetworkRequest(request) {
     // TODO: anything else that might be relavant?

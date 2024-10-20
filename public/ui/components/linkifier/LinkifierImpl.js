@@ -21,17 +21,18 @@ export class LinkifierClick extends Event {
     }
 }
 export class Linkifier extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-linkifier`;
     #shadow = this.attachShadow({ mode: 'open' });
     #url = Platform.DevToolsPath.EmptyUrlString;
     #lineNumber;
     #columnNumber;
     #linkText;
+    #title;
     set data(data) {
         this.#url = data.url;
         this.#lineNumber = data.lineNumber;
         this.#columnNumber = data.columnNumber;
         this.#linkText = data.linkText;
+        this.#title = data.title;
         if (!this.#url) {
             throw new Error('Cannot construct a Linkifier without providing a valid string URL.');
         }
@@ -55,7 +56,7 @@ export class Linkifier extends HTMLElement {
         await coordinator.write(() => {
             // clang-format off
             // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
-            LitHtml.render(html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation}><slot>${linkText}</slot></a>`, this.#shadow, { host: this });
+            LitHtml.render(html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation} title=${LitHtml.Directives.ifDefined(this.#title)}><slot>${linkText}</slot></a>`, this.#shadow, { host: this });
             // clang-format on
         });
     }

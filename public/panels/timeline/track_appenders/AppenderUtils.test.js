@@ -30,10 +30,6 @@ describeWithEnvironment('AppenderUtils', () => {
         });
     });
     describe('buildTrackHeader', () => {
-        const legends = [{
-                color: 'yellow',
-                category: 'test',
-            }];
         const trackHeader = {
             startLevel: 0,
             name: 'Header Name',
@@ -41,13 +37,12 @@ describeWithEnvironment('AppenderUtils', () => {
             selectable: true,
             expanded: true,
             showStackContextMenu: true,
-            legends,
             jslogContext: 'animations',
         };
         it('builds a track header correctly', () => {
             const builtHeader = Timeline.AppenderUtils.buildTrackHeader("animations" /* Timeline.CompatibilityTracksAppender.VisualLoggingTrackName.ANIMATIONS */, 
             /* startLevel= */ 0, 'Header Name', Timeline.AppenderUtils.buildGroupStyle(), /* selectable= */ true, 
-            /* expanded= */ true, /* showStackContextMenu= */ true, legends);
+            /* expanded= */ true, /* showStackContextMenu= */ true);
             assert.deepEqual(builtHeader, trackHeader);
         });
     });

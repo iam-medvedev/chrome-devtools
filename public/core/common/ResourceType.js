@@ -312,9 +312,11 @@ export class ResourceType {
     }
 }
 export class ResourceCategory {
+    name;
     title;
     shortTitle;
-    constructor(title, shortTitle) {
+    constructor(name, title, shortTitle) {
+        this.name = name;
         this.title = title;
         this.shortTitle = shortTitle;
     }
@@ -324,17 +326,17 @@ export class ResourceCategory {
     }
 }
 export const resourceCategories = {
-    XHR: new ResourceCategory(i18nLazyString(UIStrings.fetchAndXHR), i18n.i18n.lockedLazyString('Fetch/XHR')),
-    Document: new ResourceCategory(i18nLazyString(UIStrings.document), i18nLazyString(UIStrings.doc)),
-    Stylesheet: new ResourceCategory(i18nLazyString(UIStrings.css), i18nLazyString(UIStrings.css)),
-    Script: new ResourceCategory(i18nLazyString(UIStrings.javascript), i18nLazyString(UIStrings.js)),
-    Font: new ResourceCategory(i18nLazyString(UIStrings.font), i18nLazyString(UIStrings.font)),
-    Image: new ResourceCategory(i18nLazyString(UIStrings.image), i18nLazyString(UIStrings.img)),
-    Media: new ResourceCategory(i18nLazyString(UIStrings.media), i18nLazyString(UIStrings.media)),
-    Manifest: new ResourceCategory(i18nLazyString(UIStrings.manifest), i18nLazyString(UIStrings.manifest)),
-    WebSocket: new ResourceCategory(i18nLazyString(UIStrings.websocket), i18nLazyString(UIStrings.ws)),
-    Wasm: new ResourceCategory(i18nLazyString(UIStrings.webassembly), i18nLazyString(UIStrings.wasm)),
-    Other: new ResourceCategory(i18nLazyString(UIStrings.other), i18nLazyString(UIStrings.other)),
+    XHR: new ResourceCategory('Fetch and XHR', i18nLazyString(UIStrings.fetchAndXHR), i18n.i18n.lockedLazyString('Fetch/XHR')),
+    Document: new ResourceCategory(UIStrings.document, i18nLazyString(UIStrings.document), i18nLazyString(UIStrings.doc)),
+    Stylesheet: new ResourceCategory(UIStrings.css, i18nLazyString(UIStrings.css), i18nLazyString(UIStrings.css)),
+    Script: new ResourceCategory(UIStrings.javascript, i18nLazyString(UIStrings.javascript), i18nLazyString(UIStrings.js)),
+    Font: new ResourceCategory(UIStrings.font, i18nLazyString(UIStrings.font), i18nLazyString(UIStrings.font)),
+    Image: new ResourceCategory(UIStrings.image, i18nLazyString(UIStrings.image), i18nLazyString(UIStrings.img)),
+    Media: new ResourceCategory(UIStrings.media, i18nLazyString(UIStrings.media), i18nLazyString(UIStrings.media)),
+    Manifest: new ResourceCategory(UIStrings.manifest, i18nLazyString(UIStrings.manifest), i18nLazyString(UIStrings.manifest)),
+    WebSocket: new ResourceCategory(UIStrings.websocket, i18nLazyString(UIStrings.websocket), i18nLazyString(UIStrings.ws)),
+    Wasm: new ResourceCategory(UIStrings.webassembly, i18nLazyString(UIStrings.webassembly), i18nLazyString(UIStrings.wasm)),
+    Other: new ResourceCategory(UIStrings.other, i18nLazyString(UIStrings.other), i18nLazyString(UIStrings.other)),
 };
 /**
  * This enum is a superset of all types defined in WebCore::InspectorPageAgent::resourceTypeJson

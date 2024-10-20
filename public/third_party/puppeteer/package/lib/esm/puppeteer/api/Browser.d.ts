@@ -1,9 +1,9 @@
+/// <reference types="node" preserve="true" />
 /**
  * @license
  * Copyright 2017 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-/// <reference types="node" />
 import type { ChildProcess } from 'child_process';
 import type { Protocol } from 'devtools-protocol';
 import type { ProtocolType } from '../common/ConnectOptions.js';

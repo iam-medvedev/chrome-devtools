@@ -130,7 +130,7 @@ export declare class TreeElement {
     set title(x: string | Node);
     titleAsText(): string;
     startEditingTitle<T>(editingConfig: Config<T>): void;
-    setLeadingIcons(icons: IconButton.Icon.Icon[]): void;
+    setLeadingIcons(icons: IconButton.Icon.Icon[] | IconButton.FileSourceIcon.FileSourceIcon[]): void;
     setTrailingIcons(icons: IconButton.Icon.Icon[]): void;
     get tooltip(): string;
     set tooltip(x: string);

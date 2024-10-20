@@ -39,6 +39,7 @@ export declare class SensorsView extends UI.Widget.VBox {
     private applyLocation;
     private clearFieldsetElementInputs;
     private createDeviceOrientationSection;
+    private createPressureSection;
     private enableOrientationFields;
     private orientationSelectChanged;
     private applyDeviceOrientation;
@@ -62,6 +63,13 @@ export declare const enum DeviceOrientationModificationSource {
     RESET_BUTTON = "resetButton",
     SELECT_PRESET = "selectPreset"
 }
+export declare const PressureOptions: {
+    NoOverride: string;
+    Nominal: string;
+    Fair: string;
+    Serious: string;
+    Critical: string;
+};
 export declare const NonPresetOptions: {
     NoOverride: string;
     Custom: string;

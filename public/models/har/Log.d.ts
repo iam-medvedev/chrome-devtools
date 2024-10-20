@@ -92,6 +92,7 @@ export interface Response {
     _serviceWorkerResponseSource: Protocol.Network.ServiceWorkerResponseSource | undefined;
 }
 export interface EntryDTO {
+    _connectionId?: string;
     _fromCache?: string;
     _initiator: Protocol.Network.Initiator | null;
     _priority: Protocol.Network.ResourcePriority | null;

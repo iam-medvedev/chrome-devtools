@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import iconStyles from './icon.css.legacy.js';
 /**
  * A simple icon component to display SVG icons from the `front_end/Images/src`
@@ -48,7 +47,6 @@ import iconStyles from './icon.css.legacy.js';
  * @prop {IconData} data - Deprecated way to set dimensions, color and name at once.
  */
 export class Icon extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-icon`;
     static observedAttributes = ['name'];
     #shadowRoot;
     #icon;

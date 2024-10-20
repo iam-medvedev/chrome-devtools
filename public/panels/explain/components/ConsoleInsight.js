@@ -157,7 +157,6 @@ export class ConsoleInsight extends HTMLElement {
         const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
         return new ConsoleInsight(promptBuilder, aidaClient, aidaAvailability);
     }
-    static litTagName = LitHtml.literal `devtools-console-insight`;
     #shadow = this.attachShadow({ mode: 'open' });
     #promptBuilder;
     #aidaClient;
@@ -167,45 +166,16 @@ export class ConsoleInsight extends HTMLElement {
     // Rating sub-form state.
     #selectedRating;
     #consoleInsightsEnabledSetting;
+    #aidaAvailability;
+    #boundOnAidaAvailabilityChange;
     constructor(promptBuilder, aidaClient, aidaAvailability) {
         super();
         this.#promptBuilder = promptBuilder;
         this.#aidaClient = aidaClient;
+        this.#aidaAvailability = aidaAvailability;
         this.#consoleInsightsEnabledSetting = this.#getConsoleInsightsEnabledSetting();
-        switch (aidaAvailability) {
-            case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */: {
-                if (this.#consoleInsightsEnabledSetting?.disabled()) {
-                    this.#state = {
-                        type: "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */,
-                    };
-                    break;
-                }
-                // Allows skipping the consent reminder if the user enabled the feature via settings in the current session
-                const skipReminder = Common.Settings.Settings.instance()
-                    .createSetting('console-insights-skip-reminder', false, "Session" /* Common.Settings.SettingStorageType.SESSION */)
-                    .get();
-                this.#state = {
-                    type: "loading" /* State.LOADING */,
-                    consentOnboardingCompleted: this.#getOnboardingCompletedSetting().get() || skipReminder,
-                };
-                break;
-            }
-            case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
-                this.#state = {
-                    type: "not-logged-in" /* State.NOT_LOGGED_IN */,
-                };
-                break;
-            case "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */:
-                this.#state = {
-                    type: "sync-is-paused" /* State.SYNC_IS_PAUSED */,
-                };
-                break;
-            case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */:
-                this.#state = {
-                    type: "offline" /* State.OFFLINE */,
-                };
-                break;
-        }
+        this.#state = this.#getStateFromAidaAvailability();
+        this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.#render();
         // Stop keyboard event propagation to avoid Console acting on the events
         // inside the insight component.
@@ -222,6 +192,32 @@ export class ConsoleInsight extends HTMLElement {
             e.stopPropagation();
         });
         this.focus();
+    }
+    #getStateFromAidaAvailability() {
+        switch (this.#aidaAvailability) {
+            case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */: {
+                // Allows skipping the consent reminder if the user enabled the feature via settings in the current session
+                const skipReminder = Common.Settings.Settings.instance()
+                    .createSetting('console-insights-skip-reminder', false, "Session" /* Common.Settings.SettingStorageType.SESSION */)
+                    .get();
+                return {
+                    type: "loading" /* State.LOADING */,
+                    consentOnboardingCompleted: this.#getOnboardingCompletedSetting().get() || skipReminder,
+                };
+            }
+            case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
+                return {
+                    type: "not-logged-in" /* State.NOT_LOGGED_IN */,
+                };
+            case "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */:
+                return {
+                    type: "sync-is-paused" /* State.SYNC_IS_PAUSED */,
+                };
+            case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */:
+                return {
+                    type: "offline" /* State.OFFLINE */,
+                };
+        }
     }
     // off -> entrypoints are shown, and point to the AI setting panel where the setting can be turned on
     // on -> entrypoints are shown, and console insights can be generated
@@ -242,14 +238,32 @@ export class ConsoleInsight extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [styles, Input.checkboxStyles];
         this.classList.add('opening');
         this.#consoleInsightsEnabledSetting?.addChangeListener(this.#onConsoleInsightsSettingChanged, this);
+        const blockedByAge = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.blockedByAge === true;
         if (this.#state.type === "loading" /* State.LOADING */ && this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true &&
-            this.#state.consentOnboardingCompleted) {
+            !blockedByAge && this.#state.consentOnboardingCompleted) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.GeneratingInsightWithoutDisclaimer);
+        }
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        // If AIDA availability has changed while the component was disconnected, we need to update.
+        void this.#onAidaAvailabilityChange();
+        // The setting might have been turned on/off while the component was disconnected.
+        // Update the state, unless the current state is already terminal (`INSIGHT` or `ERROR`).
+        if (this.#state.type !== "insight" /* State.INSIGHT */ && this.#state.type !== "error" /* State.ERROR */) {
+            this.#state = this.#getStateFromAidaAvailability();
         }
         void this.#generateInsightIfNeeded();
     }
     disconnectedCallback() {
         this.#consoleInsightsEnabledSetting?.removeChangeListener(this.#onConsoleInsightsSettingChanged, this);
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+    }
+    async #onAidaAvailabilityChange() {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            this.#state = this.#getStateFromAidaAvailability();
+            void this.#generateInsightIfNeeded();
+        }
     }
     #onConsoleInsightsSettingChanged() {
         if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true) {
@@ -286,7 +300,8 @@ export class ConsoleInsight extends HTMLElement {
         if (this.#state.type !== "loading" /* State.LOADING */) {
             return;
         }
-        if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() !== true) {
+        const blockedByAge = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.blockedByAge === true;
+        if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() !== true || blockedByAge) {
             this.#transitionTo({
                 type: "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */,
             });
@@ -806,7 +821,6 @@ export class ConsoleInsight extends HTMLElement {
     }
 }
 class ConsoleInsightSourcesList extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-console-insight-sources-list`;
     #shadow = this.attachShadow({ mode: 'open' });
     #sources = [];
     #isPageReloadRecommended = false;

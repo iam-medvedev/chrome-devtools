@@ -1,9 +1,8 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Helpers from './Helpers.js';
-describeWithEnvironment('Helpers', () => {
+describe('Helpers', () => {
     it('createUrlLabels', function () {
         function fn(urls, expected) {
             assert.deepEqual(Helpers.createUrlLabels(urls.map(url => new URL(url))), expected);
@@ -24,6 +23,12 @@ describeWithEnvironment('Helpers', () => {
         fn(['http://www.example.com', 'https://www.example.com'], ['http://www.example.com', 'https://www.example.com']);
         fn(['http://www.example.com?k=1234567890', 'https://www.example.com?k=1234567890'], ['http://www.example.com/?k=1234567…', 'https://www.example.com/?k=1234567…']);
         fn(['https://www.example.com', 'https://www.example2.com'], ['/', 'www.example2.com']);
+    });
+    it('shortenUrl', function () {
+        const url = new URL('https://cdn.permutive.com/models/v2/d2fb08da-1c03-4c8a-978f-ad8a96b4c31f-models.bin');
+        // Shows lastPath and then reveals more of it, per maxCharacters
+        assert.strictEqual(Helpers.shortenUrl(url, 40), 'd2fb08da-1c03-4c8a-9…96b4c31f-models.bin');
+        assert.strictEqual(Helpers.shortenUrl(url, 70), '/models/v2/d2fb08da-1c03-4c8a-978f-ad8a96b4c31f-models.bin');
     });
 });
 //# sourceMappingURL=Helpers.test.js.map

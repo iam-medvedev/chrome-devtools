@@ -23,6 +23,7 @@ export declare class Settings {
     }): Settings;
     static removeInstance(): void;
     getHostConfig(): Root.Runtime.HostConfig;
+    setHostConfig(config: Root.Runtime.HostConfig): void;
     private registerModuleSetting;
     static normalizeSettingName(name: string): string;
     /**

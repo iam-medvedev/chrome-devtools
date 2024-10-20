@@ -61,7 +61,6 @@ export declare class BreakpointsView extends LegacyWrapper.LegacyWrapper.Wrappab
         forceNew: boolean;
     }): BreakpointsView;
     constructor();
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set data(data: BreakpointsViewData);
     connectedCallback(): void;
     render(): Promise<void>;

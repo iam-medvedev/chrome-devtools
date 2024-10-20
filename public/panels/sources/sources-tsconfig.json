@@ -128,6 +128,9 @@
       "path": "../../third_party/diff/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/floating_button/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {
@@ -156,6 +159,9 @@
     },
     {
       "path": "../../ui/visual_logging/bundle-tsconfig.json"
+    },
+    {
+      "path": "../utils/bundle-tsconfig.json"
     },
     {
       "path": "components/bundle-tsconfig.json"

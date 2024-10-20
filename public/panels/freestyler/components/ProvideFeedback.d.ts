@@ -5,7 +5,6 @@ export interface ProvideFeedbackProps {
 }
 export declare class ProvideFeedback extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(props: ProvideFeedbackProps);
     set props(props: ProvideFeedbackProps);
     connectedCallback(): void;

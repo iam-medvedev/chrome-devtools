@@ -14,7 +14,6 @@ export class SwitchChangeEvent extends Event {
     }
 }
 export class Switch extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-switch`;
     #shadow = this.attachShadow({ mode: 'open' });
     #checked = false;
     #disabled = false;

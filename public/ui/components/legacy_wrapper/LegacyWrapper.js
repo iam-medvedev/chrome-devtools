@@ -15,7 +15,7 @@ export function legacyWrapper(base, component, jsLogContext) {
     return new class extends base {
         #component;
         constructor(..._args) {
-            super(/* isWebComponent=*/ true);
+            super(/* useShadowDom=*/ true);
             this.#component = component;
             this.#component.wrapper = this;
             void this.#component.render();

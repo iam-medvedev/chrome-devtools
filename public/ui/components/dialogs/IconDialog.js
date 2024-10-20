@@ -1,11 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/icon_button/icon_button.js';
+import './Dialog.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { Dialog as DialogElement, } from './Dialog.js';
 import iconDialogStyles from './iconDialog.css.js';
 const { html } = LitHtml;
 const UIStrings = {
@@ -25,7 +26,6 @@ export class ShowDialog extends Event {
 // This class provides a shorthand for a typical use case of Dialog,
 // i.e. Dialog on an icon.
 export class IconDialog extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-icon-dialog`;
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #data = null;
@@ -92,7 +92,7 @@ export class IconDialog extends HTMLElement {
         })}
         .data=${this.#data.iconData}
       ></devtools-icon>
-      <${DialogElement.litTagName}
+      <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
         .showConnector=${true}
         .origin=${() => {
@@ -113,7 +113,7 @@ export class IconDialog extends HTMLElement {
         <div id='slot-container'>
           <slot></slot>
         </div>
-      </${DialogElement.litTagName}>
+      </devtools-dialog>
     `, this.#shadow, { host: this });
         // clang-format on
     }

@@ -12,7 +12,6 @@ export interface PieChartData {
     slices: Slice[];
 }
 export declare class PieChart extends HTMLElement {
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     private readonly shadow;
     private chartName;
     private size;

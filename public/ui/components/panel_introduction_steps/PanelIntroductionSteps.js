@@ -6,7 +6,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import panelIntroductionStepsStyles from './panelIntroductionSteps.css.js';
 const { html } = LitHtml;
 export class PanelIntroductionSteps extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-panel-introduction-steps`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     connectedCallback() {

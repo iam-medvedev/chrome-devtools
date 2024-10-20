@@ -33,11 +33,7 @@ const UIStrings = {
      * @description Message shown to the user if the DevTools locale is not
      * supported.
      */
-    wrongLocale: 'To use this feature, set your Language preference to English in DevTools Settings',
-    /**
-     * @description Message shown to the user if the age check is not successful.
-     */
-    ageRestricted: 'This feature is only available to users who are 18 years of age or older',
+    wrongLocale: 'To use this feature, set your language preference to English in DevTools settings',
     /**
      * @description Message shown to the user if the user's region is not
      * supported.
@@ -56,9 +52,6 @@ const setting = 'ai-assistance-enabled';
 function isLocaleRestricted() {
     const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
     return !devtoolsLocale.locale.startsWith('en-');
-}
-function isAgeRestricted(config) {
-    return config?.aidaAvailability?.blockedByAge === true;
 }
 function isGeoRestricted(config) {
     return config?.aidaAvailability?.blockedByGeo === true;
@@ -115,9 +108,6 @@ Common.Settings.registerSettingExtension({
         if (isLocaleRestricted()) {
             return { disabled: true, reason: i18nString(UIStrings.wrongLocale) };
         }
-        if (isAgeRestricted(config)) {
-            return { disabled: true, reason: i18nString(UIStrings.ageRestricted) };
-        }
         if (isGeoRestricted(config)) {
             return { disabled: true, reason: i18nString(UIStrings.geoRestricted) };
         }
@@ -155,6 +145,20 @@ UI.ActionRegistration.registerActionExtension({
     condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 UI.ActionRegistration.registerActionExtension({
+    actionId: 'drjones.network-floating-button',
+    contextTypes() {
+        return [];
+    },
+    experiment: "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+    title: i18nLazyString(UIStrings.askAi),
+    async loadActionDelegate() {
+        const Freestyler = await loadFreestylerModule();
+        return new Freestyler.ActionDelegate();
+    },
+    condition: config => isDrJonesNetworkFeatureAvailable(config) && !isPolicyRestricted(config),
+});
+UI.ActionRegistration.registerActionExtension({
     actionId: 'drjones.network-panel-context',
     contextTypes() {
         return [];
@@ -180,6 +184,20 @@ UI.ActionRegistration.registerActionExtension({
         return new Freestyler.ActionDelegate();
     },
     condition: config => isDrJonesPerformanceFeatureAvailable(config) && !isPolicyRestricted(config),
+});
+UI.ActionRegistration.registerActionExtension({
+    actionId: 'drjones.sources-floating-button',
+    contextTypes() {
+        return [];
+    },
+    experiment: "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+    title: i18nLazyString(UIStrings.askAi),
+    async loadActionDelegate() {
+        const Freestyler = await loadFreestylerModule();
+        return new Freestyler.ActionDelegate();
+    },
+    condition: config => isDrJonesFileFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'drjones.sources-panel-context',

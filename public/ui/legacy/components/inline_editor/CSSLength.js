@@ -45,7 +45,6 @@ export var CSSLengthUnit;
 })(CSSLengthUnit || (CSSLengthUnit = {}));
 export const CSS_LENGTH_REGEX = new RegExp(`(?<value>[+-]?\\d*\\.?\\d+([Ee][+-]?\\d+)?)(?<unit>${Object.values(CSSLengthUnit).join('|')})`);
 export class CSSLength extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-length`;
     shadow = this.attachShadow({ mode: 'open' });
     onDraggingValue = this.dragValue.bind(this);
     value = '';

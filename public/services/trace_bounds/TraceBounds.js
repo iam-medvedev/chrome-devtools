@@ -111,6 +111,10 @@ export class BoundsManager extends EventTarget {
             // Minimum timeline visible window range is 1 millisecond.
             return;
         }
+        if (newWindow.min === existingWindow.min && newWindow.max === existingWindow.max) {
+            // New bounds are identical to the old ones so no action required.
+            return;
+        }
         if (!options.ignoreMiniMapBounds) {
             // Ensure that the setTimelineVisibleWindow can never go outside the bounds of the minimap bounds.
             newWindow.min =
@@ -119,7 +123,8 @@ export class BoundsManager extends EventTarget {
                 Trace.Types.Timing.MicroSeconds(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
         }
         if (newWindow.min === existingWindow.min && newWindow.max === existingWindow.max) {
-            // New bounds are identical to the old ones so no action required.
+            // If, after we adjust for the minimap bounds, the new window matches the
+            // old one, we can exit as no action is required.
             return;
         }
         this.#currentState.timelineTraceWindow = newWindow;

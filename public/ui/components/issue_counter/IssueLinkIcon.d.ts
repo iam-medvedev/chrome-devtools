@@ -11,7 +11,6 @@ export interface IssueLinkIconData {
 export declare const extractShortPath: (path: string) => string;
 export declare class IssueLinkIcon extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     set data(data: IssueLinkIconData);
     connectedCallback(): void;
     get data(): IssueLinkIconData;

@@ -32,7 +32,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/components/markdown_view/CodeBlock.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CodeBlock extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-code-block`;
     #shadow = this.attachShadow({ mode: 'open' });
     #code = '';
     #codeLang = '';

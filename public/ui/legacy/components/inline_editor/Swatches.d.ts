@@ -12,7 +12,6 @@ export declare class BezierSwatch extends HTMLSpanElement {
 }
 export declare class CSSShadowSwatch extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     constructor(model: CSSShadowModel);
     model(): CSSShadowModel;
     iconElement(): HTMLSpanElement;

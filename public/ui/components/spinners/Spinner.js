@@ -5,7 +5,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import spinnerStyles from './spinner.css.js';
 const { html } = LitHtml;
 export class Spinner extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-spinner`;
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [spinnerStyles];

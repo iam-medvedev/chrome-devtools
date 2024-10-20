@@ -5,7 +5,6 @@ interface FloatingButtonData {
 }
 export declare class FloatingButton extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     constructor(data: FloatingButtonData);
     connectedCallback(): void;
     set data(floatingButtonData: FloatingButtonData);

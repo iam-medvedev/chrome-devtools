@@ -63,7 +63,6 @@ export type ButtonData = CommonButtonData & ({
 export declare class Button extends HTMLElement {
     #private;
     static formAssociated: boolean;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     constructor();
     /**
      * Perfer using the .data= setter instead of setting the individual properties

@@ -668,7 +668,6 @@ export interface Group {
     style: GroupStyle;
     /** Should be turned on if the track supports user editable stacks. */
     showStackContextMenu?: boolean;
-    legends?: Legend[];
     jslogContext?: string;
     description?: string;
 }
@@ -687,9 +686,5 @@ export interface GroupStyle {
     shareHeaderLine?: boolean;
     useFirstLineForOverview?: boolean;
     useDecoratorsForOverview?: boolean;
-}
-export interface Legend {
-    color: string;
-    category: string;
 }
 export {};

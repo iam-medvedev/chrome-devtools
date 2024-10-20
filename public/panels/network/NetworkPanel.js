@@ -390,7 +390,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         importHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.fileSelectorElement.click(), this);
         this.panelToolbar.appendToolbarItem(importHarButton);
         const exportHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.exportHarSanitized), 'download', undefined, 'export-har');
-        exportHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.networkLogView.exportAll.bind(this.networkItemView, { sanitize: true }), this);
+        exportHarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: true }), this);
         this.panelToolbar.appendToolbarItem(exportHarButton);
         // Support for exporting HAR (with sensitive data), which is added via a long-click
         // context menu on the Export button in the Network panel.
@@ -406,8 +406,8 @@ export class NetworkPanel extends UI.Panel.Panel {
             if (networkShowOptionsToGenerateHarWithSensitiveData.get()) {
                 controller = new UI.UIUtils.LongClickController(exportHarButton.element, event => {
                     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.exportHarSanitized), this.networkLogView.exportAll.bind(this.networkItemView, { sanitize: true }), { jslogContext: 'export-har' });
-                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.exportHarWithSensitiveData), this.networkLogView.exportAll.bind(this.networkItemView, { sanitize: false }), { jslogContext: 'export-har-with-sensitive-data' });
+                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.exportHarSanitized), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: true }), { jslogContext: 'export-har' });
+                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.exportHarWithSensitiveData), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: false }), { jslogContext: 'export-har-with-sensitive-data' });
                     void contextMenu.show();
                 });
             }

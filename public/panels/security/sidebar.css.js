@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+.tree-outline-disclosure {
+  width: 100%;
+}
+
 .tree-outline li.security-group-list-item {
   & + ol {
     padding-left: 0;
@@ -19,17 +23,52 @@ styles.replaceSync(
   &::before {
     display: none;
   }
+
+  &:not(:first-child) {
+    margin-top: var(--sys-size-6);
+  }
 }
 
 .security-main-view-reload-message {
   color: var(--sys-color-token-subtle);
 }
 
+.tree-outline li.security-sidebar-origins + .children > li {
+  &.selected {
+    .url-scheme-secure {
+      color: var(--sys-color-green);
+    }
+
+    .url-scheme-neutral,
+    .url-scheme-insecure,
+    .url-scheme-insecure-broken {
+      color: var(--sys-color-error);
+    }
+  }
+}
+
 .security-main-view-reload-message,
 .tree-outline li.security-sidebar-origins,
-.tree-outline li.security-group-list-item {
+.tree-outline li.security-group-list-item,
+.tree-outline span  {
+
+  font: var(--sys-typescale-body4-medium);
+
   &:hover:not(:has(span[is="dt-checkbox"])) .selection {
     background: transparent;
+  }
+}
+
+.tree-outline li {
+  & .leading-icons {
+    flex: none;
+  }
+
+  & .tree-element-title,
+  .highlighted-url,
+  .title {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

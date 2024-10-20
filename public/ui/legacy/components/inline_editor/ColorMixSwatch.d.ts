@@ -21,7 +21,6 @@ declare const ColorMixSwatch_base: (new (...args: any[]) => {
 };
 export declare class ColorMixSwatch extends ColorMixSwatch_base {
     #private;
-    static readonly litTagName: import("../../../lit-html/static.js").Static;
     private readonly shadow;
     private colorMixText;
     private firstColorText;

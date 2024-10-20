@@ -68,6 +68,17 @@ styles.replaceSync(
   color: var(--icon-file-script);
 }
 
+.navigator-file-tree-item .ai-button-container {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  right: var(--sys-size-3);
+}
+
+.navigator-file-tree-item:hover .ai-button-container {
+  display: inline-flex;
+}
+
 .navigator-file-tree-item devtools-icon.dot::before {
   width: 7px;
   height: 7px;

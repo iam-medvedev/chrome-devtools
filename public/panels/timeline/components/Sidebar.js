@@ -38,7 +38,7 @@ export class SidebarWidget extends UI.Widget.VBox {
      * visibility will be persisted based on if the user opens or closes it - the
      * SplitWidget tracks its state in its own setting.
      */
-    #userHasOpenedSidebarOnce = Common.Settings.Settings.instance().createSetting('timeline-user-has-opened-siderbar-once', false);
+    #userHasOpenedSidebarOnce = Common.Settings.Settings.instance().createSetting('timeline-user-has-opened-sidebar-once', false);
     userHasOpenedSidebarOnce() {
         return this.#userHasOpenedSidebarOnce.get();
     }

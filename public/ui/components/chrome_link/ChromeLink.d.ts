@@ -6,7 +6,6 @@ declare global {
 }
 export declare class ChromeLink extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set href(href: Platform.DevToolsPath.UrlString);
 }

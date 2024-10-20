@@ -583,8 +583,8 @@ export class Widget {
 }
 const storedScrollPositions = new WeakMap();
 export class VBox extends Widget {
-    constructor(isWebComponent, delegatesFocus, element) {
-        super(isWebComponent, delegatesFocus, element);
+    constructor(useShadowDom, delegatesFocus, element) {
+        super(useShadowDom, delegatesFocus, element);
         this.contentElement.classList.add('vbox');
     }
     calculateConstraints() {
@@ -599,8 +599,8 @@ export class VBox extends Widget {
     }
 }
 export class HBox extends Widget {
-    constructor(isWebComponent) {
-        super(isWebComponent);
+    constructor(useShadowDom) {
+        super(useShadowDom);
         this.contentElement.classList.add('hbox');
     }
     calculateConstraints() {

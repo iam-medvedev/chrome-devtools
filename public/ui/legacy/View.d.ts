@@ -15,7 +15,7 @@ export interface View {
 }
 export declare class SimpleView extends VBox implements View {
     #private;
-    constructor(title: Platform.UIString.LocalizedString, isWebComponent?: boolean, viewId?: Lowercase<string>);
+    constructor(title: Platform.UIString.LocalizedString, useShadowDom?: boolean, viewId?: Lowercase<string>);
     viewId(): string;
     title(): Platform.UIString.LocalizedString;
     isCloseable(): boolean;

@@ -6,7 +6,6 @@ declare class SizeChangedEvent extends Event {
 }
 export declare class SizeInputElement extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(title: Platform.UIString.LocalizedString, { jslogContext }: {
         jslogContext: string;
     });

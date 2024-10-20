@@ -206,7 +206,6 @@ class DiffRenderer {
     }
 }
 export class DiffView extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-diff-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     loaded;
     constructor(data) {

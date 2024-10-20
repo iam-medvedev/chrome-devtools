@@ -67,6 +67,7 @@ style.setProperty('--image-file-bug', 'url(\"' + new URL('./src/bug.svg', import
 style.setProperty('--image-file-bundle', 'url(\"' + new URL('./src/bundle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-button-magic', 'url(\"' + new URL('./src/button-magic.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-calendar-today', 'url(\"' + new URL('./src/calendar-today.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-center-focus-weak', 'url(\"' + new URL('./src/center-focus-weak.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-check-circle', 'url(\"' + new URL('./src/check-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-check-double', 'url(\"' + new URL('./src/check-double.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-checker', 'url(\"' + new URL('./src/checker.svg', import.meta.url).toString() + '\")');

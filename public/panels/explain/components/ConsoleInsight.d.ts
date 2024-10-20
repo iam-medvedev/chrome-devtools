@@ -10,14 +10,12 @@ type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'fetch' | 'registerClie
 export declare class ConsoleInsight extends HTMLElement {
     #private;
     static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient): Promise<ConsoleInsight>;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, aidaAvailability: Host.AidaClient.AidaAccessPreconditions);
     connectedCallback(): void;
     disconnectedCallback(): void;
 }
 declare class ConsoleInsightSourcesList extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     set sources(values: Source[]);
     set isPageReloadRecommended(isPageReloadRecommended: boolean);

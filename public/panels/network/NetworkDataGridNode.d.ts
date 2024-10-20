@@ -61,7 +61,8 @@ export declare class NetworkNode extends DataGrid.SortableDataGrid.SortableDataG
     displayType(): string;
     createCell(columnId: string): HTMLElement;
     renderCell(_cell: Element, _columnId: string): void;
-    isFailed(): boolean;
+    isError(): boolean;
+    isWarning(): boolean;
     backgroundColor(): string;
     updateBackgroundColor(): void;
     setStriped(isStriped: boolean): void;
@@ -119,6 +120,9 @@ export declare class NetworkRequestNode extends NetworkNode {
     request(): SDK.NetworkRequest.NetworkRequest;
     isNavigationRequest(): boolean;
     nodeSelfHeight(): number;
+    private isPrefetch;
+    isWarning(): boolean;
+    isError(): boolean;
     createCells(element: Element): void;
     private setTextAndTitle;
     private setTextAndTitleAsLink;
@@ -127,7 +131,7 @@ export declare class NetworkRequestNode extends NetworkNode {
     select(supressSelectedEvent?: boolean): void;
     highlightMatchedSubstring(regexp: RegExp | null): Object[];
     private openInNewTab;
-    isFailed(): boolean;
+    private isFailed;
     private renderPrimaryCell;
     private renderStatusCell;
     private renderProtocolCell;
@@ -136,6 +140,7 @@ export declare class NetworkRequestNode extends NetworkNode {
     private renderSizeCell;
     private renderTimeCell;
     private appendSubtitle;
+    private createAiButtonIfAvailable;
 }
 export declare class NetworkGroupNode extends NetworkNode {
     createCells(element: Element): void;

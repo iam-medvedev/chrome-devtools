@@ -7,7 +7,6 @@ import twoStatesCounterStyles from './twoStatesCounter.css.js';
 const { html, Directives: { ifDefined, classMap, styleMap } } = LitHtml;
 const isString = (value) => value !== undefined;
 export class TwoStatesCounter extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-two-states-counter`;
     #boundRender = this.#render.bind(this);
     #shadow = this.attachShadow({ mode: 'open' });
     #numActive = 0;

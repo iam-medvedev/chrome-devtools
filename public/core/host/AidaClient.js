@@ -239,4 +239,43 @@ export function convertToUserTierEnum(userTier) {
     }
     return UserTier.BETA;
 }
+let hostConfigTrackerInstance;
+export class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper {
+    #pollTimer;
+    #aidaAvailability;
+    constructor() {
+        super();
+    }
+    static instance() {
+        if (!hostConfigTrackerInstance) {
+            hostConfigTrackerInstance = new HostConfigTracker();
+        }
+        return hostConfigTrackerInstance;
+    }
+    addEventListener(eventType, listener) {
+        const isFirst = !this.hasEventListeners(eventType);
+        const eventDescriptor = super.addEventListener(eventType, listener);
+        if (isFirst) {
+            window.clearTimeout(this.#pollTimer);
+            void this.pollAidaAvailability();
+        }
+        return eventDescriptor;
+    }
+    removeEventListener(eventType, listener) {
+        super.removeEventListener(eventType, listener);
+        if (!this.hasEventListeners(eventType)) {
+            window.clearTimeout(this.#pollTimer);
+        }
+    }
+    async pollAidaAvailability() {
+        this.#pollTimer = window.setTimeout(() => this.pollAidaAvailability(), 2000);
+        const currentAidaAvailability = await AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            const config = await new Promise(resolve => InspectorFrontendHostInstance.getHostConfig(config => resolve(config)));
+            Common.Settings.Settings.instance().setHostConfig(config);
+            this.dispatchEventToListeners("aidaAvailabilityChanged" /* Events.AIDA_AVAILABILITY_CHANGED */);
+        }
+    }
+}
 //# sourceMappingURL=AidaClient.js.map

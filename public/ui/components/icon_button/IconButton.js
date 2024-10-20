@@ -6,7 +6,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import iconButtonStyles from './iconButton.css.js';
 const { html } = LitHtml;
 export class IconButton extends HTMLElement {
-    static litTagName = LitHtml.literal `icon-button`;
     #shadow = this.attachShadow({ mode: 'open' });
     #clickHandler = undefined;
     #groups = [];

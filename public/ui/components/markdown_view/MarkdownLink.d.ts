@@ -10,7 +10,6 @@ export interface MarkdownLinkData {
  */
 export declare class MarkdownLink extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: MarkdownLinkData);
 }

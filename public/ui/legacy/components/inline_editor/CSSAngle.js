@@ -30,7 +30,6 @@ const DefaultAngle = {
     unit: "rad" /* AngleUnit.RAD */,
 };
 export class CSSAngle extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-css-angle`;
     shadow = this.attachShadow({ mode: 'open' });
     angle = DefaultAngle;
     displayedAngle = DefaultAngle;

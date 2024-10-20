@@ -10,7 +10,6 @@ export interface PreviewToggleData {
 }
 export declare class PreviewToggle extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: PreviewToggleData);
 }

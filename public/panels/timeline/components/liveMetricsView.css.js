@@ -174,17 +174,33 @@ styles.replaceSync(
 }
 
 .interaction {
-  display: flex;
-  align-items: center;
-  padding: 7px 0;
+  --phase-table-margin: 120px;
+  --details-indicator-width: 18px;
+
+  summary {
+    display: flex;
+    align-items: center;
+    padding: 7px 0;
+
+    &::before {
+      content: " ";
+      height: 14px;
+      width: var(--details-indicator-width);
+      mask-image: var(--image-file-triangle-right);
+      background-color: var(--icon-default);
+      flex-shrink: 0;
+    }
+  }
+
+  details[open] summary::before {
+    mask-image: var(--image-file-triangle-down);
+  }
 }
 
 .interaction-type {
   font-weight: var(--ref-typeface-weight-medium);
-  width: 80px;
+  width: calc(var(--phase-table-margin) - var(--details-indicator-width));
   flex-shrink: 0;
-  margin-right: 12px;
-  white-space: nowrap;
 }
 
 .interaction-inp-chip {
@@ -292,18 +308,18 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   width: 18px;
 }
 
-.environment-recs {
-  margin: 12px 0;
-}
-
-.environment-recs > summary {
+.environment-recs-title {
+  margin-top: 12px;
   font-weight: var(--ref-typeface-weight-medium);
-  margin-bottom: 4px;
 }
 
 .environment-recs-list {
   margin: 0;
   padding-left: 20px;
+}
+
+.environment-rec {
+  font-weight: var(--ref-typeface-weight-medium);
 }
 
 .link-to-log {
@@ -324,6 +340,22 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   to {
     background-color: transparent;
   }
+}
+
+.phase-table {
+  border-top: 1px solid var(--sys-color-divider);
+  padding: 7px 0;
+  margin-left: var(--phase-table-margin);
+}
+
+.phase-table-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.phase-table-header-row {
+  font-weight: var(--ref-typeface-weight-medium);
+  margin-bottom: 4px;
 }
 
 /*# sourceURL=liveMetricsView.css */

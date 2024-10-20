@@ -24,7 +24,6 @@ export class SizeInputElement extends HTMLElement {
     #placeholder = '';
     #title;
     #jslogContext;
-    static litTagName = LitHtml.literal `device-mode-emulation-size-input`;
     constructor(title, { jslogContext }) {
         super();
         this.#title = title;

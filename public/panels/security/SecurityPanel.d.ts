@@ -3,26 +3,39 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { SecurityAndPrivacyPanelSidebar } from './SecurityAndPrivacyPanelSidebar.js';
 import { type PageVisibleSecurityState, SecurityModel } from './SecurityModel.js';
+import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): IconButton.Icon.Icon;
 export declare function getSecurityStateIconForOverview(securityState: Protocol.Security.SecurityState, className: string): IconButton.Icon.Icon;
 export declare function createHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): Element;
-export declare class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
+export type ViewInput = {
+    panel: SecurityPanel;
+};
+export type ViewOutput = {
+    splitWidget: UI.SplitWidget.SplitWidget;
+    mainView: SecurityMainView;
+    visibleView: UI.Widget.VBox | null;
+    sidebar: SecurityPanelSidebar;
+};
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
+    private view;
     readonly mainView: SecurityMainView;
-    readonly sidebar: SecurityAndPrivacyPanelSidebar;
+    readonly sidebar: SecurityPanelSidebar;
     private readonly lastResponseReceivedForLoaderId;
     private readonly origins;
     private readonly filterRequestCounts;
-    private visibleView;
+    visibleView: UI.Widget.VBox | null;
     private eventListeners;
     private securityModel;
-    constructor();
+    readonly splitWidget: UI.SplitWidget.SplitWidget;
+    constructor(view?: View);
     static instance(opts?: {
         forceNew: boolean | null;
     }): SecurityPanel;
     static createCertificateViewerButtonForOrigin(text: string, origin: string): Element;
     static createCertificateViewerButtonForCert(text: string, names: string[]): Element;
+    private doUpdate;
     private updateVisibleSecurityState;
     private onVisibleSecurityStateChanged;
     selectAndSwitchToMainView(): void;
@@ -56,7 +69,7 @@ export declare class SecurityMainView extends UI.Widget.VBox {
     private summaryText;
     private explanations;
     private securityState;
-    constructor(panel: SecurityPanel);
+    constructor(panel: SecurityPanel, element?: HTMLElement);
     getLockSpectrumDiv(securityState: Protocol.Security.SecurityState): HTMLElement;
     private addExplanation;
     updateVisibleSecurityState(visibleSecurityState: PageVisibleSecurityState): void;

@@ -62,7 +62,6 @@ export type IconData = IconWithName | {
  */
 export declare class Icon extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     static readonly observedAttributes: string[];
     constructor();
     /**

@@ -34,7 +34,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/settings/components/SyncSection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SyncSection extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-sync-section`;
     #shadow = this.attachShadow({ mode: 'open' });
     #syncInfo = { isSyncActive: false };
     #syncSetting;

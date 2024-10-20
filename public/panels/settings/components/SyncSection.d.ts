@@ -8,7 +8,6 @@ export interface SyncSectionData {
 }
 export declare class SyncSection extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
     set data(data: SyncSectionData);
 }

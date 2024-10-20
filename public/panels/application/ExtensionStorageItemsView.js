@@ -29,6 +29,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as JSON5 from '../../third_party/json5/json5.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -81,6 +82,18 @@ export class ExtensionStorageItemsView extends StorageItemsView {
         // set by enterprise policy.
         return this.#extensionStorage.storageArea !== "managed" /* Protocol.Extensions.StorageArea.Managed */;
     }
+    /**
+     * When parsing a value provided by the user, attempt to treat it as JSON,
+     * falling back to a string otherwise.
+     */
+    parseValue(input) {
+        try {
+            return JSON5.parse(input);
+        }
+        catch {
+            return input;
+        }
+    }
     #createGrid() {
         const columns = [
             { id: 'key', title: i18nString(UIStrings.key), sortable: true, editable: true, longText: true, weight: 50 },
@@ -94,8 +107,9 @@ export class ExtensionStorageItemsView extends StorageItemsView {
                     this.refreshItems();
                 },
                 setItem: async (key, value) => {
-                    await this.#extensionStorage.setItem(key, value);
+                    await this.#extensionStorage.setItem(key, this.parseValue(value));
                     this.refreshItems();
+                    this.extensionStorageItemsDispatcher.dispatchEventToListeners("ItemEdited" /* ExtensionStorageItemsDispatcher.Events.ITEM_EDITED */);
                 },
             } :
                 undefined,
@@ -161,6 +175,9 @@ export class ExtensionStorageItemsView extends StorageItemsView {
     }
     getEntriesForTesting() {
         return this.#grid.dataGridForTesting.rootNode().children.filter(node => node.data.key).map(node => node.data);
+    }
+    get dataGridForTesting() {
+        return this.#grid.dataGridForTesting;
     }
 }
 //# sourceMappingURL=ExtensionStorageItemsView.js.map

@@ -315,7 +315,7 @@ export class InspectorFrontendHostStub {
                 blockedByAge: false,
                 blockedByEnterprisePolicy: false,
                 blockedByGeo: false,
-                disallowLogging: false,
+                disallowLogging: true,
             },
             devToolsConsoleInsights: {
                 modelId: '',

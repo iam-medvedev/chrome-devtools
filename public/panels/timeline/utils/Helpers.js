@@ -62,13 +62,12 @@ export function createUrlLabels(urls) {
  * Shortens the provided URL for use within a narrow display usecase.
  *
  * The resulting string will at least contain the last path component of the URL.
- * More components are included until a limit of 20 characters is reached.
+ * More components are included until a limit of maxChars (default 20) is reached.
  * No querystring is included.
  *
- * If the last path component is larger than 20 characters, the middle is elided.
+ * If the last path component is larger than maxChars characters, the middle is elided.
  */
-export function shortenUrl(url) {
-    const maxChars = 20;
+export function shortenUrl(url, maxChars = 20) {
     const parts = url.pathname.split('/');
     let shortenedUrl = parts.at(-1) ?? '';
     if (shortenedUrl.length > maxChars) {

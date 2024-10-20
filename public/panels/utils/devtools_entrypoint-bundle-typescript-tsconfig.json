@@ -45,7 +45,22 @@
       "path": "../../models/formatter/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/persistence/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/diff_view/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../snippets/bundle-tsconfig.json"
     }
   ]
 }

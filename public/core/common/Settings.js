@@ -92,6 +92,9 @@ export class Settings {
     getHostConfig() {
         return this.#config;
     }
+    setHostConfig(config) {
+        this.#config = config;
+    }
     registerModuleSetting(setting) {
         const settingName = setting.name;
         const category = setting.category();

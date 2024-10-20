@@ -428,7 +428,6 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         this.setAttribute('jslog', `${VisualLogging.section('sources.js-breakpoints')}`);
         void this.#controller.update();
     }
-    static litTagName = LitHtml.literal `devtools-breakpoint-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #pauseOnUncaughtExceptions = false;
     #pauseOnCaughtExceptions = false;

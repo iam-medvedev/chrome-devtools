@@ -50,7 +50,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const KEYS_TREATED_AS_CLICKS = new Set([' ', 'Enter']);
 const ROW_HEIGHT_PIXELS = 20;
 export class DataGrid extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-data-grid`;
     #shadow = this.attachShadow({ mode: 'open' });
     #columns = [];
     #rows = [];
