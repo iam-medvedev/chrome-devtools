@@ -8,11 +8,13 @@ interface LayoutShifts {
     sessionMaxScore: number;
     clsWindowID: number;
     prePaintEvents: Types.Events.PrePaint[];
+    paintImageEvents: Types.Events.PaintImage[];
     layoutInvalidationEvents: readonly Types.Events.LayoutInvalidationTracking[];
     scheduleStyleInvalidationEvents: readonly Types.Events.ScheduleStyleInvalidationTracking[];
     styleRecalcInvalidationEvents: readonly Types.Events.StyleRecalcInvalidationTracking[];
     renderFrameImplCreateChildFrameEvents: readonly Types.Events.RenderFrameImplCreateChildFrame[];
     domLoadingEvents: readonly Types.Events.DomLoading[];
+    layoutImageUnsizedEvents: readonly Types.Events.LayoutImageUnsized[];
     beginRemoteFontLoadEvents: readonly Types.Events.BeginRemoteFontLoad[];
     scoreRecords: readonly ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];

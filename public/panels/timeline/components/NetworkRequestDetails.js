@@ -168,8 +168,7 @@ export class NetworkRequestDetails extends HTMLElement {
             // clang-format off
             const urlElement = html `
         ${linkifiedURL}
-        <devtools-request-link-icon
-          .data=${{ request: networkRequest }} >
+        <devtools-request-link-icon .data=${{ request: networkRequest }}>
         </devtools-request-link-icon>
       `;
             // clang-format on

@@ -29,6 +29,8 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/timeline/utils/EntryName.ts",
+    "../../../../../../../front_end/panels/timeline/utils/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.ts",
     "../../../../../../../front_end/panels/timeline/utils/ImageCache.ts",
@@ -62,6 +64,9 @@
     },
     {
       "path": "../../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/legacy/bundle-tsconfig.json"
     }
   ]
 }

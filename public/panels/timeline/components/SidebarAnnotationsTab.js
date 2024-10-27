@@ -10,7 +10,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { nameForEntry } from './EntryName.js';
+import * as Utils from '../utils/utils.js';
 import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
 const { html } = LitHtml;
@@ -164,7 +164,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
     }
     #renderEntryToIdentifier(annotation) {
         if (annotation.entryTo) {
-            const entryToName = nameForEntry(annotation.entryTo);
+            const entryToName = Utils.EntryName.nameForEntry(annotation.entryTo);
             const toBackgroundColor = this.#annotationEntryToColorMap.get(annotation.entryTo) ?? '';
             const toTextColor = findTextColorForContrast(toBackgroundColor);
             const styleForToAnnotationIdentifier = {
@@ -194,7 +194,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
     #renderAnnotationIdentifier(annotation) {
         switch (annotation.type) {
             case 'ENTRY_LABEL': {
-                const entryName = nameForEntry(annotation.entry);
+                const entryName = Utils.EntryName.nameForEntry(annotation.entry);
                 const backgroundColor = this.#annotationEntryToColorMap.get(annotation.entry) ?? '';
                 const color = findTextColorForContrast(backgroundColor);
                 const styleForAnnotationIdentifier = {
@@ -218,7 +218,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
         `;
             }
             case 'ENTRIES_LINK': {
-                const entryFromName = nameForEntry(annotation.entryFrom);
+                const entryFromName = Utils.EntryName.nameForEntry(annotation.entryFrom);
                 const fromBackgroundColor = this.#annotationEntryToColorMap.get(annotation.entryFrom) ?? '';
                 const fromTextColor = findTextColorForContrast(fromBackgroundColor);
                 const styleForFromAnnotationIdentifier = {
@@ -342,7 +342,7 @@ customElements.define('devtools-performance-sidebar-annotations', SidebarAnnotat
 function detailedAriaDescriptionForAnnotation(annotation) {
     switch (annotation.type) {
         case 'ENTRY_LABEL': {
-            const name = nameForEntry(annotation.entry);
+            const name = Utils.EntryName.nameForEntry(annotation.entry);
             return i18nString(UIStrings.entryLabelDescriptionLabel, {
                 PH1: name,
                 PH2: annotation.label,
@@ -361,8 +361,8 @@ function detailedAriaDescriptionForAnnotation(annotation) {
                 // Only label it if it is completed.
                 return '';
             }
-            const nameFrom = nameForEntry(annotation.entryFrom);
-            const nameTo = nameForEntry(annotation.entryTo);
+            const nameFrom = Utils.EntryName.nameForEntry(annotation.entryFrom);
+            const nameTo = Utils.EntryName.nameForEntry(annotation.entryTo);
             return i18nString(UIStrings.entryLinkDescriptionLabel, {
                 PH1: nameFrom,
                 PH2: nameTo,

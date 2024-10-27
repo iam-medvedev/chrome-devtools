@@ -23,7 +23,7 @@ export declare class EntriesFilter {
      * Returns the trace entry tree for the specified event, simplified for input to AI Assistance.
      * The tree is rooted at the top-level task that contains the event, with the node for specified event marked as selected.
      */
-    getTraceEntryTreeForAI(entry: Trace.Types.Events.Event): Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
+    getAIEventNodeTree(entry: Trace.Types.Events.Event): Trace.Helpers.TreeHelpers.AINode | null;
     /**
      * Returns the amount of entry descendants that belong to the hidden entries array.
      * */

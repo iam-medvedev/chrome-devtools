@@ -17,71 +17,87 @@ export const makeEmptyTraceEntryNode = (entry, id) => ({
     depth: 0,
 });
 /**
- * Represents a node in a trace entry tree, simplified for AI Assistance processing.
+ * Node in a graph simplified for AI Assistance processing. The graph mirrors the TraceEntryNode one.
+ * Huge tip of the hat to Victor Porof for prototyping this with some great work: https://crrev.com/c/5711249
  */
-export class TraceEntryNodeForAI {
-    type;
-    start;
-    end;
-    totalTime;
-    selfTime;
+export class AINode {
+    event;
+    // event: Types.Events.Event; // Set in the constructor.
+    name;
+    duration;
+    selfDuration;
     id;
-    domain;
-    line;
-    column;
-    function;
     children;
+    url;
     selected;
-    constructor(type, start, end, totalTime, selfTime) {
-        this.type = type;
-        this.start = start;
-        this.end = end;
-        this.totalTime = totalTime;
-        this.selfTime = selfTime;
+    constructor(event) {
+        this.event = event;
+        this.name = event.name;
+        this.duration = event.dur === undefined ? undefined : microSecondsToMilliseconds(event.dur);
+        if (Types.Events.isProfileCall(event)) {
+            this.name = event.callFrame.functionName || '(anonymous)';
+            this.url = event.callFrame.url;
+        }
+    }
+    // Manually handle how nodes in this tree are serialized. We'll drop serveral properties that we don't need in the JSON string.
+    // FYI: toJSON() is invoked implicitly via JSON.stringify()
+    toJSON() {
+        return {
+            selected: this.selected,
+            name: this.name,
+            url: this.url,
+            // Round milliseconds because we don't need the precision
+            dur: this.duration === undefined ? undefined : Math.round(this.duration * 10) / 10,
+            self: this.selfDuration === undefined ? undefined : Math.round(this.selfDuration * 10) / 10,
+            children: this.children?.length ? this.children : undefined,
+        };
     }
     static #fromTraceEvent(event) {
-        const start = microSecondsToMilliseconds(event.ts);
-        const duration = event.dur === undefined ? undefined : microSecondsToMilliseconds(event.dur);
-        const nodeForAI = new TraceEntryNodeForAI(event.name, start, duration);
-        if (Types.Events.isProfileCall(event)) {
-            nodeForAI.function = event.callFrame.functionName || '(anonymous)';
-            try {
-                const url = new URL(event.callFrame.url);
-                nodeForAI.domain = url.origin;
-                nodeForAI.line = event.callFrame.lineNumber;
-                nodeForAI.column = event.callFrame.columnNumber;
-            }
-            catch (e) {
-            }
-        }
-        return nodeForAI;
+        return new AINode(event);
     }
     /**
-     * Builds a TraceEntryNodeForAI tree from a TraceEntryNode tree and marks the selected node.
+     * Builds a TraceEntryNodeForAI tree from a node and marks the selected node. Primary entrypoint from EntriesFilter
      */
-    static #fromTraceEntryTree(node, selectedEntryNode) {
-        const nodeForAI = TraceEntryNodeForAI.#fromTraceEvent(node.entry);
-        nodeForAI.id = node.id;
-        if (node === selectedEntryNode) {
-            nodeForAI.selected = true;
-        }
-        nodeForAI.selfTime = node.selfTime === undefined ? undefined : microSecondsToMilliseconds(node.selfTime);
-        for (const child of node.children) {
-            nodeForAI.children ??= [];
-            nodeForAI.children.push(TraceEntryNodeForAI.#fromTraceEntryTree(child, selectedEntryNode));
-        }
-        return nodeForAI;
-    }
-    static fromSelectedEntryNode(selectedEntryNode) {
-        function getRoot(node) {
-            if (node.parent) {
-                return getRoot(node.parent);
+    static fromEntryNode(selectedNode, entryIsVisibleInTimeline) {
+        /**
+         * Builds a AINode tree from a TraceEntryNode tree and marks the selected node.
+         */
+        function fromEntryNodeAndTree(node) {
+            const aiNode = AINode.#fromTraceEvent(node.entry);
+            aiNode.id = node.id;
+            if (node === selectedNode) {
+                aiNode.selected = true;
             }
-            return node;
+            aiNode.selfDuration = node.selfTime === undefined ? undefined : microSecondsToMilliseconds(node.selfTime);
+            for (const child of node.children) {
+                aiNode.children ??= [];
+                aiNode.children.push(fromEntryNodeAndTree(child));
+            }
+            return aiNode;
         }
-        return TraceEntryNodeForAI.#fromTraceEntryTree(getRoot(selectedEntryNode), selectedEntryNode);
+        function findTopMostVisibleAncestor(node) {
+            const parentNodes = [node];
+            let parent = node.parent;
+            while (parent) {
+                parentNodes.unshift(parent);
+                parent = parent.parent;
+            }
+            return parentNodes.find(node => entryIsVisibleInTimeline(node.entry)) ?? node;
+        }
+        const topMostVisibleRoot = findTopMostVisibleAncestor(selectedNode);
+        const aiNode = fromEntryNodeAndTree(topMostVisibleRoot);
+        // If our root wasn't visible, this could return an array of multiple RunTasks.
+        // But with a visible root, we safely get back the exact same root, now with its descendent tree updated.
+        // Filter to ensure our tree here only has "visible" entries
+        const [filteredAiNodeRoot] = AINode.#filterRecursive([aiNode], node => {
+            if (node.event.name === 'V8.CompileCode' || node.event.name === 'UpdateCounters') {
+                return false;
+            }
+            return entryIsVisibleInTimeline(node.event);
+        });
+        return filteredAiNodeRoot;
     }
-    static getSelectedNodeForTraceEntryTreeForAI(node) {
+    static getSelectedNodeWithinTree(node) {
         if (node.selected) {
             return node;
         }
@@ -89,12 +105,56 @@ export class TraceEntryNodeForAI {
             return null;
         }
         for (const child of node.children) {
-            const returnedNode = TraceEntryNodeForAI.getSelectedNodeForTraceEntryTreeForAI(child);
+            const returnedNode = AINode.getSelectedNodeWithinTree(child);
             if (returnedNode) {
                 return returnedNode;
             }
         }
         return null;
+    }
+    static #filterRecursive(list, predicate) {
+        let done;
+        do {
+            done = true;
+            const filtered = [];
+            for (const node of list) {
+                if (predicate(node)) {
+                    // Keep it
+                    filtered.push(node);
+                }
+                else if (node.children) {
+                    filtered.push(...node.children);
+                    done = false;
+                }
+            }
+            list = filtered;
+        } while (!done);
+        for (const node of list) {
+            if (node.children) {
+                node.children = AINode.#filterRecursive(node.children, predicate);
+            }
+        }
+        return list;
+    }
+    static #removeInexpensiveNodesRecursively(list, options) {
+        const minDuration = options?.minDuration ?? 0;
+        const minSelf = options?.minSelf ?? 0;
+        const minJsDuration = options?.minJsDuration ?? 0;
+        const minJsSelf = options?.minJsSelf ?? 0;
+        const isJS = (node) => Boolean(node.url);
+        const longEnough = (node) => node.duration === undefined || node.duration >= (isJS(node) ? minJsDuration : minDuration);
+        const selfLongEnough = (node) => node.selfDuration === undefined || node.selfDuration >= (isJS(node) ? minJsSelf : minSelf);
+        return AINode.#filterRecursive(list, node => longEnough(node) && selfLongEnough(node));
+    }
+    // Invoked from DrJonesPerformanceAgent
+    sanitize() {
+        if (this.children) {
+            this.children = AINode.#removeInexpensiveNodesRecursively(this.children, {
+                minDuration: Types.Timing.MilliSeconds(1),
+                minJsDuration: Types.Timing.MilliSeconds(1),
+                minJsSelf: Types.Timing.MilliSeconds(0.1),
+            });
+        }
     }
 }
 class TraceEntryNodeIdTag {

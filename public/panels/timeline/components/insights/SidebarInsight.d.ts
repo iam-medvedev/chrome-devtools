@@ -12,8 +12,9 @@ export declare class InsightActivated extends Event {
     name: string;
     insightSetKey: string;
     overlays: Overlays.Overlays.TimelineOverlay[];
+    relatedEvents: Trace.Types.Events.Event[];
     static readonly eventName = "insightactivated";
-    constructor(name: string, insightSetKey: string, overlays: Overlays.Overlays.TimelineOverlay[]);
+    constructor(name: string, insightSetKey: string, overlays: Overlays.Overlays.TimelineOverlay[], relatedEvents: Trace.Types.Events.Event[]);
 }
 export declare class InsightDeactivated extends Event {
     static readonly eventName = "insightdeactivated";

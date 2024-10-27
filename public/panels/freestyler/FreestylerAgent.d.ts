@@ -36,10 +36,6 @@ export declare class FreestylerAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     handleContextDetails(selectedElement: SDK.DOMModel.DOMNode | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, selectedElement: SDK.DOMModel.DOMNode | null): Promise<string>;
-    addToHistory(options: {
-        id: number;
-        query: string;
-        response: ParsedResponse;
-    }): void;
+    formatHistoryChunkAnswer(text: string): string;
 }
 export {};

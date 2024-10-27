@@ -4,10 +4,8 @@
 import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as TimelineComponents from './components/components.js';
 import { ModificationsManager } from './ModificationsManager.js';
 import { TimelineEventOverviewCPUActivity, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview, } from './TimelineEventOverview.js';
@@ -34,12 +32,6 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.element.classList.add('timeline-minimap');
         this.#breadcrumbsUI = new TimelineComponents.BreadcrumbsUI.BreadcrumbsUI();
         this.element.prepend(this.#breadcrumbsUI);
-        const icon = new IconButton.Icon.Icon();
-        icon.setAttribute('name', 'left-panel-open');
-        icon.setAttribute('jslog', `${VisualLogging.action('timeline.sidebar-open').track({ click: true })}`);
-        icon.addEventListener('click', () => {
-            this.dispatchEventToListeners("OpenSidebarButtonClicked" /* PerfUI.TimelineOverviewPane.Events.OPEN_SIDEBAR_BUTTON_CLICKED */, {});
-        });
         this.#overviewComponent.show(this.element);
         this.#overviewComponent.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_WINDOW_CHANGED */, event => {
             this.#onOverviewPanelWindowChanged(event);

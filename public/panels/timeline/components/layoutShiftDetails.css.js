@@ -40,7 +40,7 @@ styles.replaceSync(
   td {
     padding-right: var(--sys-size-4);
     min-width: var(--sys-size-20);
-    max-width: var(--sys-size-24);
+    max-width: var(--sys-size-28);
   }
 }
 
@@ -82,6 +82,12 @@ styles.replaceSync(
   padding-right: var(--sys-size-5);
   display: inline-block;
   vertical-align: top;
+}
+
+.culprit {
+  display: inline-flex;
+  flex-direction: row;
+  gap: var(--sys-size-3);
 }
 
 .value {

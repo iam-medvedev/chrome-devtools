@@ -75,6 +75,9 @@ export function isScheduleStyleRecalculation(event) {
 export function isRenderFrameImplCreateChildFrame(event) {
     return event.name === "RenderFrameImpl::createChildFrame" /* Name.RENDER_FRAME_IMPL_CREATE_CHILD_FRAME */;
 }
+export function isLayoutImageUnsized(event) {
+    return event.name === "LayoutImageUnsized" /* Name.LAYOUT_IMAGE_UNSIZED */;
+}
 export function isPipelineReporter(event) {
     return event.name === "PipelineReporter" /* Name.PIPELINE_REPORTER */;
 }
@@ -481,6 +484,15 @@ export function isFunctionCall(event) {
 }
 export function isSyntheticServerTiming(event) {
     return event.cat === 'devtools.server-timing';
+}
+export function isSchedulePostTaskCallback(event) {
+    return event.name === "SchedulePostTaskCallback" /* Name.SCHEDULE_POST_TASK_CALLBACK */;
+}
+export function isRunPostTaskCallback(event) {
+    return event.name === "RunPostTaskCallback" /* Name.RUN_POST_TASK_CALLBACK */;
+}
+export function isAbortPostTaskCallback(event) {
+    return event.name === "AbortPostTaskCallback" /* Name.ABORT_POST_TASK_CALLBACK */;
 }
 /**
  * Generally, before JS is executed, a trace event is dispatched that

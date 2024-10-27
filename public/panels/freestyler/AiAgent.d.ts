@@ -1,5 +1,5 @@
 import * as Host from '../../core/host/host.js';
-export declare enum ResponseType {
+export declare const enum ResponseType {
     CONTEXT = "context",
     TITLE = "title",
     THOUGHT = "thought",
@@ -7,7 +7,8 @@ export declare enum ResponseType {
     SIDE_EFFECT = "side-effect",
     ANSWER = "answer",
     ERROR = "error",
-    QUERYING = "querying"
+    QUERYING = "querying",
+    USER_QUERY = "user-query"
 }
 export declare const enum ErrorType {
     UNKNOWN = "unknown",
@@ -60,8 +61,13 @@ export interface ActionResponse {
 }
 export interface QueryResponse {
     type: ResponseType.QUERYING;
+    query: string;
 }
-export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse;
+export interface UserQuery {
+    type: ResponseType.USER_QUERY;
+    query: string;
+}
+export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
 export interface AidaBuildRequestOptions {
     input: string;
 }
@@ -71,12 +77,12 @@ export interface HistoryChunk {
 }
 export interface AidaRequestOptions {
     temperature?: number;
-    model_id?: string;
+    modelId?: string;
 }
-type AgentOptions = {
+interface AgentOptions {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
-};
+}
 interface ParsedResponseAnswer {
     answer: string;
     suggestions?: [string, ...string[]];
@@ -96,15 +102,8 @@ export declare abstract class AiAgent<T> {
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: T | null): AsyncGenerator<ContextResponse, void, void>;
     constructor(opts: AgentOptions);
-    get historyEntry(): Array<HistoryChunk>;
     get chatHistoryForTesting(): Array<HistoryChunk>;
-    set chatHistoryForTesting(history: Map<number, HistoryChunk[]>);
-    removeHistoryRun(id: number): void;
-    addToHistory(options: {
-        id: number;
-        query: string;
-        response: ParsedResponse;
-    }): void;
+    set chatNewHistoryForTesting(history: Map<number, ResponseData[]>);
     aidaFetch(input: string, options?: {
         signal?: AbortSignal;
     }): Promise<{
@@ -112,13 +111,20 @@ export declare abstract class AiAgent<T> {
         rpcId?: number;
     }>;
     buildRequest(opts: AidaBuildRequestOptions): Host.AidaClient.AidaRequest;
-    handleAction(_action: string, _rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
+    handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     enhanceQuery(query: string, selected: T | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;
+    formatHistoryChunkAnswer(text: string): string;
+    formatHistoryChunkObservation(observation: {
+        title?: string;
+        thought?: string;
+        action?: string;
+    }): string;
     run(query: string, options: {
         signal?: AbortSignal;
         selected: T | null;
     }): AsyncGenerator<ResponseData, void, void>;
+    runFromHistory(): AsyncGenerator<ResponseData, void, void>;
 }
 export declare function isDebugMode(): boolean;
 export declare function debugLog(...log: unknown[]): void;

@@ -117,9 +117,13 @@ export class MarkdownLitRenderer {
             case 'space':
                 return html ``;
             case 'link':
-                return html `<devtools-markdown-link .data=${{ key: token.href, title: token.text }}></devtools-markdown-link>`;
+                return html `<devtools-markdown-link .data=${{
+                    key: token.href, title: token.text,
+                }}></devtools-markdown-link>`;
             case 'image':
-                return html `<devtools-markdown-image .data=${{ key: token.href, title: token.text }}></devtools-markdown-image>`;
+                return html `<devtools-markdown-image .data=${{
+                    key: token.href, title: token.text,
+                }}></devtools-markdown-image>`;
             case 'heading':
                 return this.renderHeading(token);
             case 'strong':

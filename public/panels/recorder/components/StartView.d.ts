@@ -1,6 +1,6 @@
-import '../../../ui/legacy/legacy.js';
-import '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
 import '../../../ui/components/panel_feedback/panel_feedback.js';
+import '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
+import '../../../ui/legacy/legacy.js';
 import type * as Platform from '../../../core/platform/platform.js';
 export declare const FEEDBACK_URL: Platform.DevToolsPath.UrlString;
 declare global {

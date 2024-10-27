@@ -1152,7 +1152,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.prompt.focus();
     }
     registerShortcuts() {
-        this.shortcuts.set(UI.KeyboardShortcut.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl), this.clearPromptBackwards.bind(this));
+        this.shortcuts.set(UI.KeyboardShortcut.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl.value), this.clearPromptBackwards.bind(this));
     }
     clearPromptBackwards(e) {
         this.prompt.clear();

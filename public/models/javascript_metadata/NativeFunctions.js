@@ -7267,11 +7267,6 @@ export const NativeFunctions = [
         signatures: [["input", "?options"]]
     },
     {
-        name: "canDetect",
-        signatures: [["languageTag"]],
-        receivers: ["AILanguageDetectorCapabilities"]
-    },
-    {
         name: "detect",
         signatures: [["input", "?options"]],
         receivers: ["AILanguageDetector"]
@@ -7788,6 +7783,10 @@ export const NativeFunctions = [
     {
         name: "fromElement",
         signatures: [["element"]]
+    },
+    {
+        name: "selectAudioOutput",
+        signatures: [["?options"]]
     },
     {
         name: "setCaptureHandleConfig",

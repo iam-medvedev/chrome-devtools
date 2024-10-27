@@ -247,7 +247,7 @@ export default {
 }
 
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-content {
-  padding: var(--sys-size-10);
+  padding-top: var(--sys-size-10);
   overflow-x: hidden;
 }
 

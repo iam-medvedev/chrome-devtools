@@ -33,8 +33,6 @@
     "../../../../../../../front_end/panels/timeline/components/BreadcrumbsUI.ts",
     "../../../../../../../front_end/panels/timeline/components/CPUThrottlingSelector.ts",
     "../../../../../../../front_end/panels/timeline/components/DetailsView.ts",
-    "../../../../../../../front_end/panels/timeline/components/EntryName.ts",
-    "../../../../../../../front_end/panels/timeline/components/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/components/FieldSettingsDialog.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
     "../../../../../../../front_end/panels/timeline/components/LayoutShiftDetails.ts",

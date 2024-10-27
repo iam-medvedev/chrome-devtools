@@ -6,6 +6,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { SourcesView } from './SourcesView.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider<Workspace.UISourceCode.UISourceCode | Workspace.UISourceCode.UILocation | SDK.RemoteObject.RemoteObject | SDK.NetworkRequest.NetworkRequest | UISourceCodeFrame>, SDK.TargetManager.Observer, UI.View.ViewLocationResolver {
+    #private;
     private readonly workspace;
     private readonly togglePauseAction;
     private readonly stepOverAction;

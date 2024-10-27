@@ -943,6 +943,16 @@ export interface RenderFrameImplCreateChildFrame extends Event {
     };
 }
 export declare function isRenderFrameImplCreateChildFrame(event: Event): event is RenderFrameImplCreateChildFrame;
+export interface LayoutImageUnsized extends Event {
+    name: Name.LAYOUT_IMAGE_UNSIZED;
+    args: Args & {
+        data: {
+            nodeId: Protocol.DOM.BackendNodeId;
+            frameId: string;
+        };
+    };
+}
+export declare function isLayoutImageUnsized(event: Event): event is LayoutImageUnsized;
 export interface PrePaint extends Complete {
     name: 'PrePaint';
 }
@@ -1792,6 +1802,42 @@ export interface FunctionCall extends Complete {
 }
 export declare function isFunctionCall(event: Event): event is FunctionCall;
 export declare function isSyntheticServerTiming(event: Event): event is SyntheticServerTiming;
+export interface SchedulePostTaskCallback extends Instant {
+    name: Name.SCHEDULE_POST_TASK_CALLBACK;
+    args: Args & {
+        data: {
+            taskId: number;
+            priority: 'user-blocking' | 'user-visible' | 'background';
+            delay: MilliSeconds;
+            frame?: string;
+            stackTrace?: CallFrame;
+        };
+    };
+}
+export declare function isSchedulePostTaskCallback(event: Event): event is SchedulePostTaskCallback;
+export interface RunPostTaskCallback extends Complete {
+    name: Name.RUN_POST_TASK_CALLBACK;
+    args: Args & {
+        data: {
+            taskId: number;
+            priority: 'user-blocking' | 'user-visible' | 'background';
+            delay: MilliSeconds;
+            frame?: string;
+        };
+    };
+}
+export declare function isRunPostTaskCallback(event: Event): event is RunPostTaskCallback;
+export interface AbortPostTaskCallback extends Complete {
+    name: Name.ABORT_POST_TASK_CALLBACK;
+    args: Args & {
+        data: {
+            taskId: number;
+            frame?: string;
+            stackTrace?: CallFrame;
+        };
+    };
+}
+export declare function isAbortPostTaskCallback(event: Event): event is RunPostTaskCallback;
 /**
  * Generally, before JS is executed, a trace event is dispatched that
  * parents the JS calls. These we call "invocation" events. This
@@ -1856,6 +1902,9 @@ export declare const enum Name {
     CRYPTO_DO_VERIFY = "DoVerify",
     CRYPTO_DO_VERIFY_REPLY = "DoVerifyReply",
     V8_EXECUTE = "V8.Execute",
+    SCHEDULE_POST_TASK_CALLBACK = "SchedulePostTaskCallback",
+    RUN_POST_TASK_CALLBACK = "RunPostTaskCallback",
+    ABORT_POST_TASK_CALLBACK = "AbortPostTaskCallback",
     GC = "GCEvent",
     DOMGC = "BlinkGC.AtomicPhase",
     MAJOR_GC = "MajorGC",
@@ -1958,6 +2007,7 @@ export declare const enum Name {
     SCHEDULE_POST_MESSAGE = "SchedulePostMessage",
     HANDLE_POST_MESSAGE = "HandlePostMessage",
     RENDER_FRAME_IMPL_CREATE_CHILD_FRAME = "RenderFrameImpl::createChildFrame",
+    LAYOUT_IMAGE_UNSIZED = "LayoutImageUnsized",
     DOM_LOADING = "domLoading",
     BEGIN_REMOTE_FONT_LOAD = "BeginRemoteFontLoad"
 }

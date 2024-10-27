@@ -118,3 +118,4 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
     };
 }
 export declare const sourceURLRegex: RegExp;
+export declare function disassembleWasm(content: string): Promise<TextUtils.WasmDisassembly.WasmDisassembly>;

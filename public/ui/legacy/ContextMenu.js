@@ -37,21 +37,25 @@ import { deepElementFromEvent } from './UIUtils.js';
 export class Item {
     typeInternal;
     label;
+    accelerator;
     previewFeature;
     disabled;
     checked;
+    isDevToolsPerformanceMenuItem;
     contextMenu;
     idInternal;
     customElement;
     shortcut;
     #tooltip;
     jslogContext;
-    constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, tooltip, jslogContext) {
+    constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext) {
         this.typeInternal = type;
         this.label = label;
         this.previewFeature = Boolean(isPreviewFeature);
+        this.accelerator = accelerator;
         this.disabled = disabled;
         this.checked = checked;
+        this.isDevToolsPerformanceMenuItem = false;
         this.contextMenu = contextMenu;
         this.idInternal = undefined;
         this.#tooltip = tooltip;
@@ -98,6 +102,12 @@ export class Item {
                 if (this.shortcut) {
                     result.shortcut = this.shortcut;
                 }
+                if (this.accelerator) {
+                    result.accelerator = this.accelerator;
+                    if (this.isDevToolsPerformanceMenuItem) {
+                        result.isDevToolsPerformanceMenuItem = true;
+                    }
+                }
                 return result;
             }
             case 'separator': {
@@ -129,6 +139,16 @@ export class Item {
         }
         throw new Error('Invalid item type:' + this.typeInternal);
     }
+    setAccelerator(key, modifiers) {
+        const modifierSum = modifiers.reduce((result, modifier) => result + modifier.value, 0);
+        this.accelerator = { keyCode: key.code, modifiers: modifierSum };
+    }
+    // This influences whether accelerators will be shown for native menus on Mac.
+    // Use this ONLY for performance menus and ONLY where accelerators are critical
+    // for a smooth user journey and heavily context dependent.
+    setIsDevToolsPerformanceMenuItem(isDevToolsPerformanceMenuItem) {
+        this.isDevToolsPerformanceMenuItem = isDevToolsPerformanceMenuItem;
+    }
     setShortcut(shortcut) {
         this.shortcut = shortcut;
     }
@@ -141,7 +161,7 @@ export class Section {
         this.items = [];
     }
     appendItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'item', label, options?.isPreviewFeature, options?.disabled, undefined, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'item', label, options?.isPreviewFeature, options?.disabled, undefined, options?.accelerator, options?.tooltip, options?.jslogContext);
         if (options?.additionalElement) {
             item.customElement = options?.additionalElement;
         }
@@ -152,7 +172,7 @@ export class Section {
         return item;
     }
     appendCustomItem(element, jslogContext) {
-        const item = new Item(this.contextMenu, 'item', undefined, undefined, undefined, undefined, undefined, jslogContext);
+        const item = new Item(this.contextMenu, 'item', undefined, undefined, undefined, undefined, undefined, undefined, jslogContext);
         item.customElement = element;
         this.items.push(item);
         return item;
@@ -186,7 +206,7 @@ export class Section {
         return item;
     }
     appendCheckboxItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'checkbox', label, undefined, options?.disabled, options?.checked, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'checkbox', label, undefined, options?.disabled, options?.checked, undefined, options?.tooltip, options?.jslogContext);
         this.items.push(item);
         if (this.contextMenu) {
             this.contextMenu.setHandler(item.id(), handler);
@@ -201,7 +221,7 @@ export class SubMenu extends Item {
     sections;
     sectionList;
     constructor(contextMenu, label, disabled, jslogContext) {
-        super(contextMenu, 'subMenu', label, undefined, disabled, undefined, undefined, jslogContext);
+        super(contextMenu, 'subMenu', label, undefined, disabled, undefined, undefined, undefined, jslogContext);
         this.sections = new Map();
         this.sectionList = [];
     }
@@ -262,6 +282,8 @@ export class SubMenu extends Item {
         const result = {
             type: 'subMenu',
             label: this.label,
+            accelerator: this.accelerator,
+            isDevToolsPerformanceMenuItem: this.accelerator ? this.isDevToolsPerformanceMenuItem : undefined,
             isExperimentalFeature: this.previewFeature,
             enabled: !this.disabled,
             subItems: [],

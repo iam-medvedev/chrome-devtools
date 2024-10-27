@@ -35,7 +35,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     entryHasAnnotations(entryIndex: number): boolean;
     deleteAnnotationsForEntry(entryIndex: number): void;
     modifyTree(action: PerfUI.FlameChart.FilterAction, entryIndex: number): void;
-    getTraceEntryTreeForAIFromEntryIndex(entryIndex: number): Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
+    getAIEventNodeTreeFromEntryIndex(entryIndex: number): Trace.Helpers.TreeHelpers.AINode | null;
     findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
@@ -71,7 +71,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     minimumBoundary(): number;
     totalTime(): number;
     static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is Trace.Types.Events.Event;
-    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     getEntryTypeForLevel(level: number): EntryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;

@@ -65,9 +65,9 @@ export class SharedStorageAccessGrid extends HTMLElement {
         LitHtml.render(html `
       <div>
         <span class="heading">${i18nString(UIStrings.sharedStorage)}</span>
-        <devtools-icon class="info-icon" title=${i18nString(UIStrings.allSharedStorageEvents)}
-          .data=${{ iconName: 'info',
-            color: 'var(--icon-default)', width: '16px' }}>
+        <devtools-icon class="info-icon"
+                       title=${i18nString(UIStrings.allSharedStorageEvents)}
+                       .data=${{ iconName: 'info', color: 'var(--icon-default)', width: '16px' }}>
         </devtools-icon>
         ${this.#renderGridOrNoDataMessage()}
       </div>

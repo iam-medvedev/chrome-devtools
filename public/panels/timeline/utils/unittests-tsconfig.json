@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/timeline/utils/EntryName.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/ImageCache.test.ts",

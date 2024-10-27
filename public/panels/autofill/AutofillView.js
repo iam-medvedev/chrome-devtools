@@ -327,8 +327,7 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
           @rowmouseenter=${this.#onGridRowMouseEnter}
           @rowmouseleave=${this.#onGridRowMouseLeave}
           class="filled-fields-grid"
-          .data=${gridData}
-        >
+          .data=${gridData}>
         </devtools-data-grid-controller>
       </div>
     `;

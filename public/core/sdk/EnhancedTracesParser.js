@@ -139,9 +139,7 @@ export class EnhancedTracesParser {
         for (const target of this.#targets) {
             data.set(target, this.groupContextsAndScriptsUnderTarget(target, this.#executionContexts, this.#scripts));
         }
-        return {
-            data,
-        };
+        return data;
     }
     getScriptIsolateId(isolate, scriptId) {
         return scriptId + '@' + isolate;

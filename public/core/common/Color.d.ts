@@ -296,6 +296,11 @@ export declare class Legacy implements Color {
         a: (number | undefined);
     };
     invert(): Legacy;
+    /**
+     * Returns a new color using the NTSC formula for making a RGB color grayscale.
+     * Note: this is ill-defined for colors with alpha, and alpha is not modified.
+     */
+    grayscale(): Legacy;
     setAlpha(alpha: number): Legacy;
     blendWith(fgColor: Legacy): Legacy;
     blendWithAlpha(alpha: number): Legacy;

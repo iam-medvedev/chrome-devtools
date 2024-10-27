@@ -38,7 +38,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/panels/animation/AnimationModel.test.ts",
     "../../../../../../front_end/panels/animation/AnimationTimeline.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

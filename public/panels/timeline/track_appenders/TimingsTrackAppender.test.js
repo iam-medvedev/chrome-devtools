@@ -248,7 +248,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
             styleElement.id = 'fake-perf-panel-colors';
             styleElement.textContent = `
         :root {
-          --ref-palette-primary70: rgb(4 4 4);
+          --ref-palette-blue70: rgb(4 4 4);
           --ref-palette-error60: rgb(10 10 10);
         }
       `;
@@ -284,7 +284,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
                 }
                 else {
                     // Unknown colors are mapped to "primary" by default, and
-                    // "primary" color category is mapped to --ref-palette-primary70
+                    // "primary" color category is mapped to --ref-palette-blue70
                     // which is faked out to 4, 4, 4
                     assert.strictEqual(timingsTrackAppender.colorForEvent(event), 'rgb(4 4 4)');
                 }
@@ -304,7 +304,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
                 },
                 cat: 'devtools.extension',
             };
-            // "primary" color category is mapped to --ref-palette-primary70
+            // "primary" color category is mapped to --ref-palette-blue70
             // which is faked out to 4, 4, 4
             assert.strictEqual(timingsTrackAppender.colorForEvent(mockExtensionEntryNoColor), 'rgb(4 4 4)');
             assert.strictEqual(timingsTrackAppender.colorForEvent(mockExtensionEntryUnknownColor), 'rgb(4 4 4)');

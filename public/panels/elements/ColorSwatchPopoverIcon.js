@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
@@ -163,7 +162,6 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
             void Common.Revealer.reveal(uiLocation, true /* omitFocus */);
         }
         UI.Context.Context.instance().setFlavor(ColorSwatchPopoverIcon, this);
-        Host.userMetrics.colorPickerOpenedFrom(1 /* Host.UserMetrics.ColorPickerOpenedFrom.STYLES_TAB */);
     }
     spectrumResized() {
         this.swatchPopoverHelper.reposition();

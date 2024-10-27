@@ -542,6 +542,14 @@ const UIStrings = {
      * @description Label for a description text of a metric.
      */
     description: 'Description',
+    /**
+     * @description Label for a numeric value that was how long to wait before a function was run.
+     */
+    delay: 'Delay',
+    /**
+     * @description Label for a string that describes the priority at which a task was scheduled, like 'background' for low-priority tasks, and 'user-blocking' for high priority.
+     */
+    priority: 'Priority',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineUIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -608,13 +616,13 @@ export class TimelineUIUtils {
     }
     static eventStyle(event) {
         if (Trace.Types.Events.isProfileCall(event) && event.callFrame.functionName === '(idle)') {
-            return new TimelineComponents.EntryStyles.TimelineRecordStyle(event.name, TimelineComponents.EntryStyles.getCategoryStyles().idle);
+            return new Utils.EntryStyles.TimelineRecordStyle(event.name, Utils.EntryStyles.getCategoryStyles().idle);
         }
         if (event.cat === Trace.Types.Events.Categories.Console || event.cat === Trace.Types.Events.Categories.UserTiming) {
-            return new TimelineComponents.EntryStyles.TimelineRecordStyle(event.name, TimelineComponents.EntryStyles.getCategoryStyles()['scripting']);
+            return new Utils.EntryStyles.TimelineRecordStyle(event.name, Utils.EntryStyles.getCategoryStyles()['scripting']);
         }
-        return TimelineComponents.EntryStyles.getEventStyle(event.name) ??
-            new TimelineComponents.EntryStyles.TimelineRecordStyle(event.name, TimelineComponents.EntryStyles.getCategoryStyles().other);
+        return Utils.EntryStyles.getEventStyle(event.name) ??
+            new Utils.EntryStyles.TimelineRecordStyle(event.name, Utils.EntryStyles.getCategoryStyles().other);
     }
     static eventColor(event) {
         if (Trace.Types.Events.isProfileCall(event)) {
@@ -630,7 +638,7 @@ export class TimelineUIUtils {
         // This event is considered idle time but still rendered as a scripting event here
         // to connect the StreamingCompileScriptParsing events it belongs to.
         if (event.name === "v8.parseOnBackgroundWaiting" /* Trace.Types.Events.Name.STREAMING_COMPILE_SCRIPT_WAITING */) {
-            parsedColor = TimelineComponents.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
+            parsedColor = Utils.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
             if (!parsedColor) {
                 throw new Error('Unable to parse color from getCategoryStyles().scripting.color');
             }
@@ -648,7 +656,7 @@ export class TimelineUIUtils {
         }
         if (event.name === 'EventTiming' && Trace.Types.Events.isSyntheticInteraction(event)) {
             // TODO(crbug.com/365047728): replace this entire method with this call.
-            return TimelineComponents.EntryName.nameForEntry(event);
+            return Utils.EntryName.nameForEntry(event);
         }
         const title = TimelineUIUtils.eventStyle(event).title;
         if (Trace.Helpers.Trace.eventHasCategory(event, Trace.Types.Events.Categories.Console)) {
@@ -1145,6 +1153,12 @@ export class TimelineUIUtils {
                 }
                 break;
             }
+            case "SchedulePostTaskCallback" /* Trace.Types.Events.Name.SCHEDULE_POST_TASK_CALLBACK */:
+            case "RunPostTaskCallback" /* Trace.Types.Events.Name.RUN_POST_TASK_CALLBACK */: {
+                contentHelper.appendTextRow(i18nString(UIStrings.delay), i18n.TimeUtilities.millisToString(unsafeEventData['delay']));
+                contentHelper.appendTextRow(i18nString(UIStrings.priority), unsafeEventData['priority']);
+                break;
+            }
             case "FireAnimationFrame" /* Trace.Types.Events.Name.FIRE_ANIMATION_FRAME */: {
                 contentHelper.appendTextRow(i18nString(UIStrings.callbackId), unsafeEventData['id']);
                 break;
@@ -1577,8 +1591,8 @@ export class TimelineUIUtils {
             }
             function onStartEvent(e) {
                 const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
-                const category = TimelineComponents.EntryStyles.getEventStyle(e.name)?.category.name ||
-                    TimelineComponents.EntryStyles.getCategoryStyles().other.name;
+                const category = Utils.EntryStyles.getEventStyle(e.name)?.category.name ||
+                    Utils.EntryStyles.getCategoryStyles().other.name;
                 const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
                 if (category !== parentCategory) {
                     categoryChange(parentCategory || null, category, startTime);
@@ -1893,12 +1907,12 @@ export class TimelineUIUtils {
         return eventDivider;
     }
     static visibleEventsFilter() {
-        return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(TimelineComponents.EntryStyles.visibleTypes());
+        return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(Utils.EntryStyles.visibleTypes());
     }
     // Included only for layout tests.
     // TODO(crbug.com/1386091): Fix/port layout tests and remove.
     static categories() {
-        return TimelineComponents.EntryStyles.getCategoryStyles();
+        return Utils.EntryStyles.getCategoryStyles();
     }
     static generatePieChart(aggregatedStats, selfCategory, selfTime) {
         let total = 0;
@@ -1929,9 +1943,8 @@ export class TimelineUIUtils {
             }
         }
         // Add other categories.
-        for (const categoryName in TimelineComponents.EntryStyles.getCategoryStyles()) {
-            const category = TimelineComponents.EntryStyles
-                .getCategoryStyles()[categoryName];
+        for (const categoryName in Utils.EntryStyles.getCategoryStyles()) {
+            const category = Utils.EntryStyles.getCategoryStyles()[categoryName];
             if (categoryName === selfCategory?.name) {
                 // Do not add an entry for this event's self category because 2
                 // entries for it where added just before this for loop (for

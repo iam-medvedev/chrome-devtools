@@ -39,12 +39,16 @@ export declare class KeyboardShortcut {
     static isModifier(key: number): boolean;
     private static modifiersToString;
 }
+export interface Modifier {
+    value: number;
+    name: string;
+}
 /**
  * Constants for encoding modifier key set as a bit mask.
  * see #makeKeyFromCodeAndModifiers
  */
 export declare const Modifiers: {
-    [x: string]: number;
+    [x: string]: Modifier;
 };
 export declare const Keys: {
     [x: string]: Key;

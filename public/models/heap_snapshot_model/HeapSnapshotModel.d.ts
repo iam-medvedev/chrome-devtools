@@ -58,7 +58,6 @@ export declare class Aggregate {
     distance: number;
     self: number;
     maxRet: number;
-    type: number;
     name: string;
     idxs: number[];
     constructor();
@@ -70,6 +69,7 @@ export declare class AggregateForDiff {
     constructor();
 }
 export declare class Diff {
+    name: string;
     addedCount: number;
     removedCount: number;
     addedSize: number;
@@ -78,9 +78,10 @@ export declare class Diff {
     addedIndexes: number[];
     countDelta: number;
     sizeDelta: number;
-    constructor();
+    constructor(name: string);
 }
 export declare class DiffForClass {
+    name: string;
     addedCount: number;
     removedCount: number;
     addedSize: number;

@@ -174,7 +174,7 @@ export class ScreencastView extends UI.Widget.VBox {
         this.isCasting = false;
         this.context = this.canvasElement.getContext('2d');
         this.checkerboardPattern = this.createCheckerboardPattern(this.context);
-        this.shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl)] =
+        this.shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl.value)] =
             this.focusNavigationBar.bind(this);
         SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
         this.updateGlasspane();

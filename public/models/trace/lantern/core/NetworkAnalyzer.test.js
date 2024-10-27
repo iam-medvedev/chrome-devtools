@@ -34,7 +34,7 @@ describe('NetworkAnalyzer', () => {
             connectionReused: false,
             networkRequestTime: 10,
             networkEndTime: 10,
-            transferSize: 0,
+            transferSize: 10000,
             protocol: opts.protocol || 'http/1.1',
             parsedURL: { scheme: url.match(/https?/)[0], securityOrigin: url.match(/.*\.com/)[0] },
             timing: opts.timing || null,
@@ -293,9 +293,9 @@ describe('NetworkAnalyzer', () => {
                 parsedURL: { scheme: 'https' },
             }, extras);
         }
-        it('should return Infinity for no/missing records', () => {
-            assert.strictEqual(estimateThroughput([]), Infinity);
-            assert.strictEqual(estimateThroughput([createThroughputRecord(0, 0, { finished: false })]), Infinity);
+        it('should return null for no/missing records', () => {
+            assert.strictEqual(estimateThroughput([]), null);
+            assert.strictEqual(estimateThroughput([createThroughputRecord(0, 0, { finished: false })]), null);
         });
         it('should compute correctly for a basic waterfall', () => {
             const result = estimateThroughput([

@@ -67,10 +67,10 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     nodeClassName(snapshotObjectId: number): Promise<string | null>;
     createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
-    createAddedNodesProvider(baseSnapshotId: string, className: string): HeapSnapshotProviderProxy;
+    createAddedNodesProvider(baseSnapshotId: string, classKey: string): HeapSnapshotProviderProxy;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotProviderProxy;
     createNodesProvider(filter: (...args: any[]) => boolean): HeapSnapshotProviderProxy;
-    createNodesProviderForClass(className: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotProviderProxy;
+    createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotProviderProxy;
     allocationTracesTops(): Promise<HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[]>;
     allocationNodeCallers(nodeId: number): Promise<HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers>;
     allocationStack(nodeIndex: number): Promise<HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null>;

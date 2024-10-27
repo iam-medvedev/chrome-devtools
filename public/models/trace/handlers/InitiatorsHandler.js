@@ -29,6 +29,7 @@ const requestAnimationFrameEventsById = new Map();
 const timerInstallEventsById = new Map();
 const requestIdleCallbackEventsById = new Map();
 const webSocketCreateEventsById = new Map();
+const schedulePostTaskCallbackEventsById = new Map();
 export function reset() {
     lastScheduleStyleRecalcByFrame.clear();
     lastInvalidationEventForFrame.clear();
@@ -39,6 +40,7 @@ export function reset() {
     requestAnimationFrameEventsById.clear();
     requestIdleCallbackEventsById.clear();
     webSocketCreateEventsById.clear();
+    schedulePostTaskCallbackEventsById.clear();
     schedulePostMessageEventByTraceId.clear();
     postMessageHandlerEvents.length = 0;
     handlerState = 1 /* HandlerState.UNINITIALIZED */;
@@ -159,6 +161,15 @@ export function handleEvent(event) {
                 event,
                 initiator: matchingCreateEvent,
             });
+        }
+    }
+    else if (Types.Events.isSchedulePostTaskCallback(event)) {
+        schedulePostTaskCallbackEventsById.set(event.args.data.taskId, event);
+    }
+    else if (Types.Events.isRunPostTaskCallback(event) || Types.Events.isAbortPostTaskCallback(event)) {
+        const matchingSchedule = schedulePostTaskCallbackEventsById.get(event.args.data.taskId);
+        if (matchingSchedule) {
+            storeInitiator({ event, initiator: matchingSchedule });
         }
     }
     // Store schedulePostMessage Events by their traceIds.

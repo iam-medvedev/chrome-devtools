@@ -152,6 +152,7 @@
       <include file="Images/heap-snapshot.svg" name="IMAGES_HEAP_SNAPSHOT_SVG" resource_path="Images/heap-snapshot.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshots.svg" name="IMAGES_HEAP_SNAPSHOTS_SVG" resource_path="Images/heap-snapshots.svg" type="BINDATA" compress="false"/>
       <include file="Images/help.svg" name="IMAGES_HELP_SVG" resource_path="Images/help.svg" type="BINDATA" compress="false"/>
+      <include file="Images/home.svg" name="IMAGES_HOME_SVG" resource_path="Images/home.svg" type="BINDATA" compress="false"/>
       <include file="Images/hover.svg" name="IMAGES_HOVER_SVG" resource_path="Images/hover.svg" type="BINDATA" compress="false"/>
       <include file="Images/iframe-crossed.svg" name="IMAGES_IFRAME_CROSSED_SVG" resource_path="Images/iframe-crossed.svg" type="BINDATA" compress="false"/>
       <include file="Images/iframe.svg" name="IMAGES_IFRAME_SVG" resource_path="Images/iframe.svg" type="BINDATA" compress="false"/>
@@ -385,11 +386,18 @@
       <include file="models/issues_manager/descriptions/SameSiteWarnCrossDowngradeSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEWARNCROSSDOWNGRADESET_MD" resource_path="models/issues_manager/descriptions/SameSiteWarnCrossDowngradeSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteWarnStrictLaxDowngradeStrict.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEWARNSTRICTLAXDOWNGRADESTRICT_MD" resource_path="models/issues_manager/descriptions/SameSiteWarnStrictLaxDowngradeStrict.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arInsecureContext.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARINSECURECONTEXT_MD" resource_path="models/issues_manager/descriptions/arInsecureContext.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arInvalidInfoHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARINVALIDINFOHEADER_MD" resource_path="models/issues_manager/descriptions/arInvalidInfoHeader.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arInvalidRegisterOsSourceHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARINVALIDREGISTEROSSOURCEHEADER_MD" resource_path="models/issues_manager/descriptions/arInvalidRegisterOsSourceHeader.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arInvalidRegisterOsTriggerHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARINVALIDREGISTEROSTRIGGERHEADER_MD" resource_path="models/issues_manager/descriptions/arInvalidRegisterOsTriggerHeader.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arInvalidRegisterSourceHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARINVALIDREGISTERSOURCEHEADER_MD" resource_path="models/issues_manager/descriptions/arInvalidRegisterSourceHeader.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arInvalidRegisterTriggerHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARINVALIDREGISTERTRIGGERHEADER_MD" resource_path="models/issues_manager/descriptions/arInvalidRegisterTriggerHeader.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arNavigationRegistrationUniqueScopeAlreadySet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNAVIGATIONREGISTRATIONUNIQUESCOPEALREADYSET_MD" resource_path="models/issues_manager/descriptions/arNavigationRegistrationUniqueScopeAlreadySet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arNavigationRegistrationWithoutTransientUserActivation.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNAVIGATIONREGISTRATIONWITHOUTTRANSIENTUSERACTIVATION_MD" resource_path="models/issues_manager/descriptions/arNavigationRegistrationWithoutTransientUserActivation.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arNoRegisterOsSourceHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNOREGISTEROSSOURCEHEADER_MD" resource_path="models/issues_manager/descriptions/arNoRegisterOsSourceHeader.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arNoRegisterOsTriggerHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNOREGISTEROSTRIGGERHEADER_MD" resource_path="models/issues_manager/descriptions/arNoRegisterOsTriggerHeader.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arNoRegisterSourceHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNOREGISTERSOURCEHEADER_MD" resource_path="models/issues_manager/descriptions/arNoRegisterSourceHeader.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arNoRegisterTriggerHeader.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNOREGISTERTRIGGERHEADER_MD" resource_path="models/issues_manager/descriptions/arNoRegisterTriggerHeader.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/arNoWebOrOsSupport.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARNOWEBOROSSUPPORT_MD" resource_path="models/issues_manager/descriptions/arNoWebOrOsSupport.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arOsSourceIgnored.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_AROSSOURCEIGNORED_MD" resource_path="models/issues_manager/descriptions/arOsSourceIgnored.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arOsTriggerIgnored.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_AROSTRIGGERIGNORED_MD" resource_path="models/issues_manager/descriptions/arOsTriggerIgnored.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/arPermissionPolicyDisabled.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_ARPERMISSIONPOLICYDISABLED_MD" resource_path="models/issues_manager/descriptions/arPermissionPolicyDisabled.md" type="BINDATA" compress="false"/>
@@ -472,6 +480,7 @@
       <include file="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICRESPONSEWASBLOCKEDBYORB_MD" resource_path="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/heavyAd.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_HEAVYAD_MD" resource_path="models/issues_manager/descriptions/heavyAd.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/mixedContent.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_MIXEDCONTENT_MD" resource_path="models/issues_manager/descriptions/mixedContent.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/placeholderDescriptionForInvisibleIssues.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_PLACEHOLDERDESCRIPTIONFORINVISIBLEISSUES_MD" resource_path="models/issues_manager/descriptions/placeholderDescriptionForInvisibleIssues.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/propertyRuleInvalidNameIssue.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_PROPERTYRULEINVALIDNAMEISSUE_MD" resource_path="models/issues_manager/descriptions/propertyRuleInvalidNameIssue.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/propertyRuleIssue.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_PROPERTYRULEISSUE_MD" resource_path="models/issues_manager/descriptions/propertyRuleIssue.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/sharedArrayBuffer.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SHAREDARRAYBUFFER_MD" resource_path="models/issues_manager/descriptions/sharedArrayBuffer.md" type="BINDATA" compress="false"/>
@@ -676,6 +685,7 @@
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/buttons.js" name="UI_COMPONENTS_BUTTONS_BUTTONS_JS" resource_path="ui/components/buttons/buttons.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/cards/cards.js" name="UI_COMPONENTS_CARDS_CARDS_JS" resource_path="ui/components/cards/cards.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chrome_link.js" name="UI_COMPONENTS_CHROME_LINK_CHROME_LINK_JS" resource_path="ui/components/chrome_link/chrome_link.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/data_grid/data_grid.js" name="UI_COMPONENTS_DATA_GRID_DATA_GRID_JS" resource_path="ui/components/data_grid/data_grid.js" type="BINDATA" compress="false"/>
@@ -791,6 +801,7 @@
       <include file="core/protocol_client/NodeURL.js" name="CORE_PROTOCOL_CLIENT_NODEURL_JS" resource_path="core/protocol_client/NodeURL.js" type="BINDATA" compress="false"/>
       <include file="core/root/Runtime.js" name="CORE_ROOT_RUNTIME_JS" resource_path="core/root/Runtime.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/AccessibilityModel.js" name="CORE_SDK_ACCESSIBILITYMODEL_JS" resource_path="core/sdk/AccessibilityModel.js" type="BINDATA" compress="false"/>
+      <include file="core/sdk/AnimationModel.js" name="CORE_SDK_ANIMATIONMODEL_JS" resource_path="core/sdk/AnimationModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/AutofillModel.js" name="CORE_SDK_AUTOFILLMODEL_JS" resource_path="core/sdk/AutofillModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CPUProfileDataModel.js" name="CORE_SDK_CPUPROFILEDATAMODEL_JS" resource_path="core/sdk/CPUProfileDataModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CPUProfilerModel.js" name="CORE_SDK_CPUPROFILERMODEL_JS" resource_path="core/sdk/CPUProfilerModel.js" type="BINDATA" compress="false"/>
@@ -845,6 +856,7 @@
       <include file="core/sdk/PerformanceMetricsModel.js" name="CORE_SDK_PERFORMANCEMETRICSMODEL_JS" resource_path="core/sdk/PerformanceMetricsModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/PreloadingModel.js" name="CORE_SDK_PRELOADINGMODEL_JS" resource_path="core/sdk/PreloadingModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/ProfileTreeModel.js" name="CORE_SDK_PROFILETREEMODEL_JS" resource_path="core/sdk/ProfileTreeModel.js" type="BINDATA" compress="false"/>
+      <include file="core/sdk/RehydratingConnection.js" name="CORE_SDK_REHYDRATINGCONNECTION_JS" resource_path="core/sdk/RehydratingConnection.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/RehydratingObject.js" name="CORE_SDK_REHYDRATINGOBJECT_JS" resource_path="core/sdk/RehydratingObject.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/RemoteObject.js" name="CORE_SDK_REMOTEOBJECT_JS" resource_path="core/sdk/RemoteObject.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/Resource.js" name="CORE_SDK_RESOURCE_JS" resource_path="core/sdk/Resource.js" type="BINDATA" compress="false"/>
@@ -1023,6 +1035,7 @@
       <include file="models/trace/extras/FilmStrip.js" name="MODELS_TRACE_EXTRAS_FILMSTRIP_JS" resource_path="models/trace/extras/FilmStrip.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/MainThreadActivity.js" name="MODELS_TRACE_EXTRAS_MAINTHREADACTIVITY_JS" resource_path="models/trace/extras/MainThreadActivity.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/Metadata.js" name="MODELS_TRACE_EXTRAS_METADATA_JS" resource_path="models/trace/extras/Metadata.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/extras/ThirdParties.js" name="MODELS_TRACE_EXTRAS_THIRDPARTIES_JS" resource_path="models/trace/extras/ThirdParties.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/URLForEntry.js" name="MODELS_TRACE_EXTRAS_URLFORENTRY_JS" resource_path="models/trace/extras/URLForEntry.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AnimationHandler.js" name="MODELS_TRACE_HANDLERS_ANIMATIONHANDLER_JS" resource_path="models/trace/handlers/AnimationHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AuctionWorkletsHandler.js" name="MODELS_TRACE_HANDLERS_AUCTIONWORKLETSHANDLER_JS" resource_path="models/trace/handlers/AuctionWorkletsHandler.js" type="BINDATA" compress="false"/>
@@ -1116,9 +1129,7 @@
       <include file="panels/accessibility/accessibilityNode.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYNODE_CSS_JS" resource_path="panels/accessibility/accessibilityNode.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/accessibilityProperties.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYPROPERTIES_CSS_JS" resource_path="panels/accessibility/accessibilityProperties.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/axBreadcrumbs.css.js" name="PANELS_ACCESSIBILITY_AXBREADCRUMBS_CSS_JS" resource_path="panels/accessibility/axBreadcrumbs.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/animation/AnimationDOMNode.js" name="PANELS_ANIMATION_ANIMATIONDOMNODE_JS" resource_path="panels/animation/AnimationDOMNode.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
-      <include file="panels/animation/AnimationModel.js" name="PANELS_ANIMATION_ANIMATIONMODEL_JS" resource_path="panels/animation/AnimationModel.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationScreenshotPopover.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_JS" resource_path="panels/animation/AnimationScreenshotPopover.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationTimeline.js" name="PANELS_ANIMATION_ANIMATIONTIMELINE_JS" resource_path="panels/animation/AnimationTimeline.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationUI.js" name="PANELS_ANIMATION_ANIMATIONUI_JS" resource_path="panels/animation/AnimationUI.js" type="BINDATA" compress="false"/>
@@ -1787,8 +1798,6 @@
       <include file="panels/timeline/components/BreadcrumbsUI.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_JS" resource_path="panels/timeline/components/BreadcrumbsUI.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/CPUThrottlingSelector.js" name="PANELS_TIMELINE_COMPONENTS_CPUTHROTTLINGSELECTOR_JS" resource_path="panels/timeline/components/CPUThrottlingSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/DetailsView.js" name="PANELS_TIMELINE_COMPONENTS_DETAILSVIEW_JS" resource_path="panels/timeline/components/DetailsView.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/components/EntryName.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYNAME_JS" resource_path="panels/timeline/components/EntryName.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/components/EntryStyles.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYSTYLES_JS" resource_path="panels/timeline/components/EntryStyles.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/FieldSettingsDialog.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_JS" resource_path="panels/timeline/components/FieldSettingsDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/InteractionBreakdown.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_JS" resource_path="panels/timeline/components/InteractionBreakdown.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/LayoutShiftDetails.js" name="PANELS_TIMELINE_COMPONENTS_LAYOUTSHIFTDETAILS_JS" resource_path="panels/timeline/components/LayoutShiftDetails.js" type="BINDATA" compress="false"/>
@@ -1855,6 +1864,8 @@
       <include file="panels/timeline/timelinePaintProfiler.css.js" name="PANELS_TIMELINE_TIMELINEPAINTPROFILER_CSS_JS" resource_path="panels/timeline/timelinePaintProfiler.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelinePanel.css.js" name="PANELS_TIMELINE_TIMELINEPANEL_CSS_JS" resource_path="panels/timeline/timelinePanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineStatusDialog.css.js" name="PANELS_TIMELINE_TIMELINESTATUSDIALOG_CSS_JS" resource_path="panels/timeline/timelineStatusDialog.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/utils/EntryName.js" name="PANELS_TIMELINE_UTILS_ENTRYNAME_JS" resource_path="panels/timeline/utils/EntryName.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/utils/EntryStyles.js" name="PANELS_TIMELINE_UTILS_ENTRYSTYLES_JS" resource_path="panels/timeline/utils/EntryStyles.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/Helpers.js" name="PANELS_TIMELINE_UTILS_HELPERS_JS" resource_path="panels/timeline/utils/Helpers.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/IgnoreList.js" name="PANELS_TIMELINE_UTILS_IGNORELIST_JS" resource_path="panels/timeline/utils/IgnoreList.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/ImageCache.js" name="PANELS_TIMELINE_UTILS_IMAGECACHE_JS" resource_path="panels/timeline/utils/ImageCache.js" type="BINDATA" compress="false"/>
@@ -2131,6 +2142,8 @@
       <include file="ui/components/adorners/adorner.css.js" name="UI_COMPONENTS_ADORNERS_ADORNER_CSS_JS" resource_path="ui/components/adorners/adorner.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/Button.js" name="UI_COMPONENTS_BUTTONS_BUTTON_JS" resource_path="ui/components/buttons/Button.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/button.css.legacy.js" name="UI_COMPONENTS_BUTTONS_BUTTON_CSS_LEGACY_JS" resource_path="ui/components/buttons/button.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/cards/Card.js" name="UI_COMPONENTS_CARDS_CARD_JS" resource_path="ui/components/cards/Card.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/cards/card.css.js" name="UI_COMPONENTS_CARDS_CARD_CSS_JS" resource_path="ui/components/cards/card.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/ChromeLink.js" name="UI_COMPONENTS_CHROME_LINK_CHROMELINK_JS" resource_path="ui/components/chrome_link/ChromeLink.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chromeLink.css.js" name="UI_COMPONENTS_CHROME_LINK_CHROMELINK_CSS_JS" resource_path="ui/components/chrome_link/chromeLink.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/CodeHighlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODEHIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/CodeHighlighter.js" type="BINDATA" compress="false"/>

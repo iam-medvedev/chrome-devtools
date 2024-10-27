@@ -1736,6 +1736,15 @@ export class Legacy {
         rgba[3] = this.#rgbaInternal[3];
         return new Legacy(rgba, "rgba" /* Format.RGBA */);
     }
+    /**
+     * Returns a new color using the NTSC formula for making a RGB color grayscale.
+     * Note: this is ill-defined for colors with alpha, and alpha is not modified.
+     */
+    grayscale() {
+        const [r, g, b, a] = this.#rgbaInternal;
+        const gray = r * 0.299 + g * 0.587 + b * 0.114;
+        return new Legacy([gray, gray, gray, a], "rgba" /* Format.RGBA */);
+    }
     setAlpha(alpha) {
         const rgba = [...this.#rgbaInternal];
         rgba[3] = alpha;

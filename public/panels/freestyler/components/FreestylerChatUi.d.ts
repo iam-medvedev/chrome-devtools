@@ -62,7 +62,7 @@ export interface Props {
     selectedElement: SDK.DOMModel.DOMNode | null;
     selectedFile: Workspace.UISourceCode.UISourceCode | null;
     selectedNetworkRequest: SDK.NetworkRequest.NetworkRequest | null;
-    selectedStackTrace: Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
+    selectedStackTrace: Trace.Helpers.TreeHelpers.AINode | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;

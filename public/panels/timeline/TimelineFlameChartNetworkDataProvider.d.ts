@@ -80,7 +80,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * searches entries within the specified time and returns a list of entry
      * indexes
      */
-    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     /**
      * Returns a map of navigations that happened in the main frame, ignoring any
      * that happened in other frames.

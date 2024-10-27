@@ -2,17 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
-export var ResponseType;
-(function (ResponseType) {
-    ResponseType["CONTEXT"] = "context";
-    ResponseType["TITLE"] = "title";
-    ResponseType["THOUGHT"] = "thought";
-    ResponseType["ACTION"] = "action";
-    ResponseType["SIDE_EFFECT"] = "side-effect";
-    ResponseType["ANSWER"] = "answer";
-    ResponseType["ERROR"] = "error";
-    ResponseType["QUERYING"] = "querying";
-})(ResponseType || (ResponseType = {}));
 const MAX_STEP = 10;
 export class AiAgent {
     static validTemperature(temperature) {
@@ -25,68 +14,16 @@ export class AiAgent {
      * Mapping between the unique request id and
      * the history chuck it created
      */
-    #chatHistory = new Map();
+    #history = new Map();
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
     }
-    get historyEntry() {
-        return [...this.#chatHistory.values()].flat();
-    }
     get chatHistoryForTesting() {
-        return this.historyEntry;
+        return this.#historyEntry;
     }
-    set chatHistoryForTesting(history) {
-        this.#chatHistory = history;
-    }
-    removeHistoryRun(id) {
-        this.#chatHistory.delete(id);
-    }
-    addToHistory(options) {
-        const response = options.response;
-        if ('answer' in response) {
-            this.#storeHistoryEntries({
-                id: options.id,
-                query: options.query,
-                output: response.answer,
-            });
-            return;
-        }
-        const { title, thought, action, } = response;
-        if (thought) {
-            this.#storeHistoryEntries({
-                id: options.id,
-                query: options.query,
-                output: `THOUGHT: ${thought}
-TITLE: ${title}
-ACTION
-${action}
-STOP`,
-            });
-        }
-        else {
-            this.#storeHistoryEntries({
-                id: options.id,
-                query: options.query,
-                output: `ACTION
-${action}
-STOP`,
-            });
-        }
-    }
-    #storeHistoryEntries({ id, query, output, }) {
-        const currentRunEntries = this.#chatHistory.get(id) ?? [];
-        this.#chatHistory.set(id, [
-            ...currentRunEntries,
-            {
-                text: query,
-                entity: Host.AidaClient.Entity.USER,
-            },
-            {
-                text: output,
-                entity: Host.AidaClient.Entity.SYSTEM,
-            },
-        ]);
+    set chatNewHistoryForTesting(history) {
+        this.#history = history;
     }
     #structuredLog = [];
     async aidaFetch(input, options) {
@@ -120,9 +57,13 @@ STOP`,
             input: opts.input,
             preamble: this.preamble,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            chat_history: this.#chatHistory.size ? this.historyEntry : undefined,
+            chat_history: this.#history.size ? this.#historyEntry : undefined,
             client: Host.AidaClient.CLIENT_NAME,
-            options: this.options,
+            options: {
+                temperature: AiAgent.validTemperature(this.options.temperature),
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                model_id: this.options.modelId,
+            },
             metadata: {
                 disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
                 string_session_id: this.#sessionId,
@@ -135,7 +76,7 @@ STOP`,
         };
         return request;
     }
-    handleAction(_action, _rpcId) {
+    handleAction() {
         throw new Error('Unexpected action found');
     }
     async enhanceQuery(query) {
@@ -146,15 +87,110 @@ STOP`,
             answer: response,
         };
     }
+    formatHistoryChunkAnswer(text) {
+        return text;
+    }
+    formatHistoryChunkObservation(observation) {
+        let text = '';
+        if (observation.thought) {
+            text = `THOUGHT: ${observation.thought}`;
+        }
+        if (observation.title) {
+            text += `\nTITLE: ${observation.title}`;
+        }
+        if (observation.action) {
+            text += `\nACTION
+${observation.action}
+STOP`;
+        }
+        return text;
+    }
+    get #historyEntry() {
+        const historyAll = new Map();
+        for (const [id, entry] of this.#history.entries()) {
+            const history = [];
+            historyAll.set(id, history);
+            let response = {};
+            for (const data of entry) {
+                switch (data.type) {
+                    case "context" /* ResponseType.CONTEXT */:
+                    case "side-effect" /* ResponseType.SIDE_EFFECT */:
+                    case "user-query" /* ResponseType.USER_QUERY */:
+                        continue;
+                    case "querying" /* ResponseType.QUERYING */: {
+                        const observation = this.formatHistoryChunkObservation(response);
+                        if (observation) {
+                            history.push({
+                                entity: Host.AidaClient.Entity.SYSTEM,
+                                text: observation,
+                            });
+                            response = {};
+                        }
+                        history.push({
+                            entity: Host.AidaClient.Entity.USER,
+                            text: data.query,
+                        });
+                        break;
+                    }
+                    case "answer" /* ResponseType.ANSWER */:
+                        history.push({
+                            entity: Host.AidaClient.Entity.SYSTEM,
+                            text: this.formatHistoryChunkAnswer(data.text),
+                        });
+                        break;
+                    case "title" /* ResponseType.TITLE */:
+                        response.title = data.title;
+                        break;
+                    case "thought" /* ResponseType.THOUGHT */:
+                        response.thought = data.thought;
+                        break;
+                    case "action" /* ResponseType.ACTION */:
+                        response.action = data.code;
+                        break;
+                    case "error" /* ResponseType.ERROR */:
+                        historyAll.delete(id);
+                        break;
+                }
+            }
+            const observation = this.formatHistoryChunkObservation(response);
+            if (observation) {
+                history.push({
+                    entity: Host.AidaClient.Entity.USER,
+                    text: observation,
+                });
+            }
+        }
+        return [...historyAll.values()].flat();
+    }
+    #addHistory(id, data) {
+        const currentRunEntries = this.#history.get(id);
+        if (currentRunEntries) {
+            currentRunEntries.push(data);
+            return;
+        }
+        this.#history.set(id, [data]);
+    }
     #runId = 0;
     async *run(query, options) {
-        yield* this.handleContextDetails(options.selected);
+        const id = this.#runId++;
+        const response = {
+            type: "user-query" /* ResponseType.USER_QUERY */,
+            query,
+        };
+        this.#addHistory(id, response);
+        yield response;
+        for await (const response of this.handleContextDetails(options.selected)) {
+            this.#addHistory(id, response);
+            yield response;
+        }
         query = await this.enhanceQuery(query, options.selected);
-        const currentRunId = ++this.#runId;
         for (let i = 0; i < MAX_STEP; i++) {
-            yield {
-                type: ResponseType.QUERYING,
+            const queryResponse = {
+                type: "querying" /* ResponseType.QUERYING */,
+                query,
             };
+            this.#addHistory(id, queryResponse);
+            yield queryResponse;
             let response;
             let rpcId;
             try {
@@ -165,77 +201,92 @@ STOP`,
             catch (err) {
                 debugLog('Error calling the AIDA API', err);
                 if (err instanceof Host.AidaClient.AidaAbortError) {
-                    this.removeHistoryRun(currentRunId);
-                    yield {
-                        type: ResponseType.ERROR,
+                    const response = {
+                        type: "error" /* ResponseType.ERROR */,
                         error: "abort" /* ErrorType.ABORT */,
                         rpcId,
                     };
+                    this.#addHistory(id, response);
+                    yield response;
                     break;
                 }
-                yield {
-                    type: ResponseType.ERROR,
+                const response = {
+                    type: "error" /* ResponseType.ERROR */,
                     error: "unknown" /* ErrorType.UNKNOWN */,
                     rpcId,
                 };
+                this.#addHistory(id, response);
+                yield response;
                 break;
             }
             const parsedResponse = this.parseResponse(response);
-            this.addToHistory({
-                id: currentRunId,
-                query,
-                response: parsedResponse,
-            });
             if ('answer' in parsedResponse) {
                 const { answer, suggestions, } = parsedResponse;
                 if (answer) {
-                    yield {
-                        type: ResponseType.ANSWER,
+                    const response = {
+                        type: "answer" /* ResponseType.ANSWER */,
                         text: answer,
                         rpcId,
                         suggestions,
                     };
+                    this.#addHistory(id, response);
+                    yield response;
                 }
                 else {
-                    this.removeHistoryRun(currentRunId);
-                    yield {
-                        type: ResponseType.ERROR,
+                    const response = {
+                        type: "error" /* ResponseType.ERROR */,
                         error: "unknown" /* ErrorType.UNKNOWN */,
                         rpcId,
                     };
+                    this.#addHistory(id, response);
+                    yield response;
                 }
                 break;
             }
             const { title, thought, action, } = parsedResponse;
             if (title) {
-                yield {
-                    type: ResponseType.TITLE,
+                const response = {
+                    type: "title" /* ResponseType.TITLE */,
                     title,
                     rpcId,
                 };
+                this.#addHistory(id, response);
+                yield response;
             }
             if (thought) {
-                yield {
-                    type: ResponseType.THOUGHT,
+                const response = {
+                    type: "thought" /* ResponseType.THOUGHT */,
                     thought,
                     rpcId,
                 };
+                this.#addHistory(id, response);
+                yield response;
             }
             if (action) {
                 const result = yield* this.handleAction(action, rpcId);
+                this.#addHistory(id, result);
                 yield result;
                 query = `OBSERVATION: ${result.output}`;
             }
             if (i === MAX_STEP - 1) {
-                yield {
-                    type: ResponseType.ERROR,
+                const response = {
+                    type: "error" /* ResponseType.ERROR */,
                     error: "max-steps" /* ErrorType.MAX_STEPS */,
                 };
+                this.#addHistory(id, response);
+                yield response;
                 break;
             }
         }
         if (isDebugMode()) {
             window.dispatchEvent(new CustomEvent('freestylerdone'));
+        }
+    }
+    async *runFromHistory() {
+        for (const historyChunk of this.#history.values()) {
+            for (const entry of historyChunk) {
+                yield entry;
+            }
         }
     }
 }

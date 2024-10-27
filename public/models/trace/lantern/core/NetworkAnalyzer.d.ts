@@ -92,15 +92,15 @@ declare class NetworkAnalyzer {
     /**
      * Computes the average throughput for the given requests in bits/second.
      * Excludes data URI, failed or otherwise incomplete, and cached requests.
-     * Returns Infinity if there were no analyzable network requests.
+     * Returns null if there were no analyzable network requests.
      */
-    static estimateThroughput(records: Lantern.NetworkRequest[]): number;
+    static estimateThroughput(records: Lantern.NetworkRequest[]): number | null;
     static computeRTTAndServerResponseTime(records: Lantern.NetworkRequest[]): {
         rtt: number;
         additionalRttByOrigin: Map<string, number>;
         serverResponseTimeByOrigin: Map<string, number>;
     };
-    static analyze(records: Lantern.NetworkRequest[]): Lantern.Simulation.Settings['networkAnalysis'];
+    static analyze(records: Lantern.NetworkRequest[]): Lantern.Simulation.Settings['networkAnalysis'] | null;
     static findResourceForUrl<T extends Lantern.NetworkRequest>(records: Array<T>, resourceUrl: string): T | undefined;
     static findLastDocumentForUrl<T extends Lantern.NetworkRequest>(records: Array<T>, resourceUrl: string): T | undefined;
     /**

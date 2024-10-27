@@ -55,7 +55,7 @@ export declare class TreeOutline extends Common.ObjectWrapper.ObjectWrapper<Even
     forceSelect(omitFocus?: boolean | undefined, selectedByUser?: boolean | undefined): void;
     private selectFirst;
     private selectLast;
-    private treeKeyDown;
+    private treeKeyUp;
     deferredScrollIntoView(treeElement: TreeElement, center: boolean): void;
     onStartedEditingTitle(_treeElement: TreeElement): void;
 }

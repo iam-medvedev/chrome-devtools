@@ -107,7 +107,7 @@ export interface PositionOverride {
     /** The z index of this entry. Use -1 if placing it underneath other entries. A z of 0 is assumed, otherwise, much like CSS's z-index */
     z?: number;
 }
-export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, timeToPosition: (time: number) => number) => PositionOverride;
+export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, timeToPosition: (time: number) => number, transformColor: (color: string) => string) => PositionOverride;
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -171,6 +171,8 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private rawTimelineData?;
     private forceDecorationCache?;
     private entryColorsCache?;
+    private entryIndicesToNotDim?;
+    private colorDimmingCache;
     private totalTime?;
     private lastPopoverState;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
@@ -192,6 +194,9 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     enableRuler(enable: boolean): void;
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
+    enableDimming(entryIndicesToNotDim: number[]): void;
+    disableDimming(): void;
+    getColorForEntry(entryIndex: number): string;
     highlightEntry(entryIndex: number): void;
     highlightAllEntries(entries: number[]): void;
     removeSearchResultHighlights(): void;
@@ -217,7 +222,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private onMouseMove;
     private updateHighlight;
     private onMouseOut;
-    showPopoverForSearchResult(selectedSearchResult: number): void;
+    showPopoverForSearchResult(selectedSearchResult: number | null): void;
     private updatePopoverOffset;
     /**
      * Handle mouse click event in flame chart
@@ -579,9 +584,9 @@ export interface FlameChartDataProvider {
     indexForEvent?(event: Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame): number | null;
     buildFlowForInitiator?(index: number): unknown;
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
+    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
-    getTraceEntryTreeForAIFromEntryIndex?(entryIndex: number): Trace.Helpers.TreeHelpers.TraceEntryNodeForAI | null;
+    getAIEventNodeTreeFromEntryIndex?(entryIndex: number): Trace.Helpers.TreeHelpers.AINode | null;
     entryHasAnnotations?(entryIndex: number): boolean;
     deleteAnnotationsForEntry?(entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;

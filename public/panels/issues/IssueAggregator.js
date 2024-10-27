@@ -214,6 +214,13 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     #onIssueAdded(event) {
+        const excludeFromAggregate = [
+            "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */,
+            "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */,
+        ];
+        if (excludeFromAggregate.some(exclude => event.data.issue.code().includes(exclude))) {
+            return;
+        }
         this.#aggregateIssue(event.data.issue);
     }
     #onFullUpdateRequired() {

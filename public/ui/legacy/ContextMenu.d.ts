@@ -1,26 +1,31 @@
 import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
+import type { Key, Modifier } from './KeyboardShortcut.js';
 import { type SoftContextMenuDescriptor } from './SoftContextMenu.js';
 export declare class Item {
     #private;
     private readonly typeInternal;
     protected readonly label: string | undefined;
+    protected accelerator?: Host.InspectorFrontendHostAPI.AcceleratorDescriptor;
     protected readonly previewFeature: boolean;
     protected disabled: boolean | undefined;
     private readonly checked;
+    protected isDevToolsPerformanceMenuItem: boolean;
     protected contextMenu: ContextMenu | null;
     protected idInternal: number | undefined;
     customElement?: Element;
     private shortcut?;
     protected jslogContext: string | undefined;
-    constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, isPreviewFeature?: boolean, disabled?: boolean, checked?: boolean, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string);
+    constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, isPreviewFeature?: boolean, disabled?: boolean, checked?: boolean, accelerator?: Host.InspectorFrontendHostAPI.AcceleratorDescriptor, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string);
     id(): number;
     type(): string;
     isPreviewFeature(): boolean;
     isEnabled(): boolean;
     setEnabled(enabled: boolean): void;
     buildDescriptor(): SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor;
+    setAccelerator(key: Key, modifiers: Modifier[]): void;
+    setIsDevToolsPerformanceMenuItem(isDevToolsPerformanceMenuItem: boolean): void;
     setShortcut(shortcut: string): void;
 }
 export declare class Section {
@@ -28,6 +33,7 @@ export declare class Section {
     readonly items: Item[];
     constructor(contextMenu: ContextMenu | null);
     appendItem(label: string, handler: () => void, options?: {
+        accelerator?: Host.InspectorFrontendHostAPI.AcceleratorDescriptor;
         isPreviewFeature?: boolean;
         disabled?: boolean;
         additionalElement?: Element;

@@ -38,7 +38,6 @@ export declare class UserMetrics {
     cssHintShown(type: CSSHintType): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;
-    colorPickerOpenedFrom(type: ColorPickerOpenedFrom): void;
     cssPropertyDocumentation(type: CSSPropertyDocumentation): void;
     swatchActivated(swatch: SwatchType): void;
     animationPlaybackRateChanged(playbackRate: AnimationsPlaybackRate): void;
@@ -663,12 +662,8 @@ export declare enum DevtoolsExperiments {
     'extension-storage-viewer' = 100,
     'floating-entry-points-for-ai-assistance' = 101,
     'timeline-experimental-insights' = 102,
-    MAX_VALUE = 103
-}
-export declare const enum ColorPickerOpenedFrom {
-    SOURCES_PANEL = 0,
-    STYLES_TAB = 1,
-    MAX_VALUE = 2
+    'timeline-dim-unrelated-events' = 103,
+    MAX_VALUE = 104
 }
 export declare const enum CSSPropertyDocumentation {
     SHOWN = 0,

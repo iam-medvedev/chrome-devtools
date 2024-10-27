@@ -17,6 +17,17 @@ import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
+import * as TimelineUtils from './utils/utils.js';
+let showPostMessageEvents;
+function isShowPostMessageEventsEnabled() {
+    // Everytime the experiment is toggled devtools is reloaded so the
+    // cache is updated automatically.
+    if (showPostMessageEvents === undefined) {
+        showPostMessageEvents =
+            Root.Runtime.experiments.isEnabled("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */);
+    }
+    return showPostMessageEvents;
+}
 export function entryIsVisibleInTimeline(entry, parsedTrace) {
     if (parsedTrace && parsedTrace.Meta.traceIsGeneric) {
         return true;
@@ -31,16 +42,17 @@ export function entryIsVisibleInTimeline(entry, parsedTrace) {
         // track, and hence accessible by the CountersGraph view.
         return true;
     }
-    // Gate the visibility of post message events behind the experiement flag
-    if (Trace.Types.Events.isSchedulePostMessage(entry) || Trace.Types.Events.isHandlePostMessage(entry)) {
-        return Root.Runtime.experiments.isEnabled("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */);
+    if (isShowPostMessageEventsEnabled()) {
+        if (Trace.Types.Events.isSchedulePostMessage(entry) || Trace.Types.Events.isHandlePostMessage(entry)) {
+            return true;
+        }
     }
     if (Trace.Types.Extensions.isSyntheticExtensionEntry(entry) || Trace.Types.Events.isSyntheticServerTiming(entry)) {
         return true;
     }
     // Default styles are globally defined for each event name. Some
     // events are hidden by default.
-    const eventStyle = TimelineComponents.EntryStyles.getEventStyle(entry.name);
+    const eventStyle = TimelineUtils.EntryStyles.getEventStyle(entry.name);
     const eventIsTiming = Trace.Types.Events.isConsoleTime(entry) || Trace.Types.Events.isPerformanceMeasure(entry) ||
         Trace.Types.Events.isPerformanceMark(entry);
     return (eventStyle && !eventStyle.hidden) || eventIsTiming;
@@ -456,7 +468,7 @@ export class CompatibilityTracksAppender {
         if (track.titleForEvent) {
             return track.titleForEvent(event);
         }
-        return TimelineComponents.EntryName.nameForEntry(event, this.#parsedTrace);
+        return TimelineUtils.EntryName.nameForEntry(event, this.#parsedTrace);
     }
     /**
      * Returns the info shown when an event in the timeline is hovered.

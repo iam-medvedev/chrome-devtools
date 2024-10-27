@@ -314,7 +314,7 @@ class NetworkAnalyzer {
             function collectEstimates(estimator, multiplier = 1) {
                 for (const request of originRequests) {
                     const timing = request.timing;
-                    if (!timing) {
+                    if (!timing || !request.transferSize) {
                         continue;
                     }
                     const estimates = estimator({
@@ -380,7 +380,7 @@ class NetworkAnalyzer {
     /**
      * Computes the average throughput for the given requests in bits/second.
      * Excludes data URI, failed or otherwise incomplete, and cached requests.
-     * Returns Infinity if there were no analyzable network requests.
+     * Returns null if there were no analyzable network requests.
      */
     static estimateThroughput(records) {
         let totalBytes = 0;
@@ -404,7 +404,7 @@ class NetworkAnalyzer {
         }, [])
             .sort((a, b) => a.time - b.time);
         if (!timeBoundaries.length) {
-            return Infinity;
+            return null;
         }
         let inflight = 0;
         let currentStart = 0;
@@ -456,6 +456,9 @@ class NetworkAnalyzer {
     }
     static analyze(records) {
         const throughput = NetworkAnalyzer.estimateThroughput(records);
+        if (throughput === null) {
+            return null;
+        }
         return {
             throughput,
             ...NetworkAnalyzer.computeRTTAndServerResponseTime(records),

@@ -352,20 +352,16 @@ c`;
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatHistoryForTesting = new Map([[
+            agent.chatNewHistoryForTesting = new Map([[
                     0,
                     [
                         {
-                            text: 'first',
-                            entity: Host.AidaClient.Entity.UNKNOWN,
+                            type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                            query: 'question',
                         },
                         {
-                            text: 'second',
-                            entity: Host.AidaClient.Entity.SYSTEM,
-                        },
-                        {
-                            text: 'third',
-                            entity: Host.AidaClient.Entity.USER,
+                            type: "answer" /* Freestyler.ResponseType.ANSWER */,
+                            text: 'answer',
                         },
                     ],
                 ]]);
@@ -377,16 +373,12 @@ c`;
                 preamble: 'preamble',
                 chat_history: [
                     {
-                        entity: 0,
-                        text: 'first',
+                        entity: 1,
+                        text: 'question',
                     },
                     {
                         entity: 2,
-                        text: 'second',
-                    },
-                    {
-                        entity: 1,
-                        text: 'third',
+                        text: 'ANSWER: answer',
                     },
                 ],
                 metadata: {
@@ -520,7 +512,7 @@ c`;
                 });
                 promise.resolve(false);
                 const responses = await Array.fromAsync(agent.run('test', { selected: element }));
-                const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
+                const actionStep = responses.find(response => response.type === "action" /* Freestyler.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
                 assert.strictEqual(execJs.getCalls().length, 1);
             });
@@ -555,7 +547,7 @@ c`;
                 });
                 const result = await Array.fromAsync(agent.run('test', { selected: element }));
                 const actionSteps = result.filter(step => {
-                    return step.type === Freestyler.ResponseType.ACTION;
+                    return step.type === "action" /* Freestyler.ResponseType.ACTION */;
                 });
                 assert(actionSteps.length === 1, 'Found non or multiple action steps');
                 const actionStep = actionSteps.at(0);
@@ -578,7 +570,11 @@ c`;
             const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.CONTEXT,
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
                     title: 'Analyzing the prompt',
                     details: [
                         {
@@ -588,10 +584,11 @@ c`;
                     ],
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    type: Freestyler.ResponseType.ANSWER,
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
                     text: 'this is the answer',
                     suggestions: undefined,
                     rpcId: undefined,
@@ -626,7 +623,11 @@ c`;
             const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.CONTEXT,
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
                     title: 'Analyzing the prompt',
                     details: [
                         {
@@ -636,10 +637,11 @@ c`;
                     ],
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    type: Freestyler.ResponseType.ANSWER,
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
                     text: 'this is the answer',
                     suggestions: undefined,
                     rpcId: 123,
@@ -667,7 +669,11 @@ c`;
             const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.CONTEXT,
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
                     title: 'Analyzing the prompt',
                     details: [
                         {
@@ -677,11 +683,12 @@ c`;
                     ],
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     rpcId: undefined,
-                    type: Freestyler.ResponseType.ERROR,
+                    type: "error" /* Freestyler.ResponseType.ERROR */,
                     error: "unknown" /* Freestyler.ErrorType.UNKNOWN */,
                 },
             ]);
@@ -707,7 +714,11 @@ c`;
             const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.CONTEXT,
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
                     title: 'Analyzing the prompt',
                     details: [
                         {
@@ -717,10 +728,11 @@ c`;
                     ],
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    type: Freestyler.ResponseType.ANSWER,
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
                     text: 'this is the answer',
                     suggestions: undefined,
                     rpcId: 123,
@@ -743,7 +755,11 @@ c`;
             const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.CONTEXT,
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
                     title: 'Analyzing the prompt',
                     details: [
                         {
@@ -753,10 +769,11 @@ c`;
                     ],
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    type: Freestyler.ResponseType.ERROR,
+                    type: "error" /* Freestyler.ResponseType.ERROR */,
                     error: "unknown" /* Freestyler.ErrorType.UNKNOWN */,
                     rpcId: undefined,
                 },
@@ -798,7 +815,11 @@ ANSWER: this is the answer`,
             const responses = await Array.fromAsync(agent.run('test', { selected: element }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: Freestyler.ResponseType.CONTEXT,
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
                     title: 'Analyzing the prompt',
                     details: [
                         {
@@ -808,25 +829,27 @@ ANSWER: this is the answer`,
                     ],
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    type: Freestyler.ResponseType.THOUGHT,
+                    type: "thought" /* Freestyler.ResponseType.THOUGHT */,
                     thought: 'I am thinking.',
                     rpcId: undefined,
                 },
                 {
-                    type: Freestyler.ResponseType.ACTION,
+                    type: "action" /* Freestyler.ResponseType.ACTION */,
                     code: 'console.log(\'hello\');',
                     output: 'hello',
                     canceled: false,
                     rpcId: undefined,
                 },
                 {
-                    type: Freestyler.ResponseType.QUERYING,
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: 'OBSERVATION: hello',
                 },
                 {
-                    type: Freestyler.ResponseType.ANSWER,
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
                     text: 'this is the actual answer',
                     suggestions: undefined,
                     rpcId: undefined,
@@ -967,7 +990,7 @@ ANSWER: this is the answer`,
                     execJs,
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: element }));
-                const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
+                const actionStep = responses.find(response => response.type === "action" /* Freestyler.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution is currently disabled.');
                 assert.strictEqual(execJs.getCalls().length, 0);
             });
@@ -984,7 +1007,7 @@ ANSWER: this is the answer`,
                     execJs,
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: element }));
-                const actionStep = responses.find(response => response.type === Freestyler.ResponseType.ACTION);
+                const actionStep = responses.find(response => response.type === "action" /* Freestyler.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution that modifies the page is currently disabled.');
                 assert.strictEqual(execJs.getCalls().length, 1);
             });

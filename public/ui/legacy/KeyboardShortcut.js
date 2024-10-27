@@ -80,22 +80,22 @@ export class KeyboardShortcut {
         if (typeof keyCode === 'string') {
             keyCode = keyCode.charCodeAt(0) - (/^[a-z]/.test(keyCode) ? 32 : 0);
         }
-        modifiers = modifiers || Modifiers.None;
+        modifiers = modifiers || Modifiers.None.value;
         return KeyboardShortcut.makeKeyFromCodeAndModifiers(keyCode, modifiers);
     }
     static makeKeyFromEvent(keyboardEvent) {
-        let modifiers = Modifiers.None;
+        let modifiers = Modifiers.None.value;
         if (keyboardEvent.shiftKey) {
-            modifiers |= Modifiers.Shift;
+            modifiers |= Modifiers.Shift.value;
         }
         if (keyboardEvent.ctrlKey) {
-            modifiers |= Modifiers.Ctrl;
+            modifiers |= Modifiers.Ctrl.value;
         }
         if (keyboardEvent.altKey) {
-            modifiers |= Modifiers.Alt;
+            modifiers |= Modifiers.Alt.value;
         }
         if (keyboardEvent.metaKey) {
-            modifiers |= Modifiers.Meta;
+            modifiers |= Modifiers.Meta.value;
         }
         // Use either a real or a synthetic keyCode (for events originating from extensions).
         // @ts-ignore ExtensionServer.js installs '__keyCode' on some events.
@@ -105,7 +105,7 @@ export class KeyboardShortcut {
     static makeKeyFromEventIgnoringModifiers(keyboardEvent) {
         // @ts-ignore ExtensionServer.js installs '__keyCode' on some events.
         const keyCode = keyboardEvent.keyCode || keyboardEvent['__keyCode'];
-        return KeyboardShortcut.makeKeyFromCodeAndModifiers(keyCode, Modifiers.None);
+        return KeyboardShortcut.makeKeyFromCodeAndModifiers(keyCode, Modifiers.None.value);
     }
     // This checks if a "control equivalent" key is pressed. For non-mac platforms this means checking
     // if control is pressed but not meta. On mac, we instead check if meta is pressed but not control.
@@ -132,14 +132,14 @@ export class KeyboardShortcut {
         const [keyString, ...modifierStrings] = shortcut.split(/\+(?!$)/).reverse();
         let modifiers = 0;
         for (const modifierString of modifierStrings) {
-            const modifier = Modifiers[modifierString];
+            const modifier = Modifiers[modifierString].value;
             console.assert(typeof modifier !== 'undefined', `Only one key other than modifier is allowed in shortcut <${shortcut}>`);
             modifiers |= modifier;
         }
         console.assert(keyString.length > 0, `Modifiers-only shortcuts are not allowed (encountered <${shortcut}>)`);
         const key = Keys[keyString] || KeyBindings[keyString];
         if (key && 'shiftKey' in key && key.shiftKey) {
-            modifiers |= Modifiers.Shift;
+            modifiers |= Modifiers.Shift.value;
         }
         return KeyboardShortcut.makeDescriptor(key ? key : keyString, modifiers);
     }
@@ -180,7 +180,7 @@ export class KeyboardShortcut {
         ]);
         return [m.Meta, m.Ctrl, m.Alt, m.Shift].map(mapModifiers).join('');
         function mapModifiers(m) {
-            return (modifiers || 0) & m ? /** @type {string} */ modifierNames.get(m) : '';
+            return (modifiers || 0) & m.value ? /** @type {string} */ modifierNames.get(m) : '';
         }
     }
 }
@@ -189,15 +189,19 @@ export class KeyboardShortcut {
  * see #makeKeyFromCodeAndModifiers
  */
 export const Modifiers = {
-    None: 0,
-    Shift: 1,
-    Ctrl: 2,
-    Alt: 4,
-    Meta: 8,
-    // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
-    CtrlOrMeta: Host.Platform.isMac() ? 8 /* Meta */ : 2 /* Ctrl */,
-    // Option on Mac, Shift on other platforms
-    ShiftOrOption: Host.Platform.isMac() ? 4 /* Alt */ : 1 /* Shift */,
+    None: { value: 0, name: 'None' },
+    Shift: { value: 1, name: 'Shift' },
+    Ctrl: { value: 2, name: 'Ctrl' },
+    Alt: { value: 4, name: 'Alt' },
+    Meta: { value: 8, name: 'Meta' },
+    CtrlOrMeta: {
+        value: Host.Platform.isMac() ? 8 /* Meta */ : 2 /* Ctrl */,
+        name: Host.Platform.isMac() ? 'Meta' : 'Ctrl',
+    },
+    ShiftOrOption: {
+        value: Host.Platform.isMac() ? 4 /* Alt */ : 1 /* Shift */,
+        name: Host.Platform.isMac() ? 'Alt' : 'Shift',
+    },
 };
 const leftKey = {
     code: 37,
@@ -269,9 +273,14 @@ export const Keys = {
     ArrowDown: downKey,
     Delete: { code: 46, name: 'Del' },
     Zero: { code: 48, name: '0' },
+    C: { code: 67, name: 'C' },
     H: { code: 72, name: 'H' },
     N: { code: 78, name: 'N' },
     P: { code: 80, name: 'P' },
+    R: { code: 82, name: 'R' },
+    U: { code: 85, name: 'U' },
+    V: { code: 86, name: 'V' },
+    X: { code: 88, name: 'X' },
     Meta: metaKey,
     F1: { code: 112, name: 'F1' },
     F2: { code: 113, name: 'F2' },

@@ -1,6 +1,6 @@
 import './LinearMemoryValueInterpreter.js';
-import type { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 import './LinearMemoryHighlightChipList.js';
+import type { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 import './LinearMemoryViewer.js';
 import type { HighlightInfo } from './LinearMemoryViewerUtils.js';
 import { Endianness, type ValueType, type ValueTypeMode } from './ValueInterpreterDisplayUtils.js';

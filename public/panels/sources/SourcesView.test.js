@@ -70,6 +70,7 @@ describeWithEnvironment('SourcesView', () => {
     it('creates a HeadersView when the filename is \'.headers\'', async () => {
         const sourcesView = new Sources.SourcesView.SourcesView();
         const uiSourceCode = new Workspace.UISourceCode.UISourceCode({}, 'file:///path/to/overrides/www.example.com/.headers', Common.ResourceType.resourceTypes.Document);
+        sinon.stub(uiSourceCode, 'mimeType').returns('text/plain');
         sourcesView.viewForFile(uiSourceCode);
         assert.isTrue(sourcesView.getSourceView(uiSourceCode) instanceof SourcesComponents.HeadersView.HeadersView);
     });

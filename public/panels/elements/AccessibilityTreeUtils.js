@@ -100,7 +100,9 @@ export function accessibilityNodeRenderer(node) {
     const properties = sdkNode.properties() || [];
     const ignored = sdkNode.ignored();
     const id = getNodeId(sdkNode);
-    return html `<devtools-accessibility-tree-node .data=${{ name, role, ignored, properties, id }}></devtools-accessibility-tree-node>`;
+    return html `<devtools-accessibility-tree-node .data=${{
+        name, role, ignored, properties, id,
+    }}></devtools-accessibility-tree-node>`;
 }
 export function getNodeId(node) {
     return node.getFrameId() + '#' + node.id();

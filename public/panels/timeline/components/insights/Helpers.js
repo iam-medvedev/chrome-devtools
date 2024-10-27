@@ -93,7 +93,9 @@ export class BaseInsight extends HTMLElement {
         this.sharedTableState.selectedRowEl?.classList.remove('selected');
         this.sharedTableState.selectedRowEl = null;
         this.sharedTableState.selectionIsSticky = false;
-        this.dispatchEvent(new SidebarInsight.InsightActivated(this.internalName, this.data.insightSetKey, this.getInitialOverlays()));
+        this.dispatchEvent(new SidebarInsight.InsightActivated(this.internalName, this.data.insightSetKey, this.getInitialOverlays(), 
+        // TODO: this could be cached.
+        this.getRelatedEvents()));
     }
     /**
      * Replaces the initial insight overlays with the ones provided.
@@ -147,8 +149,7 @@ export class BaseInsight extends HTMLElement {
  */
 export function md(markdown) {
     const tokens = Marked.Marked.lexer(markdown);
-    return html `<devtools-markdown-view
-    .data=${{ tokens }}>
-  </devtools-markdown-view>`;
+    const data = { tokens };
+    return html `<devtools-markdown-view .data=${data}></devtools-markdown-view>`;
 }
 //# sourceMappingURL=Helpers.js.map

@@ -71,16 +71,16 @@ const cancelAllPendingRaf = () => {
     }
 };
 const stubAnimationGroup = () => {
-    sinon.stub(Animation.AnimationModel.AnimationGroup.prototype, 'scrollNode')
-        .resolves(new Animation.AnimationDOMNode.AnimationDOMNode(null));
+    sinon.stub(SDK.AnimationModel.AnimationGroup.prototype, 'scrollNode')
+        .resolves(new SDK.AnimationModel.AnimationDOMNode(null));
 };
 const stubAnimationDOMNode = () => {
-    const verticalScrollRange = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'verticalScrollRange').resolves(100);
-    const horizontalScrollRange = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'horizontalScrollRange').resolves(100);
-    const scrollLeft = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollLeft').resolves(10);
-    const scrollTop = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollTop').resolves(10);
-    const addScrollEventListener = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'addScrollEventListener').resolves();
-    const removeScrollEventListener = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'removeScrollEventListener').resolves();
+    const verticalScrollRange = sinon.stub(SDK.AnimationModel.AnimationDOMNode.prototype, 'verticalScrollRange').resolves(100);
+    const horizontalScrollRange = sinon.stub(SDK.AnimationModel.AnimationDOMNode.prototype, 'horizontalScrollRange').resolves(100);
+    const scrollLeft = sinon.stub(SDK.AnimationModel.AnimationDOMNode.prototype, 'scrollLeft').resolves(10);
+    const scrollTop = sinon.stub(SDK.AnimationModel.AnimationDOMNode.prototype, 'scrollTop').resolves(10);
+    const addScrollEventListener = sinon.stub(SDK.AnimationModel.AnimationDOMNode.prototype, 'addScrollEventListener').resolves();
+    const removeScrollEventListener = sinon.stub(SDK.AnimationModel.AnimationDOMNode.prototype, 'removeScrollEventListener').resolves();
     return {
         verticalScrollRange,
         horizontalScrollRange,
@@ -125,7 +125,7 @@ describeWithMockConnection('AnimationTimeline', () => {
     });
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
-        const model = target.model(Animation.AnimationModel.AnimationModel);
+        const model = target.model(SDK.AnimationModel.AnimationModel);
         assert.exists(model);
         view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
         view.markAsRoot();
@@ -201,7 +201,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             sinon.stub(view, 'previewsCreatedForTest').callsFake(() => {
                 waitForPreviewsManualPromise.resolve();
             });
-            const model = target.model(Animation.AnimationModel.AnimationModel);
+            const model = target.model(SDK.AnimationModel.AnimationModel);
             assert.exists(model);
             animationModel = model;
             const modelForDom = target.model(SDK.DOMModel.DOMModel);
@@ -328,7 +328,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             sinon.stub(view, 'scheduledRedrawAfterAnimationGroupUpdatedForTest').callsFake(() => {
                 waitForScheduleRedrawAfterAnimationGroupUpdated.resolve();
             });
-            const model = target.model(Animation.AnimationModel.AnimationModel);
+            const model = target.model(SDK.AnimationModel.AnimationModel);
             assert.isNotNull(model);
             animationModel = model;
             const modelForDom = target.model(SDK.DOMModel.DOMModel);
@@ -407,7 +407,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             sinon.stub(view, 'scheduledRedrawAfterAnimationGroupUpdatedForTest').callsFake(() => {
                 waitForScheduleRedrawAfterAnimationGroupUpdated.resolve();
             });
-            const model = target.model(Animation.AnimationModel.AnimationModel);
+            const model = target.model(SDK.AnimationModel.AnimationModel);
             assert.exists(model);
             animationModel = model;
             const modelForDom = target.model(SDK.DOMModel.DOMModel);

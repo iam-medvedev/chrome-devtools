@@ -10,7 +10,6 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import { ResponseType } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { FreestylerChatUi, } from './components/FreestylerChatUi.js';
 import { DrJonesFileAgent, } from './DrJonesFileAgent.js';
@@ -216,7 +215,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
             selectedElement: selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)),
             selectedNetworkRequest: UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest),
-            selectedStackTrace: UI.Context.Context.instance().flavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI),
+            selectedStackTrace: UI.Context.Context.instance().flavor(Trace.Helpers.TreeHelpers.AINode),
             selectedFile: UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode),
         };
         this.doUpdate();
@@ -225,7 +224,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.#handleSearchElementActionToggled);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, this.#handleTraceEntryNodeFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(Trace.Helpers.TreeHelpers.AINode, this.#handleTraceEntryNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     }
     willHide() {
@@ -234,7 +233,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.#handleSearchElementActionToggled);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().removeFlavorChangeListener(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, this.#handleTraceEntryNodeFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(Trace.Helpers.TreeHelpers.AINode, this.#handleTraceEntryNodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     }
     #handleAidaAvailabilityChange = async () => {
@@ -330,49 +329,63 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanelFloatingButton);
                 this.#viewProps.agentType = "freestyler" /* AgentType.FREESTYLER */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#freestylerAgent.runFromHistory());
                 break;
             }
             case 'freestyler.element-panel-context': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanel);
                 this.#viewProps.agentType = "freestyler" /* AgentType.FREESTYLER */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#freestylerAgent.runFromHistory());
                 break;
             }
             case 'drjones.network-floating-button': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromNetworkPanelFloatingButton);
                 this.#viewProps.agentType = "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#drJonesNetworkAgent.runFromHistory());
                 break;
             }
             case 'drjones.network-panel-context': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromNetworkPanel);
                 this.#viewProps.agentType = "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#drJonesNetworkAgent.runFromHistory());
                 break;
             }
             case 'drjones.performance-panel-context': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromPerformancePanel);
                 this.#viewProps.agentType = "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#drJonesPerformanceAgent.runFromHistory());
                 break;
             }
             case 'drjones.sources-floating-button': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromSourcesPanelFloatingButton);
                 this.#viewProps.agentType = "drjones-file" /* AgentType.DRJONES_FILE */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#drJonesFileAgent.runFromHistory());
                 break;
             }
             case 'drjones.sources-panel-context': {
                 this.#viewOutput.freestylerChatUi?.focusTextInput();
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.DrJonesOpenedFromSourcesPanel);
                 this.#viewProps.agentType = "drjones-file" /* AgentType.DRJONES_FILE */;
+                this.#viewProps.messages = [];
                 this.doUpdate();
+                void this.#doConversation(this.#drJonesFileAgent.runFromHistory());
                 break;
             }
         }
@@ -380,9 +393,18 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #clearMessages() {
         this.#viewProps.messages = [];
         this.#viewProps.isLoading = false;
-        this.#freestylerAgent = this.#createFreestylerAgent();
-        this.#drJonesFileAgent = this.#createDrJonesFileAgent();
-        this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
+        if (this.#viewProps.agentType === "freestyler" /* AgentType.FREESTYLER */) {
+            this.#freestylerAgent = this.#createFreestylerAgent();
+        }
+        else if (this.#viewProps.agentType === "drjones-file" /* AgentType.DRJONES_FILE */) {
+            this.#drJonesFileAgent = this.#createDrJonesFileAgent();
+        }
+        else if (this.#viewProps.agentType === "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */) {
+            this.#drJonesNetworkAgent = this.#createDrJonesNetworkAgent();
+        }
+        else if (this.#viewProps.agentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */) {
+            this.#drJonesPerformanceAgent = this.#createDrJonesPerformanceAgent();
+        }
         this.#cancel();
         this.doUpdate();
         UI.ARIAUtils.alert(i18nString(UIStrings.chatCleared));
@@ -390,22 +412,10 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #runAbortController = new AbortController();
     #cancel() {
         this.#runAbortController.abort();
-        this.#runAbortController = new AbortController();
         this.#viewProps.isLoading = false;
         this.doUpdate();
     }
     async #startConversation(text) {
-        this.#viewProps.messages.push({
-            entity: "user" /* ChatMessageEntity.USER */,
-            text,
-        });
-        this.#viewProps.isLoading = true;
-        const systemMessage = {
-            entity: "model" /* ChatMessageEntity.MODEL */,
-            steps: [],
-        };
-        this.#viewProps.messages.push(systemMessage);
-        this.doUpdate();
         this.#runAbortController = new AbortController();
         const signal = this.#runAbortController.signal;
         let runner;
@@ -424,19 +434,36 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (!runner) {
             return;
         }
-        let step = { isLoading: true };
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerLoading));
-        for await (const data of runner) {
+        await this.#doConversation(runner);
+        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
+    }
+    async #doConversation(generator) {
+        const systemMessage = {
+            entity: "model" /* ChatMessageEntity.MODEL */,
+            steps: [],
+        };
+        let step = { isLoading: true };
+        for await (const data of generator) {
             step.sideEffect = undefined;
             switch (data.type) {
-                case ResponseType.QUERYING: {
+                case "user-query" /* ResponseType.USER_QUERY */: {
+                    this.#viewProps.messages.push({
+                        entity: "user" /* ChatMessageEntity.USER */,
+                        text: data.query,
+                    });
+                    this.#viewProps.isLoading = true;
+                    this.#viewProps.messages.push(systemMessage);
+                    break;
+                }
+                case "querying" /* ResponseType.QUERYING */: {
                     step = { isLoading: true };
                     if (!systemMessage.steps.length) {
                         systemMessage.steps.push(step);
                     }
                     break;
                 }
-                case ResponseType.CONTEXT: {
+                case "context" /* ResponseType.CONTEXT */: {
                     step.title = data.title;
                     step.contextDetails = data.details;
                     step.isLoading = false;
@@ -445,14 +472,14 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                     break;
                 }
-                case ResponseType.TITLE: {
+                case "title" /* ResponseType.TITLE */: {
                     step.title = data.title;
                     if (systemMessage.steps.at(-1) !== step) {
                         systemMessage.steps.push(step);
                     }
                     break;
                 }
-                case ResponseType.THOUGHT: {
+                case "thought" /* ResponseType.THOUGHT */: {
                     step.isLoading = false;
                     step.thought = data.thought;
                     if (systemMessage.steps.at(-1) !== step) {
@@ -460,7 +487,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                     break;
                 }
-                case ResponseType.SIDE_EFFECT: {
+                case "side-effect" /* ResponseType.SIDE_EFFECT */: {
                     step.isLoading = false;
                     step.code = data.code;
                     step.sideEffect = {
@@ -471,7 +498,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                     break;
                 }
-                case ResponseType.ACTION: {
+                case "action" /* ResponseType.ACTION */: {
                     step.isLoading = false;
                     step.code = data.code;
                     step.output = data.output;
@@ -481,7 +508,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                     break;
                 }
-                case ResponseType.ANSWER: {
+                case "answer" /* ResponseType.ANSWER */: {
                     systemMessage.suggestions = data.suggestions;
                     systemMessage.answer = data.text;
                     systemMessage.rpcId = data.rpcId;
@@ -493,7 +520,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     this.#viewProps.isLoading = false;
                     break;
                 }
-                case ResponseType.ERROR: {
+                case "error" /* ResponseType.ERROR */: {
                     systemMessage.error = data.error;
                     systemMessage.rpcId = undefined;
                     this.#viewProps.isLoading = false;
@@ -513,7 +540,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.doUpdate();
             this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }
-        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
     }
 }
 export class ActionDelegate {

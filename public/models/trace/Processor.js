@@ -248,6 +248,9 @@ export class TraceProcessor extends EventTarget {
         const graph = LanternComputationData.createGraph(requests, trace, parsedTrace);
         const processedNavigation = LanternComputationData.createProcessedNavigation(parsedTrace, frameId, navigationId);
         const networkAnalysis = Lantern.Core.NetworkAnalyzer.analyze(requests);
+        if (!networkAnalysis) {
+            return;
+        }
         const simulator = Lantern.Simulation.Simulator.createSimulator({
             // TODO(crbug.com/372674229): if devtools throttling was on, does this network analysis capture
             // that? Do we need to set 'devtools' throttlingMethod?
@@ -369,7 +372,7 @@ export class TraceProcessor extends EventTarget {
                 else if (!expectedErrors.some(err => e.message === err)) {
                     // To reduce noise from tests, only print errors that are not expected to occur because a trace is
                     // too old (for which there is no single check).
-                    console.error(e.message);
+                    console.error(e);
                 }
             }
             const min = navigation.ts;

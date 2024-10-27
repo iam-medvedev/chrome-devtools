@@ -10,10 +10,15 @@ styles.replaceSync(
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+:host {
+  max-width: var(--sys-size-37);
+  width: 100%;
+}
 
 .card {
-  margin: var(--sys-size-9);
-  width: auto;
+  min-width: var(--sys-size-31);
+  max-width: var(--sys-size-37);
+  margin: var(--sys-size-3);
 }
 
 .heading {

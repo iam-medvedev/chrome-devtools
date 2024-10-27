@@ -35,6 +35,10 @@ const UIStrings = {
      * @description Similar with forceElementState but allows users to force specific state of the selected element.
      */
     forceElementSpecificStates: 'Force specific element state',
+    /**
+     *@description Text that is usually a hyperlink to more documentation
+     */
+    learnMore: 'Learn more',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementStatePaneWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -116,6 +120,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
                 iconName: 'help',
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 jslogContext: 'learn-more',
+                title: i18nString(UIStrings.learnMore),
             };
             learnMoreButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('https://goo.gle/devtools-emulate-focused-page'));
             div.appendChild(label);

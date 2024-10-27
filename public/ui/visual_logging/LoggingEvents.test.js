@@ -19,6 +19,9 @@ describe('LoggingEvents', () => {
         veid = getVeId(element);
         throttler = new Common.Throttler.Throttler(1000000);
     });
+    afterEach(async () => {
+        await throttler.schedule(async () => { }, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */);
+    });
     async function assertThrottled(stub) {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isFalse(stub.called);

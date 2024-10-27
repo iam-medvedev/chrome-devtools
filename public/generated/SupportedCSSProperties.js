@@ -3814,7 +3814,7 @@ export const generatedProperties = [
         "name": "text-box"
     },
     {
-        "inherited": false,
+        "inherited": true,
         "name": "text-box-edge"
     },
     {

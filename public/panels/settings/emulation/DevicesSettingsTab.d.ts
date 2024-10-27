@@ -1,10 +1,10 @@
 import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 export declare class DevicesSettingsTab extends UI.Widget.VBox implements UI.ListWidget.Delegate<EmulationModel.EmulatedDevices.EmulatedDevice> {
+    #private;
     containerElement: HTMLElement;
     private readonly addCustomButton;
     private readonly ariaSuccessMessageElement;
-    private readonly list;
     private muteUpdate;
     private emulatedDevicesList;
     private editor?;

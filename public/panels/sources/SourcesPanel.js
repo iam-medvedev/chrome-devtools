@@ -196,6 +196,7 @@ export class SourcesPanel extends UI.Panel.Panel {
     tabbedLocationHeader;
     extensionSidebarPanesContainer;
     sidebarPaneView;
+    #lastPausedTarget = null;
     constructor() {
         super('sources');
         new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.Folder], i18nString(UIStrings.dropWorkspaceFolderHere), this.handleDrop.bind(this));
@@ -418,6 +419,15 @@ export class SourcesPanel extends UI.Panel.Panel {
         UI.Context.Context.instance().setFlavor(SDK.DebuggerModel.DebuggerPausedDetails, details);
         this.toggleDebuggerSidebarButton.setEnabled(false);
         this.revealDebuggerSidebar();
+        const pausedTarget = details.debuggerModel.target();
+        if (this.threadsSidebarPane && this.#lastPausedTarget?.deref() !== pausedTarget &&
+            pausedTarget !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
+            // If we pause in something other than the main frame (e.g. worker), we should expand the
+            // "Threads" list to make it more clear which target is paused. We do this only if the target of
+            // the previous pause is different from the new pause to prevent annoying the user by re-opening
+            // the "Threads" list while stepping or hitting the same breakpoint multiple points.
+            void this.sidebarPaneStack?.showView(this.threadsSidebarPane);
+        }
         window.focus();
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
         const withOverlay = UI.Context.Context.instance().flavor(SDK.Target.Target)?.model(SDK.OverlayModel.OverlayModel) &&
@@ -428,6 +438,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             VisualLogging.registerLoggable(this.overlayLoggables.resumeButton, `${VisualLogging.action('debugger.toggle-pause')}`, this.overlayLoggables.debuggerPausedMessage);
             VisualLogging.registerLoggable(this.overlayLoggables.stepOverButton, `${VisualLogging.action('debugger.step-over')}`, this.overlayLoggables.debuggerPausedMessage);
         }
+        this.#lastPausedTarget = new WeakRef(details.debuggerModel.target());
     }
     maybeLogOverlayAction() {
         if (!this.overlayLoggables) {
@@ -795,7 +806,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.sources-panel-context')) {
             const editorElement = this.element.querySelector('devtools-text-editor');
-            if (!eventTarget.isSelfOrDescendant(editorElement)) {
+            if (!eventTarget.isSelfOrDescendant(editorElement) && uiSourceCode.contentType().isTextType()) {
                 UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
                 contextMenu.headerSection().appendAction('drjones.sources-panel-context');
             }

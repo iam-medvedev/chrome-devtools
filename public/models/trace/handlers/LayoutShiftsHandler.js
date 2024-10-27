@@ -27,6 +27,7 @@ const scheduleStyleInvalidationEvents = [];
 const styleRecalcInvalidationEvents = [];
 const renderFrameImplCreateChildFrameEvents = [];
 const domLoadingEvents = [];
+const layoutImageUnsizedEvents = [];
 const beginRemoteFontLoadEvents = [];
 const backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
@@ -34,6 +35,7 @@ const backendNodeIds = new Set();
 // shift if the next PrePaint after the LayoutInvalidation is the parent
 // node of such shift.
 const prePaintEvents = [];
+const paintImageEvents = [];
 let sessionMaxScore = 0;
 let clsWindowID = -1;
 const clusters = [];
@@ -55,7 +57,9 @@ export function reset() {
     scheduleStyleInvalidationEvents.length = 0;
     styleRecalcInvalidationEvents.length = 0;
     prePaintEvents.length = 0;
+    paintImageEvents.length = 0;
     renderFrameImplCreateChildFrameEvents.length = 0;
+    layoutImageUnsizedEvents.length = 0;
     domLoadingEvents.length = 0;
     beginRemoteFontLoadEvents.length = 0;
     backendNodeIds.clear();
@@ -93,8 +97,14 @@ export function handleEvent(event) {
     if (Types.Events.isDomLoading(event)) {
         domLoadingEvents.push(event);
     }
+    if (Types.Events.isLayoutImageUnsized(event)) {
+        layoutImageUnsizedEvents.push(event);
+    }
     if (Types.Events.isBeginRemoteFontLoad(event)) {
         beginRemoteFontLoadEvents.push(event);
+    }
+    if (Types.Events.isPaintImage(event)) {
+        paintImageEvents.push(event);
     }
 }
 function traceWindowFromTime(time) {
@@ -169,7 +179,9 @@ export async function finalize() {
     layoutInvalidationEvents.sort((a, b) => a.ts - b.ts);
     renderFrameImplCreateChildFrameEvents.sort((a, b) => a.ts - b.ts);
     domLoadingEvents.sort((a, b) => a.ts - b.ts);
+    layoutImageUnsizedEvents.sort((a, b) => a.ts - b.ts);
     beginRemoteFontLoadEvents.sort((a, b) => a.ts - b.ts);
+    paintImageEvents.sort((a, b) => a.ts - b.ts);
     // Each function transforms the data used by the next, as such the invoke order
     // is important.
     await buildLayoutShiftsClusters();
@@ -400,11 +412,13 @@ export function data() {
         styleRecalcInvalidationEvents: [],
         renderFrameImplCreateChildFrameEvents,
         domLoadingEvents,
+        layoutImageUnsizedEvents,
         beginRemoteFontLoadEvents,
         scoreRecords,
         // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],
         clustersByNavigationId: new Map(clustersByNavigationId),
+        paintImageEvents,
     };
 }
 export function deps() {

@@ -46,6 +46,7 @@ button {
   align-items: center;
   background: transparent;
   border-radius: var(--sys-shape-corner-full);
+  cursor: inherit;
   display: inline-flex;
   position: relative;
   font-size: var(--sys-typescale-body4-size);

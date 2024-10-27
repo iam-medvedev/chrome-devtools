@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Components from '../../../panels/timeline/components/components.js';
+import * as Utils from '../../../panels/timeline/utils/utils.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getAllNodes, getEventsIn, getRootAt, makeBeginEvent, makeCompleteEvent, makeEndEvent, makeInstantEvent, prettyPrint, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -144,7 +144,7 @@ describeWithEnvironment('RendererHandler', function () {
         const isInstant = (event) => Trace.Types.Events.isInstant(event);
         const isLong = (event) => Trace.Types.Events.isComplete(event) && event.dur > 1000;
         const isIncluded = (node, event) => (!isRoot(node) || isInstant(event) || isLong(event)) &&
-            Boolean(Components.EntryStyles.getEventStyle(event.name));
+            Boolean(Utils.EntryStyles.getEventStyle(event.name));
         assert.strictEqual(prettyPrint(tree, isIncluded), `
 ............
 -RunTask [2.21ms]
@@ -339,7 +339,7 @@ describeWithEnvironment('RendererHandler', function () {
         if (!tree) {
             assert(false, 'Main thread has no tree of events');
         }
-        const isIncluded = (_node, event) => Boolean(Components.EntryStyles.getEventStyle(event.name));
+        const isIncluded = (_node, event) => Boolean(Utils.EntryStyles.getEventStyle(event.name));
         assert.strictEqual(prettyPrint(tree, isIncluded), `
 -RunTask [0.13ms]
 -RunTask [0.005ms]
@@ -823,7 +823,7 @@ describeWithEnvironment('RendererHandler', function () {
                 throw new Error('Tree not found');
             }
             const onlyLongTasksPredicate = (_node, event) => Boolean(event.dur && event.dur > 1000) &&
-                Boolean(Components.EntryStyles.getEventStyle(event.name));
+                Boolean(Utils.EntryStyles.getEventStyle(event.name));
             assert.strictEqual(prettyPrint(thread.tree, onlyLongTasksPredicate), `
 .............
 -RunTask [17.269ms]

@@ -441,6 +441,13 @@ const cookieCrossSiteRedirectDowngrade = {
             linkTitle: i18nLazyString(UIStrings.fileCrosSiteRedirectBug),
         }],
 };
+// This description will be used by cookie issues that need to be added to the
+// issueManager, but aren't intended to be surfaced in the issues pane. This
+// is why they are using a placeholder description
+const placeholderDescriptionForInvisibleIssues = {
+    file: 'placeholderDescriptionForInvisibleIssues.md',
+    links: [],
+};
 const issueDescriptions = new Map([
     // These two don't have a deprecation date yet, but they need to be fixed eventually.
     ['CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie', sameSiteUnspecifiedWarnRead],
@@ -484,6 +491,10 @@ const issueDescriptions = new Map([
     ],
     ['CookieIssue::WarnThirdPartyPhaseout::ReadCookie', cookieWarnThirdPartyPhaseoutRead],
     ['CookieIssue::WarnThirdPartyPhaseout::SetCookie', cookieWarnThirdPartyPhaseoutSet],
+    ['CookieIssue::WarnDeprecationTrialMetadata::ReadCookie', placeholderDescriptionForInvisibleIssues],
+    ['CookieIssue::WarnDeprecationTrialMetadata::SetCookie', placeholderDescriptionForInvisibleIssues],
+    ['CookieIssue::WarnThirdPartyCookieHeuristic::ReadCookie', placeholderDescriptionForInvisibleIssues],
+    ['CookieIssue::WarnThirdPartyCookieHeuristic::SetCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie', cookieExcludeThirdPartyPhaseoutRead],
     ['CookieIssue::ExcludeThirdPartyPhaseout::SetCookie', cookieExcludeThirdPartyPhaseoutSet],
     ['CookieIssue::CrossSiteRedirectDowngradeChangesInclusion', cookieCrossSiteRedirectDowngrade],

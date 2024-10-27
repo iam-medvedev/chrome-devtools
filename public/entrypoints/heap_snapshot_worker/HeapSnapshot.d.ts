@@ -96,6 +96,7 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     distanceForRetainersView(): number;
     className(): string;
     classIndex(): number;
+    classKeyInternal(): string | number;
     setClassIndex(index: number): void;
     dominatorIndex(): number;
     edges(): HeapSnapshotEdgeIterator;
@@ -258,7 +259,7 @@ export declare abstract class HeapSnapshot {
     private createNodeIdFilter;
     private createAllocationStackFilter;
     private createNamedFilter;
-    getAggregatesByClassName(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): {
+    getAggregatesByClassKey(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): {
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
     };
     allocationTracesTops(): HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[];
@@ -334,9 +335,9 @@ export declare abstract class HeapSnapshot {
     retainingEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
     containmentEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
-    createAddedNodesProvider(baseSnapshotId: string, className: string): HeapSnapshotNodesProvider;
+    createAddedNodesProvider(baseSnapshotId: string, classKey: string): HeapSnapshotNodesProvider;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotNodesProvider;
-    createNodesProviderForClass(className: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotNodesProvider;
+    createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotNodesProvider;
     private maxJsNodeId;
     updateStaticData(): HeapSnapshotModel.HeapSnapshotModel.StaticData;
     ignoreNodeInRetainersView(nodeIndex: number): void;
@@ -469,7 +470,7 @@ export interface AggregatedInfo {
     distance: number;
     self: number;
     maxRet: number;
-    name: string | null;
+    name: string;
     idxs: number[];
 }
 export {};

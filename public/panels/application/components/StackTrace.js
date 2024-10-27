@@ -163,10 +163,8 @@ export class StackTrace extends HTMLElement {
         }
         const expandableRows = this.createRowTemplates();
         LitHtml.render(html `
-        <devtools-expandable-list .data=${{
-            rows: expandableRows, title: i18nString(UIStrings.creationStackTrace),
-        }}>
-        jslog=${VisualLogging.tree()}>
+        <devtools-expandable-list .data=${{ rows: expandableRows, title: i18nString(UIStrings.creationStackTrace) }}
+                                  jslog=${VisualLogging.tree()}>
         </devtools-expandable-list>
       `, this.#shadow, { host: this });
         // clang-format on

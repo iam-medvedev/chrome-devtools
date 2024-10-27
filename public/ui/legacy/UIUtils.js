@@ -598,11 +598,13 @@ export function runCSSAnimationOnce(element, className) {
     function animationEndCallback() {
         element.classList.remove(className);
         element.removeEventListener('webkitAnimationEnd', animationEndCallback, false);
+        element.removeEventListener('animationcancel', animationEndCallback, false);
     }
     if (element.classList.contains(className)) {
         element.classList.remove(className);
     }
     element.addEventListener('webkitAnimationEnd', animationEndCallback, false);
+    element.addEventListener('animationcancel', animationEndCallback, false);
     element.classList.add(className);
 }
 export function highlightRangesWithStyleClass(element, resultRanges, styleClass, changes) {

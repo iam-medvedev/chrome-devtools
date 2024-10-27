@@ -3,12 +3,21 @@
 // found in the LICENSE file.
 import './SettingDeprecationWarning.js';
 import * as Host from '../../../core/host/host.js';
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as Buttons from '../buttons/buttons.js';
 import * as Input from '../input/input.js';
 import settingCheckboxStyles from './settingCheckbox.css.js';
 const { html, Directives: { ifDefined } } = LitHtml;
+const UIStrings = {
+    /**
+     *@description Text that is usually a hyperlink to more documentation
+     */
+    learnMore: 'Learn more',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/components/settings/SettingCheckbox.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * A simple checkbox that is backed by a boolean setting.
  */
@@ -40,10 +49,21 @@ export class SettingCheckbox extends HTMLElement {
         }
         const learnMore = this.#setting.learnMore();
         if (learnMore) {
-            const jslog = VisualLogging.link()
-                .track({ click: true, keydown: 'Enter|Space' })
-                .context(this.#setting.name + '-documentation');
-            return html `<devtools-button .iconName=${'help'} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .title=${learnMore.tooltip()} jslog=${jslog} @click=${() => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(learnMore.url)} class="learn-more"></devtools-button>`;
+            const data = {
+                iconName: 'help',
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                jslogContext: `${this.#setting.name}-documentation`,
+                title: i18nString(UIStrings.learnMore),
+            };
+            const handleClick = (event) => {
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(learnMore.url);
+                event.consume();
+            };
+            return html `<devtools-button
+                    class=learn-more
+                    @click=${handleClick}
+                    .data=${data}></devtools-button>`;
         }
         return undefined;
     }
@@ -52,6 +72,7 @@ export class SettingCheckbox extends HTMLElement {
             throw new Error('No "Setting" object provided for rendering');
         }
         const icon = this.icon();
+        const title = `${this.#setting.learnMore() ? this.#setting.learnMore()?.tooltip() : ''}`;
         const reason = this.#setting.disabledReason() ?
             html `
       <devtools-button class="disabled-reason" .iconName=${'info'} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} title=${ifDefined(this.#setting.disabledReason())} @click=${onclick}></devtools-button>
@@ -59,7 +80,7 @@ export class SettingCheckbox extends HTMLElement {
             LitHtml.nothing;
         LitHtml.render(html `
       <p>
-        <label>
+        <label title=${title}>
           <input
             type="checkbox"
             .checked=${this.#setting.disabledReason() ? false : this.#setting.get()}
