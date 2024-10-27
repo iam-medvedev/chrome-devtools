@@ -40,7 +40,6 @@
   "files": [
     "../../../../../../../front_end/panels/timeline/components/BreadcrumbsUI.test.ts",
     "../../../../../../../front_end/panels/timeline/components/CPUThrottlingSelector.test.ts",
-    "../../../../../../../front_end/panels/timeline/components/EntryName.test.ts",
     "../../../../../../../front_end/panels/timeline/components/FieldSettingsDialog.test.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.test.ts",
     "../../../../../../../front_end/panels/timeline/components/Invalidations.test.ts",

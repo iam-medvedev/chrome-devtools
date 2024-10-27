@@ -1,20 +1,19 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AnimationGroupPreviewUI } from './AnimationGroupPreviewUI.js';
-import { type AnimationEffect, type AnimationGroup, AnimationModel } from './AnimationModel.js';
 import { AnimationUI } from './AnimationUI.js';
-export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<AnimationModel> {
+export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.AnimationModel.AnimationModel> {
     #private;
     private constructor();
     static instance(opts?: {
         forceNew: boolean;
     }): AnimationTimeline;
-    get previewMap(): Map<AnimationGroup, AnimationGroupPreviewUI>;
+    get previewMap(): Map<SDK.AnimationModel.AnimationGroup, AnimationGroupPreviewUI>;
     get uiAnimations(): AnimationUI[];
-    get groupBuffer(): AnimationGroup[];
+    get groupBuffer(): SDK.AnimationModel.AnimationGroup[];
     wasShown(): void;
-    modelAdded(animationModel: AnimationModel): void;
-    modelRemoved(animationModel: AnimationModel): void;
+    modelAdded(animationModel: SDK.AnimationModel.AnimationModel): void;
+    modelRemoved(animationModel: SDK.AnimationModel.AnimationModel): void;
     private addEventListeners;
     private removeEventListeners;
     private nodeChanged;
@@ -71,7 +70,7 @@ export declare const GlobalPlaybackRates: number[];
 export declare class NodeUI {
     #private;
     element: HTMLDivElement;
-    constructor(_animationEffect: AnimationEffect);
+    constructor(_animationEffect: SDK.AnimationModel.AnimationEffect);
     nodeResolved(node: SDK.DOMModel.DOMNode | null): void;
     createNewRow(): Element;
     nodeRemoved(): void;

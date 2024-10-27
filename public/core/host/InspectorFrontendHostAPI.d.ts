@@ -251,13 +251,19 @@ export interface InspectorFrontendHostAPI {
     recordChange(event: ChangeEvent): void;
     recordKeyDown(event: KeyDownEvent): void;
 }
+export interface AcceleratorDescriptor {
+    keyCode: number;
+    modifiers: number;
+}
 export interface ContextMenuDescriptor {
     type: 'checkbox' | 'item' | 'separator' | 'subMenu';
     id?: number;
     label?: string;
+    accelerator?: AcceleratorDescriptor;
     isExperimentalFeature?: boolean;
     enabled?: boolean;
     checked?: boolean;
+    isDevToolsPerformanceMenuItem?: boolean;
     subItems?: ContextMenuDescriptor[];
     shortcut?: string;
     jslogContext?: string;
@@ -346,7 +352,6 @@ export declare const enum EnumeratedHistogram {
     CSSHintShown = "DevTools.CSSHintShown",
     LighthouseModeRun = "DevTools.LighthouseModeRun",
     LighthouseCategoryUsed = "DevTools.LighthouseCategoryUsed",
-    ColorPickerOpenedFrom = "DevTools.ColorPickerOpenedFrom",
     CSSPropertyDocumentation = "DevTools.CSSPropertyDocumentation",
     SwatchActivated = "DevTools.SwatchActivated",
     AnimationPlaybackRateChanged = "DevTools.AnimationPlaybackRateChanged",

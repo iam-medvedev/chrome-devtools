@@ -549,7 +549,9 @@ export class UserAgentClientHintsForm extends HTMLElement {
             })}
           />
           <devtools-icon
-            .data=${{ color: 'var(--icon-default)', iconName: 'bin', width: '16px', height: '16px' }}
+            .data=${{
+                color: 'var(--icon-default)', iconName: 'bin', width: '16px', height: '16px',
+            }}
             title=${i18nString(UIStrings.brandUserAgentDelete)}
             class="delete-icon"
             tabindex="0"
@@ -576,7 +578,9 @@ export class UserAgentClientHintsForm extends HTMLElement {
       >
         <devtools-icon
           aria-hidden="true"
-          .data=${{ color: 'var(--icon-default)', iconName: 'plus', width: '16px' }}
+          .data=${{
+            color: 'var(--icon-default)', iconName: 'plus', width: '16px',
+        }}
         >
         </devtools-icon>
         ${i18nString(UIStrings.addBrand)}
@@ -643,7 +647,9 @@ export class UserAgentClientHintsForm extends HTMLElement {
             })}
           />
           <devtools-icon
-            .data=${{ color: 'var(--icon-default)', iconName: 'bin', width: '16px', height: '16px' }}
+            .data=${{
+                color: 'var(--icon-default)', iconName: 'bin', width: '16px', height: '16px',
+            }}
             title=${i18nString(UIStrings.brandFullVersionListDelete)}
             class="delete-icon"
             tabindex="0"
@@ -670,7 +676,9 @@ export class UserAgentClientHintsForm extends HTMLElement {
       >
         <devtools-icon
           aria-hidden="true"
-          .data=${{ color: 'var(--icon-default)', iconName: 'plus', width: '16px' }}
+          .data=${{
+            color: 'var(--icon-default)', iconName: 'plus', width: '16px',
+        }}
         >
         </devtools-icon>
         ${i18nString(UIStrings.addBrand)}

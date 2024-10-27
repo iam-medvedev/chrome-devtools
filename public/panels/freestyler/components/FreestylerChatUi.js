@@ -48,6 +48,16 @@ const UIStrings = {
      */
     turnOnForStylesAndRequests: 'Turn on {PH1} to get help with styles and network requests',
     /**
+     *@description Text for asking the user to turn the AI assistance feature in settings first before they are able to use it.
+     *@example {AI assistance in Settings} PH1
+     */
+    turnOnForStylesRequestsAndFiles: 'Turn on {PH1} to get help with styles, network requests, and files',
+    /**
+     *@description Text for asking the user to turn the AI assistance feature in settings first before they are able to use it.
+     *@example {AI assistance in Settings} PH1
+     */
+    turnOnForStylesRequestsPerformanceAndFiles: 'Turn on {PH1} to get help with styles, network requests, performance, and files',
+    /**
      *@description The footer disclaimer that links to more information about the AI feature.
      */
     learnAbout: 'Learn about AI in DevTools',
@@ -87,7 +97,7 @@ const UIStringsNotTranslate = {
     /**
      *@description Placeholder text for the chat UI input.
      */
-    inputPlaceholderForDrJonesPerformanceAgent: 'Ask a question about the selected stack trace',
+    inputPlaceholderForDrJonesPerformanceAgent: 'Ask a question about the selected stack',
     /**
      *@description Title for the send icon button.
      */
@@ -704,14 +714,11 @@ export class FreestylerChatUi extends HTMLElement {
         if (!this.#props.selectedStackTrace) {
             return html `${LitHtml.nothing}`;
         }
-        const selectedNode = Trace.Helpers.TreeHelpers.TraceEntryNodeForAI.getSelectedNodeForTraceEntryTreeForAI(this.#props.selectedStackTrace);
+        const selectedNode = Trace.Helpers.TreeHelpers.AINode.getSelectedNodeWithinTree(this.#props.selectedStackTrace);
         if (!selectedNode) {
             return html `${LitHtml.nothing}`;
         }
-        let displayName = selectedNode.type;
-        if (selectedNode.type === 'ProfileCall' && selectedNode.function) {
-            displayName = selectedNode.function;
-        }
+        const displayName = selectedNode.name;
         const iconData = {
             iconName: 'performance',
             color: 'var(--sys-color-on-surface-subtle)',
@@ -864,10 +871,20 @@ export class FreestylerChatUi extends HTMLElement {
             void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
         });
         settingsLink.setAttribute('jslog', `${VisualLogging.action('open-ai-settings').track({ click: true })}`);
+        return html `${i18n.i18n.getFormatLocalizedString(str_, this.#getStringForConsentView(), { PH1: settingsLink })}`;
+    }
+    #getStringForConsentView() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        return html `${config.devToolsExplainThisResourceDogfood?.enabled ?
-            i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesAndRequests, { PH1: settingsLink }) :
-            i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink })}`;
+        if (config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
+            return UIStrings.turnOnForStylesRequestsPerformanceAndFiles;
+        }
+        if (config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
+            return UIStrings.turnOnForStylesRequestsAndFiles;
+        }
+        if (config.devToolsExplainThisResourceDogfood?.enabled) {
+            return UIStrings.turnOnForStylesAndRequests;
+        }
+        return UIStrings.turnOnForStyles;
     }
     #getUnavailableAidaAvailabilityContents(aidaAvailability) {
         switch (aidaAvailability) {
@@ -968,16 +985,16 @@ export class FreestylerChatUi extends HTMLElement {
         <footer class="disclaimer">
           <p class="disclaimer-text">
             ${this.#getDisclaimerText()}
-            <x-link
+            <button
               class="link"
+              role="link"
               jslog=${VisualLogging.link('open-ai-settings').track({
             click: true,
         })}
-              @click=${(event) => {
-            event.preventDefault();
+              @click=${() => {
             void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
         }}
-            >${i18nString(UIStrings.learnAbout)}</x-link>
+            >${i18nString(UIStrings.learnAbout)}</button>
           </p>
         </footer>
       </div>

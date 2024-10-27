@@ -663,7 +663,7 @@
         return getInteractionCount() - prevInteractionCount;
     };
     const resetInteractions = () => {
-        prevInteractionCount = 0;
+        prevInteractionCount = getInteractionCount();
         longestInteractionList.length = 0;
         longestInteractionMap.clear();
     };
@@ -948,7 +948,10 @@
                     // Wrap in a setTimeout so the callback is run in a separate task
                     // to avoid extending the keyboard/click handler to reduce INP impact
                     // https://github.com/GoogleChrome/web-vitals/issues/383
-                    addEventListener(type, () => whenIdle(stopListening), true);
+                    addEventListener(type, () => whenIdle(stopListening), {
+                        once: true,
+                        capture: true,
+                    });
                 });
                 onHidden(stopListening);
                 // Only report after a bfcache restore if the `PerformanceObserver`
@@ -1507,7 +1510,7 @@
     // that are known to not match INP are removed.
     let pendingEntriesGroups = [];
     // The `processingEnd` time of most recently-processed event, chronologically.
-    let latestProcessingEnd;
+    let latestProcessingEnd = 0;
     // A WeakMap to look up the event-timing-entries group of a given entry.
     // Note that this only maps from "important" entries: either the first input or
     // those with an `interactionId`.
@@ -1607,7 +1610,7 @@
         });
         // Keep all pending LoAF entries that either:
         // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
-        // 2) occur after the most recently-processed event entry.
+        // 2) occur after the most recently-processed event entry (for up to MAX_PREVIOUS_FRAMES)
         const loafsToKeep = new Set();
         for (let i = 0; i < pendingEntriesGroups.length; i++) {
             const group = pendingEntriesGroups[i];
@@ -1615,16 +1618,14 @@
                 loafsToKeep.add(loaf);
             });
         }
-        for (let i = 0; i < MAX_PREVIOUS_FRAMES; i++) {
-            // Look at pending LoAF in reverse order so the most recent are first.
-            const loaf = pendingLoAFs[pendingLoAFs.length - 1 - i];
-            // If we reach LoAFs that overlap with event processing,
-            // we can assume all previous ones have already been handled.
-            if (!loaf || loaf.startTime < latestProcessingEnd)
-                break;
-            loafsToKeep.add(loaf);
-        }
-        pendingLoAFs = Array.from(loafsToKeep);
+        const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
+        // Filter `pendingLoAFs` to preserve LoAF order.
+        pendingLoAFs = pendingLoAFs.filter((loaf, index) => {
+            if (loaf.startTime > latestProcessingEnd && index > prevFrameIndexCutoff) {
+                return true;
+            }
+            return loafsToKeep.has(loaf);
+        });
         // Reset the idle callback handle so it can be queued again.
         idleHandle = -1;
     };
@@ -2163,6 +2164,15 @@
                 nextPaintTime: interaction.attribution.nextPaintTime,
                 interactionType: interaction.attribution.interactionType,
                 eventName: interaction.entries[0].name,
+                scripts: interaction.attribution.longAnimationFrameEntries.flatMap(loaf => loaf.scripts)
+                    .map(s => ({
+                    Duration: s.duration,
+                    'Invoker Type': s.invokerType || null,
+                    Invoker: s.invoker || null,
+                    Function: s.sourceFunctionName || null,
+                    Source: s.sourceURL || null,
+                    'Char position': s.sourceCharPosition || null,
+                })),
             };
             const node = interaction.attribution.interactionTargetElement;
             if (node) {

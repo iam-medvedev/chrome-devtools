@@ -30,8 +30,22 @@ function getIssueCode(details) {
             return "AttributionReportingIssue::InvalidRegisterOsTriggerHeader" /* IssueCode.INVALID_REGISTER_OS_TRIGGER_HEADER */;
         case "WebAndOsHeaders" /* Protocol.Audits.AttributionReportingIssueType.WebAndOsHeaders */:
             return "AttributionReportingIssue::WebAndOsHeaders" /* IssueCode.WEB_AND_OS_HEADERS */;
+        case "NoWebOrOsSupport" /* Protocol.Audits.AttributionReportingIssueType.NoWebOrOsSupport */:
+            return "AttributionReportingIssue::NoWebOrOsSupport" /* IssueCode.NO_WEB_OR_OS_SUPPORT */;
         case "NavigationRegistrationWithoutTransientUserActivation" /* Protocol.Audits.AttributionReportingIssueType.NavigationRegistrationWithoutTransientUserActivation */:
             return "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssueCode.NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION */;
+        case "InvalidInfoHeader" /* Protocol.Audits.AttributionReportingIssueType.InvalidInfoHeader */:
+            return "AttributionReportingIssue::InvalidInfoHeader" /* IssueCode.INVALID_INFO_HEADER */;
+        case "NoRegisterSourceHeader" /* Protocol.Audits.AttributionReportingIssueType.NoRegisterSourceHeader */:
+            return "AttributionReportingIssue::NoRegisterSourceHeader" /* IssueCode.NO_REGISTER_SOURCE_HEADER */;
+        case "NoRegisterTriggerHeader" /* Protocol.Audits.AttributionReportingIssueType.NoRegisterTriggerHeader */:
+            return "AttributionReportingIssue::NoRegisterTriggerHeader" /* IssueCode.NO_REGISTER_TRIGGER_HEADER */;
+        case "NoRegisterOsSourceHeader" /* Protocol.Audits.AttributionReportingIssueType.NoRegisterOsSourceHeader */:
+            return "AttributionReportingIssue::NoRegisterOsSourceHeader" /* IssueCode.NO_REGISTER_OS_SOURCE_HEADER */;
+        case "NoRegisterOsTriggerHeader" /* Protocol.Audits.AttributionReportingIssueType.NoRegisterOsTriggerHeader */:
+            return "AttributionReportingIssue::NoRegisterOsTriggerHeader" /* IssueCode.NO_REGISTER_OS_TRIGGER_HEADER */;
+        case "NavigationRegistrationUniqueScopeAlreadySet" /* Protocol.Audits.AttributionReportingIssueType.NavigationRegistrationUniqueScopeAlreadySet */:
+            return "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet" /* IssueCode.NAVIGATION_REGISTRATION_UNIQUE_SCOPE_ALREADY_SET */;
         default:
             return "AttributionReportingIssue::Unknown" /* IssueCode.UNKNOWN */;
     }
@@ -132,6 +146,41 @@ export class AttributionReportingIssue extends Issue {
                     file: 'arNavigationRegistrationWithoutTransientUserActivation.md',
                     links: [],
                 };
+            case "AttributionReportingIssue::NoWebOrOsSupport" /* IssueCode.NO_WEB_OR_OS_SUPPORT */:
+                return {
+                    file: 'arNoWebOrOsSupport.md',
+                    links: [],
+                };
+            case "AttributionReportingIssue::InvalidInfoHeader" /* IssueCode.INVALID_INFO_HEADER */:
+                return {
+                    file: 'arInvalidInfoHeader.md',
+                    links: [],
+                };
+            case "AttributionReportingIssue::NoRegisterSourceHeader" /* IssueCode.NO_REGISTER_SOURCE_HEADER */:
+                return {
+                    file: 'arNoRegisterSourceHeader.md',
+                    links: [],
+                };
+            case "AttributionReportingIssue::NoRegisterTriggerHeader" /* IssueCode.NO_REGISTER_TRIGGER_HEADER */:
+                return {
+                    file: 'arNoRegisterTriggerHeader.md',
+                    links: [],
+                };
+            case "AttributionReportingIssue::NoRegisterOsSourceHeader" /* IssueCode.NO_REGISTER_OS_SOURCE_HEADER */:
+                return {
+                    file: 'arNoRegisterOsSourceHeader.md',
+                    links: [],
+                };
+            case "AttributionReportingIssue::NoRegisterOsTriggerHeader" /* IssueCode.NO_REGISTER_OS_TRIGGER_HEADER */:
+                return {
+                    file: 'arNoRegisterOsTriggerHeader.md',
+                    links: [],
+                };
+            case "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet" /* IssueCode.NAVIGATION_REGISTRATION_UNIQUE_SCOPE_ALREADY_SET */:
+                return {
+                    file: 'arNavigationRegistrationUniqueScopeAlreadySet.md',
+                    links: [],
+                };
             case "AttributionReportingIssue::Unknown" /* IssueCode.UNKNOWN */:
                 return null;
         }
@@ -140,24 +189,7 @@ export class AttributionReportingIssue extends Issue {
         return JSON.stringify(this.issueDetails);
     }
     getKind() {
-        switch (this.code()) {
-            case "AttributionReportingIssue::PermissionPolicyDisabled" /* IssueCode.PERMISSION_POLICY_DISABLED */:
-            case "AttributionReportingIssue::UntrustworthyReportingOrigin" /* IssueCode.UNTRUSTWORTHY_REPORTING_ORIGIN */:
-            case "AttributionReportingIssue::InsecureContext" /* IssueCode.INSECURE_CONTEXT */:
-            case "AttributionReportingIssue::InvalidRegisterSourceHeader" /* IssueCode.INVALID_REGISTER_SOURCE_HEADER */:
-            case "AttributionReportingIssue::InvalidRegisterTriggerHeader" /* IssueCode.INVALID_REGISTER_TRIGGER_HEADER */:
-            case "AttributionReportingIssue::InvalidRegisterOsSourceHeader" /* IssueCode.INVALID_REGISTER_OS_SOURCE_HEADER */:
-            case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader" /* IssueCode.INVALID_REGISTER_OS_TRIGGER_HEADER */:
-            case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssueCode.SOURCE_AND_TRIGGER_HEADERS */:
-            case "AttributionReportingIssue::WebAndOsHeaders" /* IssueCode.WEB_AND_OS_HEADERS */:
-            case "AttributionReportingIssue::SourceIgnored" /* IssueCode.SOURCE_IGNORED */:
-            case "AttributionReportingIssue::TriggerIgnored" /* IssueCode.TRIGGER_IGNORED */:
-            case "AttributionReportingIssue::OsSourceIgnored" /* IssueCode.OS_SOURCE_IGNORED */:
-            case "AttributionReportingIssue::OsTriggerIgnored" /* IssueCode.OS_TRIGGER_IGNORED */:
-            case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssueCode.NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION */:
-            case "AttributionReportingIssue::Unknown" /* IssueCode.UNKNOWN */:
-                return "PageError" /* IssueKind.PAGE_ERROR */;
-        }
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const { attributionReportingIssueDetails } = inspectorIssue.details;

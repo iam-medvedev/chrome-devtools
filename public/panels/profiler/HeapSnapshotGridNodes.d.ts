@@ -164,7 +164,8 @@ export declare class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
     readonly count: number;
     readonly shallowSize: number;
     readonly retainedSize: number;
-    constructor(dataGrid: HeapSnapshotConstructorsDataGrid, className: string, aggregate: HeapSnapshotModel.HeapSnapshotModel.Aggregate, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter);
+    readonly classKey: string;
+    constructor(dataGrid: HeapSnapshotConstructorsDataGrid, classKey: string, aggregate: HeapSnapshotModel.HeapSnapshotModel.Aggregate, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter);
     get name(): string | undefined;
     createProvider(): HeapSnapshotProviderProxy;
     populateNodeBySnapshotObjectId(snapshotObjectId: number): Promise<HeapSnapshotGridNode[]>;
@@ -194,7 +195,8 @@ export declare class HeapSnapshotDiffNode extends HeapSnapshotGridNode {
     readonly removedSize: number;
     readonly sizeDelta: number;
     readonly deletedIndexes: number[];
-    constructor(dataGrid: HeapSnapshotDiffDataGrid, className: string, diffForClass: HeapSnapshotModel.HeapSnapshotModel.DiffForClass);
+    readonly classKey: string;
+    constructor(dataGrid: HeapSnapshotDiffDataGrid, classKey: string, diffForClass: HeapSnapshotModel.HeapSnapshotModel.DiffForClass);
     get name(): string | undefined;
     createProvider(): HeapSnapshotDiffNodesProvider;
     createCell(columnId: string): HTMLElement;

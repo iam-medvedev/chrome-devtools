@@ -34,6 +34,14 @@ export interface INPChangeEvent extends MetricChangeEvent {
     startTime: number;
     entryGroupId: InteractionEntryGroupId;
 }
+export interface LoAFScript {
+    'Duration': number;
+    'Invoker Type': string | null;
+    'Invoker': string | null;
+    'Function': string | null;
+    'Source': string | null;
+    'Char position': number | null;
+}
 /**
  * This event is not 1:1 with the interactions that the user sees in the interactions log.
  * It is 1:1 with a `PerformanceEventTiming` entry.
@@ -48,6 +56,7 @@ export interface InteractionEntryEvent {
     duration: number;
     phases: INPPhases;
     nodeIndex?: number;
+    scripts: LoAFScript[];
 }
 export interface LayoutShiftEvent {
     name: 'LayoutShift';

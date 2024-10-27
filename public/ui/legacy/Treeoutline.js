@@ -73,7 +73,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
         this.expandTreeElementsWhenArrowing = false;
         this.comparator = null;
         this.contentElement = this.rootElementInternal.childrenListNode;
-        this.contentElement.addEventListener('keydown', this.treeKeyDown.bind(this), false);
+        this.contentElement.addEventListener('keyup', this.treeKeyUp.bind(this), false);
         this.preventTabOrder = false;
         this.showSelectionOnKeyboardFocus = false;
         this.focusable = true;
@@ -241,7 +241,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
         last.select(false, true);
         return true;
     }
-    treeKeyDown(event) {
+    treeKeyUp(event) {
         if (event.shiftKey || event.metaKey || event.ctrlKey || isEditing()) {
             return;
         }

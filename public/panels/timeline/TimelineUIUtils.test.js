@@ -15,8 +15,8 @@ import { getEventOfType, getMainThread, makeCompleteEvent, makeMockSamplesHandle
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import * as TimelineComponents from './components/components.js';
 import * as Timeline from './timeline.js';
+import * as Utils from './utils/utils.js';
 describeWithMockConnection('TimelineUIUtils', function () {
     let target;
     // Trace events contain script ids as strings. However, the linkifier
@@ -341,11 +341,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('should return the correct rgb value for a corresponding CSS variable', function () {
-            const parsedColor = TimelineComponents.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
+            const parsedColor = Utils.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
             assert.strictEqual('rgb(2 2 2)', parsedColor);
         });
         it('should return the color as a CSS variable', function () {
-            const cssVariable = TimelineComponents.EntryStyles.getCategoryStyles().scripting.getCSSValue();
+            const cssVariable = Utils.EntryStyles.getCategoryStyles().scripting.getCSSValue();
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
@@ -833,6 +833,39 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     title: 'Description',
                     value: 'Description of top level task 1',
                 },
+            ]);
+        });
+        it('renders details for SchedulePostTaskCallback events', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
+            const scheduleEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isSchedulePostTaskCallback);
+            assert(scheduleEvent, 'Could not find SchedulePostTaskCallback event');
+            const scheduleDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, scheduleEvent, new Components.Linkifier.Linkifier(), false);
+            const rowData = getRowDataForDetailsElement(scheduleDetails);
+            assert.deepEqual(rowData, [
+                { title: 'Delay', value: '200\xA0ms' },
+                { title: 'Priority', value: 'user-visible' },
+                {
+                    title: undefined,
+                    value: '(anonymous) @ localhost:8787/scheduler/app.js:49:18',
+                },
+                { title: 'Initiator for', value: 'Fire postTask' },
+            ]);
+        });
+        it('renders details for RunPostTaskCallback events', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
+            const runEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isRunPostTaskCallback);
+            assert(runEvent, 'Could not find RunPostTaskCallback event');
+            const runDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, runEvent, new Components.Linkifier.Linkifier(), false);
+            const rowData = getRowDataForDetailsElement(runDetails);
+            assert.deepEqual(rowData, [
+                { title: 'Delay', value: '200\xA0ms' },
+                { title: 'Priority', value: 'user-visible' },
+                {
+                    title: undefined,
+                    value: '(anonymous) @ localhost:8787/scheduler/app.js:49:18',
+                },
+                { title: 'Initiated by', value: 'Schedule postTask' },
+                { title: 'Pending for', value: '200.1\xA0ms' },
             ]);
         });
     });

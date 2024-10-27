@@ -91,10 +91,15 @@ const ACTIONABLE_FAILURE_REASONS = [
 ];
 // 500ms window.
 // Use this window to consider events and requests that may have caused a layout shift.
-const INVALIDATION_WINDOW = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
-function isInInvalidationWindow(event, targetEvent) {
+const ROOT_CAUSE_WINDOW = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
+/**
+ * Returns if an event happens within the root cause window, before the target event.
+ *          ROOT_CAUSE_WINDOW               v target event
+ *        |------------------------|=======================
+ */
+function isInRootCauseWindow(event, targetEvent) {
     const eventEnd = event.dur ? event.ts + event.dur : event.ts;
-    return eventEnd < targetEvent.ts && eventEnd >= targetEvent.ts - INVALIDATION_WINDOW;
+    return eventEnd < targetEvent.ts && eventEnd >= targetEvent.ts - ROOT_CAUSE_WINDOW;
 }
 export function getNonCompositedFailure(animationEvent) {
     const failures = [];
@@ -133,13 +138,13 @@ function getNonCompositedFailureRootCauses(animationEvents, prePaintEvents, shif
             continue;
         }
         allAnimationFailures.push(...failures);
-        const nextPrePaint = getNextPrePaintEvent(prePaintEvents, animation);
+        const nextPrePaint = getNextEvent(prePaintEvents, animation);
         // If no following prePaint, this is not a root cause.
         if (!nextPrePaint) {
             continue;
         }
-        // If the animation event is outside the INVALIDATION_WINDOW, it could not be a root cause.
-        if (!isInInvalidationWindow(animation, nextPrePaint)) {
+        // If the animation event is outside the ROOT_CAUSE_WINDOW, it could not be a root cause.
+        if (!isInRootCauseWindow(animation, nextPrePaint)) {
             continue;
         }
         const shifts = shiftsByPrePaint.get(nextPrePaint);
@@ -186,16 +191,15 @@ function getShiftsByPrePaintEvents(layoutShifts, prePaintEvents) {
     return shiftsByPrePaint;
 }
 /**
- * This gets the first prePaint event that follows the provided event and returns it.
+ * Given a source event list, this returns the first event of that list that directly follows the target event.
  */
-function getNextPrePaintEvent(prePaintEvents, targetEvent) {
-    // Get the first PrePaint event that happened after the targetEvent.
-    const nextPrePaintIndex = Platform.ArrayUtilities.nearestIndexFromBeginning(prePaintEvents, prePaint => prePaint.ts > targetEvent.ts + (targetEvent.dur || 0));
+function getNextEvent(sourceEvents, targetEvent) {
+    const index = Platform.ArrayUtilities.nearestIndexFromBeginning(sourceEvents, source => source.ts > targetEvent.ts + (targetEvent.dur || 0));
     // No PrePaint event registered after this event
-    if (nextPrePaintIndex === null) {
+    if (index === null) {
         return undefined;
     }
-    return prePaintEvents[nextPrePaintIndex];
+    return sourceEvents[index];
 }
 /**
  * An Iframe is considered a root cause if the iframe event occurs before a prePaint event
@@ -203,7 +207,7 @@ function getNextPrePaintEvent(prePaintEvents, targetEvent) {
  */
 function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents) {
     for (const iframeEvent of iframeCreatedEvents) {
-        const nextPrePaint = getNextPrePaintEvent(prePaintEvents, iframeEvent);
+        const nextPrePaint = getNextEvent(prePaintEvents, iframeEvent);
         // If no following prePaint, this is not a root cause.
         if (!nextPrePaint) {
             continue;
@@ -232,19 +236,46 @@ function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePai
     return rootCausesByShift;
 }
 /**
+ * An unsized image is considered a root cause if its PaintImage can be correlated to a
+ * layout shift. We can correlate PaintImages with unsized images by their matching nodeIds.
+ *                           X      <- layout shift
+ *              |----------------|
+ *                    ^ PrePaint event   |-----|
+ *                                          ^ PaintImage
+ */
+function getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsByPrePaint, rootCausesByShift) {
+    shiftsByPrePaint.forEach((shifts, prePaint) => {
+        const paintImage = getNextEvent(paintImageEvents, prePaint);
+        // The unsized image corresponds to this PaintImage.
+        const matchingNode = unsizedImageEvents.find(unsizedImage => unsizedImage.args.data.nodeId === paintImage?.args.data.nodeId);
+        if (!matchingNode) {
+            return;
+        }
+        // The unsized image is a potential root cause of all the shifts of this prePaint.
+        for (const shift of shifts) {
+            const rootCausesForShift = rootCausesByShift.get(shift);
+            if (!rootCausesForShift) {
+                throw new Error('Unaccounted shift');
+            }
+            rootCausesForShift.unsizedImages.push(matchingNode.args.data.nodeId);
+        }
+    });
+    return rootCausesByShift;
+}
+/**
  * A font request is considered a root cause if the request occurs before a prePaint event
  * and within this prePaint event a layout shift(s) occurs. Additionally, this font request should
- * happen within the INVALIDATION_WINDOW of the prePaint event.
+ * happen within the ROOT_CAUSE_WINDOW of the prePaint event.
  */
 function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift) {
     const fontRequests = networkRequests.filter(req => req.args.data.resourceType === 'Font' && req.args.data.mimeType.startsWith('font'));
     for (const req of fontRequests) {
-        const nextPrePaint = getNextPrePaintEvent(prePaintEvents, req);
+        const nextPrePaint = getNextEvent(prePaintEvents, req);
         if (!nextPrePaint) {
             continue;
         }
-        // If the req is outside the INVALIDATION_WINDOW, it could not be a root cause.
-        if (!isInInvalidationWindow(req, nextPrePaint)) {
+        // If the req is outside the ROOT_CAUSE_WINDOW, it could not be a root cause.
+        if (!isInRootCauseWindow(req, nextPrePaint)) {
             continue;
         }
         // Get the shifts that belong to this prepaint
@@ -270,21 +301,24 @@ export function generateInsight(parsedTrace, context) {
     const iframeEvents = parsedTrace.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinContext);
     const networkRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
     const domLoadingEvents = parsedTrace.LayoutShifts.domLoadingEvents.filter(isWithinContext);
+    const unsizedImageEvents = parsedTrace.LayoutShifts.layoutImageUnsizedEvents.filter(isWithinContext);
     const clusterKey = context.navigation ? context.navigationId : Types.Events.NO_NAVIGATION;
     const clusters = parsedTrace.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
     const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
     const worstCluster = clustersByScore.at(0);
     const layoutShifts = clusters.flatMap(cluster => cluster.events);
     const prePaintEvents = parsedTrace.LayoutShifts.prePaintEvents.filter(isWithinContext);
+    const paintImageEvents = parsedTrace.LayoutShifts.paintImageEvents.filter(isWithinContext);
     // Get root causes.
     const rootCausesByShift = new Map();
     const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
     for (const shift of layoutShifts) {
-        rootCausesByShift.set(shift, { iframeIds: [], fontRequests: [], nonCompositedAnimations: [] });
+        rootCausesByShift.set(shift, { iframeIds: [], fontRequests: [], nonCompositedAnimations: [], unsizedImages: [] });
     }
     // Populate root causes for rootCausesByShift.
     getIframeRootCauses(iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
     getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
+    getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsByPrePaint, rootCausesByShift);
     const animationFailures = getNonCompositedFailureRootCauses(compositeAnimationEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
     const relatedEvents = [...layoutShifts];
     if (worstCluster) {

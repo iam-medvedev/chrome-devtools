@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -209,7 +208,6 @@ function createCSSTooltip(active) {
                 spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SIZE_CHANGED */, () => view.requestMeasure());
                 spectrum.setColor(active.color);
                 widget = spectrum;
-                Host.userMetrics.colorPickerOpenedFrom(0 /* Host.UserMetrics.ColorPickerOpenedFrom.SOURCES_PANEL */);
             }
             else {
                 const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);

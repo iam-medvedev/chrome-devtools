@@ -86,8 +86,7 @@ export class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent 
         LitHtml.render(html `
       <div class="ruleset-container"
       jslog=${VisualLogging.pane('preloading-rules')}>
-        <devtools-data-grid-controller .data=${reportsGridData}>
-        </devtools-data-grid-controller>
+        <devtools-data-grid-controller .data=${reportsGridData}></devtools-data-grid-controller>
       </div>
     `, this.#shadow, { host: this });
         // clang-format on

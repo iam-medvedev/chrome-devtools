@@ -15,7 +15,7 @@ styles.replaceSync(
   padding: 0 0 0 5px;
   overflow: hidden;
   display: flex;
-  min-height: 18px;
+  min-height: var(--sys-size-9);
   align-items: center;
 }
 
@@ -40,11 +40,12 @@ styles.replaceSync(
 
 .event-listener-details {
   display: flex;
-  min-height: 18px;
+  min-height: var(--sys-size-9);
   align-items: center;
+  gap: var(--sys-size-2);
 
   devtools-button {
-    height: 18px;
+    height: var(--sys-size-8);
   }
 }
 

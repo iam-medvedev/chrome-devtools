@@ -9,7 +9,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AnimationGroupPreviewUI } from './AnimationGroupPreviewUI.js';
-import { AnimationModel, Events, } from './AnimationModel.js';
 import { AnimationScreenshotPopover } from './AnimationScreenshotPopover.js';
 import animationTimelineStyles from './animationTimeline.css.js';
 import { AnimationUI } from './AnimationUI.js';
@@ -149,7 +148,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#timelineControlsWidth = DEFAULT_TIMELINE_CONTROLS_WIDTH;
         this.element.style.setProperty('--timeline-controls-width', `${this.#timelineControlsWidth}px`);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.NodeRemoved, ev => this.markNodeAsRemoved(ev.data.node), this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().observeModels(AnimationModel, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().observeModels(SDK.AnimationModel.AnimationModel, this, { scoped: true });
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.nodeChanged, this);
         this.#setupTimelineControlsResizer();
     }
@@ -191,7 +190,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         if (this.#initialized) {
             return;
         }
-        for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel, { scoped: true })) {
+        for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
             this.addEventListeners(animationModel);
         }
         this.registerCSSFiles([animationTimelineStyles]);
@@ -207,14 +206,14 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     addEventListeners(animationModel) {
         void animationModel.ensureEnabled();
-        animationModel.addEventListener(Events.AnimationGroupStarted, this.animationGroupStarted, this);
-        animationModel.addEventListener(Events.AnimationGroupUpdated, this.animationGroupUpdated, this);
-        animationModel.addEventListener(Events.ModelReset, this.reset, this);
+        animationModel.addEventListener(SDK.AnimationModel.Events.AnimationGroupStarted, this.animationGroupStarted, this);
+        animationModel.addEventListener(SDK.AnimationModel.Events.AnimationGroupUpdated, this.animationGroupUpdated, this);
+        animationModel.addEventListener(SDK.AnimationModel.Events.ModelReset, this.reset, this);
     }
     removeEventListeners(animationModel) {
-        animationModel.removeEventListener(Events.AnimationGroupStarted, this.animationGroupStarted, this);
-        animationModel.removeEventListener(Events.AnimationGroupUpdated, this.animationGroupUpdated, this);
-        animationModel.removeEventListener(Events.ModelReset, this.reset, this);
+        animationModel.removeEventListener(SDK.AnimationModel.Events.AnimationGroupStarted, this.animationGroupStarted, this);
+        animationModel.removeEventListener(SDK.AnimationModel.Events.AnimationGroupUpdated, this.animationGroupUpdated, this);
+        animationModel.removeEventListener(SDK.AnimationModel.Events.ModelReset, this.reset, this);
     }
     nodeChanged() {
         for (const nodeUI of this.#nodesMap.values()) {
@@ -334,7 +333,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
                         3 /* Host.UserMetrics.AnimationsPlaybackRate.OTHER */);
         }
         this.#playbackRate = playbackRate;
-        for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel, { scoped: true })) {
+        for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
             animationModel.setPlaybackRate(this.#allPaused ? 0 : this.#playbackRate);
         }
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationsPlaybackRateChanged);
@@ -455,7 +454,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     scheduledRedrawAfterAnimationGroupUpdatedForTest() {
     }
-    animationGroupUpdated({ data: group }) {
+    animationGroupUpdated({ data: group, }) {
         void this.#animationGroupUpdatedThrottler.schedule(async () => {
             const preview = this.#previewMap.get(group);
             if (preview) {

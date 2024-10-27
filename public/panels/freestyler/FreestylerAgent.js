@@ -8,7 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { AiAgent, debugLog, isDebugMode, ResponseType, } from './AiAgent.js';
+import { AiAgent, debugLog, isDebugMode, } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
@@ -168,11 +168,11 @@ export class FreestylerAgent extends AiAgent {
     }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = AiAgent.validTemperature(config.devToolsFreestyler?.temperature);
+        const temperature = config.devToolsFreestyler?.temperature;
         const modelId = config.devToolsFreestyler?.modelId;
         return {
             temperature,
-            model_id: modelId,
+            modelId,
         };
     }
     parseResponse(response) {
@@ -442,7 +442,7 @@ export class FreestylerAgent extends AiAgent {
         debugLog(`Action to execute: ${action}`);
         if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
             return {
-                type: ResponseType.ACTION,
+                type: "action" /* ResponseType.ACTION */,
                 code: action,
                 output: 'Error: JavaScript execution is currently disabled.',
                 canceled: true,
@@ -457,7 +457,7 @@ export class FreestylerAgent extends AiAgent {
             if (result.sideEffect) {
                 if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
                     return {
-                        type: ResponseType.ACTION,
+                        type: "action" /* ResponseType.ACTION */,
                         code: action,
                         output: 'Error: JavaScript execution that modifies the page is currently disabled.',
                         canceled: true,
@@ -469,7 +469,7 @@ export class FreestylerAgent extends AiAgent {
                     window.dispatchEvent(new CustomEvent('freestylersideeffect', { detail: { confirm: sideEffectConfirmationPromiseWithResolvers.resolve } }));
                 }
                 yield {
-                    type: ResponseType.SIDE_EFFECT,
+                    type: "side-effect" /* ResponseType.SIDE_EFFECT */,
                     code: action,
                     confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
                     rpcId,
@@ -480,7 +480,7 @@ export class FreestylerAgent extends AiAgent {
                 });
             }
             return {
-                type: ResponseType.ACTION,
+                type: "action" /* ResponseType.ACTION */,
                 code: action,
                 output: result.observation,
                 canceled: result.canceled,
@@ -496,7 +496,7 @@ export class FreestylerAgent extends AiAgent {
             return;
         }
         yield {
-            type: ResponseType.CONTEXT,
+            type: "context" /* ResponseType.CONTEXT */,
             title: lockedString(UIStringsNotTranslate.analyzingThePrompt),
             details: [{
                     title: lockedString(UIStringsNotTranslate.dataUsed),
@@ -510,16 +510,8 @@ export class FreestylerAgent extends AiAgent {
             '';
         return `${elementEnchantmentQuery}QUERY: ${query}`;
     }
-    addToHistory(options) {
-        const response = options.response;
-        if ('answer' in response) {
-            const answer = `ANSWER: ${response.answer}`;
-            return super.addToHistory({
-                ...options,
-                response: { answer },
-            });
-        }
-        return super.addToHistory(options);
+    formatHistoryChunkAnswer(text) {
+        return `ANSWER: ${text}`;
     }
 }
 //# sourceMappingURL=FreestylerAgent.js.map

@@ -8,7 +8,7 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as EntryName from './EntryName.js';
+import * as Utils from '../utils/utils.js';
 import * as Insights from './insights/insights.js';
 import layoutShiftDetailsStyles from './layoutShiftDetails.css.js';
 const { html } = LitHtml;
@@ -64,6 +64,10 @@ const UIStrings = {
      * @description Text referring to the total cumulative score of a layout shift cluster.
      */
     total: 'Total',
+    /**
+     * @description Text for a culprit type of Unsized image.
+     */
+    unsizedImage: 'Unsized image',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LayoutShiftDetails.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -90,7 +94,7 @@ export class LayoutShiftDetails extends HTMLElement {
         this.#render();
     }
     #renderTitle(event) {
-        const title = EntryName.nameForEntry(event);
+        const title = Utils.EntryName.nameForEntry(event);
         return html `
       <div class="layout-shift-details-title">
         <div class="layout-shift-event-title"></div>
@@ -104,10 +108,7 @@ export class LayoutShiftDetails extends HTMLElement {
       ${elementsShifted?.map(el => {
             if (el.node_id !== undefined) {
                 return html `
-            <devtools-performance-node-link
-              .data=${{
-                    backendNodeId: el.node_id,
-                }}>
+            <devtools-performance-node-link .data=${{ backendNodeId: el.node_id }}>
             </devtools-performance-node-link>`;
             }
             return LitHtml.nothing;
@@ -159,11 +160,24 @@ export class LayoutShiftDetails extends HTMLElement {
       </span>`;
         // clang-format on
     }
+    #renderUnsizedImage(node) {
+        // clang-format off
+        const el = html `
+      <devtools-performance-node-link
+        .data=${{
+            backendNodeId: node,
+        }}>
+      </devtools-performance-node-link>`;
+        return html `
+    <span class="culprit"><span class="culprit-type">${i18nString(UIStrings.unsizedImage)}: </span><span class="culprit-value">${el}</span></span>`;
+        // clang-format on
+    }
     #renderRootCauseValues(rootCauses) {
         return html `
       ${rootCauses?.fontRequests.map(fontReq => this.#renderFontRequest(fontReq))}
       ${rootCauses?.iframeIds.map(iframe => this.#renderIframe(iframe))}
       ${rootCauses?.nonCompositedAnimations.map(failure => this.#renderAnimation(failure))}
+      ${rootCauses?.unsizedImages.map(image => this.#renderUnsizedImage(image))}
     `;
     }
     #renderStartTime(shift, parsedTrace) {
@@ -183,7 +197,8 @@ export class LayoutShiftDetails extends HTMLElement {
             return null;
         }
         const hasCulprits = Boolean(rootCauses &&
-            (rootCauses.fontRequests.length || rootCauses.iframeIds.length || rootCauses.nonCompositedAnimations.length));
+            (rootCauses.fontRequests.length || rootCauses.iframeIds.length || rootCauses.nonCompositedAnimations.length ||
+                rootCauses.unsizedImages.length));
         // clang-format off
         return html `
       <tr class="shift-row" data-ts=${shift.ts}>
@@ -234,7 +249,8 @@ export class LayoutShiftDetails extends HTMLElement {
         const rootCauses = clsInsight.shifts.get(layoutShift);
         const elementsShifted = layoutShift.args.data?.impacted_nodes ?? [];
         const hasCulprits = rootCauses &&
-            (rootCauses.fontRequests.length || rootCauses.iframeIds.length || rootCauses.nonCompositedAnimations.length);
+            (rootCauses.fontRequests.length || rootCauses.iframeIds.length || rootCauses.nonCompositedAnimations.length ||
+                rootCauses.unsizedImages.length);
         const hasShiftedElements = elementsShifted?.length;
         const parentCluster = clsInsight.clusters.find(cluster => {
             return cluster.events.find(event => event === layoutShift);

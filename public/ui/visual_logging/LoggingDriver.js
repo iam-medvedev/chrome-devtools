@@ -63,7 +63,7 @@ export async function addDocument(document) {
     observeMutations([document.body]);
 }
 export async function stopLogging() {
-    await keyboardLogThrottler.process?.();
+    await keyboardLogThrottler.schedule(async () => { }, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */);
     logging = false;
     unregisterAllLoggables();
     for (const document of documents) {

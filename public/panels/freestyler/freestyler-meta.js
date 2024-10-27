@@ -66,20 +66,21 @@ async function loadFreestylerModule() {
     }
     return loadedFreestylerModule;
 }
-function isFeatureAvailable(config) {
+function isFreestylerFeatureAvailable(config) {
     return (config?.aidaAvailability?.enabled && config?.devToolsFreestyler?.enabled) === true;
 }
 function isDrJonesNetworkFeatureAvailable(config) {
-    return (config?.aidaAvailability?.enabled && config?.devToolsFreestyler?.enabled &&
-        config?.devToolsExplainThisResourceDogfood?.enabled) === true;
+    return (config?.aidaAvailability?.enabled && config?.devToolsExplainThisResourceDogfood?.enabled) === true;
 }
 function isDrJonesPerformanceFeatureAvailable(config) {
-    return (config?.aidaAvailability?.enabled && config?.devToolsFreestyler?.enabled &&
-        config?.devToolsAiAssistancePerformanceAgentDogfood?.enabled) === true;
+    return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistancePerformanceAgentDogfood?.enabled) === true;
 }
 function isDrJonesFileFeatureAvailable(config) {
-    return (config?.aidaAvailability?.enabled && config?.devToolsFreestyler?.enabled &&
-        config?.devToolsAiAssistanceFileAgentDogfood?.enabled) === true;
+    return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistanceFileAgentDogfood?.enabled) === true;
+}
+function isAnyFeatureAvailable(config) {
+    return isFreestylerFeatureAvailable(config) || isDrJonesNetworkFeatureAvailable(config) ||
+        isDrJonesPerformanceFeatureAvailable(config) || isDrJonesFileFeatureAvailable(config);
 }
 UI.ViewManager.registerViewExtension({
     location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,
@@ -90,7 +91,7 @@ UI.ViewManager.registerViewExtension({
     isPreviewFeature: true,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
     hasToolbar: false,
-    condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config),
+    condition: config => isAnyFeatureAvailable(config) && !isPolicyRestricted(config),
     async loadView() {
         const Freestyler = await loadFreestylerModule();
         return Freestyler.FreestylerPanel.instance();
@@ -103,7 +104,7 @@ Common.Settings.registerSettingExtension({
     title: i18nLazyString(UIStrings.enableAiAssistance),
     defaultValue: false,
     reloadRequired: false,
-    condition: isFeatureAvailable,
+    condition: isAnyFeatureAvailable,
     disabledCondition: config => {
         if (isLocaleRestricted()) {
             return { disabled: true, reason: i18nString(UIStrings.wrongLocale) };
@@ -129,7 +130,7 @@ UI.ActionRegistration.registerActionExtension({
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
     },
-    condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config),
+    condition: config => isFreestylerFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'freestyler.element-panel-context',
@@ -142,7 +143,7 @@ UI.ActionRegistration.registerActionExtension({
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
     },
-    condition: config => isFeatureAvailable(config) && !isPolicyRestricted(config),
+    condition: config => isFreestylerFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'drjones.network-floating-button',

@@ -11,7 +11,6 @@ import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime, } from './AppenderUtils.js';
 import { entryIsVisibleInTimeline, } from './CompatibilityTracksAppender.js';
-import * as Components from './components/components.js';
 import * as ModificationsManager from './ModificationsManager.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
@@ -486,18 +485,18 @@ export class ThreadAppender {
         }
         if (Trace.Types.Events.isProfileCall(event)) {
             if (event.callFrame.functionName === '(idle)') {
-                return Components.EntryStyles.getCategoryStyles().idle.getComputedColorValue();
+                return Utils.EntryStyles.getCategoryStyles().idle.getComputedColorValue();
             }
             if (event.callFrame.scriptId === '0') {
                 // If we can not match this frame to a script, return the
                 // generic "scripting" color.
-                return Components.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
+                return Utils.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
             }
             // Otherwise, return a color created based on its URL.
             return this.#colorGenerator.colorForID(event.callFrame.url);
         }
-        const defaultColor = Components.EntryStyles.getEventStyle(event.name)?.category.getComputedColorValue();
-        return defaultColor || Components.EntryStyles.getCategoryStyles().other.getComputedColorValue();
+        const defaultColor = Utils.EntryStyles.getEventStyle(event.name)?.category.getComputedColorValue();
+        return defaultColor || Utils.EntryStyles.getCategoryStyles().other.getComputedColorValue();
     }
     /**
      * Gets the title an event added by this appender should be rendered with.
@@ -506,7 +505,7 @@ export class ThreadAppender {
         if (Utils.IgnoreList.isIgnoreListedEntry(entry)) {
             return i18nString(UIStrings.onIgnoreList);
         }
-        return Components.EntryName.nameForEntry(entry, this.#parsedTrace);
+        return Utils.EntryName.nameForEntry(entry, this.#parsedTrace);
     }
     /**
      * Returns the info shown when an event added by this appender

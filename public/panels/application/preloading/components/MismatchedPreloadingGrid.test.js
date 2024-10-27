@@ -32,8 +32,8 @@ function assertDiff(gridComponent, cellIndex, spansExpected) {
         assert.include(got.getAttribute('style'), expected.partOfStyle);
     }
 }
-const FG_GREEN = 'color: var(--sys-color-green); text-decoration: line-through';
-const FG_RED = 'color: var(--sys-color-error);';
+const FG_GREEN = 'color:var(--sys-color-green);text-decoration:line-through';
+const FG_RED = 'color:var(--sys-color-error);';
 describeWithEnvironment('MismatchedPreloadingGrid', () => {
     // Disabled due to flakiness
     it.skip('[crbug.com/1473557]: renderes no diff in URL', async function () {

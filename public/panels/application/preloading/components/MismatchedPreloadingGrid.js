@@ -122,13 +122,7 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
             rows: this.#buildReportRows(),
             striped: true,
         };
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
-        render(html `
-      <devtools-data-grid-controller .data=${reportsGridData}>
-      </devtools-data-grid-controller>
-    `, this.#shadow, { host: this });
-        // clang-format on
+        render(html `<devtools-data-grid-controller .data=${reportsGridData}></devtools-data-grid-controller>`, this.#shadow, { host: this });
     }
     #buildReportRows() {
         function urlRenderer(url, pageURL) {

@@ -1,5 +1,5 @@
-import './CSSAngleSwatch.js';
 import './CSSAngleEditor.js';
+import './CSSAngleSwatch.js';
 import { type Angle } from './CSSAngleUtils.js';
 import { ValueChangedEvent } from './InlineEditorUtils.js';
 export declare class PopoverToggledEvent extends Event {

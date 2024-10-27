@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../front_end/core/sdk/AccessibilityModel.ts",
+    "../../../../../../front_end/core/sdk/AnimationModel.ts",
     "../../../../../../front_end/core/sdk/AutofillModel.ts",
     "../../../../../../front_end/core/sdk/CPUProfileDataModel.ts",
     "../../../../../../front_end/core/sdk/CPUProfilerModel.ts",
@@ -84,6 +85,7 @@
     "../../../../../../front_end/core/sdk/PerformanceMetricsModel.ts",
     "../../../../../../front_end/core/sdk/PreloadingModel.ts",
     "../../../../../../front_end/core/sdk/ProfileTreeModel.ts",
+    "../../../../../../front_end/core/sdk/RehydratingConnection.ts",
     "../../../../../../front_end/core/sdk/RehydratingObject.ts",
     "../../../../../../front_end/core/sdk/RemoteObject.ts",
     "../../../../../../front_end/core/sdk/Resource.ts",

@@ -79,9 +79,9 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.#dimHighlightSVG = UI.UIUtils.createSVGChild(this.element, 'svg', 'timeline-minimap-dim-highlight-svg hidden');
     }
     enableCreateBreadcrumbsButton() {
-        const breacrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
-        breacrumbsElement.addEventListener('mousemove', this.onMouseMove.bind(this), true);
-        breacrumbsElement.addEventListener('mouseleave', this.hideCursor.bind(this), true);
+        const breadcrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
+        breadcrumbsElement.addEventListener('mousemove', this.onMouseMove.bind(this), true);
+        breadcrumbsElement.addEventListener('mouseleave', this.hideCursor.bind(this), true);
     }
     onMouseMove(event) {
         if (!this.cursorEnabled) {

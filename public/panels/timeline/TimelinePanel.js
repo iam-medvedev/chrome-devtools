@@ -299,6 +299,10 @@ const UIStrings = {
      *@description Text of a hyperlink to documentation.
      */
     learnMore: 'Learn more',
+    /**
+     * @description Tooltip text for a button that takes the user back to the default view which shows performance metrics that are live.
+     */
+    backToLiveMetrics: 'Go back to the live metrics page',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -352,6 +356,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     brickBreakerToolbarButtonAdded = false;
     loadButton;
     saveButton;
+    homeButton;
     statusPane;
     landingPage;
     loader;
@@ -438,7 +443,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.showScreenshotsSetting.addChangeListener(this.updateMiniMap, this);
         this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false);
         this.showMemorySetting.setTitle(i18nString(UIStrings.memory));
-        this.showMemorySetting.addChangeListener(this.onModeChanged, this);
+        this.showMemorySetting.addChangeListener(this.onMemoryModeChanged, this);
         this.#thirdPartyTracksSetting = TimelinePanel.extensionDataVisibilitySetting();
         this.#thirdPartyTracksSetting.addChangeListener(this.#extensionDataVisibilityChanged, this);
         this.#thirdPartyTracksSetting.setTitle(i18nString(UIStrings.performanceExtension));
@@ -480,8 +485,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         // is not on the DOM. That only happens when the sidebar tabbed pane component is set to Annotations.
         // In that case, clicking on the insight chip will do nothing.
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightActivated.eventName, event => {
-            const { name, insightSetKey, overlays } = event;
-            this.#setActiveInsight({ name, insightSetKey, overlays });
+            const { name, insightSetKey, overlays, relatedEvents } = event;
+            this.#setActiveInsight({ name, insightSetKey, overlays, relatedEvents });
         });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideOverlays.eventName, event => {
             const { overlays, options } = event;
@@ -530,7 +535,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightSetZoom.eventName, event => {
             TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(event.bounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
         });
-        this.onModeChanged();
+        this.onMemoryModeChanged();
         this.populateToolbar();
         // The viewMode is set by default to the landing page, so we don't call
         // `#changeView` here and can instead directly call showLandingPage();
@@ -874,6 +879,15 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.panelToolbar.appendToolbarItem(this.saveButton);
         // History
         this.panelToolbar.appendSeparator();
+        if (Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
+            this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
+            this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
+                this.#changeView({ mode: 'LANDING_PAGE' });
+                this.#historyManager.navigateToLandingPage();
+            });
+            this.panelToolbar.appendToolbarItem(this.homeButton);
+            this.panelToolbar.appendSeparator();
+        }
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
         this.panelToolbar.registerCSSFiles([historyToolbarButtonStyles]);
         this.panelToolbar.appendSeparator();
@@ -1117,7 +1131,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             },
         });
     }
-    onModeChanged() {
+    onMemoryModeChanged() {
         this.flameChart.updateCountersGraphToggle(this.showMemorySetting.get());
         this.updateMiniMap();
         this.doResize();
@@ -1392,6 +1406,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.dropTarget.setEnabled(this.state === "Idle" /* State.IDLE */);
         this.loadButton.setEnabled(this.state === "Idle" /* State.IDLE */);
         this.saveButton.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
+        this.homeButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
         if (this.#viewMode.mode === 'VIEWING_TRACE') {
             this.#addSidebarIconToToolbar();
         }
@@ -1958,7 +1973,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             return;
         }
         // At this point we know the object is a trace event
-        const name = TimelineComponents.EntryName.nameForEntry(newSelection.object);
+        const name = Utils.EntryName.nameForEntry(newSelection.object);
         UI.ARIAUtils.alert(i18nString(UIStrings.eventSelected, { PH1: name }));
     }
     select(selection) {

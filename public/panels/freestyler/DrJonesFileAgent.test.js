@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { createTarget, describeWithEnvironment, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { loadBasicSourceMapExample } from '../../testing/SourceMapHelpers.js';
 import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHelpers.js';
-import { DrJonesFileAgent, ResponseType } from './freestyler.js';
-describeWithEnvironment('DrJonesFileAgent', () => {
+import { DrJonesFileAgent, formatSourceMapDetails } from './freestyler.js';
+describeWithMockConnection('DrJonesFileAgent', () => {
     function mockHostConfig(modelId, temperature) {
         getGetHostConfigStub({
             devToolsAiAssistanceFileAgentDogfood: {
@@ -24,6 +25,17 @@ describeWithEnvironment('DrJonesFileAgent', () => {
             registerClientEvent: () => Promise.resolve({}),
         };
     }
+    beforeEach(() => {
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+        });
+        Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
+    });
     describe('buildRequest', () => {
         beforeEach(() => {
             sinon.restore();
@@ -50,23 +62,21 @@ describeWithEnvironment('DrJonesFileAgent', () => {
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatHistoryForTesting = new Map([[
+            agent.chatNewHistoryForTesting = new Map([
+                [
                     0,
                     [
                         {
-                            text: 'first',
-                            entity: Host.AidaClient.Entity.UNKNOWN,
+                            type: "querying" /* ResponseType.QUERYING */,
+                            query: 'question',
                         },
                         {
-                            text: 'second',
-                            entity: Host.AidaClient.Entity.SYSTEM,
-                        },
-                        {
-                            text: 'third',
-                            entity: Host.AidaClient.Entity.USER,
+                            type: "answer" /* ResponseType.ANSWER */,
+                            text: 'answer',
                         },
                     ],
-                ]]);
+                ],
+            ]);
             assert.deepStrictEqual(agent.buildRequest({
                 input: 'test input',
             }), {
@@ -75,16 +85,12 @@ describeWithEnvironment('DrJonesFileAgent', () => {
                 preamble: 'preamble',
                 chat_history: [
                     {
-                        entity: 0,
-                        text: 'first',
+                        entity: 1,
+                        text: 'question',
                     },
                     {
                         entity: 2,
-                        text: 'second',
-                    },
-                    {
-                        entity: 1,
-                        text: 'third',
+                        text: 'answer',
                     },
                 ],
                 metadata: {
@@ -101,7 +107,7 @@ describeWithEnvironment('DrJonesFileAgent', () => {
             });
         });
     });
-    describeWithMockConnection('run', () => {
+    describe('run', () => {
         it('generates an answer', async () => {
             async function* generateAnswer() {
                 yield {
@@ -116,7 +122,6 @@ describeWithEnvironment('DrJonesFileAgent', () => {
                 aidaClient: mockAidaClient(generateAnswer),
             });
             const url = 'http://example.com/script.js';
-            const target = createTarget({ type: SDK.Target.Type.TAB });
             const { project } = createContentProviderUISourceCodes({
                 items: [
                     {
@@ -125,30 +130,34 @@ describeWithEnvironment('DrJonesFileAgent', () => {
                         resourceType: Common.ResourceType.resourceTypes.Script,
                     },
                 ],
-                projectType: Workspace.Workspace.projectTypes.Network,
-                target,
+                target: createTarget(),
             });
             const uiSourceCode = project.uiSourceCodeForURL(url);
             const responses = await Array.fromAsync(agent.run('test', { selected: uiSourceCode }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: ResponseType.CONTEXT,
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* ResponseType.CONTEXT */,
                     title: 'Analyzing file',
                     details: [
                         {
                             title: 'Selected file',
                             text: `File Name: script.js
-URL: http://example.com/script.js
-File Content:
-`,
+URL: http://example.com/script.js\n
+File Content:\n\`\`\`
+\`\`\``,
                         },
                     ],
                 },
                 {
-                    type: ResponseType.QUERYING,
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: '# Selected file\nFile Name: script.js\nURL: http://example.com/script.js\n\nFile Content:\n\`\`\`\n\`\`\`\n\n# User request\n\ntest',
                 },
                 {
-                    type: ResponseType.ANSWER,
+                    type: "answer" /* ResponseType.ANSWER */,
                     text: 'This is the answer',
                     suggestions: undefined,
                     rpcId: 123,
@@ -158,14 +167,27 @@ File Content:
                 {
                     entity: 1,
                     text: `# Selected file\nFile Name: script.js
-URL: http://example.com/script.js
-File Content:\n\n\n# User request\n\ntest`,
+URL: http://example.com/script.js\n
+File Content:\n\`\`\`\n\`\`\`\n\n# User request\n\ntest`,
                 },
                 {
                     entity: 2,
                     text: 'This is the answer',
                 },
             ]);
+        });
+    });
+    describe('formatSourceMapDetails', () => {
+        it('returns source map', async () => {
+            const target = createTarget();
+            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(debuggerModel);
+            const script = (await loadBasicSourceMapExample(target)).script;
+            const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
+            assert.exists(uiSourceCode);
+            const response = formatSourceMapDetails(uiSourceCode, debuggerWorkspaceBinding);
+            assert.strictEqual(response, 'Source map: file://gen.js.map');
         });
     });
 });

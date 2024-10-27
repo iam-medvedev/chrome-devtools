@@ -1,8 +1,8 @@
-import type { AnimationGroup } from './AnimationModel.js';
+import type * as SDK from '../../core/sdk/sdk.js';
 export declare class AnimationGroupPreviewUI {
     #private;
     element: HTMLButtonElement;
-    constructor(model: AnimationGroup);
+    constructor(model: SDK.AnimationModel.AnimationGroup);
     removeButton(): Element;
     replay(): void;
     render(): void;

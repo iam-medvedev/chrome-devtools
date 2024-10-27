@@ -38,6 +38,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private brickBreakerToolbarButtonAdded;
     private loadButton;
     private saveButton;
+    private homeButton?;
     private statusPane;
     private landingPage;
     private loader?;
@@ -93,7 +94,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadFromFile(file: File): Promise<void>;
     loadFromURL(url: Platform.DevToolsPath.UrlString): Promise<void>;
     private updateMiniMap;
-    private onModeChanged;
+    private onMemoryModeChanged;
     private updateSettingsPaneVisibility;
     private updateShowSettingsToolbarButton;
     private setUIControlsEnabled;

@@ -1,3 +1,4 @@
+import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
 import type { InsightResult, InsightSetContext, RequiredData } from './types.js';
 export type CLSInsightResult = InsightResult<{
@@ -50,6 +51,7 @@ export interface LayoutShiftRootCausesData {
     iframeIds: string[];
     fontRequests: Types.Events.SyntheticNetworkRequest[];
     nonCompositedAnimations: NoncompositedAnimationFailure[];
+    unsizedImages: Protocol.DOM.BackendNodeId[];
 }
 export declare function getNonCompositedFailure(animationEvent: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): CLSInsightResult;

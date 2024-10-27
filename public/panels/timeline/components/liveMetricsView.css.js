@@ -358,6 +358,16 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   margin-bottom: 4px;
 }
 
+.log-extra-details-button {
+  padding: unset;
+  background: unset;
+  border: unset;
+  font: inherit;
+  color: var(--sys-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /*# sourceURL=liveMetricsView.css */
 `);
 

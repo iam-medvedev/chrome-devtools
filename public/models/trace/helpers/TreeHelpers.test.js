@@ -402,28 +402,56 @@ describe('TreeHelpers', () => {
             const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
             const traceEvents = [evaluateScript, v8Run, parseFunction];
             const profileCalls = [makeProfileCall('a', 100, 200), makeProfileCall('b', 300, 200)];
+            // Roughly this looks like:
+            // 0                                          500
+            // |------------- EvaluateScript -------------|
+            //  |-        v8.run                         -|
+            //    |--|   |-    a   -||-          b        |
+            //      ^ V8.ParseFunction
             const allEntries = Trace.Helpers.Trace.mergeEventsInOrder(traceEvents, profileCalls);
             const { tree, entryToNode } = Trace.Helpers.TreeHelpers.treify(allEntries, { filter: { has: () => true } });
             const rootNode = entryToNode.get(evaluateScript);
-            const selectedNode = entryToNode.get(parseFunction);
+            // Select something from the middle.
+            const selectedNode = entryToNode.get(v8Run);
             assert.strictEqual(tree.roots.size, 1);
             assert.exists(rootNode);
             assert.exists(selectedNode);
-            const traceEntryTreeForAI = Trace.Helpers.TreeHelpers.TraceEntryNodeForAI.fromSelectedEntryNode(selectedNode);
-            const actualSelectedNode = Trace.Helpers.TreeHelpers.TraceEntryNodeForAI.getSelectedNodeForTraceEntryTreeForAI(traceEntryTreeForAI);
-            assert.exists(traceEntryTreeForAI);
-            assert.exists(actualSelectedNode);
-            // delete for smaller deepStrictEqual comparison
-            actualSelectedNode.children = traceEntryTreeForAI.children = [];
-            const expectedTraceEntryTree = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('EvaluateScript', Trace.Types.Timing.MilliSeconds(0), Trace.Types.Timing.MilliSeconds(0.5), undefined, Trace.Types.Timing.MilliSeconds(0.01));
-            expectedTraceEntryTree.id = 0;
-            expectedTraceEntryTree.children = [];
-            assert.deepStrictEqual(traceEntryTreeForAI, expectedTraceEntryTree);
-            const expectedselectedNodeForAI = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('V8.ParseFunction', Trace.Types.Timing.MilliSeconds(0.012), Trace.Types.Timing.MilliSeconds(0.001), undefined, Trace.Types.Timing.MilliSeconds(0.001));
-            expectedselectedNodeForAI.id = 2;
-            expectedselectedNodeForAI.children = [];
-            expectedselectedNodeForAI.selected = true;
-            assert.deepStrictEqual(actualSelectedNode, expectedselectedNodeForAI);
+            const aiNodeTree = Trace.Helpers.TreeHelpers.AINode.fromEntryNode(selectedNode, () => true);
+            const v8RunNode = Trace.Helpers.TreeHelpers.AINode.getSelectedNodeWithinTree(aiNodeTree);
+            assert.exists(aiNodeTree);
+            assert.exists(v8RunNode);
+            // First check the serialization as a while.
+            assert.deepStrictEqual(JSON.parse(JSON.stringify(aiNodeTree)), {
+                name: 'EvaluateScript',
+                dur: 0.5,
+                self: 0,
+                children: [{
+                        selected: true,
+                        name: 'v8.run',
+                        dur: 0.5,
+                        self: 0.1,
+                        children: [
+                            { name: 'V8.ParseFunction', dur: 0, self: 0 },
+                            { name: 'a', url: '', dur: 0.2, self: 0.2 },
+                            { name: 'b', url: '', dur: 0.2, self: 0.2 },
+                        ],
+                    }],
+            });
+            // Now we can make sure the pre-serialized data is also correct.
+            assert.strictEqual(v8RunNode.name, 'v8.run');
+            assert.strictEqual(v8RunNode.selected, true);
+            assert.strictEqual(v8RunNode.duration, 0.49);
+            assert.strictEqual(v8RunNode.children?.length, 3);
+            assert.strictEqual(aiNodeTree.name, 'EvaluateScript');
+            assert.strictEqual(aiNodeTree.selected, undefined);
+            assert.strictEqual(aiNodeTree.duration, 0.5);
+            assert.strictEqual(aiNodeTree.children?.length, 1);
+            const parseFnAINode = v8RunNode.children?.at(0);
+            assert.exists(v8RunNode);
+            assert.strictEqual(parseFnAINode.name, 'V8.ParseFunction');
+            assert.strictEqual(parseFnAINode.selected, undefined);
+            assert.strictEqual(parseFnAINode.duration, 0.001);
+            assert.strictEqual(parseFnAINode.children, undefined);
         });
     });
 });

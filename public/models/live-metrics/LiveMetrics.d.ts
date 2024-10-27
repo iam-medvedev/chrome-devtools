@@ -13,6 +13,11 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     get inpValue(): INPValue | undefined;
     get interactions(): InteractionMap;
     get layoutShifts(): LayoutShift[];
+    /**
+     * Will create a log message describing the interaction's LoAF scripts.
+     * Returns true if the message is successfully logged.
+     */
+    logInteractionScripts(interaction: Interaction): Promise<boolean>;
     setStatusForTesting(status: StatusEvent): void;
     clearInteractions(): void;
     clearLayoutShifts(): void;
@@ -52,6 +57,7 @@ export interface Interaction {
     startTime: number;
     nextPaintTime: number;
     phases: Spec.INPPhases;
+    scripts: Spec.LoAFScript[];
     node?: SDK.DOMModel.DOMNode;
 }
 export interface StatusEvent {

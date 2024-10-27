@@ -56,6 +56,8 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
             case "AttributionReportingIssue::OsTriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OS_TRIGGER_IGNORED */:
             case "AttributionReportingIssue::SourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_IGNORED */:
             case "AttributionReportingIssue::TriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.TRIGGER_IGNORED */:
+            case "AttributionReportingIssue::InvalidInfoHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_INFO_HEADER */:
+            case "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet" /* IssuesManager.AttributionReportingIssue.IssueCode.NAVIGATION_REGISTRATION_UNIQUE_SCOPE_ALREADY_SET */:
                 this.appendColumnTitle(header, i18nString(UIStrings.request));
                 this.appendColumnTitle(header, i18nString(UIStrings.invalidHeaderValue));
                 break;
@@ -71,6 +73,11 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
                 break;
             case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_AND_TRIGGER_HEADERS */:
             case "AttributionReportingIssue::WebAndOsHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.WEB_AND_OS_HEADERS */:
+            case "AttributionReportingIssue::NoWebOrOsSupport" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_WEB_OR_OS_SUPPORT */:
+            case "AttributionReportingIssue::NoRegisterSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_SOURCE_HEADER */:
+            case "AttributionReportingIssue::NoRegisterTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_TRIGGER_HEADER */:
+            case "AttributionReportingIssue::NoRegisterOsSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_OS_SOURCE_HEADER */:
+            case "AttributionReportingIssue::NoRegisterOsTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_OS_TRIGGER_HEADER */:
                 this.appendColumnTitle(header, i18nString(UIStrings.request));
                 break;
             case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssuesManager.AttributionReportingIssue.IssueCode.NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION */:
@@ -98,6 +105,8 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
             case "AttributionReportingIssue::OsTriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OS_TRIGGER_IGNORED */:
             case "AttributionReportingIssue::SourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_IGNORED */:
             case "AttributionReportingIssue::TriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.TRIGGER_IGNORED */:
+            case "AttributionReportingIssue::InvalidInfoHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_INFO_HEADER */:
+            case "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet" /* IssuesManager.AttributionReportingIssue.IssueCode.NAVIGATION_REGISTRATION_UNIQUE_SCOPE_ALREADY_SET */:
                 this.#appendRequestOrEmptyCell(element, details.request);
                 this.appendIssueDetailCell(element, details.invalidParameter || '');
                 break;
@@ -113,6 +122,11 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
                 break;
             case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_AND_TRIGGER_HEADERS */:
             case "AttributionReportingIssue::WebAndOsHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.WEB_AND_OS_HEADERS */:
+            case "AttributionReportingIssue::NoWebOrOsSupport" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_WEB_OR_OS_SUPPORT */:
+            case "AttributionReportingIssue::NoRegisterSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_SOURCE_HEADER */:
+            case "AttributionReportingIssue::NoRegisterTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_TRIGGER_HEADER */:
+            case "AttributionReportingIssue::NoRegisterOsSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_OS_SOURCE_HEADER */:
+            case "AttributionReportingIssue::NoRegisterOsTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.NO_REGISTER_OS_TRIGGER_HEADER */:
                 this.#appendRequestOrEmptyCell(element, details.request);
                 break;
             case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssuesManager.AttributionReportingIssue.IssueCode.NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION */:

@@ -69,7 +69,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         // clang-format off
         LitHtml.render(html `
       <devtools-report .data=${{ reportTitle: i18nString(UIStrings.bounceTrackingMitigationsTitle) }}
-      jslog=${VisualLogging.pane('bounce-tracking-mitigations')}>
+                       jslog=${VisualLogging.pane('bounce-tracking-mitigations')}>
         ${await this.#renderMainFrameInformation()}
       </devtools-report>
     `, this.#shadow, { host: this });

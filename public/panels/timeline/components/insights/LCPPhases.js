@@ -122,6 +122,10 @@ export class LCPPhases extends BaseInsight {
             return [];
         }
         const lcpMicroseconds = Trace.Types.Timing.MicroSeconds(Trace.Helpers.Timing.millisecondsToMicroseconds(lcpTs));
+        const overlays = [];
+        if (lcpInsight.lcpRequest) {
+            overlays.push({ type: 'ENTRY_OUTLINE', entry: lcpInsight.lcpRequest, outlineReason: 'INFO' });
+        }
         const sections = [];
         // For text LCP, we should only have ttfb and renderDelay sections.
         if (!phases?.loadDelay && !phases?.loadTime) {
@@ -146,7 +150,8 @@ export class LCPPhases extends BaseInsight {
             type: 'TIMESPAN_BREAKDOWN',
             sections,
         };
-        return [this.#overlay];
+        overlays.push(this.#overlay);
+        return overlays;
     }
     #renderLCPPhases(phaseData) {
         const rows = phaseData.map(({ phase, percent }) => {

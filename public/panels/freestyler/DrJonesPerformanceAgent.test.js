@@ -1,10 +1,10 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../core/host/host.js';
 import * as Trace from '../../models/trace/trace.js';
-import { describeWithEnvironment, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
-import { DrJonesPerformanceAgent, ResponseType } from './freestyler.js';
+import { describeWithEnvironment, getGetHostConfigStub } from '../../testing/EnvironmentHelpers.js';
+import { makeCompleteEvent, makeProfileCall } from '../../testing/TraceHelpers.js';
+import { DrJonesPerformanceAgent } from './freestyler.js';
 describeWithEnvironment('DrJonesPerformanceAgent', () => {
     function mockHostConfig(modelId, temperature) {
         getGetHostConfigStub({
@@ -46,20 +46,16 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatHistoryForTesting = new Map([[
+            agent.chatNewHistoryForTesting = new Map([[
                     0,
                     [
                         {
-                            text: 'first',
-                            entity: Host.AidaClient.Entity.UNKNOWN,
+                            type: "querying" /* ResponseType.QUERYING */,
+                            query: 'question',
                         },
                         {
-                            text: 'second',
-                            entity: Host.AidaClient.Entity.SYSTEM,
-                        },
-                        {
-                            text: 'third',
-                            entity: Host.AidaClient.Entity.USER,
+                            type: "answer" /* ResponseType.ANSWER */,
+                            text: 'answer',
                         },
                     ],
                 ]]);
@@ -71,16 +67,12 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
                 preamble: 'preamble',
                 chat_history: [
                     {
-                        entity: 0,
-                        text: 'first',
+                        entity: 1,
+                        text: 'question',
                     },
                     {
                         entity: 2,
-                        text: 'second',
-                    },
-                    {
-                        entity: 1,
-                        text: 'third',
+                        text: 'answer',
                     },
                 ],
                 metadata: {
@@ -97,23 +89,26 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
             });
         });
     });
-    describe('run', () => {
-        const rootNodeEntry = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('RunTask', Trace.Types.Timing.MilliSeconds(0));
-        const node1 = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('ProfileCall', Trace.Types.Timing.MilliSeconds(1));
-        const node2 = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('ProfileCall', Trace.Types.Timing.MilliSeconds(2));
-        const node3 = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('ProfileCall', Trace.Types.Timing.MilliSeconds(10));
-        const node4 = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('ProfileCall', Trace.Types.Timing.MilliSeconds(11));
-        const node5 = new Trace.Helpers.TreeHelpers.TraceEntryNodeForAI('ProfileCall', Trace.Types.Timing.MilliSeconds(15));
-        beforeEach(() => {
-            rootNodeEntry.children = [node1, node3];
-            node1.function = 'foo';
-            node1.children = [node2];
-            node2.function = 'foofoo';
-            node3.function = 'foo2';
-            node3.children = [node4, node5];
-            node4.function = 'foo2foo';
-            node5.function = 'foo2foo2';
-        });
+    describe('run', function () {
+        const evaluateScript = makeCompleteEvent("EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */, 0, 500);
+        const v8Run = makeCompleteEvent('v8.run', 10, 490);
+        const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
+        const traceEvents = [evaluateScript, v8Run, parseFunction];
+        const profileCalls = [makeProfileCall('a', 100, 200), makeProfileCall('b', 300, 200)];
+        // Roughly this looks like:
+        // 0                                          500
+        // |------------- EvaluateScript -------------|
+        //  |-        v8.run                         -|
+        //    |--|   |-    a   -||-          b        |
+        //      ^ V8.ParseFunction
+        const allEntries = Trace.Helpers.Trace.mergeEventsInOrder(traceEvents, profileCalls);
+        const { entryToNode } = Trace.Helpers.TreeHelpers.treify(allEntries, { filter: { has: () => true } });
+        const selectedNode = entryToNode.get(v8Run);
+        assert.exists(selectedNode);
+        const aiNodeTree = Trace.Helpers.TreeHelpers.AINode.fromEntryNode(selectedNode, () => true);
+        const v8RunNode = Trace.Helpers.TreeHelpers.AINode.getSelectedNodeWithinTree(aiNodeTree);
+        assert.exists(aiNodeTree);
+        assert.exists(v8RunNode);
         it('generates an answer', async () => {
             async function* generateAnswer() {
                 yield {
@@ -127,25 +122,45 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
             const agent = new DrJonesPerformanceAgent({
                 aidaClient: mockAidaClient(generateAnswer),
             });
-            // Select node3
-            node3.selected = true;
-            const responses = await Array.fromAsync(agent.run('test', { selected: rootNodeEntry }));
+            // Select the v8.run node
+            v8RunNode.selected = true;
+            const responses = await Array.fromAsync(agent.run('test', { selected: aiNodeTree }));
             assert.deepStrictEqual(responses, [
                 {
-                    type: ResponseType.CONTEXT,
-                    title: 'Analyzing stack trace',
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* ResponseType.CONTEXT */,
+                    title: 'Analyzing stack',
                     details: [
                         {
-                            title: 'Selected stack trace',
-                            text: JSON.stringify(rootNodeEntry),
+                            title: 'Selected stack',
+                            text: JSON.stringify({
+                                name: 'EvaluateScript',
+                                dur: 0.5,
+                                self: 0,
+                                children: [{
+                                        selected: true,
+                                        name: 'v8.run',
+                                        dur: 0.5,
+                                        self: 0.1,
+                                        children: [
+                                            { name: 'V8.ParseFunction', dur: 0, self: 0 },
+                                            { name: 'a', url: '', dur: 0.2, self: 0.2 },
+                                            { name: 'b', url: '', dur: 0.2, self: 0.2 },
+                                        ],
+                                    }],
+                            }),
                         },
                     ],
                 },
                 {
-                    type: ResponseType.QUERYING,
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: '# Selected stack trace\n{\"name\":\"EvaluateScript\",\"dur\":0.5,\"self\":0}\n\n# User request\n\ntest',
                 },
                 {
-                    type: ResponseType.ANSWER,
+                    type: "answer" /* ResponseType.ANSWER */,
                     text: 'This is the answer',
                     suggestions: undefined,
                     rpcId: 123,
@@ -154,7 +169,7 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
                     entity: 1,
-                    text: `# Selected stack trace\n${JSON.stringify(rootNodeEntry)}\n\n# User request\n\ntest`,
+                    text: `# Selected stack trace\n${JSON.stringify(aiNodeTree)}\n\n# User request\n\ntest`,
                 },
                 {
                     entity: 2,

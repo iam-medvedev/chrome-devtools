@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/freestyler/AiAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/ChangeManager.test.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesFileAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.test.ts",
@@ -69,6 +70,9 @@
     },
     {
       "path": "../../generated/protocol-tsconfig.json"
+    },
+    {
+      "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
       "path": "../../models/trace/bundle-tsconfig.json"

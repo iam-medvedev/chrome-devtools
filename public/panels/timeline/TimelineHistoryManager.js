@@ -244,6 +244,9 @@ export class TimelineHistoryManager {
         this.#setActiveTrace(this.recordings[newIndex]);
         return this.recordings[newIndex];
     }
+    navigateToLandingPage() {
+        this.#setActiveTrace({ type: 'LANDING_PAGE' });
+    }
     #setActiveTrace(item) {
         if (item.type === 'TRACE_INDEX') {
             const data = TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);

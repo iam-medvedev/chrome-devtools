@@ -153,6 +153,7 @@ style.setProperty('--image-file-group', 'url(\"' + new URL('./src/group.svg', im
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL('./src/heap-snapshot.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshots', 'url(\"' + new URL('./src/heap-snapshots.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-help', 'url(\"' + new URL('./src/help.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-home', 'url(\"' + new URL('./src/home.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-hover', 'url(\"' + new URL('./src/hover.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-iframe-crossed', 'url(\"' + new URL('./src/iframe-crossed.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-iframe', 'url(\"' + new URL('./src/iframe.svg', import.meta.url).toString() + '\")');

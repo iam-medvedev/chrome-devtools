@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
-import * as TimelineComponents from './components/components.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description text used to announce to a screen reader that they have entered the mode to edit the label
@@ -180,8 +180,8 @@ export function ariaAnnouncementForModifiedEvent(event) {
         }
         case 'UpdateLinkToEntry': {
             if (isEntriesLink(overlay) && overlay.entryFrom && overlay.entryTo) {
-                const from = TimelineComponents.EntryName.nameForEntry(overlay.entryFrom);
-                const to = TimelineComponents.EntryName.nameForEntry(overlay.entryTo);
+                const from = Utils.EntryName.nameForEntry(overlay.entryFrom);
+                const to = Utils.EntryName.nameForEntry(overlay.entryTo);
                 return (i18nString(UIStrings.srEntriesLinked, { PH1: from, PH2: to }));
             }
             break;

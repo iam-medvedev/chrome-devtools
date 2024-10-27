@@ -151,6 +151,30 @@ label {
   border-top: 1px solid var(--sys-color-divider);
 }
 
+.settings-card-container-wrapper {
+  padding-top: var(--sys-size-8);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1000px) {
+  .settings-card-container-wrapper {
+    position: absolute;
+    top: var(--sys-size-8);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+  }
+}
+
+.settings-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sys-size-11);
+}
+
 .settings-tab.settings-content {
   margin: 0;
   padding: 0;
@@ -196,15 +220,15 @@ label {
 .settings-experiment {
   display: grid;
   grid-template-columns: auto min-content auto 1fr;
+
+  & .devtools-link {
+    display: flex !important; /* stylelint-disable-line declaration-no-important */
+    align-items: center;
+  }
 }
 
-.settings-experiment .devtools-link {
-  display: flex !important; /* stylelint-disable-line declaration-no-important */
-  align-items: center;
-}
-
-.settings-experiment .devtools-link:has(.link-icon) {
-  outline-offset: 0;
+devtools-button.link-icon {
+  cursor: pointer;
 }
 
 .experiment-label {

@@ -181,7 +181,7 @@ export class TimelineFlameChartNetworkDataProvider {
     }
     entryTitle(index) {
         const event = this.#events[index];
-        return TimelineComponents.EntryName.nameForEntry(event);
+        return TimelineUtils.EntryName.nameForEntry(event);
     }
     entryFont(_index) {
         return this.#networkTrackAppender?.font() || null;
@@ -422,7 +422,7 @@ export class TimelineFlameChartNetworkDataProvider {
             if (!Trace.Helpers.Timing.eventIsInBounds(entry, visibleWindow)) {
                 continue;
             }
-            if (filter.accept(entry, this.#parsedTrace ?? undefined)) {
+            if (!filter || filter.accept(entry, this.#parsedTrace ?? undefined)) {
                 const startTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
                 results.push({ startTimeMilli, index: i, provider: 'network' });
             }

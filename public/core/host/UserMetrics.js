@@ -230,9 +230,6 @@ export class UserMetrics {
     lighthouseCategoryUsed(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MAX_VALUE */);
     }
-    colorPickerOpenedFrom(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ColorPickerOpenedFrom" /* EnumeratedHistogram.ColorPickerOpenedFrom */, type, 2 /* ColorPickerOpenedFrom.MAX_VALUE */);
-    }
     cssPropertyDocumentation(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSPropertyDocumentation" /* EnumeratedHistogram.CSSPropertyDocumentation */, type, 3 /* CSSPropertyDocumentation.MAX_VALUE */);
     }
@@ -908,9 +905,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["extension-storage-viewer"] = 100] = "extension-storage-viewer";
     DevtoolsExperiments[DevtoolsExperiments["floating-entry-points-for-ai-assistance"] = 101] = "floating-entry-points-for-ai-assistance";
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-dim-unrelated-events"] = 103] = "timeline-dim-unrelated-events";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 103] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 104] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

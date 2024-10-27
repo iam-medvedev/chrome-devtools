@@ -39,6 +39,7 @@
   },
   "files": [
     "../../../../../../front_end/core/sdk/AccessibilityModel.test.ts",
+    "../../../../../../front_end/core/sdk/AnimationModel.test.ts",
     "../../../../../../front_end/core/sdk/AutofillModel.test.ts",
     "../../../../../../front_end/core/sdk/CPUThrottlingManager.test.ts",
     "../../../../../../front_end/core/sdk/CSSContainerQuery.test.ts",
@@ -65,6 +66,7 @@
     "../../../../../../front_end/core/sdk/OverlayPersistentHighlighter.test.ts",
     "../../../../../../front_end/core/sdk/PageResourceLoader.test.ts",
     "../../../../../../front_end/core/sdk/PreloadingModel.test.ts",
+    "../../../../../../front_end/core/sdk/RehydratingConnection.test.ts",
     "../../../../../../front_end/core/sdk/RemoteObject.test.ts",
     "../../../../../../front_end/core/sdk/ResourceTreeModel.test.ts",
     "../../../../../../front_end/core/sdk/RuntimeModel.test.ts",

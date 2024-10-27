@@ -34,7 +34,7 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as Components from './components/components.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Short for Network. Label for the network requests section of the Performance panel.
@@ -154,10 +154,10 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         // Scripting Category, but if they represent idle time, we do not want
         // that.
         if (Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === '(idle)') {
-            return Components.EntryStyles.EventCategory.IDLE;
+            return Utils.EntryStyles.EventCategory.IDLE;
         }
-        const eventStyle = Components.EntryStyles.getEventStyle(entry.name)?.category ||
-            Components.EntryStyles.getCategoryStyles().other;
+        const eventStyle = Utils.EntryStyles.getEventStyle(entry.name)?.category ||
+            Utils.EntryStyles.getCategoryStyles().other;
         const categoryName = eventStyle.name;
         return categoryName;
     }
@@ -175,11 +175,11 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         const timeRange = this.#end - this.#start;
         const scale = width / timeRange;
         const quantTime = quantSizePx / scale;
-        const categories = Components.EntryStyles.getCategoryStyles();
-        const categoryOrder = Components.EntryStyles.getTimelineMainEventCategories();
-        const otherIndex = categoryOrder.indexOf(Components.EntryStyles.EventCategory.OTHER);
+        const categories = Utils.EntryStyles.getCategoryStyles();
+        const categoryOrder = Utils.EntryStyles.getTimelineMainEventCategories();
+        const otherIndex = categoryOrder.indexOf(Utils.EntryStyles.EventCategory.OTHER);
         const idleIndex = 0;
-        console.assert(idleIndex === categoryOrder.indexOf(Components.EntryStyles.EventCategory.IDLE));
+        console.assert(idleIndex === categoryOrder.indexOf(Utils.EntryStyles.EventCategory.IDLE));
         for (let i = 0; i < categoryOrder.length; ++i) {
             categoryToIndex.set(categories[categoryOrder[i]], i);
         }

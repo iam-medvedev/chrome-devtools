@@ -7,11 +7,11 @@ import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as Components from './components/components.js';
 import { Category, IsLong } from './TimelineFilters.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Text for the start time of an activity
@@ -155,7 +155,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         }
         toolbar.appendToolbarItem(durationFilterUI);
         const categoryFiltersUI = new Map();
-        const categories = Components.EntryStyles.getCategoryStyles();
+        const categories = Utils.EntryStyles.getCategoryStyles();
         for (const categoryName in categories) {
             const category = categories[categoryName];
             if (!category.visible) {
@@ -174,7 +174,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
             this.notifyFiltersChanged();
         }
         function categoriesFilterChanged(name) {
-            const categories = Components.EntryStyles.getCategoryStyles();
+            const categories = Utils.EntryStyles.getCategoryStyles();
             const checkBox = categoryFiltersUI.get(name);
             categories[name].hidden = !checkBox || !checkBox.checked();
             this.notifyFiltersChanged();

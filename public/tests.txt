@@ -43,6 +43,7 @@ core/platform/TypedArrayUtilities.test.js
 core/protocol_client/NodeURL.test.js
 core/root/Runtime.test.js
 core/sdk/AccessibilityModel.test.js
+core/sdk/AnimationModel.test.js
 core/sdk/AutofillModel.test.js
 core/sdk/CPUThrottlingManager.test.js
 core/sdk/CSSContainerQuery.test.js
@@ -69,6 +70,7 @@ core/sdk/OverlayModel.test.js
 core/sdk/OverlayPersistentHighlighter.test.js
 core/sdk/PageResourceLoader.test.js
 core/sdk/PreloadingModel.test.js
+core/sdk/RehydratingConnection.test.js
 core/sdk/RemoteObject.test.js
 core/sdk/ResourceTreeModel.test.js
 core/sdk/RuntimeModel.test.js
@@ -167,6 +169,7 @@ models/trace/extras/FetchNodes.test.js
 models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
 models/trace/extras/Metadata.test.js
+models/trace/extras/ThirdParties.test.js
 models/trace/extras/URLForEntry.test.js
 models/trace/handlers/AnimationHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
@@ -229,7 +232,6 @@ models/workspace/UISourceCode.test.js
 models/workspace/WorkspaceImpl.test.js
 models/workspace_diff/WorkspaceDiff.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
-panels/animation/AnimationModel.test.js
 panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
@@ -329,6 +331,7 @@ panels/emulation/AdvancedApp.test.js
 panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
+panels/freestyler/AiAgent.test.js
 panels/freestyler/ChangeManager.test.js
 panels/freestyler/DrJonesFileAgent.test.js
 panels/freestyler/DrJonesNetworkAgent.test.js
@@ -450,7 +453,6 @@ panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/CPUThrottlingSelector.test.js
-panels/timeline/components/EntryName.test.js
 panels/timeline/components/FieldSettingsDialog.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
@@ -479,6 +481,7 @@ panels/timeline/track_appenders/NetworkTrackAppender.test.js
 panels/timeline/track_appenders/ServerTimingsTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
+panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js

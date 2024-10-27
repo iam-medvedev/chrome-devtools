@@ -428,9 +428,9 @@ export class ExperimentsSettingsTab extends SettingsTab {
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 jslogContext: `${experiment.name}-documentation`,
+                title: i18nString(UIStrings.learnMore),
             };
             linkButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(experimentLink));
-            linkButton.ariaLabel = i18nString(UIStrings.learnMore);
             linkButton.classList.add('link-icon');
             p.appendChild(linkButton);
         }

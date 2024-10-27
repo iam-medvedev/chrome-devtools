@@ -69,7 +69,8 @@ export class Runtime {
         return condition ? condition(config) : true;
     }
     loadLegacyModule(modulePath) {
-        return import(`../../${modulePath}`);
+        const importPath = `../../${modulePath}`; // Extracted as a variable so esbuild doesn't attempt to bundle all the things.
+        return import(importPath);
     }
 }
 export class ExperimentsSupport {

@@ -57,6 +57,7 @@ export class ProvideFeedback extends HTMLElement {
     #props;
     #isShowingFeedbackForm = false;
     #currentRating;
+    #isSubmitButtonDisabled = true;
     constructor(props) {
         super();
         this.#props = props;
@@ -138,6 +139,14 @@ export class ProvideFeedback extends HTMLElement {
     `;
         // clang-format on
     }
+    #handleInputChange = (event) => {
+        const value = event.target.value;
+        const disableSubmit = !value;
+        if (disableSubmit !== this.#isSubmitButtonDisabled) {
+            this.#isSubmitButtonDisabled = disableSubmit;
+            this.#render();
+        }
+    };
     #renderFeedbackForm() {
         // clang-format off
         return html `
@@ -159,6 +168,7 @@ export class ProvideFeedback extends HTMLElement {
         <input
           type="text"
           class="devtools-text-input feedback-input"
+          @input=${this.#handleInputChange}
           placeholder=${lockedString(UIStringsNotTranslate.provideFeedbackPlaceholder)}
           jslog=${VisualLogging.textField('feedback').track({ keydown: 'Enter' })}
         >
@@ -167,6 +177,7 @@ export class ProvideFeedback extends HTMLElement {
         aria-label=${lockedString(UIStringsNotTranslate.submit)}
         .data=${{
             type: 'submit',
+            disabled: this.#isSubmitButtonDisabled,
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             title: lockedString(UIStringsNotTranslate.submit),

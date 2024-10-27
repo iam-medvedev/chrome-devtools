@@ -1,5 +1,5 @@
-import '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
 import '../../../ui/components/panel_feedback/panel_feedback.js';
+import '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
 export declare class OverviewStartRequestedEvent extends Event {
     static readonly eventName = "overviewstartrequested";
     constructor();

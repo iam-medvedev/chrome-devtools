@@ -35,12 +35,14 @@ export class InsightActivated extends Event {
     name;
     insightSetKey;
     overlays;
+    relatedEvents;
     static eventName = 'insightactivated';
-    constructor(name, insightSetKey, overlays) {
+    constructor(name, insightSetKey, overlays, relatedEvents) {
         super(InsightActivated.eventName, { bubbles: true, composed: true });
         this.name = name;
         this.insightSetKey = insightSetKey;
         this.overlays = overlays;
+        this.relatedEvents = relatedEvents;
     }
 }
 export class InsightDeactivated extends Event {

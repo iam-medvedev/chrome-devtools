@@ -50,6 +50,7 @@ export declare class TimelineHistoryManager {
      * over only the traces.
      */
     navigate(direction: number): TraceRecordingHistoryItem | null;
+    navigateToLandingPage(): void;
     private updateState;
     static previewElement(parsedTraceIndex: number): Element;
     private static coarseAge;

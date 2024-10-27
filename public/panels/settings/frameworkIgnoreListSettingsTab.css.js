@@ -11,62 +11,35 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-:host {
-  overflow: hidden;
-}
-
-.header {
-  padding: 0 0 6px;
-  border-bottom: 1px solid var(--sys-color-divider);
-  font-size: 18px;
-  font-weight: normal;
-  flex: none;
-}
-
-.intro {
-  margin-top: 10px;
-}
-
 .ignore-list-option {
   flex: none;
-  padding: 3px 6px;
-  min-height: 30px;
 }
 
 .ignore-list-option devtools-button {
+  cursor: pointer;
   position: relative;
   top: var(--sys-size-2);
   margin-left: var(--sys-size-2);
 }
 
-.ignore-list-option-group {
-  margin-top: 13px;
-  margin-bottom: 3px;
-  margin-left: 8px;
-  flex-shrink: 0;
-}
-
 .add-button {
-  margin: 10px 2px;
+  padding: var(--sys-size-5) var(--sys-size-6);
   align-self: flex-start;
   flex: none;
 }
 
 .ignore-list {
-  max-width: 500px;
   flex: 0 1 auto;
 }
 
-.ignore-list-global-enable {
-  padding: 3px 0;
-  color: var(--sys-color-token-subtle);
-  font-size: 120%;
-  margin-top: 17px;
+.custom-exclusion-group {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .ignore-list-item {
-  padding: 3px 5px;
-  height: 30px;
+  padding: var(--sys-size-3) var(--sys-size-5);
+  height: var(--sys-size-13);
   display: flex;
   align-items: center;
   position: relative;
@@ -75,7 +48,6 @@ styles.replaceSync(
 
 .ignore-list-pattern {
   flex: auto;
-  min-width: 100px;
 }
 
 .ignore-list-item > [is="dt-checkbox"] {
@@ -104,13 +76,7 @@ styles.replaceSync(
   text-align: inherit;
 }
 
-.ignore-list-options {
-  margin-left: 22px;
-  display: flex;
-  flex-direction: column;
-}
-
-.ignore-list-options.ignore-listing-disabled {
+.ignore-listing-disabled .ignore-list-options {
   opacity: 30%;
 }
 

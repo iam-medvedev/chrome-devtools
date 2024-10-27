@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { dispatchKeyUpEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as UI from './legacy.js';
 describe('TreeOutline', () => {
     describe('correctly reacts to Enter key', () => {
@@ -13,7 +13,7 @@ describe('TreeOutline', () => {
             parent.appendChild(new UI.TreeOutline.TreeElement('child', false));
             tree.appendChild(parent);
             parent.select();
-            dispatchKeyDownEvent(tree.contentElement, { bubbles: true, key: 'Enter' });
+            dispatchKeyUpEvent(tree.contentElement, { bubbles: true, key: 'Enter' });
             assert.isTrue(parent.expanded, 'Enter key was supposed to expand the parent node');
         });
         it('by collapsing expanded parent nodes', () => {
@@ -24,7 +24,7 @@ describe('TreeOutline', () => {
             tree.appendChild(parent);
             parent.select();
             parent.expand();
-            dispatchKeyDownEvent(tree.contentElement, { bubbles: true, key: 'Enter' });
+            dispatchKeyUpEvent(tree.contentElement, { bubbles: true, key: 'Enter' });
             assert.isFalse(parent.expanded, 'Enter key was supposed to collapse the parent node');
         });
     });
@@ -79,7 +79,7 @@ describe('TreeOutline', () => {
         assert.isTrue(innerTreeOutline.firstChild().expanded, 'child is not expanded');
         function sendKey(key) {
             const deepActiveElement = Platform.DOMUtilities.deepActiveElement(document);
-            deepActiveElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key }));
+            deepActiveElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, key }));
         }
     });
 });

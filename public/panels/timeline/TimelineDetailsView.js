@@ -247,6 +247,19 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         const frameTimeMilliSeconds = Trace.Helpers.Timing.microSecondsToMilliseconds(filmStripFrame.screenshotEvent.ts);
         return frameTimeMilliSeconds - frame.endTime < 10 ? filmStripFrame : null;
     }
+    #setSelectionForTimelineFrame(frame) {
+        const matchedFilmStripFrame = this.#getFilmStripFrame(frame);
+        this.setContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
+        const target = SDK.TargetManager.TargetManager.instance().rootTarget();
+        if (frame.layerTree && target) {
+            const layerTreeForFrame = new TimelineModel.TracingLayerTree.TracingFrameLayerTree(target, frame.layerTree);
+            const layersView = this.layersView();
+            layersView.showLayerTree(layerTreeForFrame);
+            if (!this.tabbedPane.hasTab(Tab.LayerViewer)) {
+                this.appendTab(Tab.LayerViewer, i18nString(UIStrings.layers), layersView);
+            }
+        }
+    }
     async setSelection(selection) {
         if (!this.#parsedTrace) {
             // You can't make a selection if we have no trace data.
@@ -291,18 +304,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             }
         }
         else if (TimelineSelection.isLegacyTimelineFrame(selectionObject)) {
-            const frame = selectionObject;
-            const matchedFilmStripFrame = this.#getFilmStripFrame(frame);
-            this.setContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
-            const target = SDK.TargetManager.TargetManager.instance().rootTarget();
-            if (frame.layerTree && target) {
-                const layerTreeForFrame = new TimelineModel.TracingLayerTree.TracingFrameLayerTree(target, frame.layerTree);
-                const layersView = this.layersView();
-                layersView.showLayerTree(layerTreeForFrame);
-                if (!this.tabbedPane.hasTab(Tab.LayerViewer)) {
-                    this.appendTab(Tab.LayerViewer, i18nString(UIStrings.layers), layersView);
-                }
-            }
+            this.#setSelectionForTimelineFrame(selectionObject);
         }
         else if (TimelineSelection.isRangeSelection(selectionObject)) {
             this.updateSelectedRangeStats(this.selection.startTime, this.selection.endTime);

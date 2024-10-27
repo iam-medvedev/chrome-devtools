@@ -43,6 +43,7 @@ p {
 }
 
 .learn-more {
+  cursor: pointer;
   position: relative;
   margin-left: var(--sys-size-2);
   top: var(--sys-size-2);

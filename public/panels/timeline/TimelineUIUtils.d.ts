@@ -4,7 +4,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
-import * as TimelineComponents from './components/components.js';
+import * as Utils from './utils/utils.js';
 type LinkifyLocationOptions = {
     scriptId: Protocol.Runtime.ScriptId | null;
     url: string;
@@ -17,7 +17,7 @@ type LinkifyLocationOptions = {
 export declare class TimelineUIUtils {
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
     static testContentMatching(traceEvent: Trace.Types.Events.Event, regExp: RegExp, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
-    static eventStyle(event: Trace.Types.Events.Event): TimelineComponents.EntryStyles.TimelineRecordStyle;
+    static eventStyle(event: Trace.Types.Events.Event): Utils.EntryStyles.TimelineRecordStyle;
     static eventColor(event: Trace.Types.Events.Event): string;
     static eventTitle(event: Trace.Types.Events.Event): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
@@ -46,10 +46,10 @@ export declare class TimelineUIUtils {
     static buildPicturePreviewContent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Paint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: Trace.Types.Events.Event, zeroTime: number): Element;
     static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter;
-    static categories(): TimelineComponents.EntryStyles.CategoryPalette;
+    static categories(): Utils.EntryStyles.CategoryPalette;
     static generatePieChart(aggregatedStats: {
         [x: string]: number;
-    }, selfCategory?: TimelineComponents.EntryStyles.TimelineCategory, selfTime?: number): Element;
+    }, selfCategory?: Utils.EntryStyles.TimelineCategory, selfTime?: number): Element;
     static generateDetailsContentForFrame(frame: Trace.Types.Events.LegacyTimelineFrame, filmStrip: Trace.Extras.FilmStrip.Data | null, filmStripFrame: Trace.Extras.FilmStrip.Frame | null): DocumentFragment;
     static frameDuration(frame: Trace.Types.Events.LegacyTimelineFrame): Element;
     static quadWidth(quad: number[]): number;

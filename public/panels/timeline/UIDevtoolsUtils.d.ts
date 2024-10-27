@@ -1,10 +1,10 @@
-import * as Components from './components/components.js';
+import * as Utils from './utils/utils.js';
 export declare class UIDevtoolsUtils {
     static isUiDevTools(): boolean;
     static categorizeEvents(): {
-        [x: string]: Components.EntryStyles.TimelineRecordStyle;
+        [x: string]: Utils.EntryStyles.TimelineRecordStyle;
     };
-    static categories(): Components.EntryStyles.CategoryPalette;
+    static categories(): Utils.EntryStyles.CategoryPalette;
     static getMainCategoriesList(): string[];
 }
 export declare enum RecordType {

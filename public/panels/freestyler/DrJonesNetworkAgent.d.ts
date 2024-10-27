@@ -17,4 +17,9 @@ export declare class DrJonesNetworkAgent extends AiAgent<SDK.NetworkRequest.Netw
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
 export declare function formatHeaders(title: string, headers: SDK.NetworkRequest.NameValue[]): string;
 export declare function formatNetworkRequestTiming(request: SDK.NetworkRequest.NetworkRequest): string;
+export declare function formatInitiatorUrl(initiatorUrl: string, allowedOrigin: string): string;
+/**
+ * Note: nothing here should include information from origins other than
+ * the request's origin.
+ */
 export declare function formatNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): string;

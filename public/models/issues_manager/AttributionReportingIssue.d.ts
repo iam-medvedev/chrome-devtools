@@ -16,7 +16,14 @@ export declare const enum IssueCode {
     INVALID_REGISTER_OS_SOURCE_HEADER = "AttributionReportingIssue::InvalidRegisterOsSourceHeader",
     INVALID_REGISTER_OS_TRIGGER_HEADER = "AttributionReportingIssue::InvalidRegisterOsTriggerHeader",
     WEB_AND_OS_HEADERS = "AttributionReportingIssue::WebAndOsHeaders",
+    NO_WEB_OR_OS_SUPPORT = "AttributionReportingIssue::NoWebOrOsSupport",
     NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION = "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation",
+    INVALID_INFO_HEADER = "AttributionReportingIssue::InvalidInfoHeader",
+    NO_REGISTER_SOURCE_HEADER = "AttributionReportingIssue::NoRegisterSourceHeader",
+    NO_REGISTER_TRIGGER_HEADER = "AttributionReportingIssue::NoRegisterTriggerHeader",
+    NO_REGISTER_OS_SOURCE_HEADER = "AttributionReportingIssue::NoRegisterOsSourceHeader",
+    NO_REGISTER_OS_TRIGGER_HEADER = "AttributionReportingIssue::NoRegisterOsTriggerHeader",
+    NAVIGATION_REGISTRATION_UNIQUE_SCOPE_ALREADY_SET = "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet",
     UNKNOWN = "AttributionReportingIssue::Unknown"
 }
 export declare class AttributionReportingIssue extends Issue<IssueCode> {

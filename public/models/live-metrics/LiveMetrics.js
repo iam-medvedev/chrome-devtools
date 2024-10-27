@@ -59,6 +59,29 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         return this.#layoutShifts;
     }
     /**
+     * Will create a log message describing the interaction's LoAF scripts.
+     * Returns true if the message is successfully logged.
+     */
+    async logInteractionScripts(interaction) {
+        if (!this.#target) {
+            return false;
+        }
+        const executionContextId = this.#lastResetContextId;
+        if (!executionContextId) {
+            return false;
+        }
+        try {
+            await this.#target.runtimeAgent().invoke_evaluate({
+                expression: `console.table(${JSON.stringify(interaction.scripts)})`,
+                contextId: executionContextId,
+            });
+        }
+        catch {
+            return false;
+        }
+        return true;
+    }
+    /**
      * DOM nodes can't be sent over a runtime binding, so we have to retrieve
      * them separately.
      */
@@ -179,6 +202,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                         phases: webVitalsEvent.phases,
                         startTime: webVitalsEvent.startTime,
                         nextPaintTime: webVitalsEvent.nextPaintTime,
+                        scripts: webVitalsEvent.scripts,
                     };
                     groupInteractions.push(interaction);
                     this.#interactions.set(interaction.interactionId, interaction);

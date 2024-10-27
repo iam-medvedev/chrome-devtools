@@ -443,9 +443,11 @@ export function getBaseTraceParseModelData(overrides = {}) {
             styleRecalcInvalidationEvents: [],
             renderFrameImplCreateChildFrameEvents: [],
             domLoadingEvents: [],
+            layoutImageUnsizedEvents: [],
             beginRemoteFontLoadEvents: [],
             scoreRecords: [],
             backendNodeIds: [],
+            paintImageEvents: [],
         },
         Meta: {
             traceBounds: {

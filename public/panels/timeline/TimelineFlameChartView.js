@@ -36,7 +36,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const MAX_HIGHLIGHTED_SEARCH_ELEMENTS = 200;
 export class TimelineFlameChartView extends UI.Widget.VBox {
     delegate;
     /**
@@ -283,6 +282,52 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     containingElement() {
         return this.element;
     }
+    #dimInsightRelatedEvents(relatedEvents) {
+        // Dim all events except those related to the active insight.
+        const relevantMainEvents = relatedEvents.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
+        const relevantNetworkEvents = relatedEvents.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
+        // Further, overlays defining a trace bounds do not dim an event that falls within those bounds.
+        for (const overlay of this.#currentInsightOverlays) {
+            let bounds;
+            if (overlay.type === 'TIMESPAN_BREAKDOWN') {
+                const firstSection = overlay.sections.at(0);
+                const lastSection = overlay.sections.at(-1);
+                if (firstSection && lastSection) {
+                    bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(firstSection.bounds.min, lastSection.bounds.max);
+                }
+            }
+            else if (overlay.type === 'TIME_RANGE') {
+                bounds = overlay.bounds;
+            }
+            if (!bounds) {
+                continue;
+            }
+            let provider, relevantEvents;
+            // Using a relevant event for the overlay, determine which provider this overlay is for.
+            const overlayEvent = Overlays.Overlays.entriesForOverlay(overlay).at(0);
+            if (overlayEvent) {
+                if (this.mainDataProvider.indexForEvent(overlayEvent) !== null) {
+                    provider = this.mainDataProvider;
+                    relevantEvents = relevantMainEvents;
+                }
+                else if (this.networkDataProvider.indexForEvent(overlayEvent) !== null) {
+                    provider = this.networkDataProvider;
+                    relevantEvents = relevantNetworkEvents;
+                }
+            }
+            else if (overlay.type === 'TIMESPAN_BREAKDOWN') {
+                // For this overlay type, if there is no associated event it is rendered on mainFlameChart.
+                provider = this.mainDataProvider;
+                relevantEvents = relevantMainEvents;
+            }
+            if (!provider || !relevantEvents) {
+                continue;
+            }
+            relevantEvents.push(...provider.search(bounds).map(r => r.index));
+        }
+        this.mainFlameChart.enableDimming(relevantMainEvents);
+        this.networkFlameChart.enableDimming(relevantNetworkEvents);
+    }
     setOverlays(overlays, options) {
         this.bulkRemoveOverlays(this.#currentInsightOverlays);
         this.#currentInsightOverlays = overlays;
@@ -301,6 +346,12 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         for (const entry of entries) {
             // Ensure that the track for the entries are open.
             this.#expandEntryTrack(entry);
+        }
+        if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
+            // The insight's `relatedEvents` property likely already includes the events associated with
+            // and overlay, but just in case not, include both arrays. Duplicates are fine.
+            const relatedEvents = [...entries, ...this.#activeInsight?.relatedEvents || []];
+            this.#dimInsightRelatedEvents(relatedEvents);
         }
         if (options.updateTraceWindow) {
             const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(this.#currentInsightOverlays);
@@ -344,6 +395,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.#activeInsight = insight;
         this.bulkRemoveOverlays(this.#currentInsightOverlays);
         if (!this.#activeInsight) {
+            this.mainFlameChart.disableDimming();
+            this.networkFlameChart.disableDimming();
             return;
         }
         this.setOverlays(this.#activeInsight.overlays, { updateTraceWindow: true });
@@ -1113,13 +1166,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             return m1.startTimeMilli - m2.startTimeMilli;
         });
         this.searchableView.updateSearchMatchesCount(this.searchResults.length);
-        // To avoid too many highlights when the search regex matches too many entries,
-        // for example, when user only types in "e" as the search query,
-        // We only highlight the search results when the number of matches is less than or equal to 200.
-        if (this.searchResults.length <= MAX_HIGHLIGHTED_SEARCH_ELEMENTS) {
-            this.mainFlameChart.highlightAllEntries(mainMatches.map(m => m.index));
-            this.networkFlameChart.highlightAllEntries(networkMatches.map(m => m.index));
-        }
+        this.mainFlameChart.highlightAllEntries(mainMatches.map(m => m.index));
+        this.networkFlameChart.highlightAllEntries(networkMatches.map(m => m.index));
         if (!shouldJump || !this.searchResults.length) {
             return;
         }
@@ -1154,9 +1202,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         delete this.searchResults;
         delete this.selectedSearchResult;
         delete this.searchRegex;
-        this.mainFlameChart.showPopoverForSearchResult(-1);
+        this.mainFlameChart.showPopoverForSearchResult(null);
         this.mainFlameChart.removeSearchResultHighlights();
-        this.networkFlameChart.showPopoverForSearchResult(-1);
+        this.networkFlameChart.showPopoverForSearchResult(null);
         this.networkFlameChart.removeSearchResultHighlights();
     }
     performSearch(searchConfig, shouldJump, jumpBackwards) {

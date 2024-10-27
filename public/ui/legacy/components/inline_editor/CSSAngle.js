@@ -1,8 +1,8 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import './CSSAngleSwatch.js';
 import './CSSAngleEditor.js';
+import './CSSAngleSwatch.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import cssAngleStyles from './cssAngle.css.js';
 import { convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit, } from './CSSAngleUtils.js';

@@ -6,6 +6,7 @@ export interface TraceEntryTree {
     roots: Set<TraceEntryNode>;
     maxDepth: number;
 }
+/** Node in the graph that defines all parent/child relationships. */
 export interface TraceEntryNode {
     entry: Types.Events.Event;
     depth: number;
@@ -14,26 +15,36 @@ export interface TraceEntryNode {
     parent: TraceEntryNode | null;
     children: TraceEntryNode[];
 }
-/**
- * Represents a node in a trace entry tree, simplified for AI Assistance processing.
- */
-export declare class TraceEntryNodeForAI {
-    #private;
-    type: string;
-    start: Types.Timing.MilliSeconds;
-    end?: Types.Timing.MilliSeconds | undefined;
-    totalTime?: Types.Timing.MilliSeconds | undefined;
-    selfTime?: Types.Timing.MilliSeconds | undefined;
-    id?: TraceEntryNodeId;
-    domain?: string;
-    line?: number;
-    column?: number;
-    function?: string;
-    children?: TraceEntryNodeForAI[];
+export interface AINodeSerialized {
+    name: string;
+    dur?: number;
+    self?: number;
+    children?: AINodeSerialized[];
+    url?: string;
     selected?: boolean;
-    constructor(type: string, start: Types.Timing.MilliSeconds, end?: Types.Timing.MilliSeconds | undefined, totalTime?: Types.Timing.MilliSeconds | undefined, selfTime?: Types.Timing.MilliSeconds | undefined);
-    static fromSelectedEntryNode(selectedEntryNode: TraceEntryNode): TraceEntryNodeForAI;
-    static getSelectedNodeForTraceEntryTreeForAI(node: TraceEntryNodeForAI): TraceEntryNodeForAI | null;
+}
+/**
+ * Node in a graph simplified for AI Assistance processing. The graph mirrors the TraceEntryNode one.
+ * Huge tip of the hat to Victor Porof for prototyping this with some great work: https://crrev.com/c/5711249
+ */
+export declare class AINode {
+    #private;
+    event: Types.Events.Event;
+    name: string;
+    duration?: Types.Timing.MilliSeconds;
+    selfDuration?: Types.Timing.MilliSeconds;
+    id?: TraceEntryNodeId;
+    children?: AINode[];
+    url?: string;
+    selected?: boolean;
+    constructor(event: Types.Events.Event);
+    toJSON(): AINodeSerialized;
+    /**
+     * Builds a TraceEntryNodeForAI tree from a node and marks the selected node. Primary entrypoint from EntriesFilter
+     */
+    static fromEntryNode(selectedNode: TraceEntryNode, entryIsVisibleInTimeline: (event: Types.Events.Event) => boolean): AINode;
+    static getSelectedNodeWithinTree(node: AINode): AINode | null;
+    sanitize(): void;
 }
 declare class TraceEntryNodeIdTag {
     #private;

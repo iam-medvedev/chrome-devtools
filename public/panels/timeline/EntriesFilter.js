@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { entryIsVisibleInTimeline, } from './CompatibilityTracksAppender.js';
@@ -66,12 +67,12 @@ export class EntriesFilter {
      * Returns the trace entry tree for the specified event, simplified for input to AI Assistance.
      * The tree is rooted at the top-level task that contains the event, with the node for specified event marked as selected.
      */
-    getTraceEntryTreeForAI(entry) {
-        const entryNode = this.#entryToNode.get(entry);
-        if (!entryNode) {
+    getAIEventNodeTree(entry) {
+        const node = this.#entryToNode.get(entry);
+        if (!node) {
             return null;
         }
-        return Trace.Helpers.TreeHelpers.TraceEntryNodeForAI.fromSelectedEntryNode(entryNode);
+        return Trace.Helpers.TreeHelpers.AINode.fromEntryNode(node, Root.Runtime.experiments.isEnabled('timeline-show-all-events') ? () => true : entryIsVisibleInTimeline);
     }
     /**
      * Returns the amount of entry descendants that belong to the hidden entries array.

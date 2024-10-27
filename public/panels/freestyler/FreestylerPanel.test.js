@@ -371,14 +371,14 @@ describeWithEnvironment('FreestylerPanel', () => {
         });
         describe('Trace.Helpers.TreeHelpers.TraceEntryNodeForAI flavor changes for selected stack trace', () => {
             it('should set the selected stack trace when the widget is shown', () => {
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, null);
+                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, null);
                 panel = new Freestyler.FreestylerPanel(mockView, {
                     aidaClient: getTestAidaClient(),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                     syncInfo: getTestSyncInfo(),
                 });
                 const traceEntryNode = {};
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, traceEntryNode);
+                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, traceEntryNode);
                 panel.markAsRoot();
                 panel.show(document.body);
                 sinon.assert.calledWith(mockView, sinon.match({
@@ -386,7 +386,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 }));
             });
             it('should set selected stack trace when the TraceEntryNodeForAI flavor changes', () => {
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, null);
+                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, null);
                 panel = new Freestyler.FreestylerPanel(mockView, {
                     aidaClient: getTestAidaClient(),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -398,20 +398,20 @@ describeWithEnvironment('FreestylerPanel', () => {
                     selectedStackTrace: null,
                 }));
                 const traceEntryNode = {};
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, traceEntryNode);
+                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, traceEntryNode);
                 sinon.assert.calledWith(mockView, sinon.match({
                     selectedStackTrace: traceEntryNode,
                 }));
             });
             it('should not handle TraceEntryNodeForAI flavor changes if the widget is not shown', () => {
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, null);
+                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, null);
                 panel = new Freestyler.FreestylerPanel(mockView, {
                     aidaClient: getTestAidaClient(),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                     syncInfo: getTestSyncInfo(),
                 });
                 const traceEntryNode = {};
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.TraceEntryNodeForAI, traceEntryNode);
+                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, traceEntryNode);
                 sinon.assert.notCalled(mockView);
             });
         });
