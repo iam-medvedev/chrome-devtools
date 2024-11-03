@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import { ResourceSourceFrame } from './ResourceSourceFrame.js';
+import { StreamingContentHexView } from './StreamingContentHexView.js';
 export class BinaryResourceViewFactory {
-    base64content;
+    streamingContent;
     contentUrl;
     resourceType;
     arrayPromise;
     hexPromise;
     utf8Promise;
-    constructor(base64content, contentUrl, resourceType) {
-        this.base64content = base64content;
+    constructor(content, contentUrl, resourceType) {
+        this.streamingContent = content;
         this.contentUrl = contentUrl;
         this.resourceType = resourceType;
         this.arrayPromise = null;
@@ -21,7 +22,7 @@ export class BinaryResourceViewFactory {
     async fetchContentAsArray() {
         if (!this.arrayPromise) {
             this.arrayPromise = new Promise(async (resolve) => {
-                const fetchResponse = await fetch('data:;base64,' + this.base64content);
+                const fetchResponse = await fetch('data:;base64,' + this.streamingContent.content().base64);
                 resolve(new Uint8Array(await fetchResponse.arrayBuffer()));
             });
         }
@@ -38,7 +39,7 @@ export class BinaryResourceViewFactory {
         return this.hexPromise;
     }
     base64() {
-        return this.base64content;
+        return this.streamingContent.content().base64;
     }
     async utf8() {
         if (!this.utf8Promise) {
@@ -51,15 +52,10 @@ export class BinaryResourceViewFactory {
         return this.utf8Promise;
     }
     createBase64View() {
-        return new ResourceSourceFrame(TextUtils.StaticContentProvider.StaticContentProvider.fromString(this.contentUrl, this.resourceType, this.base64content), this.resourceType.canonicalMimeType(), { lineNumbers: false, lineWrapping: true });
+        return new ResourceSourceFrame(TextUtils.StaticContentProvider.StaticContentProvider.fromString(this.contentUrl, this.resourceType, this.streamingContent.content().base64), this.resourceType.canonicalMimeType(), { lineNumbers: false, lineWrapping: true });
     }
     createHexView() {
-        const hexViewerContentProvider = new TextUtils.StaticContentProvider.StaticContentProvider(this.contentUrl, this.resourceType, async () => {
-            const contentAsArray = await this.fetchContentAsArray();
-            const content = BinaryResourceViewFactory.uint8ArrayToHexViewer(contentAsArray);
-            return new TextUtils.ContentData.ContentData(content, /* isBase64 */ false, 'text/plain');
-        });
-        return new ResourceSourceFrame(hexViewerContentProvider, this.resourceType.canonicalMimeType(), { lineNumbers: false, lineWrapping: false });
+        return new StreamingContentHexView(this.streamingContent);
     }
     createUtf8View() {
         const utf8fn = () => this.utf8().then(str => new TextUtils.ContentData.ContentData(str, /* isBase64 */ false, 'text/plain'));
@@ -79,45 +75,6 @@ export class BinaryResourceViewFactory {
             hex = '0' + hex;
         }
         return hex;
-    }
-    static uint8ArrayToHexViewer(array) {
-        let output = '';
-        let line = 0;
-        while ((line * 16) < array.length) {
-            const lineArray = array.slice(line * 16, (line + 1) * 16);
-            // line number
-            output += BinaryResourceViewFactory.numberToHex(line, 8) + ':';
-            // hex
-            let hexColsPrinted = 0;
-            for (let i = 0; i < lineArray.length; i++) {
-                if (i % 2 === 0) {
-                    output += ' ';
-                    hexColsPrinted++;
-                }
-                output += BinaryResourceViewFactory.numberToHex(lineArray[i], 2);
-                hexColsPrinted += 2;
-            }
-            // hex-ascii padding
-            while (hexColsPrinted < 42) {
-                output += ' ';
-                hexColsPrinted++;
-            }
-            // ascii
-            for (let i = 0; i < lineArray.length; i++) {
-                const code = lineArray[i];
-                if (code >= 32 && code <= 126) {
-                    // printable ascii character
-                    output += String.fromCharCode(code);
-                }
-                else {
-                    // non-printable
-                    output += '.';
-                }
-            }
-            output += '\n';
-            line++;
-        }
-        return output;
     }
 }
 //# sourceMappingURL=BinaryResourceViewFactory.js.map

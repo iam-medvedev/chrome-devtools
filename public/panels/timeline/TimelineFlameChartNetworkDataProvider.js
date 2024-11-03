@@ -13,7 +13,7 @@ import { ModificationsManager } from './ModificationsManager.js';
 import { NetworkTrackAppender } from './NetworkTrackAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
 import * as TimelineUtils from './utils/utils.js';
 export class TimelineFlameChartNetworkDataProvider {
     #minimumBoundaryInternal;
@@ -99,7 +99,7 @@ export class TimelineFlameChartNetworkDataProvider {
             return null;
         }
         const event = this.#events[index];
-        this.#lastSelection = new Selection(TimelineSelection.fromTraceEvent(event), index);
+        this.#lastSelection = new Selection(selectionFromEvent(event), index);
         return this.#lastSelection.timelineSelection;
     }
     customizedContextMenu(event, eventIndex, _groupIndex) {
@@ -113,10 +113,6 @@ export class TimelineFlameChartNetworkDataProvider {
         return contextMenu;
     }
     indexForEvent(event) {
-        // In the NetworkDataProvider we will never be dealing with frames, but we need to satisfy the interface for a DataProvider.
-        if (event instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame) {
-            return null;
-        }
         if (!Trace.Types.Events.isNetworkTrackEntry(event)) {
             return null;
         }
@@ -149,18 +145,18 @@ export class TimelineFlameChartNetworkDataProvider {
         ModificationsManager.activeManager()?.deleteEntryAnnotations(event);
     }
     entryIndexForSelection(selection) {
-        if (!selection) {
+        if (!selection || selectionIsRange(selection)) {
             return -1;
         }
-        if (this.#lastSelection && this.#lastSelection.timelineSelection.object === selection.object) {
+        if (this.#lastSelection && selectionsEqual(this.#lastSelection.timelineSelection, selection)) {
             return this.#lastSelection.entryIndex;
         }
-        if (!TimelineSelection.isNetworkEventSelection(selection.object)) {
+        if (!Trace.Types.Events.isNetworkTrackEntry(selection.event)) {
             return -1;
         }
-        const index = this.#events.indexOf(selection.object);
+        const index = this.#events.indexOf(selection.event);
         if (index !== -1) {
-            this.#lastSelection = new Selection(TimelineSelection.fromTraceEvent(selection.object), index);
+            this.#lastSelection = new Selection(selectionFromEvent(selection.event), index);
         }
         return index;
     }

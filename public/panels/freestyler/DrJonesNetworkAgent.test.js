@@ -7,13 +7,13 @@ import { getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
-import { allowHeader, DrJonesNetworkAgent, formatInitiatorUrl } from './freestyler.js';
+import { allowHeader, DrJonesNetworkAgent, formatHeaders, formatInitiatorUrl } from './freestyler.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('DrJonesNetworkAgent', () => {
     let networkPanel;
     function mockHostConfig(modelId, temperature) {
         getGetHostConfigStub({
-            devToolsExplainThisResourceDogfood: {
+            devToolsAiAssistanceNetworkAgent: {
                 modelId,
                 temperature,
             },
@@ -305,6 +305,16 @@ test`,
                 }
             });
         }
+    });
+    describe('formatHeaders', () => {
+        it('does not redact a header from the list', () => {
+            assert.strictEqual(formatHeaders('test:', [{ name: 'content-type', value: 'foo' }]), 'test:\ncontent-type: foo');
+        });
+        it('disallows headers not on the list', () => {
+            assert.strictEqual(formatHeaders('test:', [{ name: 'cookie', value: 'foo' }]), 'test:\ncookie: <redacted>');
+            assert.strictEqual(formatHeaders('test:', [{ name: 'set-cookie', value: 'foo' }]), 'test:\nset-cookie: <redacted>');
+            assert.strictEqual(formatHeaders('test:', [{ name: 'authorization', value: 'foo' }]), 'test:\nauthorization: <redacted>');
+        });
     });
 });
 //# sourceMappingURL=DrJonesNetworkAgent.test.js.map

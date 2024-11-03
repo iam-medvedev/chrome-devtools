@@ -304,6 +304,7 @@ export class MainImpl {
         Root.Runtime.experiments.register("floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */, 'Floating entry points for the AI assistance panel');
         Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.register("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */, 'Performance panel: enable dimming unrelated events in performance insights and search results');
+        Root.Runtime.experiments.register("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */, 'Performance panel: enable a switch to an alternative timeline navigation option');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,

@@ -14,7 +14,7 @@ export function createTimelineNetworkRequest(syntheticNetworkRequest) {
     return request ? new TimelineNetworkRequest(request) : null;
 }
 // Add a wrapper class here.
-// The reason is the `Reveal in Network panel` option is handled by the context menu provider, which will add this
+// The reason is the `Open in Network panel` option is handled by the context menu provider, which will add this
 // option for all supporting types. And there are a lot of context menu providers that support
 // `SDK.NetworkRequest.NetworkRequest`, for example `Override content` by PersistenceActions, but we so far just want
 // the one to reveal in network panel, so add a new class which will only be supported by Network panel. Also we want to

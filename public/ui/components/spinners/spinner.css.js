@@ -12,6 +12,7 @@ styles.replaceSync(
  */
 
 :host {
+  overflow: hidden;
   width: var(--sys-size-7);
   height: var(--sys-size-7);
   display: inline-block;

@@ -30,7 +30,7 @@ styles.replaceSync(
     flex-grow: 1;
     box-shadow: inset 0 0 0 2px transparent;
     box-sizing: border-box;
-    height: var(--sys-size-9);
+    height: var(--sys-size-11);
     margin-left: var(--sys-size-3);
     padding: 0 var(--sys-size-2) 0 var(--sys-size-5);
     border-radius: 100px;
@@ -59,6 +59,10 @@ styles.replaceSync(
       width: var(--sys-size-8);
       height: var(--sys-size-8);
       margin-right: var(--sys-size-3);
+    }
+
+    & > devtools-button:last-child {
+      margin-right: var(--sys-size-4);
     }
   }
 

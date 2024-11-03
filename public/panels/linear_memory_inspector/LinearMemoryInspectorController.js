@@ -16,7 +16,7 @@ const UIStrings = {
     /**
      *@description A context menu item in the Scope View of the Sources Panel
      */
-    revealInMemoryInspectorPanel: 'Reveal in Memory inspector panel',
+    openInMemoryInspectorPanel: 'Open in Memory inspector panel',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/LinearMemoryInspectorController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -262,7 +262,7 @@ export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelO
         if (target.property.value?.isLinearMemoryInspectable()) {
             const expression = target.path();
             const object = target.property.value;
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.revealInMemoryInspectorPanel), this.reveal.bind(this, new SDK.RemoteObject.LinearMemoryInspectable(object, expression)), { jslogContext: 'reveal-in-memory-inspector' });
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.openInMemoryInspectorPanel), this.reveal.bind(this, new SDK.RemoteObject.LinearMemoryInspectable(object, expression)), { jslogContext: 'reveal-in-memory-inspector' });
         }
     }
     static extractHighlightInfo(obj, expression) {

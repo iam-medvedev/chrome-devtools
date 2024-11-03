@@ -33,7 +33,7 @@ const UIStrings = {
     /**
      *@description A context menu item to reveal a node in the DOM tree of the Elements Panel
      */
-    revealInElementsPanel: 'Reveal in Elements panel',
+    openInElementsPanel: 'Open in Elements panel',
     /**
      *@description Text in Event Listeners Widget of the Elements panel
      */
@@ -299,7 +299,7 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
                 menu.appendApplicableItems(linkElement);
             }
             if (object.subtype === 'node') {
-                menu.defaultSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'reveal-in-elements' });
+                menu.defaultSection().appendItem(i18nString(UIStrings.openInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'reveal-in-elements' });
             }
             menu.defaultSection().appendItem(i18nString(UIStrings.deleteEventListener), this.removeListener.bind(this), { disabled: !this.eventListenerInternal.canRemove(), jslogContext: 'delete-event-listener' });
             menu.defaultSection().appendCheckboxItem(i18nString(UIStrings.passive), this.togglePassiveListener.bind(this), {

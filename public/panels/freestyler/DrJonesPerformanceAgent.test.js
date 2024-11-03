@@ -1,9 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment, getGetHostConfigStub } from '../../testing/EnvironmentHelpers.js';
-import { makeCompleteEvent, makeProfileCall } from '../../testing/TraceHelpers.js';
+import { TraceLoader } from '../../testing/TraceLoader.js';
+import * as TimelineUtils from '../timeline/utils/utils.js';
 import { DrJonesPerformanceAgent } from './freestyler.js';
 describeWithEnvironment('DrJonesPerformanceAgent', () => {
     function mockHostConfig(modelId, temperature) {
@@ -90,26 +90,13 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
         });
     });
     describe('run', function () {
-        const evaluateScript = makeCompleteEvent("EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */, 0, 500);
-        const v8Run = makeCompleteEvent('v8.run', 10, 490);
-        const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
-        const traceEvents = [evaluateScript, v8Run, parseFunction];
-        const profileCalls = [makeProfileCall('a', 100, 200), makeProfileCall('b', 300, 200)];
-        // Roughly this looks like:
-        // 0                                          500
-        // |------------- EvaluateScript -------------|
-        //  |-        v8.run                         -|
-        //    |--|   |-    a   -||-          b        |
-        //      ^ V8.ParseFunction
-        const allEntries = Trace.Helpers.Trace.mergeEventsInOrder(traceEvents, profileCalls);
-        const { entryToNode } = Trace.Helpers.TreeHelpers.treify(allEntries, { filter: { has: () => true } });
-        const selectedNode = entryToNode.get(v8Run);
-        assert.exists(selectedNode);
-        const aiNodeTree = Trace.Helpers.TreeHelpers.AINode.fromEntryNode(selectedNode, () => true);
-        const v8RunNode = Trace.Helpers.TreeHelpers.AINode.getSelectedNodeWithinTree(aiNodeTree);
-        assert.exists(aiNodeTree);
-        assert.exists(v8RunNode);
-        it('generates an answer', async () => {
+        it('generates an answer', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
+            // A basic Layout.
+            const layoutEvt = parsedTrace.Renderer.allTraceEntries.find(event => event.ts === 465457096322);
+            assert.exists(layoutEvt);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvt, parsedTrace.Renderer.allTraceEntries, parsedTrace);
+            assert.exists(aiCallTree);
             async function* generateAnswer() {
                 yield {
                     explanation: 'This is the answer',
@@ -122,9 +109,23 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
             const agent = new DrJonesPerformanceAgent({
                 aidaClient: mockAidaClient(generateAnswer),
             });
-            // Select the v8.run node
-            v8RunNode.selected = true;
-            const responses = await Array.fromAsync(agent.run('test', { selected: aiNodeTree }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: aiCallTree }));
+            const expectedData = '\n\n' +
+                `
+
+
+# Call tree:
+
+Node: 1 – Task
+dur: 3
+Children:
+  * 2 – Layout
+
+Node: 2 – Layout
+Selected: true
+dur: 3
+self: 3
+`.trim();
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
@@ -132,32 +133,14 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,
-                    title: 'Analyzing stack',
+                    title: 'Analyzing call tree',
                     details: [
-                        {
-                            title: 'Selected stack',
-                            text: JSON.stringify({
-                                name: 'EvaluateScript',
-                                dur: 0.5,
-                                self: 0,
-                                children: [{
-                                        selected: true,
-                                        name: 'v8.run',
-                                        dur: 0.5,
-                                        self: 0.1,
-                                        children: [
-                                            { name: 'V8.ParseFunction', dur: 0, self: 0 },
-                                            { name: 'a', url: '', dur: 0.2, self: 0.2 },
-                                            { name: 'b', url: '', dur: 0.2, self: 0.2 },
-                                        ],
-                                    }],
-                            }),
-                        },
+                        { title: 'Selected call tree', text: expectedData },
                     ],
                 },
                 {
                     type: "querying" /* ResponseType.QUERYING */,
-                    query: '# Selected stack trace\n{\"name\":\"EvaluateScript\",\"dur\":0.5,\"self\":0}\n\n# User request\n\ntest',
+                    query: `${expectedData}\n\n# User request\n\ntest`,
                 },
                 {
                     type: "answer" /* ResponseType.ANSWER */,
@@ -169,13 +152,58 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
                     entity: 1,
-                    text: `# Selected stack trace\n${JSON.stringify(aiNodeTree)}\n\n# User request\n\ntest`,
+                    text: `${aiCallTree.serialize()}\n\n# User request\n\ntest`,
                 },
                 {
                     entity: 2,
                     text: 'This is the answer',
                 },
             ]);
+        });
+    });
+    describe('enhanceQuery', () => {
+        it('does not send the serialized calltree again if it is a followup chat about the same calltree', async () => {
+            const agent = new DrJonesPerformanceAgent({
+                aidaClient: {},
+            });
+            const mockAiCallTree = {
+                serialize: () => 'Mock call tree',
+            };
+            const enhancedQuery1 = await agent.enhanceQuery('What is this?', mockAiCallTree);
+            assert.strictEqual(enhancedQuery1, 'Mock call tree\n\n# User request\n\nWhat is this?');
+            // Create history state of the above query
+            agent.chatNewHistoryForTesting = new Map([[
+                    0,
+                    [
+                        {
+                            type: "context" /* ResponseType.CONTEXT */,
+                            title: 'Analyzing call tree',
+                            details: [
+                                {
+                                    title: 'Selected call tree',
+                                    text: mockAiCallTree.serialize(),
+                                },
+                            ],
+                        },
+                        {
+                            type: "querying" /* ResponseType.QUERYING */,
+                            query: enhancedQuery1,
+                        },
+                        {
+                            type: "answer" /* ResponseType.ANSWER */,
+                            text: 'test answer',
+                        },
+                    ],
+                ]]);
+            const query2 = 'But what about this follow-up question?';
+            const enhancedQuery2 = await agent.enhanceQuery(query2, mockAiCallTree);
+            assert.strictEqual(enhancedQuery2, query2);
+            assert.isFalse(enhancedQuery2.includes(mockAiCallTree.serialize()));
+            // Just making sure any subsequent chat doesnt include it either.
+            const query3 = 'And this 3rd question?';
+            const enhancedQuery3 = await agent.enhanceQuery(query3, mockAiCallTree);
+            assert.strictEqual(enhancedQuery3, query3);
+            assert.isFalse(enhancedQuery3.includes(mockAiCallTree.serialize()));
         });
     });
 });

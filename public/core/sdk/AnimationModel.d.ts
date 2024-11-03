@@ -46,6 +46,7 @@ export declare class AnimationModel extends SDKModel<EventTypes> {
     constructor(target: Target);
     private reset;
     devicePixelRatio(): Promise<number>;
+    getAnimationGroupForAnimation(name: string, nodeId: Protocol.DOM.NodeId): Promise<AnimationGroup | null>;
     animationCanceled(id: string): void;
     animationUpdated(payload: Protocol.Animation.Animation): Promise<void>;
     animationStarted(payload: Protocol.Animation.Animation): Promise<void>;
@@ -55,7 +56,6 @@ export declare class AnimationModel extends SDKModel<EventTypes> {
     releaseAnimations(animations: string[]): void;
     suspendModel(): Promise<void>;
     resumeModel(): Promise<void>;
-    ensureEnabled(): Promise<void>;
 }
 export declare enum Events {
     AnimationGroupStarted = "AnimationGroupStarted",

@@ -17,22 +17,20 @@ styles.replaceSync(
 }
 
 .keybinds-key {
-  padding: 0.1em 0.6em;
-  border: 1px solid var(--sys-color-neutral-outline);
-  font-size: 11px;
-  background-color: var(--sys-color-neutral-container);
-  color: var(--sys-color-on-surface);
-  box-shadow: var(--box-shadow-outline-color);
-  border-radius: 3px;
-  display: inline-block;
-  margin: 0 0.1em;
-  text-shadow: 0 1px 0 var(--sys-color-cdt-base-container);
-  line-height: 1.5;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--sys-size-11);
+  min-width: var(--sys-size-11);
+  font: var(--sys-typescale-body5-medium);
   white-space: nowrap;
+  border-radius: var(--sys-shape-corner-small);
+  background: var(--sys-color-tonal-container);
+  padding: 0px var(--sys-size-4);
 }
 
 .keybinds-list-item {
-  margin: 0 var(--sys-size-7);
+  margin: 0 var(--sys-size-6);
   padding: var(--sys-size-4) 0;
   display: grid;
   grid-template-rows: 1fr ;
@@ -63,6 +61,10 @@ styles.replaceSync(
 
 .keybinds-error {
   color: var(--sys-color-error);
+}
+
+.keybinds-shortcut {
+  gap: var(--sys-size-4);
 }
 
 .keybinds-list-item.keybinds-editing .keybinds-shortcut {

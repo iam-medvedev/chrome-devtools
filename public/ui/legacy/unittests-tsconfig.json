@@ -43,6 +43,7 @@
     "../../../../../../front_end/ui/legacy/Context.test.ts",
     "../../../../../../front_end/ui/legacy/ContextMenu.test.ts",
     "../../../../../../front_end/ui/legacy/DockController.test.ts",
+    "../../../../../../front_end/ui/legacy/FilterBar.test.ts",
     "../../../../../../front_end/ui/legacy/Fragment.test.ts",
     "../../../../../../front_end/ui/legacy/Geometry.test.ts",
     "../../../../../../front_end/ui/legacy/Infobar.test.ts",

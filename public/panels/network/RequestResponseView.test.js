@@ -26,7 +26,7 @@ describeWithEnvironment('RequestResponseView', () => {
         assert.strictEqual(widget, mockedSourceView);
         component.detach();
     });
-    it('shows the RequestBinaryResponseView for binary content', async () => {
+    it('shows the BinaryResourceView for binary content', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'http://devtools-frontend.test/image.png', '', null, null, null);
         request.setContentDataProvider(() => Promise.resolve(new TextUtils.ContentData.ContentData('AGFzbQEAAAABBQFgAAF/AwIBAAcHAQNiYXIAAAoGAQQAQQILACQEbmFtZQAQD3Nob3ctd2FzbS0yLndhdAEGAQADYmFyAgMBAAA=', true, 'application/octet-stream')));
         request.mimeType = 'application/octet-stream';
@@ -36,7 +36,7 @@ describeWithEnvironment('RequestResponseView', () => {
         component.markAsRoot();
         component.show(document.body);
         const widget = await showPreviewSpy.returnValues[0];
-        assert.instanceOf(widget, Network.RequestBinaryResponseView.RequestBinaryResponseView);
+        assert.instanceOf(widget, Network.BinaryResourceView.BinaryResourceView);
         await raf();
         component.detach();
     });

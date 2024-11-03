@@ -3263,6 +3263,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const barY = this.levelToOffset(entryLevel) - this.chartViewport.scrollOffset();
         const barHeight = this.levelHeight(entryLevel);
         const style = element.style;
+        // TODO(paulirish): make these changes within a coordinator.write callback.
+        // Currently these (plus the scrollOffset() right above) trigger layout thrashing.
         if (isDecoration) {
             style.top = barY + 'px';
             style.width = barHeight + 'px';

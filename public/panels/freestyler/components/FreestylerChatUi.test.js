@@ -48,7 +48,7 @@ css
             selectedElement: {},
             selectedFile: null,
             selectedNetworkRequest: {},
-            selectedStackTrace: {},
+            selectedAiCallTree: {},
             isLoading: false,
             canShowFeedbackForm: false,
             userInfo: {},
@@ -110,13 +110,13 @@ css
                 devToolsFreestyler: {
                     enabled: true,
                 },
-                devToolsExplainThisResourceDogfood: {
+                devToolsAiAssistanceNetworkAgent: {
                     enabled: true,
                 },
-                devToolsAiAssistanceFileAgentDogfood: {
+                devToolsAiAssistanceFileAgent: {
                     enabled: true,
                 },
-                devToolsAiAssistancePerformanceAgentDogfood: {
+                devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
                 },
             });

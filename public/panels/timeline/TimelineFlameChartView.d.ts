@@ -6,7 +6,7 @@ import * as Overlays from './overlays/overlays.js';
 import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { type TimelineSelection } from './TimelineSelection.js';
 import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
 export declare class TimelineFlameChartView extends UI.Widget.VBox implements PerfUI.FlameChart.FlameChartDelegate, UI.SearchableView.Searchable {
     #private;

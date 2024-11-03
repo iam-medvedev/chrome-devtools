@@ -412,10 +412,6 @@ describeWithEnvironment('ThreadAppender', function () {
             ignoreListManager.ignoreListURL(SCRIPT_TO_IGNORE);
             const { entryData, flameChartData, threadAppenders } = renderThreadAppendersFromParsedData(mockParsedTrace);
             const entryDataNames = entryData.map(entry => {
-                const regularEvent = Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(entry);
-                if (!regularEvent) {
-                    return 'Unknown type';
-                }
                 if (Trace.Types.Events.isProfileCall(entry)) {
                     return entry.callFrame.functionName;
                 }

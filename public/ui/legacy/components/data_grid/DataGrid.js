@@ -1370,9 +1370,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         return 0;
     }
-    asWidget() {
+    asWidget(element) {
         if (!this.dataGridWidget) {
-            this.dataGridWidget = new DataGridWidget(this);
+            this.dataGridWidget = new DataGridWidget(this, element);
         }
         return this.dataGridWidget;
     }
@@ -2084,8 +2084,8 @@ export class CreationDataGridNode extends DataGridNode {
 }
 export class DataGridWidget extends UI.Widget.VBox {
     dataGrid;
-    constructor(dataGrid) {
-        super();
+    constructor(dataGrid, element) {
+        super(undefined, undefined, element);
         this.dataGrid = dataGrid;
         this.element.appendChild(dataGrid.element);
         this.setDefaultFocusedElement(dataGrid.element);
@@ -2104,4 +2104,64 @@ export class DataGridWidget extends UI.Widget.VBox {
         return [this.dataGrid.scrollContainer];
     }
 }
+export class DataGridWidgetElement extends UI.Widget.WidgetElement {
+    #options;
+    constructor() {
+        super();
+        // default values for options
+        this.#options = {
+            implParams: {
+                displayName: 'dataGrid',
+                columns: [],
+            },
+            nodes: [],
+        };
+    }
+    set options(options) {
+        this.#options = options;
+    }
+    createWidget() {
+        const { implParams, markAsRoot, nodes, } = this.#options;
+        if (!this.#options.dataGridImpl) {
+            this.#options.dataGridImpl = new DataGridImpl(implParams);
+        }
+        this.#options.dataGridImpl.rootNode().removeChildren();
+        for (const node of nodes) {
+            this.#options.dataGridImpl.rootNode().appendChild(node);
+        }
+        // Translate existing DataGridImpl ("ObjectWrapper") events to DOM CustomEvents so clients can
+        // use lit templates to bind listeners.
+        this.#options.dataGridImpl.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, this.#selectedNode.bind(this));
+        this.#options.dataGridImpl.addEventListener("DeselectedNode" /* Events.DESELECTED_NODE */, this.#deselectedNode.bind(this));
+        this.#options.dataGridImpl.addEventListener("OpenedNode" /* Events.OPENED_NODE */, this.#openedNode.bind(this));
+        this.#options.dataGridImpl.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, this.#sortingChanged.bind(this));
+        this.#options.dataGridImpl.addEventListener("PaddingChanged" /* Events.PADDING_CHANGED */, this.#paddingChanged.bind(this));
+        const widget = this.#options.dataGridImpl.asWidget(this);
+        if (markAsRoot) {
+            widget.markAsRoot();
+        }
+        return widget;
+    }
+    #selectedNode(event) {
+        const domEvent = new CustomEvent('selectedNode', { detail: event.data });
+        this.dispatchEvent(domEvent);
+    }
+    #deselectedNode() {
+        const domEvent = new CustomEvent('deselectedNode');
+        this.dispatchEvent(domEvent);
+    }
+    #openedNode(event) {
+        const domEvent = new CustomEvent('openedNode', { detail: event.data });
+        this.dispatchEvent(domEvent);
+    }
+    #sortingChanged() {
+        const domEvent = new CustomEvent('sortingChanged');
+        this.dispatchEvent(domEvent);
+    }
+    #paddingChanged() {
+        const domEvent = new CustomEvent('paddingChanged');
+        this.dispatchEvent(domEvent);
+    }
+}
+customElements.define('devtools-data-grid-widget', DataGridWidgetElement);
 //# sourceMappingURL=DataGrid.js.map

@@ -123,9 +123,7 @@ describeWithEnvironment('Overlays', () => {
         });
         // Set the visible window to be the entire trace.
         overlays.updateVisibleWindow(parsedTrace.Meta.traceBounds);
-        // Find an event on the main chart that is not a frame (you cannot add overlays to frames)
         const event = charts.mainProvider.eventByIndex?.(50);
-        assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
         assert.isOk(event);
         const yPixel = overlays.yPixelForEventOnChart(event);
         // The Y offset for the main chart is 233px, but we add 208px on (200px for the
@@ -164,9 +162,7 @@ describeWithEnvironment('Overlays', () => {
         });
         // Set the visible window to be the entire trace.
         overlays.updateVisibleWindow(parsedTrace.Meta.traceBounds);
-        // Find an event on the main chart that is not a frame (you cannot add overlays to frames)
         const event = charts.mainProvider.eventByIndex?.(50);
-        assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
         assert.isOk(event);
         const yPixel = overlays.yPixelForEventOnChart(event);
         // The Y offset for the main chart is 233px, but we add 34px on (the height
@@ -270,7 +266,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             overlays.add({
                 type: 'ENTRY_SELECTED',
                 entry: event,
@@ -328,7 +323,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             overlays.add({
                 type: 'ENTRY_LABEL',
                 entry: event,
@@ -358,7 +352,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             overlays.add({
                 type: 'ENTRY_LABEL',
                 entry: event,
@@ -380,7 +373,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             // Create an entry label overlay
             overlays.add({
                 type: 'ENTRY_LABEL',
@@ -412,7 +404,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             // Create a time range overlay with an empty label
             overlays.add({
                 type: 'TIME_RANGE',
@@ -444,7 +435,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             // Create a time range overlay with a label
             overlays.add({
                 type: 'TIME_RANGE',
@@ -476,7 +466,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             Timeline.ModificationsManager.ModificationsManager.activeManager()?.createAnnotation({
                 type: 'TIME_RANGE',
                 label: 'label',
@@ -641,7 +630,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             const selectedOverlay = overlays.add({
                 type: 'ENTRY_SELECTED',
                 entry: event,
@@ -657,7 +645,6 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const timelineFrame = charts.mainProvider.eventByIndex?.(5);
             assert.isOk(timelineFrame);
-            assert.instanceOf(timelineFrame, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             overlays.add({
                 type: 'ENTRY_SELECTED',
                 entry: timelineFrame,
@@ -672,12 +659,10 @@ describeWithEnvironment('Overlays', () => {
             const { overlays, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             overlays.add({
                 type: 'ENTRY_SELECTED',
                 entry: event,
             });
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             const existingOverlays = overlays.overlaysForEntry(event);
             assert.deepEqual(existingOverlays, [{
                     type: 'ENTRY_SELECTED',
@@ -689,7 +674,6 @@ describeWithEnvironment('Overlays', () => {
             const { container, overlays, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
             assert.isOk(event);
-            assert.notInstanceOf(event, Trace.Handlers.ModelHandlers.Frames.TimelineFrame);
             overlays.add({
                 type: 'ENTRY_SELECTED',
                 entry: event,

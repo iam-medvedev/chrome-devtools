@@ -120,8 +120,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #collectedGroups;
     #createPreviewForCollectedGroupsThrottler = new Common.Throttler.Throttler(10);
     #animationGroupUpdatedThrottler = new Common.Throttler.Throttler(10);
-    // We're only adding event listeners to the animation model when the panel is first shown.
-    #initialized = false;
     constructor() {
         super(true);
         this.element.classList.add('animations-timeline');
@@ -187,14 +185,38 @@ export class AnimationTimeline extends UI.Widget.VBox {
         return this.#groupBuffer;
     }
     wasShown() {
-        if (this.#initialized) {
-            return;
-        }
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
+            this.#addExistingAnimationGroups(animationModel);
             this.addEventListeners(animationModel);
         }
         this.registerCSSFiles([animationTimelineStyles]);
-        this.#initialized = true;
+    }
+    willHide() {
+        for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
+            this.removeEventListeners(animationModel);
+        }
+    }
+    #addExistingAnimationGroups(animationModel) {
+        for (const animationGroup of animationModel.animationGroups.values()) {
+            if (this.#previewMap.has(animationGroup)) {
+                continue;
+            }
+            void this.addAnimationGroup(animationGroup);
+        }
+    }
+    #showPanelInDrawer() {
+        const viewManager = UI.ViewManager.ViewManager.instance();
+        viewManager.moveView('animations', 'drawer-view', {
+            shouldSelectTab: true,
+            overrideSaving: true,
+        });
+    }
+    async revealAnimationGroup(animationGroup) {
+        if (!this.#previewMap.has(animationGroup)) {
+            await this.addAnimationGroup(animationGroup);
+        }
+        this.#showPanelInDrawer();
+        return this.selectAnimationGroup(animationGroup);
     }
     modelAdded(animationModel) {
         if (this.isShowing()) {
@@ -205,7 +227,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.removeEventListeners(animationModel);
     }
     addEventListeners(animationModel) {
-        void animationModel.ensureEnabled();
         animationModel.addEventListener(SDK.AnimationModel.Events.AnimationGroupStarted, this.animationGroupStarted, this);
         animationModel.addEventListener(SDK.AnimationModel.Events.AnimationGroupUpdated, this.animationGroupUpdated, this);
         animationModel.addEventListener(SDK.AnimationModel.Events.ModelReset, this.reset, this);
@@ -450,7 +471,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.renderGrid();
     }
     animationGroupStarted({ data }) {
-        this.addAnimationGroup(data);
+        void this.addAnimationGroup(data);
     }
     scheduledRedrawAfterAnimationGroupUpdatedForTest() {
     }
@@ -581,7 +602,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
             else {
                 previewGroup.replay();
             }
-            return;
+            return Promise.resolve();
         }
         this.#groupBuffer.sort((left, right) => left.startTime() - right.startTime());
         // Discard oldest groups from buffer if necessary
@@ -603,7 +624,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         // Batch creating preview for arrivals happening closely together to ensure
         // stable UI sorting in the preview container.
         this.#collectedGroups.push(group);
-        void this.#createPreviewForCollectedGroupsThrottler.schedule(() => Promise.resolve(this.createPreviewForCollectedGroups()));
+        return this.#createPreviewForCollectedGroupsThrottler.schedule(() => Promise.resolve(this.createPreviewForCollectedGroups()));
     }
     handleAnimationGroupKeyDown(group, event) {
         switch (event.key) {
@@ -1037,6 +1058,11 @@ export class StepTimingFunction {
             return new StepTimingFunction(parseInt(match[1], 10), 'end');
         }
         return null;
+    }
+}
+export class AnimationGroupRevealer {
+    async reveal(animationGroup) {
+        await AnimationTimeline.instance().revealAnimationGroup(animationGroup);
     }
 }
 //# sourceMappingURL=AnimationTimeline.js.map

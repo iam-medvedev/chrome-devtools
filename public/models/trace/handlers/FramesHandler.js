@@ -320,7 +320,14 @@ const MAIN_FRAME_MARKERS = new Set([
     "BeginMainThreadFrame" /* Types.Events.Name.BEGIN_MAIN_THREAD_FRAME */,
     "ScrollLayer" /* Types.Events.Name.SCROLL_LAYER */,
 ]);
-export class TimelineFrame {
+/**
+ * Legacy class that represents TimelineFrames that was ported from the old SDK.
+ * This class is purposefully not exported as it breaks the abstraction that
+ * every event shown on the timeline is a trace event. Instead, we use the Type
+ * LegacyTimelineFrame to represent frames in the codebase. These do implement
+ * the right interface to be treated just like they were a trace event.
+ */
+class TimelineFrame {
     // These fields exist to satisfy the base Event type which all
     // "trace events" must implement. They aren't used, but doing this means we
     // can pass `TimelineFrame` instances into places that expect

@@ -706,11 +706,12 @@ export class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewportDataGr
             this.objectIdToSelect = id;
             return null;
         }
-        const className = await this.snapshot.nodeClassName(parseInt(id, 10));
-        if (!className) {
+        const classKey = await this.snapshot.nodeClassKey(parseInt(id, 10));
+        if (!classKey) {
             return null;
         }
-        const parent = this.topLevelNodes().find(classNode => classNode.name === className);
+        const topLevelNodes = this.topLevelNodes();
+        const parent = topLevelNodes.find(classNode => classNode.classKey === classKey);
         if (!parent) {
             return null;
         }

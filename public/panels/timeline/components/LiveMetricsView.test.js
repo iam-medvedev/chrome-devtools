@@ -63,9 +63,6 @@ function selectPageScope(view, pageScope) {
 function getFieldMessage(view) {
     return view.shadowRoot.querySelector('#field-setup .field-data-message');
 }
-function getDataDescriptions(view) {
-    return view.shadowRoot.querySelector('.data-descriptions');
-}
 function getLiveMetricsTitle(view) {
     // There may be multiple, but this should always be the first one.
     return view.shadowRoot.querySelector('.live-metrics > .section-title');
@@ -177,7 +174,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-1',
                     eventNames: ['pointerup'],
                     phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
                 {
                     duration: 30,
@@ -187,7 +184,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [],
@@ -250,13 +247,10 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-1',
                     eventNames: ['pointerup'],
                     phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
-                    scripts: [{
-                            Duration: 500,
-                            Invoker: 'invoker',
-                            'Invoker Type': 'event-listener',
-                            Function: 'hi',
-                            Source: 'https://example.com/script.js',
-                            'Char position': 10,
+                    longAnimationFrameTimings: [{
+                            renderStart: 0,
+                            duration: 0,
+                            scripts: [],
                         }],
                 },
                 {
@@ -267,7 +261,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [],
@@ -299,7 +293,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-1',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
                 {
                     duration: 500,
@@ -309,7 +303,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['pointerup'],
                     phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [],
@@ -412,7 +406,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-1',
                     eventNames: ['pointerup'],
                     phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
                 {
                     duration: 30,
@@ -422,7 +416,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [],
@@ -460,7 +454,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [],
@@ -493,7 +487,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-1',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
                 {
                     duration: 500,
@@ -503,7 +497,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['pointerup'],
                     phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [
@@ -543,7 +537,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-1',
                     eventNames: ['keyup'],
                     phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
                 {
                     duration: 500,
@@ -553,7 +547,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionId: 'interaction-1-2',
                     eventNames: ['pointerup'],
                     phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
-                    scripts: [],
+                    longAnimationFrameTimings: [],
                 },
             ]),
             layoutShifts: [
@@ -615,11 +609,8 @@ describeWithMockConnection('LiveMetricsView', () => {
             assert.lengthOf(envRecs, 0);
             const fieldMessage = getFieldMessage(view);
             assert.match(fieldMessage.innerText, /See how your local metrics compare/);
-            const dataDescriptions = getDataDescriptions(view);
-            assert.match(dataDescriptions.innerText, /local metrics/);
-            assert.notMatch(dataDescriptions.innerText, /field data/);
             const title = getLiveMetricsTitle(view);
-            assert.strictEqual(title.innerText, 'Local metrics');
+            assert.strictEqual(title.innerText, 'Local metrics ');
         });
         it('should show when crux is enabled', async () => {
             const view = renderLiveMetrics();
@@ -641,11 +632,8 @@ describeWithMockConnection('LiveMetricsView', () => {
             // run these tests are!
             // We expect it to say something like Jan 1 - Jan 29 2024.
             assert.match(fieldMessage.innerText, /Jan.+2024/);
-            const dataDescriptions = getDataDescriptions(view);
-            assert.match(dataDescriptions.innerText, /local metrics/);
-            assert.match(dataDescriptions.innerText, /field data/);
             const title = getLiveMetricsTitle(view);
-            assert.strictEqual(title.innerText, 'Local and field metrics');
+            assert.strictEqual(title.innerText, 'Local and field metrics ');
         });
         it('should show empty values when crux is enabled but there is no field data', async () => {
             const view = renderLiveMetrics();
@@ -661,11 +649,8 @@ describeWithMockConnection('LiveMetricsView', () => {
             assert.strictEqual(envRecs[1].textContent, 'Not enough data');
             const fieldMessage = getFieldMessage(view);
             assert.match(fieldMessage.textContent, /Not enough data/);
-            const dataDescriptions = getDataDescriptions(view);
-            assert.match(dataDescriptions.innerText, /local metrics/);
-            assert.match(dataDescriptions.innerText, /field data/);
             const title = getLiveMetricsTitle(view);
-            assert.strictEqual(title.innerText, 'Local and field metrics');
+            assert.strictEqual(title.innerText, 'Local and field metrics ');
         });
         it('should make initial request on render when crux is enabled', async () => {
             mockFieldData['url-ALL'] = createMockFieldData();

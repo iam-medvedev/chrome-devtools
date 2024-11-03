@@ -4,10 +4,12 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { findMenuItemWithLabel, getMenu } from '../../testing/ContextMenuHelpers.js';
+import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, getGetHostConfigStub, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as TimelineUtils from '../timeline/utils/utils.js';
 import * as Freestyler from './freestyler.js';
 function getTestAidaClient() {
     return {
@@ -369,24 +371,24 @@ describeWithEnvironment('FreestylerPanel', () => {
                 sinon.assert.notCalled(mockView);
             });
         });
-        describe('Trace.Helpers.TreeHelpers.TraceEntryNodeForAI flavor changes for selected stack trace', () => {
-            it('should set the selected stack trace when the widget is shown', () => {
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, null);
+        describe('TimelineUtils.AICallTree.AICallTree flavor changes for selected call tree', () => {
+            it('should set the selected call tree when the widget is shown', () => {
+                UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, null);
                 panel = new Freestyler.FreestylerPanel(mockView, {
                     aidaClient: getTestAidaClient(),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                     syncInfo: getTestSyncInfo(),
                 });
-                const traceEntryNode = {};
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, traceEntryNode);
+                const selectedAiCallTree = {};
+                UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, selectedAiCallTree);
                 panel.markAsRoot();
                 panel.show(document.body);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedStackTrace: traceEntryNode,
+                    selectedAiCallTree,
                 }));
             });
-            it('should set selected stack trace when the TraceEntryNodeForAI flavor changes', () => {
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, null);
+            it('should set selected call tree when the AICallTree flavor changes', () => {
+                UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, null);
                 panel = new Freestyler.FreestylerPanel(mockView, {
                     aidaClient: getTestAidaClient(),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -395,23 +397,23 @@ describeWithEnvironment('FreestylerPanel', () => {
                 panel.markAsRoot();
                 panel.show(document.body);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedStackTrace: null,
+                    selectedAiCallTree: null,
                 }));
-                const traceEntryNode = {};
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, traceEntryNode);
+                const selectedAiCallTree = {};
+                UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, selectedAiCallTree);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedStackTrace: traceEntryNode,
+                    selectedAiCallTree,
                 }));
             });
-            it('should not handle TraceEntryNodeForAI flavor changes if the widget is not shown', () => {
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, null);
+            it('should not handle AICallTree flavor changes if the widget is not shown', () => {
+                UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, null);
                 panel = new Freestyler.FreestylerPanel(mockView, {
                     aidaClient: getTestAidaClient(),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                     syncInfo: getTestSyncInfo(),
                 });
-                const traceEntryNode = {};
-                UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, traceEntryNode);
+                const selectedAiCallTree = {};
+                UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, selectedAiCallTree);
                 sinon.assert.notCalled(mockView);
             });
         });
@@ -509,6 +511,127 @@ describeWithEnvironment('FreestylerPanel', () => {
             toggleSearchElementAction.setToggled(true);
             sinon.assert.notCalled(mockView);
         });
+    });
+    describe('history interactions', () => {
+        it('should have empty messages after new chat', async () => {
+            panel = new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            panel.handleAction('freestyler.elements-floating-button');
+            mockView.lastCall.args.at(0).onTextSubmit('test');
+            await drainMicroTasks();
+            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+                {
+                    entity: 'user',
+                    text: 'test',
+                },
+                {
+                    answer: 'test',
+                    entity: 'model',
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'New chat\']');
+            assert.instanceOf(button, HTMLElement);
+            dispatchClickEvent(button);
+            assert.deepEqual(mockView.lastCall.args.at(0).messages, []);
+        });
+        it('should switch agents and restore history', async () => {
+            panel = new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            panel.handleAction('freestyler.elements-floating-button');
+            mockView.lastCall.args.at(0).onTextSubmit('User question to Freestyler?');
+            await drainMicroTasks();
+            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+                {
+                    entity: 'user',
+                    text: 'User question to Freestyler?',
+                },
+                {
+                    answer: 'test',
+                    entity: 'model',
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            panel.handleAction('drjones.network-floating-button');
+            mockView.lastCall.args.at(0).onTextSubmit('User question to DrJones?');
+            await drainMicroTasks();
+            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+                {
+                    entity: 'user',
+                    text: 'User question to DrJones?',
+                },
+                {
+                    answer: 'test',
+                    entity: 'model',
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'History\']');
+            assert.instanceOf(button, HTMLElement);
+            const contextMenu = getMenu(() => {
+                dispatchClickEvent(button);
+            });
+            const freestylerEntry = findMenuItemWithLabel(contextMenu.defaultSection(), 'User question to Freestyler?');
+            assert.isDefined(freestylerEntry);
+            contextMenu.invokeHandler(freestylerEntry.id());
+            await drainMicroTasks();
+            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+                {
+                    entity: 'user',
+                    text: 'User question to Freestyler?',
+                },
+                {
+                    answer: 'test',
+                    entity: 'model',
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+        });
+    });
+    it('should have empty state after clear chat', async () => {
+        panel = new Freestyler.FreestylerPanel(mockView, {
+            aidaClient: getTestAidaClient(),
+            aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+            syncInfo: getTestSyncInfo(),
+        });
+        panel.handleAction('freestyler.elements-floating-button');
+        mockView.lastCall.args.at(0).onTextSubmit('test');
+        await drainMicroTasks();
+        assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+            {
+                entity: 'user',
+                text: 'test',
+            },
+            {
+                answer: 'test',
+                entity: 'model',
+                rpcId: undefined,
+                suggestions: undefined,
+                steps: [],
+            },
+        ]);
+        const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Clear chat\']');
+        assert.instanceOf(button, HTMLElement);
+        dispatchClickEvent(button);
+        assert.deepEqual(mockView.lastCall.args.at(0).messages, []);
+        assert.deepEqual(mockView.lastCall.args.at(0).agentType, undefined);
     });
 });
 //# sourceMappingURL=FreestylerPanel.test.js.map

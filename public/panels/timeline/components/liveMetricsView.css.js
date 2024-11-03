@@ -80,6 +80,11 @@ styles.replaceSync(
   margin-bottom: 10px;
 }
 
+.section-title-help {
+  height: var(--sys-typescale-headline4-line-height);
+  vertical-align: top;
+}
+
 .settings-card {
   border-radius: var(--sys-shape-corner-small);
   padding: 14px 16px 16px;
@@ -180,7 +185,7 @@ styles.replaceSync(
   summary {
     display: flex;
     align-items: center;
-    padding: 7px 0;
+    padding: 7px 4px;
 
     &::before {
       content: " ";
@@ -287,12 +292,6 @@ styles.replaceSync(
 x-link { /* stylelint-disable-line selector-type-no-unknown */
   color: var(--sys-color-primary);
   text-decoration-line: underline;
-}
-
-.data-descriptions {
-  margin-top: 10px;
-  padding-left: 12px;
-  border-left: 1px solid var(--sys-color-divider);
 }
 
 .environment-option {

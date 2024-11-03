@@ -12,7 +12,7 @@ styles.replaceSync(
  */
 
 :host {
-  height: 100%;
+  height: var(--sys-size-9);
   width: 100%;
   display: block;
 }
@@ -24,13 +24,27 @@ styles.replaceSync(
   height: 100%;
   width: 100%;
   border: none;
-  border-radius: var(--override-select-menu-show-button-border-radius);
-  padding: var(--override-select-menu-show-button-padding, 1px 6px);
-}
+  border-radius: var(--sys-shape-corner-extra-small);
+  padding: 0 var(--sys-size-4) 0 var(--sys-size-5);
 
-.show:focus-visible {
-  outline: 2px solid var(--sys-color-state-focus-ring);
-  outline-offset: 2px;
+  &:hover {
+    background-color: var(--sys-color-state-hover-on-subtle);
+  }
+
+  &:active {
+    background-color: var(--sys-color-state-ripple-neutral-on-subtle);
+  }
+
+  &:hover:active {
+    background:
+      linear-gradient(var(--sys-color-state-hover-on-subtle), var(--sys-color-state-hover-on-subtle)),
+      linear-gradient(var(--sys-color-state-ripple-neutral-on-subtle), var(--sys-color-state-ripple-neutral-on-subtle));
+  }
+
+  &:focus-visible {
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: -1px;
+  }
 }
 
 #button-label-wrapper {
@@ -52,7 +66,7 @@ styles.replaceSync(
 }
 
 #label[witharrow] {
-  padding: var(--override-select-menu-label-with-arrow-padding, 0 10px 0 0);
+  padding: 0 10px 0 0;
   text-align: left;
 }
 
@@ -69,15 +83,12 @@ styles.replaceSync(
   height: 14px;
   display: inline-block;
   mask-repeat: no-repeat;
-  background-color: var(--override-throttling-icon-and-text-color, var(--override-select-menu-arrow-color, var(--sys-color-on-surface)));
-  transform: rotate(var(--arrow-angle));
-  transform-origin: center;
-  transition: 200ms;
+  background-color: var(--sys-color-on-surface-subtle);
 }
 
 .single-arrow {
   border-radius: 0 3px 3px 0;
-  border: 1px solid var(--override-select-menu-border, var(--sys-color-neutral-outline));
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   height: 100%;
   aspect-ratio: 1 / 1;
   padding: 0;
@@ -86,16 +97,17 @@ styles.replaceSync(
   align-items: center;
 }
 
-button[aria-expanded="true"] #arrow {
-  transform: rotate(calc(var(--arrow-angle) + 180deg));
-}
-
 button {
   background: none;
 }
 
 button[disabled] {
   color: var(--sys-color-state-disabled);
+  background-color: var(--sys-color-state-disabled-container);
+
+  #arrow {
+    background-color: var(--sys-color-state-disabled);
+  }
 }
 
 /*# sourceURL=selectMenuButton.css */

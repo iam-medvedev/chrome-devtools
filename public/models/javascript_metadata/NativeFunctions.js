@@ -2449,7 +2449,13 @@ export const NativeFunctions = [
     },
     {
         name: "removeAttribute",
-        signatures: [["qualifiedName"], ["name"]]
+        signatures: [["qualifiedName"], ["name"]],
+        receivers: ["Element"]
+    },
+    {
+        name: "removeAttribute",
+        signatures: [["attribute"]],
+        receivers: ["Sanitizer"]
     },
     {
         name: "removeAttributeNS",
@@ -2508,7 +2514,13 @@ export const NativeFunctions = [
     },
     {
         name: "setHTMLUnsafe",
-        signatures: [["html"]]
+        signatures: [["html", "?options"]],
+        receivers: ["Element"]
+    },
+    {
+        name: "setHTMLUnsafe",
+        signatures: [["html"]],
+        receivers: ["ShadowRoot"]
     },
     {
         name: "setPointerCapture",
@@ -6470,7 +6482,11 @@ export const NativeFunctions = [
     },
     {
         name: "parseHTMLUnsafe",
-        signatures: [["html"]]
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "parseHTML",
+        signatures: [["html", "?options"]]
     },
     {
         name: "caretPositionFromPoint",
@@ -6501,6 +6517,10 @@ export const NativeFunctions = [
     {
         name: "DOMException",
         signatures: [["?message", "?name"]]
+    },
+    {
+        name: "setHTML",
+        signatures: [["html", "?options"]]
     },
     {
         name: "getInnerHTML",
@@ -7091,6 +7111,34 @@ export const NativeFunctions = [
         signatures: [["callback"]]
     },
     {
+        name: "Sanitizer",
+        signatures: [["?config"]]
+    },
+    {
+        name: "allowElement",
+        signatures: [["element"]]
+    },
+    {
+        name: "removeElement",
+        signatures: [["element"]]
+    },
+    {
+        name: "replaceWithChildrenElement",
+        signatures: [["element"]]
+    },
+    {
+        name: "allowAttribute",
+        signatures: [["attribute"]]
+    },
+    {
+        name: "setComments",
+        signatures: [["allow"]]
+    },
+    {
+        name: "setDataAttributes",
+        signatures: [["allow"]]
+    },
+    {
         name: "postTask",
         signatures: [["callback", "?options"]]
     },
@@ -7430,7 +7478,7 @@ export const NativeFunctions = [
     },
     {
         name: "fillTextCluster",
-        signatures: [["textCluster", "?x", "?y"]]
+        signatures: [["textCluster", "x", "y"]]
     },
     {
         name: "placeElement",
@@ -7637,14 +7685,6 @@ export const NativeFunctions = [
     {
         name: "runFuzzer",
         signatures: [["fuzzer_id", "fuzzer_data"]]
-    },
-    {
-        name: "GamepadAxisEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "GamepadButtonEvent",
-        signatures: [["type", "?eventInitDict"]]
     },
     {
         name: "GamepadEvent",
@@ -8506,7 +8546,7 @@ export const NativeFunctions = [
     },
     {
         name: "install",
-        signatures: [["manifest_id", "?install_url"]]
+        signatures: [["?manifest_id", "?install_url"]]
     },
     {
         name: "AnalyserNode",

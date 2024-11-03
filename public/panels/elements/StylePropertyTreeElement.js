@@ -44,7 +44,7 @@ const UIStrings = {
     /**
      *@description Context menu item for style property in edit mode
      */
-    revealInSourcesPanel: 'Reveal in Sources panel',
+    openInSourcesPanel: 'Open in Sources panel',
     /**
      *@description A context menu item in Styles panel to copy CSS declaration
      */
@@ -606,6 +606,29 @@ export class LinkableNameRenderer {
             },
             jslogContext,
         };
+        if (match.propertyName === "animation" /* LinkableNameProperties.ANIMATION */ ||
+            match.propertyName === "animation-name" /* LinkableNameProperties.ANIMATION_NAME */) {
+            const el = document.createElement('span');
+            el.appendChild(swatch);
+            const node = this.#treeElement.node();
+            if (node) {
+                const animationModel = node.domModel().target().model(SDK.AnimationModel.AnimationModel);
+                void animationModel?.getAnimationGroupForAnimation(match.text, node.id).then(maybeAnimationGroup => {
+                    if (!maybeAnimationGroup) {
+                        return;
+                    }
+                    const icon = IconButton.Icon.create('open-externally', 'open-in-animations-panel');
+                    icon.setAttribute('jslog', `${VisualLogging.link('open-in-animations-panel').track({ click: true })}`);
+                    icon.setAttribute('role', 'button');
+                    icon.addEventListener('mouseup', ev => {
+                        ev.consume(true);
+                        void Common.Revealer.reveal(maybeAnimationGroup);
+                    });
+                    el.insertBefore(icon, swatch);
+                });
+            }
+            return [el];
+        }
         return [swatch];
     }
     matcher() {
@@ -1606,7 +1629,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             }, { checked: !this.property.disabled, jslogContext: 'toggle-property-and-continue-editing' });
         }
         const revealCallback = this.navigateToSource.bind(this);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.revealInSourcesPanel), revealCallback, { jslogContext: 'reveal-in-sources-panel' });
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.openInSourcesPanel), revealCallback, { jslogContext: 'reveal-in-sources-panel' });
         void contextMenu.show();
     }
     handleCopyContextMenuEvent(event) {

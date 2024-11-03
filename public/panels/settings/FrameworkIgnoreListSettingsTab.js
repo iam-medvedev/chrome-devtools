@@ -96,7 +96,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         const ignoreListingDescription = document.createElement('span');
         ignoreListingDescription.textContent = i18nString(UIStrings.ignoreListingDescription);
         const enabledSetting = Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing');
-        const enableIgnoreListing = this.contentElement.createChild('div');
+        const enableIgnoreListing = this.contentElement.createChild('div', 'enable-ignore-listing');
         enableIgnoreListing.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.enableIgnoreListing), enabledSetting, true));
         UI.Tooltip.Tooltip.install(enableIgnoreListing, i18nString(UIStrings.enableIgnoreListingTooltip));
         const enableIgnoreListingCard = new Cards.Card.Card();
@@ -106,6 +106,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         };
         settingsContent.appendChild(enableIgnoreListingCard);
         const generalExclusionGroup = this.createSettingGroup();
+        generalExclusionGroup.classList.add('general-exclusion-group');
         const ignoreListContentScripts = generalExclusionGroup.createChild('div', 'ignore-list-option');
         ignoreListContentScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListContentScripts), Common.Settings.Settings.instance().moduleSetting('skip-content-scripts'), true));
         const automaticallyIgnoreList = generalExclusionGroup.createChild('div', 'ignore-list-option');
@@ -150,7 +151,6 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         this.setting =
             Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
         this.setting.addChangeListener(this.settingUpdated, this);
-        this.setDefaultFocusedElement(addPatternButton);
         enabledSetting.addChangeListener(enabledChanged);
         enabledChanged();
         function enabledChanged() {

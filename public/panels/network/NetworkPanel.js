@@ -141,9 +141,18 @@ const UIStrings = {
      */
     hitSToReloadAndCaptureFilmstrip: 'Hit {PH1} to reload and capture filmstrip.',
     /**
-     *@description A context menu item in the Network Panel of the Network panel
+     * @description A context menu item that is shown for resources in other panels
+     * to open them in the Network panel.
      */
-    revealInNetworkPanel: 'Reveal in Network panel',
+    openInNetworkPanel: 'Open in Network panel',
+    /**
+     * @description A context menu item that is shown for resources in other panels
+     * to open them in the Network panel, but when there's no associated network
+     * request. This context menu item is always disabled and only provided to give
+     * the developer an idea of why they cannot open the resource in the Network
+     * panel.
+     */
+    openInNetworkPanelMissingRequest: 'Open in Network panel (missing request)',
     /**
      *@description Text in Network Panel that is displayed whilst the recording is in progress.
      */
@@ -625,13 +634,19 @@ export class NetworkPanel extends UI.Panel.Panel {
     }
     appendApplicableItems(event, contextMenu, target) {
         const appendRevealItem = (request) => {
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.openInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
                 .showView('network')
                 .then(this.networkLogView.resetFilter.bind(this.networkLogView))
                 .then(this.revealAndHighlightRequest.bind(this, request)), { jslogContext: 'reveal-in-network' });
         };
+        const appendRevealItemMissingData = () => {
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.openInNetworkPanelMissingRequest), () => { }, {
+                disabled: true,
+                jslogContext: 'reveal-in-network',
+            });
+        };
         const appendRevealItemAndSelect = (request) => {
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.openInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
                 .showView('network')
                 .then(this.networkLogView.resetFilter.bind(this.networkLogView))
                 .then(this.selectAndActivateRequest.bind(this, request.request, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, 
@@ -644,12 +659,18 @@ export class NetworkPanel extends UI.Panel.Panel {
             if (target.request) {
                 appendRevealItem(target.request);
             }
+            else {
+                appendRevealItemMissingData();
+            }
             return;
         }
         if (target instanceof Workspace.UISourceCode.UISourceCode) {
             const resource = Bindings.ResourceUtils.resourceForURL(target.url());
             if (resource && resource.request) {
                 appendRevealItem(resource.request);
+            }
+            else {
+                appendRevealItemMissingData();
             }
             return;
         }

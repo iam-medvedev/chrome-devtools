@@ -13,7 +13,7 @@ import { DrJonesFileAgent, formatSourceMapDetails } from './freestyler.js';
 describeWithMockConnection('DrJonesFileAgent', () => {
     function mockHostConfig(modelId, temperature) {
         getGetHostConfigStub({
-            devToolsAiAssistanceFileAgentDogfood: {
+            devToolsAiAssistanceFileAgent: {
                 modelId,
                 temperature,
             },

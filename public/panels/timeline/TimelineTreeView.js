@@ -17,6 +17,7 @@ import * as Extensions from './extensions/extensions.js';
 import { Tracker } from './FreshRecording.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineRegExp } from './TimelineFilters.js';
+import { rangeForSelection } from './TimelineSelection.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
@@ -235,7 +236,9 @@ export class TimelineTreeView extends UI.Widget.VBox {
         return this.lastSelectedNodeInternal;
     }
     updateContents(selection) {
-        this.setRange(selection.startTime, selection.endTime);
+        const timings = rangeForSelection(selection);
+        const timingMilli = Trace.Helpers.Timing.traceWindowMicroSecondsToMilliSeconds(timings);
+        this.setRange(timingMilli.min, timingMilli.max);
     }
     setRange(startTime, endTime) {
         this.startTime = startTime;

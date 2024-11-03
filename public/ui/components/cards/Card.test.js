@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+const CONTENT_SLOT = 'content';
+const HEADING_SUFFIX_SLOT = 'heading-suffix';
 import * as Cards from './cards.js';
-function assertCardContent(card, expectedContent) {
-    const slot = getElementWithinComponent(card, 'slot', HTMLSlotElement);
+function assertCardContent(card, slotName, expectedContent) {
+    const slot = getElementWithinComponent(card, `slot[name="${slotName}"]`, HTMLSlotElement);
     const textContents = Array.from(slot.assignedElements()).map(child => child.textContent);
     assert.deepStrictEqual(textContents, expectedContent);
 }
@@ -18,7 +20,7 @@ describe('Card', () => {
         card.data = {
             content: [content1, content2],
         };
-        assertCardContent(card, ['content 1', 'content 2']);
+        assertCardContent(card, CONTENT_SLOT, ['content 1', 'content 2']);
     });
     it('order of slotted elements matter', () => {
         const content1 = document.createElement('span');
@@ -29,11 +31,11 @@ describe('Card', () => {
         card.data = {
             content: [content1, content2],
         };
-        assertCardContent(card, ['content 1', 'content 2']);
+        assertCardContent(card, CONTENT_SLOT, ['content 1', 'content 2']);
         card.data = {
             content: [content2, content1],
         };
-        assertCardContent(card, ['content 2', 'content 1']);
+        assertCardContent(card, CONTENT_SLOT, ['content 2', 'content 1']);
     });
     it('shows heading', () => {
         const content1 = document.createElement('span');
@@ -46,6 +48,27 @@ describe('Card', () => {
         const heading = card.shadowRoot?.querySelector('[role="heading"]');
         assert.instanceOf(heading, HTMLElement);
         assert.strictEqual(heading.textContent, 'This is my heading');
+    });
+    it('shows heading icon', async () => {
+        const card = new Cards.Card.Card();
+        card.data = {
+            headingIconName: 'folder',
+            content: [],
+        };
+        renderElementIntoDOM(card);
+        const icon = card.shadowRoot?.querySelector('devtools-icon');
+        assert.isNotNull(icon);
+    });
+    it('shows heading-suffix', () => {
+        const suffix = document.createElement('span');
+        suffix.textContent = 'hello';
+        const card = new Cards.Card.Card();
+        card.data = {
+            headingSuffix: suffix,
+            content: [],
+        };
+        renderElementIntoDOM(card);
+        assertCardContent(card, HEADING_SUFFIX_SLOT, ['hello']);
     });
 });
 //# sourceMappingURL=Card.test.js.map

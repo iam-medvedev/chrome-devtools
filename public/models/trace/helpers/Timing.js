@@ -81,6 +81,13 @@ export function traceWindowMillisecondsToMicroSeconds(bounds) {
         range: millisecondsToMicroseconds(bounds.range),
     };
 }
+export function traceWindowMicroSecondsToMilliSeconds(bounds) {
+    return {
+        min: microSecondsToMilliseconds(bounds.min),
+        max: microSecondsToMilliseconds(bounds.max),
+        range: microSecondsToMilliseconds(bounds.range),
+    };
+}
 export function traceWindowFromMilliSeconds(min, max) {
     const traceWindow = {
         min: millisecondsToMicroseconds(min),
@@ -128,5 +135,8 @@ export function timestampIsInBounds(bounds, timestamp) {
  */
 export function windowFitsInsideBounds(data) {
     return data.window.min >= data.bounds.min && data.window.max <= data.bounds.max;
+}
+export function windowsEqual(w1, w2) {
+    return w1.min === w2.min && w1.max === w2.max;
 }
 //# sourceMappingURL=Timing.js.map

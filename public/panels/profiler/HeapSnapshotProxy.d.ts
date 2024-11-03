@@ -64,7 +64,7 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     }): Promise<{
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.Diff;
     }>;
-    nodeClassName(snapshotObjectId: number): Promise<string | null>;
+    nodeClassKey(snapshotObjectId: number): Promise<string | null>;
     createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createAddedNodesProvider(baseSnapshotId: string, classKey: string): HeapSnapshotProviderProxy;

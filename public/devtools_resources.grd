@@ -152,6 +152,7 @@
       <include file="Images/heap-snapshot.svg" name="IMAGES_HEAP_SNAPSHOT_SVG" resource_path="Images/heap-snapshot.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshots.svg" name="IMAGES_HEAP_SNAPSHOTS_SVG" resource_path="Images/heap-snapshots.svg" type="BINDATA" compress="false"/>
       <include file="Images/help.svg" name="IMAGES_HELP_SVG" resource_path="Images/help.svg" type="BINDATA" compress="false"/>
+      <include file="Images/history.svg" name="IMAGES_HISTORY_SVG" resource_path="Images/history.svg" type="BINDATA" compress="false"/>
       <include file="Images/home.svg" name="IMAGES_HOME_SVG" resource_path="Images/home.svg" type="BINDATA" compress="false"/>
       <include file="Images/hover.svg" name="IMAGES_HOVER_SVG" resource_path="Images/hover.svg" type="BINDATA" compress="false"/>
       <include file="Images/iframe-crossed.svg" name="IMAGES_IFRAME_CROSSED_SVG" resource_path="Images/iframe-crossed.svg" type="BINDATA" compress="false"/>
@@ -1403,9 +1404,9 @@
       <include file="panels/freestyler/FreestylerEvaluateAction.js" name="PANELS_FREESTYLER_FREESTYLEREVALUATEACTION_JS" resource_path="panels/freestyler/FreestylerEvaluateAction.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/FreestylerPanel.js" name="PANELS_FREESTYLER_FREESTYLERPANEL_JS" resource_path="panels/freestyler/FreestylerPanel.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/components/FreestylerChatUi.js" name="PANELS_FREESTYLER_COMPONENTS_FREESTYLERCHATUI_JS" resource_path="panels/freestyler/components/FreestylerChatUi.js" type="BINDATA" compress="false"/>
-      <include file="panels/freestyler/components/ProvideFeedback.js" name="PANELS_FREESTYLER_COMPONENTS_PROVIDEFEEDBACK_JS" resource_path="panels/freestyler/components/ProvideFeedback.js" type="BINDATA" compress="false"/>
+      <include file="panels/freestyler/components/UserActionRow.js" name="PANELS_FREESTYLER_COMPONENTS_USERACTIONROW_JS" resource_path="panels/freestyler/components/UserActionRow.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/components/freestylerChatUi.css.js" name="PANELS_FREESTYLER_COMPONENTS_FREESTYLERCHATUI_CSS_JS" resource_path="panels/freestyler/components/freestylerChatUi.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/freestyler/components/provideFeedback.css.js" name="PANELS_FREESTYLER_COMPONENTS_PROVIDEFEEDBACK_CSS_JS" resource_path="panels/freestyler/components/provideFeedback.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/freestyler/components/userActionRow.css.js" name="PANELS_FREESTYLER_COMPONENTS_USERACTIONROW_CSS_JS" resource_path="panels/freestyler/components/userActionRow.css.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/freestylerPanel.css.js" name="PANELS_FREESTYLER_FREESTYLERPANEL_CSS_JS" resource_path="panels/freestyler/freestylerPanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedBlockedByResponseView.js" name="PANELS_ISSUES_AFFECTEDBLOCKEDBYRESPONSEVIEW_JS" resource_path="panels/issues/AffectedBlockedByResponseView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedCookiesView.js" name="PANELS_ISSUES_AFFECTEDCOOKIESVIEW_JS" resource_path="panels/issues/AffectedCookiesView.js" type="BINDATA" compress="false"/>
@@ -1514,7 +1515,6 @@
       <include file="panels/network/NetworkSearchScope.js" name="PANELS_NETWORK_NETWORKSEARCHSCOPE_JS" resource_path="panels/network/NetworkSearchScope.js" type="BINDATA" compress="false"/>
       <include file="panels/network/NetworkTimeCalculator.js" name="PANELS_NETWORK_NETWORKTIMECALCULATOR_JS" resource_path="panels/network/NetworkTimeCalculator.js" type="BINDATA" compress="false"/>
       <include file="panels/network/NetworkWaterfallColumn.js" name="PANELS_NETWORK_NETWORKWATERFALLCOLUMN_JS" resource_path="panels/network/NetworkWaterfallColumn.js" type="BINDATA" compress="false"/>
-      <include file="panels/network/RequestBinaryResponseView.js" name="PANELS_NETWORK_REQUESTBINARYRESPONSEVIEW_JS" resource_path="panels/network/RequestBinaryResponseView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestCookiesView.js" name="PANELS_NETWORK_REQUESTCOOKIESVIEW_JS" resource_path="panels/network/RequestCookiesView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestHTMLView.js" name="PANELS_NETWORK_REQUESTHTMLVIEW_JS" resource_path="panels/network/RequestHTMLView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestInitiatorView.js" name="PANELS_NETWORK_REQUESTINITIATORVIEW_JS" resource_path="panels/network/RequestInitiatorView.js" type="BINDATA" compress="false"/>
@@ -1864,6 +1864,7 @@
       <include file="panels/timeline/timelinePaintProfiler.css.js" name="PANELS_TIMELINE_TIMELINEPAINTPROFILER_CSS_JS" resource_path="panels/timeline/timelinePaintProfiler.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelinePanel.css.js" name="PANELS_TIMELINE_TIMELINEPANEL_CSS_JS" resource_path="panels/timeline/timelinePanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineStatusDialog.css.js" name="PANELS_TIMELINE_TIMELINESTATUSDIALOG_CSS_JS" resource_path="panels/timeline/timelineStatusDialog.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/utils/AICallTree.js" name="PANELS_TIMELINE_UTILS_AICALLTREE_JS" resource_path="panels/timeline/utils/AICallTree.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntryName.js" name="PANELS_TIMELINE_UTILS_ENTRYNAME_JS" resource_path="panels/timeline/utils/EntryName.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntryStyles.js" name="PANELS_TIMELINE_UTILS_ENTRYSTYLES_JS" resource_path="panels/timeline/utils/EntryStyles.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/Helpers.js" name="PANELS_TIMELINE_UTILS_HELPERS_JS" resource_path="panels/timeline/utils/Helpers.js" type="BINDATA" compress="false"/>
@@ -2405,6 +2406,7 @@
       <include file="ui/legacy/components/source_frame/PreviewFactory.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_PREVIEWFACTORY_JS" resource_path="ui/legacy/components/source_frame/PreviewFactory.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/ResourceSourceFrame.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_RESOURCESOURCEFRAME_JS" resource_path="ui/legacy/components/source_frame/ResourceSourceFrame.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/SourceFrame.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_SOURCEFRAME_JS" resource_path="ui/legacy/components/source_frame/SourceFrame.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/components/source_frame/StreamingContentHexView.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_STREAMINGCONTENTHEXVIEW_JS" resource_path="ui/legacy/components/source_frame/StreamingContentHexView.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/XMLView.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_XMLVIEW_JS" resource_path="ui/legacy/components/source_frame/XMLView.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/fontView.css.legacy.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_FONTVIEW_CSS_LEGACY_JS" resource_path="ui/legacy/components/source_frame/fontView.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/imageView.css.legacy.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_IMAGEVIEW_CSS_LEGACY_JS" resource_path="ui/legacy/components/source_frame/imageView.css.legacy.js" type="BINDATA" compress="false"/>

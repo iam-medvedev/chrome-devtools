@@ -16,6 +16,7 @@ export declare function eventTimingsMilliSeconds(event: Types.Events.Event): Eve
 export declare function eventTimingsSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.Seconds>;
 export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;
 export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilliSeconds): Types.Timing.TraceWindowMicroSeconds;
+export declare function traceWindowMicroSecondsToMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;
 export declare function traceWindowFromMilliSeconds(min: Types.Timing.MilliSeconds, max: Types.Timing.MilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export declare function traceWindowFromMicroSeconds(min: Types.Timing.MicroSeconds, max: Types.Timing.MicroSeconds): Types.Timing.TraceWindowMicroSeconds;
 export interface BoundsIncludeTimeRange {
@@ -47,3 +48,4 @@ export interface WindowFitsInsideBounds {
  * Note that if the window is equivalent to the bounds, that is considered to fit
  */
 export declare function windowFitsInsideBounds(data: WindowFitsInsideBounds): boolean;
+export declare function windowsEqual(w1: Types.Timing.TraceWindowMicroSeconds, w2: Types.Timing.TraceWindowMicroSeconds): boolean;

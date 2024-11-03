@@ -6,7 +6,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineRegExp } from './TimelineFilters.js';
-import type { TimelineSelection } from './TimelineSelection.js';
+import { type TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineTreeView extends UI.Widget.VBox implements UI.SearchableView.Searchable {
     #private;
     private searchResults;

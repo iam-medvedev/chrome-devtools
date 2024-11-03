@@ -6,7 +6,7 @@ import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
 import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
-import { EntryType, type TimelineFlameChartEntry } from './TimelineFlameChartDataProvider.js';
+import { EntryType } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
 export type HighlightedEntryInfo = {
     title: string;
@@ -113,9 +113,9 @@ export declare class CompatibilityTracksAppender {
      * architecture and should be removed once all tracks use the new
      * system.
      */
-    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]);
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[]);
     reset(): void;
-    setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
+    setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     private onThemeChange;
     timingsTrackAppender(): TimingsTrackAppender;

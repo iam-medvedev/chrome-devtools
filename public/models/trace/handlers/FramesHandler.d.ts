@@ -9,8 +9,8 @@ export declare function initialize(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export interface FramesData {
-    frames: readonly TimelineFrame[];
-    framesById: Readonly<Record<number, TimelineFrame | undefined>>;
+    frames: readonly Types.Events.LegacyTimelineFrame[];
+    framesById: Readonly<Record<number, Types.Events.LegacyTimelineFrame | undefined>>;
 }
 export declare function data(): FramesData;
 export declare function deps(): HandlerName[];
@@ -20,7 +20,14 @@ export declare class TimelineFrameModel {
     framesById(): Readonly<Record<number, TimelineFrame | undefined>>;
     frames(): TimelineFrame[];
 }
-export declare class TimelineFrame implements Types.Events.LegacyTimelineFrame {
+/**
+ * Legacy class that represents TimelineFrames that was ported from the old SDK.
+ * This class is purposefully not exported as it breaks the abstraction that
+ * every event shown on the timeline is a trace event. Instead, we use the Type
+ * LegacyTimelineFrame to represent frames in the codebase. These do implement
+ * the right interface to be treated just like they were a trace event.
+ */
+declare class TimelineFrame implements Types.Events.LegacyTimelineFrame {
     cat: string;
     name: string;
     ph: Types.Events.Phase;
@@ -77,5 +84,5 @@ export declare class TimelineFrameBeginFrameQueue {
     setPartial(seqId: number, isPartial: boolean): void;
     processPendingBeginFramesOnDrawFrame(seqId: number): BeginFrameInfo[];
 }
-export declare function framesWithinWindow(frames: readonly TimelineFrame[], startTime: Types.Timing.MicroSeconds, endTime: Types.Timing.MicroSeconds): TimelineFrame[];
+export declare function framesWithinWindow(frames: readonly Types.Events.LegacyTimelineFrame[], startTime: Types.Timing.MicroSeconds, endTime: Types.Timing.MicroSeconds): Types.Events.LegacyTimelineFrame[];
 export {};

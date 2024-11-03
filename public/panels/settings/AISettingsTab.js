@@ -194,26 +194,28 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     }
     #getAiAssistanceSettingDescription() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        if (config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistancePerformanceAgent?.enabled ||
+            config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingNetworkPerformanceAndFile);
         }
-        if (config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistanceFileAgent?.enabled || config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingNetworkAndFile);
         }
-        if (config.devToolsExplainThisResourceDogfood?.enabled) {
+        if (config.devToolsAiAssistanceNetworkAgent?.enabled || config.devToolsExplainThisResourceDogfood?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingAndNetworkRequest);
         }
         return i18nString(UIStrings.helpUnderstandStyling);
     }
     #getAiAssistanceSettingInfo() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        if (config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistancePerformanceAgent?.enabled ||
+            config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
             return i18nString(UIStrings.explainStylingNetworkPerformanceAndFile);
         }
-        if (config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistanceFileAgent?.enabled || config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
             return i18nString(UIStrings.explainStylingNetworkAndFile);
         }
-        if (config.devToolsExplainThisResourceDogfood?.enabled) {
+        if (config.devToolsAiAssistanceNetworkAgent?.enabled || config.devToolsExplainThisResourceDogfood?.enabled) {
             return i18nString(UIStrings.explainStylingAndNetworkRequest);
         }
         return i18nString(UIStrings.explainStyling);
@@ -323,7 +325,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     `;
         // clang-format on
     }
-    #getDisabledReason(setting) {
+    #getDisabledReason() {
         switch (this.#aidaAvailability) {
             case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
             case "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */:
@@ -335,15 +337,15 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         if (config?.aidaAvailability?.blockedByAge === true) {
             return i18nString(UIStrings.ageRestricted);
         }
-        return setting?.disabledReason();
+        // `consoleInsightsSetting` and `aiAssistantSetting` are both disabled for the same reason.
+        return this.#consoleInsightsSetting?.disabledReason();
     }
-    #renderConsoleInsightsSetting() {
+    #renderConsoleInsightsSetting(disabledReason) {
         const detailsClasses = {
             'whole-row': true,
             open: this.#isConsoleInsightsSettingExpanded,
         };
         const tabindex = this.#isConsoleInsightsSettingExpanded ? '0' : '-1';
-        const disabledReason = this.#getDisabledReason(this.#consoleInsightsSetting);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
@@ -404,13 +406,12 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     `;
         // clang-format on
     }
-    #renderAiAssistanceSetting() {
+    #renderAiAssistanceSetting(disabledReason) {
         const detailsClasses = {
             'whole-row': true,
             open: this.#isAiAssistanceSettingExpanded,
         };
         const tabindex = this.#isAiAssistanceSettingExpanded ? '0' : '-1';
-        const disabledReason = this.#getDisabledReason(this.#aiAssistanceSetting);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
@@ -471,7 +472,25 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     `;
         // clang-format on
     }
+    #renderDisabledExplainer(disabledReason) {
+        // Disabled until https://crbug.com/1079231 is fixed.
+        // clang-format off
+        return html `
+      <div class="disabled-explainer">
+        <devtools-icon .data=${{
+            iconName: 'warning',
+            color: 'var(--sys-color-orange)',
+            width: 'var(--sys-size-8)',
+            height: 'var(--sys-size-8)',
+        }}>
+        </devtools-icon>
+        ${disabledReason}
+      </div>
+    `;
+        // clang-format on
+    }
     async render() {
+        const disabledReason = this.#getDisabledReason();
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         LitHtml.render(html `
@@ -481,9 +500,10 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
       <div class="settings-container-wrapper" jslog=${VisualLogging.pane('chrome-ai')}>
         ${this.#renderSharedDisclaimer()}
         ${this.#consoleInsightsSetting || this.#aiAssistanceSetting ? html `
+          ${Boolean(disabledReason) ? this.#renderDisabledExplainer(disabledReason) : LitHtml.nothing}
           <div class="settings-container">
-            ${this.#consoleInsightsSetting ? this.#renderConsoleInsightsSetting() : LitHtml.nothing}
-            ${this.#aiAssistanceSetting ? this.#renderAiAssistanceSetting() : LitHtml.nothing}
+            ${this.#consoleInsightsSetting ? this.#renderConsoleInsightsSetting(disabledReason) : LitHtml.nothing}
+            ${this.#aiAssistanceSetting ? this.#renderAiAssistanceSetting(disabledReason) : LitHtml.nothing}
           </div>
         ` : LitHtml.nothing}
       </div>

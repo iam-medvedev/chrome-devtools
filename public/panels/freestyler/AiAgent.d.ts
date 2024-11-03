@@ -93,9 +93,16 @@ interface ParsedResponseStep {
     action?: string;
 }
 export type ParsedResponse = ParsedResponseAnswer | ParsedResponseStep;
+export declare const enum AgentType {
+    FREESTYLER = "freestyler",
+    DRJONES_FILE = "drjones-file",
+    DRJONES_NETWORK_REQUEST = "drjones-network-request",
+    DRJONES_PERFORMANCE = "drjones-performance"
+}
 export declare abstract class AiAgent<T> {
     #private;
     static validTemperature(temperature: number | undefined): number | undefined;
+    abstract type: AgentType;
     abstract readonly preamble: string;
     abstract readonly options: AidaRequestOptions;
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;
@@ -104,6 +111,8 @@ export declare abstract class AiAgent<T> {
     constructor(opts: AgentOptions);
     get chatHistoryForTesting(): Array<HistoryChunk>;
     set chatNewHistoryForTesting(history: Map<number, ResponseData[]>);
+    get isEmpty(): boolean;
+    get title(): string | undefined;
     aidaFetch(input: string, options?: {
         signal?: AbortSignal;
     }): Promise<{

@@ -38,10 +38,6 @@ export declare function dispatchFocusOutEvent<T extends Element>(element: T, opt
  * Dispatches a keydown event. Errors if the event was not dispatched successfully.
  */
 export declare function dispatchKeyDownEvent<T extends Element>(element: T, options?: KeyboardEventInit): void;
-/**
- * Dispatches a keyup event. Errors if the event was not dispatched successfully.
- */
-export declare function dispatchKeyUpEvent<T extends Element>(element: T, options?: KeyboardEventInit): void;
 export declare function dispatchInputEvent<T extends Element>(element: T, options?: InputEventInit): void;
 /**
  * Dispatches a mouse over event.

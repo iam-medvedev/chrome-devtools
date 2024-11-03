@@ -86,16 +86,17 @@ const lockedString = i18n.i18n.lockedString;
  * instance for a new conversation.
  */
 export class DrJonesNetworkAgent extends AiAgent {
+    type = "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_NETWORK_AGENT;
     get userTier() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        return config.devToolsExplainThisResourceDogfood?.userTier;
+        return config.devToolsAiAssistanceNetworkAgent?.userTier ?? config.devToolsExplainThisResourceDogfood?.userTier;
     }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsExplainThisResourceDogfood?.temperature;
-        const modelId = config.devToolsExplainThisResourceDogfood?.modelId;
+        const temperature = config.devToolsAiAssistanceNetworkAgent?.temperature ?? config.devToolsExplainThisResourceDogfood?.temperature;
+        const modelId = config.devToolsAiAssistanceNetworkAgent?.modelId ?? config.devToolsExplainThisResourceDogfood?.modelId;
         return {
             temperature,
             modelId,
@@ -233,7 +234,6 @@ const allowedHeaders = new Set([
     'x-request-id',
     'x-requested-with',
     'x-ua-compatible',
-    'x-uidh',
     'x-wap-profile',
     'x-webkit-csp',
     'x-xss-protection',
@@ -242,7 +242,17 @@ export function allowHeader(header) {
     return allowedHeaders.has(header.name.toLowerCase().trim());
 }
 export function formatHeaders(title, headers) {
-    return formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
+    return formatLines(title, headers
+        .map(header => {
+        if (allowHeader(header)) {
+            return header;
+        }
+        return {
+            name: header.name,
+            value: '<redacted>',
+        };
+    })
+        .map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
 }
 export function formatNetworkRequestTiming(request) {
     const calculator = Network.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();

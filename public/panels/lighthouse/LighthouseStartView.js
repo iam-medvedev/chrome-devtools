@@ -53,7 +53,7 @@ export class StartView extends UI.Widget.Widget {
     checkboxes = [];
     changeFormMode;
     constructor(controller, panel) {
-        super();
+        super(true /* useShadowDom */);
         this.controller = controller;
         this.panel = panel;
         this.settingsToolbarInternal = new UI.Toolbar.Toolbar('');

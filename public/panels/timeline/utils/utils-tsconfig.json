@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/timeline/utils/AICallTree.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryName.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
@@ -58,6 +59,9 @@
     },
     {
       "path": "../../../models/source_map_scopes/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../models/timeline_model/bundle-tsconfig.json"
     },
     {
       "path": "../../../models/trace/bundle-tsconfig.json"

@@ -328,7 +328,8 @@ export declare abstract class HeapSnapshot {
     };
     private calculateDiffForClass;
     private nodeForSnapshotObjectId;
-    nodeClassName(snapshotObjectId: number): string | null;
+    classKeyFromClassKeyInternal(key: string | number): string;
+    nodeClassKey(snapshotObjectId: number): string | null;
     idsOfObjectsWithName(name: string): number[];
     createEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
     createEdgesProviderForTest(nodeIndex: number, filter: ((arg0: HeapSnapshotEdge) => boolean) | null): HeapSnapshotEdgesProvider;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as UI from '../ui/legacy/legacy.js';
-function getMenu(action) {
+export function getMenu(action) {
     const sandbox = sinon.createSandbox();
     const contextMenuShow = sandbox.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
     action();

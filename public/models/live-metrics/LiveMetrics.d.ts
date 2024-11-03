@@ -57,7 +57,7 @@ export interface Interaction {
     startTime: number;
     nextPaintTime: number;
     phases: Spec.INPPhases;
-    scripts: Spec.LoAFScript[];
+    longAnimationFrameTimings: Spec.PerformanceLongAnimationFrameTimingJSON[];
     node?: SDK.DOMModel.DOMNode;
 }
 export interface StatusEvent {

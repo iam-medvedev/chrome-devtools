@@ -465,7 +465,14 @@ export var Action;
     Action[Action["DrJonesOpenedFromSourcesPanelFloatingButton"] = 172] = "DrJonesOpenedFromSourcesPanelFloatingButton";
     Action[Action["DrJonesOpenedFromPerformancePanel"] = 173] = "DrJonesOpenedFromPerformancePanel";
     Action[Action["DrJonesOpenedFromNetworkPanelFloatingButton"] = 174] = "DrJonesOpenedFromNetworkPanelFloatingButton";
-    Action[Action["MAX_VALUE"] = 175] = "MAX_VALUE";
+    Action[Action["AiAssistancePanelOpened"] = 175] = "AiAssistancePanelOpened";
+    Action[Action["AiAssistanceQuerySubmitted"] = 176] = "AiAssistanceQuerySubmitted";
+    Action[Action["AiAssistanceAnswerReceived"] = 177] = "AiAssistanceAnswerReceived";
+    Action[Action["AiAssistanceDynamicSuggestionClicked"] = 178] = "AiAssistanceDynamicSuggestionClicked";
+    Action[Action["AiAssistanceSideEffectConfirmed"] = 179] = "AiAssistanceSideEffectConfirmed";
+    Action[Action["AiAssistanceSideEffectRejected"] = 180] = "AiAssistanceSideEffectRejected";
+    Action[Action["AiAssistanceError"] = 181] = "AiAssistanceError";
+    Action[Action["MAX_VALUE"] = 182] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -906,9 +913,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["floating-entry-points-for-ai-assistance"] = 101] = "floating-entry-points-for-ai-assistance";
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
     DevtoolsExperiments[DevtoolsExperiments["timeline-dim-unrelated-events"] = 103] = "timeline-dim-unrelated-events";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-alternative-navigation"] = 104] = "timeline-alternative-navigation";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 104] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 105] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

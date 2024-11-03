@@ -1,13 +1,13 @@
 import '../../../ui/components/spinners/spinners.js';
-import './ProvideFeedback.js';
+import './UserActionRow.js';
 import * as Host from '../../../core/host/host.js';
-import type * as SDK from '../../../core/sdk/sdk.js';
-import * as Trace from '../../../models/trace/trace.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import type * as Workspace from '../../../models/workspace/workspace.js';
+import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { type ContextDetail, ErrorType } from '../AiAgent.js';
+import { AgentType, type ContextDetail, ErrorType } from '../AiAgent.js';
 export interface Step {
     isLoading: boolean;
     thought?: string;
@@ -42,12 +42,6 @@ export declare const enum State {
     CONSENT_VIEW = "consent-view",
     CHAT_VIEW = "chat-view"
 }
-export declare const enum AgentType {
-    FREESTYLER = "freestyler",
-    DRJONES_FILE = "drjones-file",
-    DRJONES_NETWORK_REQUEST = "drjones-network-request",
-    DRJONES_PERFORMANCE = "drjones-performance"
-}
 export interface Props {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
@@ -62,7 +56,7 @@ export interface Props {
     selectedElement: SDK.DOMModel.DOMNode | null;
     selectedFile: Workspace.UISourceCode.UISourceCode | null;
     selectedNetworkRequest: SDK.NetworkRequest.NetworkRequest | null;
-    selectedStackTrace: Trace.Helpers.TreeHelpers.AINode | null;
+    selectedAiCallTree: TimelineUtils.AICallTree.AICallTree | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;

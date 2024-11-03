@@ -73,7 +73,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
         this.expandTreeElementsWhenArrowing = false;
         this.comparator = null;
         this.contentElement = this.rootElementInternal.childrenListNode;
-        this.contentElement.addEventListener('keyup', this.treeKeyUp.bind(this), false);
+        this.contentElement.addEventListener('keydown', this.treeKeyDown.bind(this), false);
         this.preventTabOrder = false;
         this.showSelectionOnKeyboardFocus = false;
         this.focusable = true;
@@ -241,7 +241,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
         last.select(false, true);
         return true;
     }
-    treeKeyUp(event) {
+    treeKeyDown(event) {
         if (event.shiftKey || event.metaKey || event.ctrlKey || isEditing()) {
             return;
         }
@@ -304,8 +304,11 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
             // Usually, this.element is the tree container that scrolls. But sometimes
             // (i.e. in the Elements panel), its parent is.
             let scrollParentElement = this.element;
-            while (getComputedStyle(scrollParentElement).overflow === 'visible' && scrollParentElement.parentElement) {
-                scrollParentElement = scrollParentElement.parentElement;
+            while (getComputedStyle(scrollParentElement).overflow === 'visible' &&
+                scrollParentElement.parentElementOrShadowHost()) {
+                const parent = scrollParentElement.parentElementOrShadowHost();
+                Platform.assertNotNullOrUndefined(parent);
+                scrollParentElement = parent;
             }
             const viewRect = scrollParentElement.getBoundingClientRect();
             const currentScrollX = viewRect.left - treeRect.left;
