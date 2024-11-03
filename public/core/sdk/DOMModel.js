@@ -1365,8 +1365,8 @@ export class DOMModel extends SDKModel {
         }
         return this.nodeForId(response.nodeId);
     }
-    async getContainerForNode(nodeId, containerName, physicalAxes, logicalAxes) {
-        const { nodeId: containerNodeId } = await this.agent.invoke_getContainerForNode({ nodeId, containerName, physicalAxes, logicalAxes });
+    async getContainerForNode(nodeId, containerName, physicalAxes, logicalAxes, queriesScrollState) {
+        const { nodeId: containerNodeId } = await this.agent.invoke_getContainerForNode({ nodeId, containerName, physicalAxes, logicalAxes, queriesScrollState });
         if (!containerNodeId) {
             return null;
         }

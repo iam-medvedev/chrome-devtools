@@ -17,7 +17,7 @@ import { Tracker } from './FreshRecording.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineLayersView } from './TimelineLayersView.js';
 import { TimelinePaintProfilerView } from './TimelinePaintProfilerView.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, } from './TimelineSelection.js';
 import { TimelineSelectorStatsView } from './TimelineSelectorStatsView.js';
 import { BottomUpTimelineTreeView, CallTreeTimelineTreeView } from './TimelineTreeView.js';
 import { TimelineDetailsContentHelper, TimelineUIUtils } from './TimelineUIUtils.js';
@@ -184,7 +184,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
                 return;
             }
             const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
-            view.updateContents(this.selection || TimelineSelection.fromRange(visibleWindow.min, visibleWindow.max));
+            view.updateContents(this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max));
         }
     }
     appendTab(id, tabTitle, view, isCloseable) {
@@ -260,6 +260,40 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             }
         }
     }
+    async #setSelectionForNetworkEvent(networkRequest) {
+        if (!this.#parsedTrace) {
+            return;
+        }
+        const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
+        await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget);
+        this.#relatedInsightChips.activeEvent = networkRequest;
+        if (this.#eventToRelatedInsightsMap) {
+            this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+        }
+        this.setContent(this.#networkRequestDetails);
+    }
+    async #setSelectionForTraceEvent(event) {
+        if (!this.#parsedTrace) {
+            return;
+        }
+        this.#relatedInsightChips.activeEvent = event;
+        if (this.#eventToRelatedInsightsMap) {
+            this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+        }
+        // Special case: if Insights experiment is enabled (on by default in M131)
+        // and the user selects a layout shift or a layout shift cluster, render
+        // the new layout shift details component.
+        if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */) &&
+            (Trace.Types.Events.isSyntheticLayoutShift(event) || Trace.Types.Events.isSyntheticLayoutShiftCluster(event))) {
+            const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
+            this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
+            this.setContent(this.#layoutShiftDetails);
+            return;
+        }
+        // Otherwise, build the generic trace event details UI.
+        const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true);
+        this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
+    }
     async setSelection(selection) {
         if (!this.#parsedTrace) {
             // You can't make a selection if we have no trace data.
@@ -274,40 +308,20 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             this.scheduleUpdateContentsFromWindow(/* forceImmediateUpdate */ true);
             return;
         }
-        const selectionObject = this.selection.object;
-        if (TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selectionObject)) {
-            const networkRequest = selectionObject;
-            const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
-            await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget);
-            this.#relatedInsightChips.activeEvent = networkRequest;
-            if (this.#eventToRelatedInsightsMap) {
-                this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+        if (selectionIsEvent(selection)) {
+            if (Trace.Types.Events.isSyntheticNetworkRequest(selection.event)) {
+                await this.#setSelectionForNetworkEvent(selection.event);
             }
-            this.setContent(this.#networkRequestDetails);
-        }
-        else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
-            const event = selectionObject;
-            this.#relatedInsightChips.activeEvent = event;
-            if (this.#eventToRelatedInsightsMap) {
-                this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
-            }
-            if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */) &&
-                (Trace.Types.Events.isSyntheticLayoutShift(event) ||
-                    Trace.Types.Events.isSyntheticLayoutShiftCluster(event))) {
-                const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
-                this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
-                this.setContent(this.#layoutShiftDetails);
+            else if (Trace.Types.Events.isLegacyTimelineFrame(selection.event)) {
+                this.#setSelectionForTimelineFrame(selection.event);
             }
             else {
-                const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true);
-                this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
+                await this.#setSelectionForTraceEvent(selection.event);
             }
         }
-        else if (TimelineSelection.isLegacyTimelineFrame(selectionObject)) {
-            this.#setSelectionForTimelineFrame(selectionObject);
-        }
-        else if (TimelineSelection.isRangeSelection(selectionObject)) {
-            this.updateSelectedRangeStats(this.selection.startTime, this.selection.endTime);
+        else if (selectionIsRange(selection)) {
+            const timings = Trace.Helpers.Timing.traceWindowMicroSecondsToMilliSeconds(selection.bounds);
+            this.updateSelectedRangeStats(timings.min, timings.max);
         }
         this.updateContents();
     }

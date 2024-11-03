@@ -7,7 +7,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { type TimelineSelection } from './TimelineSelection.js';
 export declare class TimelinePanel extends UI.Panel.Panel implements Client, TimelineModeViewDelegate {
     #private;
     private readonly dropTarget;
@@ -191,6 +191,9 @@ export declare class LoadTimelineHandler implements Common.QueryParamHandler.Que
 }
 export declare class TraceRevealer implements Common.Revealer.Revealer<SDK.TraceObject.TraceObject> {
     reveal(trace: SDK.TraceObject.TraceObject): Promise<void>;
+}
+export declare class EventRevealer implements Common.Revealer.Revealer<SDK.TraceObject.RevealableEvent> {
+    reveal(rEvent: SDK.TraceObject.RevealableEvent): Promise<void>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

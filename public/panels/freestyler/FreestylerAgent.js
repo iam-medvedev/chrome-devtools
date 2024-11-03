@@ -121,7 +121,7 @@ ANSWER: Even though the popup itself has a z-index of 3, its parent container ha
 SUGGESTIONS: ["What is a stacking context?", "How can I change the stacking order?"]
 `;
 /* clang-format on */
-async function executeJsCode(code, { throwOnSideEffect }) {
+async function executeJsCode(functionDeclaration, { throwOnSideEffect }) {
     const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
     if (!target) {
@@ -140,8 +140,19 @@ async function executeJsCode(code, { throwOnSideEffect }) {
     if (!executionContext) {
         throw new Error('Execution context is not found for executing code');
     }
+    if (executionContext.debuggerModel.selectedCallFrame()) {
+        throw new ExecutionError('Cannot evaluate JavaScript because the execution is paused on a breakpoint.');
+    }
+    const result = await executionContext.evaluate({
+        expression: '$0',
+        returnByValue: false,
+        includeCommandLineAPI: true,
+    }, false, false);
+    if ('error' in result) {
+        throw new ExecutionError('Cannot find $0');
+    }
     try {
-        return await FreestylerEvaluateAction.execute(code, executionContext, { throwOnSideEffect });
+        return await FreestylerEvaluateAction.execute(functionDeclaration, [result.object], executionContext, { throwOnSideEffect });
     }
     catch (err) {
         if (err instanceof ExecutionError) {
@@ -156,6 +167,7 @@ const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
  * instance for a new conversation.
  */
 export class FreestylerAgent extends AiAgent {
+    type = "freestyler" /* AgentType.FREESTYLER */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_FREESTYLER;
     get userTier() {
@@ -329,12 +341,10 @@ export class FreestylerAgent extends AiAgent {
         void this.#changes.clear();
     }
     async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, }) {
-        const actionExpression = `{
-      const scope = {$0, $1, getEventListeners};
-      with (scope) {
-        ${action}
-        ;((typeof data !== "undefined") ? data : undefined)
-      }
+        const functionDeclaration = `async function ($0) {
+      ${action}
+      ;
+      return ((typeof data !== "undefined") ? data : undefined);
     }`;
         try {
             const runConfirmed = await confirm ?? Promise.resolve(true);
@@ -345,7 +355,7 @@ export class FreestylerAgent extends AiAgent {
                     canceled: true,
                 };
             }
-            const result = await this.#execJs(actionExpression, { throwOnSideEffect });
+            const result = await this.#execJs(functionDeclaration, { throwOnSideEffect });
             const byteCount = Platform.StringUtilities.countWtf8Bytes(result);
             Host.userMetrics.freestylerEvalResponseSize(byteCount);
             if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
@@ -471,7 +481,11 @@ export class FreestylerAgent extends AiAgent {
                 yield {
                     type: "side-effect" /* ResponseType.SIDE_EFFECT */,
                     code: action,
-                    confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
+                    confirm: (result) => {
+                        sideEffectConfirmationPromiseWithResolvers.resolve(result);
+                        Host.userMetrics.actionTaken(result ? Host.UserMetrics.Action.AiAssistanceSideEffectConfirmed :
+                            Host.UserMetrics.Action.AiAssistanceSideEffectRejected);
+                    },
                     rpcId,
                 };
                 result = await this.#generateObservation(action, {

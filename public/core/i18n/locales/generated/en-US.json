@@ -80,6 +80,9 @@
   "core/common/ResourceType.ts | ws": {
     "message": "WS"
   },
+  "core/common/Revealer.ts | animationsPanel": {
+    "message": "Animations panel"
+  },
   "core/common/Revealer.ts | applicationPanel": {
     "message": "Application panel"
   },
@@ -3146,17 +3149,17 @@
   "panels/application/components/FrameDetailsView.ts | childDescription": {
     "message": "This frame has been identified as a child frame of an ad"
   },
-  "panels/application/components/FrameDetailsView.ts | clickToRevealInElementsPanel": {
-    "message": "Click to reveal in Elements panel"
+  "panels/application/components/FrameDetailsView.ts | clickToOpenInElementsPanel": {
+    "message": "Click to open in Elements panel"
   },
-  "panels/application/components/FrameDetailsView.ts | clickToRevealInNetworkPanel": {
-    "message": "Click to reveal in Network panel"
+  "panels/application/components/FrameDetailsView.ts | clickToOpenInNetworkPanel": {
+    "message": "Click to open in Network panel"
   },
-  "panels/application/components/FrameDetailsView.ts | clickToRevealInNetworkPanelMight": {
-    "message": "Click to reveal in Network panel (might require page reload)"
+  "panels/application/components/FrameDetailsView.ts | clickToOpenInNetworkPanelMight": {
+    "message": "Click to open in Network panel (might require page reload)"
   },
-  "panels/application/components/FrameDetailsView.ts | clickToRevealInSourcesPanel": {
-    "message": "Click to reveal in Sources panel"
+  "panels/application/components/FrameDetailsView.ts | clickToOpenInSourcesPanel": {
+    "message": "Click to open in Sources panel"
   },
   "panels/application/components/FrameDetailsView.ts | contentSecurityPolicy": {
     "message": "Content Security Policy (CSP)"
@@ -3665,8 +3668,8 @@
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "Access to opener"
   },
-  "panels/application/OpenedWindowDetailsView.ts | clickToRevealInElementsPanel": {
-    "message": "Click to reveal in Elements panel"
+  "panels/application/OpenedWindowDetailsView.ts | clickToOpenInElementsPanel": {
+    "message": "Click to open in Elements panel"
   },
   "panels/application/OpenedWindowDetailsView.ts | closed": {
     "message": "closed"
@@ -4106,14 +4109,14 @@
   "panels/application/preloading/components/PreloadingString.ts | statusSuccess": {
     "message": "Success"
   },
-  "panels/application/preloading/components/RuleSetGrid.ts | buttonClickToRevealInElementsPanel": {
-    "message": "Click to reveal in Elements panel"
-  },
-  "panels/application/preloading/components/RuleSetGrid.ts | buttonClickToRevealInNetworkPanel": {
-    "message": "Click to reveal in Network panel"
-  },
   "panels/application/preloading/components/RuleSetGrid.ts | buttonRevealPreloadsAssociatedWithRuleSet": {
     "message": "Reveal speculative loads associated with this rule set"
+  },
+  "panels/application/preloading/components/RuleSetGrid.ts | clickToOpenInElementsPanel": {
+    "message": "Click to open in Elements panel"
+  },
+  "panels/application/preloading/components/RuleSetGrid.ts | clickToOpenInNetworkPanel": {
+    "message": "Click to open in Network panel"
   },
   "panels/application/preloading/components/RuleSetGrid.ts | errors": {
     "message": "{errorCount, plural, =1 {# error} other {# errors}}"
@@ -5858,8 +5861,8 @@
   "panels/elements/ElementsPanel.ts | nodeCannotBeFoundInTheCurrent": {
     "message": "Node cannot be found in the current page."
   },
-  "panels/elements/ElementsPanel.ts | revealInElementsPanel": {
-    "message": "Reveal in Elements panel"
+  "panels/elements/ElementsPanel.ts | openInElementsPanel": {
+    "message": "Open in Elements panel"
   },
   "panels/elements/ElementsPanel.ts | showComputedStylesSidebar": {
     "message": "Show Computed Styles sidebar"
@@ -6176,8 +6179,8 @@
   "panels/elements/StylePropertyTreeElement.ts | openColorPickerS": {
     "message": "Open color picker. {PH1}"
   },
-  "panels/elements/StylePropertyTreeElement.ts | revealInSourcesPanel": {
-    "message": "Reveal in Sources panel"
+  "panels/elements/StylePropertyTreeElement.ts | openInSourcesPanel": {
+    "message": "Open in Sources panel"
   },
   "panels/elements/StylePropertyTreeElement.ts | shiftClickToChangeColorFormat": {
     "message": "Shift + Click to change color format."
@@ -6404,11 +6407,11 @@
   "panels/event_listeners/EventListenersView.ts | noEventListeners": {
     "message": "No event listeners"
   },
+  "panels/event_listeners/EventListenersView.ts | openInElementsPanel": {
+    "message": "Open in Elements panel"
+  },
   "panels/event_listeners/EventListenersView.ts | passive": {
     "message": "Passive"
-  },
-  "panels/event_listeners/EventListenersView.ts | revealInElementsPanel": {
-    "message": "Reveal in Elements panel"
   },
   "panels/event_listeners/EventListenersView.ts | togglePassive": {
     "message": "Toggle Passive"
@@ -6568,6 +6571,12 @@
   },
   "panels/freestyler/FreestylerPanel.ts | help": {
     "message": "Help"
+  },
+  "panels/freestyler/FreestylerPanel.ts | history": {
+    "message": "History"
+  },
+  "panels/freestyler/FreestylerPanel.ts | newChat": {
+    "message": "New chat"
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Send feedback"
@@ -7475,8 +7484,8 @@
   "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
     "message": "Could not open linear memory inspector: failed locating buffer."
   },
-  "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | revealInMemoryInspectorPanel": {
-    "message": "Reveal in Memory inspector panel"
+  "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | openInMemoryInspectorPanel": {
+    "message": "Open in Memory inspector panel"
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
     "message": "No open inspections"
@@ -8825,14 +8834,17 @@
   "panels/network/NetworkPanel.ts | networkSettings": {
     "message": "Network settings"
   },
+  "panels/network/NetworkPanel.ts | openInNetworkPanel": {
+    "message": "Open in Network panel"
+  },
+  "panels/network/NetworkPanel.ts | openInNetworkPanelMissingRequest": {
+    "message": "Open in Network panel (missing request)"
+  },
   "panels/network/NetworkPanel.ts | preserveLog": {
     "message": "Preserve log"
   },
   "panels/network/NetworkPanel.ts | recordingFrames": {
     "message": "Recording frames..."
-  },
-  "panels/network/NetworkPanel.ts | revealInNetworkPanel": {
-    "message": "Reveal in Network panel"
   },
   "panels/network/NetworkPanel.ts | search": {
     "message": "Search"
@@ -12911,9 +12923,6 @@
   "panels/timeline/components/LiveMetricsView.ts | fieldData": {
     "message": "Field data"
   },
-  "panels/timeline/components/LiveMetricsView.ts | fieldDataLink": {
-    "message": "field data"
-  },
   "panels/timeline/components/LiveMetricsView.ts | inpInteraction": {
     "message": "The INP interaction is at the 98th percentile of interaction delays."
   },
@@ -12935,6 +12944,9 @@
   "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
     "message": "LCP element"
   },
+  "panels/timeline/components/LiveMetricsView.ts | learnMoreAboutMetrics": {
+    "message": "Local metrics are captured from the current page using your network connection and device. Field data is measured by real users using many different network connections and devices. Click to learn more about local and field metrics."
+  },
   "panels/timeline/components/LiveMetricsView.ts | loadingOption": {
     "message": "{PH1} - Loading…"
   },
@@ -12943,9 +12955,6 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | localMetrics": {
     "message": "Local metrics"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | localMetricsLink": {
-    "message": "local metrics"
   },
   "panels/timeline/components/LiveMetricsView.ts | logToConsole": {
     "message": "Log additional interaction data to the console"
@@ -13018,12 +13027,6 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | tablet": {
     "message": "Tablet"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | theFieldMetricsAre": {
-    "message": "The {PH1} is measured by real users using many different network connections and devices."
-  },
-  "panels/timeline/components/LiveMetricsView.ts | theLocalMetricsAre": {
-    "message": "The {PH1} are captured from the current page using your network connection and device."
   },
   "panels/timeline/components/LiveMetricsView.ts | timeToFirstByte": {
     "message": "Time to first byte"
@@ -15362,8 +15365,8 @@
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | noProperties": {
     "message": "No properties"
   },
-  "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | revealInMemoryInpector": {
-    "message": "Reveal in Memory inspector panel"
+  "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | openInMemoryInpector": {
+    "message": "Open in Memory inspector panel"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | showAllD": {
     "message": "Show all {PH1}"

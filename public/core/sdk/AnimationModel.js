@@ -235,7 +235,6 @@ export class AnimationModel extends SDKModel {
     #pendingAnimations;
     playbackRate;
     #screenshotCapture;
-    #enabled;
     #flushPendingAnimations;
     constructor(target) {
         super(target);
@@ -247,7 +246,7 @@ export class AnimationModel extends SDKModel {
         this.#pendingAnimations = new Set();
         this.playbackRate = 1;
         if (!target.suspended()) {
-            void this.ensureEnabled();
+            void this.agent.invoke_enable();
         }
         const resourceTreeModel = target.model(ResourceTreeModel);
         resourceTreeModel.addEventListener(ResourceTreeModelEvents.PrimaryPageChanged, this.reset, this);
@@ -273,6 +272,19 @@ export class AnimationModel extends SDKModel {
             return evaluateResult?.result.value ?? 1;
         }
         return 1;
+    }
+    async getAnimationGroupForAnimation(name, nodeId) {
+        for (const animationGroup of this.animationGroups.values()) {
+            for (const animation of animationGroup.animations()) {
+                if (animation.name() === name) {
+                    const animationNode = await animation.source().node();
+                    if (animationNode?.id === nodeId) {
+                        return animationGroup;
+                    }
+                }
+            }
+        }
+        return null;
     }
     animationCanceled(id) {
         this.#pendingAnimations.delete(id);
@@ -368,21 +380,10 @@ export class AnimationModel extends SDKModel {
         void this.agent.invoke_releaseAnimations({ animations });
     }
     async suspendModel() {
-        this.reset();
-        await this.agent.invoke_disable();
+        await this.agent.invoke_disable().then(() => this.reset());
     }
     async resumeModel() {
-        if (!this.#enabled) {
-            return;
-        }
         await this.agent.invoke_enable();
-    }
-    async ensureEnabled() {
-        if (this.#enabled) {
-            return;
-        }
-        await this.agent.invoke_enable();
-        this.#enabled = true;
     }
 }
 export var Events;
@@ -920,5 +921,5 @@ export class ScreenshotCapture {
         this.#screenCaptureModel.stopScreencast();
     }
 }
-SDKModel.register(AnimationModel, { capabilities: 2 /* Capability.DOM */, autostart: false });
+SDKModel.register(AnimationModel, { capabilities: 2 /* Capability.DOM */, autostart: true });
 //# sourceMappingURL=AnimationModel.js.map

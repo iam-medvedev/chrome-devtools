@@ -66,6 +66,18 @@ export declare class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper<Fil
     private valueChanged;
     clear(): void;
 }
+interface NamedBitSetFilterUIOptions {
+    items: Item[];
+    setting?: Common.Settings.Setting<{
+        [key: string]: boolean;
+    }>;
+}
+export declare class NamedBitSetFilterUIElement extends HTMLElement {
+    #private;
+    set options(options: NamedBitSetFilterUIOptions);
+    getOrCreateNamedBitSetFilterUI(): NamedBitSetFilterUI;
+    connectedCallback(): void;
+}
 export declare class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {
     private readonly filtersElement;
     private readonly typeFilterElementTypeNames;

@@ -113,9 +113,6 @@ export default {
     & > devtools-button {
       width: var(--sys-size-11);
       justify-content: center;
-    }
-
-    & devtools-button:last-child(devtools-button) {
       margin-right: var(--sys-size-4);
     }
   }
@@ -147,6 +144,10 @@ export default {
     display: inline-flex;
     grid-row: 1/2;
     grid-column: 2/3;
+
+    & > devtools-button:last-child {
+      margin-right: var(--sys-size-4);
+    }
   }
 
   .toolbar-search-buttons {

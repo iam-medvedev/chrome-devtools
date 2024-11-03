@@ -25,6 +25,18 @@ export class AiAgent {
     set chatNewHistoryForTesting(history) {
         this.#history = history;
     }
+    get isEmpty() {
+        return this.#history.size <= 0;
+    }
+    get title() {
+        return [...this.#history.values()]
+            .flat()
+            .filter(response => {
+            return response.type === "user-query" /* ResponseType.USER_QUERY */;
+        })
+            .at(0)
+            ?.query;
+    }
     #structuredLog = [];
     async aidaFetch(input, options) {
         const request = this.buildRequest({
@@ -215,6 +227,7 @@ STOP`;
                     error: "unknown" /* ErrorType.UNKNOWN */,
                     rpcId,
                 };
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
                 this.#addHistory(id, response);
                 yield response;
                 break;
@@ -229,6 +242,7 @@ STOP`;
                         rpcId,
                         suggestions,
                     };
+                    Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceAnswerReceived);
                     this.#addHistory(id, response);
                     yield response;
                 }
@@ -238,6 +252,7 @@ STOP`;
                         error: "unknown" /* ErrorType.UNKNOWN */,
                         rpcId,
                     };
+                    Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
                     this.#addHistory(id, response);
                     yield response;
                 }
@@ -273,6 +288,7 @@ STOP`;
                     type: "error" /* ResponseType.ERROR */,
                     error: "max-steps" /* ErrorType.MAX_STEPS */,
                 };
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
                 this.#addHistory(id, response);
                 yield response;
                 break;

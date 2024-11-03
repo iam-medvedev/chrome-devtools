@@ -57,16 +57,17 @@ const MAX_FILE_SIZE = 10000;
  * instance for a new conversation.
  */
 export class DrJonesFileAgent extends AiAgent {
+    type = "drjones-file" /* AgentType.DRJONES_FILE */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_FILE_AGENT;
     get userTier() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        return config.devToolsAiAssistanceFileAgentDogfood?.userTier;
+        return config.devToolsAiAssistanceFileAgent?.userTier ?? config.devToolsAiAssistanceFileAgentDogfood?.userTier;
     }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsAiAssistanceFileAgentDogfood?.temperature;
-        const modelId = config.devToolsAiAssistanceFileAgentDogfood?.modelId;
+        const temperature = config.devToolsAiAssistanceFileAgent?.temperature ?? config.devToolsAiAssistanceFileAgentDogfood?.temperature;
+        const modelId = config.devToolsAiAssistanceFileAgent?.modelId ?? config.devToolsAiAssistanceFileAgentDogfood?.modelId;
         return {
             temperature,
             modelId,

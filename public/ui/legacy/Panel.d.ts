@@ -3,7 +3,7 @@ import { SplitWidget } from './SplitWidget.js';
 import { VBox } from './Widget.js';
 export declare class Panel extends VBox {
     protected panelName: string;
-    constructor(name: string);
+    constructor(name: string, useShadowDom?: boolean);
     get name(): string;
     searchableView(): SearchableView | null;
     elementsToRestoreScrollPositionsFor(): Element[];

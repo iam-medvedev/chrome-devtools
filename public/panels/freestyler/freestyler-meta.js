@@ -70,13 +70,19 @@ function isFreestylerFeatureAvailable(config) {
     return (config?.aidaAvailability?.enabled && config?.devToolsFreestyler?.enabled) === true;
 }
 function isDrJonesNetworkFeatureAvailable(config) {
-    return (config?.aidaAvailability?.enabled && config?.devToolsExplainThisResourceDogfood?.enabled) === true;
+    return (config?.aidaAvailability?.enabled &&
+        (config?.devToolsExplainThisResourceDogfood?.enabled ||
+            config?.devToolsAiAssistanceNetworkAgent?.enabled)) === true;
 }
 function isDrJonesPerformanceFeatureAvailable(config) {
-    return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistancePerformanceAgentDogfood?.enabled) === true;
+    return (config?.aidaAvailability?.enabled &&
+        (config?.devToolsAiAssistancePerformanceAgentDogfood?.enabled ||
+            config?.devToolsAiAssistancePerformanceAgent?.enabled)) === true;
 }
 function isDrJonesFileFeatureAvailable(config) {
-    return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistanceFileAgentDogfood?.enabled) === true;
+    return (config?.aidaAvailability?.enabled &&
+        (config?.devToolsAiAssistanceFileAgentDogfood?.enabled || config?.devToolsAiAssistanceFileAgent?.enabled)) ===
+        true;
 }
 function isAnyFeatureAvailable(config) {
     return isFreestylerFeatureAvailable(config) || isDrJonesNetworkFeatureAvailable(config) ||

@@ -22,7 +22,7 @@ const component = new Freestyler.FreestylerChatUi({
     selectedElement: {},
     selectedFile: {},
     selectedNetworkRequest: {},
-    selectedStackTrace: {},
+    selectedAiCallTree: {},
     agentType: "freestyler" /* Freestyler.AgentType.FREESTYLER */,
     isLoading: false,
     canShowFeedbackForm: false,

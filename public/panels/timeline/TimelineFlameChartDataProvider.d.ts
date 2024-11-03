@@ -4,8 +4,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { CompatibilityTracksAppender, type DrawOverride, type TrackAppenderName } from './CompatibilityTracksAppender.js';
-import { TimelineSelection } from './TimelineSelection.js';
-export type TimelineFlameChartEntry = Trace.Handlers.ModelHandlers.Frames.TimelineFrame | Trace.Types.Events.Event;
+import { type TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     private droppedFramePatternCanvas;
@@ -35,7 +34,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     entryHasAnnotations(entryIndex: number): boolean;
     deleteAnnotationsForEntry(entryIndex: number): void;
     modifyTree(action: PerfUI.FlameChart.FilterAction, entryIndex: number): void;
-    getAIEventNodeTreeFromEntryIndex(entryIndex: number): Trace.Helpers.TreeHelpers.AINode | null;
     findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
@@ -70,7 +68,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is Trace.Types.Events.Event;
     search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     getEntryTypeForLevel(level: number): EntryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
@@ -93,7 +90,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      * timelineData() has been generated. If it hasn't, this method will return
      * null.
      */
-    indexForEvent(targetEvent: Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    indexForEvent(targetEvent: Trace.Types.Events.Event): number | null;
     /**
      * Build the data for initiators and initiated entries.
      * @param entryIndex

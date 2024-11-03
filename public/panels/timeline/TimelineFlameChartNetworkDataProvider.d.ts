@@ -2,7 +2,7 @@ import type * as TimelineModel from '../../models/timeline_model/timeline_model.
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { type TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     constructor();
@@ -17,7 +17,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     setWindowTimes(startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): void;
     createSelection(index: number): TimelineSelection | null;
     customizedContextMenu(event: MouseEvent, eventIndex: number, _groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    indexForEvent(event: Trace.Types.Events.Event | Trace.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    indexForEvent(event: Trace.Types.Events.Event): number | null;
     eventByIndex(entryIndex: number): Trace.Types.Events.SyntheticNetworkRequest | Trace.Types.Events.WebSocketEvent | null;
     entryHasAnnotations(entryIndex: number): boolean;
     deleteAnnotationsForEntry(entryIndex: number): void;

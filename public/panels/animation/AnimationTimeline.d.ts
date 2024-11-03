@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AnimationGroupPreviewUI } from './AnimationGroupPreviewUI.js';
@@ -12,6 +13,8 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     get uiAnimations(): AnimationUI[];
     get groupBuffer(): SDK.AnimationModel.AnimationGroup[];
     wasShown(): void;
+    willHide(): void;
+    revealAnimationGroup(animationGroup: SDK.AnimationModel.AnimationGroup): Promise<void>;
     modelAdded(animationModel: SDK.AnimationModel.AnimationModel): void;
     modelRemoved(animationModel: SDK.AnimationModel.AnimationModel): void;
     private addEventListeners;
@@ -82,4 +85,7 @@ export declare class StepTimingFunction {
     stepAtPosition: string;
     constructor(steps: number, stepAtPosition: string);
     static parse(text: string): StepTimingFunction | null;
+}
+export declare class AnimationGroupRevealer implements Common.Revealer.Revealer<SDK.AnimationModel.AnimationGroup> {
+    reveal(animationGroup: SDK.AnimationModel.AnimationGroup): Promise<void>;
 }

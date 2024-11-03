@@ -130,4 +130,6 @@ export declare function setupIgnoreListManagerEnvironment(): {
     ignoreListManager: Bindings.IgnoreListManager.IgnoreListManager;
 };
 export declare function microsecondsTraceWindow(min: number, max: number): Trace.Types.Timing.TraceWindowMicroSeconds;
+export declare function microseconds(x: number): Trace.Types.Timing.MicroSeconds;
+export declare function milliseconds(x: number): Trace.Types.Timing.MilliSeconds;
 export {};

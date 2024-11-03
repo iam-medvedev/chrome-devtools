@@ -44,7 +44,6 @@
     "../../../../../../front_end/panels/network/NetworkSearchScope.ts",
     "../../../../../../front_end/panels/network/NetworkTimeCalculator.ts",
     "../../../../../../front_end/panels/network/NetworkWaterfallColumn.ts",
-    "../../../../../../front_end/panels/network/RequestBinaryResponseView.ts",
     "../../../../../../front_end/panels/network/RequestCookiesView.ts",
     "../../../../../../front_end/panels/network/RequestHTMLView.ts",
     "../../../../../../front_end/panels/network/RequestInitiatorView.ts",

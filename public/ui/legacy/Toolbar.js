@@ -766,6 +766,7 @@ export class ToolbarFilter extends ToolbarInput {
         super(filterPlaceholder, filterPlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext || 'filter');
         const filterIcon = IconButton.Icon.create('filter');
         this.element.prepend(filterIcon);
+        this.element.classList.add('toolbar-filter');
     }
 }
 export class ToolbarToggle extends ToolbarButton {

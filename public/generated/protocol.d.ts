@@ -2288,6 +2288,11 @@ export declare namespace CSS {
          * The array keeps the types of ancestor CSSRules from the innermost going outwards.
          */
         ruleTypes?: CSSRuleType[];
+        /**
+         * @starting-style CSS at-rule array.
+         * The array enumerates @starting-style at-rules starting with the innermost one, going outwards.
+         */
+        startingStyles?: CSSStartingStyle[];
     }
     /**
      * Enum indicating the type of a CSS rule, used to represent the order of a style rule's ancestors.
@@ -2299,7 +2304,8 @@ export declare namespace CSS {
         ContainerRule = "ContainerRule",
         LayerRule = "LayerRule",
         ScopeRule = "ScopeRule",
-        StyleRule = "StyleRule"
+        StyleRule = "StyleRule",
+        StartingStyleRule = "StartingStyleRule"
     }
     /**
      * CSS coverage information.
@@ -2542,6 +2548,10 @@ export declare namespace CSS {
          * Optional logical axes queried for the container.
          */
         logicalAxes?: DOM.LogicalAxes;
+        /**
+         * true if the query contains scroll-state() queries.
+         */
+        queriesScrollState?: boolean;
     }
     /**
      * CSS Supports at-rule descriptor.
@@ -2591,6 +2601,20 @@ export declare namespace CSS {
          * Layer name.
          */
         text: string;
+        /**
+         * The associated rule header range in the enclosing stylesheet (if
+         * available).
+         */
+        range?: SourceRange;
+        /**
+         * Identifier of the stylesheet containing this object (if exists).
+         */
+        styleSheetId?: StyleSheetId;
+    }
+    /**
+     * CSS Starting Style at-rule descriptor.
+     */
+    interface CSSStartingStyle {
         /**
          * The associated rule header range in the enclosing stylesheet (if
          * available).
@@ -4437,6 +4461,7 @@ export declare namespace DOM {
         containerName?: string;
         physicalAxes?: PhysicalAxes;
         logicalAxes?: LogicalAxes;
+        queriesScrollState?: boolean;
     }
     interface GetContainerForNodeResponse extends ProtocolResponseWithError {
         /**
@@ -13581,6 +13606,7 @@ export declare namespace Storage {
         destinationLimitPriority: SignedInt64AsBase10;
         aggregatableDebugReportingConfig: AttributionReportingAggregatableDebugReportingConfig;
         scopesData?: AttributionScopesData;
+        maxEventLevelReports: integer;
     }
     const enum AttributionReportingSourceRegistrationResult {
         Success = "success",
@@ -15261,7 +15287,8 @@ export declare namespace WebAudio {
     const enum ContextState {
         Suspended = "suspended",
         Running = "running",
-        Closed = "closed"
+        Closed = "closed",
+        Interrupted = "interrupted"
     }
     /**
      * Enum of AudioNode types

@@ -2024,6 +2024,8 @@
     // found in the LICENSE file.
     const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
     const INTERNAL_KILL_SWITCH = '__chromium_devtools_kill_live_metrics';
+    const SCRIPTS_PER_LOAF_LIMIT = 10;
+    const LOAF_LIMIT = 5;
     function getUniqueLayoutShiftId(entry) {
         return `layout-shift-${entry.value}-${entry.startTime}`;
     }
@@ -2096,6 +2098,25 @@
     window.getNodeForIndex = (index) => {
         return nodeList[index];
     };
+    function limitScripts(loafs) {
+        return loafs.map(loaf => {
+            const longestScripts = [];
+            for (const script of loaf.scripts) {
+                if (longestScripts.length < SCRIPTS_PER_LOAF_LIMIT) {
+                    longestScripts.push(script);
+                    continue;
+                }
+                const shorterIndex = longestScripts.findIndex(s => s.duration < script.duration);
+                if (shorterIndex === -1) {
+                    continue;
+                }
+                longestScripts[shorterIndex] = script;
+            }
+            longestScripts.sort((a, b) => a.startTime - b.startTime);
+            loaf.scripts = longestScripts;
+            return loaf;
+        });
+    }
     function initialize() {
         sendEventToDevTools({ name: 'reset' });
         // We want to treat bfcache navigations like a standard navigations, so emit
@@ -2164,15 +2185,8 @@
                 nextPaintTime: interaction.attribution.nextPaintTime,
                 interactionType: interaction.attribution.interactionType,
                 eventName: interaction.entries[0].name,
-                scripts: interaction.attribution.longAnimationFrameEntries.flatMap(loaf => loaf.scripts)
-                    .map(s => ({
-                    Duration: s.duration,
-                    'Invoker Type': s.invokerType || null,
-                    Invoker: s.invoker || null,
-                    Function: s.sourceFunctionName || null,
-                    Source: s.sourceURL || null,
-                    'Char position': s.sourceCharPosition || null,
-                })),
+                // To limit the amount of events, just get the last 5 LoAFs
+                longAnimationFrameEntries: limitScripts(interaction.attribution.longAnimationFrameEntries.slice(-LOAF_LIMIT).map(loaf => loaf.toJSON())),
             };
             const node = interaction.attribution.interactionTargetElement;
             if (node) {

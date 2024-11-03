@@ -84,7 +84,8 @@ export declare const enum ExperimentName {
     EXTENSION_STORAGE_VIEWER = "extension-storage-viewer",
     FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance",
     TIMELINE_EXPERIMENTAL_INSIGHTS = "timeline-experimental-insights",
-    TIMELINE_DIM_UNRELATED_EVENTS = "timeline-dim-unrelated-events"
+    TIMELINE_DIM_UNRELATED_EVENTS = "timeline-dim-unrelated-events",
+    TIMELINE_ALTERNATIVE_NAVIGATION = "timeline-alternative-navigation"
 }
 export interface AidaAvailability {
     enabled: boolean;
@@ -110,19 +111,19 @@ export interface HostConfigFreestyler {
     userTier: string;
     executionMode?: HostConfigFreestylerExecutionMode;
 }
-export interface HostConfigExplainThisResourceDogfood {
+export interface HostConfigAiAssistanceNetworkAgent {
     modelId: string;
     temperature: number;
     enabled: boolean;
     userTier: string;
 }
-export interface HostConfigAiAssistancePerformanceAgentDogfood {
+export interface HostConfigAiAssistancePerformanceAgent {
     modelId: string;
     temperature: number;
     enabled: boolean;
     userTier: string;
 }
-export interface HostConfigAiAssistanceFileAgentDogfood {
+export interface HostConfigAiAssistanceFileAgent {
     modelId: string;
     temperature: number;
     enabled: boolean;
@@ -139,9 +140,12 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestyler: HostConfigFreestyler;
-    devToolsExplainThisResourceDogfood: HostConfigExplainThisResourceDogfood;
-    devToolsAiAssistancePerformanceAgentDogfood: HostConfigAiAssistancePerformanceAgentDogfood;
-    devToolsAiAssistanceFileAgentDogfood: HostConfigAiAssistanceFileAgentDogfood;
+    devToolsExplainThisResourceDogfood: HostConfigAiAssistanceNetworkAgent;
+    devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
+    devToolsAiAssistancePerformanceAgentDogfood: HostConfigAiAssistancePerformanceAgent;
+    devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
+    devToolsAiAssistanceFileAgentDogfood: HostConfigAiAssistanceFileAgent;
+    devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsPrivacyUI: HostConfigPrivacyUI;
     /**

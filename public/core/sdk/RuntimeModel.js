@@ -461,6 +461,24 @@ export class ExecutionContext {
         };
         return this.evaluateGlobal(evaluationOptions, false, false);
     }
+    async callFunctionOn(options) {
+        const response = await this.runtimeModel.agent.invoke_callFunctionOn({
+            functionDeclaration: options.functionDeclaration,
+            returnByValue: options.returnByValue,
+            userGesture: options.userGesture,
+            awaitPromise: options.awaitPromise,
+            throwOnSideEffect: options.throwOnSideEffect,
+            arguments: options.arguments,
+            // Old back-ends don't know about uniqueContextId (and also don't generate
+            // one), so fall back to contextId in that case (https://crbug.com/1192621).
+            ...(this.uniqueId ? { uniqueContextId: this.uniqueId } : { contextId: this.id }),
+        });
+        const error = response.getError();
+        if (error) {
+            return { error };
+        }
+        return { object: this.runtimeModel.createRemoteObject(response.result), exceptionDetails: response.exceptionDetails };
+    }
     async evaluateGlobal(options, userGesture, awaitPromise) {
         if (!options.expression) {
             // There is no expression, so the completion should happen against global properties.

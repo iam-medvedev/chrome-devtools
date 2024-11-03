@@ -115,7 +115,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     private resizerDragging;
     private setPreferredWidth;
     columnOffset(columnId: string): number;
-    asWidget(): DataGridWidget<T>;
+    asWidget(element?: HTMLElement): DataGridWidget<T>;
     topFillerRowElement(): HTMLElement;
     protected headerHeightInScroller(): number;
     headerHeight(): number;
@@ -247,12 +247,24 @@ export declare class CreationDataGridNode<T> extends DataGridNode<T> {
     makeNormal(): void;
 }
 export declare class DataGridWidget<T> extends UI.Widget.VBox {
-    private readonly dataGrid;
-    constructor(dataGrid: DataGridImpl<T>);
+    readonly dataGrid: DataGridImpl<T>;
+    constructor(dataGrid: DataGridImpl<T>, element?: HTMLElement);
     wasShown(): void;
     willHide(): void;
     onResize(): void;
     elementsToRestoreScrollPositionsFor(): Element[];
+}
+export interface DataGridWidgetOptions<T> {
+    implParams: Parameters;
+    dataGridImpl?: DataGridImpl<T>;
+    markAsRoot?: boolean;
+    nodes: DataGridNode<T>[];
+}
+export declare class DataGridWidgetElement<T> extends UI.Widget.WidgetElement<DataGridWidget<T>> {
+    #private;
+    constructor();
+    set options(options: DataGridWidgetOptions<T>);
+    createWidget(): DataGridWidget<T>;
 }
 export interface Parameters {
     displayName: string;

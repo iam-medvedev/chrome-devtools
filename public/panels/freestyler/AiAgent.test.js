@@ -5,6 +5,7 @@ import { describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import * as Freestyler from './freestyler.js';
 const { AiAgent, ResponseType } = Freestyler;
 class AiAgentMock extends AiAgent {
+    type = "freestyler" /* Freestyler.AgentType.FREESTYLER */;
     preamble = 'preamble';
     // eslint-disable-next-line require-yield
     async *handleContextDetails() {

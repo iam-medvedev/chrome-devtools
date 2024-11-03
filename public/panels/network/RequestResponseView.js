@@ -34,7 +34,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { RequestBinaryResponseView } from './RequestBinaryResponseView.js';
+import { BinaryResourceView } from './BinaryResourceView.js';
 const UIStrings = {
     /**
      *@description Text in Request Response View of the Network panel
@@ -57,15 +57,10 @@ export class RequestResponseView extends UI.Widget.VBox {
         this.request = request;
         this.contentViewPromise = null;
     }
-    static async sourceViewForRequest(request) {
+    static #sourceViewForRequest(request, contentData) {
         let sourceView = requestToSourceView.get(request);
         if (sourceView !== undefined) {
             return sourceView;
-        }
-        const contentData = await request.requestStreamingContent();
-        if (TextUtils.StreamingContentData.isError(contentData)) {
-            requestToSourceView.delete(request);
-            return null;
         }
         let mimeType;
         // If the main document is of type JSON (or any JSON subtype), do not use the more generic canonical MIME type,
@@ -85,7 +80,7 @@ export class RequestResponseView extends UI.Widget.VBox {
             sourceView = SourceFrame.ResourceSourceFrame.ResourceSourceFrame.createSearchableView(request, mimeType);
         }
         else {
-            sourceView = new RequestBinaryResponseView(contentData);
+            sourceView = new BinaryResourceView(contentData, request.url(), request.resourceType());
         }
         requestToSourceView.set(request, sourceView);
         return sourceView;
@@ -109,7 +104,7 @@ export class RequestResponseView extends UI.Widget.VBox {
         if (TextUtils.StreamingContentData.isError(contentData)) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
         }
-        const sourceView = await RequestResponseView.sourceViewForRequest(this.request);
+        const sourceView = RequestResponseView.#sourceViewForRequest(this.request, contentData);
         if (!sourceView || this.request.statusCode === 204) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoResponseData));
         }

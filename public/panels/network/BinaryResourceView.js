@@ -64,10 +64,10 @@ export class BinaryResourceView extends UI.Widget.VBox {
     copiedText;
     addFadeoutSettimeoutId;
     lastView;
-    constructor(base64content, contentUrl, resourceType) {
+    constructor(content, contentUrl, resourceType) {
         super();
         this.binaryResourceViewFactory =
-            new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(base64content, contentUrl, resourceType);
+            new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(content, contentUrl, resourceType);
         this.toolbar = new UI.Toolbar.Toolbar('binary-view-toolbar', this.element);
         this.binaryViewObjects = [
             new BinaryViewObject('base64', i18n.i18n.lockedString('Base64'), i18nString(UIStrings.copiedAsBase), this.binaryResourceViewFactory.createBase64View.bind(this.binaryResourceViewFactory), () => Promise.resolve(this.binaryResourceViewFactory.base64())),

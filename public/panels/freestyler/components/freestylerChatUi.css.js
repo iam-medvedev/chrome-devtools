@@ -37,9 +37,36 @@ styles.replaceSync(
 .input-form {
   display: flex;
   flex-direction: column;
-  padding: var(--sys-size-8) var(--sys-size-5) 0 var(--sys-size-5);
+  padding: var(--sys-size-5) var(--sys-size-5) 0 var(--sys-size-5);
   max-width: var(--sys-size-36);
+  background-color: var(--sys-color-cdt-base-container);
   width: 100%;
+  position: sticky;
+  z-index: 9999;
+  bottom: 0;
+  /*
+  The \\'box-shadow\\' is a workaround to hide the content appearing between the \\'.input-form\\'
+  and the footer in some resolutions even though the \\'.input-form\\' has \\'bottom: 0\\'.
+  */
+  box-shadow: 0 1px var(--sys-color-cdt-base-container);
+
+  /* Prevents the input form from jumping when the scrollbar is shown */
+  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
+  /* stylelint-disable-next-line at-rule-no-unknown */
+  @container (width > 688px) {
+    --half-scrollbar-width: calc((100cqw - 100%) / 2); /* stylelint-disable-line unit-no-unknown */
+
+    margin-left: var(--half-scrollbar-width);
+    margin-right: calc(-1 * var(--half-scrollbar-width));
+  }
+
+  /* when there isn't enough space to view the messages,
+  do not overlay the input form on top of the messages */
+  /* height < var(--sys-size-27) */
+  /* stylelint-disable-next-line at-rule-no-unknown */
+  @container (height < 224px) {
+    position: static;
+  }
 }
 
 .chat-input-container {
@@ -109,17 +136,20 @@ styles.replaceSync(
   }
 }
 
-.messages-scroll-container {
-  overflow: auto;
-  flex-grow: 1;
-  scrollbar-gutter: stable both-edges;
-  scrollbar-width: thin;
-  width: 100%;
-}
-
 .messages-container {
-  margin: 0 auto;
+  flex-grow: 1;
+  width: 100%;
   max-width: var(--sys-size-36);
+
+  /* Prevents the container from jumping when the scrollbar is shown */
+  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
+  /* stylelint-disable-next-line at-rule-no-unknown */
+  @container (width > 688px) {
+    --half-scrollbar-width: calc((100cqw - 100%) / 2); /* stylelint-disable-line unit-no-unknown */
+
+    margin-left: var(--half-scrollbar-width);
+    margin-right: calc(-1 * var(--half-scrollbar-width));
+  }
 }
 
 .chat-message {
@@ -165,66 +195,6 @@ styles.replaceSync(
     align-items: flex-end;
   }
 
-  /*
-    Scroll driven animation below is used for generating shadows
-    when the \\'.suggestions\\' area is scrollable.
-  */
-  .suggestions {
-    display: flex;
-    overflow-y: hidden;
-    overflow-x: auto;
-    scrollbar-width: none;
-    gap: var(--sys-size-3);
-    scroll-timeline: --scroll-timeline x; /* stylelint-disable-line property-no-unknown */
-    animation: detect-scroll;
-    animation-timeline: --scroll-timeline; /* stylelint-disable-line property-no-unknown */
-    animation-fill-mode: none;
-    position: relative;
-  }
-
-  .suggestions::before,
-  .suggestions::after {
-    content: "";
-    display: block;
-    position: sticky;
-    min-width: var(--sys-size-3);
-    height: var(--sys-size-11);
-    left: 0;
-    right: 0;
-    z-index: 999;
-    animation-name: reveal;
-    animation-timeline: --scroll-timeline; /* stylelint-disable-line property-no-unknown */
-    animation-fill-mode: both;
-  }
-
-  .suggestions::before {
-    top: 0;
-    visibility: var(--visibility-if-can-scroll, hidden);
-    animation-range: var(--sys-size-6) var(--sys-size-11); /* stylelint-disable-line property-no-unknown */
-    background:
-      radial-gradient(
-        farthest-side at 0 50%,
-        var(--app-color-scroll-area-shadow-start),
-        transparent
-      );
-  }
-
-  .suggestions::after {
-    bottom: 0;
-    visibility: var(--visibility-if-can-scroll, hidden);
-    animation-direction: reverse;
-    /* stylelint-disable-next-line property-no-unknown */
-    animation-range:
-      calc(100% - var(--sys-size-11))
-      calc(100% - var(--sys-size-6));
-    background:
-      radial-gradient(
-        farthest-side at 100% 50%,
-        var(--app-color-scroll-area-shadow-start),
-        transparent
-      );
-  }
-
   .aborted {
     color: var(--sys-color-on-surface-subtle);
   }
@@ -236,12 +206,9 @@ styles.replaceSync(
   align-items: center;
   width: 100%;
 
-  .resource-link {
-    cursor: pointer;
-  }
-
   .resource-link,
   .resource-task {
+    cursor: pointer;
     padding: var(--sys-size-2) var(--sys-size-4);
     font: var(--sys-typescale-body4-size);
     border: var(--sys-size-1) solid var(--sys-color-divider);
@@ -506,20 +473,40 @@ button.link {
 }
 
 main {
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
-  overflow-y: auto;
+  container-type: size; /* stylelint-disable-line property-no-unknown */
+  scrollbar-width: thin;
+  /*
+  Even though \\'transform: translateZ(1px)\\' doesn't have a visual effect,
+  it puts \\'main\\' element into another rendering layer which somehow
+  fixes the \\'.input-form\\' jumping on scroll issue.
+  */
+  transform: translateZ(1px);
 }
 
 .empty-state-container {
+  flex-grow: 1;
   display: grid;
   align-items: center;
   justify-content: center;
   font: var(--sys-typescale-headline4);
   gap: var(--sys-size-11);
   padding: var(--sys-size-3);
+
+  /* Prevents the container from jumping when the scrollbar is shown */
+  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
+  /* stylelint-disable-next-line at-rule-no-unknown */
+  @container (width > 688px) {
+    --half-scrollbar-width: calc((100cqw - 100%) / 2); /* stylelint-disable-line unit-no-unknown */
+
+    margin-left: var(--half-scrollbar-width);
+    margin-right: calc(-1 * var(--half-scrollbar-width));
+  }
 
   .header {
     display: flex;
@@ -604,23 +591,6 @@ main {
 .side-effect-buttons-container {
   display: flex;
   gap: var(--sys-size-4);
-}
-
-@keyframes reveal {
-  0% {
-    opacity: 0%;
-  }
-
-  100% {
-    opacity: 100%;
-  }
-}
-
-@keyframes detect-scroll {
-  from,
-  to {
-    --visibility-if-can-scroll: visible;
-  }
 }
 
 /*# sourceURL=./components/freestylerChatUi.css */

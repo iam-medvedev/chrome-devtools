@@ -109,6 +109,7 @@ export declare class ExecutionContext {
     static comparator(a: ExecutionContext, b: ExecutionContext): number;
     evaluate(options: EvaluationOptions, userGesture: boolean, awaitPromise: boolean): Promise<EvaluationResult>;
     globalObject(objectGroup: string, generatePreview: boolean): Promise<EvaluationResult>;
+    callFunctionOn(options: CallFunctionOptions): Promise<EvaluationResult>;
     private evaluateGlobal;
     globalLexicalScopeNames(): Promise<string[] | null>;
     label(): string | null;
@@ -138,6 +139,16 @@ export interface EvaluationOptions {
     replMode?: boolean;
     allowUnsafeEvalBlockedByCSP?: boolean;
     contextId?: number;
+}
+export interface CallFunctionOptions {
+    functionDeclaration: string;
+    includeCommandLineAPI?: boolean;
+    returnByValue?: boolean;
+    throwOnSideEffect?: boolean;
+    allowUnsafeEvalBlockedByCSP?: boolean;
+    arguments: Array<Protocol.Runtime.CallArgument>;
+    userGesture: boolean;
+    awaitPromise: boolean;
 }
 export type QueryObjectResult = {
     objects: RemoteObject;

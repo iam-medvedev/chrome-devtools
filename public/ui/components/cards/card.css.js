@@ -18,13 +18,26 @@ styles.replaceSync(
 .card {
   min-width: var(--sys-size-31);
   max-width: var(--sys-size-37);
-  margin: var(--sys-size-3);
+  margin: var(--sys-size-3) var(--sys-size-5) var(--sys-size-5) var(--sys-size-5);
+}
+
+.heading-wrapper {
+  display: flex;
+  white-space: nowrap;
+  margin-bottom: var(--sys-size-5);
 }
 
 .heading {
   color: var(--sys-color-on-surface);
   font: var(--sys-typescale-body2-medium);
-  margin-bottom: var(--sys-size-5);
+}
+
+.heading-icon {
+  margin-right: var(--sys-size-3);
+}
+
+slot[name="heading-suffix"]::slotted(*) {
+  margin-left: auto;
 }
 
 .content-container {
@@ -35,12 +48,12 @@ styles.replaceSync(
   background: var(--app-color-card-background);
 }
 
-::slotted(*) {
-  padding: var(--sys-size-5);
+slot[name="content"]::slotted(*) {
+  padding: var(--sys-size-5) var(--sys-size-6);
 }
 
-::slotted(*:not(:first-child)) {
-  border-top: 1px solid var(--sys-color-divider);
+slot[name="content"]::slotted(*:not(:first-child)) {
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 /*# sourceURL=card.css */

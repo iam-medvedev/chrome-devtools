@@ -340,7 +340,7 @@ panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
 panels/freestyler/components/FreestylerChatUi.test.js
-panels/freestyler/components/ProvideFeedback.test.js
+panels/freestyler/components/UserActionRow.test.js
 panels/issues/IssueAggregator.test.js
 panels/issues/IssueView.test.js
 panels/layer_viewer/layer_viewer.test.js
@@ -368,7 +368,6 @@ panels/network/NetworkLogView.test.js
 panels/network/NetworkOverview.test.js
 panels/network/NetworkPanel.test.js
 panels/network/NetworkSearchScope.test.js
-panels/network/RequestBinaryResponseView.test.js
 panels/network/RequestCookiesView.test.js
 panels/network/RequestHTMLView.test.js
 panels/network/RequestPayloadView.test.js
@@ -481,6 +480,7 @@ panels/timeline/track_appenders/NetworkTrackAppender.test.js
 panels/timeline/track_appenders/ServerTimingsTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
+panels/timeline/utils/AICallTree.test.js
 panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
@@ -541,6 +541,7 @@ ui/legacy/ActionRegistration.test.js
 ui/legacy/Context.test.js
 ui/legacy/ContextMenu.test.js
 ui/legacy/DockController.test.js
+ui/legacy/FilterBar.test.js
 ui/legacy/Fragment.test.js
 ui/legacy/Geometry.test.js
 ui/legacy/Infobar.test.js
@@ -559,6 +560,7 @@ ui/legacy/Widget.test.js
 ui/legacy/XLink.test.js
 ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
+ui/legacy/components/data_grid/DataGrid.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js
 ui/legacy/components/inline_editor/BezierUI.test.js
@@ -583,6 +585,7 @@ ui/legacy/components/quick_open/FilteredListWidget.test.js
 ui/legacy/components/source_frame/BinaryResourceViewFactory.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
 ui/legacy/components/source_frame/SourceFrame.test.js
+ui/legacy/components/source_frame/StreamingContentHexView.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js
 ui/legacy/components/utils/Linkifier.test.js
 ui/legacy/theme_support/ThemeSupport.test.js

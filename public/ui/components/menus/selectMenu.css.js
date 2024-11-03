@@ -13,15 +13,18 @@ styles.replaceSync(
 
 :host {
   border: 1px solid var(--sys-color-neutral-outline);
-  border-radius: 3px;
+  border-radius: var(--sys-shape-corner-extra-small);
   width: fit-content;
   display: flex;
   align-items: center;
-  background-color: var(--override-select-menu-background-color, var(--sys-color-cdt-base-container));
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 :host([has-open-dialog]) {
-  background-color: var(--override-select-menu-active-background-color, var(--sys-color-neutral-container));
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+  background:
+    linear-gradient(var(--sys-color-state-hover-on-subtle), var(--sys-color-state-hover-on-subtle)),
+    linear-gradient(var(--sys-color-state-ripple-neutral-on-subtle), var(--sys-color-state-ripple-neutral-on-subtle));
 }
 
 button {
@@ -29,7 +32,7 @@ button {
 }
 
 #side-button {
-  border: 1px solid var(--override-select-menu-border, var(--sys-color-neutral-outline));
+  border: 1px solid var(--sys-color-neutral-outline);
   border-radius: 3px 0 0 3px;
   border-right: none;
   height: 100%;
@@ -38,7 +41,7 @@ button {
 }
 
 button:disabled {
-  cursor: not-allowed;
+  pointer-events: none;
 }
 
 @keyframes slideIn {

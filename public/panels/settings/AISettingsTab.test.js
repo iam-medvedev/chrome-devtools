@@ -18,7 +18,7 @@ describeWithEnvironment('AISettingsTab', () => {
     });
     function mockHostConfigWithExplainThisResourceEnabled() {
         getGetHostConfigStub({
-            devToolsExplainThisResourceDogfood: {
+            devToolsAiAssistanceNetworkAgent: {
                 enabled: true,
                 modelId: 'test',
             },
@@ -42,7 +42,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(dropdownButtons.length, 2);
         const toggleContainers = Array.from(view.shadowRoot.querySelectorAll('.toggle-container'));
         assert.strictEqual(toggleContainers.length, 2);
-        return { switches, details, dropdownButtons, toggleContainers };
+        return { switches, details, dropdownButtons, toggleContainers, view };
     }
     it('renders', async () => {
         Common.Settings.moduleSetting('console-insights-enabled').set(true);
@@ -113,7 +113,8 @@ describeWithEnvironment('AISettingsTab', () => {
                 enabled: true,
             },
         });
-        const { switches, toggleContainers } = await renderAISettings();
+        const { switches, toggleContainers, view } = await renderAISettings();
+        assert.strictEqual(view.shadowRoot?.querySelector('.disabled-explainer')?.textContent?.trim(), underAgeExplainer);
         assert.isTrue(switches[0].disabled);
         assert.strictEqual(toggleContainers[0].title, underAgeExplainer);
         assert.isTrue(switches[1].disabled);
@@ -125,7 +126,8 @@ describeWithEnvironment('AISettingsTab', () => {
         const notLoggedInExplainer = 'This feature is only available when you sign into Chrome with your Google account.';
         const aidaAccessStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
         aidaAccessStub.returns(Promise.resolve("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */));
-        const { switches, toggleContainers } = await renderAISettings();
+        const { switches, toggleContainers, view } = await renderAISettings();
+        assert.strictEqual(view.shadowRoot?.querySelector('.disabled-explainer')?.textContent?.trim(), notLoggedInExplainer);
         assert.isTrue(switches[0].disabled);
         assert.strictEqual(toggleContainers[0].title, notLoggedInExplainer);
         assert.isTrue(switches[1].disabled);
@@ -133,6 +135,7 @@ describeWithEnvironment('AISettingsTab', () => {
         aidaAccessStub.returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
         Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
         await drainMicroTasks();
+        assert.isNull(view.shadowRoot?.querySelector('.disabled-explainer'));
         assert.isFalse(switches[0].disabled);
         assert.isFalse(switches[1].disabled);
         aidaAccessStub.restore();
@@ -143,7 +146,7 @@ describeWithEnvironment('AISettingsTab', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: false,
             disabledCondition: () => {
-                return { disabled: true, reason: 'reason 1' };
+                return { disabled: true, reason: 'some reason' };
             },
         });
         Common.Settings.moduleSetting('ai-assistance-enabled').setRegistration({
@@ -151,16 +154,17 @@ describeWithEnvironment('AISettingsTab', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: true,
             disabledCondition: () => {
-                return { disabled: true, reason: 'reason 2' };
+                return { disabled: true, reason: 'some reason' };
             },
         });
         const stub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
         stub.returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
-        const { switches, toggleContainers } = await renderAISettings();
+        const { switches, toggleContainers, view } = await renderAISettings();
+        assert.strictEqual(view.shadowRoot?.querySelector('.disabled-explainer')?.textContent?.trim(), 'some reason');
         assert.isTrue(switches[0].disabled);
-        assert.strictEqual(toggleContainers[0].title, 'reason 1');
+        assert.strictEqual(toggleContainers[0].title, 'some reason');
         assert.isTrue(switches[1].disabled);
-        assert.strictEqual(toggleContainers[1].title, 'reason 2');
+        assert.strictEqual(toggleContainers[1].title, 'some reason');
         stub.restore();
     });
 });

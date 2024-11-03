@@ -24,7 +24,7 @@ import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import timelineFlameChartViewStyles from './timelineFlameChartView.css.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { rangeForSelection, selectionFromEvent, selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
 const UIStrings = {
     /**
@@ -501,7 +501,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
                         let startTime = visibleWindow.min;
                         // Prefer the start time of the selected event, if there is one.
                         if (this.#currentSelection) {
-                            startTime = Trace.Helpers.Timing.millisecondsToMicroseconds(this.#currentSelection.startTime);
+                            startTime = rangeForSelection(this.#currentSelection).min;
                         }
                         this.#createNewTimeRangeFromKeyboard(startTime, Trace.Types.Timing.MicroSeconds(startTime + timeRangeIncrementValue));
                         return true;
@@ -659,7 +659,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
      * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
      */
     updateRangeSelection(startTime, endTime) {
-        this.delegate.select(TimelineSelection.fromRange(startTime, endTime));
+        this.delegate.select(selectionFromRangeMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime)));
         if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
             const bounds = Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime));
             // If the current time range annotation exists, the range selection
@@ -819,7 +819,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (!event || !this.#parsedTrace) {
             return;
         }
-        if (event instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame) {
+        if (Trace.Types.Events.isLegacyTimelineFrame(event)) {
             return;
         }
         const target = targetForEvent(this.#parsedTrace, event);
@@ -832,7 +832,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
     }
     highlightEvent(event) {
-        const entryIndex = event ? this.mainDataProvider.entryIndexForSelection(TimelineSelection.fromTraceEvent(event)) : -1;
+        const entryIndex = event ? this.mainDataProvider.entryIndexForSelection(selectionFromEvent(event)) : -1;
         if (entryIndex >= 0) {
             this.mainFlameChart.highlightEntry(entryIndex);
         }
@@ -895,8 +895,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         // AND 2. we have an active time range selection overlay
         // AND 3. The label of the selection is empty
         // then we need to remove it.
-        if ((selection === null || !TimelineSelection.isRangeSelection(selection.object)) &&
-            this.#timeRangeSelectionAnnotation && !this.#timeRangeSelectionAnnotation.label) {
+        if ((selection === null || !selectionIsRange(selection)) && this.#timeRangeSelectionAnnotation &&
+            !this.#timeRangeSelectionAnnotation.label) {
             ModificationsManager.activeManager()?.removeAnnotation(this.#timeRangeSelectionAnnotation);
             this.#timeRangeSelectionAnnotation = null;
         }
@@ -908,14 +908,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             // TODO(crbug.com/1459265):  Change to await after migration work.
             void this.detailsView.setSelection(selection);
         }
-        // Create the entry selected overlay if the selection represents a frame or trace event (either network, or anything else)
-        if (selection &&
-            (TimelineSelection.isTraceEventSelection(selection.object) ||
-                TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
-                TimelineSelection.isLegacyTimelineFrame(selection.object))) {
+        // Create the entry selected overlay if the selection represents a trace event
+        if (selectionIsEvent(selection)) {
             this.addOverlay({
                 type: 'ENTRY_SELECTED',
-                entry: selection.object,
+                entry: selection.event,
             });
         }
         if (this.#linkSelectionAnnotation &&
@@ -959,14 +956,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     onAddEntryLabelAnnotation(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data.entryIndex);
-        if (selection &&
-            (TimelineSelection.isTraceEventSelection(selection.object) ||
-                TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
-                TimelineSelection.isLegacyTimelineFrame(selection.object))) {
+        if (selectionIsEvent(selection)) {
             this.setSelectionAndReveal(selection);
             ModificationsManager.activeManager()?.createAnnotation({
                 type: 'ENTRY_LABEL',
-                entry: selection.object,
+                entry: selection.event,
                 label: '',
             });
             if (event.data.withLinkCreationButton) {
@@ -990,17 +984,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     #selectionIfTraceEvent(index, dataProvider) {
         const selection = dataProvider.createSelection(index);
-        if (!selection) {
-            return null;
-        }
-        if (TimelineSelection.isTraceEventSelection(selection.object) ||
-            TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object)) {
-            return selection.object;
-        }
-        if (TimelineSelection.isLegacyTimelineFrame(selection.object)) {
-            return selection.object;
-        }
-        return null;
+        return selectionIsEvent(selection) ? selection.event : null;
     }
     /**
      * Called when the user either:
@@ -1143,11 +1127,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         const oldSelectedSearchResult = this.selectedSearchResult;
         delete this.selectedSearchResult;
         this.searchResults = [];
-        this.mainFlameChart.removeSearchResultHighlights();
-        this.networkFlameChart.removeSearchResultHighlights();
         if (!this.searchRegex) {
             return;
         }
+        this.mainFlameChart.removeSearchResultHighlights();
+        this.networkFlameChart.removeSearchResultHighlights();
         const regExpFilter = new TimelineRegExp(this.searchRegex);
         const visibleWindow = traceBoundsState.micro.timelineTraceWindow;
         /**

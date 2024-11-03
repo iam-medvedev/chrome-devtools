@@ -30,13 +30,20 @@ export class HideIssuesMenu extends HTMLElement {
     }
     onMenuOpen(event) {
         event.stopPropagation();
-        const buttonElement = this.#shadow.querySelector('button');
+        const buttonElement = this.#shadow.querySelector('devtools-button');
         const contextMenu = new UI.ContextMenu.ContextMenu(event, {
             x: buttonElement?.getBoundingClientRect().left,
             y: buttonElement?.getBoundingClientRect().bottom,
         });
         contextMenu.headerSection().appendItem(this.#menuItemLabel, () => this.#menuItemAction(), { jslogContext: 'toggle-similar-issues' });
         void contextMenu.show();
+    }
+    onKeydown(event) {
+        if (event.key === 'Enter' || event.key === 'Space') {
+            // Make sure we don't propagate 'Enter' or 'Space' key events to parents,
+            // so that these get turned into 'click' events properly.
+            event.stopImmediatePropagation();
+        }
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
@@ -46,7 +53,8 @@ export class HideIssuesMenu extends HTMLElement {
       .data=${{ variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: 'dots-vertical', title: i18nString(UIStrings.tooltipTitle) }}
       .jslogContext=${'hide-issues'}
       class="hide-issues-menu-btn"
-      @click=${this.onMenuOpen.bind(this)}></devtools-button>
+      @click=${this.onMenuOpen}
+      @keydown=${this.onKeydown}></devtools-button>
     `, this.#shadow, { host: this });
     }
 }

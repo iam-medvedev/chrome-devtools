@@ -19,6 +19,7 @@ describeWithMockConnection('DebuggerModel', () => {
             setMockConnectionResponseHandler('DOM.disable', () => ({}));
             setMockConnectionResponseHandler('CSS.disable', () => ({}));
             setMockConnectionResponseHandler('Overlay.disable', () => ({}));
+            setMockConnectionResponseHandler('Animation.disable', () => ({}));
             setMockConnectionResponseHandler('Overlay.setShowGridOverlays', () => ({}));
             setMockConnectionResponseHandler('Overlay.setShowFlexOverlays', () => ({}));
             setMockConnectionResponseHandler('Overlay.setShowScrollSnapOverlays', () => ({}));
@@ -32,6 +33,7 @@ describeWithMockConnection('DebuggerModel', () => {
             setMockConnectionResponseHandler('DOM.enable', () => ({}));
             setMockConnectionResponseHandler('Overlay.enable', () => ({}));
             setMockConnectionResponseHandler('CSS.enable', () => ({}));
+            setMockConnectionResponseHandler('Animation.enable', () => ({}));
         });
         it('deactivates breakpoints on construction with inactive breakpoints', async () => {
             let breakpointsDeactivated = false;

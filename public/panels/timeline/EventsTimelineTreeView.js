@@ -8,7 +8,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { Category, IsLong } from './TimelineFilters.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { selectionIsEvent } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import * as Utils from './utils/utils.js';
@@ -52,8 +52,8 @@ export class EventsTimelineTreeView extends TimelineTreeView {
     }
     updateContents(selection) {
         super.updateContents(selection);
-        if (TimelineSelection.isTraceEventSelection(selection.object)) {
-            this.selectEvent(selection.object, true);
+        if (selectionIsEvent(selection)) {
+            this.selectEvent(selection.event, true);
         }
     }
     buildTree() {

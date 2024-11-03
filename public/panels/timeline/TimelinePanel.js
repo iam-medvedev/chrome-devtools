@@ -65,7 +65,7 @@ import { TimelineLandingPage } from './TimelineLandingPage.js';
 import { TimelineLoader } from './TimelineLoader.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import timelinePanelStyles from './timelinePanel.css.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { rangeForSelection, selectionFromEvent, selectionIsRange, } from './TimelineSelection.js';
 import timelineStatusDialogStyles from './timelineStatusDialog.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import { UIDevtoolsController } from './UIDevtoolsController.js';
@@ -511,11 +511,11 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
         });
         this.flameChart.element.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
-            const fromTraceEvent = TimelineSelection.fromTraceEvent(event.event);
+            const fromTraceEvent = selectionFromEvent(event.event);
             this.flameChart.setSelectionAndReveal(fromTraceEvent);
         });
         this.#sideBar.contentElement.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
-            this.select(TimelineSelection.fromTraceEvent(event.event));
+            this.select(selectionFromEvent(event.event));
         });
         this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
             const { removedAnnotation } = event;
@@ -1910,30 +1910,24 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
             return null;
         }
-        if (TimelineSelection.isLegacyTimelineFrame(selection.object) &&
-            selection.object instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame) {
-            return selection.object;
-        }
-        if (TimelineSelection.isRangeSelection(selection.object) ||
-            TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object)) {
+        if (selectionIsRange(selection)) {
             return null;
         }
-        if (TimelineSelection.isTraceEventSelection(selection.object)) {
-            const parsedTrace = this.#traceEngineModel.parsedTrace(this.#viewMode.traceIndex);
-            if (!parsedTrace) {
-                return null;
-            }
-            // If the user has selected a time range, the frame we want is the last
-            // frame in that time window, hence why the window we look for is the
-            // endTime to the endTime.
-            const endTimeMicro = Trace.Helpers.Timing.millisecondsToMicroseconds(selection.endTime);
-            const lastFrameInSelection = Trace.Handlers.ModelHandlers.Frames
-                .framesWithinWindow(parsedTrace.Frames.frames, endTimeMicro, endTimeMicro)
-                .at(0);
-            return lastFrameInSelection || null;
+        if (Trace.Types.Events.isSyntheticNetworkRequest(selection.event)) {
+            return null;
         }
-        console.assert(false, 'Should never be reached');
-        return null;
+        // If the user has selected a random trace event, the frame we want is the last
+        // frame in that time window, hence why the window we look for is the
+        // endTime to the endTime.
+        const parsedTrace = this.#traceEngineModel.parsedTrace(this.#viewMode.traceIndex);
+        if (!parsedTrace) {
+            return null;
+        }
+        const endTime = rangeForSelection(selection).max;
+        const lastFrameInSelection = Trace.Handlers.ModelHandlers.Frames
+            .framesWithinWindow(parsedTrace.Frames.frames, endTime, endTime)
+            .at(0);
+        return lastFrameInSelection || null;
     }
     jumpToFrame(offset) {
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
@@ -1952,7 +1946,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         index = Platform.NumberUtilities.clamp(index + offset, 0, parsedTrace.Frames.frames.length - 1);
         const frame = parsedTrace.Frames.frames[index];
         this.#revealTimeRange(Trace.Helpers.Timing.microSecondsToMilliseconds(frame.startTime), Trace.Helpers.Timing.microSecondsToMilliseconds(frame.endTime));
-        this.select(TimelineSelection.fromFrame(frame));
+        this.select(selectionFromEvent(frame));
         return true;
     }
     #announceSelectionToAria(oldSelection, newSelection) {
@@ -1962,18 +1956,18 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (newSelection === null) {
             return;
         }
-        if (TimelineSelection.isRangeSelection(newSelection.object)) {
+        if (selectionIsRange(newSelection)) {
             // We don't announce here; within the annotations code we announce when
             // the user creates a new time range selection. So if we also announce
             // here we will duplicate and overwhelm rather than be useful.
             return;
         }
-        if (TimelineSelection.isLegacyTimelineFrame(newSelection.object)) {
+        // Announce the type of event that was selected (special casing frames.)
+        if (Trace.Types.Events.isLegacyTimelineFrame(newSelection.event)) {
             UI.ARIAUtils.alert(i18nString(UIStrings.frameSelected));
             return;
         }
-        // At this point we know the object is a trace event
-        const name = Utils.EntryName.nameForEntry(newSelection.object);
+        const name = Utils.EntryName.nameForEntry(newSelection.event);
         UI.ARIAUtils.alert(i18nString(UIStrings.eventSelected, { PH1: name }));
     }
     select(selection) {
@@ -1997,7 +1991,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 break;
             }
             if (ActiveFilters.instance().isVisible(event) && endTime >= time) {
-                this.select(TimelineSelection.fromTraceEvent(event));
+                this.select(selectionFromEvent(event));
                 return;
             }
         }
@@ -2195,6 +2189,12 @@ export class TraceRevealer {
     async reveal(trace) {
         await UI.ViewManager.ViewManager.instance().showView('timeline');
         TimelinePanel.instance().loadFromEvents(trace.traceEvents);
+    }
+}
+export class EventRevealer {
+    async reveal(rEvent) {
+        await UI.ViewManager.ViewManager.instance().showView('timeline');
+        TimelinePanel.instance().select(selectionFromEvent(rEvent.event));
     }
 }
 export class ActionDelegate {

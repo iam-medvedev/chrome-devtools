@@ -98,7 +98,7 @@ const UIStrings = {
     /**
      * @description A context menu item to reveal a node in the DOM tree of the Elements Panel
      */
-    revealInElementsPanel: 'Reveal in Elements panel',
+    openInElementsPanel: 'Open in Elements panel',
     /**
      * @description Warning/error text displayed when a node cannot be found in the current page.
      */
@@ -1079,7 +1079,7 @@ export class ContextMenuProvider {
         if (ElementsPanel.instance().element.isAncestor(event.target)) {
             return;
         }
-        contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'elements.reveal-node' });
+        contextMenu.revealSection().appendItem(i18nString(UIStrings.openInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'elements.reveal-node' });
     }
 }
 export class DOMNodeRevealer {

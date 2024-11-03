@@ -113,6 +113,7 @@ const REGISTERED_EXPERIMENTS = [
     "extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */,
     "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
     "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
+    "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -412,17 +413,35 @@ export function getGetHostConfigStub(config) {
             enabled: false,
             ...config.devToolsExplainThisResourceDogfood,
         },
+        devToolsAiAssistanceNetworkAgent: {
+            modelId: '',
+            temperature: -1,
+            enabled: false,
+            ...config.devToolsAiAssistanceNetworkAgent,
+        },
         devToolsAiAssistanceFileAgentDogfood: {
             modelId: '',
             temperature: -1,
             enabled: false,
             ...config.devToolsAiAssistanceFileAgentDogfood,
         },
+        devToolsAiAssistanceFileAgent: {
+            modelId: '',
+            temperature: -1,
+            enabled: false,
+            ...config.devToolsAiAssistanceFileAgent,
+        },
         devToolsAiAssistancePerformanceAgentDogfood: {
             modelId: '',
             temperature: -1,
             enabled: false,
             ...config.devToolsAiAssistancePerformanceAgentDogfood,
+        },
+        devToolsAiAssistancePerformanceAgent: {
+            modelId: '',
+            temperature: -1,
+            enabled: false,
+            ...config.devToolsAiAssistancePerformanceAgent,
         },
         devToolsVeLogging: {
             enabled: true,

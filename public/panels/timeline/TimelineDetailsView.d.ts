@@ -2,7 +2,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { type TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineDetailsView extends UI.Widget.VBox {
     #private;
     private readonly detailsLinkifier;

@@ -1023,7 +1023,7 @@ export class HeapSnapshot {
             // for class keys.
             aggregates = Object.create(null);
             for (const [classKey, aggregate] of aggregatesMap.entries()) {
-                const newKey = typeof classKey === 'number' ? (',' + this.strings[classKey]) : classKey;
+                const newKey = this.classKeyFromClassKeyInternal(classKey);
                 aggregates[newKey] = aggregate;
             }
             if (key) {
@@ -2098,10 +2098,16 @@ export class HeapSnapshot {
         }
         return null;
     }
-    nodeClassName(snapshotObjectId) {
+    // Converts an internal class key, suitable for categorizing within this
+    // snapshot, to a public class key, which can be used in comparisons
+    // between multiple snapshots.
+    classKeyFromClassKeyInternal(key) {
+        return typeof key === 'number' ? (',' + this.strings[key]) : key;
+    }
+    nodeClassKey(snapshotObjectId) {
         const node = this.nodeForSnapshotObjectId(snapshotObjectId);
         if (node) {
-            return node.className();
+            return this.classKeyFromClassKeyInternal(node.classKeyInternal());
         }
         return null;
     }

@@ -42,7 +42,7 @@ import { ModificationsManager } from './ModificationsManager.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
@@ -120,6 +120,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     // all - will not appear in this array and it will change per-render. For
     // example, if a user collapses an icicle in the flamechart, those entries
     // that are now hidden will no longer be in this array.
+    // This also includes entrys that used to be special cased (e.g.
+    // TimelineFrames) that are now of type Types.Events.Event and so the old
+    // `TimelineFlameChartEntry` type has been removed in faovur of using
+    // Trace.Types.Events.Event directly. See crrev.com/c/5973695 for details.
     entryData = [];
     entryTypeByLevel;
     entryIndexToTitle;
@@ -191,10 +195,21 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         // TODO(crbug.com/368240754): Temporarily use soft menu for the shortcuts to show, till the accelerators backend CLs land.
         const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
-        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.performance-panel-context')) {
-            const aiNode = this.getAIEventNodeTreeFromEntryIndex(entryIndex);
-            UI.Context.Context.instance().setFlavor(Trace.Helpers.TreeHelpers.AINode, aiNode);
-            contextMenu.headerSection().appendAction('drjones.performance-panel-context');
+        // This action and its 'execute' is defined in `freestyler-meta`
+        const actionIdDrJ = 'drjones.performance-panel-context';
+        if (UI.ActionRegistry.ActionRegistry.instance().hasAction(actionIdDrJ)) {
+            const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionIdDrJ);
+            contextMenu.headerSection().appendItem(action.title(), () => {
+                const event = this.eventByIndex(entryIndex);
+                if (!event || !this.parsedTrace) {
+                    return;
+                }
+                const allEvents = Array.from(this.entryData.values());
+                const aiCallTree = Utils.AICallTree.AICallTree.from(event, allEvents, this.parsedTrace);
+                // The other side of setFlavor is handleTraceEntryNodeFlavorChange() in FreestylerPanel
+                UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
+                return action.execute();
+            }, { jslogContext: actionIdDrJ });
         }
         const hideEntryOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
             this.modifyTree("MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entryIndex);
@@ -239,7 +254,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             jslogContext: 'reset-trace',
         });
         const entry = this.eventByIndex(entryIndex);
-        if (!entry || entry instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame || !this.parsedTrace) {
+        if (!entry || !this.parsedTrace || Trace.Types.Events.isLegacyTimelineFrame(entry)) {
             return contextMenu;
         }
         const url = Utils.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
@@ -249,6 +264,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (Utils.IgnoreList.isIgnoreListedEntry(entry)) {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
                 Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
+                this.timelineData(/* rebuild= */ true);
                 this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
             }, {
                 jslogContext: 'remove-from-ignore-list',
@@ -257,6 +273,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         else {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
                 Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
+                this.timelineData(/* rebuild= */ true);
                 this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
             }, {
                 jslogContext: 'add-to-ignore-list',
@@ -285,14 +302,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.timelineData(true);
         this.buildFlowForInitiator(entryIndex);
         this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
-    }
-    getAIEventNodeTreeFromEntryIndex(entryIndex) {
-        const entry = this.entryData[entryIndex];
-        const manager = ModificationsManager.activeManager();
-        if (!manager) {
-            return null;
-        }
-        return manager.getEntriesFilter().getAIEventNodeTree(entry);
     }
     findPossibleContextMenuActions(entryIndex) {
         const entry = this.entryData[entryIndex];
@@ -423,9 +432,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     textColor(index) {
         const event = this.entryData[index];
-        if (!TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(event)) {
-            return FlameChartStyle.textColor;
-        }
         return Utils.IgnoreList.isIgnoreListedEntry(event) ? '#888' : FlameChartStyle.textColor;
     }
     entryFont(_index) {
@@ -559,9 +565,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     totalTime() {
         return this.timeSpan;
     }
-    static timelineEntryIsTraceEvent(entry) {
-        return entry instanceof Trace.Handlers.ModelHandlers.Frames.TimelineFrame === false;
-    }
     search(visibleWindow, filter) {
         const results = [];
         this.timelineData();
@@ -570,8 +573,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             if (!entry) {
                 continue;
             }
-            if (!TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(entry)) {
-                // We only search for events, not for frames, hence this early exit.
+            if (Trace.Types.Events.isLegacyTimelineFrame(entry)) {
                 continue;
             }
             if (Trace.Types.Events.isScreenshot(entry)) {
@@ -609,7 +611,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.appendHeader(i18nString(UIStrings.frames), this.framesHeader, false /* selectable */, expanded);
         this.entryTypeByLevel[this.currentLevel] = "Frame" /* EntryType.FRAME */;
         for (const frame of this.parsedTrace.Frames.frames) {
-            this.#appendNewEngineFrame(frame);
+            this.#appendFrame(frame);
         }
         ++this.currentLevel;
         if (!hasScreenshots) {
@@ -795,7 +797,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             ctx2.stroke();
         }
     }
-    drawFrame(entryIndex, context, text, barX, barY, barWidth, barHeight) {
+    drawFrame(entryIndex, context, barX, barY, barWidth, barHeight) {
         const hPadding = 1;
         const frame = this.entryData[entryIndex];
         barX += hPadding;
@@ -848,7 +850,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio) {
         const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Frame" /* EntryType.FRAME */) {
-            this.drawFrame(entryIndex, context, text, barX, barY, barWidth, barHeight);
+            this.drawFrame(entryIndex, context, barX, barY, barWidth, barHeight);
             return true;
         }
         if (entryType === "Screenshot" /* EntryType.SCREENSHOT */) {
@@ -972,7 +974,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.timelineDataInternal.groups.push(group);
         return group;
     }
-    #appendNewEngineFrame(frame) {
+    #appendFrame(frame) {
         const index = this.entryData.length;
         this.entryData.push(frame);
         const durationMilliseconds = Trace.Helpers.Timing.microSecondsToMilliseconds(frame.duration);
@@ -985,15 +987,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.timelineDataInternal.entryStartTimes[index] = Trace.Helpers.Timing.microSecondsToMilliseconds(frame.startTime);
     }
     createSelection(entryIndex) {
-        const entryType = this.#entryTypeForIndex(entryIndex);
-        let timelineSelection = null;
         const entry = this.entryData[entryIndex];
-        if (entry && TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(entry)) {
-            timelineSelection = TimelineSelection.fromTraceEvent(entry);
-        }
-        else if (entryType === "Frame" /* EntryType.FRAME */) {
-            timelineSelection = TimelineSelection.fromFrame(this.entryData[entryIndex]);
-        }
+        const timelineSelection = entry ? selectionFromEvent(entry) : null;
         if (timelineSelection) {
             this.lastSelection = new Selection(timelineSelection, entryIndex);
         }
@@ -1020,23 +1015,22 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return false;
     }
     entryIndexForSelection(selection) {
-        if (!selection || TimelineSelection.isRangeSelection(selection.object) ||
-            TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object)) {
+        if (!selection || selectionIsRange(selection) || Trace.Types.Events.isNetworkTrackEntry(selection.event)) {
             return -1;
         }
-        if (this.lastSelection && this.lastSelection.timelineSelection.object === selection.object) {
+        if (this.lastSelection && selectionsEqual(this.lastSelection.timelineSelection, selection)) {
             return this.lastSelection.entryIndex;
         }
+        const index = this.entryData.indexOf(selection.event);
         // If the index is -1 and the selection is a TraceEvent, it might be
         // the case that this Entry is hidden by the Context Menu action.
         // Try revealing the entry and getting the index again.
-        if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
+        if (index > -1) {
             if (this.timelineDataInternal?.selectedGroup) {
-                ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.object);
+                ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.event);
                 this.timelineData(true);
             }
         }
-        const index = this.entryData.indexOf(selection.object);
         if (index !== -1) {
             this.lastSelection = new Selection(selection, index);
         }

@@ -600,4 +600,10 @@ export function setupIgnoreListManagerEnvironment() {
 export function microsecondsTraceWindow(min, max) {
     return Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
 }
+export function microseconds(x) {
+    return Trace.Types.Timing.MicroSeconds(x);
+}
+export function milliseconds(x) {
+    return Trace.Types.Timing.MilliSeconds(x);
+}
 //# sourceMappingURL=TraceHelpers.js.map

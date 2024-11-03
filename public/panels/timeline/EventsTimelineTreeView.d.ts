@@ -3,7 +3,7 @@ import type * as TimelineModel from '../../models/timeline_model/timeline_model.
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
-import { TimelineSelection } from './TimelineSelection.js';
+import { type TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
 export declare class EventsTimelineTreeView extends TimelineTreeView {
     private readonly filtersControl;

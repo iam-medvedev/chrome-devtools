@@ -307,12 +307,9 @@ styles.replaceSync(
   align-items: center;
 }
 
-.editable-setting devtools-select-menu {
-  height: 32px;
-}
-
 .editable-setting .devtools-text-input {
   width: fit-content;
+  height: var(--sys-size-9);
 }
 
 .wrapping-label {

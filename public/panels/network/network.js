@@ -39,7 +39,6 @@ import * as NetworkPanel from './NetworkPanel.js';
 import * as NetworkSearchScope from './NetworkSearchScope.js';
 import * as NetworkTimeCalculator from './NetworkTimeCalculator.js';
 import * as NetworkWaterfallColumn from './NetworkWaterfallColumn.js';
-import * as RequestBinaryResponseView from './RequestBinaryResponseView.js';
 import * as RequestCookiesView from './RequestCookiesView.js';
 import * as RequestHTMLView from './RequestHTMLView.js';
 import * as RequestInitiatorView from './RequestInitiatorView.js';
@@ -49,5 +48,5 @@ import * as RequestResponseView from './RequestResponseView.js';
 import * as RequestTimingView from './RequestTimingView.js';
 import * as ResourceWebSocketFrameView from './ResourceWebSocketFrameView.js';
 import * as SignedExchangeInfoView from './SignedExchangeInfoView.js';
-export { BinaryResourceView, BlockedURLsPane, EventSourceMessagesView, NetworkConfigView, NetworkDataGridNode, NetworkFrameGrouper, NetworkItemView, NetworkLogView, NetworkLogViewColumns, NetworkManageCustomHeadersView, NetworkOverview, NetworkPanel, NetworkSearchScope, NetworkTimeCalculator, NetworkWaterfallColumn, RequestBinaryResponseView, RequestCookiesView, RequestHTMLView, RequestInitiatorView, RequestPayloadView, RequestPreviewView, RequestResponseView, RequestTimingView, ResourceWebSocketFrameView, SignedExchangeInfoView, };
+export { BinaryResourceView, BlockedURLsPane, EventSourceMessagesView, NetworkConfigView, NetworkDataGridNode, NetworkFrameGrouper, NetworkItemView, NetworkLogView, NetworkLogViewColumns, NetworkManageCustomHeadersView, NetworkOverview, NetworkPanel, NetworkSearchScope, NetworkTimeCalculator, NetworkWaterfallColumn, RequestCookiesView, RequestHTMLView, RequestInitiatorView, RequestPayloadView, RequestPreviewView, RequestResponseView, RequestTimingView, ResourceWebSocketFrameView, SignedExchangeInfoView, };
 //# sourceMappingURL=network.js.map

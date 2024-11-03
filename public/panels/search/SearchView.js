@@ -90,7 +90,6 @@ function createSearchToggleButton(iconName, jslogContext) {
     const button = new Buttons.Button.Button();
     button.data = {
         variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
-        size: "SMALL" /* Buttons.Button.Size.SMALL */,
         iconName,
         toggledIconName: iconName,
         toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
@@ -172,7 +171,6 @@ export class SearchView extends UI.Widget.VBox {
         const clearInputFieldButton = new Buttons.Button.Button();
         clearInputFieldButton.data = {
             variant: "icon" /* Buttons.Button.Variant.ICON */,
-            size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'cross-circle-filled',
             jslogContext: 'clear-input',
             title: i18nString(UIStrings.clearInput),

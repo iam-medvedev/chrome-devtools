@@ -92,10 +92,6 @@ styles.replaceSync(
 .network-config-ua .chrome-select {
   width: calc(100% - 20px);
   max-width: 250px;
-
-  &:disabled {
-    opacity: unset;
-  }
 }
 
 .network-config-ua span[is="dt-radio"] {
@@ -104,10 +100,15 @@ styles.replaceSync(
 
 .network-config-ua-custom {
   padding-bottom: 8px;
-  opacity: 38%;
-  pointer-events: none;
 
-  &.checked {
+  input,
+  devtools-user-agent-client-hints-form {
+    opacity: 38%;
+    pointer-events: none;
+  }
+
+  &.checked input,
+  &.checked devtools-user-agent-client-hints-form {
     opacity: revert;
     pointer-events: revert;
   }
