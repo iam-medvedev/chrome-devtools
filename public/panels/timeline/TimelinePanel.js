@@ -41,6 +41,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
+import * as ShortcutDialog from '../../ui/components/dialogs/dialogs.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -460,6 +461,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         const topPaneElement = this.timelinePane.element.createChild('div', 'hbox');
         topPaneElement.id = 'timeline-overview-panel';
         this.#minimapComponent.show(topPaneElement);
+        this.#minimapComponent.addEventListener("OverviewPaneMouseMove" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_MOUSE_MOVE */, event => {
+            this.flameChart.addTimestampMarkerOverlay(event.data.timeInMicroSeconds);
+        });
+        this.#minimapComponent.addEventListener("OverviewPaneMouseLeave" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_MOUSE_LEAVE */, async () => {
+            await this.flameChart.removeTimestampMarkerOverlay();
+        });
         this.statusPaneContainer = this.timelinePane.element.createChild('div', 'status-pane-container fill');
         this.createFileSelector();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
@@ -913,6 +920,13 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (!isNode) {
             this.panelRightToolbar.appendSeparator();
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
+        }
+        if (Root.Runtime.experiments.isEnabled("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */)) {
+            // TODO: Fill the shortcuts dialog with shortcuts for the cuttently selected navigation option
+            const shortcutDialog = new ShortcutDialog.ShortcutDialog.ShortcutDialog();
+            shortcutDialog.data = { shortcuts: [{ title: 'Shortcut Title', bindings: ['Ctrl+E'] }] };
+            const dialogToolbarItem = new UI.Toolbar.ToolbarItem(shortcutDialog);
+            this.panelRightToolbar.appendToolbarItem(dialogToolbarItem);
         }
     }
     createSettingsPane() {

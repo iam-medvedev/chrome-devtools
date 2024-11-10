@@ -124,6 +124,17 @@ describe('Button', () => {
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isFalse(innerButton.classList.contains('small'));
     });
+    it('prevents only "keydown" events for Enter and Space to bubble up', () => {
+        const button = renderButton({ variant: "primary" /* Buttons.Button.Variant.PRIMARY */ });
+        const onKeydown = sinon.spy();
+        button.addEventListener('keydown', onKeydown);
+        const innerButton = button.shadowRoot.querySelector('button');
+        dispatchKeyDownEvent(innerButton, { bubbles: true, composed: true, key: 'Enter' });
+        dispatchKeyDownEvent(innerButton, { bubbles: true, composed: true, key: ' ' });
+        dispatchKeyDownEvent(innerButton, { bubbles: true, composed: true, key: 'x' });
+        assert.isTrue(onKeydown.calledOnce);
+        assert.strictEqual(onKeydown.getCall(0).args[0].key, 'x');
+    });
     describe('in forms', () => {
         function renderForm(data = {
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,

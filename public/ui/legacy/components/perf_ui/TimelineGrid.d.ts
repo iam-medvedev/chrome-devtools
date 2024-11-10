@@ -22,8 +22,8 @@ export declare class TimelineGrid {
     setScrollTop(scrollTop: number): void;
 }
 export interface Calculator {
-    computePosition(time: number): number;
-    formatValue(time: number, precision?: number): string;
+    computePosition(value: number): number;
+    formatValue(value: number, precision?: number): string;
     minimumBoundary(): number;
     zeroTime(): number;
     maximumBoundary(): number;

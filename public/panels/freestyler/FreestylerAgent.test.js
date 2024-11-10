@@ -439,7 +439,7 @@ c`;
                     execJs,
                 });
                 promise.resolve(true);
-                await Array.fromAsync(agent.run('test', { selected: element }));
+                await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
                 sinon.assert.match(execJs.getCall(0).args[1], sinon.match({ throwOnSideEffect: true }));
             });
             it('calls execJs with allowing side effects when confirmSideEffect resolves to true', async () => {
@@ -475,7 +475,7 @@ c`;
                     execJs,
                 });
                 promise.resolve(true);
-                await Array.fromAsync(agent.run('test', { selected: element }));
+                await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
                 assert.strictEqual(execJs.getCalls().length, 2);
                 sinon.assert.match(execJs.getCall(1).args[1], sinon.match({ throwOnSideEffect: false }));
             });
@@ -511,7 +511,7 @@ c`;
                     execJs,
                 });
                 promise.resolve(false);
-                const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
                 const actionStep = responses.find(response => response.type === "action" /* Freestyler.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
                 assert.strictEqual(execJs.getCalls().length, 1);
@@ -545,7 +545,7 @@ c`;
                     createExtensionScope,
                     execJs,
                 });
-                const result = await Array.fromAsync(agent.run('test', { selected: element }));
+                const result = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
                 const actionSteps = result.filter(step => {
                     return step.type === "action" /* Freestyler.ResponseType.ACTION */;
                 });
@@ -567,7 +567,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs,
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
@@ -620,7 +620,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs: sinon.spy(),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
@@ -666,7 +666,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs: sinon.spy(),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
@@ -711,7 +711,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 execJs: sinon.spy(),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
@@ -752,7 +752,7 @@ c`;
                 aidaClient: mockAidaClient(generateNothing),
                 execJs,
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
@@ -812,7 +812,7 @@ ANSWER: this is the answer`,
                 createExtensionScope,
                 execJs,
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(responses, [
                 {
                     type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
@@ -881,7 +881,7 @@ ANSWER: this is the answer`,
                 createExtensionScope,
                 execJs,
             });
-            await Array.fromAsync(agent.run('test', { selected: element }));
+            await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
                     entity: 1,
@@ -946,7 +946,7 @@ ANSWER: this is the answer`,
             });
             const controller = new AbortController();
             controller.abort();
-            await Array.fromAsync(agent.run('test', { selected: element, signal: controller.signal }));
+            await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element), signal: controller.signal }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, []);
         });
     });
@@ -989,7 +989,7 @@ ANSWER: this is the answer`,
                     createExtensionScope,
                     execJs,
                 });
-                const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
                 const actionStep = responses.find(response => response.type === "action" /* Freestyler.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution is currently disabled.');
                 assert.strictEqual(execJs.getCalls().length, 0);
@@ -1006,7 +1006,7 @@ ANSWER: this is the answer`,
                     createExtensionScope,
                     execJs,
                 });
-                const responses = await Array.fromAsync(agent.run('test', { selected: element }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
                 const actionStep = responses.find(response => response.type === "action" /* Freestyler.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution that modifies the page is currently disabled.');
                 assert.strictEqual(execJs.getCalls().length, 1);

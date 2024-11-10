@@ -27,6 +27,7 @@ core/common/Throttler.test.js
 core/common/Trie.test.js
 core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
+core/i18n/ByteUtilities.test.js
 core/i18n/DevToolsLocale.test.js
 core/i18n/i18n.test.js
 core/i18n/time-utilities.test.js
@@ -160,8 +161,6 @@ models/text_utils/TextCursor.test.js
 models/text_utils/TextRange.test.js
 models/text_utils/TextUtils.test.js
 models/text_utils/WasmDisassembly.test.js
-models/timeline_model/TimelineModelFilter.test.js
-models/timeline_model/TimelineProfileTree.test.js
 models/trace/ModelImpl.test.js
 models/trace/Processor.test.js
 models/trace/TracingManager.test.js
@@ -170,6 +169,8 @@ models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
 models/trace/extras/Metadata.test.js
 models/trace/extras/ThirdParties.test.js
+models/trace/extras/TraceFilter.test.js
+models/trace/extras/TraceTree.test.js
 models/trace/extras/URLForEntry.test.js
 models/trace/handlers/AnimationHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
@@ -203,14 +204,15 @@ models/trace/helpers/SyntheticEvents.test.js
 models/trace/helpers/Timing.test.js
 models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
-models/trace/insights/CumulativeLayoutShift.test.js
+models/trace/insights/CLSCulprits.test.js
 models/trace/insights/DocumentLatency.test.js
 models/trace/insights/FontDisplay.test.js
 models/trace/insights/InteractionToNextPaint.test.js
-models/trace/insights/LargestContentfulPaint.test.js
+models/trace/insights/LCPDiscovery.test.js
+models/trace/insights/LCPPhases.test.js
 models/trace/insights/RenderBlocking.test.js
 models/trace/insights/SlowCSSSelector.test.js
-models/trace/insights/ThirdPartyWeb.test.js
+models/trace/insights/ThirdParties.test.js
 models/trace/insights/Viewport.test.js
 models/trace/lantern/core/NetworkAnalyzer.test.js
 models/trace/lantern/graph/BaseNode.test.js
@@ -311,6 +313,7 @@ panels/elements/components/StylePropertyEditor.test.js
 panels/elements/AccessibilityTreeView.test.js
 panels/elements/CSSRuleValidator.test.js
 panels/elements/ClassesPaneWidget.test.js
+panels/elements/ComputedStyleWidget.test.js
 panels/elements/DOMLinkifier.test.js
 panels/elements/ElementStatePaneWidget.test.js
 panels/elements/ElementsPanel.test.js

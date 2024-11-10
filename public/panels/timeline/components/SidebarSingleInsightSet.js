@@ -27,25 +27,25 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * us to ship incrementally without turning insights on by default for all
  * users. */
 const EXPERIMENTAL_INSIGHTS = new Set([
-    Insights.FontDisplay.FontDisplay,
+    'FontDisplay',
 ]);
 /**
  * Every insight (INCLUDING experimental ones)
- * The order of this array is the order the insights will be shown in the sidebar.
+ * The order of these properties is the order the insights will be shown in the sidebar.
  * TODO(crbug.com/368135130): sort this in a smart way!
  */
-const ALL_INSIGHTS = [
-    Insights.InteractionToNextPaint.InteractionToNextPaint,
-    Insights.LCPPhases.LCPPhases,
-    Insights.LCPDiscovery.LCPDiscovery,
-    Insights.CLSCulprits.CLSCulprits,
-    Insights.RenderBlocking.RenderBlockingRequests,
-    Insights.DocumentLatency.DocumentLatency,
-    Insights.FontDisplay.FontDisplay,
-    Insights.Viewport.Viewport,
-    Insights.ThirdParties.ThirdParties,
-    Insights.SlowCSSSelector.SlowCSSSelector,
-];
+const INSIGHT_NAME_TO_COMPONENT = {
+    InteractionToNextPaint: Insights.InteractionToNextPaint.InteractionToNextPaint,
+    LCPPhases: Insights.LCPPhases.LCPPhases,
+    LCPDiscovery: Insights.LCPDiscovery.LCPDiscovery,
+    CLSCulprits: Insights.CLSCulprits.CLSCulprits,
+    RenderBlocking: Insights.RenderBlocking.RenderBlocking,
+    DocumentLatency: Insights.DocumentLatency.DocumentLatency,
+    FontDisplay: Insights.FontDisplay.FontDisplay,
+    Viewport: Insights.Viewport.Viewport,
+    ThirdParties: Insights.ThirdParties.ThirdParties,
+    SlowCSSSelector: Insights.SlowCSSSelector.SlowCSSSelector,
+};
 export class SidebarSingleInsightSet extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
@@ -104,7 +104,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         return { value, event: insight.longestInteractionEvent };
     }
     #getLCP(insightSetKey) {
-        const insight = Trace.Insights.Common.getInsight('LargestContentfulPaint', this.#data.insights, insightSetKey);
+        const insight = Trace.Insights.Common.getInsight('LCPPhases', this.#data.insights, insightSetKey);
         if (!insight || !insight.lcpMs || !insight.lcpEvent) {
             return null;
         }
@@ -112,7 +112,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         return { value, event: insight.lcpEvent };
     }
     #getCLS(insightSetKey) {
-        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.#data.insights, insightSetKey);
+        const insight = Trace.Insights.Common.getInsight('CLSCulprits', this.#data.insights, insightSetKey);
         if (!insight) {
             // Unlike the other metrics, there is still a value for this metric even with no data.
             // This means this view will always display a CLS score.
@@ -143,28 +143,31 @@ export class SidebarSingleInsightSet extends HTMLElement {
     </div>
     `;
     }
-    #insightsForRendering() {
+    #renderInsights(insightSets, parsedTrace, insightSetKey) {
         const includeExperimental = Root.Runtime.experiments.isEnabled("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */);
-        if (includeExperimental) {
-            return ALL_INSIGHTS;
+        const models = insightSets?.get(insightSetKey)?.model;
+        if (!models) {
+            return html ``;
         }
-        return ALL_INSIGHTS.filter(insight => !EXPERIMENTAL_INSIGHTS.has(insight));
-    }
-    #renderInsights(insights, parsedTrace, insightSetKey) {
-        const insightComponents = this.#insightsForRendering();
-        // clang-format off
-        return html `${insightComponents.map(component => {
-            return html `<div data-single-insight-wrapper>
-        <${component.litTagName}
-          .insights=${insights}
+        const components = [];
+        for (const [name, componentClass] of Object.entries(INSIGHT_NAME_TO_COMPONENT)) {
+            if (!includeExperimental && EXPERIMENTAL_INSIGHTS.has(name)) {
+                continue;
+            }
+            // clang-format off
+            const component = html `<div data-single-insight-wrapper>
+        <${componentClass.litTagName}
+          .model=${models[name]}
           .parsedTrace=${parsedTrace}
           .insightSetKey=${insightSetKey}
           .activeInsight=${this.#data.activeInsight}
           .activeCategory=${this.#data.activeCategory}>
-        </${component.litTagName}>
+        </${componentClass.litTagName}>
       </div>`;
-        })}`;
-        // clang-format on
+            // clang-format on
+            components.push(component);
+        }
+        return html `${components}`;
     }
     #render() {
         const { parsedTrace, insights, insightSetKey, } = this.#data;

@@ -12,6 +12,7 @@ export declare class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWid
     constructor();
     onResize(): void;
     wasShown(): void;
+    willHide(): void;
     doUpdate(): Promise<void>;
     private fetchMatchedCascade;
     private rebuildAlphabeticalList;

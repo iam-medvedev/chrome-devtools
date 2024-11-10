@@ -29,6 +29,58 @@ css
 }`,
             }));
         });
+        describe('link/image stripping', () => {
+            const linkCases = [
+                '[link text](https://z.com)',
+                'A response with [link text](https://z.com).',
+                '[*link text*](https://z.com)',
+                '[**text** `with code`](https://z.com).',
+                'plain link https://z.com .',
+                'link in quotes \'https://z.com\' .',
+            ];
+            const renderToElem = (string, renderer) => {
+                const component = new MarkdownView.MarkdownView.MarkdownView();
+                renderElementIntoDOM(component, { allowMultipleChildren: true });
+                component.data = { tokens: Marked.Marked.lexer(string), renderer };
+                assert.exists(component.shadowRoot?.firstElementChild);
+                return component.shadowRoot.firstElementChild;
+            };
+            it('strips links if stripLinks true', () => {
+                const linklessRenderer = new MarkdownRendererWithCodeBlock({ stripLinks: true });
+                for (const linkCase of linkCases) {
+                    const elem = renderToElem(linkCase, linklessRenderer);
+                    assert.strictEqual(elem.querySelectorAll('a, x-link, devtools-link').length, 0);
+                    assert.strictEqual(['<a', '<x-link', '<devtools-link'].some(tagName => elem.outerHTML.includes(tagName)), false);
+                    assert.ok(elem.textContent?.includes('( https://z.com )'), linkCase);
+                }
+            });
+            it('leaves links intact by default', () => {
+                const linkfulRenderer = new MarkdownRendererWithCodeBlock();
+                for (const linkCase of linkCases) {
+                    const elem = renderToElem(linkCase, linkfulRenderer);
+                    assert.strictEqual(elem.querySelectorAll('a, x-link, devtools-link').length, 1);
+                    assert.strictEqual(['<a', '<x-link', '<devtools-link'].some(tagName => elem.outerHTML.includes(tagName)), true);
+                    assert.strictEqual(elem.textContent?.includes('( https://z.com )'), false);
+                }
+            });
+            const imageCases = [
+                '![image alt](https://z.com/i.png)',
+                'A response with ![image alt](https://z.com/i.png).',
+                '![*image alt*](https://z.com/i.png)',
+                '![**text** `with code`](https://z.com/i.png).',
+                'plain image href https://z.com/i.png .',
+                'link in quotes \'https://z.com/i.png\' .',
+            ];
+            it('strips images if stripLinks true', () => {
+                const linklessRenderer = new MarkdownRendererWithCodeBlock({ stripLinks: true });
+                for (const imageCase of imageCases) {
+                    const elem = renderToElem(imageCase, linklessRenderer);
+                    assert.strictEqual(elem.querySelectorAll('a, x-link, devtools-link, img, devtools-markdown-image').length, 0);
+                    assert.strictEqual(['<a', '<x-link', '<devtools-link', '<img', '<devtools-markdown-image'].some(tagName => elem.outerHTML.includes(tagName)), false);
+                    assert.ok(elem.textContent?.includes('( https://z.com/i.png )'), imageCase);
+                }
+            });
+        });
     });
     function getProp(options) {
         const noop = () => { };
@@ -38,20 +90,20 @@ css
             onInspectElementClick: noop,
             onFeedbackSubmit: noop,
             onCancelClick: noop,
-            onSelectedNetworkRequestClick: noop,
-            onSelectedFileRequestClick: noop,
+            onContextClick: noop,
+            onNewConversation: noop,
             inspectElementToggled: false,
             state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
             agentType: "freestyler" /* Freestyler.AgentType.FREESTYLER */,
             aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             messages,
-            selectedElement: {},
-            selectedFile: null,
-            selectedNetworkRequest: {},
-            selectedAiCallTree: {},
+            selectedContext: new Freestyler.NodeContext({}),
             isLoading: false,
             canShowFeedbackForm: false,
             userInfo: {},
+            blockedByCrossOrigin: false,
+            stripLinks: false,
+            isReadOnly: false,
             ...options,
         };
     }
@@ -105,34 +157,61 @@ css
             assert.isTrue(chatInput.disabled);
             assert.strictEqual(chatInput.placeholder, 'Ask a question about the selected element');
         });
-        it('shows usage instructions', async () => {
-            const stub = getGetHostConfigStub({
-                devToolsFreestyler: {
-                    enabled: true,
-                },
-                devToolsAiAssistanceNetworkAgent: {
-                    enabled: true,
-                },
-                devToolsAiAssistanceFileAgent: {
-                    enabled: true,
-                },
-                devToolsAiAssistancePerformanceAgent: {
-                    enabled: true,
-                },
+        describe('no agent empty state', () => {
+            it('should show feature cards for enabled features', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsFreestyler: {
+                        enabled: true,
+                    },
+                    devToolsAiAssistanceNetworkAgent: {
+                        enabled: true,
+                    },
+                    devToolsAiAssistanceFileAgent: {
+                        enabled: true,
+                    },
+                    devToolsAiAssistancePerformanceAgent: {
+                        enabled: true,
+                    },
+                });
+                const props = getProp({
+                    agentType: undefined,
+                });
+                const chat = new Freestyler.FreestylerChatUi(props);
+                renderElementIntoDOM(chat);
+                const featureCards = chat.shadowRoot?.querySelectorAll('.feature-card');
+                assert.isDefined(featureCards);
+                assert.strictEqual(featureCards?.length, 4);
+                assert.strictEqual(featureCards[0].querySelector('.feature-card-content h3')?.textContent, 'CSS styles');
+                assert.strictEqual(featureCards[1].querySelector('.feature-card-content h3')?.textContent, 'Network');
+                assert.strictEqual(featureCards[2].querySelector('.feature-card-content h3')?.textContent, 'Files');
+                assert.strictEqual(featureCards[3].querySelector('.feature-card-content h3')?.textContent, 'Performance');
+                stub.restore();
             });
-            const props = getProp({
-                agentType: undefined,
+            it('should not show any feature cards if none of the entrypoints are available', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsFreestyler: {
+                        enabled: false,
+                    },
+                    devToolsAiAssistanceNetworkAgent: {
+                        enabled: false,
+                    },
+                    devToolsAiAssistanceFileAgent: {
+                        enabled: false,
+                    },
+                    devToolsAiAssistancePerformanceAgent: {
+                        enabled: false,
+                    },
+                });
+                const props = getProp({
+                    agentType: undefined,
+                });
+                const chat = new Freestyler.FreestylerChatUi(props);
+                renderElementIntoDOM(chat);
+                const featureCards = chat.shadowRoot?.querySelectorAll('.feature-card');
+                assert.isDefined(featureCards);
+                assert.strictEqual(featureCards?.length, 0);
+                stub.restore();
             });
-            const chat = new Freestyler.FreestylerChatUi(props);
-            renderElementIntoDOM(chat);
-            const instructions = chat.shadowRoot?.querySelectorAll('.instructions strong');
-            assert.isDefined(instructions);
-            assert.strictEqual(instructions?.length, 4);
-            assert.strictEqual(instructions[0].textContent, 'CSS help:');
-            assert.strictEqual(instructions[1].textContent, 'File insights:');
-            assert.strictEqual(instructions[2].textContent, 'Network request insights:');
-            assert.strictEqual(instructions[3].textContent, 'Performance analysis:');
-            stub.restore();
         });
     });
 });

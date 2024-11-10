@@ -1,16 +1,15 @@
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
-export declare class IsLong extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export declare class IsLong extends Trace.Extras.TraceFilter.TraceFilter {
     #private;
     constructor();
     setMinimumRecordDuration(value: Trace.Types.Timing.MilliSeconds): void;
     accept(event: Trace.Types.Events.Event): boolean;
 }
-export declare class Category extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export declare class Category extends Trace.Extras.TraceFilter.TraceFilter {
     constructor();
     accept(event: Trace.Types.Events.Event): boolean;
 }
-export declare class TimelineRegExp extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export declare class TimelineRegExp extends Trace.Extras.TraceFilter.TraceFilter {
     private regExpInternal;
     constructor(regExp?: RegExp);
     setRegExp(regExp: RegExp | null): void;

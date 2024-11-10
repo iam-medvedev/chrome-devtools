@@ -1887,13 +1887,7 @@ export const NativeFunctions = [
     },
     {
         name: "deleteData",
-        signatures: [["offset", "count"]],
-        receivers: ["CharacterData"]
-    },
-    {
-        name: "deleteData",
-        signatures: [["key"]],
-        receivers: ["LockScreenData"]
+        signatures: [["offset", "count"]]
     },
     {
         name: "insertData",
@@ -2226,23 +2220,11 @@ export const NativeFunctions = [
     },
     {
         name: "getData",
-        signatures: [["format"]],
-        receivers: ["DataTransfer"]
-    },
-    {
-        name: "getData",
-        signatures: [["key"]],
-        receivers: ["LockScreenData"]
+        signatures: [["format"]]
     },
     {
         name: "setData",
-        signatures: [["format", "data"]],
-        receivers: ["DataTransfer"]
-    },
-    {
-        name: "setData",
-        signatures: [["key", "data"]],
-        receivers: ["LockScreenData"]
+        signatures: [["format", "data"]]
     },
     {
         name: "setDragImage",
@@ -6917,6 +6899,11 @@ export const NativeFunctions = [
     {
         name: "CloseWatcher",
         signatures: [["?options"]]
+    },
+    {
+        name: "requestClose",
+        signatures: [["?returnValue"]],
+        receivers: ["HTMLDialogElement"]
     },
     {
         name: "reportEvent",

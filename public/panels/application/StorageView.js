@@ -437,8 +437,8 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
             return;
         }
         const quotaOverridden = response.overrideActive;
-        const quotaAsString = Platform.NumberUtilities.bytesToString(response.quota);
-        const usageAsString = Platform.NumberUtilities.bytesToString(response.usage);
+        const quotaAsString = i18n.ByteUtilities.bytesToString(response.quota);
+        const usageAsString = i18n.ByteUtilities.bytesToString(response.usage);
         const formattedQuotaAsString = i18nString(UIStrings.storageWithCustomMarker, { PH1: quotaAsString });
         const quota = quotaOverridden ? UI.Fragment.Fragment.build `<b>${formattedQuotaAsString}</b>`.element() : quotaAsString;
         const element = i18n.i18n.getFormatLocalizedString(str_, UIStrings.storageQuotaUsed, { PH1: usageAsString, PH2: quota });
@@ -470,7 +470,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         this.pieChart.data = {
             chartName: i18nString(UIStrings.storageUsage),
             size: 110,
-            formatter: Platform.NumberUtilities.bytesToString,
+            formatter: i18n.ByteUtilities.bytesToString,
             showLegend: true,
             total,
             slices,

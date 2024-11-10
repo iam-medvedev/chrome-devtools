@@ -20,16 +20,7 @@ styles.replaceSync(
 
 fieldset {
   border: 0;
-  margin-left: 20px;
   padding: 0;
-}
-
-legend {
-  color: var(--sys-color-token-subtle);
-  font-size: 120%;
-  margin-left: -20px;
-  padding: 0;
-  text-align: left;
 }
 
 .link {
@@ -49,7 +40,6 @@ img {
 
 .warning {
   display: block;
-  margin-top: 12px;
 }
 
 .account-info {

@@ -131,6 +131,9 @@ export class CSSModel extends SDKModel {
     domModel() {
         return this.#domModel;
     }
+    async trackComputedStyleUpdatesForNode(nodeId) {
+        await this.agent.invoke_trackComputedStyleUpdatesForNode({ nodeId });
+    }
     async setStyleText(styleSheetId, range, text, majorChange) {
         try {
             await this.ensureOriginalStyleSheetText(styleSheetId);
@@ -510,6 +513,9 @@ export class CSSModel extends SDKModel {
     getAllStyleSheetHeaders() {
         return this.#styleSheetIdToHeader.values();
     }
+    computedStyleUpdated(nodeId) {
+        this.dispatchEventToListeners(Events.ComputedStyleUpdated, { nodeId });
+    }
     styleSheetAdded(header) {
         console.assert(!this.#styleSheetIdToHeader.get(header.styleSheetId));
         if (header.loadingFailed) {
@@ -730,6 +736,7 @@ export var Events;
     Events["StyleSheetAdded"] = "StyleSheetAdded";
     Events["StyleSheetChanged"] = "StyleSheetChanged";
     Events["StyleSheetRemoved"] = "StyleSheetRemoved";
+    Events["ComputedStyleUpdated"] = "ComputedStyleUpdated";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 const PseudoStateMarker = 'pseudo-state-marker';
@@ -786,6 +793,9 @@ class CSSDispatcher {
     }
     styleSheetRemoved({ styleSheetId }) {
         this.#cssModel.styleSheetRemoved(styleSheetId);
+    }
+    computedStyleUpdated({ nodeId }) {
+        this.#cssModel.computedStyleUpdated(nodeId);
     }
 }
 class ComputedStyleLoader {

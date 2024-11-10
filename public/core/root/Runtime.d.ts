@@ -136,15 +136,16 @@ export interface HostConfigVeLogging {
 export interface HostConfigPrivacyUI {
     enabled: boolean;
 }
+export interface HostConfigEnableOriginBoundCookies {
+    portBindingEnabled: boolean;
+    schemeBindingEnabled: boolean;
+}
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestyler: HostConfigFreestyler;
-    devToolsExplainThisResourceDogfood: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
-    devToolsAiAssistancePerformanceAgentDogfood: HostConfigAiAssistancePerformanceAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
-    devToolsAiAssistanceFileAgentDogfood: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsPrivacyUI: HostConfigPrivacyUI;
@@ -153,6 +154,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
      * or guest mode, rather than a "normal" profile.
      */
     isOffTheRecord: boolean;
+    devToolsEnableOriginBoundCookies: HostConfigEnableOriginBoundCookies;
 }>;
 /**
  * When defining conditions make sure that objects used by the function have

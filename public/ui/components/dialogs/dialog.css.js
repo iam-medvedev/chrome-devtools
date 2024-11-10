@@ -24,7 +24,6 @@ dialog::backdrop {
 dialog {
   background: transparent;
   border: none;
-  border-radius: 4px;
   top: var(--dialog-top);
   padding: var(--dialog-padding);
   left: var(--dialog-left);
@@ -36,6 +35,7 @@ dialog {
   animation-duration: 100ms;
   animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
   overflow: hidden;
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 15%)) drop-shadow(0 1px 3px rgb(0 0 0 / 30%));
 }
 
 dialog:focus,
@@ -46,7 +46,7 @@ dialog:focus-visible {
 #content {
   min-width: var(--content-min-width);
   background: var(--color-background-elevation-dark-only);
-  border-radius: 4px;
+  border-radius: var(--sys-size-5);
   padding-top: var(--content-padding-top);
   padding-bottom: var(--content-padding-bottom);
   box-shadow: var(--override-content-box-shadow);
@@ -55,10 +55,6 @@ dialog:focus-visible {
   overflow: auto;
   outline: none;
   clip-path: polygon(var(--content-clip-path));
-}
-
-#content-wrap {
-  filter: drop-shadow(0 1px 2px rgb(60 64 67 / 30%)) drop-shadow(0 2px 0 rgb(60 64 67 / 15%));
 }
 
 @keyframes slideIn {

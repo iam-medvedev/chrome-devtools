@@ -1945,21 +1945,28 @@
 
     var index = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        onCLS: onCLS$1,
-        onFCP: onFCP,
-        onINP: onINP$1,
-        onLCP: onLCP$1,
-        onTTFB: onTTFB,
         CLSThresholds: CLSThresholds,
         FCPThresholds: FCPThresholds,
+        FIDThresholds: FIDThresholds,
         INPThresholds: INPThresholds,
         LCPThresholds: LCPThresholds,
         TTFBThresholds: TTFBThresholds,
+        onCLS: onCLS$1,
+        onFCP: onFCP,
         onFID: onFID,
-        FIDThresholds: FIDThresholds
+        onINP: onINP$1,
+        onLCP: onLCP$1,
+        onTTFB: onTTFB
     });
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
+    /**
+     * @fileoverview web-vitals.js doesn't provide a log of all interactions.
+     * This solution is hacky but it was recommended by web-vitals devs:
+     * b/371052022
+     */
     function onEachInteraction$1(onReport) {
         entryPreProcessingCallbacks.push((entry) => {
             // Wait a microtask so this "pre" processing callback actually
@@ -2031,6 +2038,8 @@
     }
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     const { onLCP, onCLS, onINP } = index;
     const { onEachInteraction } = OnEachInteraction;
     const { onEachLayoutShift } = OnEachLayoutShift;

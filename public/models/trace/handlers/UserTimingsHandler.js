@@ -13,14 +13,12 @@ const performanceMeasureEvents = [];
 const performanceMarkEvents = [];
 const consoleTimings = [];
 const timestampEvents = [];
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function reset() {
     syntheticEvents.length = 0;
     performanceMeasureEvents.length = 0;
     performanceMarkEvents.length = 0;
     consoleTimings.length = 0;
     timestampEvents.length = 0;
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 const resourceTimingNames = [
     'workerStart',
@@ -108,9 +106,6 @@ function userTimingComparator(a, b, originalArray) {
     return originalArray.indexOf(b) - originalArray.indexOf(a);
 }
 export function handleEvent(event) {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('UserTimings handler is not initialized');
-    }
     if (ignoredNames.includes(event.name)) {
         return;
     }
@@ -129,18 +124,11 @@ export function handleEvent(event) {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('UserTimings handler is not initialized');
-    }
     const asyncEvents = [...performanceMeasureEvents, ...consoleTimings];
     syntheticEvents = Helpers.Trace.createMatchedSortedSyntheticEvents(asyncEvents);
     syntheticEvents = syntheticEvents.sort((a, b) => userTimingComparator(a, b, [...syntheticEvents]));
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('UserTimings handler is not finalized');
-    }
     return {
         performanceMeasures: syntheticEvents.filter(e => e.cat === 'blink.user_timing'),
         consoleTimings: syntheticEvents.filter(e => e.cat === 'blink.console'),

@@ -476,7 +476,7 @@ export class WritableProfileHeader extends ProfileHeader {
     onChunkTransferred(_reader) {
         if (this.jsonifiedProfile) {
             // TODO(l10n): Is the '%' at the end of this string correct? 4MB% looks wrong
-            this.updateStatus(i18nString(UIStrings.loadingD, { PH1: Platform.NumberUtilities.bytesToString(this.jsonifiedProfile.length) }));
+            this.updateStatus(i18nString(UIStrings.loadingD, { PH1: i18n.ByteUtilities.bytesToString(this.jsonifiedProfile.length) }));
         }
     }
     onError(reader) {

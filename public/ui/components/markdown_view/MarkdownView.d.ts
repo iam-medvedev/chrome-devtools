@@ -6,6 +6,7 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 export interface MarkdownViewData {
     tokens: Marked.Marked.Token[];
     renderer?: MarkdownLitRenderer;
+    animationEnabled?: boolean;
 }
 export declare class MarkdownView extends HTMLElement {
     #private;
@@ -21,6 +22,8 @@ declare global {
  * Default renderer is used for the IssuesPanel and allows only well-known images and links to be embedded.
  */
 export declare class MarkdownLitRenderer {
+    #private;
+    setCustomClasses(customClasses: Record<Marked.Marked.Token['type'], string>): void;
     renderChildTokens(token: Marked.Marked.Token): LitHtml.TemplateResult[];
     /**
      * Unescape will get rid of the escaping done by Marked to avoid double escaping due to escaping it also with Lit-html.

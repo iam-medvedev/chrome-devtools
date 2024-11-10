@@ -334,6 +334,10 @@ export class InspectorFrontendHostStub {
             devToolsPrivacyUI: {
                 enabled: false,
             },
+            devToolsEnableOriginBoundCookies: {
+                portBindingEnabled: false,
+                schemeBindingEnabled: false,
+            },
             isOffTheRecord: false,
         };
         if ('hostConfigForTesting' in globalThis) {

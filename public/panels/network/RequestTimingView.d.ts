@@ -13,6 +13,8 @@ export declare class RequestTimingView extends UI.Widget.VBox {
     private constructFetchDetailsView;
     private getLocalizedResponseSourceForCode;
     private onToggleFetchDetails;
+    private constructRouterEvaluationView;
+    private onToggleRouterEvaluationDetails;
     wasShown(): void;
     willHide(): void;
     private refresh;

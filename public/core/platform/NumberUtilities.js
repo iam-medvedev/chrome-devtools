@@ -14,23 +14,6 @@ export const clamp = (num, min, max) => {
 export const mod = (m, n) => {
     return ((m % n) + n) % n;
 };
-export const bytesToString = (bytes) => {
-    if (bytes < 1000) {
-        return `${bytes.toFixed(0)}\xA0B`;
-    }
-    const kilobytes = bytes / 1000;
-    if (kilobytes < 100) {
-        return `${kilobytes.toFixed(1)}\xA0kB`;
-    }
-    if (kilobytes < 1000) {
-        return `${kilobytes.toFixed(0)}\xA0kB`;
-    }
-    const megabytes = kilobytes / 1000;
-    if (megabytes < 100) {
-        return `${megabytes.toFixed(1)}\xA0MB`;
-    }
-    return `${megabytes.toFixed(0)}\xA0MB`;
-};
 export const toFixedIfFloating = (value) => {
     if (!value || Number.isNaN(Number(value))) {
         return value;

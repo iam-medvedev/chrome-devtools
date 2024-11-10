@@ -11,6 +11,7 @@ export declare class UserActionRow extends HTMLElement {
     constructor(props: UserActionRowProps);
     set props(props: UserActionRowProps);
     connectedCallback(): void;
+    disconnectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

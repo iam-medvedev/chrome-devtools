@@ -54,7 +54,8 @@ styles.replaceSync(
   /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
   /* stylelint-disable-next-line at-rule-no-unknown */
   @container (width > 688px) {
-    --half-scrollbar-width: calc((100cqw - 100%) / 2); /* stylelint-disable-line unit-no-unknown */
+    /* stylelint-disable-next-line unit-no-unknown */
+    --half-scrollbar-width: calc((100cqw - 100%) / 2);
 
     margin-left: var(--half-scrollbar-width);
     margin-right: calc(-1 * var(--half-scrollbar-width));
@@ -67,6 +68,20 @@ styles.replaceSync(
   @container (height < 224px) {
     position: static;
   }
+}
+
+.chat-readonly-container {
+  display: flex;
+  width: 100%;
+  max-width: var(--sys-size-36);
+  justify-content: center;
+  align-items: center;
+  background-color: var(--sys-color-surface3);
+  font: var(--sys-typescale-body4-regular);
+  padding: var(--sys-size-5) 0;
+  border-radius: var(--sys-shape-corner-medium-small);
+  margin-bottom: var(--sys-size-5);
+  color: var(--sys-color-on-surface-subtle);
 }
 
 .chat-input-container {
@@ -111,6 +126,11 @@ styles.replaceSync(
     color: var(--sys-color-state-disabled);
     background-color: var(--sys-color-state-disabled-container);
     border-color: transparent;
+
+    &::placeholder {
+      color: var(--sys-color-on-surface-subtle);
+      opacity: 100%;
+    }
   }
 }
 
@@ -145,7 +165,8 @@ styles.replaceSync(
   /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
   /* stylelint-disable-next-line at-rule-no-unknown */
   @container (width > 688px) {
-    --half-scrollbar-width: calc((100cqw - 100%) / 2); /* stylelint-disable-line unit-no-unknown */
+    /* stylelint-disable-next-line unit-no-unknown */
+    --half-scrollbar-width: calc((100cqw - 100%) / 2);
 
     margin-left: var(--half-scrollbar-width);
     margin-right: calc(-1 * var(--half-scrollbar-width));
@@ -268,35 +289,6 @@ styles.replaceSync(
   .resource-task.not-selected {
     color: var(--sys-color-state-disabled);
     border-color: var(--sys-color-neutral-outline);
-  }
-}
-
-.no-agent-message {
-  user-select: text;
-  cursor: initial;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sys-size-5);
-  width: 100%;
-  padding: var(--sys-size-7) var(--sys-size-5);
-  height: 100%;
-
-  .header {
-    display: flex;
-    align-items: center;
-    height: var(--sys-size-11);
-    gap: var(--sys-size-4);
-
-    h2 {
-      font: var(--sys-typescale-body4-bold);
-    }
-  }
-
-  .instructions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sys-size-6);
-    line-height: 18px;
   }
 }
 
@@ -495,14 +487,16 @@ main {
   align-items: center;
   justify-content: center;
   font: var(--sys-typescale-headline4);
-  gap: var(--sys-size-11);
+  gap: var(--sys-size-8);
   padding: var(--sys-size-3);
+  max-width: var(--sys-size-33);
 
   /* Prevents the container from jumping when the scrollbar is shown */
   /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
   /* stylelint-disable-next-line at-rule-no-unknown */
   @container (width > 688px) {
-    --half-scrollbar-width: calc((100cqw - 100%) / 2); /* stylelint-disable-line unit-no-unknown */
+    /* stylelint-disable-next-line unit-no-unknown */
+    --half-scrollbar-width: calc((100cqw - 100%) / 2);
 
     margin-left: var(--half-scrollbar-width);
     margin-right: calc(-1 * var(--half-scrollbar-width));
@@ -535,15 +529,56 @@ main {
     h1 {
       font: var(--sys-typescale-headline4);
     }
+
+    p {
+      text-align: center;
+      font: var(--sys-typescale-body4-regular);
+    }
   }
 
-  .suggestions {
+  .empty-state-content {
     display: flex;
     flex-direction: column;
     gap: var(--sys-size-5);
     align-items: center;
     justify-content: center;
     align-self: start;
+  }
+}
+
+.feature-card {
+  display: flex;
+  padding: var(--sys-size-4) var(--sys-size-6);
+  gap: 10px;
+  background-color: var(--sys-color-surface2);
+  border-radius: var(--sys-shape-corner-medium-small);
+  width: 100%;
+  align-items: center;
+
+  .feature-card-icon {
+    min-width: var(--sys-size-12);
+    min-height: var(--sys-size-12);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--sys-color-tonal-container);
+    border-radius: var(--sys-shape-corner-full);
+
+    devtools-icon {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .feature-card-content {
+    h3 {
+      font: var(--sys-typescale-body3-medium);
+    }
+
+    p {
+      font: var(--sys-typescale-body4-regular);
+      line-height: 18px;
+    }
   }
 }
 

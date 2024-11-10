@@ -29,7 +29,6 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -277,7 +276,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
             this.paintCountCell.parentElement.classList.toggle('hidden', !layer.paintCount());
         }
         this.paintCountCell.textContent = String(layer.paintCount());
-        this.memoryEstimateCell.textContent = Platform.NumberUtilities.bytesToString(layer.gpuMemoryUsage());
+        this.memoryEstimateCell.textContent = i18n.ByteUtilities.bytesToString(layer.gpuMemoryUsage());
         void layer.requestCompositingReasons().then(this.updateCompositingReasons.bind(this));
         this.scrollRectsCell.removeChildren();
         layer.scrollRects().forEach(this.createScrollRectElement.bind(this));

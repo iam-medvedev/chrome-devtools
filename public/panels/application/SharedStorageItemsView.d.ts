@@ -17,7 +17,7 @@ export declare namespace SharedStorageItemsDispatcher {
     }
     interface ItemEditedEvent {
         columnIdentifier: string;
-        oldText: string;
+        oldText: string | null;
         newText: string;
     }
     type EventTypes = {

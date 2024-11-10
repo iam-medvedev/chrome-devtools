@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import * as Freestyler from './freestyler.js';
-const { AiAgent, ResponseType } = Freestyler;
+const { AiAgent, ResponseType, ConversationContext } = Freestyler;
 class AiAgentMock extends AiAgent {
     type = "freestyler" /* Freestyler.AgentType.FREESTYLER */;
     preamble = 'preamble';
@@ -183,6 +183,62 @@ describeWithEnvironment('AiAgent', () => {
                     text: 'second answer',
                 },
             ]);
+        });
+    });
+    describe('ConversationContext', () => {
+        function getTestContext(origin) {
+            class TestContext extends ConversationContext {
+                getIcon() {
+                    throw new Error('Method not implemented.');
+                }
+                getTitle() {
+                    throw new Error('Method not implemented.');
+                }
+                getOrigin() {
+                    return origin;
+                }
+                getItem() {
+                    return undefined;
+                }
+            }
+            return new TestContext();
+        }
+        it('checks context origins', () => {
+            const tests = [
+                {
+                    contextOrigin: 'https://google.test',
+                    agentOrigin: 'https://google.test',
+                    isAllowed: true,
+                },
+                {
+                    contextOrigin: 'https://google.test',
+                    agentOrigin: 'about:blank',
+                    isAllowed: false,
+                },
+                {
+                    contextOrigin: 'https://google.test',
+                    agentOrigin: 'https://www.google.test',
+                    isAllowed: false,
+                },
+                {
+                    contextOrigin: 'https://a.test',
+                    agentOrigin: 'https://b.test',
+                    isAllowed: false,
+                },
+                {
+                    contextOrigin: 'https://a.test',
+                    agentOrigin: 'file:///tmp',
+                    isAllowed: false,
+                },
+                {
+                    contextOrigin: 'https://a.test',
+                    agentOrigin: 'http://a.test',
+                    isAllowed: false,
+                },
+            ];
+            for (const test of tests) {
+                assert.strictEqual(getTestContext(test.contextOrigin).isOriginAllowed(test.agentOrigin), test.isAllowed);
+            }
         });
     });
 });

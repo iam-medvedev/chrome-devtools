@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as Cards from '../../ui/components/cards/cards.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
@@ -11,7 +13,7 @@ const UIStrings = {
      *@description Title in the Locations Settings Tab, where custom geographic locations that the user
      *has entered are stored.
      */
-    customLocations: 'Custom locations',
+    locations: 'Locations',
     /**
      *@description Label for the name of a geographic location that the user has entered.
      */
@@ -88,7 +90,7 @@ const UIStrings = {
     /**
      *@description Text of add locations button in Locations Settings Tab of the Device Toolbar
      */
-    addLocation: 'Add location...',
+    addLocation: 'Add location',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sensors/LocationsSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -99,12 +101,27 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     constructor() {
         super(true);
         this.element.setAttribute('jslog', `${VisualLogging.pane('emulation-locations')}`);
-        this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.customLocations);
-        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addLocation), this.addButtonClicked.bind(this), { className: 'add-locations-button', jslogContext: 'emulation.add-location' });
-        this.contentElement.appendChild(addButton);
+        const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
+        settingsContent.classList.add('settings-card-container');
+        const addButton = new Buttons.Button.Button();
+        addButton.classList.add('add-locations-button');
+        addButton.data = {
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
+            iconName: 'plus',
+            jslogContext: 'emulation.add-location',
+        };
+        addButton.textContent = i18nString(UIStrings.addLocation);
+        addButton.addEventListener('click', () => this.addButtonClicked());
+        const listContainer = document.createElement('div');
+        const locationsCard = new Cards.Card.Card();
+        locationsCard.data = {
+            heading: i18nString(UIStrings.locations),
+            content: [listContainer, addButton],
+        };
+        settingsContent.appendChild(locationsCard);
         this.list = new UI.ListWidget.ListWidget(this, undefined, true);
         this.list.element.classList.add('locations-list');
-        this.list.show(this.contentElement);
+        this.list.show(listContainer);
         this.customSetting =
             Common.Settings.Settings.instance().moduleSetting('emulation.locations');
         const list = this.customSetting.get().map(location => replaceLocationTitles(location, this.customSetting.defaultValue));
@@ -129,7 +146,6 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         }
         this.customSetting.set(list);
         this.customSetting.addChangeListener(this.locationsUpdated, this);
-        this.setDefaultFocusedElement(addButton);
     }
     wasShown() {
         super.wasShown();

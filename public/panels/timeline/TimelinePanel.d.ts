@@ -1,7 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Client } from './TimelineController.js';
@@ -123,7 +122,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
      * user switches to an existing trace, please {@see setModel} and put your
      * code in there.
      **/
-    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: (TimelineModel.TimelineModelFilter.TimelineModelFilter | null) | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: (Trace.Extras.TraceFilter.TraceFilter | null) | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;
     loadingCompleteForTest(): void;
     private showRecordingStarted;

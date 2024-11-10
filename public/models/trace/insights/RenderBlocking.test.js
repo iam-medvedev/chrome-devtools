@@ -12,7 +12,7 @@ export async function processTrace(testContext, traceFile) {
     }
     return { data: parsedTrace, insights };
 }
-describeWithEnvironment('RenderBlockingRequests', function () {
+describeWithEnvironment('RenderBlocking', function () {
     it('finds render blocking requests', async () => {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.deepStrictEqual([...insights.keys()], [Trace.Types.Events.NO_NAVIGATION, '0BCFC23BC7D7BEDC9F93E912DCCEC1DA']);

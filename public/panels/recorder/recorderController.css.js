@@ -148,10 +148,6 @@ devtools-recording-list-view {
   outline: -webkit-focus-ring-color auto 1px;
 }
 
-devtools-shortcut-dialog {
-  padding-right: 6px;
-}
-
 /*# sourceURL=recorderController.css */
 `);
 

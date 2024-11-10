@@ -18,7 +18,7 @@ export declare class CSSContainerQueryContainer {
     constructor(containerNode: DOMNode);
     getContainerSizeDetails(): Promise<ContainerQueriedSizeDetails | undefined>;
 }
-export declare const getQueryAxis: (propertyValue: string) => QueryAxis;
+export declare const getQueryAxisFromContainerType: (propertyValue: string) => QueryAxis;
 export declare const getPhysicalAxisFromQueryAxis: (queryAxis: QueryAxis, writingMode: string) => PhysicalAxis;
 export interface ContainerQueriedSizeDetails {
     queryAxis: QueryAxis;

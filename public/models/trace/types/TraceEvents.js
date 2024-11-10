@@ -246,7 +246,8 @@ export function isFrameCommittedInBrowser(event) {
 export function isCommitLoad(event) {
     return event.name === 'CommitLoad';
 }
-export function isNavigationStart(event) {
+/** @deprecated You probably want `isNavigationStart` instead. */
+export function isNavigationStartUnreliable(event) {
     return event.name === 'navigationStart';
 }
 export function isAnimation(event) {
@@ -347,8 +348,9 @@ export function isNetworkTrackEntry(event) {
 export function isPrePaint(event) {
     return event.name === 'PrePaint';
 }
-export function isNavigationStartWithURL(event) {
-    return Boolean(isNavigationStart(event) && event.args.data && event.args.data.documentLoaderURL !== '');
+/** A VALID navigation start (as it has a populated documentLoaderURL) */
+export function isNavigationStart(event) {
+    return Boolean(isNavigationStartUnreliable(event) && event.args.data && event.args.data.documentLoaderURL !== '');
 }
 export function isMainFrameViewport(event) {
     return event.name === 'PaintTimingVisualizer::Viewport';

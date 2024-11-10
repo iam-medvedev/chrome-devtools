@@ -12,7 +12,15 @@ declare const ViewportDataGrid_base: (new (...args: any[]) => {
 export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportDataGridNode<T>> {
     private readonly onScrollBound;
     private visibleNodes;
-    stickToBottom: boolean;
+    /** A datagrid preference to express that the grid represents an updating log of rows (eg Network panel request log, websocket messages).
+     * If `true`, the datagrid will mostly keep the scroll at the bottom, so new items are visible.
+     * If the data is sorted descending (eg Performance Call Tree, heap snapshot), keep the default of `false`.
+     */
+    enableAutoScrollToBottom: boolean;
+    /** When true, the datagrid will manipulate the scrollTop to focus on the bottom, mostly so new additions are visible.
+     * Some actions will unset this, like revealing or expanding a particular node.
+     * Only matters if enableAutoScrollToBottom is true. */
+    keepScrollingToBottom: boolean;
     private updateIsFromUser;
     private lastScrollTop;
     private firstVisibleIsStriped;
@@ -22,7 +30,7 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
     private updateStripesClass;
     setScrollContainer(scrollContainer: HTMLElement): void;
     onResize(): void;
-    setStickToBottom(stick: boolean): void;
+    setEnableAutoScrollToBottom(stick: boolean): void;
     private onScroll;
     scheduleUpdateStructure(): void;
     scheduleUpdate(isFromUser?: boolean): void;

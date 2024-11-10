@@ -37,7 +37,7 @@ export function getInsightOrError(insightName, insights, navigation) {
     if (!insightSets) {
         throw new Error('missing navInsights');
     }
-    const insight = insightSets.data[insightName];
+    const insight = insightSets.model[insightName];
     if (insight instanceof Error) {
         throw insight;
     }

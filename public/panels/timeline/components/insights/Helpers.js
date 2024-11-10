@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../../ui/components/markdown_view/markdown_view.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import * as Marked from '../../../../third_party/marked/marked.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
@@ -21,13 +20,16 @@ export function insightIsActive(options) {
 }
 // TODO(crbug.com/371615739): BaseInsight, SidebarInsight should be combined.
 // This is an abstract base class so the component naming rules do not apply.
-export class BaseInsight extends HTMLElement {
+export class BaseInsightComponent extends HTMLElement {
     // So we can use the TypeScript BaseInsight class without getting warnings
     // about litTagName. Every child should overrwrite this.
     static litTagName = LitHtml.literal ``;
     shadow = this.attachShadow({ mode: 'open' });
+    #model = null;
+    get model() {
+        return this.#model;
+    }
     data = {
-        insights: null,
         parsedTrace: null,
         insightSetKey: null,
         activeInsight: null,
@@ -50,16 +52,16 @@ export class BaseInsight extends HTMLElement {
         // Used for unit test purposes when querying the DOM.
         this.dataset.insightName = this.internalName;
         // TODO(crbug.com/371615739): this should be moved to model/trace/insights
-        if (!this.#hasRegisteredRelatedEvents) {
+        if (!this.#hasRegisteredRelatedEvents && this.#model) {
             this.#hasRegisteredRelatedEvents = true;
             const events = this.getRelatedEvents();
             if (events.length) {
-                this.dispatchEvent(new SidebarInsight.InsightProvideRelatedEvents(this.userVisibleTitle, events, this.#dispatchInsightActivatedEvent.bind(this)));
+                this.dispatchEvent(new SidebarInsight.InsightProvideRelatedEvents(this.#model.title, events, this.#dispatchInsightActivatedEvent.bind(this)));
             }
         }
     }
-    set insights(insights) {
-        this.data.insights = insights;
+    set model(model) {
+        this.#model = model;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set parsedTrace(parsedTrace) {
@@ -135,11 +137,6 @@ export class BaseInsight extends HTMLElement {
             insightName: this.internalName,
             insightSetKey: this.data.insightSetKey,
         });
-    }
-    getInsightSetUrl() {
-        const url = this.data.insights?.get(this.data.insightSetKey ?? '')?.url;
-        Platform.TypeScriptUtilities.assertNotNullOrUndefined(url, 'Expected url for insight set');
-        return new URL(url);
     }
 }
 /**

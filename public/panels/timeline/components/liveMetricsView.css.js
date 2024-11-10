@@ -80,11 +80,6 @@ styles.replaceSync(
   margin-bottom: 10px;
 }
 
-.section-title-help {
-  height: var(--sys-typescale-headline4-line-height);
-  vertical-align: top;
-}
-
 .settings-card {
   border-radius: var(--sys-shape-corner-small);
   padding: 14px 16px 16px;
@@ -140,6 +135,10 @@ styles.replaceSync(
   border-radius: 2px;
   padding: 0 2px;
   min-width: 0;
+}
+
+.local-field-link {
+  margin-top: 8px;
 }
 
 .logs-section {
@@ -300,13 +299,6 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   margin-top: 8px;
 }
 
-.setting-hint {
-  margin-left: 6px;
-  vertical-align: bottom;
-  height: 18px;
-  width: 18px;
-}
-
 .environment-recs-title {
   margin-top: 12px;
   font-weight: var(--ref-typeface-weight-medium);
@@ -343,7 +335,7 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
 
 .phase-table {
   border-top: 1px solid var(--sys-color-divider);
-  padding: 7px 0;
+  padding: 7px 4px;
   margin-left: var(--phase-table-margin);
 }
 

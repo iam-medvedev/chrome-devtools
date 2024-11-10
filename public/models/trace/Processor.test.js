@@ -123,6 +123,7 @@ describeWithEnvironment('TraceProcessor', function () {
         const baseHandler = {
             data() { },
             handleEvent() { },
+            async finalize() { },
             reset() { },
         };
         function fillHandlers(handlersDeps) {
@@ -235,7 +236,7 @@ describeWithEnvironment('TraceProcessor', function () {
                         generateInsight: () => {
                             throw new Error('forced error');
                         },
-                        deps: Trace.Insights.InsightRunners.RenderBlocking.deps,
+                        deps: Trace.Insights.Models.RenderBlocking.deps,
                     },
                 };
             });
@@ -247,8 +248,8 @@ describeWithEnvironment('TraceProcessor', function () {
             }
             const insights = Array.from(processor.insights.values());
             assert.strictEqual(insights.length, 2);
-            assert(insights[1].data.RenderBlocking instanceof Error, 'RenderBlocking did not throw an error');
-            assert.strictEqual(insights[1].data.RenderBlocking.message, 'forced error');
+            assert(insights[1].model.RenderBlocking instanceof Error, 'RenderBlocking did not throw an error');
+            assert.strictEqual(insights[1].model.RenderBlocking.message, 'forced error');
         });
         it('skips insights that are missing one or more dependencies', async function () {
             const processor = new Trace.Processor.TraceProcessor({
@@ -264,8 +265,8 @@ describeWithEnvironment('TraceProcessor', function () {
                 '0BCFC23BC7D7BEDC9F93E912DCCEC1DA',
             ]);
             const insights = Array.from(processor.insights.values());
-            assert.isUndefined(insights[0].data.RenderBlocking);
-            assert.isUndefined(insights[1].data.RenderBlocking);
+            assert.isUndefined(insights[0].model.RenderBlocking);
+            assert.isUndefined(insights[1].model.RenderBlocking);
         });
         it('returns insights for a navigation', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
@@ -279,14 +280,14 @@ describeWithEnvironment('TraceProcessor', function () {
                 '0BCFC23BC7D7BEDC9F93E912DCCEC1DA',
             ]);
             const insights = Array.from(processor.insights.values());
-            if (insights[0].data.RenderBlocking instanceof Error) {
+            if (insights[0].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            if (insights[1].data.RenderBlocking instanceof Error) {
+            if (insights[1].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            assert.strictEqual(insights[0].data.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[1].data.RenderBlocking.renderBlockingRequests.length, 2);
+            assert.strictEqual(insights[0].model.RenderBlocking.renderBlockingRequests.length, 0);
+            assert.strictEqual(insights[1].model.RenderBlocking.renderBlockingRequests.length, 2);
         });
         it('returns insights for multiple navigations', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
@@ -302,22 +303,22 @@ describeWithEnvironment('TraceProcessor', function () {
                 '71CF0F2B9FE50F2CB31B261D129D06E8',
             ]);
             const insights = Array.from(processor.insights.values());
-            if (insights[0].data.RenderBlocking instanceof Error) {
+            if (insights[0].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            if (insights[1].data.RenderBlocking instanceof Error) {
+            if (insights[1].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            if (insights[2].data.RenderBlocking instanceof Error) {
+            if (insights[2].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            if (insights[3].data.RenderBlocking instanceof Error) {
+            if (insights[3].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            assert.strictEqual(insights[0].data.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[1].data.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[2].data.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[3].data.RenderBlocking.renderBlockingRequests.length, 1);
+            assert.strictEqual(insights[0].model.RenderBlocking.renderBlockingRequests.length, 0);
+            assert.strictEqual(insights[1].model.RenderBlocking.renderBlockingRequests.length, 0);
+            assert.strictEqual(insights[2].model.RenderBlocking.renderBlockingRequests.length, 0);
+            assert.strictEqual(insights[3].model.RenderBlocking.renderBlockingRequests.length, 1);
         });
     });
 });

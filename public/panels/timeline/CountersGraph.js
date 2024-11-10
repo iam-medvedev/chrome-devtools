@@ -124,11 +124,11 @@ export class CountersGraph extends UI.Widget.VBox {
         this.counters = [];
         this.counterUI = [];
         this.countersByName = new Map();
-        this.countersByName.set('jsHeapSizeUsed', this.createCounter(i18nString(UIStrings.jsHeap), 'js-heap-size-used', 'hsl(220, 90%, 43%)', Platform.NumberUtilities.bytesToString));
+        this.countersByName.set('jsHeapSizeUsed', this.createCounter(i18nString(UIStrings.jsHeap), 'js-heap-size-used', 'hsl(220, 90%, 43%)', i18n.ByteUtilities.bytesToString));
         this.countersByName.set('documents', this.createCounter(i18nString(UIStrings.documents), 'documents', 'hsl(0, 90%, 43%)'));
         this.countersByName.set('nodes', this.createCounter(i18nString(UIStrings.nodes), 'nodes', 'hsl(120, 90%, 43%)'));
         this.countersByName.set('jsEventListeners', this.createCounter(i18nString(UIStrings.listeners), 'js-event-listeners', 'hsl(38, 90%, 43%)'));
-        this.gpuMemoryCounter = this.createCounter(i18nString(UIStrings.gpuMemory), 'gpu-memory-used-kb', 'hsl(300, 90%, 43%)', Platform.NumberUtilities.bytesToString);
+        this.gpuMemoryCounter = this.createCounter(i18nString(UIStrings.gpuMemory), 'gpu-memory-used-kb', 'hsl(300, 90%, 43%)', i18n.ByteUtilities.bytesToString);
         this.countersByName.set('gpuMemoryUsedKB', this.gpuMemoryCounter);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     }

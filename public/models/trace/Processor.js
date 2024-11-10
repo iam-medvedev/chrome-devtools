@@ -35,7 +35,7 @@ export class TraceProcessor extends EventTarget {
     }
     static getEnabledInsightRunners(parsedTrace) {
         const enabledInsights = {};
-        for (const [name, insight] of Object.entries(Insights.InsightRunners)) {
+        for (const [name, insight] of Object.entries(Insights.Models)) {
             const deps = insight.deps();
             if (deps.some(dep => !parsedTrace[dep])) {
                 continue;
@@ -118,7 +118,7 @@ export class TraceProcessor extends EventTarget {
         }
         try {
             this.#status = "PARSING" /* Status.PARSING */;
-            await this.#computeParsedTrace(traceEvents, Boolean(options.isFreshRecording));
+            await this.#computeParsedTrace(traceEvents);
             if (this.#data && !options.isCPUProfile) { // We do not calculate insights for CPU Profiles.
                 this.#computeInsights(this.#data, traceEvents);
             }
@@ -132,7 +132,7 @@ export class TraceProcessor extends EventTarget {
     /**
      * Run all the handlers and set the result to `#data`.
      */
-    async #computeParsedTrace(traceEvents, freshRecording) {
+    async #computeParsedTrace(traceEvents) {
         /**
          * We want to yield regularly to maintain responsiveness. If we yield too often, we're wasting idle time.
          * We could do this by checking `performance.now()` regularly, but it's an expensive call in such a hot loop.
@@ -147,10 +147,6 @@ export class TraceProcessor extends EventTarget {
         // Reset.
         for (const handler of sortedHandlers) {
             handler.reset();
-        }
-        // Initialize.
-        for (const handler of sortedHandlers) {
-            handler.initialize?.(freshRecording);
         }
         // Handle each event.
         for (let i = 0; i < traceEvents.length; ++i) {
@@ -271,7 +267,7 @@ export class TraceProcessor extends EventTarget {
         return { graph, simulator, metrics };
     }
     #computeInsightSets(insights, parsedTrace, insightRunners, context) {
-        const data = {};
+        const model = {};
         for (const [name, insight] of Object.entries(insightRunners)) {
             let insightResult;
             try {
@@ -280,7 +276,7 @@ export class TraceProcessor extends EventTarget {
             catch (err) {
                 insightResult = err;
             }
-            Object.assign(data, { [name]: insightResult });
+            Object.assign(model, { [name]: insightResult });
         }
         let id, urlString, navigation;
         if (context.navigation) {
@@ -307,7 +303,7 @@ export class TraceProcessor extends EventTarget {
             navigation,
             frameId: context.frameId,
             bounds: context.bounds,
-            data,
+            model,
         };
         insights.set(insightSets.id, insightSets);
     }

@@ -1,7 +1,8 @@
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { type ActionResponse, AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, type ParsedResponse, type SideEffectResponse } from './AiAgent.js';
+import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { type ActionResponse, AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, ConversationContext, type ParsedResponse, type SideEffectResponse } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
@@ -18,6 +19,14 @@ type AgentOptions = {
     createExtensionScope?: CreateExtensionScopeFunction;
     execJs?: typeof executeJsCode;
 };
+export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNode> {
+    #private;
+    constructor(node: SDK.DOMModel.DOMNode);
+    getOrigin(): string;
+    getItem(): SDK.DOMModel.DOMNode;
+    getIcon(): HTMLElement;
+    getTitle(): string | ReturnType<typeof LitHtml.Directives.until>;
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -35,8 +44,8 @@ export declare class FreestylerAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     onPrimaryPageChanged(): void;
     static describeElement(element: SDK.DOMModel.DOMNode): Promise<string>;
     handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
-    handleContextDetails(selectedElement: SDK.DOMModel.DOMNode | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, selectedElement: SDK.DOMModel.DOMNode | null): Promise<string>;
+    handleContextDetails(selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): AsyncGenerator<ContextResponse, void, void>;
+    enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): Promise<string>;
     formatHistoryChunkAnswer(text: string): string;
 }
 export {};

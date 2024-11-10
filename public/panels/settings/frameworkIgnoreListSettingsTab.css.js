@@ -35,7 +35,9 @@ styles.replaceSync(
   flex: 0 1 auto;
 }
 
-.enable-ignore-listing, .ignore-list-item, .general-exclusion-group {
+.enable-ignore-listing,
+.ignore-list-item,
+.general-exclusion-group {
   padding-left: var(--sys-size-4);
 }
 

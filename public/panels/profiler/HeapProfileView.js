@@ -147,7 +147,7 @@ export class HeapProfileView extends ProfileView {
     }
     onIdsRangeChanged(event) {
         const { minId, maxId } = event.data;
-        this.selectedSizeText.setText(i18nString(UIStrings.selectedSizeS, { PH1: Platform.NumberUtilities.bytesToString(event.data.size) }));
+        this.selectedSizeText.setText(i18nString(UIStrings.selectedSizeS, { PH1: i18n.ByteUtilities.bytesToString(event.data.size) }));
         this.setSelectionRange(minId, maxId);
     }
     setSelectionRange(minId, maxId) {
@@ -562,8 +562,8 @@ export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
             entryInfo.push({ title, value });
         }
         pushEntryInfoRow(i18nString(UIStrings.name), UI.UIUtils.beautifyFunctionName(node.functionName));
-        pushEntryInfoRow(i18nString(UIStrings.selfSize), Platform.NumberUtilities.bytesToString(node.self));
-        pushEntryInfoRow(i18nString(UIStrings.totalSize), Platform.NumberUtilities.bytesToString(node.total));
+        pushEntryInfoRow(i18nString(UIStrings.selfSize), i18n.ByteUtilities.bytesToString(node.self));
+        pushEntryInfoRow(i18nString(UIStrings.totalSize), i18n.ByteUtilities.bytesToString(node.total));
         const linkifier = new Components.Linkifier.Linkifier();
         const link = linkifier.maybeLinkifyConsoleCallFrame(this.heapProfilerModel ? this.heapProfilerModel.target() : null, node.callFrame);
         if (link) {

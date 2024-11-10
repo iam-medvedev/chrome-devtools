@@ -70,7 +70,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
             new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(content, contentUrl, resourceType);
         this.toolbar = new UI.Toolbar.Toolbar('binary-view-toolbar', this.element);
         this.binaryViewObjects = [
-            new BinaryViewObject('base64', i18n.i18n.lockedString('Base64'), i18nString(UIStrings.copiedAsBase), this.binaryResourceViewFactory.createBase64View.bind(this.binaryResourceViewFactory), () => Promise.resolve(this.binaryResourceViewFactory.base64())),
+            new BinaryViewObject('base64', i18n.i18n.lockedString('Base64'), i18nString(UIStrings.copiedAsBase), this.binaryResourceViewFactory.createBase64View.bind(this.binaryResourceViewFactory), this.binaryResourceViewFactory.base64.bind(this.binaryResourceViewFactory)),
             new BinaryViewObject('hex', i18nString(UIStrings.hexViewer), i18nString(UIStrings.copiedAsHex), this.binaryResourceViewFactory.createHexView.bind(this.binaryResourceViewFactory), this.binaryResourceViewFactory.hex.bind(this.binaryResourceViewFactory)),
             new BinaryViewObject('utf8', i18n.i18n.lockedString('UTF-8'), i18nString(UIStrings.copiedAsUtf), this.binaryResourceViewFactory.createUtf8View.bind(this.binaryResourceViewFactory), this.binaryResourceViewFactory.utf8.bind(this.binaryResourceViewFactory)),
         ];
@@ -83,7 +83,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
         this.toolbar.appendToolbarItem(this.binaryViewTypeCombobox);
         const copyButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.copyToClipboard), 'copy');
         copyButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
-            void this.copySelectedViewToClipboard();
+            this.copySelectedViewToClipboard();
         }, this);
         this.toolbar.appendToolbarItem(copyButton);
         this.copiedText = new UI.Toolbar.ToolbarText();
@@ -99,12 +99,12 @@ export class BinaryResourceView extends UI.Widget.VBox {
         console.assert(Boolean(binaryViewObject), `No binary view found for binary view type found in setting 'binary-view-type': ${this.binaryViewTypeSetting.get()}`);
         return binaryViewObject || null;
     }
-    async copySelectedViewToClipboard() {
+    copySelectedViewToClipboard() {
         const viewObject = this.getCurrentViewObject();
         if (!viewObject) {
             return;
         }
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(await viewObject.content());
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(viewObject.content());
         this.copiedText.setText(viewObject.copiedMessage);
         this.copiedText.element.classList.remove('fadeout');
         function addFadeoutClass() {

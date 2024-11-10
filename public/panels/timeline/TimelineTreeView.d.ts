@@ -1,6 +1,5 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -33,29 +32,29 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null): void;
     parsedTrace(): Trace.Handlers.Types.ParsedTrace | null;
     init(): void;
-    lastSelectedNode(): TimelineModel.TimelineProfileTree.Node | null | undefined;
+    lastSelectedNode(): Trace.Extras.TraceTree.Node | null | undefined;
     updateContents(selection: TimelineSelection): void;
     setRange(startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): void;
-    filters(): TimelineModel.TimelineModelFilter.TimelineModelFilter[];
-    filtersWithoutTextFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter[];
+    filters(): Trace.Extras.TraceFilter.TraceFilter[];
+    filtersWithoutTextFilter(): Trace.Extras.TraceFilter.TraceFilter[];
     textFilter(): TimelineRegExp;
     exposePercentages(): boolean;
     populateToolbar(toolbar: UI.Toolbar.Toolbar): void;
     selectedEvents(): Trace.Types.Events.Event[];
-    onHover(_node: TimelineModel.TimelineProfileTree.Node | null): void;
-    appendContextMenuItems(_contextMenu: UI.ContextMenu.ContextMenu, _node: TimelineModel.TimelineProfileTree.Node): void;
-    selectProfileNode(treeNode: TimelineModel.TimelineProfileTree.Node, suppressSelectedEvent: boolean): void;
+    onHover(_node: Trace.Extras.TraceTree.Node | null): void;
+    appendContextMenuItems(_contextMenu: UI.ContextMenu.ContextMenu, _node: Trace.Extras.TraceTree.Node): void;
+    selectProfileNode(treeNode: Trace.Extras.TraceTree.Node, suppressSelectedEvent: boolean): void;
     refreshTree(): void;
-    buildTree(): TimelineModel.TimelineProfileTree.Node;
-    buildTopDownTree(doNotAggregate: boolean, groupIdCallback: ((arg0: Trace.Types.Events.Event) => string) | null): TimelineModel.TimelineProfileTree.Node;
+    buildTree(): Trace.Extras.TraceTree.Node;
+    buildTopDownTree(doNotAggregate: boolean, groupIdCallback: ((arg0: Trace.Types.Events.Event) => string) | null): Trace.Extras.TraceTree.Node;
     populateColumns(columns: DataGrid.DataGrid.ColumnDescriptor[]): void;
     private sortingChanged;
     private onShowModeChanged;
     private updateDetailsForSelection;
-    showDetailsForNode(_node: TimelineModel.TimelineProfileTree.Node): boolean;
+    showDetailsForNode(_node: Trace.Extras.TraceTree.Node): boolean;
     private onMouseMove;
     private onContextMenu;
-    dataGridNodeForTreeNode(treeNode: TimelineModel.TimelineProfileTree.Node): GridNode | null;
+    dataGridNodeForTreeNode(treeNode: Trace.Extras.TraceTree.Node): GridNode | null;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, _shouldJump: boolean, _jumpBackwards?: boolean): void;
     jumpToNextSearchResult(): void;
@@ -65,19 +64,19 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
     protected populated: boolean;
-    profileNode: TimelineModel.TimelineProfileTree.Node;
+    profileNode: Trace.Extras.TraceTree.Node;
     protected treeView: TimelineTreeView;
     protected grandTotalTime: number;
     protected maxSelfTime: number;
     protected maxTotalTime: number;
     linkElement: Element | null;
-    constructor(profileNode: TimelineModel.TimelineProfileTree.Node, grandTotalTime: number, maxSelfTime: number, maxTotalTime: number, treeView: TimelineTreeView);
+    constructor(profileNode: Trace.Extras.TraceTree.Node, grandTotalTime: number, maxSelfTime: number, maxTotalTime: number, treeView: TimelineTreeView);
     createCell(columnId: string): HTMLElement;
     private createNameCell;
     private createValueCell;
 }
 export declare class TreeGridNode extends GridNode {
-    constructor(profileNode: TimelineModel.TimelineProfileTree.Node, grandTotalTime: number, maxSelfTime: number, maxTotalTime: number, treeView: TimelineTreeView);
+    constructor(profileNode: Trace.Extras.TraceTree.Node, grandTotalTime: number, maxSelfTime: number, maxTotalTime: number, treeView: TimelineTreeView);
     populate(): void;
 }
 export declare class AggregatedTimelineTreeView extends TimelineTreeView {
@@ -89,7 +88,7 @@ export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     updateContents(selection: TimelineSelection): void;
     private updateExtensionResolver;
     private beautifyDomainName;
-    displayInfoForGroupNode(node: TimelineModel.TimelineProfileTree.Node): {
+    displayInfoForGroupNode(node: Trace.Extras.TraceTree.Node): {
         name: string;
         color: string;
         icon: (Element | undefined);
@@ -98,7 +97,7 @@ export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     private buildHeaviestStack;
     exposePercentages(): boolean;
     private onStackViewSelectionChanged;
-    showDetailsForNode(node: TimelineModel.TimelineProfileTree.Node): boolean;
+    showDetailsForNode(node: Trace.Extras.TraceTree.Node): boolean;
     protected groupingFunction(groupBy: AggregatedTimelineTreeView.GroupBy): ((arg0: Trace.Types.Events.Event) => string) | null;
     private domainByEvent;
     private static isExtensionInternalURL;
@@ -120,11 +119,11 @@ export declare namespace AggregatedTimelineTreeView {
 }
 export declare class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
     constructor();
-    buildTree(): TimelineModel.TimelineProfileTree.Node;
+    buildTree(): Trace.Extras.TraceTree.Node;
 }
 export declare class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
     constructor();
-    buildTree(): TimelineModel.TimelineProfileTree.Node;
+    buildTree(): Trace.Extras.TraceTree.Node;
 }
 declare const TimelineStackView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineStackView.EventTypes>;
@@ -138,8 +137,8 @@ export declare class TimelineStackView extends TimelineStackView_base {
     private readonly treeView;
     private readonly dataGrid;
     constructor(treeView: TimelineTreeView);
-    setStack(stack: TimelineModel.TimelineProfileTree.Node[], selectedNode: TimelineModel.TimelineProfileTree.Node): void;
-    selectedTreeNode(): TimelineModel.TimelineProfileTree.Node | null;
+    setStack(stack: Trace.Extras.TraceTree.Node[], selectedNode: Trace.Extras.TraceTree.Node): void;
+    selectedTreeNode(): Trace.Extras.TraceTree.Node | null;
     private onSelectionChanged;
 }
 export declare namespace TimelineStackView {

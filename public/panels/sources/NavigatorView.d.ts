@@ -201,7 +201,7 @@ export declare class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
     hasChildren(): boolean;
     dispose(): void;
     reveal(select?: boolean): void;
-    rename(callback?: ((arg0: boolean) => void)): void;
+    rename(callback?: ((committed: boolean) => void)): void;
 }
 export declare class NavigatorFolderTreeNode extends NavigatorTreeNode {
     project: Workspace.Workspace.Project | null;

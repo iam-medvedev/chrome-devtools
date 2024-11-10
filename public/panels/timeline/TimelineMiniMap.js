@@ -39,6 +39,15 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.#overviewComponent.addEventListener("OverviewPaneBreadcrumbAdded" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_BREADCRUMB_ADDED */, event => {
             this.addBreadcrumb(event.data);
         });
+        // We want to add/remove an overlay for these two events, and the overlay system is controlled by
+        // `TimelineFlameChartView`, so we need to dispatch them up to the `TimelinePanel` level to call
+        // `TimelineFlameChartView` -> `addOverlay()/removeOverlay()`.
+        this.#overviewComponent.addEventListener("OverviewPaneMouseMove" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_MOUSE_MOVE */, event => {
+            this.dispatchEventToListeners("OverviewPaneMouseMove" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_MOUSE_MOVE */, event.data);
+        });
+        this.#overviewComponent.addEventListener("OverviewPaneMouseLeave" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_MOUSE_LEAVE */, () => {
+            this.dispatchEventToListeners("OverviewPaneMouseLeave" /* PerfUI.TimelineOverviewPane.Events.OVERVIEW_PANE_MOUSE_LEAVE */);
+        });
         this.#breadcrumbsUI.addEventListener(TimelineComponents.BreadcrumbsUI.BreadcrumbActivatedEvent.eventName, event => {
             const { breadcrumb, childBreadcrumbsRemoved } = event;
             this.#activateBreadcrumb(breadcrumb, { removeChildBreadcrumbs: Boolean(childBreadcrumbsRemoved), updateVisibleWindow: true });

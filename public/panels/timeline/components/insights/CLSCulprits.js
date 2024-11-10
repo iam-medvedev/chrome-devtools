@@ -5,17 +5,10 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { EventReferenceClick } from './EventRef.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
-    title: 'Layout shift culprits',
-    /**
-     * @description Description of a DevTools insight that identifies the reasons that elements shift on the page.
-     * This is displayed after a user expands the section to see more. No character length limits.
-     */
-    description: 'Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.',
     /**
      *@description Text indicating the worst layout shift cluster.
      */
@@ -52,15 +45,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/CLSCulprits.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class CLSCulprits extends BaseInsight {
+export class CLSCulprits extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-cls-culprits`;
     insightCategory = Category.CLS;
     internalName = 'cls-culprits';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
     createOverlays() {
-        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
-        const clustersByScore = insight?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
+        const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
         const worstCluster = clustersByScore[0];
         if (!worstCluster) {
             return [];
@@ -119,6 +109,9 @@ export class CLSCulprits extends BaseInsight {
         this.dispatchEvent(new EventReferenceClick(event));
     }
     #render(culprits, worstCluster) {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         const ts = Trace.Types.Timing.MicroSeconds(worstCluster.ts - (this.data.parsedTrace?.Meta.traceBounds.min ?? 0));
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // TODO(crbug.com/369102516): use Table for hover/click ux.
@@ -126,8 +119,8 @@ export class CLSCulprits extends BaseInsight {
         return html `
         <div class="insights">
             <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             internalName: this.internalName,
             expanded: this.isActive(),
         }}
@@ -146,26 +139,24 @@ export class CLSCulprits extends BaseInsight {
         // clang-format on
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
-        return insight?.relatedEvents ?? [];
+        return this.model?.relatedEvents ?? [];
     }
     render() {
-        const insight = Trace.Insights.Common.getInsight('CumulativeLayoutShift', this.data.insights, this.data.insightSetKey);
-        if (!insight) {
+        if (!this.model) {
             return;
         }
-        const culpritsByShift = insight.shifts;
-        const clusters = insight.clusters ?? [];
-        if (!clusters.length || !insight.worstCluster) {
+        const culpritsByShift = this.model.shifts;
+        const clusters = this.model.clusters ?? [];
+        if (!clusters.length || !this.model.worstCluster) {
             return;
         }
-        const causes = this.getTopCulprits(insight.worstCluster, culpritsByShift);
+        const causes = this.getTopCulprits(this.model.worstCluster, culpritsByShift);
         const hasCulprits = causes.length > 0;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,
         });
-        const output = hasCulprits && matchesCategory ? this.#render(causes, insight.worstCluster) : LitHtml.nothing;
+        const output = hasCulprits && matchesCategory ? this.#render(causes, this.model.worstCluster) : LitHtml.nothing;
         LitHtml.render(output, this.shadow, { host: this });
     }
 }

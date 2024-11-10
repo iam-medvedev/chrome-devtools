@@ -17,7 +17,7 @@ styles.replaceSync(
 }
 
 .keybinds-key {
-  display:flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   height: var(--sys-size-11);
@@ -26,19 +26,16 @@ styles.replaceSync(
   white-space: nowrap;
   border-radius: var(--sys-shape-corner-small);
   background: var(--sys-color-tonal-container);
-  padding: 0px var(--sys-size-4);
+  padding: 0 var(--sys-size-4);
 }
 
 .keybinds-list-item {
   margin: 0 var(--sys-size-6);
   padding: var(--sys-size-4) 0;
   display: grid;
-  grid-template-rows: 1fr ;
+  grid-template-rows: 1fr;
   grid-template-columns: 1fr 30px 2fr 30px 30px;
-}
-
-.keybinds-list-item:not(.keybinds-category-header) {
-  border-top: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .keybinds-list-item:focus-visible {
@@ -50,7 +47,7 @@ styles.replaceSync(
 }
 
 .keybinds-list-text.keybinds-action-name {
-  grid-row: 1 / 3;
+  grid-row: 1 / 1;
 }
 
 .keybinds-shortcut,
@@ -115,8 +112,8 @@ styles.replaceSync(
   white-space: nowrap;
 }
 
-.keybinds-header-wrapper + .keybinds-list-item-wrapper > .keybinds-list-item {
-  border: none;
+.keybinds-list-item-wrapper + .keybinds-header-wrapper {
+  margin-top: var(--sys-size-9);
 }
 
 .keybinds-list-item-wrapper:has(:not(.keybinds-category-header):hover),

@@ -15,6 +15,7 @@ declare global {
 export interface ParseOptions {
     /**
      * If the trace was just recorded on the current page, rather than an imported file.
+     * TODO(paulirish): Maybe remove. This is currently unused by the Processor and Handlers
      * @default false
      */
     isFreshRecording?: boolean;
@@ -27,7 +28,7 @@ export interface ParseOptions {
 export declare class TraceProcessor extends EventTarget {
     #private;
     static createWithAllHandlers(): TraceProcessor;
-    static getEnabledInsightRunners(parsedTrace: Handlers.Types.ParsedTrace): Partial<Insights.Types.InsightRunnersType>;
+    static getEnabledInsightRunners(parsedTrace: Handlers.Types.ParsedTrace): Partial<Insights.Types.InsightModelsType>;
     constructor(traceHandlers: Partial<Handlers.Types.Handlers>, modelConfiguration?: Types.Configuration.Configuration);
     reset(): void;
     parse(traceEvents: readonly Types.Events.Event[], options: ParseOptions): Promise<void>;

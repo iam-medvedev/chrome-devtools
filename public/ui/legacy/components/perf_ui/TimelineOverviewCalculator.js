@@ -12,7 +12,7 @@ export class TimelineOverviewCalculator {
         return (time - this.#minimumBoundary) / this.boundarySpan() * this.workingArea;
     }
     positionToTime(position) {
-        return position / this.workingArea * this.boundarySpan() + this.#minimumBoundary;
+        return Trace.Types.Timing.MilliSeconds(position / this.workingArea * this.boundarySpan() + this.#minimumBoundary);
     }
     setBounds(minimumBoundary, maximumBoundary) {
         this.#minimumBoundary = minimumBoundary;
@@ -27,20 +27,20 @@ export class TimelineOverviewCalculator {
     reset() {
         this.setBounds(Trace.Types.Timing.MilliSeconds(0), Trace.Types.Timing.MilliSeconds(100));
     }
-    formatValue(value, precision) {
+    formatValue(time, precision) {
         // If there are nav start times the value needs to be remapped.
         if (this.navStartTimes) {
             // Find the latest possible nav start time which is considered earlier
             // than the value passed through.
             for (let i = this.navStartTimes.length - 1; i >= 0; i--) {
                 const startTimeMilliseconds = Trace.Helpers.Timing.microSecondsToMilliseconds(this.navStartTimes[i].ts);
-                if (value > startTimeMilliseconds) {
-                    value -= (startTimeMilliseconds - this.zeroTime());
+                if (time > startTimeMilliseconds) {
+                    time = Trace.Types.Timing.MilliSeconds(time - (startTimeMilliseconds - this.zeroTime()));
                     break;
                 }
             }
         }
-        return i18n.TimeUtilities.preciseMillisToString(value - this.zeroTime(), precision);
+        return i18n.TimeUtilities.preciseMillisToString(time - this.zeroTime(), precision);
     }
     maximumBoundary() {
         return this.#maximumBoundary;

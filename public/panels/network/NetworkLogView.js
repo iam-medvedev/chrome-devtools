@@ -979,7 +979,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 this.handleContextMenuForRequest(contextMenu, request);
             }
         });
-        this.dataGrid.setStickToBottom(true);
+        this.dataGrid.setEnableAutoScrollToBottom(true);
         this.dataGrid.setName('network-log');
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.element.classList.add('network-log-grid');
@@ -1094,21 +1094,21 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             appendChunk(i18nString(UIStrings.sSRequests, { PH1: selectedNodeNumber, PH2: nodeCount }));
             this.summaryToolbarInternal.appendSeparator();
             appendChunk(i18nString(UIStrings.sSTransferred, {
-                PH1: Platform.NumberUtilities.bytesToString(selectedTransferSize),
-                PH2: Platform.NumberUtilities.bytesToString(transferSize),
+                PH1: i18n.ByteUtilities.bytesToString(selectedTransferSize),
+                PH2: i18n.ByteUtilities.bytesToString(transferSize),
             }), i18nString(UIStrings.sBSBTransferredOverNetwork, { PH1: selectedTransferSize, PH2: transferSize }));
             this.summaryToolbarInternal.appendSeparator();
             appendChunk(i18nString(UIStrings.sSResources, {
-                PH1: Platform.NumberUtilities.bytesToString(selectedResourceSize),
-                PH2: Platform.NumberUtilities.bytesToString(resourceSize),
+                PH1: i18n.ByteUtilities.bytesToString(selectedResourceSize),
+                PH2: i18n.ByteUtilities.bytesToString(resourceSize),
             }), i18nString(UIStrings.sBSBResourcesLoadedByThePage, { PH1: selectedResourceSize, PH2: resourceSize }));
         }
         else {
             appendChunk(i18nString(UIStrings.sRequests, { PH1: nodeCount }));
             this.summaryToolbarInternal.appendSeparator();
-            appendChunk(i18nString(UIStrings.sTransferred, { PH1: Platform.NumberUtilities.bytesToString(transferSize) }), i18nString(UIStrings.sBTransferredOverNetwork, { PH1: transferSize }));
+            appendChunk(i18nString(UIStrings.sTransferred, { PH1: i18n.ByteUtilities.bytesToString(transferSize) }), i18nString(UIStrings.sBTransferredOverNetwork, { PH1: transferSize }));
             this.summaryToolbarInternal.appendSeparator();
-            appendChunk(i18nString(UIStrings.sResources, { PH1: Platform.NumberUtilities.bytesToString(resourceSize) }), i18nString(UIStrings.sBResourcesLoadedByThePage, { PH1: resourceSize }));
+            appendChunk(i18nString(UIStrings.sResources, { PH1: i18n.ByteUtilities.bytesToString(resourceSize) }), i18nString(UIStrings.sBResourcesLoadedByThePage, { PH1: resourceSize }));
         }
         if (baseTime !== -1 && maxTime !== -1) {
             this.summaryToolbarInternal.appendSeparator();
@@ -1354,7 +1354,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.mainRequestDOMContentLoadedTime = -1;
         this.dataGrid.rootNode().removeChildren();
         this.updateSummaryBar();
-        this.dataGrid.setStickToBottom(true);
         this.scheduleRefresh();
     }
     // TODO(crbug.com/1477668)

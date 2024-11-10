@@ -6,18 +6,10 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /**
-     * @description Text to tell the user about the longest user interaction.
-     */
-    description: 'Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS.',
-    /**
-     * @description Title for the performance insight "INP by phase", which shows a breakdown of INP by phases / sections.
-     */
-    title: 'INP by phase',
     /**
      *@description Label used for the phase/component/stage/section of a larger duration.
      */
@@ -42,18 +34,15 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/InteractionToNextPaint.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class InteractionToNextPaint extends BaseInsight {
+export class InteractionToNextPaint extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-inp`;
     insightCategory = Category.INP;
     internalName = 'inp';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
     createOverlays() {
-        const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);
-        if (!insight) {
+        if (!this.model) {
             return [];
         }
-        const event = insight.longestInteractionEvent;
+        const event = this.model.longestInteractionEvent;
         if (!event) {
             return [];
         }
@@ -82,13 +71,16 @@ export class InteractionToNextPaint extends BaseInsight {
         ];
     }
     #render(event) {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
         return html `
         <div class="insights">
             <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             internalName: this.internalName,
             expanded: this.isActive(),
         }}
@@ -120,12 +112,10 @@ export class InteractionToNextPaint extends BaseInsight {
         // clang-format on
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);
-        return insight?.relatedEvents ?? [];
+        return this.model?.relatedEvents ?? [];
     }
     render() {
-        const insight = Trace.Insights.Common.getInsight('InteractionToNextPaint', this.data.insights, this.data.insightSetKey);
-        const event = insight?.longestInteractionEvent;
+        const event = this.model?.longestInteractionEvent;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,

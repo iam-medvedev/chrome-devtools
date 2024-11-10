@@ -1,6 +1,6 @@
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
-import type { BaseInsight } from './Helpers.js';
+import type { BaseInsightComponent } from './Helpers.js';
 /**
  * @fileoverview An interactive table component.
  *
@@ -21,7 +21,7 @@ export type TableState = {
     selectionIsSticky: boolean;
 };
 export interface TableData {
-    insight: BaseInsight;
+    insight: BaseInsightComponent<any>;
     headers: string[];
     rows: TableDataRow[];
 }

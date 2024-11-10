@@ -97,6 +97,8 @@ export function handleEvent(event) {
         eventToPaintImage.set(event, paintEvent);
     }
 }
+export async function finalize() {
+}
 export function data() {
     return {
         paintImageByDrawLazyPixelRef: paintImageByLazyPixelRef,

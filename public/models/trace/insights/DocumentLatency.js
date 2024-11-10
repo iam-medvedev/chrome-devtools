@@ -1,8 +1,21 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+const UIStrings = {
+    /**
+     *@description Title of an insight that provides a breakdown for how long it took to download the main document.
+     */
+    title: 'Document request latency',
+    /**
+     *@description Description of an insight that provides a breakdown for how long it took to download the main document.
+     */
+    description: 'Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.',
+};
+const str_ = i18n.i18n.registerUIStrings('models/trace/insights/DocumentLatency.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // Due to the way that DevTools throttling works we cannot see if server response took less than ~570ms.
 // We set our failure threshold to 600ms to avoid those false positives but we want devs to shoot for 100ms.
 const TOO_SLOW_THRESHOLD_MS = 600;
@@ -81,9 +94,12 @@ function getCompressionSavings(request) {
     // no percent threshold.
     return estimatedSavings < IGNORE_THRESHOLD_IN_BYTES ? 0 : estimatedSavings;
 }
+function finalize(partialModel) {
+    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+}
 export function generateInsight(parsedTrace, context) {
     if (!context.navigation) {
-        return {};
+        return finalize({});
     }
     const documentRequest = parsedTrace.NetworkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!documentRequest) {
@@ -104,7 +120,7 @@ export function generateInsight(parsedTrace, context) {
         FCP: overallSavingsMs,
         LCP: overallSavingsMs,
     };
-    return {
+    return finalize({
         relatedEvents: [documentRequest],
         data: {
             serverResponseTime,
@@ -114,6 +130,6 @@ export function generateInsight(parsedTrace, context) {
             documentRequest,
         },
         metricSavings,
-    };
+    });
 }
 //# sourceMappingURL=DocumentLatency.js.map

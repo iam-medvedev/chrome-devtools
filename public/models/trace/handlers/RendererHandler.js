@@ -26,7 +26,6 @@ const compositorTileWorkers = Array();
 const entryToNode = new Map();
 let allTraceEntries = [];
 const completeEventStack = [];
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 let config = Types.Configuration.defaults();
 const makeRendererProcess = () => ({
     url: null,
@@ -53,18 +52,8 @@ export function reset() {
     allTraceEntries.length = 0;
     completeEventStack.length = 0;
     compositorTileWorkers.length = 0;
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
-}
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('Renderer Handler was not reset');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 export function handleEvent(event) {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Renderer Handler is not initialized');
-    }
     if (Types.Events.isThreadName(event) && event.args.name?.startsWith('CompositorTileWorker')) {
         compositorTileWorkers.push({
             pid: event.pid,
@@ -90,21 +79,14 @@ export function handleEvent(event) {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Renderer Handler is not initialized');
-    }
     const { mainFrameId, rendererProcessesByFrame, threadsInProcess } = metaHandlerData();
     assignMeta(processes, mainFrameId, rendererProcessesByFrame, threadsInProcess);
     sanitizeProcesses(processes);
     buildHierarchy(processes);
     sanitizeThreads(processes);
     Helpers.Trace.sortTraceEventsInPlace(allTraceEntries);
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('Renderer Handler is not finalized');
-    }
     return {
         processes: new Map(processes),
         compositorTileWorkers: new Map(gatherCompositorThreads()),

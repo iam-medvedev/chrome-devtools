@@ -112,7 +112,7 @@ export declare class StylePropertiesSection {
     private startEditingAtFirstPosition;
     startEditingSelector(): void;
     moveEditorFromSelector(moveDirection: string): void;
-    editingSelectorCommitted(element: Element, newContent: string, oldContent: string, context: Context | undefined, moveDirection: string): void;
+    editingSelectorCommitted(element: Element, newContent: string, oldContent: string | null, context: Context | undefined, moveDirection: string): void;
     setHeaderText(rule: SDK.CSSRule.CSSRule, newContent: string): Promise<void>;
     protected editingSelectorCommittedForTest(): void;
     protected updateRuleOrigin(): void;

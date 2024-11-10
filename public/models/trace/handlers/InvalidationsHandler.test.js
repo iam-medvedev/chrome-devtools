@@ -14,7 +14,6 @@ function invalidationDataForTestAssertion(invalidation) {
 describe('InvalidationsHandler', () => {
     beforeEach(() => {
         Trace.Handlers.ModelHandlers.Invalidations.reset();
-        Trace.Handlers.ModelHandlers.Invalidations.initialize();
     });
     it('finds the right invalidators for a layout where attributes have been changed', async function () {
         const events = await TraceLoader.rawEvents(this, 'style-invalidation-change-attribute.json.gz');

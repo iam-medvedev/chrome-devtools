@@ -1,7 +1,15 @@
 import * as Host from '../../core/host/host.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
-import { AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, type ParsedResponse } from './AiAgent.js';
+import { AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, ConversationContext, type ParsedResponse } from './AiAgent.js';
+export declare class FileContext extends ConversationContext<Workspace.UISourceCode.UISourceCode> {
+    #private;
+    constructor(file: Workspace.UISourceCode.UISourceCode);
+    getOrigin(): string;
+    getItem(): Workspace.UISourceCode.UISourceCode;
+    getIcon(): HTMLElement;
+    getTitle(): string;
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -12,8 +20,9 @@ export declare class DrJonesFileAgent extends AiAgent<Workspace.UISourceCode.UIS
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_FILE_AGENT;
     get userTier(): string | undefined;
     get options(): AidaRequestOptions;
-    handleContextDetails(selectedFile: Workspace.UISourceCode.UISourceCode | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, selectedFile: Workspace.UISourceCode.UISourceCode | null): Promise<string>;
+    handleContextDetails(selectedFile: ConversationContext<Workspace.UISourceCode.UISourceCode> | null): AsyncGenerator<ContextResponse, void, void>;
+    enhanceQuery(query: string, selectedFile: ConversationContext<Workspace.UISourceCode.UISourceCode> | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;
 }
+export declare function formatFile(selectedFile: Workspace.UISourceCode.UISourceCode): string;
 export declare function formatSourceMapDetails(selectedFile: Workspace.UISourceCode.UISourceCode, debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): string;

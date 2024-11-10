@@ -1,9 +1,25 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
+const UIStrings = {
+    /**
+     * @description Text to tell the user about the longest user interaction.
+     */
+    description: 'Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS.',
+    /**
+     * @description Title for the performance insight "INP by phase", which shows a breakdown of INP by phases / sections.
+     */
+    title: 'INP by phase',
+};
+const str_ = i18n.i18n.registerUIStrings('models/trace/insights/InteractionToNextPaint.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function deps() {
     return ['UserInteractions'];
+}
+function finalize(partialModel) {
+    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
 }
 export function generateInsight(parsedTrace, context) {
     const interactionEvents = parsedTrace.UserInteractions.interactionEventsWithNoNesting.filter(event => {
@@ -11,7 +27,7 @@ export function generateInsight(parsedTrace, context) {
     });
     if (!interactionEvents.length) {
         // A valid result, when there is no user interaction.
-        return {};
+        return finalize({});
     }
     const longestByInteractionId = new Map();
     for (const event of interactionEvents) {
@@ -28,10 +44,10 @@ export function generateInsight(parsedTrace, context) {
     // last array element. To keep things simpler, sort desc and pick from front.
     // See https://source.chromium.org/chromium/chromium/src/+/main:components/page_load_metrics/browser/responsiveness_metrics_normalization.cc;l=45-59;drc=cb0f9c8b559d9c7c3cb4ca94fc1118cc015d38ad
     const highPercentileIndex = Math.min(9, Math.floor(normalizedInteractionEvents.length / 50));
-    return {
+    return finalize({
         relatedEvents: [normalizedInteractionEvents[0]],
         longestInteractionEvent: normalizedInteractionEvents[0],
         highPercentileInteractionEvent: normalizedInteractionEvents[highPercentileIndex],
-    };
+    });
 }
 //# sourceMappingURL=InteractionToNextPaint.js.map

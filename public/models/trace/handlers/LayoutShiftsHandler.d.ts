@@ -1,7 +1,7 @@
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
 import { ScoreClassification } from './PageLoadMetricsHandler.js';
-import { type HandlerName } from './types.js';
+import type { HandlerName } from './types.js';
 interface LayoutShifts {
     clusters: readonly Types.Events.SyntheticLayoutShiftCluster[];
     clustersByNavigationId: Map<Types.Events.NavigationId, Types.Events.SyntheticLayoutShiftCluster[]>;
@@ -25,7 +25,6 @@ type ScoreRecord = {
     ts: number;
     score: number;
 };
-export declare function initialize(): void;
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;

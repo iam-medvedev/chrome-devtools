@@ -37,7 +37,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
@@ -557,14 +556,14 @@ let eventDispatchDesciptors;
 let colorGenerator;
 export class TimelineUIUtils {
     static frameDisplayName(frame) {
-        if (!TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.isNativeRuntimeFrame(frame)) {
+        if (!Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.isNativeRuntimeFrame(frame)) {
             return UI.UIUtils.beautifyFunctionName(frame.functionName);
         }
-        const nativeGroup = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.nativeGroup(frame.functionName);
+        const nativeGroup = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.nativeGroup(frame.functionName);
         switch (nativeGroup) {
-            case "Compile" /* TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups.COMPILE */:
+            case "Compile" /* Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups.COMPILE */:
                 return i18nString(UIStrings.compile);
-            case "Parse" /* TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups.PARSE */:
+            case "Parse" /* Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups.PARSE */:
                 return i18nString(UIStrings.parse);
         }
         return frame.functionName;
@@ -689,7 +688,7 @@ export class TimelineUIUtils {
             case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
             case "MinorGC" /* Trace.Types.Events.Name.MINOR_GC */: {
                 const delta = unsafeEventArgs['usedHeapSizeBefore'] - unsafeEventArgs['usedHeapSizeAfter'];
-                detailsText = i18nString(UIStrings.sCollected, { PH1: Platform.NumberUtilities.bytesToString(delta) });
+                detailsText = i18nString(UIStrings.sCollected, { PH1: i18n.ByteUtilities.bytesToString(delta) });
                 break;
             }
             case "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */: {
@@ -1017,7 +1016,7 @@ export class TimelineUIUtils {
     static buildConsumeCacheDetails(eventData, contentHelper) {
         if (typeof eventData.consumedCacheSize === 'number') {
             contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptLoadedFromCache));
-            contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(eventData.consumedCacheSize));
+            contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(eventData.consumedCacheSize));
             const cacheKind = eventData.cacheKind;
             if (cacheKind) {
                 contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheKind), cacheKind);
@@ -1133,7 +1132,7 @@ export class TimelineUIUtils {
             case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
             case "MinorGC" /* Trace.Types.Events.Name.MINOR_GC */: {
                 const delta = unsafeEventArgs['usedHeapSizeBefore'] - unsafeEventArgs['usedHeapSizeAfter'];
-                contentHelper.appendTextRow(i18nString(UIStrings.collected), Platform.NumberUtilities.bytesToString(delta));
+                contentHelper.appendTextRow(i18nString(UIStrings.collected), i18n.ByteUtilities.bytesToString(delta));
                 break;
             }
             case "ProfileCall" /* Trace.Types.Events.Name.PROFILE_CALL */:
@@ -1174,7 +1173,7 @@ export class TimelineUIUtils {
             }
             case "v8.produceModuleCache" /* Trace.Types.Events.Name.CACHE_MODULE */: {
                 url = unsafeEventData && unsafeEventData['url'];
-                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(unsafeEventData['producedCacheSize']));
+                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(unsafeEventData['producedCacheSize']));
                 break;
             }
             case "v8.produceCache" /* Trace.Types.Events.Name.CACHE_SCRIPT */: {
@@ -1183,7 +1182,7 @@ export class TimelineUIUtils {
                     const { lineNumber, columnNumber } = Trace.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                     contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
                 }
-                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(unsafeEventData['producedCacheSize']));
+                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(unsafeEventData['producedCacheSize']));
                 break;
             }
             case "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */: {
@@ -1305,7 +1304,7 @@ export class TimelineUIUtils {
                 if (!relatedNodesMap?.size && nodeName) {
                     contentHelper.appendTextRow(i18nString(UIStrings.relatedNode), nodeName);
                 }
-                const CLSInsight = Trace.Insights.InsightRunners.CumulativeLayoutShift;
+                const CLSInsight = Trace.Insights.Models.CLSCulprits;
                 const failures = CLSInsight.getNonCompositedFailure(event);
                 if (!failures.length) {
                     break;
@@ -1908,7 +1907,7 @@ export class TimelineUIUtils {
         return eventDivider;
     }
     static visibleEventsFilter() {
-        return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(Utils.EntryStyles.visibleTypes());
+        return new Trace.Extras.TraceFilter.VisibleEventsFilter(Utils.EntryStyles.visibleTypes());
     }
     // Included only for layout tests.
     // TODO(crbug.com/1386091): Fix/port layout tests and remove.

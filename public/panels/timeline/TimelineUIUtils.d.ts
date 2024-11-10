@@ -1,7 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as Utils from './utils/utils.js';
@@ -45,7 +44,7 @@ export declare class TimelineUIUtils {
     private static aggregatedStatsForTraceEvent;
     static buildPicturePreviewContent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Paint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: Trace.Types.Events.Event, zeroTime: number): Element;
-    static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter;
+    static visibleEventsFilter(): Trace.Extras.TraceFilter.TraceFilter;
     static categories(): Utils.EntryStyles.CategoryPalette;
     static generatePieChart(aggregatedStats: {
         [x: string]: number;

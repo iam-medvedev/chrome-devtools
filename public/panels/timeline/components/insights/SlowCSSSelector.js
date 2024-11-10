@@ -8,18 +8,10 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /**
-     *@description Title of an insight that provides details about slow CSS selectors.
-     */
-    title: 'CSS Selector costs',
-    /**
-     * @description Text to describe how to improve the performance of CSS selectors.
-     */
-    description: 'If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs.',
     /**
      *@description Column name for count of elements that the engine attempted to match against a style rule
      */
@@ -43,13 +35,10 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/SlowCSSSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class SlowCSSSelector extends BaseInsight {
+export class SlowCSSSelector extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-slow-css-selector`;
     insightCategory = Category.ALL;
     internalName = 'slow-css-selector';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
-    #slowCSSSelector = null;
     #selectorLocations = new Map();
     createOverlays() {
         return [];
@@ -103,15 +92,18 @@ export class SlowCSSSelector extends BaseInsight {
         return links;
     }
     renderSlowCSSSelector() {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         const cssModel = target?.model(SDK.CSSModel.CSSModel);
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
-        return this.#slowCSSSelector ? html `
+        return html `
       <div class="insights">
         <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             internalName: this.internalName,
             expanded: this.isActive(),
         }}
@@ -123,9 +115,9 @@ export class SlowCSSSelector extends BaseInsight {
             insight: this,
             headers: [i18nString(UIStrings.total), ''],
             rows: [
-                { values: [i18nString(UIStrings.elapsed), i18n.TimeUtilities.millisToString(this.#slowCSSSelector.totalElapsedMs)] },
-                { values: [i18nString(UIStrings.matchAttempts), this.#slowCSSSelector.totalMatchAttempts] },
-                { values: [i18nString(UIStrings.matchCount), this.#slowCSSSelector.totalMatchCount] },
+                { values: [i18nString(UIStrings.elapsed), i18n.TimeUtilities.millisToString(this.model.totalElapsedMs)] },
+                { values: [i18nString(UIStrings.matchAttempts), this.model.totalMatchAttempts] },
+                { values: [i18nString(UIStrings.matchCount), this.model.totalMatchCount] },
             ],
         }}>
               </devtools-performance-table>`}
@@ -135,7 +127,7 @@ export class SlowCSSSelector extends BaseInsight {
                 .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.elapsed)],
-            rows: this.#slowCSSSelector.topElapsedMs.map(selector => {
+            rows: this.model.topElapsedMs.map(selector => {
                 return {
                     values: [
                         html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
@@ -151,7 +143,7 @@ export class SlowCSSSelector extends BaseInsight {
                 .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.matchAttempts)],
-            rows: this.#slowCSSSelector.topMatchAttempts.map(selector => {
+            rows: this.model.topMatchAttempts.map(selector => {
                 return {
                     values: [
                         html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
@@ -164,18 +156,14 @@ export class SlowCSSSelector extends BaseInsight {
             </div>
           </div>
         </devtools-performance-sidebar-insight>
-      </div>` : LitHtml.nothing;
+      </div>`;
         // clang-format on
     }
     #hasDataToRender() {
-        this.#slowCSSSelector =
-            Trace.Insights.Common.getInsight('SlowCSSSelector', this.data.insights, this.data.insightSetKey);
-        return this.#slowCSSSelector !== null && this.#slowCSSSelector.topElapsedMs.length !== 0 &&
-            this.#slowCSSSelector.topMatchAttempts.length !== 0;
+        return this.model !== null && this.model.topElapsedMs.length !== 0 && this.model.topMatchAttempts.length !== 0;
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('SlowCSSSelector', this.data.insights, this.data.insightSetKey);
-        return insight?.relatedEvents ?? [];
+        return this.model?.relatedEvents ?? [];
     }
     render() {
         const matchesCategory = shouldRenderForCategory({

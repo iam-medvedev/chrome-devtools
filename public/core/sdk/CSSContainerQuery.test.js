@@ -2,25 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from './sdk.js';
-const { getPhysicalAxisFromQueryAxis, getQueryAxis, PhysicalAxis, QueryAxis } = SDK.CSSContainerQuery;
+const { getPhysicalAxisFromQueryAxis, getQueryAxisFromContainerType, PhysicalAxis, QueryAxis } = SDK.CSSContainerQuery;
 describe('CSSContainerQuery', () => {
-    describe('getQueryAxis', () => {
-        it('gets the query axis of no containment correctly', () => {
-            assert.strictEqual(getQueryAxis(''), "" /* QueryAxis.NONE */);
-            assert.strictEqual(getQueryAxis('style layout'), "" /* QueryAxis.NONE */);
+    describe('getQueryAxisFromContainerType', () => {
+        it('gets the query axis of no container-type correctly', () => {
+            assert.strictEqual(getQueryAxisFromContainerType(''), "" /* QueryAxis.NONE */);
+            assert.strictEqual(getQueryAxisFromContainerType('normal'), "" /* QueryAxis.NONE */);
         });
         it('gets the query axis of an inline container query correctly', () => {
-            assert.strictEqual(getQueryAxis('inline-size layout style'), "inline-size" /* QueryAxis.INLINE */);
-            assert.strictEqual(getQueryAxis('layout inline-size style inline-size'), "inline-size" /* QueryAxis.INLINE */);
+            assert.strictEqual(getQueryAxisFromContainerType('inline-size'), "inline-size" /* QueryAxis.INLINE */);
+            assert.strictEqual(getQueryAxisFromContainerType('scroll-state inline-size'), "inline-size" /* QueryAxis.INLINE */);
         });
-        it('gets the query axis of a block container query correctly', () => {
-            assert.strictEqual(getQueryAxis('block-size layout style'), "block-size" /* QueryAxis.BLOCK */);
-            assert.strictEqual(getQueryAxis('layout block-size style block-size'), "block-size" /* QueryAxis.BLOCK */);
-        });
-        it('gets the query axis of inline-block container query correctly', () => {
-            assert.strictEqual(getQueryAxis('inline-size layout style block-size'), "size" /* QueryAxis.BOTH */);
-            assert.strictEqual(getQueryAxis('layout size style'), "size" /* QueryAxis.BOTH */);
-            assert.strictEqual(getQueryAxis('size'), "size" /* QueryAxis.BOTH */);
+        it('gets the query axis of size container query correctly', () => {
+            assert.strictEqual(getQueryAxisFromContainerType('size'), "size" /* QueryAxis.BOTH */);
+            assert.strictEqual(getQueryAxisFromContainerType('scroll-state size'), "size" /* QueryAxis.BOTH */);
         });
     });
     describe('getPhysicalAxisFromQueryAxis', () => {

@@ -231,6 +231,9 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         const fontsWidget = new PlatformFontsWidget(this.computedStyleModel);
         fontsWidget.show(this.contentElement);
     }
+    #handleNodeChange(event) {
+        void this.computedStyleModel.cssModel()?.trackComputedStyleUpdatesForNode(event.data?.id);
+    }
     onResize() {
         const isNarrow = this.contentElement.offsetWidth < 260;
         this.#computedStylesTree.classList.toggle('computed-narrow', isNarrow);
@@ -238,6 +241,12 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     wasShown() {
         super.wasShown();
         this.registerCSSFiles([computedStyleSidebarPaneStyles]);
+        void this.computedStyleModel.cssModel()?.trackComputedStyleUpdatesForNode(this.computedStyleModel.node()?.id);
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleNodeChange, this);
+    }
+    willHide() {
+        void this.computedStyleModel.cssModel()?.trackComputedStyleUpdatesForNode(undefined);
+        UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleNodeChange, this);
     }
     async doUpdate() {
         const [nodeStyles, matchedStyles] = await Promise.all([this.computedStyleModel.fetchComputedStyle(), this.fetchMatchedCascade()]);

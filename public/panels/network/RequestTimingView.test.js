@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import * as Network from './NetworkTimeCalculator.js';
 import * as RequestTimingView from './RequestTimingView.js';
 function createNetworkRequest(matchedSource, actualSource) {
     const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'http://devtools-frontend.test', '', null, null, null);
@@ -40,7 +43,7 @@ function createNetworkRequest(matchedSource, actualSource) {
     };
     return request;
 }
-describe('ResourceTimingView', () => {
+describeWithLocale('ResourceTimingView', () => {
     it('RequestTimeRanges has router evaluation field with SW router source as network', async () => {
         const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
         const timingInfo = request.timing;
@@ -96,6 +99,29 @@ describe('ResourceTimingView', () => {
         assert.isTrue(Boolean(cacheLookup), 'worker cache lookup does not exist');
         assert.strictEqual(cacheLookup?.start, timingInfo.requestTime + cacheLookupStart / 1000);
         assert.strictEqual(cacheLookup?.end, timingInfo.requestTime + timingInfo.sendStart / 1000);
+    });
+    it('Timing table has router evaluation field with detail tabs', async () => {
+        const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
+        const component = new RequestTimingView.RequestTimingView(request, new Network.NetworkTimeCalculator(true));
+        const div = document.createElement('div');
+        renderElementIntoDOM(div);
+        component.markAsRoot();
+        component.show(div);
+        // Test if we correctly set details element
+        const routerEvaluationDetailsElement = document.querySelector('.router-evaluation-timing-bar-details');
+        assert.isNotNull(routerEvaluationDetailsElement, 'router evaluation details does not exist');
+        assert.strictEqual(routerEvaluationDetailsElement.childElementCount, 1, 'router evaluation details child element count does not match');
+        assert.isNotNull(routerEvaluationDetailsElement.firstElementChild, 'router evaluation first element is non null');
+        // Test if we correctly set the tree item inside shadow root
+        const shadowElement = routerEvaluationDetailsElement.firstElementChild.shadowRoot;
+        assert.isNotNull(shadowElement, 'shadow element does not exist');
+        const content = getCleanTextContentFromElements(shadowElement, '.network-fetch-details-treeitem');
+        assert.strictEqual(content.length, 2, 'does not match the tree item');
+        // Check the content of the view. Since the value is set from matched to actual,
+        // the order should be the same.
+        const networkString = String("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
+        assert.strictEqual(content[0], `Matched source: ${networkString}`, 'matched source does not match');
+        assert.strictEqual(content[1], `Actual source: ${networkString}`, 'actual source does not match');
     });
 });
 //# sourceMappingURL=RequestTimingView.test.js.map

@@ -11,27 +11,13 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-:host {
-  overflow: hidden;
-}
-
-.header {
-  padding: 0 0 6px;
-  border-bottom: 1px solid var(--sys-color-divider);
-  font-size: 18px;
-  font-weight: normal;
-  flex: none;
-}
-
 .add-conditions-button {
-  flex: none;
-  margin: 10px 5px;
-  min-width: 140px;
-  align-self: flex-start;
+  margin-bottom: var(--sys-size-5);
+  border: none;
 }
 
 .conditions-list {
-  min-width: 640px;
+  margin-top: var(--sys-size-3);
   flex: auto;
 }
 
@@ -45,7 +31,9 @@ styles.replaceSync(
 }
 
 .conditions-list-text {
-  flex: 0 0 80px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex: 0 0 50px;
   user-select: none;
   color: var(--sys-color-on-surface);
   text-align: center;
@@ -64,12 +52,15 @@ styles.replaceSync(
 .conditions-list-title {
   text-align: start;
   display: flex;
-  flex: auto;
+  flex-grow: 1;
   align-items: flex-start;
 }
 
 .conditions-list-title-text {
   flex: auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .conditions-list-separator {
@@ -116,6 +107,21 @@ styles.replaceSync(
 
 .editor-buttons {
   margin-top: 10px;
+}
+
+.settings-card-container-wrapper {
+  scrollbar-gutter: stable;
+  padding-bottom: var(--sys-size-8);
+  overflow: auto;
+  position: absolute;
+  inset: var(--sys-size-8) 0 0;
+}
+
+.settings-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sys-size-9);
 }
 
 /*# sourceURL=throttlingSettingsTab.css */

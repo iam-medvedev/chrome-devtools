@@ -5,9 +5,7 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function processTrace(context, url) {
     Trace.Handlers.ModelHandlers.Meta.reset();
-    Trace.Handlers.ModelHandlers.Meta.initialize();
     Trace.Handlers.ModelHandlers.LayoutShifts.reset();
-    Trace.Handlers.ModelHandlers.LayoutShifts.initialize();
     try {
         const events = await TraceLoader.rawEvents(context, url);
         for (const event of events) {
@@ -29,7 +27,6 @@ describe('LayoutShiftsHandler', function () {
         // run the meta handler here, too, so that later on we can get the IDs of
         // the main renderer process and thread.
         Trace.Handlers.ModelHandlers.Meta.reset();
-        Trace.Handlers.ModelHandlers.Meta.initialize();
         Trace.Handlers.ModelHandlers.LayoutShifts.reset();
     });
     it('clusters a single frame correctly', async function () {

@@ -44,6 +44,8 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
+    addTimestampMarkerOverlay(timestamp: Trace.Types.Timing.MicroSeconds): void;
+    removeTimestampMarkerOverlay(): Promise<void>;
     runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
     getLinkSelectionAnnotation(): Trace.Types.File.EntriesLinkAnnotation | null;

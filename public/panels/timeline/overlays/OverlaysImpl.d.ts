@@ -87,14 +87,14 @@ export interface TimespanBreakdown {
     entry?: Trace.Types.Events.Event;
     renderLocation?: 'BOTTOM_OF_TIMELINE' | 'BELOW_EVENT' | 'ABOVE_EVENT';
 }
-export interface CursorTimestampMarker {
-    type: 'CURSOR_TIMESTAMP_MARKER';
+export interface TimestampMarker {
+    type: 'TIMESTAMP_MARKER';
     timestamp: Trace.Types.Timing.MicroSeconds;
 }
 /**
  * All supported overlay types.
  */
-export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | CursorTimestampMarker | CandyStripedTimeRange;
+export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | TimestampMarker | CandyStripedTimeRange;
 export interface TimelineOverlaySetOptions {
     updateTraceWindow: boolean;
 }
@@ -103,7 +103,7 @@ export interface TimelineOverlaySetOptions {
  * exist at any given time. If one exists and the add() method is called, the
  * new overlay will replace the existing one.
  */
-type SingletonOverlay = EntrySelected | CursorTimestampMarker;
+type SingletonOverlay = EntrySelected | TimestampMarker;
 export declare function overlayIsSingleton(overlay: TimelineOverlay): overlay is SingletonOverlay;
 /**
  * The dimensions each flame chart reports. Note that in the current UI they

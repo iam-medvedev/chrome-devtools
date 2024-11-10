@@ -43,15 +43,7 @@ const clustersByNavigationId = new Map();
 // The complete timeline of LS score changes in a trace.
 // Includes drops to 0 when session windows end.
 const scoreRecords = [];
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('LayoutShifts Handler was not reset');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
-}
 export function reset() {
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
     layoutShiftEvents.length = 0;
     layoutInvalidationEvents.length = 0;
     scheduleStyleInvalidationEvents.length = 0;
@@ -70,9 +62,6 @@ export function reset() {
     clustersByNavigationId.clear();
 }
 export function handleEvent(event) {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Handler is not initialized');
-    }
     if (Types.Events.isLayoutShift(event) && !event.args.data?.had_recent_input) {
         layoutShiftEvents.push(event);
         return;
@@ -187,7 +176,6 @@ export async function finalize() {
     await buildLayoutShiftsClusters();
     buildScoreRecords();
     collectNodes();
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 async function buildLayoutShiftsClusters() {
     const { navigationsByFrameId, mainFrameId, traceBounds } = metaHandlerData();
@@ -399,9 +387,6 @@ async function buildLayoutShiftsClusters() {
     }
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('Layout Shifts Handler is not finalized');
-    }
     return {
         clusters,
         sessionMaxScore,

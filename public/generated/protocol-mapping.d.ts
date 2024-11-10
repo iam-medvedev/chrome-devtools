@@ -81,6 +81,7 @@ export namespace ProtocolMapping {
      * Fired whenever an active document stylesheet is removed.
      */
     'CSS.styleSheetRemoved': [Protocol.CSS.StyleSheetRemovedEvent];
+    'CSS.computedStyleUpdated': [Protocol.CSS.ComputedStyleUpdatedEvent];
     /**
      * This is fired whenever the list of available sinks changes. A sink is a
      * device or a software surface that you can cast to.
@@ -419,7 +420,8 @@ export namespace ProtocolMapping {
      */
     'Page.javascriptDialogOpening': [Protocol.Page.JavascriptDialogOpeningEvent];
     /**
-     * Fired for top level page lifecycle events such as navigation, load, paint, etc.
+     * Fired for lifecycle events (navigation, load, paint, etc) in the current
+     * target (including local frames).
      */
     'Page.lifecycleEvent': [Protocol.Page.LifecycleEventEvent];
     /**
@@ -1302,6 +1304,18 @@ export namespace ProtocolMapping {
     'CSS.getLocationForSelector': {
       paramsType: [Protocol.CSS.GetLocationForSelectorRequest];
       returnType: Protocol.CSS.GetLocationForSelectorResponse;
+    };
+    /**
+     * Starts tracking the given node for the computed style updates
+     * and whenever the computed style is updated for node, it queues
+     * a `computedStyleUpdated` event with throttling.
+     * There can only be 1 node tracked for computed style updates
+     * so passing a new node id removes tracking from the previous node.
+     * Pass `undefined` to disable tracking.
+     */
+    'CSS.trackComputedStyleUpdatesForNode': {
+      paramsType: [Protocol.CSS.TrackComputedStyleUpdatesForNodeRequest?];
+      returnType: void;
     };
     /**
      * Starts tracking the given computed styles for updates. The specified array of properties

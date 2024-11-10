@@ -163,6 +163,7 @@ export declare namespace Accessibility {
      * - from 'activedescendant' to 'owns' - relationships between elements other than parent/child/sibling.
      */
     const enum AXPropertyName {
+        Actions = "actions",
         Busy = "busy",
         Disabled = "disabled",
         Editable = "editable",
@@ -703,7 +704,9 @@ export declare namespace Audits {
         ExcludeSamePartyCrossPartyContext = "ExcludeSamePartyCrossPartyContext",
         ExcludeDomainNonASCII = "ExcludeDomainNonASCII",
         ExcludeThirdPartyCookieBlockedInFirstPartySet = "ExcludeThirdPartyCookieBlockedInFirstPartySet",
-        ExcludeThirdPartyPhaseout = "ExcludeThirdPartyPhaseout"
+        ExcludeThirdPartyPhaseout = "ExcludeThirdPartyPhaseout",
+        ExcludePortMismatch = "ExcludePortMismatch",
+        ExcludeSchemeMismatch = "ExcludeSchemeMismatch"
     }
     const enum CookieWarningReason {
         WarnSameSiteUnspecifiedCrossSiteContext = "WarnSameSiteUnspecifiedCrossSiteContext",
@@ -3077,6 +3080,9 @@ export declare namespace CSS {
     interface GetLocationForSelectorResponse extends ProtocolResponseWithError {
         ranges: SourceRange[];
     }
+    interface TrackComputedStyleUpdatesForNodeRequest {
+        nodeId?: DOM.NodeId;
+    }
     interface TrackComputedStyleUpdatesRequest {
         propertiesToTrack: CSSComputedStyleProperty[];
     }
@@ -3245,6 +3251,12 @@ export declare namespace CSS {
          * Identifier of the removed stylesheet.
          */
         styleSheetId: StyleSheetId;
+    }
+    interface ComputedStyleUpdatedEvent {
+        /**
+         * The node id that has updated computed styles.
+         */
+        nodeId: DOM.NodeId;
     }
 }
 export declare namespace CacheStorage {
@@ -3511,6 +3523,7 @@ export declare namespace DOM {
         Check = "check",
         Before = "before",
         After = "after",
+        SelectArrow = "select-arrow",
         Marker = "marker",
         Backdrop = "backdrop",
         Column = "column",
@@ -7511,7 +7524,9 @@ export declare namespace Network {
      */
     type LoaderId = OpaqueIdentifier<string, 'Protocol.Network.LoaderId'>;
     /**
-     * Unique request identifier.
+     * Unique network request identifier.
+     * Note that this does not identify individual HTTP requests that are part of
+     * a network request.
      */
     type RequestId = OpaqueIdentifier<string, 'Protocol.Network.RequestId'>;
     /**
@@ -8230,6 +8245,7 @@ export declare namespace Network {
         type: InitiatorType;
         /**
          * Initiator JavaScript stack trace, set for Script only.
+         * Requires the Debugger domain to be enabled.
          */
         stack?: Runtime.StackTrace;
         /**
@@ -8383,7 +8399,9 @@ export declare namespace Network {
         SchemefulSameSiteLax = "SchemefulSameSiteLax",
         SchemefulSameSiteUnspecifiedTreatedAsLax = "SchemefulSameSiteUnspecifiedTreatedAsLax",
         SamePartyFromCrossPartyContext = "SamePartyFromCrossPartyContext",
-        NameValuePairExceedsMaxSize = "NameValuePairExceedsMaxSize"
+        NameValuePairExceedsMaxSize = "NameValuePairExceedsMaxSize",
+        PortMismatch = "PortMismatch",
+        SchemeMismatch = "SchemeMismatch"
     }
     /**
      * Types of reasons why a cookie should have been blocked by 3PCD but is exempted for the request.
@@ -12614,7 +12632,8 @@ export declare namespace Page {
         defaultPrompt?: string;
     }
     /**
-     * Fired for top level page lifecycle events such as navigation, load, paint, etc.
+     * Fired for lifecycle events (navigation, load, paint, etc) in the current
+     * target (including local frames).
      */
     interface LifecycleEventEvent {
         /**
@@ -13703,6 +13722,7 @@ export declare namespace Storage {
         ExcessiveReportingOrigins = "excessiveReportingOrigins",
         NoHistograms = "noHistograms",
         InsufficientBudget = "insufficientBudget",
+        InsufficientNamedBudget = "insufficientNamedBudget",
         NoMatchingSourceFilterData = "noMatchingSourceFilterData",
         NotRegistered = "notRegistered",
         ProhibitedByBrowserPolicy = "prohibitedByBrowserPolicy",
@@ -14954,6 +14974,8 @@ export declare namespace Tracing {
 export declare namespace Fetch {
     /**
      * Unique request identifier.
+     * Note that this does not identify individual HTTP requests that are part of
+     * a network request.
      */
     type RequestId = OpaqueIdentifier<string, 'Protocol.Fetch.RequestId'>;
     /**

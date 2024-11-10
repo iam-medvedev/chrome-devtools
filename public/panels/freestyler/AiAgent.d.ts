@@ -1,4 +1,5 @@
 import * as Host from '../../core/host/host.js';
+import type * as LitHtml from '../../ui/lit-html/lit-html.js';
 export declare const enum ResponseType {
     CONTEXT = "context",
     TITLE = "title",
@@ -99,6 +100,13 @@ export declare const enum AgentType {
     DRJONES_NETWORK_REQUEST = "drjones-network-request",
     DRJONES_PERFORMANCE = "drjones-performance"
 }
+export declare abstract class ConversationContext<T> {
+    abstract getOrigin(): string;
+    abstract getItem(): T;
+    abstract getIcon(): HTMLElement;
+    abstract getTitle(): string | ReturnType<typeof LitHtml.Directives.until>;
+    isOriginAllowed(agentOrigin: string | undefined): boolean;
+}
 export declare abstract class AiAgent<T> {
     #private;
     static validTemperature(temperature: number | undefined): number | undefined;
@@ -107,12 +115,15 @@ export declare abstract class AiAgent<T> {
     abstract readonly options: AidaRequestOptions;
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;
     abstract readonly userTier: string | undefined;
-    abstract handleContextDetails(select: T | null): AsyncGenerator<ContextResponse, void, void>;
+    abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     constructor(opts: AgentOptions);
     get chatHistoryForTesting(): Array<HistoryChunk>;
     set chatNewHistoryForTesting(history: Map<number, ResponseData[]>);
     get isEmpty(): boolean;
+    get origin(): string | undefined;
+    get context(): ConversationContext<T> | undefined;
     get title(): string | undefined;
+    get isHistoryEntry(): boolean;
     aidaFetch(input: string, options?: {
         signal?: AbortSignal;
     }): Promise<{
@@ -121,7 +132,7 @@ export declare abstract class AiAgent<T> {
     }>;
     buildRequest(opts: AidaBuildRequestOptions): Host.AidaClient.AidaRequest;
     handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
-    enhanceQuery(query: string, selected: T | null): Promise<string>;
+    enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;
     formatHistoryChunkAnswer(text: string): string;
     formatHistoryChunkObservation(observation: {
@@ -131,7 +142,7 @@ export declare abstract class AiAgent<T> {
     }): string;
     run(query: string, options: {
         signal?: AbortSignal;
-        selected: T | null;
+        selected: ConversationContext<T> | null;
     }): AsyncGenerator<ResponseData, void, void>;
     runFromHistory(): AsyncGenerator<ResponseData, void, void>;
 }

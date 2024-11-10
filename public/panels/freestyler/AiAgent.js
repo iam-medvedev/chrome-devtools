@@ -3,6 +3,18 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 const MAX_STEP = 10;
+export class ConversationContext {
+    isOriginAllowed(agentOrigin) {
+        if (!agentOrigin) {
+            return true;
+        }
+        // Currently does not handle opaque origins because they
+        // are not available to DevTools, instead checks
+        // that serialization of the origin is the same
+        // https://html.spec.whatwg.org/#ascii-serialisation-of-an-origin.
+        return this.getOrigin() === agentOrigin;
+    }
+}
 export class AiAgent {
     static validTemperature(temperature) {
         return typeof temperature === 'number' && temperature >= 0 ? temperature : undefined;
@@ -10,11 +22,18 @@ export class AiAgent {
     #sessionId = crypto.randomUUID();
     #aidaClient;
     #serverSideLoggingEnabled;
+    #generatedFromHistory = false;
     /**
      * Mapping between the unique request id and
      * the history chuck it created
      */
     #history = new Map();
+    /**
+     * Might need to be part of history in case we allow chatting in
+     * historical conversations.
+     */
+    #origin;
+    #context;
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
@@ -28,6 +47,12 @@ export class AiAgent {
     get isEmpty() {
         return this.#history.size <= 0;
     }
+    get origin() {
+        return this.#origin;
+    }
+    get context() {
+        return this.#context;
+    }
     get title() {
         return [...this.#history.values()]
             .flat()
@@ -36,6 +61,9 @@ export class AiAgent {
         })
             .at(0)
             ?.query;
+    }
+    get isHistoryEntry() {
+        return this.#generatedFromHistory;
     }
     #structuredLog = [];
     async aidaFetch(input, options) {
@@ -184,6 +212,17 @@ STOP`;
     }
     #runId = 0;
     async *run(query, options) {
+        if (this.#generatedFromHistory) {
+            throw new Error('History entries are read-only.');
+        }
+        // First context set on the agent determines its origin from now on.
+        if (options.selected && this.#origin === undefined && options.selected) {
+            this.#origin = options.selected.getOrigin();
+        }
+        // Remember if the context that is set.
+        if (options.selected && !this.#context) {
+            this.#context = options.selected;
+        }
         const id = this.#runId++;
         const response = {
             type: "user-query" /* ResponseType.USER_QUERY */,
@@ -299,6 +338,10 @@ STOP`;
         }
     }
     async *runFromHistory() {
+        if (this.isEmpty) {
+            return;
+        }
+        this.#generatedFromHistory = true;
         for (const historyChunk of this.#history.values()) {
             for (const entry of historyChunk) {
                 yield entry;

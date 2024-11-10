@@ -1,6 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 export declare class TimelineController implements Trace.TracingManager.TracingManagerClient {
     #private;
@@ -53,7 +52,7 @@ export interface Client {
     loadingStarted(): void;
     processingStarted(): void;
     loadingProgress(progress?: number): void;
-    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: Trace.Extras.TraceFilter.TraceFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
     loadingCompleteForTest(): void;
 }
 export interface RecordingOptions {

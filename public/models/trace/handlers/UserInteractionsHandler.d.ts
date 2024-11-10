@@ -1,10 +1,10 @@
 import * as Types from '../types/types.js';
 import { ScoreClassification } from './PageLoadMetricsHandler.js';
-import { type HandlerName } from './types.js';
+import type { HandlerName } from './types.js';
 export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.MicroSeconds;
 export interface UserInteractionsData {
     /** All the user events we found in the trace */
-    allEvents: readonly Types.Events.EventTiming[];
+    allEvents: readonly Types.Events.EventTimingBeginOrEnd[];
     /** All the BeginCommitCompositorFrame events we found in the trace */
     beginCommitCompositorFrameEvents: readonly Types.Events.BeginCommitCompositorFrame[];
     /** All the ParseMetaViewport events we found in the trace */

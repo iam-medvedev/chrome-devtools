@@ -102,6 +102,14 @@ const UIStrings = {
      */
     label: 'Label',
     /**
+     *@description Text in Request Timing View of the Network panel
+     */
+    routerEvaluation: 'Router Evaluation',
+    /**
+     *@description Text in Request Timing View of the Network panel
+     */
+    routerCacheLookup: 'Cache Lookup',
+    /**
      *@description Inner element text content in Network Log View Columns of the Network panel
      */
     waterfall: 'Waterfall',
@@ -211,6 +219,16 @@ const UIStrings = {
      *@description Text used to show that data was retrieved using ServiceWorker fallback code
      */
     fallbackCode: 'Fallback code',
+    /**
+     *@description Name of the specified source for SW static routing API.
+     *@example {network} PH1
+     */
+    routerMatchedSource: 'Matched source: {PH1}',
+    /**
+     *@description Name of the actually used source for SW static routing API.
+     *@example {network} PH1
+     */
+    routerActualSource: 'Actual source: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/RequestTimingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -250,6 +268,10 @@ export class RequestTimingView extends UI.Widget.VBox {
                 return i18nString(UIStrings.requestToServiceworker);
             case "serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */:
                 return i18nString(UIStrings.startup);
+            case "serviceworker-routerevaluation" /* RequestTimeRangeNames.SERVICE_WORKER_ROUTER_EVALUATION */:
+                return i18nString(UIStrings.routerEvaluation);
+            case "serviceworker-cachelookup" /* RequestTimeRangeNames.SERVICE_WORKER_CACHE_LOOKUP */:
+                return i18nString(UIStrings.routerCacheLookup);
             case "serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */:
                 return i18nString(UIStrings.respondwith);
             case "ssl" /* RequestTimeRangeNames.SSL */:
@@ -450,6 +472,13 @@ export class RequestTimingView extends UI.Widget.VBox {
                 timingBarTitleElement.setAttribute('role', 'switch');
                 UI.ARIAUtils.setChecked(timingBarTitleElement, false);
             }
+            if (range.name === 'serviceworker-routerevaluation') {
+                timingBarTitleElement.classList.add('network-fetch-timing-bar-clickable');
+                tableElement.createChild('tr', 'router-evaluation-timing-bar-details');
+                timingBarTitleElement.setAttribute('tabindex', '0');
+                timingBarTitleElement.setAttribute('role', 'switch');
+                UI.ARIAUtils.setChecked(timingBarTitleElement, false);
+            }
         }
         if (!request.finished && !request.preserved) {
             const cell = tableElement.createChild('tr').createChild('td', 'caution');
@@ -604,6 +633,52 @@ export class RequestTimingView extends UI.Widget.VBox {
             fetchDetailsElement.classList.toggle('network-fetch-timing-bar-details-expanded');
         }
     }
+    constructRouterEvaluationView() {
+        if (!this.tableElement) {
+            return;
+        }
+        const routerEvaluationDetailsElement = this.tableElement.querySelector('.router-evaluation-timing-bar-details');
+        if (!routerEvaluationDetailsElement) {
+            return;
+        }
+        routerEvaluationDetailsElement.classList.add('network-fetch-timing-bar-details-collapsed');
+        self.onInvokeElement(this.tableElement, this.onToggleRouterEvaluationDetails.bind(this, routerEvaluationDetailsElement));
+        const detailsView = new UI.TreeOutline.TreeOutlineInShadow();
+        routerEvaluationDetailsElement.appendChild(detailsView.element);
+        const { serviceWorkerRouterInfo } = this.request;
+        if (!serviceWorkerRouterInfo) {
+            return;
+        }
+        const document = this.tableElement.ownerDocument;
+        // Add matched source type element
+        const matchedSourceTypeElement = document.createElement('div');
+        matchedSourceTypeElement.classList.add('network-fetch-details-treeitem');
+        const matchedSourceType = serviceWorkerRouterInfo.matchedSourceType;
+        const matchedSourceTypeString = String(matchedSourceType) || i18nString(UIStrings.unknown);
+        matchedSourceTypeElement.textContent = i18nString(UIStrings.routerMatchedSource, { PH1: matchedSourceTypeString });
+        const matchedSourceTypeTreeElement = new UI.TreeOutline.TreeElement(matchedSourceTypeElement);
+        detailsView.appendChild(matchedSourceTypeTreeElement);
+        // Add actual source type element
+        const actualSourceTypeElement = document.createElement('div');
+        actualSourceTypeElement.classList.add('network-fetch-details-treeitem');
+        const actualSourceType = serviceWorkerRouterInfo.actualSourceType;
+        const actualSourceTypeString = String(actualSourceType) || i18nString(UIStrings.unknown);
+        actualSourceTypeElement.textContent = i18nString(UIStrings.routerActualSource, { PH1: actualSourceTypeString });
+        const actualSourceTypeTreeElement = new UI.TreeOutline.TreeElement(actualSourceTypeElement);
+        detailsView.appendChild(actualSourceTypeTreeElement);
+    }
+    onToggleRouterEvaluationDetails(routerEvaluationDetailsElement, event) {
+        if (!event.target) {
+            return;
+        }
+        const target = event.target;
+        if (target.classList.contains('network-fetch-timing-bar-clickable')) {
+            const expanded = target.getAttribute('aria-checked') === 'true';
+            target.setAttribute('aria-checked', String(!expanded));
+            routerEvaluationDetailsElement.classList.toggle('network-fetch-timing-bar-details-collapsed');
+            routerEvaluationDetailsElement.classList.toggle('network-fetch-timing-bar-details-expanded');
+        }
+    }
     wasShown() {
         this.request.addEventListener(SDK.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
         this.request.addEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
@@ -625,6 +700,9 @@ export class RequestTimingView extends UI.Widget.VBox {
         this.element.appendChild(this.tableElement);
         if (this.request.fetchedViaServiceWorker) {
             this.constructFetchDetailsView();
+        }
+        if (this.request.serviceWorkerRouterInfo) {
+            this.constructRouterEvaluationView();
         }
     }
     boundaryChanged() {

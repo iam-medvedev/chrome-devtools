@@ -817,7 +817,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         // Remove zero-width spaces that were added by nodeTitleInfo.
         removeZeroWidthSpaceRecursive(attribute);
-        const config = new UI.InplaceEditor.Config(this.attributeEditingCommitted.bind(this), this.editingCancelled.bind(this), attributeName || undefined);
+        const config = new UI.InplaceEditor.Config(this.attributeEditingCommitted.bind(this), this.editingCancelled.bind(this), attributeName);
         function postKeyDownFinishHandler(event) {
             UI.UIUtils.handleElementValueModifications(event, attribute);
             return '';
@@ -844,7 +844,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (container) {
             container.textContent = textNode.nodeValue();
         } // Strip the CSS or JS highlighting if present.
-        const config = new UI.InplaceEditor.Config(this.textNodeEditingCommitted.bind(this, textNode), this.editingCancelled.bind(this));
+        const config = new UI.InplaceEditor.Config(this.textNodeEditingCommitted.bind(this, textNode), this.editingCancelled.bind(this), null);
         this.updateEditorHandles(textNodeElement, config);
         const componentSelection = this.listItemElement.getComponentSelection();
         componentSelection && componentSelection.selectAllChildren(textNodeElement);
@@ -1086,7 +1086,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 }
             }
         }
-        if ((attributeName.trim() || newText.trim()) && oldText !== newText) {
+        if (attributeName !== null && (attributeName.trim() || newText.trim()) && oldText !== newText) {
             this.nodeInternal.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
             return;
         }
@@ -1912,8 +1912,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 styles.get('grid-template-rows')?.startsWith('subgrid'))) ??
             false;
         const containerType = styles.get('container-type');
-        const contain = styles.get('contain');
-        const isContainer = SDK.CSSContainerQuery.getQueryAxis(`${containerType} ${contain}`) !== "" /* SDK.CSSContainerQuery.QueryAxis.NONE */;
+        const isContainer = containerType && containerType !== '' && containerType !== 'normal';
         if (isGrid) {
             this.pushGridAdorner(this.tagTypeContext, isSubgrid);
         }

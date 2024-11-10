@@ -455,10 +455,10 @@ export class ContextMenu extends SubMenu {
         }
     }
     innerShow() {
-        const menuObject = this.buildMenuDescriptors();
         if (!this.eventTarget) {
             return;
         }
+        const menuObject = this.buildMenuDescriptors();
         const ownerDocument = this.eventTarget.ownerDocument;
         if (this.useSoftMenu || ContextMenu.useSoftMenu ||
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {

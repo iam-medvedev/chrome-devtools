@@ -6,6 +6,7 @@ export declare enum Entity {
     SYSTEM = 2
 }
 export declare const enum Rating {
+    SENTIMENT_UNSPECIFIED = "SENTIMENT_UNSPECIFIED",
     POSITIVE = "POSITIVE",
     NEGATIVE = "NEGATIVE"
 }

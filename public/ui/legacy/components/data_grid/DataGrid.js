@@ -582,9 +582,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.updateWidths();
     }
     startEditingConfig(_element) {
-        return new UI.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this));
+        return new UI.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), undefined);
     }
-    editingCommitted(element, newText, oldText, context, moveDirection) {
+    editingCommitted(element, newText, _oldText, _context, moveDirection) {
         const columnId = this.columnIdFromNode(element);
         if (!columnId) {
             this.editingCancelled(element);
@@ -595,7 +595,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.editingNode) {
             return;
         }
-        const valueBeforeEditing = (this.editingNode.data[columnId] === null ? '' : this.editingNode.data[columnId]);
+        const valueBeforeEditing = this.editingNode.data[columnId];
         const currentEditingNode = this.editingNode;
         function moveToNextIfNeeded(wasChange) {
             if (!moveDirection) {

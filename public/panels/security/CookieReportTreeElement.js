@@ -3,19 +3,13 @@
 // found in the LICENSE file.
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import { SecurityPanelSidebarTreeElement } from './SecurityPanelSidebarTreeElement.js';
-export class ShowCookieReportEvent extends Event {
-    static eventName = 'showcookiereport';
-    constructor() {
-        super(ShowCookieReportEvent.eventName, { bubbles: true, composed: true });
-    }
-}
 export class CookieReportTreeElement extends SecurityPanelSidebarTreeElement {
     constructor(title) {
         super(title);
         this.setLeadingIcons([IconButton.Icon.create('cookie', 'cookie-icon')]);
     }
     onselect() {
-        this.listItemElement.dispatchEvent(new ShowCookieReportEvent());
+        this.listItemElement.dispatchEvent(new CustomEvent('showCookieReport', { bubbles: true, composed: true }));
         return true;
     }
 }

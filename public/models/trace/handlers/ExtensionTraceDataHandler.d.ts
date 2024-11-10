@@ -1,6 +1,6 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { type HandlerName } from './types.js';
+import type { HandlerName } from './types.js';
 export interface ExtensionTraceData {
     extensionTrackData: readonly Types.Extensions.ExtensionTrackData[];
     extensionMarkers: readonly Types.Extensions.SyntheticExtensionMarker[];

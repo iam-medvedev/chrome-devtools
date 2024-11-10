@@ -3,9 +3,8 @@ import { type AuctionWorkletsData } from './AuctionWorkletsHandler.js';
 import { type LayerTreeData } from './LayerTreeHandler.js';
 import { type MetaHandlerData } from './MetaHandler.js';
 import { type RendererHandlerData } from './RendererHandler.js';
-import { type HandlerName } from './types.js';
+import type { HandlerName } from './types.js';
 export declare function reset(): void;
-export declare function initialize(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export interface FramesData {

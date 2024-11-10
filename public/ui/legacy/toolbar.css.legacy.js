@@ -337,10 +337,9 @@ select.toolbar-item {
   height: var(--sys-size-9);
   border-radius: var(--sys-shape-corner-extra-small);
 
-  &:disabled,
-  &:disabled:hover,
-  &:disabled:active,
-  &:disabled:hover:active {
+  &:disabled {
+    opacity: 100%;
+    pointer-events: none;
     background-color: var(--sys-color-state-disabled-container);
     color: var(--sys-color-state-disabled);
 
@@ -395,7 +394,7 @@ select.toolbar-item:focus-visible > * {
     box-shadow: inset 0 0 0 2px var(--sys-color-state-focus-ring);
   }
 
-  &:not(:has(devtools-button:hover)):hover {
+  &:not(:has(devtools-button:hover)):not(.disabled):hover {
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 

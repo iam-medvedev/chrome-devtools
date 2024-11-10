@@ -83,7 +83,7 @@ function traceWindowForOverlay(overlay) {
             }
             break;
         }
-        case 'CURSOR_TIMESTAMP_MARKER': {
+        case 'TIMESTAMP_MARKER': {
             overlayMinBounds.push(overlay.timestamp);
             break;
         }
@@ -137,7 +137,8 @@ export function entriesForOverlay(overlay) {
             }
             break;
         }
-        case 'CURSOR_TIMESTAMP_MARKER': {
+        case 'TIMESTAMP_MARKER': {
+            // This overlay type isn't associated to any entry, so just break here.
             break;
         }
         case 'CANDY_STRIPED_TIME_RANGE': {
@@ -156,7 +157,7 @@ export function chartForEntry(entry) {
     return 'main';
 }
 export function overlayIsSingleton(overlay) {
-    return overlay.type === 'CURSOR_TIMESTAMP_MARKER' || overlay.type === 'ENTRY_SELECTED';
+    return overlay.type === 'TIMESTAMP_MARKER' || overlay.type === 'ENTRY_SELECTED';
 }
 export class AnnotationOverlayActionEvent extends Event {
     overlay;
@@ -553,7 +554,7 @@ export class Overlays extends EventTarget {
                 }
                 break;
             }
-            case 'CURSOR_TIMESTAMP_MARKER': {
+            case 'TIMESTAMP_MARKER': {
                 const { visibleWindow } = this.#dimensions.trace;
                 // Only update the position if the timestamp of this marker is within
                 // the visible bounds.
@@ -1128,7 +1129,7 @@ export class Overlays extends EventTarget {
                 }
                 break;
             }
-            case 'CURSOR_TIMESTAMP_MARKER':
+            case 'TIMESTAMP_MARKER':
                 break;
             case 'CANDY_STRIPED_TIME_RANGE':
                 break;
@@ -1162,7 +1163,7 @@ export class Overlays extends EventTarget {
                 component?.checkSectionLabelPositioning();
                 break;
             }
-            case 'CURSOR_TIMESTAMP_MARKER':
+            case 'TIMESTAMP_MARKER':
                 break;
             case 'CANDY_STRIPED_TIME_RANGE':
                 break;
@@ -1450,7 +1451,7 @@ export function jsLogContext(overlay) {
         case 'TIMESPAN_BREAKDOWN': {
             return 'timeline.overlays.timespan-breakdown';
         }
-        case 'CURSOR_TIMESTAMP_MARKER': {
+        case 'TIMESTAMP_MARKER': {
             return 'timeline.overlays.cursor-timestamp-marker';
         }
         case 'CANDY_STRIPED_TIME_RANGE': {

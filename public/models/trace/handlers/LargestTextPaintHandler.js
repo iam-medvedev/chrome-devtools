@@ -20,6 +20,8 @@ export function handleEvent(event) {
     }
     textPaintByDOMNodeId.set(event.args.data.DOMNodeId, event);
 }
+export async function finalize() {
+}
 export function data() {
     return textPaintByDOMNodeId;
 }

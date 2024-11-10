@@ -53,6 +53,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/cards/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {

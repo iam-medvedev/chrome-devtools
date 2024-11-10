@@ -1261,7 +1261,7 @@ export class StylePropertiesSection {
         if (textContent !== null) {
             element.textContent = textContent.replace(/\s+/g, ' ').trim();
         }
-        const config = new UI.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this));
+        const config = new UI.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this), undefined);
         UI.InplaceEditor.InplaceEditor.startEditing(this.selectorElement, config);
         const selection = element.getComponentSelection();
         if (selection) {

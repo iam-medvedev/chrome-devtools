@@ -168,7 +168,8 @@ table.network-timing-table > tr:not(.network-timing-table-header):not(.network-t
   display: block;
 }
 
-.network-fetch-timing-bar-details {
+.network-fetch-timing-bar-details,
+.router-evaluation-timing-bar-details {
   padding-left: 11px;
   width: fit-content;
 }

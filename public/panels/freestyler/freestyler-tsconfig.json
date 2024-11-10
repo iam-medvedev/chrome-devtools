@@ -73,7 +73,16 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../elements/bundle-tsconfig.json"
+    },
+    {
       "path": "../network/bundle-tsconfig.json"
+    },
+    {
+      "path": "../sources/bundle-tsconfig.json"
+    },
+    {
+      "path": "../timeline/bundle-tsconfig.json"
     },
     {
       "path": "../timeline/utils/bundle-tsconfig.json"

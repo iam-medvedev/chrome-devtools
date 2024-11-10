@@ -15,8 +15,8 @@ export declare class HeapTimelineOverview extends HeapTimelineOverview_base {
     overviewContainer: HTMLElement;
     overviewGrid: PerfUI.OverviewGrid.OverviewGrid;
     overviewCanvas: HTMLCanvasElement;
-    windowLeft: number;
-    windowRight: number;
+    windowLeftRatio: number;
+    windowRightRatio: number;
     readonly yScale: SmoothScale;
     readonly xScale: SmoothScale;
     profileSamples: Samples;
@@ -24,7 +24,7 @@ export declare class HeapTimelineOverview extends HeapTimelineOverview_base {
     updateOverviewCanvas?: boolean;
     updateGridTimerId?: number;
     updateTimerId?: number | null;
-    windowWidth?: number;
+    windowWidthRatio?: number;
     constructor();
     start(): void;
     stop(): void;

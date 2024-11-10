@@ -118,7 +118,7 @@ styles.replaceSync(
   }
 }
 
-.overlay-type-CURSOR_TIMESTAMP_MARKER {
+.overlay-type-TIMESTAMP_MARKER {
   top: 0;
   bottom: 0;
   width: 2px;
