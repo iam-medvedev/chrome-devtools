@@ -1,10 +1,9 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
-export class IsLong extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export class IsLong extends Trace.Extras.TraceFilter.TraceFilter {
     #minimumRecordDurationMilli = Trace.Types.Timing.MilliSeconds(0);
     constructor() {
         super();
@@ -17,7 +16,7 @@ export class IsLong extends TimelineModel.TimelineModelFilter.TimelineModelFilte
         return duration >= this.#minimumRecordDurationMilli;
     }
 }
-export class Category extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export class Category extends Trace.Extras.TraceFilter.TraceFilter {
     constructor() {
         super();
     }
@@ -25,7 +24,7 @@ export class Category extends TimelineModel.TimelineModelFilter.TimelineModelFil
         return !TimelineUIUtils.eventStyle(event).category.hidden;
     }
 }
-export class TimelineRegExp extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export class TimelineRegExp extends Trace.Extras.TraceFilter.TraceFilter {
     regExpInternal;
     constructor(regExp) {
         super();

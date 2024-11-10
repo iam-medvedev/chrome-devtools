@@ -39,8 +39,7 @@ export class AnimationsTrackAppender {
     }
     #eventAppendedCallbackFunction(event, index) {
         if (event && Trace.Types.Events.isSyntheticAnimation(event)) {
-            const CLSInsight = Trace.Insights.InsightRunners.CumulativeLayoutShift;
-            const failures = CLSInsight.getNonCompositedFailure(event);
+            const failures = Trace.Insights.Models.CLSCulprits.getNonCompositedFailure(event);
             if (failures.length) {
                 addDecorationToEvent(this.#compatibilityBuilder.getFlameChartTimelineData(), index, {
                     type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,

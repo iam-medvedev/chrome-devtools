@@ -1,6 +1,14 @@
 import * as Host from '../../core/host/host.js';
 import type * as SDK from '../../core/sdk/sdk.js';
-import { AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, type ParsedResponse } from './AiAgent.js';
+import { AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, ConversationContext, type ParsedResponse } from './AiAgent.js';
+export declare class RequestContext extends ConversationContext<SDK.NetworkRequest.NetworkRequest> {
+    #private;
+    constructor(request: SDK.NetworkRequest.NetworkRequest);
+    getOrigin(): string;
+    getItem(): SDK.NetworkRequest.NetworkRequest;
+    getIcon(): HTMLElement;
+    getTitle(): string;
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -11,8 +19,8 @@ export declare class DrJonesNetworkAgent extends AiAgent<SDK.NetworkRequest.Netw
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_NETWORK_AGENT;
     get userTier(): string | undefined;
     get options(): AidaRequestOptions;
-    handleContextDetails(selectedNetworkRequest: SDK.NetworkRequest.NetworkRequest | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, selectedNetworkRequest: SDK.NetworkRequest.NetworkRequest | null): Promise<string>;
+    handleContextDetails(selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): AsyncGenerator<ContextResponse, void, void>;
+    enhanceQuery(query: string, selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;
 }
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;

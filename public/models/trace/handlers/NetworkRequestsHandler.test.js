@@ -4,28 +4,9 @@
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('NetworkRequestsHandler', function () {
-    describe('error handling', () => {
-        it('throws if handleEvent is called before it is initialized', () => {
-            assert.throws(() => {
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent({});
-            }, 'Network Request handler is not initialized');
-        });
-        it('throws if finalize is called before initialize', async () => {
-            let thrown = null;
-            try {
-                await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
-            }
-            catch (e) {
-                thrown = e;
-            }
-            assert.strictEqual(thrown?.message, 'Network Request handler is not initialized');
-        });
-    });
     describe('network requests calculations', () => {
         beforeEach(() => {
             Trace.Handlers.ModelHandlers.Meta.reset();
-            Trace.Handlers.ModelHandlers.Meta.initialize();
-            Trace.Handlers.ModelHandlers.NetworkRequests.initialize();
         });
         it('calculates network requests correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'load-simple.json.gz');
@@ -157,8 +138,6 @@ describe('NetworkRequestsHandler', function () {
     describe('parses the change priority request', () => {
         beforeEach(() => {
             Trace.Handlers.ModelHandlers.Meta.reset();
-            Trace.Handlers.ModelHandlers.Meta.initialize();
-            Trace.Handlers.ModelHandlers.NetworkRequests.initialize();
         });
         it('changes priority of the resouce', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'changing-priority.json.gz');
@@ -182,8 +161,6 @@ describe('NetworkRequestsHandler', function () {
     describe('redirects', () => {
         beforeEach(() => {
             Trace.Handlers.ModelHandlers.Meta.reset();
-            Trace.Handlers.ModelHandlers.Meta.initialize();
-            Trace.Handlers.ModelHandlers.NetworkRequests.initialize();
         });
         it('calculates redirects correctly (navigations)', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'redirects.json.gz');
@@ -245,8 +222,6 @@ describe('NetworkRequestsHandler', function () {
     describe('initiators', () => {
         beforeEach(() => {
             Trace.Handlers.ModelHandlers.Meta.reset();
-            Trace.Handlers.ModelHandlers.Meta.initialize();
-            Trace.Handlers.ModelHandlers.NetworkRequests.initialize();
         });
         it('calculate the initiator by `initiator` field correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'network-requests-initiators.json.gz');

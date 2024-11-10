@@ -6,7 +6,8 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Network from '../../panels/network/network.js';
-import { AiAgent, } from './AiAgent.js';
+import * as PanelUtils from '../utils/utils.js';
+import { AiAgent, ConversationContext, } from './AiAgent.js';
 /* clang-format off */
 const preamble = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
@@ -81,6 +82,25 @@ const UIStringsNotTranslate = {
     requestInitiatorChain: 'Request initiator chain',
 };
 const lockedString = i18n.i18n.lockedString;
+export class RequestContext extends ConversationContext {
+    #request;
+    constructor(request) {
+        super();
+        this.#request = request;
+    }
+    getOrigin() {
+        return new URL(this.#request.url()).origin;
+    }
+    getItem() {
+        return this.#request;
+    }
+    getIcon() {
+        return PanelUtils.PanelUtils.getIconForNetworkRequest(this.#request);
+    }
+    getTitle() {
+        return this.#request.name();
+    }
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -91,12 +111,12 @@ export class DrJonesNetworkAgent extends AiAgent {
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_NETWORK_AGENT;
     get userTier() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        return config.devToolsAiAssistanceNetworkAgent?.userTier ?? config.devToolsExplainThisResourceDogfood?.userTier;
+        return config.devToolsAiAssistanceNetworkAgent?.userTier;
     }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsAiAssistanceNetworkAgent?.temperature ?? config.devToolsExplainThisResourceDogfood?.temperature;
-        const modelId = config.devToolsAiAssistanceNetworkAgent?.modelId ?? config.devToolsExplainThisResourceDogfood?.modelId;
+        const temperature = config.devToolsAiAssistanceNetworkAgent?.temperature;
+        const modelId = config.devToolsAiAssistanceNetworkAgent?.modelId;
         return {
             temperature,
             modelId,
@@ -109,12 +129,12 @@ export class DrJonesNetworkAgent extends AiAgent {
         yield {
             type: "context" /* ResponseType.CONTEXT */,
             title: lockedString(UIStringsNotTranslate.analyzingNetworkData),
-            details: createContextDetailsForDrJonesNetworkAgent(selectedNetworkRequest),
+            details: createContextDetailsForDrJonesNetworkAgent(selectedNetworkRequest.getItem()),
         };
     }
     async enhanceQuery(query, selectedNetworkRequest) {
         const networkEnchantmentQuery = selectedNetworkRequest ?
-            `# Selected network request \n${formatNetworkRequest(selectedNetworkRequest)}\n\n# User request\n\n` :
+            `# Selected network request \n${formatNetworkRequest(selectedNetworkRequest.getItem())}\n\n# User request\n\n` :
             '';
         return `${networkEnchantmentQuery}${query}`;
     }
@@ -162,9 +182,7 @@ const allowedHeaders = new Set([
     'content-disposition',
     'content-encoding',
     'content-language',
-    'content-length',
     'content-location',
-    'content-md5',
     'content-range',
     'content-security-policy',
     'content-type',
@@ -172,7 +190,6 @@ const allowedHeaders = new Set([
     'date',
     'delta-base',
     'dnt',
-    'etag',
     'expect-ct',
     'expect',
     'expires',
@@ -180,9 +197,7 @@ const allowedHeaders = new Set([
     'front-end-https',
     'host',
     'http2-settings',
-    'if-match',
     'if-modified-since',
-    'if-none-match',
     'if-range',
     'if-unmodified-source',
     'im',

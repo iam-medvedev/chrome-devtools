@@ -20,8 +20,7 @@ export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.Vi
 }
 declare abstract class SettingsTab extends UI.Widget.VBox {
     containerElement: HTMLElement;
-    constructor(name: string, id?: string);
-    protected appendSection(name?: string): HTMLElement;
+    constructor(id?: string);
     abstract highlightObject(_object: Object): void;
 }
 export declare class GenericSettingsTab extends SettingsTab {

@@ -24,7 +24,6 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     small;
     dataDisplayDelegate;
     profile;
-    saveLinkElement;
     editing;
     constructor(dataDisplayDelegate, profile, className) {
         super('', false);
@@ -53,6 +52,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         this.dataDisplayDelegate = dataDisplayDelegate;
         this.profile = profile;
         profile.addEventListener("UpdateStatus" /* ProfileHeaderEvents.UPDATE_STATUS */, this.updateStatus, this);
+        this.editing = null;
     }
     updateStatus(event) {
         const statusUpdate = event.data;
@@ -77,15 +77,15 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         if (!container) {
             return;
         }
-        const config = new UI.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this));
+        const config = new UI.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), undefined);
         this.editing = UI.InplaceEditor.InplaceEditor.startEditing(container, config);
     }
-    editingCommitted(container, newTitle) {
-        delete this.editing;
+    editingCommitted(_container, newTitle) {
+        this.editing = null;
         this.profile.setTitle(newTitle);
     }
     editingCancelled() {
-        delete this.editing;
+        this.editing = null;
     }
     dispose() {
         this.profile.removeEventListener("UpdateStatus" /* ProfileHeaderEvents.UPDATE_STATUS */, this.updateStatus, this);

@@ -2,6 +2,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 export declare class ElementStatePaneWidget extends UI.Widget.Widget {
     private readonly inputs;
     private readonly inputStates;
+    private readonly duals;
     private cssModel?;
     private specificPseudoStateDivs;
     private specificHeader;

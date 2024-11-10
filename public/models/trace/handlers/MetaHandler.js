@@ -54,7 +54,6 @@ const eventPhasesOfInterestForTraceBounds = new Set([
     "X" /* Types.Events.Phase.COMPLETE */,
     "I" /* Types.Events.Phase.INSTANT */,
 ]);
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 // Tracks if the trace is a generic trace, which here means that it did not come from athe DevTools Performance Panel recording.
 // We assume a trace is generic, and mark it as not generic if we see any of:
 // - TracingStartedInPage
@@ -86,13 +85,6 @@ export function reset() {
     traceBounds.range = Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
     traceStartedTimeFromTracingStartedEvent = Types.Timing.MicroSeconds(-1);
     traceIsGeneric = true;
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
-}
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('Meta Handler was not reset');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 function updateRendererProcessByFrame(event, frame) {
     const framesInProcessById = Platform.MapUtilities.getWithDefault(framesByProcessId, frame.processId, () => new Map());
@@ -119,9 +111,6 @@ function updateRendererProcessByFrame(event, frame) {
     });
 }
 export function handleEvent(event) {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Meta Handler is not initialized');
-    }
     if (traceIsGeneric && CHROME_WEB_TRACE_EVENTS.has(event.name)) {
         traceIsGeneric = false;
     }
@@ -262,9 +251,8 @@ export function handleEvent(event) {
     // Track all navigation events. Note that there can be navigation start events
     // but where the documentLoaderURL is empty. As far as the trace rendering is
     // concerned, these events are noise so we filter them out here.
-    // (The filtering of empty URLs is done in the
-    // isNavigationStartWithURL check)
-    if (Types.Events.isNavigationStartWithURL(event) && event.args.data) {
+    // (The filtering of empty URLs is done in the isNavigationStart check)
+    if (Types.Events.isNavigationStart(event) && event.args.data) {
         const navigationId = event.args.data.navigationId;
         if (navigationsByNavigationId.has(navigationId)) {
             // We have only ever seen this situation once, in crbug.com/1503982, where the user ran:
@@ -285,9 +273,6 @@ export function handleEvent(event) {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Handler is not initialized');
-    }
     // We try to set the minimum time by finding the event with the smallest
     // timestamp. However, if we also got a timestamp from the
     // TracingStartedInBrowser event, we should always use that.
@@ -357,12 +342,8 @@ export async function finalize() {
             mainFrameURL = firstMainFrameNav.args.data.documentLoaderURL;
         }
     }
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('Meta Handler is not finalized');
-    }
     return {
         traceBounds: { ...traceBounds },
         browserProcessId,

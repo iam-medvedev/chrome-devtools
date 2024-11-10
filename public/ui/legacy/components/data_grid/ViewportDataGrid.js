@@ -9,7 +9,15 @@ const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridImpl) {
     onScrollBound;
     visibleNodes;
-    stickToBottom;
+    /** A datagrid preference to express that the grid represents an updating log of rows (eg Network panel request log, websocket messages).
+     * If `true`, the datagrid will mostly keep the scroll at the bottom, so new items are visible.
+     * If the data is sorted descending (eg Performance Call Tree, heap snapshot), keep the default of `false`.
+     */
+    enableAutoScrollToBottom = false;
+    /** When true, the datagrid will manipulate the scrollTop to focus on the bottom, mostly so new additions are visible.
+     * Some actions will unset this, like revealing or expanding a particular node.
+     * Only matters if enableAutoScrollToBottom is true. */
+    keepScrollingToBottom = false;
     updateIsFromUser;
     lastScrollTop;
     firstVisibleIsStriped;
@@ -20,7 +28,6 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         this.scrollContainer.addEventListener('scroll', this.onScrollBound, true);
         this.visibleNodes = [];
         this.inline = false;
-        this.stickToBottom = false;
         this.updateIsFromUser = false;
         this.lastScrollTop = 0;
         this.firstVisibleIsStriped = false;
@@ -46,14 +53,14 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         this.scrollContainer.addEventListener('scroll', this.onScrollBound, true);
     }
     onResize() {
-        if (this.stickToBottom) {
+        if (this.keepScrollingToBottom) {
             this.scrollContainer.scrollTop = this.scrollContainer.scrollHeight - this.scrollContainer.clientHeight;
         }
         this.scheduleUpdate();
         super.onResize();
     }
-    setStickToBottom(stick) {
-        this.stickToBottom = stick;
+    setEnableAutoScrollToBottom(stick) {
+        this.keepScrollingToBottom = this.enableAutoScrollToBottom = stick;
     }
     onScroll(_event) {
         if (this.lastScrollTop !== this.scrollContainer.scrollTop) {
@@ -99,8 +106,10 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         for (; i < size; ++i) {
             bottomPadding += nodes[i].nodeSelfHeight();
         }
-        // enable stick-to-bottom if the last item is visible
-        this.stickToBottom = end === nodes.length;
+        if (this.enableAutoScrollToBottom) {
+            // If we're scrolled to the very end, keep the scroll viewport focused to the end (as new items arrive)
+            this.keepScrollingToBottom = end === nodes.length;
+        }
         return {
             topPadding,
             bottomPadding,
@@ -122,7 +131,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         let scrollTop = this.scrollContainer.scrollTop;
         const currentScrollTop = scrollTop;
         const maxScrollTop = Math.max(0, this.contentHeight() - clientHeight);
-        if (!this.updateIsFromUser && this.stickToBottom) {
+        if (!this.updateIsFromUser && this.keepScrollingToBottom) {
             scrollTop = maxScrollTop;
         }
         this.updateIsFromUser = false;
@@ -146,7 +155,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
             const nodes = this.rootNode().flatChildren();
             const index = nodes.indexOf(visibleNodes[0]);
             this.updateStripesClass(Boolean(index % 2));
-            if (this.stickToBottom && index !== -1 && Boolean(index % 2) !== this.firstVisibleIsStriped) {
+            if (this.keepScrollingToBottom && index !== -1 && Boolean(index % 2) !== this.firstVisibleIsStriped) {
                 offset += 1;
             }
         }
@@ -189,7 +198,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         const visibleHeight = this.scrollContainer.offsetHeight - this.headerHeightInScroller();
         if (scrollTop > fromY) {
             scrollTop = fromY;
-            this.stickToBottom = false;
+            this.keepScrollingToBottom = false;
         }
         else if (scrollTop + visibleHeight < toY) {
             scrollTop = toY - visibleHeight;
@@ -342,7 +351,7 @@ export class ViewportDataGridNode extends DataGridNode {
         if (this.expanded) {
             return;
         }
-        this.dataGrid.stickToBottom = false;
+        this.dataGrid.keepScrollingToBottom = false;
         this.clearFlatNodes();
         super.expand();
         this.dataGrid.scheduleUpdateStructure();

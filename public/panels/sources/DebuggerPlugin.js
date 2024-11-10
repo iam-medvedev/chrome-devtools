@@ -480,7 +480,7 @@ export class DebuggerPlugin extends Plugin {
             scriptFile.addSourceMapURL(url);
         }
         function addDebugInfoURL(scriptFile) {
-            const dialog = AddDebugInfoURLDialog.createAddDWARFSymbolsURLDialog(addDebugInfoURLDialogCallback.bind(null, scriptFile));
+            const dialog = AddDebugInfoURLDialog.createAddDWARFSymbolsURLDialog(addDebugInfoURLDialogCallback.bind(this, scriptFile));
             dialog.show();
         }
         function addDebugInfoURLDialogCallback(scriptFile, url) {
@@ -488,6 +488,9 @@ export class DebuggerPlugin extends Plugin {
                 return;
             }
             scriptFile.addDebugInfoURL(url);
+            if (scriptFile.script?.debuggerModel) {
+                this.updateScriptFile(scriptFile.script?.debuggerModel);
+            }
         }
         if (this.uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network &&
             Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get() &&
@@ -498,7 +501,7 @@ export class DebuggerPlugin extends Plugin {
                 contextMenu.debugSection().appendItem(addSourceMapURLLabel, addSourceMapURL.bind(null, scriptFile), { jslogContext: 'add-source-map' });
                 if (scriptFile.script?.isWasm() &&
                     !Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager.hasPluginForScript(scriptFile.script)) {
-                    contextMenu.debugSection().appendItem(i18nString(UIStrings.addWasmDebugInfo), addDebugInfoURL.bind(null, scriptFile), { jslogContext: 'add-wasm-debug-info' });
+                    contextMenu.debugSection().appendItem(i18nString(UIStrings.addWasmDebugInfo), addDebugInfoURL.bind(this, scriptFile), { jslogContext: 'add-wasm-debug-info' });
                 }
             }
         }

@@ -50,8 +50,7 @@ styles.replaceSync(
 .security-main-view-reload-message,
 .tree-outline li.security-sidebar-origins,
 .tree-outline li.security-group-list-item,
-.tree-outline span  {
-
+.tree-outline span {
   font: var(--sys-typescale-body4-medium);
 
   &:hover:not(:has(span[is="dt-checkbox"])) .selection {

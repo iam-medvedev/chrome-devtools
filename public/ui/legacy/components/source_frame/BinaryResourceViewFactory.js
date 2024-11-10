@@ -8,68 +8,47 @@ export class BinaryResourceViewFactory {
     streamingContent;
     contentUrl;
     resourceType;
-    arrayPromise;
-    hexPromise;
-    utf8Promise;
     constructor(content, contentUrl, resourceType) {
         this.streamingContent = content;
         this.contentUrl = contentUrl;
         this.resourceType = resourceType;
-        this.arrayPromise = null;
-        this.hexPromise = null;
-        this.utf8Promise = null;
     }
-    async fetchContentAsArray() {
-        if (!this.arrayPromise) {
-            this.arrayPromise = new Promise(async (resolve) => {
-                const fetchResponse = await fetch('data:;base64,' + this.streamingContent.content().base64);
-                resolve(new Uint8Array(await fetchResponse.arrayBuffer()));
-            });
-        }
-        return await this.arrayPromise;
-    }
-    async hex() {
-        if (!this.hexPromise) {
-            this.hexPromise = new Promise(async (resolve) => {
-                const content = await this.fetchContentAsArray();
-                const hexString = BinaryResourceViewFactory.uint8ArrayToHexString(content);
-                resolve(hexString);
-            });
-        }
-        return this.hexPromise;
+    hex() {
+        const binaryString = window.atob(this.base64());
+        const array = Uint8Array.from(binaryString, m => m.codePointAt(0));
+        return BinaryResourceViewFactory.#uint8ArrayToHexString(array);
     }
     base64() {
         return this.streamingContent.content().base64;
     }
-    async utf8() {
-        if (!this.utf8Promise) {
-            this.utf8Promise = new Promise(async (resolve) => {
-                const content = await this.fetchContentAsArray();
-                const utf8String = new TextDecoder('utf8').decode(content);
-                resolve(utf8String);
-            });
-        }
-        return this.utf8Promise;
+    utf8() {
+        return new TextUtils.ContentData.ContentData(this.base64(), /* isBase64 */ true, 'text/plain', 'utf-8').text;
     }
     createBase64View() {
-        return new ResourceSourceFrame(TextUtils.StaticContentProvider.StaticContentProvider.fromString(this.contentUrl, this.resourceType, this.streamingContent.content().base64), this.resourceType.canonicalMimeType(), { lineNumbers: false, lineWrapping: true });
+        const resourceFrame = new ResourceSourceFrame(TextUtils.StaticContentProvider.StaticContentProvider.fromString(this.contentUrl, this.resourceType, this.streamingContent.content().base64), this.resourceType.canonicalMimeType(), { lineNumbers: false, lineWrapping: true });
+        this.streamingContent.addEventListener("ChunkAdded" /* TextUtils.StreamingContentData.Events.CHUNK_ADDED */, () => {
+            void resourceFrame.setContent(this.base64());
+        });
+        return resourceFrame;
     }
     createHexView() {
         return new StreamingContentHexView(this.streamingContent);
     }
     createUtf8View() {
-        const utf8fn = () => this.utf8().then(str => new TextUtils.ContentData.ContentData(str, /* isBase64 */ false, 'text/plain'));
-        const utf8ContentProvider = new TextUtils.StaticContentProvider.StaticContentProvider(this.contentUrl, this.resourceType, utf8fn);
-        return new ResourceSourceFrame(utf8ContentProvider, this.resourceType.canonicalMimeType(), { lineNumbers: true, lineWrapping: true });
+        const resourceFrame = new ResourceSourceFrame(TextUtils.StaticContentProvider.StaticContentProvider.fromString(this.contentUrl, this.resourceType, this.utf8()), this.resourceType.canonicalMimeType(), { lineNumbers: true, lineWrapping: true });
+        this.streamingContent.addEventListener("ChunkAdded" /* TextUtils.StreamingContentData.Events.CHUNK_ADDED */, () => {
+            void resourceFrame.setContent(this.utf8());
+        });
+        return resourceFrame;
     }
-    static uint8ArrayToHexString(uint8Array) {
+    static #uint8ArrayToHexString(uint8Array) {
         let output = '';
         for (let i = 0; i < uint8Array.length; i++) {
-            output += BinaryResourceViewFactory.numberToHex(uint8Array[i], 2);
+            output += BinaryResourceViewFactory.#numberToHex(uint8Array[i], 2);
         }
         return output;
     }
-    static numberToHex(number, padding) {
+    static #numberToHex(number, padding) {
         let hex = number.toString(16);
         while (hex.length < padding) {
             hex = '0' + hex;

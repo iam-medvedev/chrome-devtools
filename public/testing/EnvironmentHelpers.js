@@ -407,35 +407,17 @@ export function getGetHostConfigStub(config) {
             enabled: false,
             ...config.devToolsFreestyler,
         },
-        devToolsExplainThisResourceDogfood: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            ...config.devToolsExplainThisResourceDogfood,
-        },
         devToolsAiAssistanceNetworkAgent: {
             modelId: '',
             temperature: -1,
             enabled: false,
             ...config.devToolsAiAssistanceNetworkAgent,
         },
-        devToolsAiAssistanceFileAgentDogfood: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            ...config.devToolsAiAssistanceFileAgentDogfood,
-        },
         devToolsAiAssistanceFileAgent: {
             modelId: '',
             temperature: -1,
             enabled: false,
             ...config.devToolsAiAssistanceFileAgent,
-        },
-        devToolsAiAssistancePerformanceAgentDogfood: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            ...config.devToolsAiAssistancePerformanceAgentDogfood,
         },
         devToolsAiAssistancePerformanceAgent: {
             modelId: '',
@@ -450,6 +432,11 @@ export function getGetHostConfigStub(config) {
         devToolsPrivacyUI: {
             enabled: false,
             ...config.devToolsPrivacyUI,
+        },
+        devToolsEnableOriginBoundCookies: {
+            portBindingEnabled: false,
+            schemeBindingEnabled: false,
+            ...config.devToolsEnableOriginBoundCookies,
         },
         isOffTheRecord: false,
     });

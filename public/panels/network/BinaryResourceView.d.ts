@@ -23,9 +23,9 @@ export declare class BinaryViewObject {
     type: string;
     label: string;
     copiedMessage: string;
-    content: () => Promise<string>;
+    content: () => string;
     private createViewFn;
     private view;
-    constructor(type: string, label: string, copiedMessage: string, createViewFn: () => UI.Widget.Widget, content: () => Promise<string>);
+    constructor(type: string, label: string, copiedMessage: string, createViewFn: () => UI.Widget.Widget, content: () => string);
     getView(): UI.Widget.Widget;
 }

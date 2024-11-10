@@ -29,7 +29,6 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import type * as TimelineModel from '../../../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
@@ -584,7 +583,7 @@ export interface FlameChartDataProvider {
     indexForEvent?(event: Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame): number | null;
     buildFlowForInitiator?(index: number): unknown;
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
+    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
     getAIEventNodeTreeFromEntryIndex?(entryIndex: number): Trace.Helpers.TreeHelpers.AINode | null;
     entryHasAnnotations?(entryIndex: number): boolean;

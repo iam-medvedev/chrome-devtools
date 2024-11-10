@@ -132,10 +132,12 @@ export class Aggregate {
     }
 }
 export class AggregateForDiff {
+    name;
     indexes;
     ids;
     selfSizes;
     constructor() {
+        this.name = '';
         this.indexes = [];
         this.ids = [];
         this.selfSizes = [];

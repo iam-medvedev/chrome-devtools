@@ -38,14 +38,15 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../../front_end/models/trace/insights/CumulativeLayoutShift.test.ts",
+    "../../../../../../../front_end/models/trace/insights/CLSCulprits.test.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.test.ts",
     "../../../../../../../front_end/models/trace/insights/FontDisplay.test.ts",
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.test.ts",
-    "../../../../../../../front_end/models/trace/insights/LargestContentfulPaint.test.ts",
+    "../../../../../../../front_end/models/trace/insights/LCPDiscovery.test.ts",
+    "../../../../../../../front_end/models/trace/insights/LCPPhases.test.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.test.ts",
     "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.test.ts",
-    "../../../../../../../front_end/models/trace/insights/ThirdPartyWeb.test.ts",
+    "../../../../../../../front_end/models/trace/insights/ThirdParties.test.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

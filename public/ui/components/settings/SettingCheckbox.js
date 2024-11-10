@@ -48,7 +48,8 @@ export class SettingCheckbox extends HTMLElement {
             return html `<devtools-setting-deprecation-warning .data=${this.#setting.deprecation}></devtools-setting-deprecation-warning>`;
         }
         const learnMore = this.#setting.learnMore();
-        if (learnMore) {
+        if (learnMore && learnMore.url) {
+            const url = learnMore.url;
             const data = {
                 iconName: 'help',
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -57,7 +58,7 @@ export class SettingCheckbox extends HTMLElement {
                 title: i18nString(UIStrings.learnMore),
             };
             const handleClick = (event) => {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(learnMore.url);
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
                 event.consume();
             };
             return html `<devtools-button

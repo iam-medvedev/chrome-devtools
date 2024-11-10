@@ -19,26 +19,15 @@ import * as Threads from './Threads.js';
  *
  * In time we expect to migrate this code to a more "typical" handler.
  */
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 const allEvents = [];
 let model = null;
 export function reset() {
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
     allEvents.length = 0;
-}
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('FramesHandler was not reset before being initialized');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 export function handleEvent(event) {
     allEvents.push(event);
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('FramesHandler is not initialized');
-    }
     // Snapshot events can be emitted out of order, so we need to sort before
     // building the frames model.
     Helpers.Trace.sortTraceEventsInPlace(allEvents);

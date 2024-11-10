@@ -12,8 +12,8 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
     overviewContainer;
     overviewGrid;
     overviewCanvas;
-    windowLeft;
-    windowRight;
+    windowLeftRatio;
+    windowRightRatio;
     yScale;
     xScale;
     profileSamples;
@@ -21,7 +21,7 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
     updateOverviewCanvas;
     updateGridTimerId;
     updateTimerId;
-    windowWidth;
+    windowWidthRatio;
     constructor() {
         super();
         this.element.id = 'heap-recording-view';
@@ -35,9 +35,9 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
             this.overviewContainer.createChild('canvas', 'heap-recording-overview-canvas');
         this.overviewContainer.appendChild(this.overviewGrid.element);
         this.overviewGrid.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED */, this.onWindowChanged, this);
-        this.windowLeft = 0.0;
-        this.windowRight = 1.0;
-        this.overviewGrid.setWindow(this.windowLeft, this.windowRight);
+        this.windowLeftRatio = 0.0;
+        this.windowRightRatio = 1.0;
+        this.overviewGrid.setWindowRatio(this.windowLeftRatio, this.windowRightRatio);
         this.yScale = new SmoothScale();
         this.xScale = new SmoothScale();
         this.profileSamples = new Samples();
@@ -152,7 +152,7 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         context.stroke();
         context.closePath();
         if (gridValue) {
-            const label = Platform.NumberUtilities.bytesToString(gridValue);
+            const label = i18n.ByteUtilities.bytesToString(gridValue);
             const labelPadding = 4;
             const labelX = 0;
             const labelY = gridY - 0.5;
@@ -184,9 +184,9 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.updateTimerId = window.setTimeout(this.update.bind(this), 10);
     }
     updateBoundaries() {
-        this.windowLeft = this.overviewGrid.windowLeft();
-        this.windowRight = this.overviewGrid.windowRight();
-        this.windowWidth = this.windowRight - this.windowLeft;
+        this.windowLeftRatio = this.overviewGrid.windowLeftRatio();
+        this.windowRightRatio = this.overviewGrid.windowRightRatio();
+        this.windowWidthRatio = this.windowRightRatio - this.windowLeftRatio;
     }
     update() {
         this.updateTimerId = null;
@@ -209,8 +209,8 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         const sizes = this.profileSamples.sizes;
         const startTime = timestamps[0];
         const totalTime = this.profileSamples.totalTime;
-        const timeLeft = startTime + totalTime * this.windowLeft;
-        const timeRight = startTime + totalTime * this.windowRight;
+        const timeLeft = startTime + totalTime * this.windowLeftRatio;
+        const timeRight = startTime + totalTime * this.windowRightRatio;
         const minIndex = Platform.ArrayUtilities.lowerBound(timestamps, timeLeft, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
         const maxIndex = Platform.ArrayUtilities.upperBound(timestamps, timeRight, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
         let size = 0;

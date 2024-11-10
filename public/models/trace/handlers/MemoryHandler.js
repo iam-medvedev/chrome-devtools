@@ -14,6 +14,8 @@ export function handleEvent(event) {
         updateCountersByProcess.set(event.pid, countersForProcess);
     }
 }
+export async function finalize() {
+}
 export function data() {
     return { updateCountersByProcess };
 }

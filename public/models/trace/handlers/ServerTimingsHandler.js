@@ -6,24 +6,15 @@ import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as networkData } from './NetworkRequestsHandler.js';
 const serverTimings = [];
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function reset() {
     serverTimings.length = 0;
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
-}
-export function initialize() {
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 export function handleEvent(_event) {
     // Implementation not needed because data is sourced from NetworkRequestsHandler
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Server Timings handler is not initialized');
-    }
     extractServerTimings();
     Helpers.Trace.sortTraceEventsInPlace(serverTimings);
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 const RESPONSE_START_METRIC_NAME = 'response-start';
 const RESPONSE_END_METRIC_NAME = 'response-end';
@@ -105,9 +96,6 @@ function createSyntheticServerTiming(request, serverStart, serverEnd, timingsInR
     return convertedServerTimings;
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('Server Timing handler is not finalized');
-    }
     return {
         serverTimings,
     };

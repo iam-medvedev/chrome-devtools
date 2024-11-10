@@ -42,7 +42,6 @@ function firstPositiveValueInList(entries) {
     // a -1 here because it would affect the calculation of stats below.
     return 0;
 }
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function reset() {
     requestsById.clear();
     requestsByOrigin.clear();
@@ -51,15 +50,8 @@ export function reset() {
     networkRequestEventByInitiatorUrl.clear();
     eventToInitiatorMap.clear();
     webSocketData.clear();
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
-}
-export function initialize() {
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 export function handleEvent(event) {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Network Request handler is not initialized');
-    }
     if (Types.Events.isResourceChangePriority(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'changePriority', event);
         return;
@@ -113,9 +105,6 @@ export function handleEvent(event) {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Network Request handler is not initialized');
-    }
     const { rendererProcessesByFrame } = metaHandlerData();
     for (const [requestId, request] of requestMap.entries()) {
         // If we have an incomplete set of events here, we choose to drop the network
@@ -189,6 +178,8 @@ export async function finalize() {
         if (request.changePriority) {
             finalPriority = request.changePriority.args.data.priority;
         }
+        // Network timings are complicated.
+        // https://raw.githubusercontent.com/GoogleChrome/lighthouse/main/docs/Network-Timings.svg is generally correct, but.. less so for navigations/redirects/etc.
         // Start time
         // =======================
         // The time where the request started, which is either the first willSendRequest
@@ -398,12 +389,8 @@ export async function finalize() {
         }
     }
     finalizeWebSocketData();
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('Network Request handler is not finalized');
-    }
     return {
         byId: requestsById,
         byOrigin: requestsByOrigin,

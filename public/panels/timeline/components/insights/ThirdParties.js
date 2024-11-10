@@ -4,20 +4,11 @@
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
-    title: 'Third parties',
-    /**
-     * @description Description of a DevTools insight that identifies the code on the page that the user doesn't control.
-     * This is displayed after a user expands the section to see more. No character length limits.
-     */
-    description: 'Third party code can significantly impact load performance. ' +
-        '[Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page\'s content.',
     /** Label for a table column that displays the name of a third-party provider. */
     columnThirdParty: 'Third party',
     /** Label for a column in a data table; entries will be the download size of a web resource in kilobytes. */
@@ -27,22 +18,19 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/ThirdParties.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class ThirdParties extends BaseInsight {
+export class ThirdParties extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-third-parties`;
     insightCategory = Category.ALL;
     internalName = 'third-parties';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
     #overlaysForEntity = new Map();
     createOverlays() {
         this.#overlaysForEntity.clear();
-        const insight = Trace.Insights.Common.getInsight('ThirdPartyWeb', this.data.insights, this.data.insightSetKey);
-        if (!insight) {
+        if (!this.model) {
             return [];
         }
         const overlays = [];
-        for (const [entity, requests] of insight.requestsByEntity) {
-            if (entity === insight.firstPartyEntity) {
+        for (const [entity, requests] of this.model.requestsByEntity) {
+            if (entity === this.model.firstPartyEntity) {
                 continue;
             }
             const overlaysForThisEntity = [];
@@ -60,14 +48,17 @@ export class ThirdParties extends BaseInsight {
         return overlays;
     }
     #render(entries) {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         const topTransferSizeEntries = entries.sort((a, b) => b[1].transferSize - a[1].transferSize).slice(0, 6);
         const topMainThreadTimeEntries = entries.sort((a, b) => b[1].mainThreadTime - a[1].mainThreadTime).slice(0, 6);
         // clang-format off
         return html `
         <div class="insights">
             <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             internalName: this.internalName,
             expanded: this.isActive(),
         }}
@@ -81,7 +72,7 @@ export class ThirdParties extends BaseInsight {
             rows: topTransferSizeEntries.map(([entity, summary]) => ({
                 values: [
                     entity.name,
-                    Platform.NumberUtilities.bytesToString(summary.transferSize),
+                    i18n.ByteUtilities.bytesToString(summary.transferSize),
                 ],
                 overlays: this.#overlaysForEntity.get(entity),
             })),
@@ -110,12 +101,11 @@ export class ThirdParties extends BaseInsight {
         // clang-format on
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('ThirdPartyWeb', this.data.insights, this.data.insightSetKey);
-        return insight?.relatedEvents ?? [];
+        return this.model?.relatedEvents ?? [];
     }
     render() {
-        const insight = Trace.Insights.Common.getInsight('ThirdPartyWeb', this.data.insights, this.data.insightSetKey);
-        const entries = insight && [...insight.summaryByEntity.entries()].filter(kv => kv[0] !== insight.firstPartyEntity);
+        const model = this.model;
+        const entries = model && [...model.summaryByEntity.entries()].filter(kv => kv[0] !== model.firstPartyEntity);
         const shouldShow = entries?.length;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,

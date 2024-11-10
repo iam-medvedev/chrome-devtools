@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TimelineModel from '../../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { nameForEntry } from './EntryName.js';
 import { visibleTypes } from './EntryStyles.js';
@@ -27,17 +26,17 @@ export class AICallTree {
         this.parsedTrace = parsedTrace;
     }
     static from(selectedEvent, events, parsedTrace) {
-        const timings = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
-        const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.millisecondsToMicroseconds(timings.startTime), Trace.Helpers.Timing.millisecondsToMicroseconds(timings.endTime));
+        const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
+        const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.millisecondsToMicroseconds(startTime), Trace.Helpers.Timing.millisecondsToMicroseconds(endTime));
         const threadEvents = parsedTrace.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
         if (!threadEvents) {
             throw new Error('Cannot locate thread');
         }
         const overlappingEvents = threadEvents.filter(e => Trace.Helpers.Timing.eventIsInBounds(e, selectedEventBounds));
-        const visibleEventsFilter = new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(visibleTypes());
-        const customFilter = new AITreeFilter(timings.duration);
+        const visibleEventsFilter = new Trace.Extras.TraceFilter.VisibleEventsFilter(visibleTypes());
+        const customFilter = new AITreeFilter(selectedEvent);
         // Build a tree bounded by the selected event's timestamps, and our other filters applied
-        const rootNode = new TimelineModel.TimelineProfileTree.TopDownRootNode(overlappingEvents, [visibleEventsFilter, customFilter], timings.startTime, timings.endTime, false, null);
+        const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, [visibleEventsFilter, customFilter], startTime, endTime, false, null, true);
         // Walk the tree to find selectedNode
         let selectedNode = null;
         depthFirstWalk([rootNode].values(), node => {
@@ -121,16 +120,19 @@ export class AICallTree {
         }
     }
 }
-export class AITreeFilter extends TimelineModel.TimelineModelFilter.TimelineModelFilter {
+export class AITreeFilter extends Trace.Extras.TraceFilter.TraceFilter {
     #minDuration;
-    constructor(eventDuration) {
+    #selectedEvent;
+    constructor(selectedEvent) {
         super();
         // The larger the selected event is, the less small ones matter. We'll exclude items under ½% of the selected event's size
-        // We'll always exclude items under 0.15ms of total time.
-        const minDurationMs = Math.max(Trace.Types.Timing.MilliSeconds(0.15), eventDuration * 0.005);
-        this.#minDuration = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(minDurationMs));
+        this.#minDuration = Trace.Types.Timing.MicroSeconds((selectedEvent.dur ?? 1) * 0.005);
+        this.#selectedEvent = selectedEvent;
     }
     accept(event) {
+        if (event === this.#selectedEvent) {
+            return true;
+        }
         if (event.name === "V8.CompileCode" /* Trace.Types.Events.Name.COMPILE_CODE */) {
             return false;
         }

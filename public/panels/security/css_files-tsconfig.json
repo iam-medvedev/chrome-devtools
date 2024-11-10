@@ -4,6 +4,7 @@
         "outDir": "."
     },
     "files": [
+        "cookieReportView.css.js",
         "lockIcon.css.js",
         "mainView.css.js",
         "originView.css.js",

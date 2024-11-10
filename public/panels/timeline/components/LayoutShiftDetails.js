@@ -242,7 +242,7 @@ export class LayoutShiftDetails extends HTMLElement {
             return null;
         }
         const insightsId = layoutShift.args.data?.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
-        const clsInsight = traceInsightsSets.get(insightsId)?.data.CumulativeLayoutShift;
+        const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
         if (!clsInsight || clsInsight instanceof Error) {
             return null;
         }
@@ -281,7 +281,7 @@ export class LayoutShiftDetails extends HTMLElement {
             return null;
         }
         const insightsId = cluster.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
-        const clsInsight = traceInsightsSets.get(insightsId)?.data.CumulativeLayoutShift;
+        const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
         if (!clsInsight || clsInsight instanceof Error) {
             return null;
         }

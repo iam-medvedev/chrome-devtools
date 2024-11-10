@@ -61,7 +61,7 @@ export default {
 }
 
 .text-prompt.disabled {
-  opacity: 50%;
+  color: var(--sys-color-state-disabled);
   cursor: default;
 }
 

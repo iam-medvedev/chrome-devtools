@@ -13,13 +13,12 @@ export declare class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElemen
     small: boolean;
     readonly dataDisplayDelegate: DataDisplayDelegate;
     profile: ProfileHeader;
-    saveLinkElement?: HTMLElement;
-    editing?: UI.InplaceEditor.Controller | null;
+    editing: UI.InplaceEditor.Controller | null;
     constructor(dataDisplayDelegate: DataDisplayDelegate, profile: ProfileHeader, className: string);
     updateStatus(event: Common.EventTarget.EventTargetEvent<StatusUpdate>): void;
     ondblclick(event: Event): boolean;
     startEditing(eventTarget: Element): void;
-    editingCommitted(container: Element, newTitle: string): void;
+    editingCommitted(_container: Element, newTitle: string): void;
     editingCancelled(): void;
     dispose(): void;
     onselect(): boolean;

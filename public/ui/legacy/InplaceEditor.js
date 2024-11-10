@@ -65,11 +65,10 @@ export class InplaceEditor {
             element.textContent = editingContext.oldText;
         }
     }
-    startEditing(element, inputConfig) {
+    startEditing(element, config) {
         if (!markBeingEdited(element, true)) {
             return null;
         }
-        const config = inputConfig || new Config(function () { }, function () { });
         const editingContext = { element, config, oldRole: null, oldTabIndex: null, oldText: null };
         const committedCallback = config.commitHandler;
         const cancelledCallback = config.cancelHandler;
@@ -80,7 +79,7 @@ export class InplaceEditor {
         this.setUpEditor(editingContext);
         editingContext.oldText = this.editorContent(editingContext);
         function blurEventListener(e) {
-            if (config.blurHandler && !config.blurHandler(element, e)) {
+            if (!config.blurHandler(element, e)) {
                 return;
             }
             editingCommitted.call(element);
@@ -104,7 +103,7 @@ export class InplaceEditor {
         }
         function editingCommitted() {
             cleanUpAfterEditing();
-            committedCallback(this, self.editorContent(editingContext), editingContext.oldText || '', context, moveDirection);
+            committedCallback(this, self.editorContent(editingContext), editingContext.oldText, context, moveDirection);
             element.dispatchEvent(new Event('change'));
         }
         function defaultFinishHandler(event) {
@@ -169,7 +168,7 @@ export class Config {
     blurHandler;
     pasteHandler;
     postKeydownFinishHandler;
-    constructor(commitHandler, cancelHandler, context, blurHandler) {
+    constructor(commitHandler, cancelHandler, context, blurHandler = () => true) {
         this.commitHandler = commitHandler;
         this.cancelHandler = cancelHandler;
         this.context = context;

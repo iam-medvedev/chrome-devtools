@@ -216,6 +216,8 @@
     }
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     const idSelector = (id) => {
         return `#${CSS.escape(id)}`;
     };
@@ -500,6 +502,8 @@
     };
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     class PierceSelectorRangeOpts {
         #selector = [[]];
         #attributes;
@@ -729,6 +733,8 @@
     };
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     const MINIMUM_TEXT_LENGTH = 12;
     const MAXIMUM_TEXT_LENGTH = 64;
     const collect = (iter, max = Infinity) => {
@@ -791,6 +797,8 @@
     };
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     const attributeSelector = (name, value) => {
         return `//*[@${name}=${JSON.stringify(value)}]`;
     };
@@ -931,6 +939,8 @@
     };
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     const prefixSelector = (selector, prefix) => {
         if (selector === undefined) {
             return;
@@ -1101,6 +1111,8 @@
     };
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     /**
      * Determines whether an element is ignorable as an input.
      *
@@ -1316,6 +1328,8 @@
     }
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     class SelectorPicker {
         #logger;
         #computer;
@@ -1347,6 +1361,8 @@
     }
 
     // Copyright 2023 The Chromium Authors. All rights reserved.
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     class DevToolsRecorder {
         #recordingClient;
         startRecording(bindings, options) {

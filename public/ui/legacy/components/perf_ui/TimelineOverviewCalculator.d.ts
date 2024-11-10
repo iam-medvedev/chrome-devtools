@@ -5,12 +5,12 @@ export declare class TimelineOverviewCalculator implements Calculator {
     private workingArea;
     private navStartTimes?;
     computePosition(time: Trace.Types.Timing.MilliSeconds): number;
-    positionToTime(position: number): number;
+    positionToTime(position: number): Trace.Types.Timing.MilliSeconds;
     setBounds(minimumBoundary: Trace.Types.Timing.MilliSeconds, maximumBoundary: Trace.Types.Timing.MilliSeconds): void;
     setNavStartTimes(navStartTimes: readonly Trace.Types.Events.NavigationStart[]): void;
     setDisplayWidth(clientWidth: number): void;
     reset(): void;
-    formatValue(value: number, precision?: number): string;
+    formatValue(time: Trace.Types.Timing.MilliSeconds, precision?: number): string;
     maximumBoundary(): Trace.Types.Timing.MilliSeconds;
     minimumBoundary(): Trace.Types.Timing.MilliSeconds;
     zeroTime(): Trace.Types.Timing.MilliSeconds;

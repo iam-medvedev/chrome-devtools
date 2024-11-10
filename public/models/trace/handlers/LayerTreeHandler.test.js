@@ -12,8 +12,6 @@ describe('LayerTreeHandler', function () {
     beforeEach(() => {
         Trace.Handlers.ModelHandlers.Meta.reset();
         Trace.Handlers.ModelHandlers.LayerTree.reset();
-        Trace.Handlers.ModelHandlers.Meta.initialize();
-        Trace.Handlers.ModelHandlers.LayerTree.initialize();
     });
     it('creates a relationship between paint events and the snapshot event', async function () {
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-advanced-instrumentation.json.gz');

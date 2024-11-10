@@ -9,6 +9,10 @@ import { findMenuItemWithLabel, getMenu } from '../../testing/ContextMenuHelpers
 import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, getGetHostConfigStub, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ElementsPanel from '../elements/elements.js';
+import * as NetworkPanel from '../network/network.js';
+import * as SourcesPanel from '../sources/sources.js';
+import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import * as Freestyler from './freestyler.js';
 function getTestAidaClient() {
@@ -31,6 +35,10 @@ describeWithEnvironment('FreestylerPanel', () => {
     beforeEach(() => {
         mockView = sinon.stub();
         registerNoopActions(['elements.toggle-element-search']);
+        UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, null);
+        UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, null);
+        UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, null);
+        UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, null);
     });
     afterEach(() => {
         panel.detach();
@@ -267,8 +275,9 @@ describeWithEnvironment('FreestylerPanel', () => {
                 UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('freestyler.elements-floating-button');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedElement: node,
+                    selectedContext: new Freestyler.NodeContext(node),
                 }));
             });
             it('should update the selected element when the changed DOMNode flavor is an ELEMENT_NODE', () => {
@@ -280,15 +289,16 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('freestyler.elements-floating-button');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedElement: null,
+                    selectedContext: null,
                 }));
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
                     nodeType: Node.ELEMENT_NODE,
                 });
                 UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedElement: node,
+                    selectedContext: new Freestyler.NodeContext(node),
                 }));
             });
             it('should set selected element to null when the change DOMNode flavor is not an ELEMENT_NODE', () => {
@@ -300,15 +310,16 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('freestyler.elements-floating-button');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedElement: null,
+                    selectedContext: null,
                 }));
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
                     nodeType: Node.COMMENT_NODE,
                 });
                 UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedElement: null,
+                    selectedContext: null,
                 }));
             });
             it('should not handle DOMNode flavor changes if the widget is not shown', () => {
@@ -337,8 +348,9 @@ describeWithEnvironment('FreestylerPanel', () => {
                 UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('drjones.network-floating-button');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedNetworkRequest: networkRequest,
+                    selectedContext: new Freestyler.RequestContext(networkRequest),
                 }));
             });
             it('should set selected network request when the NetworkRequest flavor changes', () => {
@@ -350,13 +362,14 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('drjones.network-floating-button');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedNetworkRequest: null,
+                    selectedContext: null,
                 }));
                 const networkRequest = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest);
                 UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedNetworkRequest: networkRequest,
+                    selectedContext: new Freestyler.RequestContext(networkRequest),
                 }));
             });
             it('should not handle NetworkRequest flavor changes if the widget is not shown', () => {
@@ -383,8 +396,9 @@ describeWithEnvironment('FreestylerPanel', () => {
                 UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, selectedAiCallTree);
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('drjones.performance-panel-context');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedAiCallTree,
+                    selectedContext: new Freestyler.CallTreeContext(selectedAiCallTree),
                 }));
             });
             it('should set selected call tree when the AICallTree flavor changes', () => {
@@ -396,13 +410,14 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('drjones.performance-panel-context');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedAiCallTree: null,
+                    selectedContext: null,
                 }));
                 const selectedAiCallTree = {};
                 UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, selectedAiCallTree);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedAiCallTree,
+                    selectedContext: new Freestyler.CallTreeContext(selectedAiCallTree),
                 }));
             });
             it('should not handle AICallTree flavor changes if the widget is not shown', () => {
@@ -429,8 +444,9 @@ describeWithEnvironment('FreestylerPanel', () => {
                 UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('drjones.sources-panel-context');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedFile: uiSourceCode,
+                    selectedContext: new Freestyler.FileContext(uiSourceCode),
                 }));
             });
             it('should set selected file when the UISourceCode flavor changes', () => {
@@ -442,13 +458,14 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
+                panel.handleAction('drjones.sources-panel-context');
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedFile: null,
+                    selectedContext: null,
                 }));
                 const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
                 UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
                 sinon.assert.calledWith(mockView, sinon.match({
-                    selectedFile: uiSourceCode,
+                    selectedContext: new Freestyler.FileContext(uiSourceCode),
                 }));
             });
             it('should not handle NetworkRequest flavor changes if the widget is not shown', () => {
@@ -520,16 +537,16 @@ describeWithEnvironment('FreestylerPanel', () => {
                 syncInfo: getTestSyncInfo(),
             });
             panel.handleAction('freestyler.elements-floating-button');
-            mockView.lastCall.args.at(0).onTextSubmit('test');
+            mockView.lastCall.args[0].onTextSubmit('test');
             await drainMicroTasks();
-            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
                 {
-                    entity: 'user',
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
                     text: 'test',
                 },
                 {
                     answer: 'test',
-                    entity: 'model',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -539,7 +556,43 @@ describeWithEnvironment('FreestylerPanel', () => {
             const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'New chat\']');
             assert.instanceOf(button, HTMLElement);
             dispatchClickEvent(button);
-            assert.deepEqual(mockView.lastCall.args.at(0).messages, []);
+            assert.deepEqual(mockView.lastCall.args[0].messages, []);
+        });
+        it('should select default agent after new chat', async () => {
+            const stub = getGetHostConfigStub({
+                devToolsFreestyler: {
+                    enabled: true,
+                },
+            });
+            panel = new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            panel.handleAction('freestyler.elements-floating-button');
+            mockView.lastCall.args[0].onTextSubmit('test');
+            await drainMicroTasks();
+            UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
+                {
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                    text: 'test',
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'New chat\']');
+            assert.instanceOf(button, HTMLElement);
+            dispatchClickEvent(button);
+            assert.deepEqual(mockView.lastCall.args[0].messages, []);
+            assert.deepEqual(mockView.lastCall.args[0].agentType, "freestyler" /* AiAgent.AgentType.FREESTYLER */);
+            stub.restore();
         });
         it('should switch agents and restore history', async () => {
             panel = new Freestyler.FreestylerPanel(mockView, {
@@ -548,32 +601,32 @@ describeWithEnvironment('FreestylerPanel', () => {
                 syncInfo: getTestSyncInfo(),
             });
             panel.handleAction('freestyler.elements-floating-button');
-            mockView.lastCall.args.at(0).onTextSubmit('User question to Freestyler?');
+            mockView.lastCall.args[0].onTextSubmit('User question to Freestyler?');
             await drainMicroTasks();
-            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
                 {
-                    entity: 'user',
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                 },
                 {
                     answer: 'test',
-                    entity: 'model',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
                 },
             ]);
             panel.handleAction('drjones.network-floating-button');
-            mockView.lastCall.args.at(0).onTextSubmit('User question to DrJones?');
+            mockView.lastCall.args[0].onTextSubmit('User question to DrJones?');
             await drainMicroTasks();
-            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
                 {
-                    entity: 'user',
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
                     text: 'User question to DrJones?',
                 },
                 {
                     answer: 'test',
-                    entity: 'model',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -589,14 +642,14 @@ describeWithEnvironment('FreestylerPanel', () => {
             assert.isDefined(freestylerEntry);
             contextMenu.invokeHandler(freestylerEntry.id());
             await drainMicroTasks();
-            assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
                 {
-                    entity: 'user',
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                 },
                 {
                     answer: 'test',
-                    entity: 'model',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -611,27 +664,398 @@ describeWithEnvironment('FreestylerPanel', () => {
             syncInfo: getTestSyncInfo(),
         });
         panel.handleAction('freestyler.elements-floating-button');
-        mockView.lastCall.args.at(0).onTextSubmit('test');
+        mockView.lastCall.args[0].onTextSubmit('test');
         await drainMicroTasks();
-        assert.deepEqual(mockView.lastCall.args.at(0).messages, [
+        assert.deepEqual(mockView.lastCall.args[0].messages, [
             {
-                entity: 'user',
+                entity: "user" /* Freestyler.ChatMessageEntity.USER */,
                 text: 'test',
             },
             {
                 answer: 'test',
-                entity: 'model',
+                entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
                 rpcId: undefined,
                 suggestions: undefined,
                 steps: [],
             },
         ]);
         const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Clear chat\']');
+        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete chat\']');
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
-        assert.deepEqual(mockView.lastCall.args.at(0).messages, []);
-        assert.deepEqual(mockView.lastCall.args.at(0).agentType, undefined);
+        assert.deepEqual(mockView.lastCall.args[0].messages, []);
+        assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+    });
+    it('should select default agent based on open panel after clearing the chat', async () => {
+        const stub = getGetHostConfigStub({
+            devToolsFreestyler: {
+                enabled: true,
+            },
+        });
+        panel = new Freestyler.FreestylerPanel(mockView, {
+            aidaClient: getTestAidaClient(),
+            aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+            syncInfo: getTestSyncInfo(),
+        });
+        panel.handleAction('freestyler.elements-floating-button');
+        mockView.lastCall.args[0].onTextSubmit('test');
+        await drainMicroTasks();
+        UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+        assert.deepEqual(mockView.lastCall.args[0].messages, [
+            {
+                entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                text: 'test',
+            },
+            {
+                answer: 'test',
+                entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                rpcId: undefined,
+                suggestions: undefined,
+                steps: [],
+            },
+        ]);
+        const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete chat\']');
+        assert.instanceOf(button, HTMLElement);
+        dispatchClickEvent(button);
+        assert.deepEqual(mockView.lastCall.args[0].messages, []);
+        assert.deepEqual(mockView.lastCall.args[0].agentType, "freestyler" /* AiAgent.AgentType.FREESTYLER */);
+        stub.restore();
+    });
+    it('should have empty state after clear chat history', async () => {
+        panel = new Freestyler.FreestylerPanel(mockView, {
+            aidaClient: getTestAidaClient(),
+            aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+            syncInfo: getTestSyncInfo(),
+        });
+        panel.handleAction('freestyler.elements-floating-button');
+        mockView.lastCall.args[0].onTextSubmit('User question to Freestyler?');
+        await drainMicroTasks();
+        assert.deepEqual(mockView.lastCall.args[0].messages, [
+            {
+                entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                text: 'User question to Freestyler?',
+            },
+            {
+                answer: 'test',
+                entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                rpcId: undefined,
+                suggestions: undefined,
+                steps: [],
+            },
+        ]);
+        panel.handleAction('drjones.network-floating-button');
+        mockView.lastCall.args[0].onTextSubmit('User question to DrJones?');
+        await drainMicroTasks();
+        assert.deepEqual(mockView.lastCall.args[0].messages, [
+            {
+                entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                text: 'User question to DrJones?',
+            },
+            {
+                answer: 'test',
+                entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                rpcId: undefined,
+                suggestions: undefined,
+                steps: [],
+            },
+        ]);
+        let toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+        let button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'History\']');
+        assert.instanceOf(button, HTMLElement);
+        let contextMenu = getMenu(() => {
+            dispatchClickEvent(button);
+        });
+        const clearAll = findMenuItemWithLabel(contextMenu.footerSection(), 'Clear chat history');
+        assert.isDefined(clearAll);
+        contextMenu.invokeHandler(clearAll.id());
+        await drainMicroTasks();
+        assert.deepEqual(mockView.lastCall.args[0].messages, []);
+        assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+        await drainMicroTasks();
+        contextMenu.discard();
+        await drainMicroTasks();
+        toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
+        button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'History\']');
+        assert.instanceOf(button, HTMLElement);
+        contextMenu = getMenu(() => {
+            dispatchClickEvent(button);
+        });
+        const menuItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'No past conversations');
+        assert(menuItem);
+    });
+    describe('cross-origin', () => {
+        it('blocks input on cross origin requests', async () => {
+            const networkRequest = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest, {
+                url: 'https://a.test',
+            });
+            UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
+            panel = new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            panel.markAsRoot();
+            panel.show(document.body);
+            panel.handleAction('drjones.network-floating-button');
+            sinon.assert.calledWith(mockView, sinon.match({
+                selectedContext: new Freestyler.RequestContext(networkRequest),
+                blockedByCrossOrigin: false,
+            }));
+            // Send a query for https://a.test.
+            panel.handleAction('drjones.network-floating-button');
+            mockView.lastCall.args[0].onTextSubmit('test');
+            await drainMicroTasks();
+            // Change context to https://b.test.
+            const networkRequest2 = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest, {
+                url: 'https://b.test',
+            });
+            UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
+            panel.handleAction('drjones.network-floating-button');
+            await drainMicroTasks();
+            sinon.assert.calledWith(mockView, sinon.match({
+                selectedContext: new Freestyler.RequestContext(networkRequest2),
+                blockedByCrossOrigin: true,
+            }));
+        });
+    });
+    describe('auto agent selection for panels', () => {
+        describe('Elements panel', () => {
+            it('should select FREESTYLER agent when the Elements panel is open in initial render', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsFreestyler: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "freestyler" /* AiAgent.AgentType.FREESTYLER */,
+                }));
+                stub.restore();
+            });
+            it('should update to no agent state when the Elements panel is closed and no other panels are open', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsFreestyler: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "freestyler" /* AiAgent.AgentType.FREESTYLER */,
+                }));
+                UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, null);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+            it('should render no agent state when Elements panel is open but Freestyler is not enabled', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsFreestyler: {
+                        enabled: false,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+        });
+        describe('Network panel', () => {
+            it('should select DRJONES_NETWORK agent when the Network panel is open in initial render', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistanceNetworkAgent: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, sinon.createStubInstance(NetworkPanel.NetworkPanel.NetworkPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "drjones-network-request" /* AiAgent.AgentType.DRJONES_NETWORK_REQUEST */,
+                }));
+                stub.restore();
+            });
+            it('should update to no agent state when the Network panel is closed and no other panels are open', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistanceNetworkAgent: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, sinon.createStubInstance(NetworkPanel.NetworkPanel.NetworkPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "drjones-network-request" /* AiAgent.AgentType.DRJONES_NETWORK_REQUEST */,
+                }));
+                UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, null);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+            it('should render no agent state when Network panel is open but devToolsAiAssistanceNetworkAgent is not enabled', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistanceNetworkAgent: {
+                        enabled: false,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, sinon.createStubInstance(NetworkPanel.NetworkPanel.NetworkPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+        });
+        describe('Sources panel', () => {
+            it('should select DRJONES_FILE agent when the Sources panel is open in initial render', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistanceFileAgent: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, sinon.createStubInstance(SourcesPanel.SourcesPanel.SourcesPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "drjones-file" /* AiAgent.AgentType.DRJONES_FILE */,
+                }));
+                stub.restore();
+            });
+            it('should update to no agent state when the Sources panel is closed and no other panels are open', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistanceFileAgent: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, sinon.createStubInstance(SourcesPanel.SourcesPanel.SourcesPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "drjones-file" /* AiAgent.AgentType.DRJONES_FILE */,
+                }));
+                UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, null);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+            it('should render no agent state when Sources panel is open but devToolsAiAssistanceFileAgent is not enabled', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistanceFileAgent: {
+                        enabled: false,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, sinon.createStubInstance(SourcesPanel.SourcesPanel.SourcesPanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+        });
+        describe('Performance panel', () => {
+            it('should select DRJONES_PERFORMANCE agent when the Performance panel is open in initial render', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistancePerformanceAgent: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, sinon.createStubInstance(TimelinePanel.TimelinePanel.TimelinePanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "drjones-performance" /* AiAgent.AgentType.DRJONES_PERFORMANCE */,
+                }));
+                stub.restore();
+            });
+            it('should update to no agent state when the Performance panel is closed and no other panels are open', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistancePerformanceAgent: {
+                        enabled: true,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, sinon.createStubInstance(TimelinePanel.TimelinePanel.TimelinePanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                sinon.assert.calledWith(mockView, sinon.match({
+                    agentType: "drjones-performance" /* AiAgent.AgentType.DRJONES_PERFORMANCE */,
+                }));
+                UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, null);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+            it('should render no agent state when Performance panel is open but devToolsAiAssistancePerformanceAgent is not enabled', () => {
+                const stub = getGetHostConfigStub({
+                    devToolsAiAssistancePerformanceAgent: {
+                        enabled: false,
+                    },
+                });
+                UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, sinon.createStubInstance(TimelinePanel.TimelinePanel.TimelinePanel));
+                panel = new Freestyler.FreestylerPanel(mockView, {
+                    aidaClient: getTestAidaClient(),
+                    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                    syncInfo: getTestSyncInfo(),
+                });
+                panel.markAsRoot();
+                panel.show(document.body);
+                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                stub.restore();
+            });
+        });
     });
 });
 //# sourceMappingURL=FreestylerPanel.test.js.map

@@ -4,7 +4,9 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import { AiAgent, } from './AiAgent.js';
+import * as TimelineUtils from '../../panels/timeline/utils/utils.js';
+import * as PanelUtils from '../utils/utils.js';
+import { AiAgent, ConversationContext, } from './AiAgent.js';
 /**
  * Preamble clocks in at ~950 tokens.
  *   The prose is around 4.5 chars per token.
@@ -106,6 +108,36 @@ const UIStringsNotTranslate = {
     analyzingCallTree: 'Analyzing call tree',
 };
 const lockedString = i18n.i18n.lockedString;
+export class CallTreeContext extends ConversationContext {
+    #callTree;
+    constructor(callTree) {
+        super();
+        this.#callTree = callTree;
+    }
+    getOrigin() {
+        // TODO: implement cross-origin checks for the PerformanceAgent.
+        return '';
+    }
+    getItem() {
+        return this.#callTree;
+    }
+    getIcon() {
+        const iconData = {
+            iconName: 'performance',
+            color: 'var(--sys-color-on-surface-subtle)',
+        };
+        const icon = PanelUtils.PanelUtils.createIconElement(iconData, 'Performance');
+        icon.classList.add('icon');
+        return icon;
+    }
+    getTitle() {
+        const { event } = this.#callTree.selectedNode;
+        if (!event) {
+            return 'unknown';
+        }
+        return TimelineUtils.EntryName.nameForEntry(event);
+    }
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -116,12 +148,12 @@ export class DrJonesPerformanceAgent extends AiAgent {
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_PERFORMANCE_AGENT;
     get userTier() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        return config.devToolsAiAssistancePerformanceAgentDogfood?.userTier;
+        return config.devToolsAiAssistancePerformanceAgent?.userTier;
     }
     get options() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsAiAssistancePerformanceAgentDogfood?.temperature;
-        const modelId = config.devToolsAiAssistancePerformanceAgentDogfood?.modelId;
+        const temperature = config.devToolsAiAssistancePerformanceAgent?.temperature;
+        const modelId = config.devToolsAiAssistancePerformanceAgent?.modelId;
         return {
             temperature,
             modelId,
@@ -134,13 +166,13 @@ export class DrJonesPerformanceAgent extends AiAgent {
             details: [
                 {
                     title: 'Selected call tree',
-                    text: aiCallTree?.serialize() ?? '',
+                    text: aiCallTree?.getItem().serialize() ?? '',
                 },
             ],
         };
     }
     async enhanceQuery(query, aiCallTree) {
-        const treeStr = aiCallTree?.serialize();
+        const treeStr = aiCallTree?.getItem().serialize();
         // Collect the queries from previous messages in this session
         const prevQueries = [];
         for await (const data of this.runFromHistory()) {

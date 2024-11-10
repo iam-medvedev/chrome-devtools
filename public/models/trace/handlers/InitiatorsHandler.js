@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 const lastScheduleStyleRecalcByFrame = new Map();
 // This tracks the last event that is considered to have invalidated the layout
 // for a given frame.
@@ -43,13 +42,6 @@ export function reset() {
     schedulePostTaskCallbackEventsById.clear();
     schedulePostMessageEventByTraceId.clear();
     postMessageHandlerEvents.length = 0;
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
-}
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('InitiatorsHandler was not reset before being initialized');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 function storeInitiator(data) {
     eventToInitiatorMap.set(data.event, data.initiator);
@@ -195,14 +187,10 @@ function finalizeInitiatorRelationship() {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('InitiatorsHandler is not initialized');
-    }
     // During event processing, we may encounter initiators before the handler events themselves
     // (e.g dispatch events on worker and handler events on the main thread)
     // we don't want to miss out on events whose initiators haven't been processed yet
     finalizeInitiatorRelationship();
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
     return {

@@ -56,8 +56,8 @@ styles.replaceSync(
     details:first-child & {
       border-top: 1px solid var(--sys-color-divider);
     }
-    }
   }
+}
 
 .zoom-button {
   margin-left: auto;

@@ -43,6 +43,7 @@ style.setProperty('--image-file-align-self-center', 'url(\"' + new URL('./src/al
 style.setProperty('--image-file-align-self-end', 'url(\"' + new URL('./src/align-self-end.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-self-start', 'url(\"' + new URL('./src/align-self-start.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-self-stretch', 'url(\"' + new URL('./src/align-self-stretch.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-animation', 'url(\"' + new URL('./src/animation.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-back', 'url(\"' + new URL('./src/arrow-back.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-down', 'url(\"' + new URL('./src/arrow-down.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-drop-down-dark', 'url(\"' + new URL('./src/arrow-drop-down-dark.svg', import.meta.url).toString() + '\")');
@@ -61,6 +62,7 @@ style.setProperty('--image-file-brackets', 'url(\"' + new URL('./src/brackets.sv
 style.setProperty('--image-file-breakpoint-circle', 'url(\"' + new URL('./src/breakpoint-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-breakpoint-crossed-filled', 'url(\"' + new URL('./src/breakpoint-crossed-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-breakpoint-crossed', 'url(\"' + new URL('./src/breakpoint-crossed.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-brush-2', 'url(\"' + new URL('./src/brush-2.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-brush-filled', 'url(\"' + new URL('./src/brush-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-brush', 'url(\"' + new URL('./src/brush.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bug', 'url(\"' + new URL('./src/bug.svg', import.meta.url).toString() + '\")');

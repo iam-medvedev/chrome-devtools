@@ -93,6 +93,18 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.cursorPosition = mouseEvent.offsetX + offsetLeftRelativeToCursorArea;
         this.cursorElement.style.left = this.cursorPosition + 'px';
         this.cursorElement.style.visibility = 'visible';
+        // Dispatch an event to notify the flame chart to show a timestamp marker for the current timestamp if it's visible
+        // in the flame chart.
+        const timeInMilliSeconds = this.overviewCalculator.positionToTime(this.cursorPosition);
+        const timeWindow = this.overviewGrid.calculateWindowValue();
+        if (Trace.Types.Timing.MilliSeconds(timeWindow.rawStartValue) <= timeInMilliSeconds &&
+            timeInMilliSeconds <= Trace.Types.Timing.MilliSeconds(timeWindow.rawEndValue)) {
+            const timeInMicroSeconds = Trace.Helpers.Timing.millisecondsToMicroseconds(timeInMilliSeconds);
+            this.dispatchEventToListeners("OverviewPaneMouseMove" /* Events.OVERVIEW_PANE_MOUSE_MOVE */, { timeInMicroSeconds });
+        }
+        else {
+            this.dispatchEventToListeners("OverviewPaneMouseLeave" /* Events.OVERVIEW_PANE_MOUSE_LEAVE */);
+        }
         void this.overviewInfo.setContent(this.buildOverviewInfo());
     }
     async buildOverviewInfo() {
@@ -106,6 +118,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     }
     hideCursor() {
         this.cursorElement.style.visibility = 'hidden';
+        this.dispatchEventToListeners("OverviewPaneMouseLeave" /* Events.OVERVIEW_PANE_MOUSE_LEAVE */);
         this.overviewInfo.hide();
     }
     wasShown() {
@@ -251,7 +264,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         const left = haveRecords && this.windowStartTime ? Math.min((this.windowStartTime - absoluteMin) / timeSpan, 1) : 0;
         const right = haveRecords && this.windowEndTime < Infinity ? (this.windowEndTime - absoluteMin) / timeSpan : 1;
         this.muteOnWindowChanged = true;
-        this.overviewGrid.setWindow(left, right);
+        this.overviewGrid.setWindowRatio(left, right);
         this.muteOnWindowChanged = false;
     }
     highlightBounds(bounds) {

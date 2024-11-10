@@ -26,6 +26,9 @@ export declare const enum Phase {
     MARK = "R",
     CLOCK_SYNC = "c"
 }
+export type NonEmptyString = string & {
+    _tag: 'NonEmptyString';
+};
 export declare function isNestableAsyncPhase(phase: Phase): boolean;
 export declare function isPhaseAsync(phase: Phase): boolean;
 export declare function isFlowPhase(phase: Phase): boolean;
@@ -188,28 +191,34 @@ export interface End extends Event {
  * the RendererHandler.
  */
 export type SyntheticComplete = Complete;
-export interface EventTiming extends Event {
-    ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_END;
+export type EventTimingBeginOrEnd = EventTimingBegin | EventTimingEnd;
+export interface EventTimingBegin extends Event {
+    ph: Phase.ASYNC_NESTABLE_START;
     name: Name.EVENT_TIMING;
     id: string;
     args: Args & {
-        frame: string;
-        data?: ArgsData & {
+        data: ArgsData & {
             cancelable: boolean;
             duration: MilliSeconds;
-            processingEnd: MilliSeconds;
-            processingStart: MilliSeconds;
-            timeStamp: MilliSeconds;
-            interactionId?: number;
             type: string;
+            interactionId: number;
+            interactionOffset: number;
+            nodeId: Protocol.DOM.BackendNodeId;
+            frame?: string;
+            processingEnd?: MilliSeconds;
+            processingStart?: MilliSeconds;
+            timeStamp?: MilliSeconds;
+            enqueuedToMainThreadTime?: MilliSeconds;
+            commitFinishTime?: MilliSeconds;
         };
+        frame?: string;
     };
 }
-export interface EventTimingBegin extends EventTiming {
-    ph: Phase.ASYNC_NESTABLE_START;
-}
-export interface EventTimingEnd extends EventTiming {
+export interface EventTimingEnd extends Event {
     ph: Phase.ASYNC_NESTABLE_END;
+    name: Name.EVENT_TIMING;
+    id: string;
+    args: Args;
 }
 export interface GPUTask extends Complete {
     name: 'GPUTask';
@@ -446,11 +455,12 @@ export interface ProcessName extends Metadata {
 export interface Mark extends Event {
     ph: Phase.MARK;
 }
-export interface NavigationStart extends Mark {
+export interface NavigationStartUnreliable extends Mark {
     name: 'navigationStart';
     args: Args & {
         data?: ArgsData & {
-            documentLoaderURL: string;
+            /** An empty documentLoaderURL means this navigationStart is unreliable noise and can be ignored. */
+            documentLoaderURL: never;
             isLoadingMainFrame: boolean;
             isOutermostMainFrame?: boolean;
             navigationId: string;
@@ -460,6 +470,14 @@ export interface NavigationStart extends Mark {
             url?: string;
         };
         frame: string;
+    };
+}
+export interface NavigationStart extends NavigationStartUnreliable {
+    args: NavigationStartUnreliable['args'] & {
+        data: NavigationStartUnreliable['args']['data'] & {
+            /** This navigationStart is valid, as the documentLoaderURL isn't empty. */
+            documentLoaderURL: NonEmptyString;
+        };
     };
 }
 export interface FirstContentfulPaint extends Mark {
@@ -746,8 +764,9 @@ export interface ResourceChangePriority extends Instant {
         };
     };
 }
+/** Only sent for navigations. https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_instrumentation.cc;l=1612-1647;drc=ec7daf93d0479b758610c75f4e146fd4d2d6ed2b */
 export interface ResourceWillSendRequest extends Instant {
-    name: 'ResourceWillSendRequest';
+    name: Name.RESOURCE_WILL_SEND_REQUEST;
     args: Args & {
         data: ArgsData & {
             requestId: string;
@@ -776,6 +795,7 @@ export interface ResourceReceivedData extends Instant {
         };
     };
 }
+/** See https://mdn.github.io/shared-assets/images/diagrams/api/performance/timestamp-diagram.svg  */
 interface ResourceReceiveResponseTimingData {
     connectEnd: MilliSeconds;
     connectStart: MilliSeconds;
@@ -787,6 +807,7 @@ interface ResourceReceiveResponseTimingData {
     pushStart: MilliSeconds;
     receiveHeadersEnd: MilliSeconds;
     receiveHeadersStart: MilliSeconds;
+    /** When the network service is about to handle a request, ie. just before going to the HTTP cache or going to the network for DNS/connection setup. */
     requestTime: Seconds;
     sendEnd: MilliSeconds;
     sendStart: MilliSeconds;
@@ -1148,7 +1169,7 @@ export type SyntheticPipelineReporterPair = SyntheticEventPair<PipelineReporter>
 export type SyntheticUserTimingPair = SyntheticEventPair<PerformanceMeasure>;
 export type SyntheticConsoleTimingPair = SyntheticEventPair<ConsoleTime>;
 export type SyntheticAnimationPair = SyntheticEventPair<Animation>;
-export interface SyntheticInteractionPair extends SyntheticEventPair<EventTiming> {
+export interface SyntheticInteractionPair extends SyntheticEventPair<EventTimingBeginOrEnd> {
     interactionId: number;
     type: string;
     ts: MicroSeconds;
@@ -1442,7 +1463,8 @@ export declare function isProcessName(event: Event): event is ProcessName;
 export declare function isTracingStartedInBrowser(event: Event): event is TracingStartedInBrowser;
 export declare function isFrameCommittedInBrowser(event: Event): event is FrameCommittedInBrowser;
 export declare function isCommitLoad(event: Event): event is CommitLoad;
-export declare function isNavigationStart(event: Event): event is NavigationStart;
+/** @deprecated You probably want `isNavigationStart` instead. */
+export declare function isNavigationStartUnreliable(event: Event): event is NavigationStartUnreliable;
 export declare function isAnimation(event: Event): event is Animation;
 export declare function isSyntheticAnimation(event: Event): event is SyntheticAnimationPair;
 export declare function isLayoutShift(event: Event): event is LayoutShift;
@@ -1455,7 +1477,7 @@ export declare function isMarkLoad(event: Event): event is MarkLoad;
 export declare function isFirstPaint(event: Event): event is FirstPaint;
 export declare function isMarkDOMContent(event: Event): event is MarkDOMContent;
 export declare function isInteractiveTime(event: Event): event is InteractiveTime;
-export declare function isEventTiming(event: Event): event is EventTiming;
+export declare function isEventTiming(event: Event): event is EventTimingBeginOrEnd;
 export declare function isEventTimingEnd(event: Event): event is EventTimingEnd;
 export declare function isEventTimingStart(event: Event): event is EventTimingBegin;
 export declare function isGPUTask(event: Event): event is GPUTask;
@@ -1473,7 +1495,8 @@ export declare function isSyntheticNetworkRequest(event: Event): event is Synthe
 export declare function isSyntheticWebSocketConnection(event: Event): event is SyntheticWebSocketConnection;
 export declare function isNetworkTrackEntry(event: Event): event is SyntheticWebSocketConnection | SyntheticNetworkRequest;
 export declare function isPrePaint(event: Event): event is PrePaint;
-export declare function isNavigationStartWithURL(event: Event): event is NavigationStart;
+/** A VALID navigation start (as it has a populated documentLoaderURL) */
+export declare function isNavigationStart(event: Event): event is NavigationStart;
 export declare function isMainFrameViewport(event: Event): event is MainFrameViewport;
 export declare function isSyntheticUserTiming(event: Event): event is SyntheticUserTimingPair;
 export declare function isSyntheticConsoleTiming(event: Event): event is SyntheticConsoleTimingPair;

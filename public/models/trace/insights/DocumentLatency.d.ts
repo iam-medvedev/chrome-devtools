@@ -1,6 +1,6 @@
 import * as Types from '../types/types.js';
-import type { InsightResult, InsightSetContext, RequiredData } from './types.js';
-export type DocumentLatencyInsightResult = InsightResult<{
+import type { InsightModel, InsightSetContext, RequiredData } from './types.js';
+export type DocumentLatencyInsightModel = InsightModel<{
     data?: {
         serverResponseTime: Types.Timing.MilliSeconds;
         serverResponseTooSlow: boolean;
@@ -10,4 +10,4 @@ export type DocumentLatencyInsightResult = InsightResult<{
     };
 }>;
 export declare function deps(): ['Meta', 'NetworkRequests'];
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): DocumentLatencyInsightResult;
+export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): DocumentLatencyInsightModel;

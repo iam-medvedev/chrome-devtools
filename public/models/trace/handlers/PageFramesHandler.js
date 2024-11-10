@@ -33,6 +33,8 @@ export function handleEvent(event) {
         });
     }
 }
+export async function finalize() {
+}
 export function data() {
     return {
         frames,

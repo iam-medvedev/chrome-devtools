@@ -1,4 +1,5 @@
 import '../../../../ui/components/markdown_view/markdown_view.js';
+import type { InsightModel } from '../../../../models/trace/insights/types.js';
 import type * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
@@ -14,26 +15,24 @@ export declare function insightIsActive(options: {
     insightSetKey: string | null;
 }): boolean;
 export interface BaseInsightData {
-    insights: Trace.Insights.Types.TraceInsightSets | null;
     parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
     /** The key into `insights` that contains this particular insight. */
     insightSetKey: string | null;
     activeInsight: ActiveInsight | null;
     activeCategory: Category;
 }
-export declare abstract class BaseInsight extends HTMLElement {
+export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> extends HTMLElement {
     #private;
     abstract internalName: string;
     abstract insightCategory: Category;
-    abstract userVisibleTitle: string;
-    abstract description: string;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     protected readonly shadow: ShadowRoot;
+    get model(): T | null;
     protected data: BaseInsightData;
     readonly sharedTableState: TableState;
     protected scheduleRender(): void;
     connectedCallback(): void;
-    set insights(insights: Trace.Insights.Types.TraceInsightSets | null);
+    set model(model: T);
     set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace | null);
     set insightSetKey(insightSetKey: string | null);
     set activeInsight(activeInsight: ActiveInsight | null);
@@ -54,7 +53,6 @@ export declare abstract class BaseInsight extends HTMLElement {
     protected abstract createOverlays(): Overlays.Overlays.TimelineOverlay[];
     abstract render(): void;
     protected isActive(): boolean;
-    getInsightSetUrl(): URL;
 }
 /**
  * Returns a rendered MarkdownView component.

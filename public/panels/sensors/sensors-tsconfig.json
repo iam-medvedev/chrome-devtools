@@ -52,6 +52,12 @@
       "path": "../mobile_throttling/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/cards/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     }
   ]

@@ -1,13 +1,10 @@
 import '../../../ui/components/spinners/spinners.js';
 import './UserActionRow.js';
 import * as Host from '../../../core/host/host.js';
-import * as SDK from '../../../core/sdk/sdk.js';
-import type * as Workspace from '../../../models/workspace/workspace.js';
-import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { AgentType, type ContextDetail, ErrorType } from '../AiAgent.js';
+import { AgentType, type ContextDetail, type ConversationContext, ErrorType } from '../AiAgent.js';
 export interface Step {
     isLoading: boolean;
     thought?: string;
@@ -47,22 +44,27 @@ export interface Props {
     onInspectElementClick: () => void;
     onFeedbackSubmit: (rpcId: number, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onCancelClick: () => void;
-    onSelectedNetworkRequestClick: () => void | Promise<void>;
-    onSelectedFileRequestClick: () => void | Promise<void>;
+    onContextClick: () => void | Promise<void>;
+    onNewConversation: () => void;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
-    selectedElement: SDK.DOMModel.DOMNode | null;
-    selectedFile: Workspace.UISourceCode.UISourceCode | null;
-    selectedNetworkRequest: SDK.NetworkRequest.NetworkRequest | null;
-    selectedAiCallTree: TimelineUtils.AICallTree.AICallTree | null;
+    selectedContext: ConversationContext<unknown> | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;
     agentType?: AgentType;
+    isReadOnly: boolean;
+    blockedByCrossOrigin: boolean;
+    requiresNewConversation?: boolean;
+    stripLinks: boolean;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+    #private;
+    constructor(opts?: {
+        stripLinks?: boolean;
+    });
     templateForToken(token: Marked.Marked.MarkedToken): LitHtml.TemplateResult | null;
 }
 export declare class FreestylerChatUi extends HTMLElement {

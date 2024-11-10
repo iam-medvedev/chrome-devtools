@@ -467,6 +467,9 @@ export const generatedPropertyValues: {
     "inset-area": {
         values: string[];
     };
+    interactivity: {
+        values: string[];
+    };
     "interpolate-size": {
         values: string[];
     };

@@ -12,6 +12,7 @@ export type ViewInput = {
     panel: SecurityPanel;
 };
 export type ViewOutput = {
+    setVisibleView: (view: UI.Widget.VBox) => void;
     splitWidget: UI.SplitWidget.SplitWidget;
     mainView: SecurityMainView;
     visibleView: UI.Widget.VBox | null;

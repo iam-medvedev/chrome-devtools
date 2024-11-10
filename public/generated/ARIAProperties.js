@@ -4,6 +4,10 @@
 export const config = {
     "attributes": [
         {
+            "name": "aria-actions",
+            "type": "IDREF_list"
+        },
+        {
             "name": "aria-activedescendant",
             "type": "IDREF"
         },

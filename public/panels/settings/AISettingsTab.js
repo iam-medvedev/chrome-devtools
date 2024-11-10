@@ -125,10 +125,6 @@ const UIStrings = {
      */
     privacyNotice: 'Google Privacy Policy',
     /**
-     *@description Header for the AI innovations settings page
-     */
-    aiInnovations: 'AI innovations',
-    /**
      *@description Label for a toggle to enable the Console Insights feature
      */
     enableConsoleInsights: 'Enable `Console insights`',
@@ -194,28 +190,26 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     }
     #getAiAssistanceSettingDescription() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        if (config.devToolsAiAssistancePerformanceAgent?.enabled ||
-            config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingNetworkPerformanceAndFile);
         }
-        if (config.devToolsAiAssistanceFileAgent?.enabled || config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistanceFileAgent?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingNetworkAndFile);
         }
-        if (config.devToolsAiAssistanceNetworkAgent?.enabled || config.devToolsExplainThisResourceDogfood?.enabled) {
+        if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingAndNetworkRequest);
         }
         return i18nString(UIStrings.helpUnderstandStyling);
     }
     #getAiAssistanceSettingInfo() {
         const config = Common.Settings.Settings.instance().getHostConfig();
-        if (config.devToolsAiAssistancePerformanceAgent?.enabled ||
-            config.devToolsAiAssistancePerformanceAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
             return i18nString(UIStrings.explainStylingNetworkPerformanceAndFile);
         }
-        if (config.devToolsAiAssistanceFileAgent?.enabled || config.devToolsAiAssistanceFileAgentDogfood?.enabled) {
+        if (config.devToolsAiAssistanceFileAgent?.enabled) {
             return i18nString(UIStrings.explainStylingNetworkAndFile);
         }
-        if (config.devToolsAiAssistanceNetworkAgent?.enabled || config.devToolsExplainThisResourceDogfood?.enabled) {
+        if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
             return i18nString(UIStrings.explainStylingAndNetworkRequest);
         }
         return i18nString(UIStrings.explainStyling);
@@ -494,9 +488,6 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         LitHtml.render(html `
-      <header>
-        <h1>${i18nString(UIStrings.aiInnovations)}</h1>
-      </header>
       <div class="settings-container-wrapper" jslog=${VisualLogging.pane('chrome-ai')}>
         ${this.#renderSharedDisclaimer()}
         ${this.#consoleInsightsSetting || this.#aiAssistanceSetting ? html `

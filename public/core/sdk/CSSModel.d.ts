@@ -28,6 +28,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     static readableLayerName(text: string): string;
     static trimSourceURL(text: string): string;
     domModel(): DOMModel;
+    trackComputedStyleUpdatesForNode(nodeId: Protocol.DOM.NodeId | undefined): Promise<void>;
     setStyleText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, text: string, majorChange: boolean): Promise<boolean>;
     setSelectorText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, text: string): Promise<boolean>;
     setPropertyRulePropertyName(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, text: string): Promise<boolean>;
@@ -70,6 +71,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     private originalContentRequestedForTest;
     originalStyleSheetText(header: CSSStyleSheetHeader): Promise<string | null>;
     getAllStyleSheetHeaders(): Iterable<CSSStyleSheetHeader>;
+    computedStyleUpdated(nodeId: Protocol.DOM.NodeId): void;
     styleSheetAdded(header: Protocol.CSS.CSSStyleSheetHeader): void;
     styleSheetRemoved(id: Protocol.CSS.StyleSheetId): void;
     getStyleSheetIdsForURL(url: Platform.DevToolsPath.UrlString): Protocol.CSS.StyleSheetId[];
@@ -98,7 +100,8 @@ export declare enum Events {
     PseudoStateForced = "PseudoStateForced",
     StyleSheetAdded = "StyleSheetAdded",
     StyleSheetChanged = "StyleSheetChanged",
-    StyleSheetRemoved = "StyleSheetRemoved"
+    StyleSheetRemoved = "StyleSheetRemoved",
+    ComputedStyleUpdated = "ComputedStyleUpdated"
 }
 export interface StyleSheetChangedEvent {
     styleSheetId: Protocol.CSS.StyleSheetId;
@@ -109,6 +112,9 @@ export interface PseudoStateForcedEvent {
     pseudoClass: string;
     enable: boolean;
 }
+export interface ComputedStyleUpdatedEvent {
+    nodeId: Protocol.DOM.NodeId;
+}
 export type EventTypes = {
     [Events.FontsUpdated]: void;
     [Events.MediaQueryResultChanged]: void;
@@ -118,6 +124,7 @@ export type EventTypes = {
     [Events.StyleSheetAdded]: CSSStyleSheetHeader;
     [Events.StyleSheetChanged]: StyleSheetChangedEvent;
     [Events.StyleSheetRemoved]: CSSStyleSheetHeader;
+    [Events.ComputedStyleUpdated]: ComputedStyleUpdatedEvent;
 };
 export declare class Edit {
     styleSheetId: string;

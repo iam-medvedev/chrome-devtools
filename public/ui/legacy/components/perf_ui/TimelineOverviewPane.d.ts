@@ -55,7 +55,8 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
 export declare const enum Events {
     OVERVIEW_PANE_WINDOW_CHANGED = "OverviewPaneWindowChanged",
     OVERVIEW_PANE_BREADCRUMB_ADDED = "OverviewPaneBreadcrumbAdded",
-    OPEN_SIDEBAR_BUTTON_CLICKED = "OpenSidebarButtonClicked"
+    OVERVIEW_PANE_MOUSE_MOVE = "OverviewPaneMouseMove",
+    OVERVIEW_PANE_MOUSE_LEAVE = "OverviewPaneMouseLeave"
 }
 export interface OverviewPaneWindowChangedEvent {
     startTime: Trace.Types.Timing.MilliSeconds;
@@ -65,12 +66,14 @@ export interface OverviewPaneBreadcrumbAddedEvent {
     startTime: Trace.Types.Timing.MilliSeconds;
     endTime: Trace.Types.Timing.MilliSeconds;
 }
-export interface OpenSidebarButtonClicked {
+export interface OverviewPaneMouseMoveEvent {
+    timeInMicroSeconds: Trace.Types.Timing.MicroSeconds;
 }
 export type EventTypes = {
     [Events.OVERVIEW_PANE_WINDOW_CHANGED]: OverviewPaneWindowChangedEvent;
     [Events.OVERVIEW_PANE_BREADCRUMB_ADDED]: OverviewPaneBreadcrumbAddedEvent;
-    [Events.OPEN_SIDEBAR_BUTTON_CLICKED]: OpenSidebarButtonClicked;
+    [Events.OVERVIEW_PANE_MOUSE_MOVE]: OverviewPaneMouseMoveEvent;
+    [Events.OVERVIEW_PANE_MOUSE_LEAVE]: void;
 };
 export interface TimelineOverview {
     show(parentElement: Element, insertBefore?: Element | null): void;

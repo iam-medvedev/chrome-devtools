@@ -3,22 +3,13 @@
 // found in the LICENSE file.
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { eventRef } from './EventRef.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /**
-     *@description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
-     */
-    title: 'LCP request discovery',
-    /**
-     *@description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
-     */
-    description: 'Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)',
     /**
      * @description Text to tell the user how long after the earliest discovery time their LCP element loaded.
      * @example {401ms} PH1
@@ -49,17 +40,16 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LCPDiscovery.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-function getImageData(insights, insightSetKey) {
-    const insight = Trace.Insights.Common.getInsight('LargestContentfulPaint', insights, insightSetKey);
-    if (!insight) {
+function getImageData(model) {
+    if (!model) {
         return null;
     }
-    if (insight.lcpRequest === undefined) {
+    if (model.lcpRequest === undefined) {
         return null;
     }
-    const shouldIncreasePriorityHint = insight.shouldIncreasePriorityHint;
-    const shouldPreloadImage = insight.shouldPreloadImage;
-    const shouldRemoveLazyLoading = insight.shouldRemoveLazyLoading;
+    const shouldIncreasePriorityHint = model.shouldIncreasePriorityHint;
+    const shouldPreloadImage = model.shouldPreloadImage;
+    const shouldRemoveLazyLoading = model.shouldRemoveLazyLoading;
     const imageLCP = shouldIncreasePriorityHint !== undefined && shouldPreloadImage !== undefined &&
         shouldRemoveLazyLoading !== undefined;
     // Shouldn't render anything if lcp insight is null or lcp is text.
@@ -70,22 +60,20 @@ function getImageData(insights, insightSetKey) {
         shouldIncreasePriorityHint,
         shouldPreloadImage,
         shouldRemoveLazyLoading,
-        request: insight.lcpRequest,
+        request: model.lcpRequest,
         discoveryDelay: null,
-        estimatedSavings: insight.metricSavings?.LCP ?? null,
+        estimatedSavings: model.metricSavings?.LCP ?? null,
     };
-    if (insight.earliestDiscoveryTimeTs && insight.lcpRequest) {
-        const discoveryDelay = insight.lcpRequest.ts - insight.earliestDiscoveryTimeTs;
+    if (model.earliestDiscoveryTimeTs && model.lcpRequest) {
+        const discoveryDelay = model.lcpRequest.ts - model.earliestDiscoveryTimeTs;
         data.discoveryDelay = Trace.Types.Timing.MicroSeconds(discoveryDelay);
     }
     return data;
 }
-export class LCPDiscovery extends BaseInsight {
+export class LCPDiscovery extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-lcp-discovery`;
     insightCategory = Category.LCP;
     internalName = 'lcp-discovery';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
     #adviceIcon(didFail, label) {
         const icon = didFail ? 'clear' : 'check-circle';
         const ariaLabel = didFail ? i18nString(UIStrings.failedAriaLabel, { PH1: label }) :
@@ -105,7 +93,7 @@ export class LCPDiscovery extends BaseInsight {
         return i18n.i18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
     }
     createOverlays() {
-        const imageResults = getImageData(this.data.insights, this.data.insightSetKey);
+        const imageResults = getImageData(this.model);
         if (!imageResults || !imageResults.discoveryDelay) {
             return [];
         }
@@ -151,18 +139,21 @@ export class LCPDiscovery extends BaseInsight {
            />` : LitHtml.nothing}
         <span class="element-img-details">
           ${eventRef(imageData.request)}
-          <span class="element-img-details-size">${Platform.NumberUtilities.bytesToString(imageData.request.args.data.decodedBodyLength ?? 0)}</span>
+          <span class="element-img-details-size">${i18n.ByteUtilities.bytesToString(imageData.request.args.data.decodedBodyLength ?? 0)}</span>
         </span>
       </div>`;
         // clang-format on
     }
     #renderDiscovery(imageData) {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         // clang-format off
         return html `
         <div class="insights">
           <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             internalName: this.internalName,
             expanded: this.isActive(),
             estimatedSavingsTime: imageData.estimatedSavings,
@@ -192,15 +183,14 @@ export class LCPDiscovery extends BaseInsight {
         // clang-format on
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('LargestContentfulPaint', this.data.insights, this.data.insightSetKey);
-        if (!insight?.lcpEvent || !insight?.lcpRequest) {
+        if (!this.model?.lcpEvent || !this.model?.lcpRequest) {
             return [];
         }
         // TODO: add entire request initiator chain?
-        return [insight.lcpEvent, insight.lcpRequest];
+        return [this.model.lcpEvent, this.model.lcpRequest];
     }
     render() {
-        const imageResults = getImageData(this.data.insights, this.data.insightSetKey);
+        const imageResults = getImageData(this.model);
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,

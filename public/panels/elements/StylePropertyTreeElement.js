@@ -89,6 +89,10 @@ const UIStrings = {
      *@description A context menu item in Styles panel to copy all declarations of CSS rule as JavaScript properties.
      */
     copyAllCssDeclarationsAsJs: 'Copy all declarations as JS',
+    /**
+     *@description Title of the link in Styles panel to jump to the Animations panel.
+     */
+    jumpToAnimationsPanel: 'Jump to Animations panel',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -175,7 +179,7 @@ export class VariableRenderer {
     render(match, context) {
         const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
         const { declaration, value: variableValue } = this.resolveVariable(match) ?? {};
-        const fromFallback = !variableValue;
+        const fromFallback = variableValue === undefined;
         const computedValue = variableValue ?? this.fallbackValue(match);
         const varSwatch = new InlineEditor.LinkSwatch.CSSVarSwatch();
         varSwatch.data = {
@@ -617,9 +621,10 @@ export class LinkableNameRenderer {
                     if (!maybeAnimationGroup) {
                         return;
                     }
-                    const icon = IconButton.Icon.create('open-externally', 'open-in-animations-panel');
+                    const icon = IconButton.Icon.create('animation', 'open-in-animations-panel');
                     icon.setAttribute('jslog', `${VisualLogging.link('open-in-animations-panel').track({ click: true })}`);
                     icon.setAttribute('role', 'button');
+                    icon.setAttribute('title', i18nString(UIStrings.jumpToAnimationsPanel));
                     icon.addEventListener('mouseup', ev => {
                         ev.consume(true);
                         void Common.Revealer.reveal(maybeAnimationGroup);
@@ -1409,7 +1414,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
             })]);
         const decl = SDK.CSSPropertyParser.ASTUtils.siblings(SDK.CSSPropertyParser.ASTUtils.declValue(matching.ast.tree));
-        return matching.getComputedTextRange(decl[0], decl[decl.length - 1]);
+        return decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
     }
     refreshIfComputedValueChanged() {
         this.#gridNames = undefined;

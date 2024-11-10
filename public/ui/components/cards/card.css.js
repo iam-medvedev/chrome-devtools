@@ -11,14 +11,17 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 :host {
-  max-width: var(--sys-size-37);
+  display: flex;
+  max-width: var(--sys-size-35);
   width: 100%;
 }
 
 .card {
+  break-inside: avoid;
   min-width: var(--sys-size-31);
-  max-width: var(--sys-size-37);
-  margin: var(--sys-size-3) var(--sys-size-5) var(--sys-size-5) var(--sys-size-5);
+  max-width: var(--sys-size-35);
+  margin: var(--sys-size-3) var(--sys-size-6) var(--sys-size-5) var(--sys-size-5);
+  flex: 1;
 }
 
 .heading-wrapper {
@@ -42,7 +45,7 @@ slot[name="heading-suffix"]::slotted(*) {
 
 .content-container {
   border-radius: var(--sys-shape-corner-small);
-  box-shadow: var(--sys-elevation-level3);
+  box-shadow: var(--sys-elevation-level2);
   display: flex;
   flex-direction: column;
   background: var(--app-color-card-background);

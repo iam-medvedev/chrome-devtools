@@ -5,7 +5,6 @@ import '../../../ui/components/spinners/spinners.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Input from '../../../ui/components/input/input.js';
@@ -89,9 +88,9 @@ const UIStrings = {
      */
     notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account.',
     /**
-     * @description The title of the button that opens Chrome settings.
+     * @description The title of a button which opens the Chrome SignIn page.
      */
-    updateSettings: 'Update Settings',
+    signIn: 'Sign in',
     /**
      * @description The header shown when the internet connection is not
      * available.
@@ -151,7 +150,7 @@ const PRIVACY_POLICY_URL = 'https://policies.google.com/privacy';
 const CODE_SNIPPET_WARNING_URL = 'https://support.google.com/legal/answer/13505487';
 const LEARNMORE_URL = 'https://goo.gle/devtools-console-messages-ai';
 const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504';
-const CHROME_SETTINGS_URL = 'chrome://settings';
+const SIGN_IN_URL = 'https://accounts.google.com';
 export class ConsoleInsight extends HTMLElement {
     static async create(promptBuilder, aidaClient) {
         const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
@@ -449,17 +448,8 @@ export class ConsoleInsight extends HTMLElement {
             throw err;
         }
     }
-    #onGoToChromeSettings() {
-        const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
-        if (rootTarget === null) {
-            return;
-        }
-        const url = CHROME_SETTINGS_URL;
-        void rootTarget.targetAgent().invoke_createTarget({ url }).then(result => {
-            if (result.getError()) {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
-            }
-        });
+    #onGoToSignIn() {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(SIGN_IN_URL);
     }
     #focusHeader() {
         this.addEventListener('animationend', () => {
@@ -507,7 +497,7 @@ export class ConsoleInsight extends HTMLElement {
                 return html `
         <main jslog=${jslog}>
           ${this.#state.validMarkdown ? html `<devtools-markdown-view
-              .data=${{ tokens: this.#state.tokens, renderer: this.#renderer }}>
+              .data=${{ tokens: this.#state.tokens, renderer: this.#renderer, animationEnabled: true }}>
             </devtools-markdown-view>` : this.#state.explanation}
           <details style="--list-height: ${(this.#state.sources.length + (this.#state.isPageReloadRecommended ? 1 : 0)) * 20}px;" jslog=${VisualLogging.expand('sources').track({ click: true })}>
             <summary>${i18nString(UIStrings.inputData)}</summary>
@@ -648,13 +638,13 @@ export class ConsoleInsight extends HTMLElement {
         <div class="filler"></div>
         <div>
           <devtools-button
-            @click=${this.#onGoToChromeSettings}
+            @click=${this.#onGoToSignIn}
             .data=${{
                     variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                     jslogContext: 'update-settings',
                 }}
           >
-            ${UIStrings.updateSettings}
+            ${UIStrings.signIn}
           </devtools-button>
         </div>
       </footer>`;

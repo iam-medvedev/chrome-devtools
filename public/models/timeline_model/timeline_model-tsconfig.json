@@ -29,9 +29,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/models/timeline_model/TimelineJSProfile.ts",
-    "../../../../../../front_end/models/timeline_model/TimelineModelFilter.ts",
-    "../../../../../../front_end/models/timeline_model/TimelineProfileTree.ts",
     "../../../../../../front_end/models/timeline_model/TracingLayerTree.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -42,15 +39,6 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/i18n/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../core/platform/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -58,9 +46,6 @@
     },
     {
       "path": "../trace/bundle-tsconfig.json"
-    },
-    {
-      "path": "../cpu_profile/bundle-tsconfig.json"
     }
   ]
 }

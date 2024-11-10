@@ -575,9 +575,16 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             });
         },
     };
+    const protocolGet = Object.getOwnPropertyDescriptor(URL.prototype, 'protocol')?.get;
+    function getProtocol(url) {
+        if (!protocolGet) {
+            throw new Error('URL.protocol is not available');
+        }
+        return protocolGet.call(new URL(url));
+    }
     function canAccessResource(resource) {
         try {
-            return extensionInfo.allowFileAccess || (new URL(resource.url)).protocol !== 'file:';
+            return extensionInfo.allowFileAccess || getProtocol(resource.url) !== 'file:';
         }
         catch (e) {
             return false;

@@ -4,23 +4,12 @@
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { eventRef } from './EventRef.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /**
-     * @description Title of an insight that provides the user with the list of network requests that blocked and therefore slowed down the page rendering and becoming visible to the user.
-     */
-    title: 'Render blocking requests',
-    /**
-     * @description Text to describe that there are requests blocking rendering, which may affect LCP.
-     */
-    description: 'Requests are blocking the page\'s initial render, which may delay LCP. ' +
-        '[Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) ' +
-        'can move these network requests out of the critical path.',
     /**
      * @description Label to describe a network request (that happens to be render-blocking).
      */
@@ -32,18 +21,15 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/RenderBlocking.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class RenderBlockingRequests extends BaseInsight {
+export class RenderBlocking extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-render-blocking-requests`;
     insightCategory = Category.LCP;
     internalName = 'render-blocking-requests';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
     createOverlays() {
-        const insight = Trace.Insights.Common.getInsight('RenderBlocking', this.data.insights, this.data.insightSetKey);
-        if (!insight) {
+        if (!this.model) {
             return [];
         }
-        return insight.renderBlockingRequests.map(request => this.#createOverlayForRequest(request));
+        return this.model.renderBlockingRequests.map(request => this.#createOverlayForRequest(request));
     }
     #createOverlayForRequest(request) {
         return {
@@ -53,6 +39,9 @@ export class RenderBlockingRequests extends BaseInsight {
         };
     }
     #renderRenderBlocking(insightResult) {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         const estimatedSavings = insightResult.metricSavings?.FCP;
         const MAX_REQUESTS = 3;
         const topRequests = insightResult.renderBlockingRequests.slice(0, MAX_REQUESTS);
@@ -60,8 +49,8 @@ export class RenderBlockingRequests extends BaseInsight {
         return html `
         <div class="insights">
           <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             internalName: this.internalName,
             expanded: this.isActive(),
             estimatedSavingsTime: estimatedSavings,
@@ -87,19 +76,18 @@ export class RenderBlockingRequests extends BaseInsight {
         // clang-format on
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('RenderBlocking', this.data.insights, this.data.insightSetKey);
-        return insight?.relatedEvents ?? [];
+        return this.model?.relatedEvents ?? [];
     }
     render() {
-        const insight = Trace.Insights.Common.getInsight('RenderBlocking', this.data.insights, this.data.insightSetKey);
-        const hasBlockingRequests = insight?.renderBlockingRequests && insight.renderBlockingRequests.length > 0;
+        const model = this.model;
+        const hasBlockingRequests = model?.renderBlockingRequests && model.renderBlockingRequests.length > 0;
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,
         });
-        const output = hasBlockingRequests && matchesCategory ? this.#renderRenderBlocking(insight) : LitHtml.nothing;
+        const output = hasBlockingRequests && matchesCategory ? this.#renderRenderBlocking(model) : LitHtml.nothing;
         LitHtml.render(output, this.shadow, { host: this });
     }
 }
-customElements.define('devtools-performance-render-blocking-requests', RenderBlockingRequests);
+customElements.define('devtools-performance-render-blocking-requests', RenderBlocking);
 //# sourceMappingURL=RenderBlocking.js.map

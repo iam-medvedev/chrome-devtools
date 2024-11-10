@@ -1,5 +1,4 @@
 import * as Common from '../../core/common/common.js';
-import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -68,7 +67,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     getEntryTypeForLevel(level: number): EntryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;

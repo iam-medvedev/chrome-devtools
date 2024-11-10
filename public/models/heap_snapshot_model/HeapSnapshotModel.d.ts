@@ -63,6 +63,7 @@ export declare class Aggregate {
     constructor();
 }
 export declare class AggregateForDiff {
+    name: string;
     indexes: number[];
     ids: number[];
     selfSizes: number[];

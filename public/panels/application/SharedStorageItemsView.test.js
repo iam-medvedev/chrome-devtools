@@ -847,13 +847,13 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.dataGrid.startEditingNextEditableColumnOfDataGridNode(selectedNode, 'key', true);
         const cellElement = getCellElementFromNodeAndColumnId(view.dataGrid, selectedNode, 'key');
         assert.exists(cellElement);
-        // Editing a key will cause `deleteEntry()`, `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
+        // Editing a key will cause `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const editedPromise = itemsListener.waitForItemsEditedTotal(1);
         cellElement.textContent = 'key4';
         dispatchKeyDownEvent(cellElement, { key: 'Enter' });
         await raf();
         await editedPromise;
-        assert.isTrue(deleteEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: '' }));
+        assert.isTrue(deleteEntrySpy.notCalled);
         assert.isTrue(setEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key4', value: '', ignoreIfPresent: false }));
         assert.isTrue(getMetadataSpy.calledThrice);
         assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
@@ -861,7 +861,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES_NEW_KEY);
         assert.deepEqual(itemsListener.editedEvents, [
-            { columnIdentifier: 'key', oldText: '', newText: 'key4' },
+            { columnIdentifier: 'key', oldText: null, newText: 'key4' },
         ]);
         // Verify that the preview loads.
         assert.instanceOf(view.outerSplitWidget.sidebarWidget(), UI.SearchableView.SearchableView);

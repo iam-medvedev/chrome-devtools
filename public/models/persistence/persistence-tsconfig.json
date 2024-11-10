@@ -76,6 +76,9 @@
       "path": "../workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/cards/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

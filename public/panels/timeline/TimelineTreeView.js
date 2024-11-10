@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ThirdPartyWeb from '../../third_party/third-party-web/third-party-web.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
@@ -196,7 +195,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
     }
     init() {
         this.linkifier = new Components.Linkifier.Linkifier();
-        this.taskFilter = new TimelineModel.TimelineModelFilter.ExclusiveNameFilter([
+        this.taskFilter = new Trace.Extras.TraceFilter.ExclusiveNameFilter([
             "RunTask" /* Trace.Types.Events.Name.RUN_TASK */,
         ]);
         this.textFilterInternal = new TimelineRegExp();
@@ -348,7 +347,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         throw new Error('Not Implemented');
     }
     buildTopDownTree(doNotAggregate, groupIdCallback) {
-        return new TimelineModel.TimelineProfileTree.TopDownRootNode(this.selectedEvents(), this.filters(), this.startTime, this.endTime, doNotAggregate, groupIdCallback);
+        return new Trace.Extras.TraceTree.TopDownRootNode(this.selectedEvents(), this.filters(), this.startTime, this.endTime, doNotAggregate, groupIdCallback);
     }
     populateColumns(columns) {
         columns.push({ id: 'self', title: i18nString(UIStrings.selfTime), width: '120px', fixedWidth: true, sortable: true });
@@ -885,7 +884,7 @@ export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
         this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
     }
     buildTree() {
-        return new TimelineModel.TimelineProfileTree.BottomUpRootNode(this.selectedEvents(), this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction(this.groupBySetting.get()));
+        return new Trace.Extras.TraceTree.BottomUpRootNode(this.selectedEvents(), this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction(this.groupBySetting.get()));
     }
 }
 export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {

@@ -524,11 +524,11 @@ export function tokenizeDeclaration(propertyName, propertyValue) {
         return null;
     }
     const childNodes = ASTUtils.children(decl);
-    if (childNodes.length < 3) {
+    if (childNodes.length < 2) {
         return null;
     }
     const [varName, colon, tree] = childNodes;
-    if (!varName || varName.type.isError || !colon || colon.type.isError || !tree || tree.type.isError) {
+    if (!varName || varName.type.isError || !colon || colon.type.isError || tree?.type.isError) {
         return null;
     }
     // It's possible that there are nodes following the declaration when there are comments or syntax errors. We want to

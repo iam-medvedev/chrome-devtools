@@ -1,6 +1,14 @@
 import * as Host from '../../core/host/host.js';
-import type * as TimelineUtils from '../../panels/timeline/utils/utils.js';
-import { AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, type ParsedResponse } from './AiAgent.js';
+import * as TimelineUtils from '../../panels/timeline/utils/utils.js';
+import { AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, ConversationContext, type ParsedResponse } from './AiAgent.js';
+export declare class CallTreeContext extends ConversationContext<TimelineUtils.AICallTree.AICallTree> {
+    #private;
+    constructor(callTree: TimelineUtils.AICallTree.AICallTree);
+    getOrigin(): string;
+    getItem(): TimelineUtils.AICallTree.AICallTree;
+    getIcon(): HTMLElement;
+    getTitle(): string;
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -11,7 +19,7 @@ export declare class DrJonesPerformanceAgent extends AiAgent<TimelineUtils.AICal
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_DRJONES_PERFORMANCE_AGENT;
     get userTier(): string | undefined;
     get options(): AidaRequestOptions;
-    handleContextDetails(aiCallTree: TimelineUtils.AICallTree.AICallTree | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, aiCallTree: TimelineUtils.AICallTree.AICallTree | null): Promise<string>;
+    handleContextDetails(aiCallTree: ConversationContext<TimelineUtils.AICallTree.AICallTree> | null): AsyncGenerator<ContextResponse, void, void>;
+    enhanceQuery(query: string, aiCallTree: ConversationContext<TimelineUtils.AICallTree.AICallTree> | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;
 }

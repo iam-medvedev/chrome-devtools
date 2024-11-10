@@ -8,23 +8,17 @@ const extensionFlameChartEntries = [];
 const extensionTrackData = [];
 const extensionMarkers = [];
 const entryToNode = new Map();
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function handleEvent(_event) {
     // Implementation not needed because data is sourced from UserTimingsHandler
 }
 export function reset() {
-    handlerState = 2 /* HandlerState.INITIALIZED */;
     extensionFlameChartEntries.length = 0;
     extensionTrackData.length = 0;
     extensionMarkers.length = 0;
     entryToNode.clear();
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('ExtensionTraceData handler is not initialized');
-    }
     createExtensionFlameChartEntries();
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 function createExtensionFlameChartEntries() {
     const pairedMeasures = userTimingsData().performanceMeasures;
@@ -93,9 +87,6 @@ export function extensionDataInTiming(timing) {
     }
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('ExtensionTraceData handler is not finalized');
-    }
     return {
         entryToNode,
         extensionTrackData: [...extensionTrackData],

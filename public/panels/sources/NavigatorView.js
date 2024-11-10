@@ -1483,19 +1483,18 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         // Tree outline should be marked as edited as well as the tree element to prevent search from starting.
         const treeOutlineElement = this.treeElement.treeOutline.element;
         UI.UIUtils.markBeingEdited(treeOutlineElement, true);
-        function commitHandler(element, newTitle, oldTitle) {
+        const commitHandler = (_element, newTitle, oldTitle) => {
             if (newTitle !== oldTitle) {
                 if (this.treeElement) {
                     this.treeElement.title = newTitle;
                 }
                 // necessary cast to RawPathString as alternative would be altering type of Config<T>
-                void this.uiSourceCodeInternal.rename(newTitle)
-                    .then(renameCallback.bind(this));
+                void this.uiSourceCodeInternal.rename(newTitle).then(renameCallback);
                 return;
             }
-            afterEditing.call(this, true);
-        }
-        function renameCallback(success) {
+            afterEditing(true);
+        };
+        const renameCallback = (success) => {
             if (!success) {
                 UI.UIUtils.markBeingEdited(treeOutlineElement, false);
                 this.updateTitle();
@@ -1510,17 +1509,17 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
                     this.treeElement.select();
                 }
             }
-            afterEditing.call(this, true);
-        }
-        function afterEditing(committed) {
+            afterEditing(true);
+        };
+        const afterEditing = (committed) => {
             UI.UIUtils.markBeingEdited(treeOutlineElement, false);
             this.updateTitle();
             if (callback) {
                 callback(committed);
             }
-        }
+        };
         this.updateTitle(true);
-        this.treeElement.startEditingTitle(new UI.InplaceEditor.Config(commitHandler.bind(this), afterEditing.bind(this, false)));
+        this.treeElement.startEditingTitle(new UI.InplaceEditor.Config(commitHandler, () => afterEditing(false), undefined));
     }
 }
 export class NavigatorFolderTreeNode extends NavigatorTreeNode {

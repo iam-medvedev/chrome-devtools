@@ -3,19 +3,12 @@
 // found in the LICENSE file.
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { eventRef } from './EventRef.js';
-import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
+import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
 import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
-    /** Title of an insight that provides details about the fonts used on the page, and the value of their `font-display` properties. */
-    title: 'Font display',
-    /**
-     * @description Text to tell the user about the font-display CSS feature to help improve a the UX of a page.
-     */
-    description: 'Consider setting [`font-display`](https://developer.chrome.com/blog/font-display) to `swap` or `optional` to ensure text is consistently visible. `swap` can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks).',
     /** Column for a font loaded by the page to render text. */
     fontColumn: 'Font',
     /** Column for the amount of time wasted. */
@@ -23,20 +16,17 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/FontDisplay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class FontDisplay extends BaseInsight {
+export class FontDisplay extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-font-display`;
     insightCategory = Category.INP;
     internalName = 'font-display';
-    userVisibleTitle = i18nString(UIStrings.title);
-    description = i18nString(UIStrings.description);
     #overlayForRequest = new Map();
     createOverlays() {
         this.#overlayForRequest.clear();
-        const insight = Trace.Insights.Common.getInsight('FontDisplay', this.data.insights, this.data.insightSetKey);
-        if (!insight) {
+        if (!this.model) {
             return [];
         }
-        for (const font of insight.fonts) {
+        for (const font of this.model.fonts) {
             this.#overlayForRequest.set(font.request, {
                 type: 'ENTRY_OUTLINE',
                 entry: font.request,
@@ -46,12 +36,15 @@ export class FontDisplay extends BaseInsight {
         return [...this.#overlayForRequest.values()];
     }
     #render(insight) {
+        if (!this.model) {
+            return LitHtml.nothing;
+        }
         // clang-format off
         return html `
         <div class="insights">
             <devtools-performance-sidebar-insight .data=${{
-            title: this.userVisibleTitle,
-            description: this.description,
+            title: this.model.title,
+            description: this.model.description,
             expanded: this.isActive(),
             internalName: this.internalName,
             estimatedSavingsTime: insight.metricSavings?.FCP,
@@ -79,17 +72,16 @@ export class FontDisplay extends BaseInsight {
         // clang-format on
     }
     getRelatedEvents() {
-        const insight = Trace.Insights.Common.getInsight('FontDisplay', this.data.insights, this.data.insightSetKey);
-        return insight?.relatedEvents ?? [];
+        return this.model?.relatedEvents ?? [];
     }
     render() {
-        const insight = Trace.Insights.Common.getInsight('FontDisplay', this.data.insights, this.data.insightSetKey);
-        const shouldShow = insight && insight.fonts.find(font => font.wastedTime);
+        const model = this.model;
+        const shouldShow = model && model.fonts.find(font => font.wastedTime);
         const matchesCategory = shouldRenderForCategory({
             activeCategory: this.data.activeCategory,
             insightCategory: this.insightCategory,
         });
-        const output = shouldShow && matchesCategory ? this.#render(insight) : LitHtml.nothing;
+        const output = shouldShow && matchesCategory ? this.#render(model) : LitHtml.nothing;
         LitHtml.render(output, this.shadow, { host: this });
     }
 }

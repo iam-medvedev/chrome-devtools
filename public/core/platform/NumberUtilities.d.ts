@@ -1,6 +1,5 @@
 export declare const clamp: (num: number, min: number, max: number) => number;
 export declare const mod: (m: number, n: number) => number;
-export declare const bytesToString: (bytes: number) => string;
 export declare const toFixedIfFloating: (value: string) => string;
 /**
  * Rounds a number (including float) down.

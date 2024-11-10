@@ -30,7 +30,6 @@
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Trace from '../../../../models/trace/trace.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
@@ -56,6 +55,8 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class OverviewGrid {
     element;
     grid;
+    // The |window| will manage the html element of resizers, the left/right blue-colour curtain, and handle the resizing,
+    // zooming, and breadcrumb creation.
     window;
     constructor(prefix, calculator) {
         this.element = document.createElement('div');
@@ -87,14 +88,27 @@ export class OverviewGrid {
     reset() {
         this.window.reset();
     }
-    windowLeft() {
-        return this.window.windowLeft || 0;
+    // The ratio of the left slider position compare to the whole overview grid.
+    // It should be a number between 0 and 1.
+    windowLeftRatio() {
+        return this.window.windowLeftRatio || 0;
     }
-    windowRight() {
-        return this.window.windowRight || 0;
+    // The ratio of the right slider position compare to the whole overview grid.
+    // It should be a number between 0 and 1.
+    windowRightRatio() {
+        return this.window.windowRightRatio || 0;
     }
-    setWindow(left, right) {
-        this.window.setWindow(left, right);
+    /**
+     * This function will return the raw value of the slider window.
+     * Since the OverviewGrid is used in Performance panel or Memory panel, the raw value can be in milliseconds or bytes.
+     *
+     * @returns the pair of start/end value of the slider window in milliseconds or bytes
+     */
+    calculateWindowValue() {
+        return this.window.calculateWindowValue();
+    }
+    setWindowRatio(leftRatio, rightRatio) {
+        this.window.setWindowRatio(leftRatio, rightRatio);
     }
     addEventListener(eventType, listener, thisObject) {
         return this.window.addEventListener(eventType, listener, thisObject);
@@ -106,13 +120,13 @@ export class OverviewGrid {
         this.window.zoom(zoomFactor, referencePoint);
     }
     setResizeEnabled(enabled) {
-        this.window.setEnabled(enabled);
+        this.window.setResizeEnabled(enabled);
     }
 }
-export const MinSelectableSize = 14;
-export const WindowScrollSpeedFactor = .3;
-export const ResizerOffset = 5;
-export const OffsetFromWindowEnds = 10;
+const MinSelectableSize = 14;
+const WindowScrollSpeedFactor = .3;
+const ResizerOffset = 5;
+const OffsetFromWindowEnds = 10;
 export class Window extends Common.ObjectWrapper.ObjectWrapper {
     parentElement;
     calculator;
@@ -126,12 +140,14 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     breadcrumbZoomIcon;
     overviewWindowSelector;
     offsetLeft;
-    dragStartPoint;
-    dragStartLeft;
-    dragStartRight;
-    windowLeft;
-    windowRight;
-    enabled;
+    dragStartPointPixel;
+    dragStartLeftRatio;
+    dragStartRightRatio;
+    // The ratio of the left/right resizer position compare to the whole overview grid.
+    // They should be a number between 0 and 1.
+    windowLeftRatio = 0;
+    windowRightRatio = 1;
+    resizeEnabled;
     clickHandler;
     resizerParentOffsetLeft;
     #breadcrumbsEnabled = false;
@@ -199,7 +215,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         element.addEventListener('mouseover', () => {
-            if ((this.windowLeft ?? 0) <= 0 && (this.windowRight ?? 1) >= 1) {
+            if (this.windowLeftRatio <= 0 && this.windowRightRatio >= 1) {
                 this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
                 this.#mouseOverGridOverview = false;
             }
@@ -223,15 +239,15 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.parentElement.scrollLeft = 0;
     }
     reset() {
-        this.windowLeft = 0.0;
-        this.windowRight = 1.0;
-        this.setEnabled(true);
+        this.windowLeftRatio = 0;
+        this.windowRightRatio = 1;
+        this.setResizeEnabled(true);
         this.updateCurtains();
     }
-    setEnabled(enabled) {
-        this.enabled = enabled;
-        this.rightResizeElement.tabIndex = enabled ? 0 : -1;
-        this.leftResizeElement.tabIndex = enabled ? 0 : -1;
+    setResizeEnabled(resizeEnabled) {
+        this.resizeEnabled = resizeEnabled;
+        this.rightResizeElement.tabIndex = resizeEnabled ? 0 : -1;
+        this.leftResizeElement.tabIndex = resizeEnabled ? 0 : -1;
     }
     setClickHandler(clickHandler) {
         this.clickHandler = clickHandler;
@@ -239,7 +255,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     resizerElementStartDragging(event) {
         const mouseEvent = event;
         const target = event.target;
-        if (!this.enabled) {
+        if (!this.resizeEnabled) {
             return false;
         }
         this.resizerParentOffsetLeft = mouseEvent.pageX - mouseEvent.offsetX - target.offsetLeft;
@@ -292,7 +308,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         return newPos;
     }
     startWindowSelectorDragging(event) {
-        if (!this.enabled) {
+        if (!this.resizeEnabled) {
             return false;
         }
         const mouseEvent = event;
@@ -342,9 +358,9 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     }
     startWindowDragging(event) {
         const mouseEvent = event;
-        this.dragStartPoint = mouseEvent.pageX;
-        this.dragStartLeft = this.windowLeft || 0;
-        this.dragStartRight = this.windowRight || 0;
+        this.dragStartPointPixel = mouseEvent.pageX;
+        this.dragStartLeftRatio = this.windowLeftRatio;
+        this.dragStartRightRatio = this.windowRightRatio;
         event.stopPropagation();
         return true;
     }
@@ -355,14 +371,14 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         }
         const mouseEvent = event;
         mouseEvent.preventDefault();
-        let delta = (mouseEvent.pageX - this.dragStartPoint) / this.parentElement.clientWidth;
-        if (this.dragStartLeft + delta < 0) {
-            delta = -this.dragStartLeft;
+        let delta = (mouseEvent.pageX - this.dragStartPointPixel) / this.parentElement.clientWidth;
+        if (this.dragStartLeftRatio + delta < 0) {
+            delta = -this.dragStartLeftRatio;
         }
-        if (this.dragStartRight + delta > 1) {
-            delta = 1 - this.dragStartRight;
+        if (this.dragStartRightRatio + delta > 1) {
+            delta = 1 - this.dragStartRightRatio;
         }
-        this.setWindow(this.dragStartLeft + delta, this.dragStartRight + delta);
+        this.setWindowRatio(this.dragStartLeftRatio + delta, this.dragStartRightRatio + delta);
     }
     resizeWindowLeft(start) {
         this.#mouseOverGridOverview = true;
@@ -389,6 +405,12 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     resizeWindowMaximum() {
         this.setWindowPosition(0, this.parentElement.clientWidth);
     }
+    /**
+     * This function will return the raw value of the give slider.
+     * Since the OverviewGrid is used in Performance panel or Memory panel, the raw value can be in milliseconds or bytes.
+     * @param leftSlider if this slider is the left one
+     * @returns the value in milliseconds or bytes
+     */
     getRawSliderValue(leftSlider) {
         if (!this.calculator) {
             throw new Error('No calculator to calculate boundaries');
@@ -396,13 +418,13 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         const minimumValue = this.calculator.minimumBoundary();
         const valueSpan = this.calculator.maximumBoundary() - minimumValue;
         if (leftSlider) {
-            return minimumValue + valueSpan * (this.windowLeft || 0);
+            return minimumValue + valueSpan * this.windowLeftRatio;
         }
-        return minimumValue + valueSpan * (this.windowRight || 0);
+        return minimumValue + valueSpan * this.windowRightRatio;
     }
-    updateResizeElementPositionValue(leftValue, rightValue) {
-        const roundedLeftValue = leftValue.toFixed(2);
-        const roundedRightValue = rightValue.toFixed(2);
+    updateResizeElementAriaValue(leftPercentValue, rightPercentValue) {
+        const roundedLeftValue = leftPercentValue.toFixed(2);
+        const roundedRightValue = rightPercentValue.toFixed(2);
         UI.ARIAUtils.setAriaValueNow(this.leftResizeElement, roundedLeftValue);
         UI.ARIAUtils.setAriaValueNow(this.rightResizeElement, roundedRightValue);
         // Left and right sliders cannot be within 0.5% of each other (Range of AriaValueMin/Max/Now is from 0-100).
@@ -415,8 +437,8 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.calculator) {
             return;
         }
-        const startValue = this.calculator.formatValue(Trace.Types.Timing.MilliSeconds(this.getRawSliderValue(/* leftSlider */ true)));
-        const endValue = this.calculator.formatValue(Trace.Types.Timing.MilliSeconds(this.getRawSliderValue(/* leftSlider */ false)));
+        const startValue = this.calculator.formatValue(this.getRawSliderValue(/* leftSlider */ true));
+        const endValue = this.calculator.formatValue(this.getRawSliderValue(/* leftSlider */ false));
         UI.ARIAUtils.setAriaValueText(this.leftResizeElement, String(startValue));
         UI.ARIAUtils.setAriaValueText(this.rightResizeElement, String(endValue));
     }
@@ -424,29 +446,35 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         UI.ARIAUtils.setAriaValueText(this.leftResizeElement, leftValue);
         UI.ARIAUtils.setAriaValueText(this.rightResizeElement, rightValue);
     }
-    calculateWindowPosition() {
+    /**
+     * This function will return the raw value of the slider window.
+     * Since the OverviewGrid is used in Performance panel or Memory panel, the raw value can be in milliseconds or bytes.
+     *
+     * @returns the pair of start/end value of the slider window in milliseconds or bytes
+     */
+    calculateWindowValue() {
         return {
-            rawStartValue: Number(this.getRawSliderValue(/* leftSlider */ true)),
-            rawEndValue: Number(this.getRawSliderValue(/* leftSlider */ false)),
+            rawStartValue: this.getRawSliderValue(/* leftSlider */ true),
+            rawEndValue: this.getRawSliderValue(/* leftSlider */ false),
         };
     }
-    setWindow(windowLeft, windowRight) {
-        this.windowLeft = windowLeft;
-        this.windowRight = windowRight;
+    setWindowRatio(windowLeftRatio, windowRightRatio) {
+        this.windowLeftRatio = windowLeftRatio;
+        this.windowRightRatio = windowRightRatio;
         this.updateCurtains();
         if (this.calculator) {
-            this.dispatchEventToListeners("WindowChangedWithPosition" /* Events.WINDOW_CHANGED_WITH_POSITION */, this.calculateWindowPosition());
+            this.dispatchEventToListeners("WindowChangedWithPosition" /* Events.WINDOW_CHANGED_WITH_POSITION */, this.calculateWindowValue());
         }
         this.dispatchEventToListeners("WindowChanged" /* Events.WINDOW_CHANGED */);
-        this.#changeBreadcrumbButtonVisibility(windowLeft, windowRight);
+        this.#changeBreadcrumbButtonVisibility(windowLeftRatio, windowRightRatio);
     }
     // "Create breadcrumb" button is only visible when the window is set to
     // something other than the full range and mouse is hovering over the MiniMap
-    #changeBreadcrumbButtonVisibility(windowLeft, windowRight) {
+    #changeBreadcrumbButtonVisibility(windowLeftRatio, windowRightRatio) {
         if (!this.#breadcrumbsEnabled) {
             return;
         }
-        if ((windowRight >= 1 && windowLeft <= 0) || !this.#mouseOverGridOverview) {
+        if ((windowRightRatio >= 1 && windowLeftRatio <= 0) || !this.#mouseOverGridOverview) {
             this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
         }
         else {
@@ -454,28 +482,28 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     #createBreadcrumb() {
-        this.dispatchEventToListeners("BreadcrumbAdded" /* Events.BREADCRUMB_ADDED */, this.calculateWindowPosition());
+        this.dispatchEventToListeners("BreadcrumbAdded" /* Events.BREADCRUMB_ADDED */, this.calculateWindowValue());
     }
     updateCurtains() {
-        const windowLeft = this.windowLeft || 0;
-        const windowRight = this.windowRight || 0;
-        let left = windowLeft;
-        let right = windowRight;
-        const width = right - left;
+        const windowLeftRatio = this.windowLeftRatio;
+        const windowRightRatio = this.windowRightRatio;
+        let leftRatio = windowLeftRatio;
+        let rightRatio = windowRightRatio;
+        const widthRatio = rightRatio - leftRatio;
         // OverviewGrids that are instantiated before the parentElement is shown will have a parent element client width of 0 which throws off the 'factor' calculation
         if (this.parentElement.clientWidth !== 0) {
             // We allow actual time window to be arbitrarily small but don't want the UI window to be too small.
-            const widthInPixels = width * this.parentElement.clientWidth;
+            const widthInPixels = widthRatio * this.parentElement.clientWidth;
             const minWidthInPixels = MinSelectableSize / 2;
             if (widthInPixels < minWidthInPixels) {
                 const factor = minWidthInPixels / widthInPixels;
-                left = ((windowRight + windowLeft) - width * factor) / 2;
-                right = ((windowRight + windowLeft) + width * factor) / 2;
+                leftRatio = ((windowRightRatio + windowLeftRatio) - widthRatio * factor) / 2;
+                rightRatio = ((windowRightRatio + windowLeftRatio) + widthRatio * factor) / 2;
             }
         }
-        const leftResizerPercLeftOffset = (100 * left);
-        const rightResizerPercLeftOffset = (100 * right);
-        const rightResizerPercRightOffset = (100 - (100 * right));
+        const leftResizerPercLeftOffset = (100 * leftRatio);
+        const rightResizerPercLeftOffset = (100 * rightRatio);
+        const rightResizerPercRightOffset = (100 - (100 * rightRatio));
         const leftResizerPercLeftOffsetString = leftResizerPercLeftOffset + '%';
         const rightResizerPercLeftOffsetString = rightResizerPercLeftOffset + '%';
         this.leftResizeElement.style.left = leftResizerPercLeftOffsetString;
@@ -489,16 +517,16 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         if (this.curtainsRange) {
             this.curtainsRange.textContent = this.getWindowRange().toFixed(0) + ' ms';
         }
-        this.updateResizeElementPositionValue(leftResizerPercLeftOffset, rightResizerPercLeftOffset);
+        this.updateResizeElementAriaValue(leftResizerPercLeftOffset, rightResizerPercLeftOffset);
         if (this.calculator) {
             this.updateResizeElementPositionLabels();
         }
         else {
             this.updateResizeElementPercentageLabels(leftResizerPercLeftOffsetString, rightResizerPercLeftOffsetString);
         }
-        this.toggleZoomButtonDisplay();
+        this.toggleBreadcrumbZoomButtonDisplay();
     }
-    toggleZoomButtonDisplay() {
+    toggleBreadcrumbZoomButtonDisplay() {
         if (this.breadcrumbZoomIcon) {
             // disable button that creates breadcrumbs and hide the zoom icon
             // when the selected window is smaller than 4.5 ms
@@ -517,19 +545,19 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.calculator) {
             throw new Error('No calculator to calculate window range');
         }
-        const left = (this.windowLeft && this.windowLeft > 0) ? this.windowLeft : 0;
-        const right = (this.windowRight && this.windowRight < 1) ? this.windowRight : 1;
-        return (this.calculator.boundarySpan() * (right - left));
+        const leftRatio = this.windowLeftRatio > 0 ? this.windowLeftRatio : 0;
+        const rightRatio = this.windowRightRatio < 1 ? this.windowRightRatio : 1;
+        return (this.calculator.boundarySpan() * (rightRatio - leftRatio));
     }
-    setWindowPosition(start, end) {
+    setWindowPosition(startPixel, endPixel) {
         const clientWidth = this.parentElement.clientWidth;
-        const windowLeft = typeof start === 'number' ? start / clientWidth : this.windowLeft;
-        const windowRight = typeof end === 'number' ? end / clientWidth : this.windowRight;
-        this.setWindow(windowLeft || 0, windowRight || 0);
+        const windowLeft = typeof startPixel === 'number' ? startPixel / clientWidth : this.windowLeftRatio;
+        const windowRight = typeof endPixel === 'number' ? endPixel / clientWidth : this.windowRightRatio;
+        this.setWindowRatio(windowLeft || 0, windowRight || 0);
     }
     onMouseWheel(event) {
         const wheelEvent = event;
-        if (!this.enabled) {
+        if (!this.resizeEnabled) {
             return;
         }
         if (wheelEvent.deltaY) {
@@ -540,32 +568,32 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         }
         if (wheelEvent.deltaX) {
             let offset = Math.round(wheelEvent.deltaX * WindowScrollSpeedFactor);
-            const windowLeft = this.leftResizeElement.offsetLeft + ResizerOffset;
-            const windowRight = this.rightResizeElement.offsetLeft + ResizerOffset;
-            if (windowLeft - offset < 0) {
-                offset = windowLeft;
+            const windowLeftPixel = this.leftResizeElement.offsetLeft + ResizerOffset;
+            const windowRightPixel = this.rightResizeElement.offsetLeft + ResizerOffset;
+            if (windowLeftPixel - offset < 0) {
+                offset = windowLeftPixel;
             }
-            if (windowRight - offset > this.parentElement.clientWidth) {
-                offset = windowRight - this.parentElement.clientWidth;
+            if (windowRightPixel - offset > this.parentElement.clientWidth) {
+                offset = windowRightPixel - this.parentElement.clientWidth;
             }
-            this.setWindowPosition(windowLeft - offset, windowRight - offset);
+            this.setWindowPosition(windowLeftPixel - offset, windowRightPixel - offset);
             wheelEvent.preventDefault();
         }
     }
     zoom(factor, reference) {
-        let left = this.windowLeft || 0;
-        let right = this.windowRight || 0;
-        const windowSize = right - left;
-        let newWindowSize = factor * windowSize;
-        if (newWindowSize > 1) {
-            newWindowSize = 1;
-            factor = newWindowSize / windowSize;
+        let leftRatio = this.windowLeftRatio || 0;
+        let rightRatio = this.windowRightRatio || 0;
+        const windowSizeRatio = rightRatio - leftRatio;
+        let newWindowSizeRatio = factor * windowSizeRatio;
+        if (newWindowSizeRatio > 1) {
+            newWindowSizeRatio = 1;
+            factor = newWindowSizeRatio / windowSizeRatio;
         }
-        left = reference + (left - reference) * factor;
-        left = Platform.NumberUtilities.clamp(left, 0, 1 - newWindowSize);
-        right = reference + (right - reference) * factor;
-        right = Platform.NumberUtilities.clamp(right, newWindowSize, 1);
-        this.setWindow(left, right);
+        leftRatio = reference + (leftRatio - reference) * factor;
+        leftRatio = Platform.NumberUtilities.clamp(leftRatio, 0, 1 - newWindowSizeRatio);
+        rightRatio = reference + (rightRatio - reference) * factor;
+        rightRatio = Platform.NumberUtilities.clamp(rightRatio, newWindowSizeRatio, 1);
+        this.setWindowRatio(leftRatio, rightRatio);
     }
 }
 export class WindowSelector {

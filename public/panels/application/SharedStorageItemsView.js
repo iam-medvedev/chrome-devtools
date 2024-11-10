@@ -180,7 +180,9 @@ export class SharedStorageItemsView extends StorageItemsView {
             return;
         }
         if (columnIdentifier === 'key') {
-            await this.#sharedStorage.deleteEntry(oldText);
+            if (oldText !== null) {
+                await this.#sharedStorage.deleteEntry(oldText);
+            }
             await this.#sharedStorage.setEntry(newText, editingNode.data.value || '', false);
         }
         else {

@@ -11,20 +11,33 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-.file-system-header {
+.excluded-folder-header {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex: auto;
-  margin: 10px 0;
+  flex-direction: column;
+  height: var(--sys-size-16);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-5) var(--sys-size-6);
+
+  & > .excluded-folder-url {
+    color: var(--sys-color-on-surface-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
-.file-system-header-text {
-  flex: 1 0 auto;
+.exclude-subfolders-text,
+.file-system-list-empty {
+  padding: 0 var(--sys-size-6);
+  height: var(--sys-size-13);
+}
+
+.exclude-subfolders-text {
+  align-items: center;
+  display: flex;
 }
 
 .add-button {
-  margin-left: 10px;
+  padding: var(--sys-size-4) var(--sys-size-6);
   align-self: flex-start;
 }
 
@@ -33,17 +46,12 @@ styles.replaceSync(
 }
 
 .file-system-list-empty {
-  flex: auto;
-  height: 30px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
 }
 
 .file-system-list-item {
-  padding: 3px 5px;
-  height: 30px;
+  height: var(--sys-size-13);
   display: flex;
   align-items: center;
   flex: auto 1 1;
@@ -51,6 +59,18 @@ styles.replaceSync(
 
 .file-system-value {
   flex: 1 1 0;
+}
+
+.list {
+  border: none;
+}
+
+.list-item {
+  padding: 0 var(--sys-size-6);
+}
+
+.editor-buttons {
+  padding: var(--sys-size-4) var(--sys-size-6);
 }
 
 .list-item .file-system-value {
@@ -64,7 +84,7 @@ styles.replaceSync(
   flex: none;
   display: flex;
   flex-direction: row;
-  margin: 6px 5px;
+  margin: var(--sys-size-4) var(--sys-size-6);
   align-items: center;
 }
 

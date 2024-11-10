@@ -193,8 +193,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (!possibleActions) {
             return;
         }
-        // TODO(crbug.com/368240754): Temporarily use soft menu for the shortcuts to show, till the accelerators backend CLs land.
-        const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
         // This action and its 'execute' is defined in `freestyler-meta`
         const actionIdDrJ = 'drjones.performance-panel-context';
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction(actionIdDrJ)) {
@@ -217,7 +216,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             disabled: !possibleActions?.["MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */],
             jslogContext: 'hide-function',
         });
-        hideEntryOption.setShortcut('H');
         hideEntryOption.setAccelerator(UI.KeyboardShortcut.Keys.H, [UI.KeyboardShortcut.Modifiers.None]);
         hideEntryOption.setIsDevToolsPerformanceMenuItem(true);
         const hideChildrenOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
@@ -226,7 +224,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             disabled: !possibleActions?.["COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */],
             jslogContext: 'hide-children',
         });
-        hideChildrenOption.setShortcut('C');
         hideChildrenOption.setAccelerator(UI.KeyboardShortcut.Keys.C, [UI.KeyboardShortcut.Modifiers.None]);
         hideChildrenOption.setIsDevToolsPerformanceMenuItem(true);
         const hideRepeatingChildrenOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
@@ -235,7 +232,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             disabled: !possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* PerfUI.FlameChart.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */],
             jslogContext: 'hide-repeating-children',
         });
-        hideRepeatingChildrenOption.setShortcut('R');
         hideRepeatingChildrenOption.setAccelerator(UI.KeyboardShortcut.Keys.R, [UI.KeyboardShortcut.Modifiers.None]);
         hideRepeatingChildrenOption.setIsDevToolsPerformanceMenuItem(true);
         const resetChildrenOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetChildren), () => {
@@ -244,7 +240,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             disabled: !possibleActions?.["RESET_CHILDREN" /* PerfUI.FlameChart.FilterAction.RESET_CHILDREN */],
             jslogContext: 'reset-children',
         });
-        resetChildrenOption.setShortcut('U');
         resetChildrenOption.setAccelerator(UI.KeyboardShortcut.Keys.U, [UI.KeyboardShortcut.Modifiers.None]);
         resetChildrenOption.setIsDevToolsPerformanceMenuItem(true);
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetTrace), () => {

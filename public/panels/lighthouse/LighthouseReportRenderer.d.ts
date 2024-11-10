@@ -8,5 +8,6 @@ export declare class LighthouseReportRenderer {
     static waitForMainTargetLoad(): Promise<void>;
     static linkifyNodeDetails(el: Element): Promise<void>;
     static linkifySourceLocationDetails(el: Element): Promise<void>;
+    static installVisualLogging(el: Element): void;
 }
 export {};

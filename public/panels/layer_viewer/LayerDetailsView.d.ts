@@ -1,5 +1,4 @@
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LayerView, type LayerViewHost, type Selection } from './LayerViewHost.js';
@@ -9,7 +8,7 @@ declare const LayerDetailsView_base: (new (...args: any[]) => {
     once<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: Events.PAINT_PROFILER_REQUESTED): boolean;
-    dispatchEventToListeners<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    dispatchEventToListeners<T extends Events.PAINT_PROFILER_REQUESTED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.Widget;
 export declare class LayerDetailsView extends LayerDetailsView_base implements LayerView {
     private readonly layerViewHost;
@@ -47,5 +46,5 @@ export declare const enum Events {
 export type EventTypes = {
     [Events.PAINT_PROFILER_REQUESTED]: Selection;
 };
-export declare const slowScrollRectNames: Map<SDK.LayerTreeBase.Layer.ScrollRectType, () => Platform.UIString.LocalizedString>;
+export declare const slowScrollRectNames: Map<SDK.LayerTreeBase.Layer.ScrollRectType, () => Common.UIString.LocalizedString>;
 export {};

@@ -18,7 +18,6 @@ const entryToNode = new Map();
 // are matched by profile id, which we then finish processing to export
 // events matched by thread id.
 const preprocessedData = new Map();
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 function buildProfileCalls() {
     for (const [processId, profiles] of preprocessedData) {
         for (const [profileId, preProcessedData] of profiles) {
@@ -90,18 +89,8 @@ export function reset() {
     preprocessedData.clear();
     profilesInProcess.clear();
     entryToNode.clear();
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
-}
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('Samples Handler was not reset');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 export function handleEvent(event) {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Samples Handler is not initialized');
-    }
     /**
      * A fake trace event created to support CDP.Profiler.Profiles in the
      * trace engine.
@@ -173,16 +162,9 @@ export function handleEvent(event) {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('Samples Handler is not initialized');
-    }
     buildProfileCalls();
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
-    if (handlerState !== 3 /* HandlerState.FINALIZED */) {
-        throw new Error('Samples Handler is not finalized');
-    }
     return {
         profilesInProcess,
         entryToNode,

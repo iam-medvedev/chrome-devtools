@@ -8,7 +8,8 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { AiAgent, debugLog, isDebugMode, } from './AiAgent.js';
+import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { AiAgent, ConversationContext, debugLog, isDebugMode, } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
@@ -162,6 +163,31 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect }) {
     }
 }
 const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
+const OBSERVATION_TIMEOUT = 5_000;
+export class NodeContext extends ConversationContext {
+    #node;
+    constructor(node) {
+        super();
+        this.#node = node;
+    }
+    getOrigin() {
+        const ownerDocument = this.#node.ownerDocument;
+        if (!ownerDocument) {
+            // The node is detached from a document.
+            return 'detached';
+        }
+        return new URL(ownerDocument.documentURL).origin;
+    }
+    getItem() {
+        return this.#node;
+    }
+    getIcon() {
+        return document.createElement('span');
+    }
+    getTitle() {
+        return LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#node));
+    }
+}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -355,7 +381,12 @@ export class FreestylerAgent extends AiAgent {
                     canceled: true,
                 };
             }
-            const result = await this.#execJs(functionDeclaration, { throwOnSideEffect });
+            const result = await Promise.race([
+                this.#execJs(functionDeclaration, { throwOnSideEffect }),
+                new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Script execution exceeded the maximum allowed time.')), OBSERVATION_TIMEOUT);
+                }),
+            ]);
             const byteCount = Platform.StringUtilities.countWtf8Bytes(result);
             Host.userMetrics.freestylerEvalResponseSize(byteCount);
             if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
@@ -514,13 +545,13 @@ export class FreestylerAgent extends AiAgent {
             title: lockedString(UIStringsNotTranslate.analyzingThePrompt),
             details: [{
                     title: lockedString(UIStringsNotTranslate.dataUsed),
-                    text: await FreestylerAgent.describeElement(selectedElement),
+                    text: await FreestylerAgent.describeElement(selectedElement.getItem()),
                 }],
         };
     }
     async enhanceQuery(query, selectedElement) {
         const elementEnchantmentQuery = selectedElement ?
-            `# Inspected element\n\n${await FreestylerAgent.describeElement(selectedElement)}\n\n# User request\n\n` :
+            `# Inspected element\n\n${await FreestylerAgent.describeElement(selectedElement.getItem())}\n\n# User request\n\n` :
             '';
         return `${elementEnchantmentQuery}QUERY: ${query}`;
     }

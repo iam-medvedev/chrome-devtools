@@ -12,18 +12,24 @@ export declare class OverviewGrid {
     addEventDividers(dividers: Element[]): void;
     removeEventDividers(): void;
     reset(): void;
-    windowLeft(): number;
-    windowRight(): number;
-    setWindow(left: number, right: number): void;
+    windowLeftRatio(): number;
+    windowRightRatio(): number;
+    /**
+     * This function will return the raw value of the slider window.
+     * Since the OverviewGrid is used in Performance panel or Memory panel, the raw value can be in milliseconds or bytes.
+     *
+     * @returns the pair of start/end value of the slider window in milliseconds or bytes
+     */
+    calculateWindowValue(): {
+        rawStartValue: number;
+        rawEndValue: number;
+    };
+    setWindowRatio(leftRatio: number, rightRatio: number): void;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: Common.EventTarget.EventListener<EventTypes, T>, thisObject?: Object): Common.EventTarget.EventDescriptor;
     setClickHandler(clickHandler: ((arg0: Event) => boolean) | null): void;
     zoom(zoomFactor: number, referencePoint: number): void;
     setResizeEnabled(enabled: boolean): void;
 }
-export declare const MinSelectableSize = 14;
-export declare const WindowScrollSpeedFactor = 0.3;
-export declare const ResizerOffset = 5;
-export declare const OffsetFromWindowEnds = 10;
 export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     private parentElement;
@@ -38,12 +44,12 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private breadcrumbZoomIcon?;
     private overviewWindowSelector;
     private offsetLeft;
-    private dragStartPoint;
-    private dragStartLeft;
-    private dragStartRight;
-    windowLeft?: number;
-    windowRight?: number;
-    private enabled?;
+    private dragStartPointPixel;
+    private dragStartLeftRatio;
+    private dragStartRightRatio;
+    windowLeftRatio: number;
+    windowRightRatio: number;
+    private resizeEnabled?;
     private clickHandler?;
     private resizerParentOffsetLeft?;
     constructor(parentElement: HTMLElement, dividersLabelBarElement?: Element, calculator?: Calculator);
@@ -52,7 +58,7 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private onResizerClicked;
     private onRightResizeElementFocused;
     reset(): void;
-    setEnabled(enabled: boolean): void;
+    setResizeEnabled(resizeEnabled: boolean): void;
     setClickHandler(clickHandler: ((arg0: Event) => boolean) | null): void;
     private resizerElementStartDragging;
     private leftResizeElementDragging;
@@ -67,14 +73,29 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private resizeWindowLeft;
     private resizeWindowRight;
     private resizeWindowMaximum;
+    /**
+     * This function will return the raw value of the give slider.
+     * Since the OverviewGrid is used in Performance panel or Memory panel, the raw value can be in milliseconds or bytes.
+     * @param leftSlider if this slider is the left one
+     * @returns the value in milliseconds or bytes
+     */
     private getRawSliderValue;
-    private updateResizeElementPositionValue;
+    private updateResizeElementAriaValue;
     private updateResizeElementPositionLabels;
     private updateResizeElementPercentageLabels;
-    private calculateWindowPosition;
-    setWindow(windowLeft: number, windowRight: number): void;
+    /**
+     * This function will return the raw value of the slider window.
+     * Since the OverviewGrid is used in Performance panel or Memory panel, the raw value can be in milliseconds or bytes.
+     *
+     * @returns the pair of start/end value of the slider window in milliseconds or bytes
+     */
+    calculateWindowValue(): {
+        rawStartValue: number;
+        rawEndValue: number;
+    };
+    setWindowRatio(windowLeftRatio: number, windowRightRatio: number): void;
     private updateCurtains;
-    private toggleZoomButtonDisplay;
+    private toggleBreadcrumbZoomButtonDisplay;
     private getWindowRange;
     private setWindowPosition;
     private onMouseWheel;

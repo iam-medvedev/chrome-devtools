@@ -20,6 +20,8 @@ export function handleEvent(event) {
         return;
     }
 }
+export async function finalize() {
+}
 export function data() {
     return {
         dataForUpdateLayoutEvent: selectorDataForUpdateLayoutTree,

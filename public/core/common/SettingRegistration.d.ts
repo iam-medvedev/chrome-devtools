@@ -142,7 +142,7 @@ export interface SettingRegistration {
  */
 export interface LearnMore {
     tooltip: () => Platform.UIString.LocalizedString;
-    url: Platform.DevToolsPath.UrlString;
+    url?: Platform.DevToolsPath.UrlString;
 }
 interface LocalizedSettingExtensionOption {
     value: boolean | string;

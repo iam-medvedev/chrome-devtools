@@ -203,27 +203,6 @@
   "core/host/ResourceLoader.ts | unknownError": {
     "message": "Unknown error"
   },
-  "core/i18n/time-utilities.ts | fdays": {
-    "message": "{PH1} days"
-  },
-  "core/i18n/time-utilities.ts | fhrs": {
-    "message": "{PH1} hrs"
-  },
-  "core/i18n/time-utilities.ts | fmin": {
-    "message": "{PH1} min"
-  },
-  "core/i18n/time-utilities.ts | fmms": {
-    "message": "{PH1} μs"
-  },
-  "core/i18n/time-utilities.ts | fms": {
-    "message": "{PH1} ms"
-  },
-  "core/i18n/time-utilities.ts | fmsExpanded": {
-    "message": "{PH1} milliseconds"
-  },
-  "core/i18n/time-utilities.ts | fs": {
-    "message": "{PH1} s"
-  },
   "core/sdk/ChildTargetManager.ts | main": {
     "message": "Main"
   },
@@ -625,6 +604,9 @@
   },
   "core/sdk/sdk-meta.ts | highlightAdFrames": {
     "message": "Highlight ad frames"
+  },
+  "core/sdk/sdk-meta.ts | networkCacheExplanation": {
+    "message": "Disabling the network cache will simulate a network experience similar to a first time visitor."
   },
   "core/sdk/sdk-meta.ts | networkRequestBlocking": {
     "message": "Network request blocking"
@@ -1596,7 +1578,7 @@
     "message": "<anonymous>"
   },
   "models/persistence/EditFileSystemView.ts | add": {
-    "message": "Add"
+    "message": "Add folder"
   },
   "models/persistence/EditFileSystemView.ts | enterAPath": {
     "message": "Enter a path"
@@ -1605,7 +1587,7 @@
     "message": "Enter a unique path"
   },
   "models/persistence/EditFileSystemView.ts | excludedFolders": {
-    "message": "Excluded folders"
+    "message": "Excluded sub-folders"
   },
   "models/persistence/EditFileSystemView.ts | folderPath": {
     "message": "Folder path"
@@ -1615,6 +1597,9 @@
   },
   "models/persistence/EditFileSystemView.ts | sViaDevtools": {
     "message": "{PH1} (via .devtools)"
+  },
+  "models/persistence/EditFileSystemView.ts | url": {
+    "message": "URL"
   },
   "models/persistence/IsolatedFileSystem.ts | blobCouldNotBeLoaded": {
     "message": "Blob could not be loaded."
@@ -1695,10 +1680,10 @@
     "message": "PlatformFileSystem cannot read files."
   },
   "models/persistence/WorkspaceSettingsTab.ts | addFolder": {
-    "message": "Add folder…"
+    "message": "Add folder"
   },
   "models/persistence/WorkspaceSettingsTab.ts | folderExcludePattern": {
-    "message": "Folder exclude pattern"
+    "message": "Exclude from workspace"
   },
   "models/persistence/WorkspaceSettingsTab.ts | mappingsAreInferredAutomatically": {
     "message": "Mappings are inferred automatically."
@@ -1709,8 +1694,65 @@
   "models/persistence/WorkspaceSettingsTab.ts | workspace": {
     "message": "Workspace"
   },
-  "models/timeline_model/TimelineJSProfile.ts | threadS": {
-    "message": "Thread {PH1}"
+  "models/trace/insights/CLSCulprits.ts | description": {
+    "message": "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads."
+  },
+  "models/trace/insights/CLSCulprits.ts | title": {
+    "message": "Layout shift culprits"
+  },
+  "models/trace/insights/DocumentLatency.ts | description": {
+    "message": "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression."
+  },
+  "models/trace/insights/DocumentLatency.ts | title": {
+    "message": "Document request latency"
+  },
+  "models/trace/insights/FontDisplay.ts | description": {
+    "message": "Consider setting [font-display](https://developer.chrome.com/blog/font-display) to swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
+  },
+  "models/trace/insights/FontDisplay.ts | title": {
+    "message": "Font display"
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | description": {
+    "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | title": {
+    "message": "INP by phase"
+  },
+  "models/trace/insights/LCPDiscovery.ts | description": {
+    "message": "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)"
+  },
+  "models/trace/insights/LCPDiscovery.ts | title": {
+    "message": "LCP request discovery"
+  },
+  "models/trace/insights/LCPPhases.ts | description": {
+    "message": "Each [phase has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays."
+  },
+  "models/trace/insights/LCPPhases.ts | title": {
+    "message": "LCP by phase"
+  },
+  "models/trace/insights/RenderBlocking.ts | description": {
+    "message": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) can move these network requests out of the critical path."
+  },
+  "models/trace/insights/RenderBlocking.ts | title": {
+    "message": "Render blocking requests"
+  },
+  "models/trace/insights/SlowCSSSelector.ts | description": {
+    "message": "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs."
+  },
+  "models/trace/insights/SlowCSSSelector.ts | title": {
+    "message": "CSS Selector costs"
+  },
+  "models/trace/insights/ThirdParties.ts | description": {
+    "message": "Third party code can significantly impact load performance. [Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page's content."
+  },
+  "models/trace/insights/ThirdParties.ts | title": {
+    "message": "Third parties"
+  },
+  "models/trace/insights/Viewport.ts | description": {
+    "message": "The page's viewport is not mobile-optimized, so tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
+  },
+  "models/trace/insights/Viewport.ts | title": {
+    "message": "Viewport not optimized for mobile"
   },
   "models/workspace/UISourceCode.ts | index": {
     "message": "(index)"
@@ -6176,6 +6218,9 @@
   "panels/elements/StylePropertyTreeElement.ts | gridEditorButton": {
     "message": "Open grid editor"
   },
+  "panels/elements/StylePropertyTreeElement.ts | jumpToAnimationsPanel": {
+    "message": "Jump to Animations panel"
+  },
   "panels/elements/StylePropertyTreeElement.ts | openColorPickerS": {
     "message": "Open color picker. {PH1}"
   },
@@ -6479,6 +6524,9 @@
   "panels/explain/components/ConsoleInsight.ts | settingsLink": {
     "message": "Console insights in Settings"
   },
+  "panels/explain/components/ConsoleInsight.ts | signIn": {
+    "message": "Sign in"
+  },
   "panels/explain/components/ConsoleInsight.ts | signInToUse": {
     "message": "Sign in to use this feature"
   },
@@ -6487,9 +6535,6 @@
   },
   "panels/explain/components/ConsoleInsight.ts | turnOnInSettings": {
     "message": "Turn on {PH1} to receive AI assistance for understanding and addressing console warnings and errors."
-  },
-  "panels/explain/components/ConsoleInsight.ts | updateSettings": {
-    "message": "Update Settings"
   },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
     "message": "Understand console messages with AI"
@@ -6563,11 +6608,14 @@
   "panels/freestyler/freestyler-meta.ts | wrongLocale": {
     "message": "To use this feature, set your language preference to English in DevTools settings"
   },
-  "panels/freestyler/FreestylerPanel.ts | chatCleared": {
-    "message": "Chat cleared"
+  "panels/freestyler/FreestylerPanel.ts | chatDeleted": {
+    "message": "Chat deleted"
   },
-  "panels/freestyler/FreestylerPanel.ts | clearChat": {
-    "message": "Clear chat"
+  "panels/freestyler/FreestylerPanel.ts | clearChatHistory": {
+    "message": "Clear chat history"
+  },
+  "panels/freestyler/FreestylerPanel.ts | deleteChat": {
+    "message": "Delete chat"
   },
   "panels/freestyler/FreestylerPanel.ts | help": {
     "message": "Help"
@@ -6577,6 +6625,12 @@
   },
   "panels/freestyler/FreestylerPanel.ts | newChat": {
     "message": "New chat"
+  },
+  "panels/freestyler/FreestylerPanel.ts | newChatCreated": {
+    "message": "New chat created"
+  },
+  "panels/freestyler/FreestylerPanel.ts | noPastConversations": {
+    "message": "No past conversations"
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Send feedback"
@@ -7800,7 +7854,7 @@
     "message": "Slow 3G & 6x CPU slowdown"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | addCustomProfile": {
-    "message": "Add custom profile..."
+    "message": "Add profile"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | dms": {
     "message": "{PH1} ms"
@@ -7821,7 +7875,7 @@
     "message": "Latency must be an integer between {PH1} ms to {PH2} ms inclusive"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | networkThrottlingProfiles": {
-    "message": "Network Throttling Profiles"
+    "message": "Network throttling profiles"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | off": {
     "message": "Off"
@@ -9064,6 +9118,18 @@
   },
   "panels/network/RequestTimingView.ts | retrievalTimeS": {
     "message": "Retrieval Time: {PH1}"
+  },
+  "panels/network/RequestTimingView.ts | routerActualSource": {
+    "message": "Actual source: {PH1}"
+  },
+  "panels/network/RequestTimingView.ts | routerCacheLookup": {
+    "message": "Cache Lookup"
+  },
+  "panels/network/RequestTimingView.ts | routerEvaluation": {
+    "message": "Router Evaluation"
+  },
+  "panels/network/RequestTimingView.ts | routerMatchedSource": {
+    "message": "Matched source: {PH1}"
   },
   "panels/network/RequestTimingView.ts | serverPush": {
     "message": "Server Push"
@@ -10460,6 +10526,24 @@
   "panels/search/SearchView.ts | searchInterrupted": {
     "message": "Search interrupted."
   },
+  "panels/security/CookieReportView.ts | allowed": {
+    "message": "Allowed"
+  },
+  "panels/security/CookieReportView.ts | allowedByException": {
+    "message": "Allowed By Exception"
+  },
+  "panels/security/CookieReportView.ts | blocked": {
+    "message": "Blocked"
+  },
+  "panels/security/CookieReportView.ts | body": {
+    "message": "Third-party cookies that might be restricted by users, depending on their settings. If a user chooses to restrict cookies, then this site might not work for them."
+  },
+  "panels/security/CookieReportView.ts | learnMoreLink": {
+    "message": "Learn more about how third-party cookies are used"
+  },
+  "panels/security/CookieReportView.ts | title": {
+    "message": "Third-party cookies"
+  },
   "panels/security/security-meta.ts | security": {
     "message": "Security"
   },
@@ -10806,10 +10890,7 @@
     "message": "Unknown / canceled"
   },
   "panels/sensors/LocationsSettingsTab.ts | addLocation": {
-    "message": "Add location..."
-  },
-  "panels/sensors/LocationsSettingsTab.ts | customLocations": {
-    "message": "Custom locations"
+    "message": "Add location"
   },
   "panels/sensors/LocationsSettingsTab.ts | lat": {
     "message": "Lat"
@@ -10840,6 +10921,9 @@
   },
   "panels/sensors/LocationsSettingsTab.ts | locationNameMustBeLessThanS": {
     "message": "Location name must be less than {PH1} characters"
+  },
+  "panels/sensors/LocationsSettingsTab.ts | locations": {
+    "message": "Locations"
   },
   "panels/sensors/LocationsSettingsTab.ts | long": {
     "message": "Long"
@@ -11044,9 +11128,6 @@
   },
   "panels/settings/AISettingsTab.ts | ageRestricted": {
     "message": "This feature is only available to users who are 18 years of age or older"
-  },
-  "panels/settings/AISettingsTab.ts | aiInnovations": {
-    "message": "AI innovations"
   },
   "panels/settings/AISettingsTab.ts | boostYourProductivity": {
     "message": "Boost your productivity with AI"
@@ -11352,7 +11433,7 @@
     "message": "Keyboard shortcuts list"
   },
   "panels/settings/KeybindsSettingsTab.ts | matchShortcutsFromPreset": {
-    "message": "Match shortcuts from preset"
+    "message": "Shortcut preset"
   },
   "panels/settings/KeybindsSettingsTab.ts | noShortcutForAction": {
     "message": "No shortcut for action"
@@ -11436,13 +11517,10 @@
     "message": "Learn more"
   },
   "panels/settings/SettingsScreen.ts | noResults": {
-    "message": "No experiments match the filter"
+    "message": "Warning: No experiments match the filter"
   },
   "panels/settings/SettingsScreen.ts | oneOrMoreSettingsHaveChanged": {
     "message": "One or more settings have changed which requires a reload to take effect."
-  },
-  "panels/settings/SettingsScreen.ts | preferences": {
-    "message": "Preferences"
   },
   "panels/settings/SettingsScreen.ts | restoreDefaultsAndReload": {
     "message": "Restore defaults and reload"
@@ -11457,13 +11535,13 @@
     "message": "Shortcuts"
   },
   "panels/settings/SettingsScreen.ts | theseExperimentsAreParticularly": {
-    "message": "These experiments are particularly unstable. Enable at your own risk."
+    "message": "Warning: These experiments are particularly unstable. Enable at your own risk."
   },
   "panels/settings/SettingsScreen.ts | theseExperimentsCouldBeUnstable": {
-    "message": "These experiments could be unstable or unreliable and may require you to restart DevTools."
+    "message": "Warning: These experiments could be unstable or unreliable."
   },
-  "panels/settings/SettingsScreen.ts | warning": {
-    "message": "WARNING:"
+  "panels/settings/SettingsScreen.ts | unstableExperiments": {
+    "message": "Unstable experiments"
   },
   "panels/snippets/ScriptSnippetFileSystem.ts | linkedTo": {
     "message": "Linked to {PH1}"
@@ -12626,9 +12704,6 @@
   "panels/timeline/components/insights/CLSCulprits.ts | animation": {
     "message": "Animation"
   },
-  "panels/timeline/components/insights/CLSCulprits.ts | description": {
-    "message": "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads."
-  },
   "panels/timeline/components/insights/CLSCulprits.ts | fontRequest": {
     "message": "Font request"
   },
@@ -12637,9 +12712,6 @@
   },
   "panels/timeline/components/insights/CLSCulprits.ts | layoutShiftCluster": {
     "message": "Layout shift cluster @ {PH1}"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | title": {
-    "message": "Layout shift culprits"
   },
   "panels/timeline/components/insights/CLSCulprits.ts | topCulprits": {
     "message": "Top layout shift culprits"
@@ -12652,9 +12724,6 @@
   },
   "panels/timeline/components/insights/CLSCulprits.ts | worstLayoutShiftCluster": {
     "message": "Worst layout shift cluster"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | description": {
-    "message": "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression."
   },
   "panels/timeline/components/insights/DocumentLatency.ts | failedAriaLabel": {
     "message": "Insight check failed: {PH1}"
@@ -12686,26 +12755,14 @@
   "panels/timeline/components/insights/DocumentLatency.ts | successAriaLabel": {
     "message": "Insight check passed: {PH1}"
   },
-  "panels/timeline/components/insights/DocumentLatency.ts | title": {
-    "message": "Document request latency"
-  },
   "panels/timeline/components/insights/DocumentLatency.ts | uncompressedDownload": {
     "message": "Uncompressed download"
-  },
-  "panels/timeline/components/insights/FontDisplay.ts | description": {
-    "message": "Consider setting [font-display](https://developer.chrome.com/blog/font-display) to swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
   },
   "panels/timeline/components/insights/FontDisplay.ts | fontColumn": {
     "message": "Font"
   },
-  "panels/timeline/components/insights/FontDisplay.ts | title": {
-    "message": "Font display"
-  },
   "panels/timeline/components/insights/FontDisplay.ts | wastedTimeColumn": {
     "message": "Wasted time"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | description": {
-    "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
     "message": "Duration"
@@ -12721,12 +12778,6 @@
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | processingDuration": {
     "message": "Processing duration"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | title": {
-    "message": "INP by phase"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | description": {
-    "message": "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)"
   },
   "panels/timeline/components/insights/LCPDiscovery.ts | failedAriaLabel": {
     "message": "Insight check failed: {PH1}"
@@ -12746,12 +12797,6 @@
   "panels/timeline/components/insights/LCPDiscovery.ts | successAriaLabel": {
     "message": "Insight check passed: {PH1}"
   },
-  "panels/timeline/components/insights/LCPDiscovery.ts | title": {
-    "message": "LCP request discovery"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | description": {
-    "message": "Each [phase has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays."
-  },
   "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
     "message": "Element render delay"
   },
@@ -12770,20 +12815,11 @@
   "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
     "message": "Time to first byte"
   },
-  "panels/timeline/components/insights/LCPPhases.ts | title": {
-    "message": "LCP by phase"
-  },
-  "panels/timeline/components/insights/RenderBlocking.ts | description": {
-    "message": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) can move these network requests out of the critical path."
-  },
   "panels/timeline/components/insights/RenderBlocking.ts | duration": {
     "message": "Duration"
   },
   "panels/timeline/components/insights/RenderBlocking.ts | renderBlockingRequest": {
     "message": "Request"
-  },
-  "panels/timeline/components/insights/RenderBlocking.ts | title": {
-    "message": "Render blocking requests"
   },
   "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavings": {
     "message": "Est savings: {PH1}"
@@ -12794,9 +12830,6 @@
   "panels/timeline/components/insights/SidebarInsight.ts | viewDetails": {
     "message": "View details for {PH1}"
   },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | description": {
-    "message": "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs."
-  },
   "panels/timeline/components/insights/SlowCSSSelector.ts | elapsed": {
     "message": "Elapsed time"
   },
@@ -12805,9 +12838,6 @@
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | matchCount": {
     "message": "Match count"
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | title": {
-    "message": "CSS Selector costs"
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | topSelectors": {
     "message": "Top selectors"
@@ -12823,18 +12853,6 @@
   },
   "panels/timeline/components/insights/ThirdParties.ts | columnTransferSize": {
     "message": "Transfer size"
-  },
-  "panels/timeline/components/insights/ThirdParties.ts | description": {
-    "message": "Third party code can significantly impact load performance. [Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page's content."
-  },
-  "panels/timeline/components/insights/ThirdParties.ts | title": {
-    "message": "Third parties"
-  },
-  "panels/timeline/components/insights/Viewport.ts | description": {
-    "message": "The page's viewport is not mobile-optimized, so tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
-  },
-  "panels/timeline/components/insights/Viewport.ts | title": {
-    "message": "Viewport not optimized for mobile"
   },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
@@ -12944,14 +12962,17 @@
   "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
     "message": "LCP element"
   },
-  "panels/timeline/components/LiveMetricsView.ts | learnMoreAboutMetrics": {
-    "message": "Local metrics are captured from the current page using your network connection and device. Field data is measured by real users using many different network connections and devices. Click to learn more about local and field metrics."
-  },
   "panels/timeline/components/LiveMetricsView.ts | loadingOption": {
     "message": "{PH1} - Loading…"
   },
   "panels/timeline/components/LiveMetricsView.ts | localAndFieldMetrics": {
     "message": "Local and field metrics"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | localFieldLearnMoreLink": {
+    "message": "Learn more about local and field data"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | localFieldLearnMoreTooltip": {
+    "message": "Local metrics are captured from the current page using your network connection and device. Field data is measured by real users using many different network connections and devices."
   },
   "panels/timeline/components/LiveMetricsView.ts | localMetrics": {
     "message": "Local metrics"
@@ -12967,9 +12988,6 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | network": {
     "message": "Network: {PH1}"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | networkCacheExplanation": {
-    "message": "Disabling the network cache will simulate a network experience similar to a first time visitor."
   },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
@@ -13052,6 +13070,9 @@
   "panels/timeline/components/MetricCard.ts | betweenRange": {
     "message": "({PH1}-{PH2})"
   },
+  "panels/timeline/components/MetricCard.ts | clsHelpTooltip": {
+    "message": "CLS measures the amount of unexpected shifted content. Click here to learn more about CLS."
+  },
   "panels/timeline/components/MetricCard.ts | considerTesting": {
     "message": "Consider your local test conditions"
   },
@@ -13067,8 +13088,14 @@
   "panels/timeline/components/MetricCard.ts | gtRange": {
     "message": "(>{PH1})"
   },
+  "panels/timeline/components/MetricCard.ts | inpHelpTooltip": {
+    "message": "INP measures the overall responsiveness to all click, tap, and keyboard interactions. Click here to learn more about INP."
+  },
   "panels/timeline/components/MetricCard.ts | interactToMeasure": {
     "message": "Interact with the page to measure INP."
+  },
+  "panels/timeline/components/MetricCard.ts | lcpHelpTooltip": {
+    "message": "LCP reports the render time of the largest image, text block, or video visible in the viewport. Click here to learn more about LCP."
   },
   "panels/timeline/components/MetricCard.ts | leqRange": {
     "message": "(≤{PH1})"

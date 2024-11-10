@@ -117,7 +117,7 @@ describeWithMockConnection('MetricCard', () => {
         await coordinator.done();
         const localValueEl = getLocalMetricValue(view);
         assert.strictEqual(localValueEl.className, 'metric-value poor');
-        assert.strictEqual(localValueEl.innerText, '2000 ms');
+        assert.strictEqual(localValueEl.innerText, '2,000 ms');
         const fieldValueEl = getFieldMetricValue(view);
         assert.strictEqual(fieldValueEl.className, 'metric-value good');
         assert.strictEqual(fieldValueEl.innerText, '1 ms');

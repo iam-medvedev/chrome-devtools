@@ -4,7 +4,6 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
-let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 const paintEvents = [];
 const snapshotEvents = [];
 const paintToSnapshotMap = new Map();
@@ -13,7 +12,6 @@ let currentMainFrameLayerTreeId = null;
 const updateLayerEvents = [];
 const relevantEvents = [];
 export function reset() {
-    handlerState = 1 /* HandlerState.UNINITIALIZED */;
     paintEvents.length = 0;
     snapshotEvents.length = 0;
     paintToSnapshotMap.clear();
@@ -21,12 +19,6 @@ export function reset() {
     currentMainFrameLayerTreeId = null;
     updateLayerEvents.length = 0;
     relevantEvents.length = 0;
-}
-export function initialize() {
-    if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
-        throw new Error('LayerTree Handler was not reset before being initialized');
-    }
-    handlerState = 2 /* HandlerState.INITIALIZED */;
 }
 export function handleEvent(event) {
     // We gather up the events here but do all the processing in finalize(). This
@@ -39,9 +31,6 @@ export function handleEvent(event) {
     }
 }
 export async function finalize() {
-    if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
-        throw new Error('LayerTree Handler is not initialized');
-    }
     const metaData = metaHandlerData();
     Helpers.Trace.sortTraceEventsInPlace(relevantEvents);
     for (const event of relevantEvents) {
@@ -101,7 +90,6 @@ export async function finalize() {
             paintToSnapshotMap.set(paintEvent, event);
         }
     }
-    handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
     return {

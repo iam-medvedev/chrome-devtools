@@ -284,7 +284,7 @@ export class OverviewPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     selectRange(timeLeft, timeRight) {
         const startTime = this.dataProvider.minimumBoundary();
         const totalTime = this.dataProvider.totalTime();
-        this.overviewGrid.setWindow((timeLeft - startTime) / totalTime, (timeRight - startTime) / totalTime);
+        this.overviewGrid.setWindowRatio((timeLeft - startTime) / totalTime, (timeRight - startTime) / totalTime);
     }
     onWindowChanged(event) {
         const windowPosition = { windowTimeLeft: event.data.rawStartValue, windowTimeRight: event.data.rawEndValue };
