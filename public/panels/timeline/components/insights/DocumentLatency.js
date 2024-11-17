@@ -5,8 +5,7 @@ import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -60,7 +59,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Do
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class DocumentLatency extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-document-latency`;
-    insightCategory = Category.ALL;
     internalName = 'document-latency';
     #check(didPass, good, bad) {
         const icon = didPass ? 'check-circle' : 'clear';
@@ -117,55 +115,41 @@ export class DocumentLatency extends BaseInsightComponent {
         });
         return overlays;
     }
-    #renderInsight() {
+    getEstimatedSavingsTime() {
+        return this.model?.metricSavings?.FCP ?? null;
+    }
+    getEstimatedSavingsBytes() {
+        return this.model?.data?.uncompressedResponseBytes ?? null;
+    }
+    #renderContent() {
         if (!this.model?.data) {
             return LitHtml.nothing;
         }
         // clang-format off
         return html `
-    <div class="insights">
-      <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            expanded: this.isActive(),
-            internalName: this.internalName,
-            estimatedSavingsTime: this.model.metricSavings?.FCP,
-            estimatedSavingsBytes: this.model.data.uncompressedResponseBytes,
-        }}
-        @insighttoggleclick=${this.onSidebarClick}
-      >
-        <div slot="insight-content" class="insight-section">
-          <ul class="insight-results insight-icon-results">
-            <li class="insight-entry">
-              ${this.#check(this.model.data.redirectDuration === 0, i18nString(UIStrings.passingRedirects), i18nString(UIStrings.failedRedirects))}
-            </li>
-            <li class="insight-entry">
-              ${this.#check(!this.model.data.serverResponseTooSlow, i18nString(UIStrings.passingServerResponseTime), i18nString(UIStrings.failedServerResponseTime))}
-            </li>
-            <li class="insight-entry">
-              ${this.#check(this.model.data.uncompressedResponseBytes === 0, i18nString(UIStrings.passingTextCompression), i18nString(UIStrings.failedTextCompression))}
-            </li>
-          </ul>
-        </div>
-      </devtools-performance-sidebar-insight>
-    </div>`;
+      <div class="insight-section">
+        <ul class="insight-results insight-icon-results">
+          <li class="insight-entry">
+            ${this.#check(this.model.data.redirectDuration === 0, i18nString(UIStrings.passingRedirects), i18nString(UIStrings.failedRedirects))}
+          </li>
+          <li class="insight-entry">
+            ${this.#check(!this.model.data.serverResponseTooSlow, i18nString(UIStrings.passingServerResponseTime), i18nString(UIStrings.failedServerResponseTime))}
+          </li>
+          <li class="insight-entry">
+            ${this.#check(this.model.data.uncompressedResponseBytes === 0, i18nString(UIStrings.passingTextCompression), i18nString(UIStrings.failedTextCompression))}
+          </li>
+        </ul>
+      </div>`;
         // clang-format on
-    }
-    getRelatedEvents() {
-        return this.model?.relatedEvents ?? [];
     }
     render() {
         if (this.model?.data === undefined) {
             return;
         }
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const hasFailure = this.model?.data?.redirectDuration > 0 || this.model?.data?.serverResponseTooSlow ||
+        const hasFailure = this.model.data.redirectDuration > 0 || this.model.data.serverResponseTooSlow ||
             this.model.data.uncompressedResponseBytes > 0;
-        const output = (matchesCategory && hasFailure) ? this.#renderInsight() : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        const output = hasFailure ? this.#renderContent() : LitHtml.nothing;
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-document-latency', DocumentLatency);

@@ -397,7 +397,7 @@ class TickingFlameChartDataProvider {
     forceDecoration(_index) {
         return false;
     }
-    prepareHighlightedEntryInfo(index) {
+    preparePopoverElement(index) {
         const element = document.createElement('div');
         this.eventMap.get(index).decorate(element);
         return element;

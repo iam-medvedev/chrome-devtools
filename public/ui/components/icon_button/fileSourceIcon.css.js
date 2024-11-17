@@ -12,20 +12,24 @@ styles.replaceSync(
  */
 
 :host {
+  devtools-icon.document {
+    color: var(--override-file-source-icon-color, var(--icon-default));
+  }
+
   devtools-icon.script,
   devtools-icon.sm-script,
   devtools-icon.snippet {
-    color: var(--icon-file-script);
+    color: var(--override-file-source-icon-color, var(--icon-file-script));
   }
 
   devtools-icon.stylesheet,
   devtools-icon.sm-stylesheet {
-    color: var(--icon-file-styles);
+    color: var(--override-file-source-icon-color, var(--icon-file-styles));
   }
 
   devtools-icon.image,
   devtools-icon.font {
-    color: var(--icon-file-image);
+    color: var(--override-file-source-icon-color, var(--icon-file-image));
   }
 
   devtools-icon.dot::before {

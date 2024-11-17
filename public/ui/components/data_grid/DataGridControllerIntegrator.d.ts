@@ -5,5 +5,5 @@ export declare class DataGridControllerIntegrator extends UI.Widget.VBox {
     readonly dataGrid: DataGridController;
     constructor(data: DataGridControllerData);
     data(): Readonly<DataGridControllerData>;
-    update(data: Readonly<DataGridControllerData>): void;
+    update(data?: Readonly<DataGridControllerData>): void;
 }

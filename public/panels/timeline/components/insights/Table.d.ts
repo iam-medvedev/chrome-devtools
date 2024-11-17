@@ -1,6 +1,8 @@
+import type * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
-import type { BaseInsightComponent } from './Helpers.js';
+import type * as BaseInsightComponent from './BaseInsightComponent.js';
+type BaseInsightComponent = BaseInsightComponent.BaseInsightComponent<Trace.Insights.Types.InsightModel<{}>>;
 /**
  * @fileoverview An interactive table component.
  *
@@ -21,7 +23,7 @@ export type TableState = {
     selectionIsSticky: boolean;
 };
 export interface TableData {
-    insight: BaseInsightComponent<any>;
+    insight: BaseInsightComponent;
     headers: string[];
     rows: TableDataRow[];
 }
@@ -39,3 +41,4 @@ declare global {
         'devtools-performance-table': Table;
     }
 }
+export {};

@@ -36,7 +36,7 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     serviceWorkersTreeElement: ServiceWorkersTreeElement;
     localStorageListTreeElement: ExpandableApplicationPanelTreeElement;
     sessionStorageListTreeElement: ExpandableApplicationPanelTreeElement;
-    extensionStorageListTreeElement: ExpandableApplicationPanelTreeElement | undefined;
+    extensionStorageListTreeElement: ExpandableApplicationPanelTreeElement;
     indexedDBListTreeElement: IndexedDBTreeElement;
     interestGroupTreeElement: InterestGroupTreeElement;
     cookieListTreeElement: ExpandableApplicationPanelTreeElement;

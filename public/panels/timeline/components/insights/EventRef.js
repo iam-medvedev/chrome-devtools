@@ -6,7 +6,7 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as Utils from '../../utils/utils.js';
-import sidebarInsightStyles from './sidebarInsight.css.js';
+import baseInsightComponentStyles from './baseInsightComponent.css.js';
 const { html } = LitHtml;
 export class EventReferenceClick extends Event {
     event;
@@ -22,7 +22,7 @@ class EventRef extends HTMLElement {
     #text = null;
     #event = null;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sidebarInsightStyles];
+        this.#shadow.adoptedStyleSheets = [baseInsightComponentStyles];
     }
     set text(text) {
         this.#text = text;

@@ -102,7 +102,7 @@ export declare class FakeFlameChartProvider implements PerfUI.FlameChart.FlameCh
     totalTime(): number;
     formatValue(value: number): string;
     maxStackDepth(): number;
-    prepareHighlightedEntryInfo(_entryIndex: number): Element | null;
+    preparePopoverElement(_entryIndex: number): Element | null;
     canJumpToEntry(_entryIndex: number): boolean;
     entryTitle(entryIndex: number): string | null;
     entryFont(_entryIndex: number): string | null;

@@ -15,7 +15,7 @@ export declare class DeviceModeWrapper extends UI.Widget.VBox {
     isDeviceModeOn(): boolean;
     captureScreenshot(fullSize?: boolean, clip?: Protocol.Page.Viewport): boolean;
     private screenshotRequestedFromOverlay;
-    private update;
+    update(force?: boolean): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

@@ -52,6 +52,10 @@ styles.replaceSync(
   flex-shrink: 0;
 }
 
+.data-grid {
+  flex: auto;
+}
+
 /*# sourceURL=cookieReportView.css */
 `);
 

@@ -59,9 +59,6 @@
       "path": "../../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/two_states_counter/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/legacy/components/utils/bundle-tsconfig.json"
     },
     {

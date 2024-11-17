@@ -5,8 +5,7 @@ import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -38,7 +37,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LC
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class LCPPhases extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-lcp-by-phases`;
-    insightCategory = Category.LCP;
     internalName = 'lcp-by-phase';
     #overlay = null;
     #getPhaseData() {
@@ -125,7 +123,7 @@ export class LCPPhases extends BaseInsightComponent {
         overlays.push(this.#overlay);
         return overlays;
     }
-    #renderLCPPhases(phaseData) {
+    #renderContent(phaseData) {
         if (!this.model) {
             return LitHtml.nothing;
         }
@@ -141,51 +139,25 @@ export class LCPPhases extends BaseInsightComponent {
         });
         // clang-format off
         return html `
-    <div class="insights">
-      <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            internalName: this.internalName,
-            expanded: this.isActive(),
-        }}
-        @insighttoggleclick=${this.onSidebarClick}
-      >
-        <div slot="insight-content" class="insight-section">
-          ${html `<devtools-performance-table
-            .data=${{
+      <div class="insight-section">
+        ${html `<devtools-performance-table
+          .data=${{
             insight: this,
             headers: [i18nString(UIStrings.phase), i18nString(UIStrings.percentLCP)],
             rows,
         }}>
-          </devtools-performance-table>`}
-        </div>
-      </devtools-performance-sidebar-insight>
-    </div>`;
+        </devtools-performance-table>`}
+      </div>`;
         // clang-format on
     }
     #hasDataToRender(phaseData) {
         return phaseData ? phaseData.length > 0 : false;
     }
-    getRelatedEvents() {
-        const insight = this.model;
-        if (!insight?.lcpEvent) {
-            return [];
-        }
-        const relatedEvents = [insight.lcpEvent];
-        if (insight.lcpRequest) {
-            relatedEvents.push(insight.lcpRequest);
-        }
-        return relatedEvents;
-    }
     render() {
         const phaseData = this.#getPhaseData();
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const shouldRender = matchesCategory && this.#hasDataToRender(phaseData);
-        const output = shouldRender ? this.#renderLCPPhases(phaseData) : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        const shouldRender = this.#hasDataToRender(phaseData);
+        const output = shouldRender ? this.#renderContent(phaseData) : LitHtml.nothing;
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-lcp-by-phases', LCPPhases);

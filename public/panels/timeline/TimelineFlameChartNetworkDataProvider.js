@@ -333,7 +333,7 @@ export class TimelineFlameChartNetworkDataProvider {
     forceDrawableLevel(levelIndex) {
         return this.#networkTrackAppender?.webSocketIdToLevel.has(levelIndex) || false;
     }
-    prepareHighlightedEntryInfo(index) {
+    preparePopoverElement(index) {
         const event = this.#events[index];
         if (Trace.Types.Events.isSyntheticNetworkRequest(event)) {
             const element = document.createElement('div');

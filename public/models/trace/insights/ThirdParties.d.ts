@@ -1,6 +1,6 @@
 import * as Extras from '../extras/extras.js';
 import type * as Types from '../types/types.js';
-import type { InsightModel, InsightSetContext, RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
 export declare function deps(): ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
 export type ThirdPartiesInsightModel = InsightModel<{
     entityByRequest: Map<Types.Events.SyntheticNetworkRequest, Extras.ThirdParties.Entity>;

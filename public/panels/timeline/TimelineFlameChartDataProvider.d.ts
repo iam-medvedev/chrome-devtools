@@ -69,8 +69,8 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     totalTime(): number;
     search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     getEntryTypeForLevel(level: number): EntryType;
-    prepareHighlightedEntryInfo(entryIndex: number): Element | null;
-    prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;
+    preparePopoverElement(entryIndex: number): Element | null;
+    preparePopoverForCollapsedArrow(entryIndex: number): Element | null;
     getDrawOverride(entryIndex: number): DrawOverride | undefined;
     entryColor(entryIndex: number): string;
     private preparePatternCanvas;

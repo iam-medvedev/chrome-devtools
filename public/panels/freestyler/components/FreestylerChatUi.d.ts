@@ -46,6 +46,7 @@ export interface Props {
     onCancelClick: () => void;
     onContextClick: () => void | Promise<void>;
     onNewConversation: () => void;
+    onCancelCrossOriginChat?: () => void;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;

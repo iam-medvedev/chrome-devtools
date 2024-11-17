@@ -10,7 +10,7 @@ export declare const enum Rating {
     POSITIVE = "POSITIVE",
     NEGATIVE = "NEGATIVE"
 }
-export interface Chunk {
+export interface HistoryChunk {
     text: string;
     entity: Entity;
 }
@@ -36,10 +36,10 @@ export declare enum UserTier {
 export interface AidaRequest {
     input: string;
     preamble?: string;
-    chat_history?: Chunk[];
+    chat_history?: HistoryChunk[];
     client: string;
     options?: {
-        temperature?: Number;
+        temperature?: number;
         model_id?: string;
     };
     metadata?: {

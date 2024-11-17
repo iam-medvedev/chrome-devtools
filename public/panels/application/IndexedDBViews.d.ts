@@ -55,7 +55,7 @@ export declare class IDBDataView extends UI.View.SimpleView {
     private pageForwardButtonClicked;
     private populateContextMenu;
     refreshData(): void;
-    update(objectStore: ObjectStore, index: Index | null): void;
+    update(objectStore?: ObjectStore | null, index?: Index | null): void;
     private parseKey;
     private updateData;
     private updateSummaryBar;

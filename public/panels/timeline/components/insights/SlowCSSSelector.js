@@ -8,8 +8,7 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -37,7 +36,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Sl
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SlowCSSSelector extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-slow-css-selector`;
-    insightCategory = Category.ALL;
     internalName = 'slow-css-selector';
     #selectorLocations = new Map();
     createOverlays() {
@@ -100,18 +98,10 @@ export class SlowCSSSelector extends BaseInsightComponent {
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
         return html `
-      <div class="insights">
-        <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            internalName: this.internalName,
-            expanded: this.isActive(),
-        }}
-          @insighttoggleclick=${this.onSidebarClick} >
-          <div slot="insight-content">
-            <div class="insight-section">
-              ${html `<devtools-performance-table
-                .data=${{
+      <div>
+        <div class="insight-section">
+          ${html `<devtools-performance-table
+            .data=${{
             insight: this,
             headers: [i18nString(UIStrings.total), ''],
             rows: [
@@ -120,11 +110,11 @@ export class SlowCSSSelector extends BaseInsightComponent {
                 { values: [i18nString(UIStrings.matchCount), this.model.totalMatchCount] },
             ],
         }}>
-              </devtools-performance-table>`}
-            </div>
-            <div class="insight-section">
-              ${html `<devtools-performance-table
-                .data=${{
+          </devtools-performance-table>`}
+        </div>
+        <div class="insight-section">
+          ${html `<devtools-performance-table
+            .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.elapsed)],
             rows: this.model.topElapsedMs.map(selector => {
@@ -136,11 +126,11 @@ export class SlowCSSSelector extends BaseInsightComponent {
                 };
             }),
         }}>
-              </devtools-performance-table>`}
-            </div>
-            <div class="insight-section">
-              ${html `<devtools-performance-table
-                .data=${{
+          </devtools-performance-table>`}
+        </div>
+        <div class="insight-section">
+          ${html `<devtools-performance-table
+            .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.matchAttempts)],
             rows: this.model.topMatchAttempts.map(selector => {
@@ -152,27 +142,18 @@ export class SlowCSSSelector extends BaseInsightComponent {
                 };
             }),
         }}>
-              </devtools-performance-table>`}
-            </div>
-          </div>
-        </devtools-performance-sidebar-insight>
+          </devtools-performance-table>`}
+        </div>
       </div>`;
         // clang-format on
     }
     #hasDataToRender() {
         return this.model !== null && this.model.topElapsedMs.length !== 0 && this.model.topMatchAttempts.length !== 0;
     }
-    getRelatedEvents() {
-        return this.model?.relatedEvents ?? [];
-    }
     render() {
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const shouldRender = matchesCategory && this.#hasDataToRender();
+        const shouldRender = this.#hasDataToRender();
         const output = shouldRender ? this.renderSlowCSSSelector() : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-slow-css-selector', SlowCSSSelector);

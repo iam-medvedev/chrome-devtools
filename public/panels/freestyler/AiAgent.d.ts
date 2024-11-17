@@ -69,14 +69,10 @@ export interface UserQuery {
     query: string;
 }
 export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
-export interface AidaBuildRequestOptions {
+export interface BuildRequestOptions {
     input: string;
 }
-export interface HistoryChunk {
-    text: string;
-    entity: Host.AidaClient.Entity;
-}
-export interface AidaRequestOptions {
+export interface RequestOptions {
     temperature?: number;
     modelId?: string;
 }
@@ -112,25 +108,25 @@ export declare abstract class AiAgent<T> {
     static validTemperature(temperature: number | undefined): number | undefined;
     abstract type: AgentType;
     abstract readonly preamble: string;
-    abstract readonly options: AidaRequestOptions;
+    abstract readonly options: RequestOptions;
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     constructor(opts: AgentOptions);
-    get chatHistoryForTesting(): Array<HistoryChunk>;
-    set chatNewHistoryForTesting(history: Map<number, ResponseData[]>);
+    get chatHistoryForTesting(): Array<Host.AidaClient.HistoryChunk>;
+    set chatNewHistoryForTesting(history: Array<ResponseData>);
     get isEmpty(): boolean;
     get origin(): string | undefined;
     get context(): ConversationContext<T> | undefined;
     get title(): string | undefined;
     get isHistoryEntry(): boolean;
-    aidaFetch(input: string, options?: {
+    aidaFetch(request: Host.AidaClient.AidaRequest, options?: {
         signal?: AbortSignal;
     }): Promise<{
         response: string;
         rpcId?: number;
     }>;
-    buildRequest(opts: AidaBuildRequestOptions): Host.AidaClient.AidaRequest;
+    buildRequest(opts: BuildRequestOptions): Host.AidaClient.AidaRequest;
     handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;

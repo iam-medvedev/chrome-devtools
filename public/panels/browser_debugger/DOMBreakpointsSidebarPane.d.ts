@@ -17,7 +17,7 @@ export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     private contextMenu;
     private checkboxClicked;
     flavorChanged(_object: Object | null): void;
-    private update;
+    update(): void;
     wasShown(): void;
 }
 export declare class ContextMenuProvider implements UI.ContextMenu.Provider<SDK.DOMModel.DOMNode> {

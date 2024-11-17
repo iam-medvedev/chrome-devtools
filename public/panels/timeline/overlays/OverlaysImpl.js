@@ -169,6 +169,20 @@ export class AnnotationOverlayActionEvent extends Event {
         this.action = action;
     }
 }
+export class TimeRangeMouseOverEvent extends Event {
+    overlay;
+    static eventName = 'timerangemouseoverevent';
+    constructor(overlay) {
+        super(TimeRangeMouseOverEvent.eventName, { bubbles: true });
+        this.overlay = overlay;
+    }
+}
+export class TimeRangeMouseOutEvent extends Event {
+    static eventName = 'timerangemouseoutevent';
+    constructor() {
+        super(TimeRangeMouseOutEvent.eventName, { bubbles: true });
+    }
+}
 /**
  * This class manages all the overlays that get drawn onto the performance
  * timeline. Overlays are DOM and are drawn above the network and main flame
@@ -1076,6 +1090,12 @@ export class Overlays extends EventTarget {
                 });
                 component.addEventListener(Components.TimeRangeOverlay.TimeRangeRemoveEvent.eventName, () => {
                     this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
+                });
+                component.addEventListener('mouseover', () => {
+                    this.dispatchEvent(new TimeRangeMouseOverEvent(overlay));
+                });
+                component.addEventListener('mouseout', () => {
+                    this.dispatchEvent(new TimeRangeMouseOutEvent());
                 });
                 div.appendChild(component);
                 return div;

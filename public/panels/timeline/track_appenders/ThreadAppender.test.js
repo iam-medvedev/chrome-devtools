@@ -14,31 +14,17 @@ import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
     setupIgnoreListManagerEnvironment();
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
-    return compatibilityTracksAppender.threadAppenders();
+    return { threadAppenders: compatibilityTracksAppender.threadAppenders(), compatibilityTracksAppender };
 }
 async function renderThreadAppendersFromTrace(context, trace) {
-    const entryTypeByLevel = [];
-    const entryData = [];
-    const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     const { parsedTrace } = await TraceLoader.traceEngine(context, trace);
-    const threadAppenders = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
-    let level = 0;
-    for (const appender of threadAppenders) {
-        level = appender.appendTrackAtLevel(level);
-    }
-    return {
-        entryTypeByLevel,
-        parsedTrace,
-        flameChartData,
-        threadAppenders,
-        entryData,
-    };
+    return renderThreadAppendersFromParsedData(parsedTrace);
 }
 function renderThreadAppendersFromParsedData(parsedTrace) {
     const entryTypeByLevel = [];
     const entryData = [];
     const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
-    const threadAppenders = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
+    const { threadAppenders, compatibilityTracksAppender } = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
     let level = 0;
     for (const appender of threadAppenders) {
         level = appender.appendTrackAtLevel(level);
@@ -46,6 +32,8 @@ function renderThreadAppendersFromParsedData(parsedTrace) {
     return {
         entryTypeByLevel,
         flameChartData,
+        compatibilityTracksAppender,
+        parsedTrace,
         threadAppenders,
         entryData,
     };
@@ -221,29 +209,31 @@ describeWithEnvironment('ThreadAppender', function () {
         // Reset the value for future tests.
         cpuProfileNode.setFunctionName(originalName);
     });
-    it('shows the correct title for a trace event when hovered', async function () {
-        const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
-        const events = parsedTrace.Renderer?.allTraceEntries;
-        if (!events) {
-            throw new Error('Could not find renderer events');
-        }
-        const info = threadAppenders[0].highlightedEntryInfo(events[0]);
-        assert.strictEqual(info.title, 'Task');
-        assert.strictEqual(info.formattedTime, '0.27\u00A0ms');
-    });
+    function getDefaultInfo() {
+        const defaultInfo = {
+            title: 'title',
+            formattedTime: 'time',
+            warningElements: [],
+            additionalElements: [],
+            url: null,
+        };
+        return defaultInfo;
+    }
     it('shows self time only for events with self time above the threshold when hovered', async function () {
         const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
         const events = parsedTrace.Renderer?.allTraceEntries;
         if (!events) {
             throw new Error('Could not find renderer events');
         }
-        const infoForShortEvent = threadAppenders[0].highlightedEntryInfo(events[0]);
+        const infoForShortEvent = getDefaultInfo();
+        threadAppenders[0].setPopoverInfo(events[0], infoForShortEvent);
         assert.strictEqual(infoForShortEvent.formattedTime, '0.27\u00A0ms');
         const longTask = events.find(e => (e.dur || 0) > 1_000_000);
         if (!longTask) {
             throw new Error('Could not find long task');
         }
-        const infoForLongEvent = threadAppenders[0].highlightedEntryInfo(longTask);
+        const infoForLongEvent = getDefaultInfo();
+        threadAppenders[0].setPopoverInfo(longTask, infoForLongEvent);
         assert.strictEqual(infoForLongEvent.formattedTime, '1.30\u00A0s (self 47\u00A0μs)');
     });
     it('shows the correct title for a ParseHTML event', async function () {
@@ -252,16 +242,18 @@ describeWithEnvironment('ThreadAppender', function () {
         if (!events) {
             throw new Error('Could not find renderer events');
         }
-        const infoForShortEvent = threadAppenders[0].highlightedEntryInfo(events[0]);
+        const infoForShortEvent = getDefaultInfo();
+        threadAppenders[0].setPopoverInfo(events[0], infoForShortEvent);
         assert.strictEqual(infoForShortEvent.formattedTime, '0.27\u00A0ms');
         const longTask = events.find(e => (e.dur || 0) > 1_000_000);
         if (!longTask) {
             throw new Error('Could not find long task');
         }
-        const infoForLongEvent = threadAppenders[0].highlightedEntryInfo(longTask);
+        const infoForLongEvent = getDefaultInfo();
+        threadAppenders[0].setPopoverInfo(longTask, infoForLongEvent);
         assert.strictEqual(infoForLongEvent.formattedTime, '1.30\u00A0s (self 47\u00A0μs)');
     });
-    it('shows the correct title for a profile call when hovered', async function () {
+    it('shows the right time for a profile call when hovered', async function () {
         const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
         const rendererHandler = parsedTrace.Renderer;
         if (!rendererHandler) {
@@ -273,8 +265,8 @@ describeWithEnvironment('ThreadAppender', function () {
         if (!profileCalls) {
             throw new Error('Could not find renderer events');
         }
-        const info = threadAppenders[0].highlightedEntryInfo(profileCalls[0]);
-        assert.strictEqual(info.title, '(anonymous)');
+        const info = getDefaultInfo();
+        threadAppenders[0].setPopoverInfo(profileCalls[0], info);
         assert.strictEqual(info.formattedTime, '15\u00A0μs');
     });
     it('candy-stripes long tasks', async function () {

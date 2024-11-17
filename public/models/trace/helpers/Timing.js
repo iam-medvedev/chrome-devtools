@@ -104,6 +104,13 @@ export function traceWindowFromMicroSeconds(min, max) {
     };
     return traceWindow;
 }
+export function traceWindowFromEvent(event) {
+    return {
+        min: event.ts,
+        max: Types.Timing.MicroSeconds(event.ts + (event.dur ?? 0)),
+        range: event.dur ?? Types.Timing.MicroSeconds(0),
+    };
+}
 /**
  * Checks to see if the timeRange is within the bounds. By "within" we mean
  * "has any overlap":

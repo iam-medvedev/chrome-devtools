@@ -1,5 +1,5 @@
 import * as Trace from '../../models/trace/trace.js';
-import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import { type CompatibilityTracksAppender, type PopoverInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare class ThreadAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
@@ -32,9 +32,5 @@ export declare class ThreadAppender implements TrackAppender {
      * Gets the title an event added by this appender should be rendered with.
      */
     titleForEvent(entry: Trace.Types.Events.Event): string;
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event: Trace.Types.Events.Event): HighlightedEntryInfo;
+    setPopoverInfo(event: Trace.Types.Events.Event, info: PopoverInfo): void;
 }

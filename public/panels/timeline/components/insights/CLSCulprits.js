@@ -4,9 +4,8 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { EventReferenceClick } from './EventRef.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -47,7 +46,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/CL
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CLSCulprits extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-cls-culprits`;
-    insightCategory = Category.CLS;
     internalName = 'cls-culprits';
     createOverlays() {
         const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
@@ -108,38 +106,21 @@ export class CLSCulprits extends BaseInsightComponent {
     #clickEvent(event) {
         this.dispatchEvent(new EventReferenceClick(event));
     }
-    #render(culprits, worstCluster) {
-        if (!this.model) {
-            return LitHtml.nothing;
-        }
+    #renderContent(culprits, worstCluster) {
         const ts = Trace.Types.Timing.MicroSeconds(worstCluster.ts - (this.data.parsedTrace?.Meta.traceBounds.min ?? 0));
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
-        // TODO(crbug.com/369102516): use Table for hover/click ux.
         // clang-format off
         return html `
-        <div class="insights">
-            <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            internalName: this.internalName,
-            expanded: this.isActive(),
-        }}
-            @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-content" class="insight-section">
-                  <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <button type="button" class="timeline-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</button></span>
-                    <p>${i18nString(UIStrings.topCulprits)}:</p>
-                        ${culprits.map(culprit => {
+      <div class="insight-section">
+        <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <button type="button" class="timeline-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</button></span>
+          <p>${i18nString(UIStrings.topCulprits)}:</p>
+              ${culprits.map(culprit => {
             return html `
-                            <li>${culprit}</li>
-                          `;
+                  <li>${culprit}</li>
+                `;
         })}
-                </div>
-            </devtools-performance-sidebar-insight>
-        </div>`;
+      </div>`;
         // clang-format on
-    }
-    getRelatedEvents() {
-        return this.model?.relatedEvents ?? [];
     }
     render() {
         if (!this.model) {
@@ -152,12 +133,8 @@ export class CLSCulprits extends BaseInsightComponent {
         }
         const causes = this.getTopCulprits(this.model.worstCluster, culpritsByShift);
         const hasCulprits = causes.length > 0;
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const output = hasCulprits && matchesCategory ? this.#render(causes, this.model.worstCluster) : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        const output = hasCulprits ? this.#renderContent(causes, this.model.worstCluster) : LitHtml.nothing;
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-cls-culprits', CLSCulprits);

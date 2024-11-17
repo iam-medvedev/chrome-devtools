@@ -8861,6 +8861,9 @@
   "panels/network/NetworkPanel.ts | doNotClearLogOnPageReload": {
     "message": "Do not clear log on page reload / navigation"
   },
+  "panels/network/NetworkPanel.ts | exportHar": {
+    "message": "Export HAR (either sanitized or with sensitive data)"
+  },
   "panels/network/NetworkPanel.ts | exportHarSanitized": {
     "message": "Export HAR (sanitized)..."
   },
@@ -10538,11 +10541,35 @@
   "panels/security/CookieReportView.ts | body": {
     "message": "Third-party cookies that might be restricted by users, depending on their settings. If a user chooses to restrict cookies, then this site might not work for them."
   },
+  "panels/security/CookieReportView.ts | domain": {
+    "message": "Domain"
+  },
   "panels/security/CookieReportView.ts | learnMoreLink": {
     "message": "Learn more about how third-party cookies are used"
   },
+  "panels/security/CookieReportView.ts | name": {
+    "message": "Name"
+  },
+  "panels/security/CookieReportView.ts | platform": {
+    "message": "Platform"
+  },
+  "panels/security/CookieReportView.ts | recommendation": {
+    "message": "Recommendation"
+  },
+  "panels/security/CookieReportView.ts | report": {
+    "message": "Third-Party Cookie Report"
+  },
+  "panels/security/CookieReportView.ts | status": {
+    "message": "Status"
+  },
   "panels/security/CookieReportView.ts | title": {
     "message": "Third-party cookies"
+  },
+  "panels/security/CookieReportView.ts | type": {
+    "message": "Type"
+  },
+  "panels/security/CookieReportView.ts | unknown": {
+    "message": "Unknown"
   },
   "panels/security/security-meta.ts | security": {
     "message": "Security"
@@ -11517,7 +11544,7 @@
     "message": "Learn more"
   },
   "panels/settings/SettingsScreen.ts | noResults": {
-    "message": "Warning: No experiments match the filter"
+    "message": "No experiments match the filter"
   },
   "panels/settings/SettingsScreen.ts | oneOrMoreSettingsHaveChanged": {
     "message": "One or more settings have changed which requires a reload to take effect."
@@ -12701,6 +12728,15 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
   },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavings": {
+    "message": "Est savings: {PH1}"
+  },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytes": {
+    "message": "Est savings: {PH1} & {PH2}"
+  },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | viewDetails": {
+    "message": "View details for {PH1}"
+  },
   "panels/timeline/components/insights/CLSCulprits.ts | animation": {
     "message": "Animation"
   },
@@ -12820,15 +12856,6 @@
   },
   "panels/timeline/components/insights/RenderBlocking.ts | renderBlockingRequest": {
     "message": "Request"
-  },
-  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavings": {
-    "message": "Est savings: {PH1}"
-  },
-  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavingsTimingAndBytes": {
-    "message": "Est savings: {PH1} & {PH2}"
-  },
-  "panels/timeline/components/insights/SidebarInsight.ts | viewDetails": {
-    "message": "View details for {PH1}"
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | elapsed": {
     "message": "Elapsed time"
@@ -15811,6 +15838,9 @@
   },
   "ui/legacy/InspectorView.ts | panels": {
     "message": "Panels"
+  },
+  "ui/legacy/InspectorView.ts | reloadDebuggedTab": {
+    "message": "Reload"
   },
   "ui/legacy/InspectorView.ts | reloadDevtools": {
     "message": "Reload DevTools"

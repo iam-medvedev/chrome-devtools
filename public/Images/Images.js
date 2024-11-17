@@ -109,6 +109,7 @@ style.setProperty('--image-file-dock-right', 'url(\"' + new URL(new URL('dock-ri
 style.setProperty('--image-file-dock-window', 'url(\"' + new URL(new URL('dock-window.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-document', 'url(\"' + new URL(new URL('document.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dog-paw', 'url(\"' + new URL(new URL('dog-paw.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-domain', 'url(\"' + new URL(new URL('domain.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dots-horizontal', 'url(\"' + new URL(new URL('dots-horizontal.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dots-vertical', 'url(\"' + new URL(new URL('dots-vertical.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-download', 'url(\"' + new URL(new URL('download.svg', import.meta.url).href, import.meta.url).toString() + '\")');

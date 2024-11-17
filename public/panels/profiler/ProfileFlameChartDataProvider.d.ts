@@ -48,7 +48,7 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
     hasTrackConfigurationMode(): boolean;
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData | null;
     calculateTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    prepareHighlightedEntryInfo(_entryIndex: number): Element | null;
+    preparePopoverElement(_entryIndex: number): Element | null;
     canJumpToEntry(entryIndex: number): boolean;
     entryTitle(entryIndex: number): string;
     entryFont(entryIndex: number): string | null;

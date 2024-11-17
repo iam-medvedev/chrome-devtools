@@ -2,15 +2,13 @@ import './Table.js';
 import type { RenderBlockingInsightModel } from '../../../../models/trace/insights/RenderBlocking.js';
 import type * as Trace from '../../../../models/trace/trace.js';
 import type * as Overlays from '../../overlays/overlays.js';
-import { BaseInsightComponent } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class RenderBlocking extends BaseInsightComponent<RenderBlockingInsightModel> {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    insightCategory: Category;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    getRelatedEvents(): Trace.Types.Events.Event[];
+    getEstimatedSavingsTime(): Trace.Types.Timing.MilliSeconds | null;
     render(): void;
 }
 declare global {

@@ -41,14 +41,20 @@ const markerTypeGuards = [
 ];
 export const MarkerName = ['MarkDOMContent', 'MarkLoad', 'firstPaint', 'firstContentfulPaint', 'largestContentfulPaint::Candidate'];
 export function isMarkerEvent(event) {
-    return markerTypeGuards.some(fn => fn(event));
+    if (event.ph === "I" /* Phase.INSTANT */ || event.ph === "R" /* Phase.MARK */) {
+        return markerTypeGuards.some(fn => fn(event));
+    }
+    return false;
 }
 const pageLoadEventTypeGuards = [
     ...markerTypeGuards,
     isInteractiveTime,
 ];
 export function eventIsPageLoadEvent(event) {
-    return pageLoadEventTypeGuards.some(fn => fn(event));
+    if (event.ph === "I" /* Phase.INSTANT */ || event.ph === "R" /* Phase.MARK */) {
+        return pageLoadEventTypeGuards.some(fn => fn(event));
+    }
+    return false;
 }
 export function isTracingSessionIdForWorker(event) {
     return event.name === 'TracingSessionIdForWorker';
@@ -505,6 +511,7 @@ export function isJSInvocationEvent(event) {
     switch (event.name) {
         case "RunMicrotasks" /* Name.RUN_MICROTASKS */:
         case "FunctionCall" /* Name.FUNCTION_CALL */:
+        // TODO(paulirish): Define types for these Evaluate* events
         case "EvaluateScript" /* Name.EVALUATE_SCRIPT */:
         case "v8.evaluateModule" /* Name.EVALUATE_MODULE */:
         case "EventDispatch" /* Name.EVENT_DISPATCH */:

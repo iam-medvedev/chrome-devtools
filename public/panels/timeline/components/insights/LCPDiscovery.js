@@ -5,9 +5,8 @@ import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -72,7 +71,6 @@ function getImageData(model) {
 }
 export class LCPDiscovery extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-lcp-discovery`;
-    insightCategory = Category.LCP;
     internalName = 'lcp-discovery';
     #adviceIcon(didFail, label) {
         const icon = didFail ? 'clear' : 'check-circle';
@@ -144,59 +142,40 @@ export class LCPDiscovery extends BaseInsightComponent {
       </div>`;
         // clang-format on
     }
-    #renderDiscovery(imageData) {
+    getEstimatedSavingsTime() {
+        return getImageData(this.model)?.estimatedSavings ?? null;
+    }
+    #renderContent(imageData) {
         if (!this.model) {
             return LitHtml.nothing;
         }
         // clang-format off
         return html `
-        <div class="insights">
-          <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            internalName: this.internalName,
-            expanded: this.isActive(),
-            estimatedSavingsTime: imageData.estimatedSavings,
-        }}
-          @insighttoggleclick=${this.onSidebarClick}>
-            <div slot="insight-content" class="insight-section">
-              <div class="insight-results">
-                <ul class="insight-icon-results">
-                  <li class="insight-entry">
-                    ${this.#adviceIcon(imageData.shouldIncreasePriorityHint, i18nString(UIStrings.fetchPriorityApplied))}
-                    <span>${i18nString(UIStrings.fetchPriorityApplied)}</span>
-                  </li>
-                  <li class="insight-entry">
-                    ${this.#adviceIcon(imageData.shouldPreloadImage, i18nString(UIStrings.requestDiscoverable))}
-                    <span>${i18nString(UIStrings.requestDiscoverable)}</span>
-                  </li>
-                  <li class="insight-entry">
-                    ${this.#adviceIcon(imageData.shouldRemoveLazyLoading, i18nString(UIStrings.lazyLoadNotApplied))}
-                    <span>${i18nString(UIStrings.lazyLoadNotApplied)}</span>
-                  </li>
-                </ul>
-              </div>
-              ${this.#renderImage(imageData)}
-            </div>
-          </devtools-performance-sidebar-insight>
+      <div class="insight-section">
+        <div class="insight-results">
+          <ul class="insight-icon-results">
+            <li class="insight-entry">
+              ${this.#adviceIcon(imageData.shouldIncreasePriorityHint, i18nString(UIStrings.fetchPriorityApplied))}
+              <span>${i18nString(UIStrings.fetchPriorityApplied)}</span>
+            </li>
+            <li class="insight-entry">
+              ${this.#adviceIcon(imageData.shouldPreloadImage, i18nString(UIStrings.requestDiscoverable))}
+              <span>${i18nString(UIStrings.requestDiscoverable)}</span>
+            </li>
+            <li class="insight-entry">
+              ${this.#adviceIcon(imageData.shouldRemoveLazyLoading, i18nString(UIStrings.lazyLoadNotApplied))}
+              <span>${i18nString(UIStrings.lazyLoadNotApplied)}</span>
+            </li>
+          </ul>
+        </div>
+        ${this.#renderImage(imageData)}
       </div>`;
         // clang-format on
     }
-    getRelatedEvents() {
-        if (!this.model?.lcpEvent || !this.model?.lcpRequest) {
-            return [];
-        }
-        // TODO: add entire request initiator chain?
-        return [this.model.lcpEvent, this.model.lcpRequest];
-    }
     render() {
         const imageResults = getImageData(this.model);
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const output = imageResults && matchesCategory ? this.#renderDiscovery(imageResults) : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        const output = imageResults ? this.#renderContent(imageResults) : LitHtml.nothing;
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-lcp-discovery', LCPDiscovery);

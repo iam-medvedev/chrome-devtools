@@ -79,18 +79,21 @@ export class RenderCoordinator extends EventTarget {
             if (!callback) {
                 throw new Error('Read called with label but no callback');
             }
-            return this.#enqueueHandler(callback, "read" /* ACTION.READ */, labelOrCallback);
+            return this.#enqueueHandler("read" /* ACTION.READ */, labelOrCallback, callback);
         }
-        return this.#enqueueHandler(labelOrCallback, "read" /* ACTION.READ */, UNNAMED_READ);
+        return this.#enqueueHandler("read" /* ACTION.READ */, UNNAMED_READ, labelOrCallback);
     }
     async write(labelOrCallback, callback) {
         if (typeof labelOrCallback === 'string') {
             if (!callback) {
                 throw new Error('Write called with label but no callback');
             }
-            return this.#enqueueHandler(callback, "write" /* ACTION.WRITE */, labelOrCallback);
+            return this.#enqueueHandler("write" /* ACTION.WRITE */, labelOrCallback, callback);
         }
-        return this.#enqueueHandler(labelOrCallback, "write" /* ACTION.WRITE */, UNNAMED_WRITE);
+        return this.#enqueueHandler("write" /* ACTION.WRITE */, UNNAMED_WRITE, labelOrCallback);
+    }
+    findPendingWrite(label) {
+        return this.#enqueueHandler("write" /* ACTION.WRITE */, label);
     }
     takeRecords() {
         const logs = [...this.#logInternal];
@@ -102,11 +105,11 @@ export class RenderCoordinator extends EventTarget {
             if (!callback) {
                 throw new Error('Scroll called with label but no callback');
             }
-            return this.#enqueueHandler(callback, "read" /* ACTION.READ */, labelOrCallback);
+            return this.#enqueueHandler("read" /* ACTION.READ */, labelOrCallback, callback);
         }
-        return this.#enqueueHandler(labelOrCallback, "read" /* ACTION.READ */, UNNAMED_SCROLL);
+        return this.#enqueueHandler("read" /* ACTION.READ */, UNNAMED_SCROLL, labelOrCallback);
     }
-    #enqueueHandler(callback, action, label) {
+    #enqueueHandler(action, label, callback) {
         const hasName = ![UNNAMED_READ, UNNAMED_WRITE, UNNAMED_SCROLL].includes(label);
         label = `${action === "read" /* ACTION.READ */ ? '[Read]' : '[Write]'}: ${label}`;
         let workItems = null;
@@ -121,18 +124,20 @@ export class RenderCoordinator extends EventTarget {
                 throw new Error(`Unknown action: ${action}`);
         }
         let workItem = hasName ? workItems.find(w => w.label === label) : undefined;
-        if (!workItem) {
-            workItem = new WorkItem(label, callback);
-            workItems.push(workItem);
+        if (callback) {
+            if (!workItem) {
+                workItem = new WorkItem(label, callback);
+                workItems.push(workItem);
+            }
+            else {
+                // We are always using the latest handler, so that we don't end up with a
+                // stale results. We are reusing the promise to avoid blocking the first invocation, when
+                // it is being "overridden" by another one.
+                workItem.handler = callback;
+            }
+            this.#scheduleWork();
         }
-        else {
-            // We are always using the latest handler, so that we don't end up with a
-            // stale results. We are reusing the promise to avoid blocking the first invocation, when
-            // it is being "overridden" by another one.
-            workItem.handler = callback;
-        }
-        this.#scheduleWork();
-        return workItem.promise;
+        return workItem?.promise;
     }
     #scheduleWork() {
         const hasScheduledWork = this.#scheduledWorkId !== 0;

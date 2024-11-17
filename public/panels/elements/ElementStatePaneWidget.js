@@ -57,11 +57,12 @@ var SpecificPseudoStates;
     SpecificPseudoStates["IN_RANGE"] = "in-range";
     SpecificPseudoStates["OUT_OF_RANGE"] = "out-of-range";
     SpecificPseudoStates["VISITED"] = "visited";
+    SpecificPseudoStates["LINK"] = "link";
     SpecificPseudoStates["CHECKED"] = "checked";
     SpecificPseudoStates["INDETERMINATE"] = "indeterminate";
     SpecificPseudoStates["PLACEHOLDER_SHOWN"] = "placeholder-shown";
     SpecificPseudoStates["AUTOFILL"] = "autofill";
-})(SpecificPseudoStates || (SpecificPseudoStates = {})); // TODO(crbug.com/332914922): Also add :link and tests for :visited when the bug is fixed.
+})(SpecificPseudoStates || (SpecificPseudoStates = {}));
 export class ElementStatePaneWidget extends UI.Widget.Widget {
     inputs;
     inputStates;
@@ -174,6 +175,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
         this.specificPseudoStateDivs.set(SpecificPseudoStates.IN_RANGE, createElementStateCheckbox(SpecificPseudoStates.IN_RANGE));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.OUT_OF_RANGE, createElementStateCheckbox(SpecificPseudoStates.OUT_OF_RANGE));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.VISITED, createElementStateCheckbox(SpecificPseudoStates.VISITED));
+        this.specificPseudoStateDivs.set(SpecificPseudoStates.LINK, createElementStateCheckbox(SpecificPseudoStates.LINK));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.CHECKED, createElementStateCheckbox(SpecificPseudoStates.CHECKED));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.INDETERMINATE, createElementStateCheckbox(SpecificPseudoStates.INDETERMINATE));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.PLACEHOLDER_SHOWN, createElementStateCheckbox(SpecificPseudoStates.PLACEHOLDER_SHOWN));
@@ -186,6 +188,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
         setDualStateCheckboxes(SpecificPseudoStates.READ_ONLY, SpecificPseudoStates.READ_WRITE);
         setDualStateCheckboxes(SpecificPseudoStates.IN_RANGE, SpecificPseudoStates.OUT_OF_RANGE);
         setDualStateCheckboxes(SpecificPseudoStates.ENABLED, SpecificPseudoStates.DISABLED);
+        setDualStateCheckboxes(SpecificPseudoStates.VISITED, SpecificPseudoStates.LINK);
         this.specificHeader = document.createElement('details');
         this.specificHeader.classList.add('specific-details');
         const sectionHeaderContainer = document.createElement('summary');
@@ -337,9 +340,11 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
         }
         if (isElementOfTypes(node, ['a', 'area']) && node.getAttribute('href') !== undefined) {
             hideSpecificCheckbox(SpecificPseudoStates.VISITED, false);
+            hideSpecificCheckbox(SpecificPseudoStates.LINK, false);
         }
         else {
             hideSpecificCheckbox(SpecificPseudoStates.VISITED, true);
+            hideSpecificCheckbox(SpecificPseudoStates.LINK, true);
         }
         if (isInputWithTypeRadioOrCheckbox(node) || isElementOfTypes(node, ['option'])) {
             hideSpecificCheckbox(SpecificPseudoStates.CHECKED, false);

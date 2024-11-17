@@ -40,7 +40,19 @@ function toIconGroup({ iconName, color, width, height }, sizeOverride) {
     }
     return { iconName, iconColor: color, iconWidth: width, iconHeight: height };
 }
-const listFormat = new Intl.ListFormat(navigator.language, { type: 'unit', style: 'short' });
+// Lazily instantiate the formatter as the constructor takes 50ms+
+const listFormatter = (function defineFormatter() {
+    let intlListFormat;
+    return {
+        format(...args) {
+            if (!intlListFormat) {
+                const opts = { type: 'unit', style: 'short' };
+                intlListFormat = new Intl.ListFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, opts);
+            }
+            return intlListFormat.format(...args);
+        },
+    };
+})();
 export function getIssueCountsEnumeration(issuesManager, omitEmpty = true) {
     const counts = [
         issuesManager.numberOfIssues("PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */),
@@ -52,7 +64,7 @@ export function getIssueCountsEnumeration(issuesManager, omitEmpty = true) {
         i18nString(UIStrings.breakingChanges, { issueCount: counts[1] }),
         i18nString(UIStrings.possibleImprovements, { issueCount: counts[2] }),
     ];
-    return listFormat.format(phrases.filter((_, i) => omitEmpty ? counts[i] > 0 : true));
+    return listFormatter.format(phrases.filter((_, i) => omitEmpty ? counts[i] > 0 : true));
 }
 export class IssueCounter extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });

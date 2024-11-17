@@ -19,7 +19,7 @@ export declare class XHRBreakpointsSidebarPane extends UI.Widget.VBox implements
     private checkboxClicked;
     private labelClicked;
     flavorChanged(_object: Object | null): void;
-    private update;
+    update(): void;
     private restoreBreakpoints;
     wasShown(): void;
 }

@@ -10,7 +10,7 @@ export declare class ElementStatePaneWidget extends UI.Widget.Widget {
     constructor();
     private updateModel;
     wasShown(): void;
-    private update;
+    update(): void;
     private updateElementSpecificStatesTable;
     updateElementSpecificStatesTableForTest(): void;
 }

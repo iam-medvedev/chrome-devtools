@@ -146,8 +146,8 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             activeBreadcrumb: addedBreadcrumb,
         };
     }
-    highlightBounds(bounds) {
-        this.#overviewComponent.highlightBounds(bounds);
+    highlightBounds(bounds, withBracket = false) {
+        this.#overviewComponent.highlightBounds(bounds, withBracket);
     }
     clearBoundsHighlight() {
         this.#overviewComponent.clearBoundsHighlight();

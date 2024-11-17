@@ -26,7 +26,7 @@ export declare class ServiceWorkerCacheView extends UI.View.SimpleView {
     private createDataGrid;
     private sortingChanged;
     private deleteButtonClicked;
-    update(cache: SDK.ServiceWorkerCacheModel.Cache): void;
+    update(cache?: SDK.ServiceWorkerCacheModel.Cache | null): void;
     private updateSummaryBar;
     private updateDataCallback;
     private updateData;

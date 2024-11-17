@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightWarning } from './types.js';
+import { InsightCategory, InsightWarning, } from './types.js';
 const UIStrings = {
     /**
      *@description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
@@ -22,7 +22,17 @@ export function deps() {
     return ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    const relatedEvents = partialModel.lcpEvent && partialModel.lcpRequest ?
+        // TODO: add entire request initiator chain?
+        [partialModel.lcpEvent, partialModel.lcpRequest] :
+        [];
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.LCP,
+        ...partialModel,
+        relatedEvents,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     if (!context.navigation) {

@@ -109,6 +109,7 @@
       <include file="Images/dock-window.svg" name="IMAGES_DOCK_WINDOW_SVG" resource_path="Images/dock-window.svg" type="BINDATA" compress="false"/>
       <include file="Images/document.svg" name="IMAGES_DOCUMENT_SVG" resource_path="Images/document.svg" type="BINDATA" compress="false"/>
       <include file="Images/dog-paw.svg" name="IMAGES_DOG_PAW_SVG" resource_path="Images/dog-paw.svg" type="BINDATA" compress="false"/>
+      <include file="Images/domain.svg" name="IMAGES_DOMAIN_SVG" resource_path="Images/domain.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-horizontal.svg" name="IMAGES_DOTS_HORIZONTAL_SVG" resource_path="Images/dots-horizontal.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-vertical.svg" name="IMAGES_DOTS_VERTICAL_SVG" resource_path="Images/dots-vertical.svg" type="BINDATA" compress="false"/>
       <include file="Images/download.svg" name="IMAGES_DOWNLOAD_SVG" resource_path="Images/download.svg" type="BINDATA" compress="false"/>
@@ -415,6 +416,8 @@
       <include file="models/issues_manager/descriptions/cookieCrossSiteRedirectDowngrade.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIECROSSSITEREDIRECTDOWNGRADE_MD" resource_path="models/issues_manager/descriptions/cookieCrossSiteRedirectDowngrade.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludeBlockedWithinRelatedWebsiteSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDEBLOCKEDWITHINRELATEDWEBSITESET_MD" resource_path="models/issues_manager/descriptions/cookieExcludeBlockedWithinRelatedWebsiteSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludeDomainNonAscii.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDEDOMAINNONASCII_MD" resource_path="models/issues_manager/descriptions/cookieExcludeDomainNonAscii.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/cookieExcludePortMismatch.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDEPORTMISMATCH_MD" resource_path="models/issues_manager/descriptions/cookieExcludePortMismatch.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/cookieExcludeSchemeMismatch.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDESCHEMEMISMATCH_MD" resource_path="models/issues_manager/descriptions/cookieExcludeSchemeMismatch.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludeThirdPartyPhaseoutRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDETHIRDPARTYPHASEOUTREAD_MD" resource_path="models/issues_manager/descriptions/cookieExcludeThirdPartyPhaseoutRead.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludeThirdPartyPhaseoutSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDETHIRDPARTYPHASEOUTSET_MD" resource_path="models/issues_manager/descriptions/cookieExcludeThirdPartyPhaseoutSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieWarnDomainNonAscii.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEWARNDOMAINNONASCII_MD" resource_path="models/issues_manager/descriptions/cookieWarnDomainNonAscii.md" type="BINDATA" compress="false"/>
@@ -721,7 +724,6 @@
       <include file="ui/components/text_editor/text_editor.js" name="UI_COMPONENTS_TEXT_EDITOR_TEXT_EDITOR_JS" resource_path="ui/components/text_editor/text_editor.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_prompt/text_prompt.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXT_PROMPT_JS" resource_path="ui/components/text_prompt/text_prompt.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/two_states_counter/two_states_counter.js" name="UI_COMPONENTS_TWO_STATES_COUNTER_TWO_STATES_COUNTER_JS" resource_path="ui/components/two_states_counter/two_states_counter.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/color_picker/color_picker.js" name="UI_LEGACY_COMPONENTS_COLOR_PICKER_COLOR_PICKER_JS" resource_path="ui/legacy/components/color_picker/color_picker.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/cookie_table/cookie_table.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIE_TABLE_JS" resource_path="ui/legacy/components/cookie_table/cookie_table.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/data_grid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATA_GRID_JS" resource_path="ui/legacy/components/data_grid/data_grid.js" type="BINDATA" compress="false"/>
@@ -1823,6 +1825,7 @@
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/cpuThrottlingSelector.css.js" name="PANELS_TIMELINE_COMPONENTS_CPUTHROTTLINGSELECTOR_CSS_JS" resource_path="panels/timeline/components/cpuThrottlingSelector.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/fieldSettingsDialog.css.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_CSS_JS" resource_path="panels/timeline/components/fieldSettingsDialog.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/BaseInsightComponent.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_BASEINSIGHTCOMPONENT_JS" resource_path="panels/timeline/components/insights/BaseInsightComponent.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/CLSCulprits.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_CLSCULPRITS_JS" resource_path="panels/timeline/components/insights/CLSCulprits.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/DocumentLatency.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DOCUMENTLATENCY_JS" resource_path="panels/timeline/components/insights/DocumentLatency.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/EventRef.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_EVENTREF_JS" resource_path="panels/timeline/components/insights/EventRef.js" type="BINDATA" compress="false"/>
@@ -1838,7 +1841,7 @@
       <include file="panels/timeline/components/insights/Table.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TABLE_JS" resource_path="panels/timeline/components/insights/Table.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/ThirdParties.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_THIRDPARTIES_JS" resource_path="panels/timeline/components/insights/ThirdParties.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Viewport.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_VIEWPORT_JS" resource_path="panels/timeline/components/insights/Viewport.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/components/insights/sidebarInsight.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_SIDEBARINSIGHT_CSS_JS" resource_path="panels/timeline/components/insights/sidebarInsight.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/baseInsightComponent.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_BASEINSIGHTCOMPONENT_CSS_JS" resource_path="panels/timeline/components/insights/baseInsightComponent.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/table.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TABLE_CSS_JS" resource_path="panels/timeline/components/insights/table.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/types.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TYPES_JS" resource_path="panels/timeline/components/insights/types.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/interactionBreakdown.css.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_CSS_JS" resource_path="panels/timeline/components/interactionBreakdown.css.js" type="BINDATA" compress="false"/>
@@ -2265,8 +2268,6 @@
       <include file="ui/components/tree_outline/TreeOutline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREEOUTLINE_JS" resource_path="ui/components/tree_outline/TreeOutline.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/TreeOutlineUtils.js" name="UI_COMPONENTS_TREE_OUTLINE_TREEOUTLINEUTILS_JS" resource_path="ui/components/tree_outline/TreeOutlineUtils.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/treeOutline.css.js" name="UI_COMPONENTS_TREE_OUTLINE_TREEOUTLINE_CSS_JS" resource_path="ui/components/tree_outline/treeOutline.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/two_states_counter/TwoStatesCounter.js" name="UI_COMPONENTS_TWO_STATES_COUNTER_TWOSTATESCOUNTER_JS" resource_path="ui/components/two_states_counter/TwoStatesCounter.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/two_states_counter/twoStatesCounter.css.js" name="UI_COMPONENTS_TWO_STATES_COUNTER_TWOSTATESCOUNTER_CSS_JS" resource_path="ui/components/two_states_counter/twoStatesCounter.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/ARIAUtils.js" name="UI_LEGACY_ARIAUTILS_JS" resource_path="ui/legacy/ARIAUtils.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/ActionRegistration.js" name="UI_LEGACY_ACTIONREGISTRATION_JS" resource_path="ui/legacy/ActionRegistration.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/ActionRegistry.js" name="UI_LEGACY_ACTIONREGISTRY_JS" resource_path="ui/legacy/ActionRegistry.js" type="BINDATA" compress="false"/>

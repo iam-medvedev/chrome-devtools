@@ -64,7 +64,7 @@ export class SourceMapScopeChainEntry {
             case 'block':
                 return "block" /* Protocol.Debugger.ScopeType.Block */;
         }
-        return this.#scope.kind;
+        return this.#scope.kind ?? '';
     }
     typeName() {
         switch (this.#scope.kind) {
@@ -75,7 +75,7 @@ export class SourceMapScopeChainEntry {
             case 'block':
                 return i18nString(UIStrings.block);
         }
-        return this.#scope.kind;
+        return this.#scope.kind ?? '';
     }
     name() {
         return this.#scope.name;

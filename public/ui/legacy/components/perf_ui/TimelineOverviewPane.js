@@ -77,6 +77,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowEndTime = Infinity;
         this.muteOnWindowChanged = false;
         this.#dimHighlightSVG = UI.UIUtils.createSVGChild(this.element, 'svg', 'timeline-minimap-dim-highlight-svg hidden');
+        this.#initializeDimHighlightSVG();
     }
     enableCreateBreadcrumbsButton() {
         const breadcrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
@@ -267,44 +268,77 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.overviewGrid.setWindowRatio(left, right);
         this.muteOnWindowChanged = false;
     }
-    highlightBounds(bounds) {
-        let mask = this.#dimHighlightSVG?.querySelector('mask');
-        if (!mask) {
-            // Set up the desaturation mask
-            const defs = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'defs');
-            mask = UI.UIUtils.createSVGChild(defs, 'mask');
-            mask.id = 'dim-highlight-cutouts';
-            /* Within the mask...
-                - black fill = punch, fully transparently, through to the next thing. these are the cutouts to the color.
-                - white fill = be 100% desaturated
-                - grey fill  = show at the Lightness level of grayscale/desaturation
-            */
-            const showAllRect = UI.UIUtils.createSVGChild(mask, 'rect');
-            showAllRect.setAttribute('width', '100%');
-            showAllRect.setAttribute('height', '100%');
-            showAllRect.setAttribute('fill', 'hsl(0deg 0% 95%)');
-            const desaturateRect = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'rect');
-            desaturateRect.setAttribute('width', '100%');
-            desaturateRect.setAttribute('height', '100%');
-            desaturateRect.setAttribute('fill', '#ffffff');
-            desaturateRect.setAttribute('mask', `url(#${mask.id})`);
-            desaturateRect.style.mixBlendMode = 'saturation';
-            const punchRect = UI.UIUtils.createSVGChild(mask, 'rect', 'punch');
-            punchRect.setAttribute('y', '0');
-            punchRect.setAttribute('height', '100%');
-            punchRect.setAttribute('fill', 'black');
-            const bracketColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-state-on-header-hover');
-            const bracket = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'polygon');
-            bracket.setAttribute('fill', bracketColor);
-        }
+    /**
+     * This function will create three rectangles and a polygon, which will be use to highlight the time range.
+     */
+    #initializeDimHighlightSVG() {
+        // Set up the desaturation mask
+        const defs = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'defs');
+        const mask = UI.UIUtils.createSVGChild(defs, 'mask');
+        mask.id = 'dim-highlight-cutouts';
+        /* Within the mask...
+            - black fill = punch, fully transparently, through to the next thing. these are the cutouts to the color.
+            - white fill = be 100% desaturated
+            - grey fill  = show at the Lightness level of grayscale/desaturation
+        */
+        // This a rectangle covers the entire SVG and has a light gray fill. This sets the base desaturation level for the
+        // masked area.
+        // The colour here should be fixed because the colour's brightness changes the desaturation level.
+        const showAllRect = UI.UIUtils.createSVGChild(mask, 'rect');
+        showAllRect.setAttribute('width', '100%');
+        showAllRect.setAttribute('height', '100%');
+        showAllRect.setAttribute('fill', 'hsl(0deg 0% 95%)');
+        // This rectangle also covers the entire SVG and has a fill with the current background. It is linked to the
+        // `mask` element.
+        // The `mixBlendMode` is set to 'saturation', so this rectangle will completely desaturate the area it covers
+        // within the mask.
+        const desaturateRect = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'rect', 'background');
+        desaturateRect.setAttribute('width', '100%');
+        desaturateRect.setAttribute('height', '100%');
+        desaturateRect.setAttribute('fill', ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background'));
+        desaturateRect.setAttribute('mask', `url(#${mask.id})`);
+        desaturateRect.style.mixBlendMode = 'saturation';
+        // This rectangle is positioned at the top of the not-to-desaturate time range, with full height and a black fill.
+        // It will be used to "punch" through the desaturation, revealing the original colours beneath.
+        // The *black* fill on the "punch-out" rectangle is crucial because black is fully transparent in a mask.
+        const punchRect = UI.UIUtils.createSVGChild(mask, 'rect', 'punch');
+        punchRect.setAttribute('y', '0');
+        punchRect.setAttribute('height', '100%');
+        punchRect.setAttribute('fill', 'black');
+        // This polygon is for the bracket beyond the not desaturated area.
+        const bracketColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-state-on-header-hover');
+        const bracket = UI.UIUtils.createSVGChild(this.#dimHighlightSVG, 'polygon');
+        bracket.setAttribute('fill', bracketColor);
+        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
+            const desaturateRect = this.#dimHighlightSVG.querySelector('rect.background');
+            desaturateRect?.setAttribute('fill', ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background'));
+            const bracket = this.#dimHighlightSVG.querySelector('polygon');
+            bracket?.setAttribute('fill', ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-state-on-header-hover'));
+        });
+    }
+    #addBracket(left, right) {
+        const TRIANGLE_SIZE = 5; // px size of triangles
+        const bracket = this.#dimHighlightSVG.querySelector('polygon');
+        bracket?.setAttribute('points', `${left},0 ${left},${TRIANGLE_SIZE} ${left + TRIANGLE_SIZE - 1},1 ${right - TRIANGLE_SIZE - 1},1 ${right},${TRIANGLE_SIZE} ${right},0`);
+        bracket?.classList.remove('hidden');
+    }
+    #hideBracket() {
+        const bracket = this.#dimHighlightSVG.querySelector('polygon');
+        bracket?.classList.add('hidden');
+    }
+    highlightBounds(bounds, withBracket) {
         const left = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.min));
         const right = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.max));
+        // Update the punch out rectangle to the not-to-desaturate time range.
         const punchRect = this.#dimHighlightSVG.querySelector('rect.punch');
         punchRect?.setAttribute('x', left.toString());
         punchRect?.setAttribute('width', (right - left).toString());
-        const size = 5; // px size of triangles
-        const bracket = this.#dimHighlightSVG.querySelector('polygon');
-        bracket?.setAttribute('points', `${left},0 ${left},${size} ${left + size - 1},1 ${right - size - 1},1 ${right},${size} ${right},0`);
+        if (withBracket) {
+            this.#addBracket(left, right);
+        }
+        else {
+            this.#hideBracket();
+        }
         this.#dimHighlightSVG.classList.remove('hidden');
     }
     clearBoundsHighlight() {

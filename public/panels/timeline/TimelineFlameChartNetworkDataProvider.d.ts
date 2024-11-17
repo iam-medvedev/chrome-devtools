@@ -70,7 +70,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * event C and will include the socket event A.
      * */
     forceDrawableLevel(levelIndex: number): boolean;
-    prepareHighlightedEntryInfo(index: number): Element | null;
+    preparePopoverElement(index: number): Element | null;
     preferredHeight(): number;
     isExpanded(): boolean;
     formatValue(value: number, precision?: number): string;

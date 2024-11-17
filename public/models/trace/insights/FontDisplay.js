@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { InsightCategory } from './types.js';
 const UIStrings = {
     /** Title of an insight that provides details about the fonts used on the page, and the value of their `font-display` properties. */
     title: 'Font display',
@@ -19,7 +20,12 @@ export function deps() {
     return ['Meta', 'NetworkRequests', 'LayoutShifts'];
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.INP,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     const fonts = [];

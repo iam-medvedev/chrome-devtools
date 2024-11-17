@@ -19,7 +19,7 @@ export declare class FreestylerPanel extends UI.Panel.Panel {
     } | undefined): Promise<FreestylerPanel>;
     wasShown(): void;
     willHide(): void;
-    doUpdate(): void;
+    doUpdate(): Promise<void>;
     handleAction(actionId: string): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {

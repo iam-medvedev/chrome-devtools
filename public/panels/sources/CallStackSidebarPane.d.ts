@@ -26,8 +26,8 @@ export declare class CallStackSidebarPane extends UI.View.SimpleView implements 
     flavorChanged(_object: Object | null): void;
     private debugInfoAttached;
     private setSourceMapSubscription;
-    private update;
-    private doUpdate;
+    update(): void;
+    doUpdate(): Promise<void>;
     private updatedForTest;
     private refreshItem;
     createElementForItem(item: Item): Element;

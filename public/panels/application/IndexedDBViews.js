@@ -414,7 +414,10 @@ export class IDBDataView extends UI.View.SimpleView {
     refreshData() {
         this.updateData(true);
     }
-    update(objectStore, index) {
+    update(objectStore = null, index = null) {
+        if (!objectStore) {
+            return;
+        }
         this.objectStore = objectStore;
         this.index = index;
         if (this.dataGrid) {

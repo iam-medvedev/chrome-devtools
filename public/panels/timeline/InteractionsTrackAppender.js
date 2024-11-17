@@ -113,13 +113,12 @@ export class InteractionsTrackAppender {
         }
         return this.#colorGenerator.colorForID(idForColorGeneration);
     }
-    highlightedEntryInfo(event) {
+    setPopoverInfo(event, info) {
         if (Trace.Types.Events.isSyntheticInteraction(event)) {
             const breakdown = new Components.InteractionBreakdown.InteractionBreakdown();
             breakdown.entry = event;
-            return { title: '', formattedTime: '', additionalElement: breakdown };
+            info.additionalElements.push(breakdown);
         }
-        return { title: '', formattedTime: '' };
     }
 }
 //# sourceMappingURL=InteractionsTrackAppender.js.map

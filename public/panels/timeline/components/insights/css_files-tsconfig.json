@@ -4,7 +4,7 @@
         "outDir": "."
     },
     "files": [
-        "sidebarInsight.css.js",
+        "baseInsightComponent.css.js",
         "table.css.js"
     ]
 }

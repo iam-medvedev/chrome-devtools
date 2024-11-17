@@ -254,14 +254,14 @@ export declare class DataGridWidget<T> extends UI.Widget.VBox {
     onResize(): void;
     elementsToRestoreScrollPositionsFor(): Element[];
 }
-export interface DataGridWidgetOptions<T> {
-    implParams: Parameters;
-    dataGridImpl?: DataGridImpl<T>;
+export type DataGridWidgetOptions<T> = Parameters & {
     markAsRoot?: boolean;
+    striped?: boolean;
     nodes: DataGridNode<T>[];
-}
+};
 export declare class DataGridWidgetElement<T> extends UI.Widget.WidgetElement<DataGridWidget<T>> {
     #private;
+    widget?: DataGridWidget<T>;
     constructor();
     set options(options: DataGridWidgetOptions<T>);
     createWidget(): DataGridWidget<T>;

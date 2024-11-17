@@ -134,6 +134,15 @@ export declare class AnnotationOverlayActionEvent extends Event {
     static readonly eventName = "annotationoverlayactionsevent";
     constructor(overlay: TimelineOverlay, action: UpdateAction);
 }
+export declare class TimeRangeMouseOverEvent extends Event {
+    overlay: TimeRangeLabel;
+    static readonly eventName = "timerangemouseoverevent";
+    constructor(overlay: TimeRangeLabel);
+}
+export declare class TimeRangeMouseOutEvent extends Event {
+    static readonly eventName = "timerangemouseoutevent";
+    constructor();
+}
 /**
  * This class manages all the overlays that get drawn onto the performance
  * timeline. Overlays are DOM and are drawn above the network and main flame

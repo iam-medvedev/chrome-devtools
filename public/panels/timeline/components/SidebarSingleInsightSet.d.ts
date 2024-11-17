@@ -1,11 +1,10 @@
 import * as Trace from '../../../models/trace/trace.js';
-import * as Insights from './insights/insights.js';
 import type { ActiveInsight } from './Sidebar.js';
 export interface SidebarSingleInsightSetData {
     parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
     insights: Trace.Insights.Types.TraceInsightSets | null;
     insightSetKey: Trace.Types.Events.NavigationId | null;
-    activeCategory: Insights.Types.Category;
+    activeCategory: Trace.Insights.Types.InsightCategory;
     activeInsight: ActiveInsight | null;
 }
 export declare class SidebarSingleInsightSet extends HTMLElement {

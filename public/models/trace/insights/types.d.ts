@@ -37,9 +37,16 @@ export interface MetricSavings {
     CLS?: number;
     INP?: Types.Timing.MilliSeconds;
 }
+export declare enum InsightCategory {
+    ALL = "All",
+    INP = "INP",
+    LCP = "LCP",
+    CLS = "CLS"
+}
 export type InsightModel<R extends Record<string, unknown>> = R & {
     title: string;
     description: string;
+    category: InsightCategory;
     relatedEvents?: Types.Events.Event[];
     warnings?: InsightWarning[];
     metricSavings?: MetricSavings;

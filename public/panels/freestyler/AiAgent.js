@@ -24,10 +24,9 @@ export class AiAgent {
     #serverSideLoggingEnabled;
     #generatedFromHistory = false;
     /**
-     * Mapping between the unique request id and
-     * the history chuck it created
+     * Historical responses.
      */
-    #history = new Map();
+    #history = [];
     /**
      * Might need to be part of history in case we allow chatting in
      * historical conversations.
@@ -39,13 +38,13 @@ export class AiAgent {
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
     }
     get chatHistoryForTesting() {
-        return this.#historyEntry;
+        return this.#chatHistoryForAida;
     }
     set chatNewHistoryForTesting(history) {
         this.#history = history;
     }
     get isEmpty() {
-        return this.#history.size <= 0;
+        return this.#history.length === 0;
     }
     get origin() {
         return this.#origin;
@@ -54,8 +53,7 @@ export class AiAgent {
         return this.#context;
     }
     get title() {
-        return [...this.#history.values()]
-            .flat()
+        return this.#history
             .filter(response => {
             return response.type === "user-query" /* ResponseType.USER_QUERY */;
         })
@@ -66,10 +64,7 @@ export class AiAgent {
         return this.#generatedFromHistory;
     }
     #structuredLog = [];
-    async aidaFetch(input, options) {
-        const request = this.buildRequest({
-            input,
-        });
+    async aidaFetch(request, options) {
         let rawResponse = undefined;
         let response = '';
         let rpcId;
@@ -93,11 +88,12 @@ export class AiAgent {
         return { response, rpcId };
     }
     buildRequest(opts) {
+        const history = this.#chatHistoryForAida;
         const request = {
             input: opts.input,
             preamble: this.preamble,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            chat_history: this.#history.size ? this.#historyEntry : undefined,
+            chat_history: history.length ? history : undefined,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
                 temperature: AiAgent.validTemperature(this.options.temperature),
@@ -145,72 +141,69 @@ STOP`;
         }
         return text;
     }
-    get #historyEntry() {
-        const historyAll = new Map();
-        for (const [id, entry] of this.#history.entries()) {
-            const history = [];
-            historyAll.set(id, history);
-            let response = {};
-            for (const data of entry) {
-                switch (data.type) {
-                    case "context" /* ResponseType.CONTEXT */:
-                    case "side-effect" /* ResponseType.SIDE_EFFECT */:
-                    case "user-query" /* ResponseType.USER_QUERY */:
-                        continue;
-                    case "querying" /* ResponseType.QUERYING */: {
-                        const observation = this.formatHistoryChunkObservation(response);
-                        if (observation) {
-                            history.push({
-                                entity: Host.AidaClient.Entity.SYSTEM,
-                                text: observation,
-                            });
-                            response = {};
-                        }
-                        history.push({
-                            entity: Host.AidaClient.Entity.USER,
-                            text: data.query,
-                        });
-                        break;
-                    }
-                    case "answer" /* ResponseType.ANSWER */:
+    get #chatHistoryForAida() {
+        const history = [];
+        let response = {};
+        let lastRunStartIdx = 0;
+        for (const data of this.#history) {
+            switch (data.type) {
+                case "context" /* ResponseType.CONTEXT */:
+                case "side-effect" /* ResponseType.SIDE_EFFECT */:
+                    break;
+                case "user-query" /* ResponseType.USER_QUERY */:
+                    lastRunStartIdx = history.length;
+                    break;
+                case "querying" /* ResponseType.QUERYING */: {
+                    const observation = this.formatHistoryChunkObservation(response);
+                    if (observation) {
                         history.push({
                             entity: Host.AidaClient.Entity.SYSTEM,
-                            text: this.formatHistoryChunkAnswer(data.text),
+                            text: observation,
                         });
-                        break;
-                    case "title" /* ResponseType.TITLE */:
-                        response.title = data.title;
-                        break;
-                    case "thought" /* ResponseType.THOUGHT */:
-                        response.thought = data.thought;
-                        break;
-                    case "action" /* ResponseType.ACTION */:
-                        response.action = data.code;
-                        break;
-                    case "error" /* ResponseType.ERROR */:
-                        historyAll.delete(id);
-                        break;
+                        response = {};
+                    }
+                    history.push({
+                        entity: Host.AidaClient.Entity.USER,
+                        text: data.query,
+                    });
+                    break;
                 }
-            }
-            const observation = this.formatHistoryChunkObservation(response);
-            if (observation) {
-                history.push({
-                    entity: Host.AidaClient.Entity.USER,
-                    text: observation,
-                });
+                case "answer" /* ResponseType.ANSWER */:
+                    history.push({
+                        entity: Host.AidaClient.Entity.SYSTEM,
+                        text: this.formatHistoryChunkAnswer(data.text),
+                    });
+                    break;
+                case "title" /* ResponseType.TITLE */:
+                    response.title = data.title;
+                    break;
+                case "thought" /* ResponseType.THOUGHT */:
+                    response.thought = data.thought;
+                    break;
+                case "action" /* ResponseType.ACTION */:
+                    response.action = data.code;
+                    break;
+                case "error" /* ResponseType.ERROR */:
+                    // Delete the end of history.
+                    history.splice(lastRunStartIdx);
+                    response = {};
+                    break;
             }
         }
-        return [...historyAll.values()].flat();
-    }
-    #addHistory(id, data) {
-        const currentRunEntries = this.#history.get(id);
-        if (currentRunEntries) {
-            currentRunEntries.push(data);
-            return;
+        // Trailing history, should be the same as handling the
+        // ResponseType.QUERYING branch above.
+        const observation = this.formatHistoryChunkObservation(response);
+        if (observation) {
+            history.push({
+                entity: Host.AidaClient.Entity.USER,
+                text: observation,
+            });
         }
-        this.#history.set(id, [data]);
+        return history;
     }
-    #runId = 0;
+    #addHistory(data) {
+        this.#history.push(data);
+    }
     async *run(query, options) {
         if (this.#generatedFromHistory) {
             throw new Error('History entries are read-only.');
@@ -223,29 +216,33 @@ STOP`;
         if (options.selected && !this.#context) {
             this.#context = options.selected;
         }
-        const id = this.#runId++;
+        const enhancedQuery = await this.enhanceQuery(query, options.selected);
+        // Request is built here to capture history up to this point.
+        let request = this.buildRequest({
+            input: enhancedQuery,
+        });
         const response = {
             type: "user-query" /* ResponseType.USER_QUERY */,
             query,
         };
-        this.#addHistory(id, response);
+        this.#addHistory(response);
         yield response;
         for await (const response of this.handleContextDetails(options.selected)) {
-            this.#addHistory(id, response);
+            this.#addHistory(response);
             yield response;
         }
-        query = await this.enhanceQuery(query, options.selected);
+        query = enhancedQuery;
         for (let i = 0; i < MAX_STEP; i++) {
             const queryResponse = {
                 type: "querying" /* ResponseType.QUERYING */,
                 query,
             };
-            this.#addHistory(id, queryResponse);
+            this.#addHistory(queryResponse);
             yield queryResponse;
             let response;
             let rpcId;
             try {
-                const fetchResult = await this.aidaFetch(query, { signal: options.signal });
+                const fetchResult = await this.aidaFetch(request, { signal: options.signal });
                 response = fetchResult.response;
                 rpcId = fetchResult.rpcId;
             }
@@ -257,7 +254,7 @@ STOP`;
                         error: "abort" /* ErrorType.ABORT */,
                         rpcId,
                     };
-                    this.#addHistory(id, response);
+                    this.#addHistory(response);
                     yield response;
                     break;
                 }
@@ -267,7 +264,7 @@ STOP`;
                     rpcId,
                 };
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
-                this.#addHistory(id, response);
+                this.#addHistory(response);
                 yield response;
                 break;
             }
@@ -282,7 +279,7 @@ STOP`;
                         suggestions,
                     };
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceAnswerReceived);
-                    this.#addHistory(id, response);
+                    this.#addHistory(response);
                     yield response;
                 }
                 else {
@@ -292,7 +289,7 @@ STOP`;
                         rpcId,
                     };
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
-                    this.#addHistory(id, response);
+                    this.#addHistory(response);
                     yield response;
                 }
                 break;
@@ -304,7 +301,7 @@ STOP`;
                     title,
                     rpcId,
                 };
-                this.#addHistory(id, response);
+                this.#addHistory(response);
                 yield response;
             }
             if (thought) {
@@ -313,14 +310,18 @@ STOP`;
                     thought,
                     rpcId,
                 };
-                this.#addHistory(id, response);
+                this.#addHistory(response);
                 yield response;
             }
             if (action) {
                 const result = yield* this.handleAction(action, rpcId);
-                this.#addHistory(id, result);
-                yield result;
+                this.#addHistory(result);
                 query = `OBSERVATION: ${result.output}`;
+                // Capture history state for the next iteration query.
+                request = this.buildRequest({
+                    input: query,
+                });
+                yield result;
             }
             if (i === MAX_STEP - 1) {
                 const response = {
@@ -328,7 +329,7 @@ STOP`;
                     error: "max-steps" /* ErrorType.MAX_STEPS */,
                 };
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
-                this.#addHistory(id, response);
+                this.#addHistory(response);
                 yield response;
                 break;
             }
@@ -342,10 +343,8 @@ STOP`;
             return;
         }
         this.#generatedFromHistory = true;
-        for (const historyChunk of this.#history.values()) {
-            for (const entry of historyChunk) {
-                yield entry;
-            }
+        for (const entry of this.#history) {
+            yield entry;
         }
     }
 }

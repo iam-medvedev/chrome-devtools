@@ -40,7 +40,7 @@ export declare class PaintProfilerView extends PaintProfilerView_base {
     onResize(): void;
     setSnapshotAndLog(snapshot: SDK.PaintProfiler.PaintProfilerSnapshot | null, log: SDK.PaintProfiler.PaintProfilerLogItem[], clipRect: Protocol.DOM.Rect | null): Promise<void>;
     setScale(scale: number): void;
-    private update;
+    update(): void;
     private renderBar;
     private onWindowChanged;
     private updatePieChart;

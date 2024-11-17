@@ -12,6 +12,7 @@ type Constructor<T, Args extends unknown[]> = {
 };
 export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof LitHtml.Directives.ref>;
 export declare class Widget {
+    #private;
     readonly element: HTMLElement;
     contentElement: HTMLElement;
     private shadowRoot;
@@ -93,6 +94,24 @@ export declare class Widget {
     resumeInvalidations(): void;
     invalidateConstraints(): void;
     markAsExternallyManaged(): void;
+    /**
+     * Called by the RenderCoordinator to perform an update.
+     * This is not meant to be called directly. Instead, use update() to schedule an asynchronous update.
+     *
+     * @returns A promise that resolves when the update is complete.
+     */
+    protected doUpdate(): Promise<void>;
+    /**
+     * Schedules an asynchronous update. The update will be deduplicated and executed with the animation frame.
+     */
+    update(): void;
+    /**
+     * Returns a promise that resolves when the pending update is complete.
+     * Returns a resolved promise if there is no pending update.
+  `  *
+     * @returns A probleme that resolves when the pending update is complete.
+     */
+    pendingUpdate(): Promise<void>;
 }
 export declare class VBox extends Widget {
     constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);

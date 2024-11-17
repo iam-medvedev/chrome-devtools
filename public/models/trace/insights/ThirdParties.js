@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
 import * as Extras from '../extras/extras.js';
 import * as Helpers from '../helpers/helpers.js';
+import { InsightCategory } from './types.js';
 const UIStrings = {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
     title: 'Third parties',
@@ -30,7 +31,12 @@ function getRelatedEvents(summaries, firstPartyEntity) {
     return events;
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.ALL,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     const networkRequests = parsedTrace.NetworkRequests.byTime.filter(event => {

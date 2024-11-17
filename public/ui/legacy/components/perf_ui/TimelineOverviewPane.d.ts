@@ -39,7 +39,7 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     setBounds(minimumBoundary: Trace.Types.Timing.MilliSeconds, maximumBoundary: Trace.Types.Timing.MilliSeconds): void;
     setNavStartTimes(navStartTimes: readonly Trace.Types.Events.NavigationStart[]): void;
     scheduleUpdate(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
-    private update;
+    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
     setMarkers(markers: Map<number, Element>): void;
     getMarkers(): Map<number, Element>;
     private updateMarkers;
@@ -49,7 +49,7 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     private onWindowChanged;
     setWindowTimes(startTime: number, endTime: number): void;
     private updateWindow;
-    highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds): void;
+    highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds, withBracket: boolean): void;
     clearBoundsHighlight(): void;
 }
 export declare const enum Events {

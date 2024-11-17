@@ -424,7 +424,8 @@ export class ShortcutListItem {
             }));
         }
         else {
-            const keys = shortcut.descriptors.flatMap(descriptor => descriptor.name.split(' + '));
+            const separator = Host.Platform.isMac() ? '\u2004' : ' + ';
+            const keys = shortcut.descriptors.flatMap(descriptor => descriptor.name.split(separator));
             keys.forEach(key => {
                 shortcutElement.createChild('div', 'keybinds-key').createChild('span').textContent = key;
             });

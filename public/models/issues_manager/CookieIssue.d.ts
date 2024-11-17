@@ -8,9 +8,24 @@ export declare const enum CookieIssueSubCategory {
     SAME_SITE_COOKIE = "SameSiteCookie",
     THIRD_PARTY_PHASEOUT_COOKIE = "ThirdPartyPhaseoutCookie"
 }
+export declare const enum CookieStatus {
+    BLOCKED = 0,
+    ALLOWED = 1,
+    ALLOWED_BY_GRACE_PERIOD = 2,
+    ALLOWED_BY_HEURISTICS = 3
+}
+export interface CookieReportInfo {
+    name: string;
+    domain: string;
+    type?: string;
+    platform?: string;
+    status: CookieStatus;
+    recommendation?: string;
+}
 export declare class CookieIssue extends Issue {
     #private;
     constructor(code: string, issueDetails: Protocol.Audits.CookieIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId: Protocol.Audits.IssueId | undefined);
+    cookieId(): string;
     primaryKey(): string;
     /**
      * Returns an array of issues from a given CookieIssueDetails.
@@ -32,6 +47,8 @@ export declare class CookieIssue extends Issue {
     getDescription(): MarkdownIssueDescription | null;
     isCausedByThirdParty(): boolean;
     getKind(): IssueKind;
+    makeCookieReportEntry(): CookieReportInfo | undefined;
+    static getCookieStatus(cookieIssueDetails: Protocol.Audits.CookieIssueDetails): CookieStatus | undefined;
     static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): CookieIssue[];
     static getSubCategory(code: string): CookieIssueSubCategory;
     maybeCreateConsoleMessage(): SDK.ConsoleModel.ConsoleMessage | undefined;

@@ -29,6 +29,9 @@ export class DataGridControllerIntegrator extends UI.Widget.VBox {
         return this.#data;
     }
     update(data) {
+        if (!data) {
+            return;
+        }
         this.#data = data;
         // Setting of `dataGrid.data` is compute heavy because of the
         // filtering logic. Thus, we're debouncing calls to the setter.

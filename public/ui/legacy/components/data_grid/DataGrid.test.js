@@ -14,25 +14,23 @@ describeWithEnvironment('DataGrid', () => {
         renderElementIntoDOM(container);
         let widget;
         const dataGridOptions = {
-            implParams: {
-                displayName: 'testGrid',
-                columns: [{
-                        id: 'test',
-                        sortable: false,
-                    }],
-            },
+            displayName: 'testGrid',
+            columns: [{
+                    id: 'test',
+                    sortable: false,
+                }],
             nodes: [new DataGrid.DataGrid.DataGridNode({ test: 'testNode' })],
             markAsRoot: true,
         };
         // clang-format off
         render(html `
+        <!-- @ts-ignore -->
         <devtools-data-grid-widget
             .options=${dataGridOptions}
             ${widgetRef(DataGrid.DataGrid.DataGridWidget, e => { widget = e; })}
         ></devtools-data-grid-widget>
         `, container, { host: this });
         // clang-format on
-        await new Promise(resolve => setTimeout(resolve, 0));
         assert.exists(widget);
         // There is a single test row
         assert.strictEqual(widget.dataGrid.rootNode().children.length, 1);

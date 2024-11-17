@@ -24,6 +24,7 @@ styles.replaceSync(
   gap: var(--sys-size-8);
   justify-content: space-between;
   align-items: center;
+  margin-block: calc(-1 * var(--sys-size-3));
 }
 
 .rate-buttons {
@@ -88,7 +89,7 @@ styles.replaceSync(
     overflow: auto hidden;
     scrollbar-width: none;
     gap: var(--sys-size-3);
-    padding-right: var(--sys-size-1);
+    padding: var(--sys-size-3);
   }
 
   .scroll-button-container {

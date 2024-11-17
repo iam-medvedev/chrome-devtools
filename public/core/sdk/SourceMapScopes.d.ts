@@ -9,8 +9,9 @@ export interface OriginalScope {
      * Other languages might require language-specific scope kinds, in which case we'll print the
      * kind as-is.
      */
-    kind: string;
+    kind?: string;
     name?: string;
+    isStackFrame: boolean;
     variables: string[];
     children: OriginalScope[];
     parent?: OriginalScope;
@@ -25,7 +26,12 @@ export interface GeneratedRange {
     /**
      * Whether this generated range is an actual JavaScript function in the generated code.
      */
-    isFunctionScope: boolean;
+    isStackFrame: boolean;
+    /**
+     * Whether calls to this generated range should be hidden from stack traces even if
+     * this range has an `originalScope`.
+     */
+    isHidden: boolean;
     /**
      * If this `GeneratedRange` is the result of inlining `originalScope`, then `callsite`
      * refers to where `originalScope` was called in the original ("authored") code.
@@ -62,10 +68,16 @@ interface OriginalScopeTree {
     readonly scopeForItemIndex: Map<number, OriginalScope>;
 }
 export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScopeTree[];
+export declare const enum EncodedOriginalScopeFlag {
+    HAS_NAME = 1,
+    HAS_KIND = 2,
+    IS_STACK_FRAME = 4
+}
 export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], names: string[]): GeneratedRange[];
 export declare const enum EncodedGeneratedRangeFlag {
     HAS_DEFINITION = 1,
     HAS_CALLSITE = 2,
-    IS_FUNCTION_SCOPE = 4
+    IS_STACK_FRAME = 4,
+    IS_HIDDEN = 8
 }
 export {};

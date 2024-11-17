@@ -1,6 +1,7 @@
 import '../icon_button/icon_button.js';
 interface FloatingButtonData {
     iconName: string;
+    title?: string;
     disabled?: boolean;
 }
 export declare class FloatingButton extends HTMLElement {

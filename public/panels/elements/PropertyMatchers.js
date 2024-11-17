@@ -274,6 +274,9 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
         'ease-in': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
         'ease-out': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
         'ease-in-out': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        steps: "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        'step-start': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
+        'step-end': "easing-function" /* AnimationLonghandPart.EASING_FUNCTION */,
     }));
     matchAnimationNameInShorthand(node, matching) {
         // Order is important within each animation definition for distinguishing <keyframes-name> values from other keywords.

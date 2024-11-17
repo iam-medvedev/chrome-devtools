@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightWarning } from './types.js';
+import { InsightCategory, InsightWarning, } from './types.js';
 const UIStrings = {
     /**
      *@description Title of an insight that provides details about the LCP metric, broken down by phases / parts.
@@ -65,7 +65,20 @@ function breakdownPhases(nav, docRequest, lcpMs, lcpRequest) {
     };
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    const relatedEvents = [];
+    if (partialModel.lcpEvent) {
+        relatedEvents.push(partialModel.lcpEvent);
+    }
+    if (partialModel.lcpRequest) {
+        relatedEvents.push(partialModel.lcpRequest);
+    }
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.LCP,
+        ...partialModel,
+        relatedEvents,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     if (!context.navigation) {

@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { InsightCategory } from './types.js';
 const UIStrings = {
     /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
     title: 'Layout shift culprits',
@@ -308,7 +309,12 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
     return rootCausesByShift;
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.CLS,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);

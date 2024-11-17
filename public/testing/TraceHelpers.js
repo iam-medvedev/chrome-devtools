@@ -377,7 +377,7 @@ export class FakeFlameChartProvider {
     maxStackDepth() {
         return 3;
     }
-    prepareHighlightedEntryInfo(_entryIndex) {
+    preparePopoverElement(_entryIndex) {
         return null;
     }
     canJumpToEntry(_entryIndex) {

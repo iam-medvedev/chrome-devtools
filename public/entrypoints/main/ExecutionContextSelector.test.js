@@ -14,11 +14,13 @@ describeWithMockConnection('ExecutionContextSelector', () => {
         const mainFrameTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
         const subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
         const prerenderTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget, subtype: 'prerender' });
+        const serviceWorkerTarget = createTarget({ type: SDK.Target.Type.ServiceWorker });
+        const workerTarget = createTarget({ type: SDK.Target.Type.Worker });
         const contextSetFlavor = sinon.spy(UI.Context.Context.instance(), 'setFlavor');
-        const sentExecutionContextCreated = (target) => {
-            const frame = getMainFrame(target);
+        const sentExecutionContextCreated = (target, includeFrameId = true) => {
+            const frameId = includeFrameId ? getMainFrame(target).id : undefined;
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            runtimeModel.dispatchEventToListeners(SDK.RuntimeModel.Events.ExecutionContextCreated, { isDefault: true, frameId: frame.id, target: () => target });
+            runtimeModel.dispatchEventToListeners(SDK.RuntimeModel.Events.ExecutionContextCreated, { isDefault: true, frameId, target: () => target });
         };
         sentExecutionContextCreated(subframeTarget);
         assert.isTrue(contextSetFlavor.called);
@@ -29,6 +31,12 @@ describeWithMockConnection('ExecutionContextSelector', () => {
         assert.isTrue(contextSetFlavor.called);
         contextSetFlavor.resetHistory();
         sentExecutionContextCreated(prerenderTarget);
+        assert.isFalse(contextSetFlavor.called);
+        contextSetFlavor.resetHistory();
+        sentExecutionContextCreated(serviceWorkerTarget, /* includeFrameId */ false);
+        assert.isFalse(contextSetFlavor.called);
+        contextSetFlavor.resetHistory();
+        sentExecutionContextCreated(workerTarget, /* includeFrameId */ false);
         assert.isFalse(contextSetFlavor.called);
     });
 });
