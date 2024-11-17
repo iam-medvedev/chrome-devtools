@@ -909,7 +909,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
     DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
-    DevtoolsExperiments[DevtoolsExperiments["extension-storage-viewer"] = 100] = "extension-storage-viewer";
     DevtoolsExperiments[DevtoolsExperiments["floating-entry-points-for-ai-assistance"] = 101] = "floating-entry-points-for-ai-assistance";
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
     DevtoolsExperiments[DevtoolsExperiments["timeline-dim-unrelated-events"] = 103] = "timeline-dim-unrelated-events";

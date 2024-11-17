@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ThirdPartyWeb from '../../third_party/third-party-web/third-party-web.js';
 import { Issue } from './Issue.js';
 import { resolveLazyDescription, } from './MarkdownIssueDescription.js';
 const UIStrings = {
@@ -52,7 +53,7 @@ export class CookieIssue extends Issue {
         super(code, issuesModel, issueId);
         this.#issueDetails = issueDetails;
     }
-    #cookieId() {
+    cookieId() {
         if (this.#issueDetails.cookie) {
             const { domain, path, name } = this.#issueDetails.cookie;
             const cookieId = `${domain};${path};${name}`;
@@ -62,7 +63,7 @@ export class CookieIssue extends Issue {
     }
     primaryKey() {
         const requestId = this.#issueDetails.request ? this.#issueDetails.request.requestId : 'no-request';
-        return `${this.code()}-(${this.#cookieId()})-(${requestId})`;
+        return `${this.code()}-(${this.cookieId()})-(${requestId})`;
     }
     /**
      * Returns an array of issues from a given CookieIssueDetails.
@@ -151,6 +152,12 @@ export class CookieIssue extends Issue {
             reason === "WarnSameSiteLaxCrossDowngradeStrict" /* Protocol.Audits.CookieWarningReason.WarnSameSiteLaxCrossDowngradeStrict */) {
             return ["CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */, 'WarnCrossDowngrade', operation, secure].join('::');
         }
+        if (reason === "ExcludePortMismatch" /* Protocol.Audits.CookieExclusionReason.ExcludePortMismatch */) {
+            return ["CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */, 'ExcludePortMismatch'].join('::');
+        }
+        if (reason === "ExcludeSchemeMismatch" /* Protocol.Audits.CookieExclusionReason.ExcludeSchemeMismatch */) {
+            return ["CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */, 'ExcludeSchemeMismatch'].join('::');
+        }
         return ["CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */, reason, operation].join('::');
     }
     cookies() {
@@ -190,6 +197,35 @@ export class CookieIssue extends Issue {
             return "PageError" /* IssueKind.PAGE_ERROR */;
         }
         return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
+    }
+    makeCookieReportEntry() {
+        const status = CookieIssue.getCookieStatus(this.#issueDetails);
+        if (this.#issueDetails.cookie && this.#issueDetails.cookieUrl && status !== undefined) {
+            const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(this.#issueDetails.cookieUrl);
+            return {
+                name: this.#issueDetails.cookie.name,
+                domain: this.#issueDetails.cookie.domain,
+                type: entity?.category,
+                platform: entity?.name,
+                status,
+            };
+        }
+        return;
+    }
+    static getCookieStatus(cookieIssueDetails) {
+        if (cookieIssueDetails.cookieExclusionReasons.includes("ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */)) {
+            return 0 /* CookieStatus.BLOCKED */;
+        }
+        if (cookieIssueDetails.cookieWarningReasons.includes("WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */)) {
+            return 2 /* CookieStatus.ALLOWED_BY_GRACE_PERIOD */;
+        }
+        if (cookieIssueDetails.cookieWarningReasons.includes("WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */)) {
+            return 3 /* CookieStatus.ALLOWED_BY_HEURISTICS */;
+        }
+        if (cookieIssueDetails.cookieWarningReasons.includes("WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */)) {
+            return 1 /* CookieStatus.ALLOWED */;
+        }
+        return;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const cookieIssueDetails = inspectorIssue.details.cookieIssueDetails;
@@ -441,6 +477,14 @@ const cookieCrossSiteRedirectDowngrade = {
             linkTitle: i18nLazyString(UIStrings.fileCrosSiteRedirectBug),
         }],
 };
+const ExcludePortMismatch = {
+    file: 'cookieExcludePortMismatch.md',
+    links: [],
+};
+const ExcludeSchemeMismatch = {
+    file: 'cookieExcludeSchemeMismatch.md',
+    links: [],
+};
 // This description will be used by cookie issues that need to be added to the
 // issueManager, but aren't intended to be surfaced in the issues pane. This
 // is why they are using a placeholder description
@@ -498,5 +542,7 @@ const issueDescriptions = new Map([
     ['CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie', cookieExcludeThirdPartyPhaseoutRead],
     ['CookieIssue::ExcludeThirdPartyPhaseout::SetCookie', cookieExcludeThirdPartyPhaseoutSet],
     ['CookieIssue::CrossSiteRedirectDowngradeChangesInclusion', cookieCrossSiteRedirectDowngrade],
+    ['CookieIssue::ExcludePortMismatch', ExcludePortMismatch],
+    ['CookieIssue::ExcludeSchemeMismatch', ExcludeSchemeMismatch],
 ]);
 //# sourceMappingURL=CookieIssue.js.map

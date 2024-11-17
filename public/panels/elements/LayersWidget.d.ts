@@ -5,7 +5,7 @@ export declare class LayersWidget extends UI.Widget.Widget {
     constructor();
     private updateModel;
     wasShown(): Promise<void>;
-    private update;
+    update(): Promise<void>;
     revealLayer(layerName: string): Promise<void>;
     static instance(opts?: {
         forceNew: boolean | null;

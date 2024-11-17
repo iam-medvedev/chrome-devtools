@@ -4,6 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { InsightCategory } from './types.js';
 const UIStrings = {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
@@ -95,7 +96,12 @@ function getCompressionSavings(request) {
     return estimatedSavings < IGNORE_THRESHOLD_IN_BYTES ? 0 : estimatedSavings;
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.ALL,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     if (!context.navigation) {

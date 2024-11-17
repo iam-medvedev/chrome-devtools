@@ -6,6 +6,7 @@ import * as Root from '../../../core/root/root.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { shouldRenderForCategory } from './insights/Helpers.js';
 import * as Insights from './insights/insights.js';
 import styles from './sidebarSingleInsightSet.css.js';
 import { NumberWithUnit } from './Utils.js';
@@ -53,7 +54,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         parsedTrace: null,
         insights: null,
         insightSetKey: null,
-        activeCategory: Insights.Types.Category.ALL,
+        activeCategory: Trace.Insights.Types.InsightCategory.ALL,
         activeInsight: null,
     };
     set data(data) {
@@ -65,7 +66,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         this.#render();
     }
     #metricIsVisible(label) {
-        if (this.#data.activeCategory === Insights.Types.Category.ALL) {
+        if (this.#data.activeCategory === Trace.Insights.Types.InsightCategory.ALL) {
             return true;
         }
         return label === this.#data.activeCategory;
@@ -147,21 +148,25 @@ export class SidebarSingleInsightSet extends HTMLElement {
         const includeExperimental = Root.Runtime.experiments.isEnabled("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */);
         const models = insightSets?.get(insightSetKey)?.model;
         if (!models) {
-            return html ``;
+            return LitHtml.nothing;
         }
         const components = [];
         for (const [name, componentClass] of Object.entries(INSIGHT_NAME_TO_COMPONENT)) {
             if (!includeExperimental && EXPERIMENTAL_INSIGHTS.has(name)) {
                 continue;
             }
+            const model = models[name];
+            if (!model ||
+                !shouldRenderForCategory({ activeCategory: this.#data.activeCategory, insightCategory: model.category })) {
+                continue;
+            }
             // clang-format off
-            const component = html `<div data-single-insight-wrapper>
+            const component = html `<div>
         <${componentClass.litTagName}
-          .model=${models[name]}
+          .selected=${this.#data.activeInsight?.model === model}
+          .model=${model}
           .parsedTrace=${parsedTrace}
           .insightSetKey=${insightSetKey}
-          .activeInsight=${this.#data.activeInsight}
-          .activeCategory=${this.#data.activeCategory}>
         </${componentClass.litTagName}>
       </div>`;
             // clang-format on

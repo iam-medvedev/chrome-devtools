@@ -76,7 +76,7 @@ export declare class Layers3DView extends Layers3DView_base implements LayerView
     private drawTexture;
     private drawViewportAndChrome;
     private drawViewRect;
-    private update;
+    update(): void;
     private innerUpdate;
     private webglDisabledBanner;
     private selectionFromEventPoint;

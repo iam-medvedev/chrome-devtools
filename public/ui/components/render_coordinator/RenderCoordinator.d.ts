@@ -43,6 +43,7 @@ export declare class RenderCoordinator extends EventTarget {
     read<T>(label: string, callback: CoordinatorCallback<T>): Promise<T>;
     write<T>(callback: CoordinatorCallback<T>): Promise<T>;
     write<T>(label: string, callback: CoordinatorCallback<T>): Promise<T>;
+    findPendingWrite(label: string): Promise<void> | undefined;
     takeRecords(): CoordinatorLogEntry[];
     /**
      * We offer a convenience function for scroll-based activity, but often triggering a scroll

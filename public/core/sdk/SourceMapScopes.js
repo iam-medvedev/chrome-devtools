@@ -23,14 +23,22 @@ function decodeOriginalScope(encodedOriginalScope, names) {
         line += item.line;
         const { column } = item;
         if (isStart(item)) {
-            kindIdx += item.kind;
-            const kind = resolveName(kindIdx, names);
-            if (kind === undefined) {
-                throw new Error(`Scope does not have a valid kind '${kind}'`);
+            let kind;
+            if (item.kind !== undefined) {
+                kindIdx += item.kind;
+                kind = resolveName(kindIdx, names);
             }
             const name = resolveName(item.name, names);
             const variables = item.variables.map(idx => names[idx]);
-            const scope = { start: { line, column }, end: { line, column }, kind, name, variables, children: [] };
+            const scope = {
+                start: { line, column },
+                end: { line, column },
+                kind,
+                name,
+                isStackFrame: Boolean(item.flags & 4 /* EncodedOriginalScopeFlag.IS_STACK_FRAME */),
+                variables,
+                children: [],
+            };
             scopeStack.push(scope);
             scopeForItemIndex.set(index, scope);
         }
@@ -51,7 +59,7 @@ function decodeOriginalScope(encodedOriginalScope, names) {
     throw new Error('Malformed original scope encoding');
 }
 function isStart(item) {
-    return 'kind' in item;
+    return 'flags' in item;
 }
 function* decodeOriginalScopeItems(encodedOriginalScope) {
     const iter = new TokenIterator(encodedOriginalScope);
@@ -73,12 +81,14 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
         const startItem = {
             line,
             column,
-            kind: iter.nextVLQ(),
             flags: iter.nextVLQ(),
             variables: [],
         };
-        if (startItem.flags & 0x1) {
+        if (startItem.flags & 1 /* EncodedOriginalScopeFlag.HAS_NAME */) {
             startItem.name = iter.nextVLQ();
+        }
+        if (startItem.flags & 2 /* EncodedOriginalScopeFlag.HAS_KIND */) {
+            startItem.kind = iter.nextVLQ();
         }
         while (iter.hasNext() && iter.peek() !== ',') {
             startItem.variables.push(iter.nextVLQ());
@@ -91,7 +101,8 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
     const rangeStack = [{
             start: { line: 0, column: 0 },
             end: { line: 0, column: 0 },
-            isFunctionScope: false,
+            isStackFrame: false,
+            isHidden: false,
             children: [],
             values: [],
         }];
@@ -101,7 +112,8 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
             const range = {
                 start: { line: item.line, column: item.column },
                 end: { line: item.line, column: item.column },
-                isFunctionScope: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IS_FUNCTION_SCOPE */),
+                isStackFrame: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IS_STACK_FRAME */),
+                isHidden: Boolean(item.flags & 8 /* EncodedGeneratedRangeFlag.IS_HIDDEN */),
                 values: [],
                 children: [],
             };

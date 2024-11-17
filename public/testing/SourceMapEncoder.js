@@ -124,19 +124,28 @@ export class OriginalScopeBuilder {
     constructor(names) {
         this.#names = names;
     }
-    start(line, column, kind, name, variables) {
+    start(line, column, options) {
         if (this.#encodedScope !== '') {
             this.#encodedScope += ',';
         }
         const lineDiff = line - this.#lastLine;
         this.#lastLine = line;
-        const flags = (name !== undefined ? 0x1 : 0x0);
-        this.#encodedScope += encodeVlqList([lineDiff, column, this.#encodeKind(kind), flags]);
-        if (name !== undefined) {
-            this.#encodedScope += encodeVlq(this.#nameIdx(name));
+        let flags = 0;
+        const nameIdxAndKindIdx = [];
+        if (options?.name) {
+            flags |= 1 /* SDK.SourceMapScopes.EncodedOriginalScopeFlag.HAS_NAME */;
+            nameIdxAndKindIdx.push(this.#nameIdx(options.name));
         }
-        if (variables !== undefined) {
-            this.#encodedScope += encodeVlqList(variables.map(variable => this.#nameIdx(variable)));
+        if (options?.kind) {
+            flags |= 2 /* SDK.SourceMapScopes.EncodedOriginalScopeFlag.HAS_KIND */;
+            nameIdxAndKindIdx.push(this.#encodeKind(options?.kind));
+        }
+        if (options?.isStackFrame) {
+            flags |= 4 /* SDK.SourceMapScopes.EncodedOriginalScopeFlag.IS_STACK_FRAME */;
+        }
+        this.#encodedScope += encodeVlqList([lineDiff, column, flags, ...nameIdxAndKindIdx]);
+        if (options?.variables) {
+            this.#encodedScope += encodeVlqList(options.variables.map(variable => this.#nameIdx(variable)));
         }
         return this;
     }
@@ -200,8 +209,11 @@ export class GeneratedRangeBuilder {
         if (options?.callsite) {
             flags |= 2 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HAS_CALLSITE */;
         }
-        if (options?.isFunctionScope) {
-            flags |= 4 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.IS_FUNCTION_SCOPE */;
+        if (options?.isStackFrame) {
+            flags |= 4 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.IS_STACK_FRAME */;
+        }
+        if (options?.isHidden) {
+            flags |= 8 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.IS_HIDDEN */;
         }
         this.#encodedRange += encodeVlq(flags);
         if (options?.definition) {

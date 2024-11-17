@@ -8,7 +8,6 @@ const { html } = LitHtml;
 export class Table extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #insight;
     #state;
     #headers;

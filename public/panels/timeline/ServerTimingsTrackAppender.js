@@ -4,7 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -68,13 +68,6 @@ export class ServerTimingsTrackAppender {
     }
     titleForEvent(event) {
         return event.name;
-    }
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event) {
-        return { title: event.name, formattedTime: getFormattedTime(event.dur) };
     }
 }
 //# sourceMappingURL=ServerTimingsTrackAppender.js.map

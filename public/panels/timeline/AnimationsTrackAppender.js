@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { addDecorationToEvent, buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -53,10 +53,6 @@ export class AnimationsTrackAppender {
     titleForEvent(event) {
         const { displayName } = event.args.data.beginEvent.args.data;
         return displayName || event.name;
-    }
-    highlightedEntryInfo(event) {
-        const title = this.titleForEvent(event);
-        return { title, formattedTime: getFormattedTime(event.dur) };
     }
 }
 //# sourceMappingURL=AnimationsTrackAppender.js.map

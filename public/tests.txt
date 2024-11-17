@@ -409,6 +409,7 @@ panels/recorder/util/SharedObject.test.js
 panels/screencast/ScreencastApp.test.js
 panels/search/SearchResultsPane.test.js
 panels/search/SearchView.test.js
+panels/security/CookieReportView.test.js
 panels/security/SecurityModel.test.js
 panels/security/SecurityPanel.test.js
 panels/settings/AISettingsTab.test.js
@@ -469,7 +470,7 @@ panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsightsTab.test.js
 panels/timeline/components/SidebarSingleInsightSet.test.js
 panels/timeline/components/Utils.test.js
-panels/timeline/components/insights/SidebarInsight.test.js
+panels/timeline/components/insights/BaseInsightComponent.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
 panels/timeline/overlays/components/TimespanBreakdownOverlay.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
@@ -538,7 +539,6 @@ ui/components/text_editor/TextEditorHistory.test.js
 ui/components/text_editor/javascript.test.js
 ui/components/text_prompt/TextPrompt.test.js
 ui/components/tree_outline/TreeOutline.test.js
-ui/components/two_states_counter/TwoStatesCounter.test.js
 ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js
 ui/legacy/Context.test.js

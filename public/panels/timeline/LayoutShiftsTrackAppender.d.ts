@@ -1,6 +1,6 @@
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type CompatibilityTracksAppender, type DrawOverride, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import { type CompatibilityTracksAppender, type DrawOverride, type PopoverInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.MicroSeconds;
 export declare class LayoutShiftsTrackAppender implements TrackAppender {
     #private;
@@ -24,11 +24,7 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
      * Gets the title an event added by this appender should be rendered with.
      */
     titleForEvent(event: Trace.Types.Events.Event): string;
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event: Trace.Types.Events.Event): HighlightedEntryInfo;
+    setPopoverInfo(event: Trace.Types.Events.Event, info: PopoverInfo): void;
     getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
     preloadScreenshots(events: Trace.Types.Events.SyntheticLayoutShift[]): Promise<(void | undefined)[]>;
     static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.Handlers.Types.ParsedTrace, maxSize: UI.Geometry.Size): HTMLElement | undefined;

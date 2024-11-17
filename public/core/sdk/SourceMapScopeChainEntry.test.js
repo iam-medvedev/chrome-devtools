@@ -15,6 +15,7 @@ describeWithMockConnection('SourceMapScopeRemoteObject', () => {
         const originalScope = {
             start: { line: 0, column: 0 },
             end: { line: 20, column: 0 },
+            isStackFrame: false,
             kind: 'global',
             variables: ['variable1', 'variable2'],
             children: [],
@@ -32,6 +33,7 @@ describeWithMockConnection('SourceMapScopeRemoteObject', () => {
         const originalScope = {
             start: { line: 0, column: 0 },
             end: { line: 20, column: 0 },
+            isStackFrame: false,
             kind: 'global',
             variables: ['variable1'],
             children: [],
@@ -39,7 +41,8 @@ describeWithMockConnection('SourceMapScopeRemoteObject', () => {
         const range = {
             start: { line: 0, column: 0 },
             end: { line: 0, column: 200 },
-            isFunctionScope: false,
+            isStackFrame: false,
+            isHidden: false,
             values: ['a'],
             children: [],
         };
@@ -59,6 +62,7 @@ describeWithMockConnection('SourceMapScopeRemoteObject', () => {
         const originalScope = {
             start: { line: 0, column: 0 },
             end: { line: 20, column: 0 },
+            isStackFrame: false,
             kind: 'global',
             variables: ['variable1'],
             children: [],
@@ -66,7 +70,8 @@ describeWithMockConnection('SourceMapScopeRemoteObject', () => {
         const range = {
             start: { line: 0, column: 0 },
             end: { line: 0, column: 200 },
-            isFunctionScope: false,
+            isStackFrame: false,
+            isHidden: false,
             values: [[
                     { from: { line: 0, column: 0 }, to: { line: 0, column: 50 }, value: 'a' }, // From 0..50 available as 'a'.
                     { from: { line: 0, column: 50 }, to: { line: 0, column: 150 } }, // From 50..150 unavailable.

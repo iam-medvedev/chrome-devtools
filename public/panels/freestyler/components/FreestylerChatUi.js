@@ -716,6 +716,9 @@ export class FreestylerChatUi extends HTMLElement {
     #onNewConversation() {
         this.#props.onNewConversation();
     }
+    #onCancelCrossOriginChat() {
+        this.#props.onCancelCrossOriginChat?.();
+    }
     #getEmptyStateSuggestions = () => {
         if (!this.#props.agentType) {
             return [];
@@ -792,7 +795,7 @@ export class FreestylerChatUi extends HTMLElement {
     </div>`;
         // clang-format on
     }
-    #renderChatInputButton() {
+    #renderChatInputButtons() {
         if (this.#props.isLoading) {
             // clang-format off
             return html `<devtools-button
@@ -811,17 +814,28 @@ export class FreestylerChatUi extends HTMLElement {
         }
         if (this.#props.blockedByCrossOrigin || this.#props.requiresNewConversation) {
             // clang-format off
-            return html `<devtools-button
-        class="chat-input-button"
-        aria-label=${lockedString(UIStringsNotTranslate.startNewChat)}
-        @click=${this.#onNewConversation}
-        .data=${{
+            return html `
+        ${this.#props.blockedByCrossOrigin && Boolean(this.#props.onCancelCrossOriginChat) ? html `<devtools-button
+          class="chat-cancel-context-button"
+          @click=${this.#onCancelCrossOriginChat}
+          .data=${{
+                variant: "text" /* Buttons.Button.Variant.TEXT */,
+                size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
+                jslogContext: 'cancel-cross-origin-context-chat',
+            }}
+        >${lockedString(UIStringsNotTranslate.cancelButtonTitle)}</devtools-button>` : LitHtml.nothing}
+        <devtools-button
+          class="chat-input-button"
+          aria-label=${lockedString(UIStringsNotTranslate.startNewChat)}
+          @click=${this.#onNewConversation}
+          .data=${{
                 variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
                 title: lockedString(UIStringsNotTranslate.startNewChat),
                 jslogContext: 'start-new-chat',
             }}
-      >${lockedString(UIStringsNotTranslate.startNewChat)}</devtools-button>`;
+        >${lockedString(UIStringsNotTranslate.startNewChat)}</devtools-button>
+      `;
             // clang-format on
         }
         // clang-format off
@@ -843,6 +857,11 @@ export class FreestylerChatUi extends HTMLElement {
         if (!this.#props.agentType) {
             return LitHtml.nothing;
         }
+        const cls = LitHtml.Directives.classMap({
+            'chat-input': true,
+            'one-big-button': Boolean(this.#props.requiresNewConversation),
+            'two-big-buttons': this.#props.blockedByCrossOrigin,
+        });
         // clang-format off
         return html `
     <form class="input-form" @submit=${this.#handleSubmit}>
@@ -854,14 +873,16 @@ export class FreestylerChatUi extends HTMLElement {
         </div>
       ` : LitHtml.nothing}
       <div class="chat-input-container">
-        <textarea class="chat-input"
+        <textarea class=${cls}
           .disabled=${this.#isTextInputDisabled()}
           wrap="hard"
           @keydown=${this.#handleTextAreaKeyDown}
           placeholder=${this.#getInputPlaceholderString()}
           jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}
         ></textarea>
-        ${this.#renderChatInputButton()}
+        <div class="chat-input-buttons">
+          ${this.#renderChatInputButtons()}
+        </div>
       </div>
     </form>`;
         // clang-format on

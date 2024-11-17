@@ -166,6 +166,21 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
         });
         Utils.ImageCache.emitter.addEventListener('screenshot-loaded', () => this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */));
+        Common.Settings.Settings.instance()
+            .moduleSetting('skip-stack-frames-pattern')
+            .addChangeListener(this.#onIgnoreListChanged.bind(this));
+        Common.Settings.Settings.instance()
+            .moduleSetting('skip-content-scripts')
+            .addChangeListener(this.#onIgnoreListChanged.bind(this));
+        Common.Settings.Settings.instance()
+            .moduleSetting('automatically-ignore-list-known-third-party-scripts')
+            .addChangeListener(this.#onIgnoreListChanged.bind(this));
+        Common.Settings.Settings.instance()
+            .moduleSetting('enable-ignore-listing')
+            .addChangeListener(this.#onIgnoreListChanged.bind(this));
+        Common.Settings.Settings.instance()
+            .moduleSetting('skip-anonymous-scripts')
+            .addChangeListener(this.#onIgnoreListChanged.bind(this));
     }
     hasTrackConfigurationMode() {
         return true;
@@ -259,8 +274,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (Utils.IgnoreList.isIgnoreListedEntry(entry)) {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
                 Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
-                this.timelineData(/* rebuild= */ true);
-                this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
+                this.#onIgnoreListChanged();
             }, {
                 jslogContext: 'remove-from-ignore-list',
             });
@@ -268,13 +282,16 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         else {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
                 Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
-                this.timelineData(/* rebuild= */ true);
-                this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
+                this.#onIgnoreListChanged();
             }, {
                 jslogContext: 'add-to-ignore-list',
             });
         }
         return contextMenu;
+    }
+    #onIgnoreListChanged() {
+        this.timelineData(/* rebuild= */ true);
+        this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
     }
     entryHasAnnotations(entryIndex) {
         const event = this.eventByIndex(entryIndex);
@@ -642,11 +659,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         const level = this.timelineData().entryLevels[entryIndex];
         return this.entryTypeByLevel[level];
     }
-    prepareHighlightedEntryInfo(entryIndex) {
+    preparePopoverElement(entryIndex) {
         let time = '';
         let title;
         let warningElements = [];
-        let nameSpanTimelineInfoTime = 'timeline-info-time';
+        let timeElementClassName = 'popoverinfo-time';
         const additionalContent = [];
         const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
@@ -656,12 +673,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             const event = this.entryData[entryIndex];
             const timelineData = this.timelineDataInternal;
             const eventLevel = timelineData.entryLevels[entryIndex];
-            const highlightedEntryInfo = this.compatibilityTracksAppender.highlightedEntryInfo(event, eventLevel);
-            title = highlightedEntryInfo.title;
-            time = highlightedEntryInfo.formattedTime;
-            warningElements = highlightedEntryInfo.warningElements || warningElements;
-            if (highlightedEntryInfo.additionalElement) {
-                additionalContent.push(highlightedEntryInfo.additionalElement);
+            const popoverInfo = this.compatibilityTracksAppender.popoverInfo(event, eventLevel);
+            title = popoverInfo.title;
+            time = popoverInfo.formattedTime;
+            warningElements = popoverInfo.warningElements || warningElements;
+            if (popoverInfo.additionalElements?.length) {
+                additionalContent.push(...popoverInfo.additionalElements);
             }
         }
         else if (entryType === "Frame" /* EntryType.FRAME */) {
@@ -672,13 +689,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 title = i18nString(UIStrings.idleFrame);
             }
             else if (frame.dropped) {
-                if (frame.isPartial) {
-                    title = i18nString(UIStrings.partiallyPresentedFrame);
-                }
-                else {
-                    title = i18nString(UIStrings.droppedFrame);
-                }
-                nameSpanTimelineInfoTime = 'timeline-info-warning';
+                title = frame.isPartial ? i18nString(UIStrings.partiallyPresentedFrame) : i18nString(UIStrings.droppedFrame);
+                timeElementClassName = 'popoverinfo-warning';
             }
             else {
                 title = i18nString(UIStrings.frame);
@@ -687,26 +699,24 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         else {
             return null;
         }
-        const element = document.createElement('div');
-        const root = UI.UIUtils.createShadowRootWithCoreStyles(element, {
+        const popoverElement = document.createElement('div');
+        const root = UI.UIUtils.createShadowRootWithCoreStyles(popoverElement, {
             cssFile: [timelineFlamechartPopoverStyles],
             delegatesFocus: undefined,
         });
-        const contents = root.createChild('div', 'timeline-flamechart-popover');
-        contents.createChild('span', nameSpanTimelineInfoTime).textContent = time;
-        contents.createChild('span', 'timeline-info-title').textContent = title;
-        if (warningElements) {
-            for (const warningElement of warningElements) {
-                warningElement.classList.add('timeline-info-warning');
-                contents.appendChild(warningElement);
-            }
+        const popoverContents = root.createChild('div', 'timeline-flamechart-popover');
+        popoverContents.createChild('span', timeElementClassName).textContent = time;
+        popoverContents.createChild('span', 'popoverinfo-title').textContent = title;
+        for (const warningElement of warningElements) {
+            warningElement.classList.add('popoverinfo-warning');
+            popoverContents.appendChild(warningElement);
         }
         for (const elem of additionalContent) {
-            contents.appendChild(elem);
+            popoverContents.appendChild(elem);
         }
-        return element;
+        return popoverElement;
     }
-    prepareHighlightedHiddenEntriesArrowInfo(entryIndex) {
+    preparePopoverForCollapsedArrow(entryIndex) {
         const element = document.createElement('div');
         const root = UI.UIUtils.createShadowRootWithCoreStyles(element, {
             cssFile: [timelineFlamechartPopoverStyles],
@@ -718,7 +728,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return null;
         }
         const contents = root.createChild('div', 'timeline-flamechart-popover');
-        contents.createChild('span', 'timeline-info-title').textContent = hiddenEntriesAmount + ' hidden';
+        contents.createChild('span', 'popoverinfo-title').textContent = hiddenEntriesAmount + ' hidden';
         return element;
     }
     getDrawOverride(entryIndex) {

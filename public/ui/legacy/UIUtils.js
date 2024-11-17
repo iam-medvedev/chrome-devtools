@@ -940,6 +940,7 @@ export function createTextButton(text, clickHandler, opts) {
         button.className = opts.className;
     }
     button.textContent = text;
+    button.iconName = opts?.icon;
     button.variant = opts?.variant ? opts.variant : "outlined" /* Buttons.Button.Variant.OUTLINED */;
     if (clickHandler) {
         button.addEventListener('click', clickHandler);

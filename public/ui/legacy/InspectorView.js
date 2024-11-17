@@ -31,8 +31,10 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
+import { ActionRegistry } from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Dialog } from './Dialog.js';
 import { DockController } from './DockController.js';
@@ -59,6 +61,10 @@ const UIStrings = {
      *@description The aria label for main tabbed pane that contains Panels
      */
     panels: 'Panels',
+    /**
+     *@description Title of an action that reloads the tab currently being debugged by DevTools
+     */
+    reloadDebuggedTab: 'Reload',
     /**
      *@description Title of an action that reloads the DevTools
      */
@@ -404,6 +410,32 @@ export class InspectorView extends VBox {
             this.ownerSplitWidget.setSidebarMinimized(false);
         }
     }
+    displayDebuggedTabReloadRequiredWarning(message) {
+        if (!this.reloadRequiredInfobar) {
+            const infobar = new Infobar("info" /* InfobarType.INFO */, message, [
+                {
+                    text: i18nString(UIStrings.reloadDebuggedTab),
+                    highlight: true,
+                    delegate: () => {
+                        reloadDebuggedTab();
+                        if (this.reloadRequiredInfobar) {
+                            this.reloadRequiredInfobar.dispose();
+                        }
+                    },
+                    dismiss: false,
+                    buttonVariant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+                    icon: 'refresh',
+                    jslogContext: 'main.debug-reload',
+                },
+            ], undefined, undefined, 'reload-required');
+            infobar.setParentView(this);
+            this.attachInfobar(infobar);
+            this.reloadRequiredInfobar = infobar;
+            infobar.setCloseCallback(() => {
+                delete this.reloadRequiredInfobar;
+            });
+        }
+    }
     displayReloadRequiredWarning(message) {
         if (!this.reloadRequiredInfobar) {
             const infobar = new Infobar("info" /* InfobarType.INFO */, message, [
@@ -508,6 +540,9 @@ function reloadDevTools() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(true, function () { });
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.reattach(() => window.location.reload());
+}
+function reloadDebuggedTab() {
+    void ActionRegistry.instance().getAction('inspector-main.reload').execute();
 }
 export class ActionDelegate {
     handleAction(context, actionId) {

@@ -10,7 +10,7 @@ export declare class EditFileSystemView extends UI.Widget.VBox implements UI.Lis
     constructor(fileSystemPath: Platform.DevToolsPath.UrlString);
     dispose(): void;
     private getFileSystem;
-    private update;
+    update(): void;
     private addExcludedFolderButtonClicked;
     renderItem(item: string, editable: boolean): Element;
     removeItemRequested(_item: string, index: number): void;

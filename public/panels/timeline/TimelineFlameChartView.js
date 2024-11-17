@@ -350,7 +350,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
             // The insight's `relatedEvents` property likely already includes the events associated with
             // and overlay, but just in case not, include both arrays. Duplicates are fine.
-            const relatedEvents = [...entries, ...this.#activeInsight?.relatedEvents || []];
+            const relatedEvents = [...entries, ...this.#activeInsight?.model.relatedEvents || []];
             this.#dimInsightRelatedEvents(relatedEvents);
         }
         if (options.updateTraceWindow) {
@@ -397,9 +397,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (!this.#activeInsight) {
             this.mainFlameChart.disableDimming();
             this.networkFlameChart.disableDimming();
-            return;
         }
-        this.setOverlays(this.#activeInsight.overlays, { updateTraceWindow: true });
     }
     /**
      * Expands the track / group that the given entry is in.
@@ -1210,6 +1208,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         else {
             this.mainFlameChart.hideHighlight();
         }
+    }
+    overlays() {
+        return this.#overlays;
     }
 }
 export class Selection {

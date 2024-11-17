@@ -8,11 +8,12 @@ import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
-export type HighlightedEntryInfo = {
+export type PopoverInfo = {
     title: string;
     formattedTime: string;
-    warningElements?: HTMLSpanElement[];
-    additionalElement?: HTMLElement;
+    url: string | null;
+    warningElements: HTMLSpanElement[];
+    additionalElements: HTMLElement[];
 };
 export declare function entryIsVisibleInTimeline(entry: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
 /**
@@ -58,9 +59,9 @@ export interface TrackAppender {
      */
     titleForEvent?(event: Trace.Types.Events.Event): string;
     /**
-     * Returns the info shown when an event in the timeline is hovered.
+     * Updates the standard popover (AKA tooltip) some appender specific details.
      */
-    highlightedEntryInfo?(event: Trace.Types.Events.Event): Partial<HighlightedEntryInfo>;
+    setPopoverInfo?(event: Trace.Types.Events.Event, info: PopoverInfo): void;
     /**
      * Returns the a callback function to draw an event to overrides the normal rectangle draw operation.
      */
@@ -211,5 +212,5 @@ export declare class CompatibilityTracksAppender {
     /**
      * Returns the info shown when an event in the timeline is hovered.
      */
-    highlightedEntryInfo(event: Trace.Types.Events.Event, level: number): HighlightedEntryInfo;
+    popoverInfo(event: Trace.Types.Events.Event, level: number): PopoverInfo;
 }

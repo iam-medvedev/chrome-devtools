@@ -545,6 +545,19 @@ describe('ExtensionServer', () => {
             assert.isTrue(Extensions.ExtensionServer.ExtensionServer.canInspectURL(url), url);
         }
     });
+    it('cannot inspect non-HTTP URL schemes', () => {
+        const blockedUrls = [
+            'devtools://devtools/bundled/front_end/devtools_app.html',
+            'devtools://devtools/anything',
+            'chrome://extensions',
+            'chrome-untrusted://extensions',
+            'chrome-error://crash',
+            'chrome-search://foo/bar',
+        ];
+        for (const url of blockedUrls) {
+            assert.isFalse(Extensions.ExtensionServer.ExtensionServer.canInspectURL(url), url);
+        }
+    });
 });
 function assertIsStatus(value) {
     if (value && typeof value === 'object' && 'code' in value) {

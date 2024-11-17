@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import { SelectorTimingsKey } from '../types/TraceEvents.js';
 import * as Types from '../types/types.js';
+import { InsightCategory } from './types.js';
 const UIStrings = {
     /**
      *@description Title of an insight that provides details about slow CSS selectors.
@@ -46,7 +47,12 @@ function aggregateSelectorStats(data, context) {
     return [...selectorMap.values()];
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.ALL,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     const selectorStatsData = parsedTrace.SelectorStats;

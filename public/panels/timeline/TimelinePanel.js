@@ -401,6 +401,7 @@ export class TimelinePanel extends UI.Panel.Panel {
      */
     #pendingAriaMessage = null;
     #eventToRelatedInsights = new Map();
+    #onMainEntryHovered;
     constructor() {
         super('timeline');
         const adornerContent = document.createElement('span');
@@ -474,6 +475,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#onChartPlayableStateChangeBound = this.#onChartPlayableStateChange.bind(this);
         this.element.addEventListener('toggle-popover', event => this.flameChart.togglePopover(event.detail));
         this.flameChart.getMainFlameChart().addEventListener("ChartPlayableStateChange" /* PerfUI.FlameChart.Events.CHART_PLAYABLE_STATE_CHANGED */, this.#onChartPlayableStateChangeBound, this);
+        this.#onMainEntryHovered = this.#onEntryHovered.bind(this, this.flameChart.getMainDataProvider());
+        this.flameChart.getMainFlameChart().addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, this.#onMainEntryHovered);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this.flameChart, null);
         this.searchableViewInternal.setMinimumSize(0, 100);
         this.searchableViewInternal.element.classList.add('searchable-view');
@@ -485,36 +488,30 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#splitWidget.setSidebarWidget(this.#sideBar);
         this.#splitWidget.enableShowModeSaving();
         this.#splitWidget.show(this.element);
+        this.flameChart.overlays().addEventListener(Overlays.Overlays.TimeRangeMouseOverEvent.eventName, event => {
+            const { overlay } = event;
+            const overlayBounds = overlay && Overlays.Overlays.traceWindowContainingOverlays([overlay]);
+            this.#minimapComponent.highlightBounds(overlayBounds, /* withBracket */ false);
+        });
+        this.flameChart.overlays().addEventListener(Overlays.Overlays.TimeRangeMouseOutEvent.eventName, () => {
+            this.#minimapComponent.clearBoundsHighlight();
+        });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightDeactivated.eventName, () => {
             this.#setActiveInsight(null);
         });
-        // TODO(crbug.com/372946179): when clicking on an insight chip, this event never fires if the insight tab
-        // is not on the DOM. That only happens when the sidebar tabbed pane component is set to Annotations.
-        // In that case, clicking on the insight chip will do nothing.
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightActivated.eventName, event => {
-            const { name, insightSetKey, overlays, relatedEvents } = event;
-            this.#setActiveInsight({ name, insightSetKey, overlays, relatedEvents });
+            const { model, insightSetKey } = event;
+            this.#setActiveInsight({ model, insightSetKey });
         });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideOverlays.eventName, event => {
             const { overlays, options } = event;
             this.flameChart.setOverlays(overlays, options);
             const overlaysBounds = overlays && Overlays.Overlays.traceWindowContainingOverlays(overlays);
             if (overlaysBounds) {
-                this.#minimapComponent.highlightBounds(overlaysBounds);
+                this.#minimapComponent.highlightBounds(overlaysBounds, /* withBracket */ true);
             }
             else {
                 this.#minimapComponent.clearBoundsHighlight();
-            }
-        });
-        this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideRelatedEvents.eventName, event => {
-            const relatedInsight = {
-                insightLabel: event.label,
-                activateInsight: event.activateInsight,
-            };
-            for (const traceEvent of event.events) {
-                const relatedInsights = this.#eventToRelatedInsights.get(traceEvent) ?? [];
-                relatedInsights.push(relatedInsight);
-                this.#eventToRelatedInsights.set(traceEvent, relatedInsights);
             }
         });
         this.flameChart.element.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
@@ -533,7 +530,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightSetHovered.eventName, event => {
             if (event.bounds) {
-                this.#minimapComponent.highlightBounds(event.bounds);
+                this.#minimapComponent.highlightBounds(event.bounds, /* withBracket */ true);
             }
             else {
                 this.#minimapComponent.clearBoundsHighlight();
@@ -785,6 +782,19 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.brickBreakerToolbarButtonAdded = false;
             this.panelToolbar.removeToolbarItem(this.brickBreakerToolbarButton);
         }
+    }
+    #onEntryHovered(dataProvider, event) {
+        const entryIndex = event.data;
+        if (entryIndex === -1) {
+            this.#minimapComponent.clearBoundsHighlight();
+            return;
+        }
+        const traceEvent = dataProvider.eventByIndex(entryIndex);
+        if (!traceEvent) {
+            return;
+        }
+        const bounds = Trace.Helpers.Timing.traceWindowFromEvent(traceEvent);
+        this.#minimapComponent.highlightBounds(bounds, /* withBracket */ false);
     }
     loadFromCpuProfile(profile) {
         if (this.state !== "Idle" /* State.IDLE */ || profile === null) {
@@ -1611,10 +1621,26 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 90);
         this.updateTimelineControls();
         this.#setActiveInsight(null);
-        this.#eventToRelatedInsights.clear();
         const traceInsightsSets = this.#traceEngineModel.traceInsights(traceIndex);
         this.flameChart.setInsights(traceInsightsSets, this.#eventToRelatedInsights);
         this.#sideBar.setInsights(traceInsightsSets);
+        this.#eventToRelatedInsights.clear();
+        if (traceInsightsSets) {
+            for (const [insightSetKey, insightSet] of traceInsightsSets) {
+                for (const model of Object.values(insightSet.model)) {
+                    for (const event of model.relatedEvents ?? []) {
+                        const relatedInsights = this.#eventToRelatedInsights.get(event) ?? [];
+                        this.#eventToRelatedInsights.set(event, relatedInsights);
+                        relatedInsights.push({
+                            insightLabel: model.title,
+                            activateInsight: () => {
+                                this.#setActiveInsight({ model, insightSetKey });
+                            },
+                        });
+                    }
+                }
+            }
+        }
         this.#showSidebarIfRequired();
     }
     /**

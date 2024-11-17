@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import * as Freestyler from './freestyler.js';
-const { AiAgent, ResponseType, ConversationContext } = Freestyler;
+const { AiAgent, ResponseType, ConversationContext, ErrorType } = Freestyler;
 class AiAgentMock extends AiAgent {
     type = "freestyler" /* Freestyler.AgentType.FREESTYLER */;
     preamble = 'preamble';
@@ -92,17 +92,38 @@ describeWithEnvironment('AiAgent', () => {
             const agent = new AiAgentMock({
                 aidaClient: {},
             });
-            agent.chatNewHistoryForTesting = new Map([
-                [
-                    0,
-                    [
-                        {
-                            type: "querying" /* ResponseType.QUERYING */,
-                            query: 'test',
-                        },
-                    ],
-                ],
-            ]);
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'test',
+                },
+                {
+                    type: "thought" /* ResponseType.THOUGHT */,
+                    thought: 'thought',
+                },
+                {
+                    type: "title" /* ResponseType.TITLE */,
+                    title: 'title',
+                },
+                {
+                    type: "action" /* ResponseType.ACTION */,
+                    code: 'action',
+                    output: 'result',
+                    canceled: false,
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'OBSERVATION: result',
+                },
+                {
+                    type: "answer" /* ResponseType.ANSWER */,
+                    text: 'answer',
+                },
+            ];
             const request = agent.buildRequest({
                 input: 'test input',
             });
@@ -112,6 +133,129 @@ describeWithEnvironment('AiAgent', () => {
                     text: 'test',
                     entity: 1,
                 },
+                {
+                    entity: 2,
+                    text: 'THOUGHT: thought\nTITLE: title\nACTION\naction\nSTOP',
+                },
+                {
+                    entity: 1,
+                    text: 'OBSERVATION: result',
+                },
+                {
+                    entity: 2,
+                    text: 'answer',
+                },
+            ]);
+        });
+        it('builds a request with aborted query in history', async () => {
+            const agent = new AiAgentMock({
+                aidaClient: {},
+            });
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'test',
+                },
+                {
+                    type: "thought" /* ResponseType.THOUGHT */,
+                    thought: 'thought',
+                },
+                {
+                    type: "title" /* ResponseType.TITLE */,
+                    title: 'title',
+                },
+                {
+                    type: "error" /* ResponseType.ERROR */,
+                    error: "abort" /* ErrorType.ABORT */,
+                },
+            ];
+            const request = agent.buildRequest({
+                input: 'test input',
+            });
+            assert.strictEqual(request.input, 'test input');
+            assert.deepStrictEqual(request.chat_history, undefined);
+        });
+        it('builds a request with aborted query in history before a real request', async () => {
+            const agent = new AiAgentMock({
+                aidaClient: {},
+            });
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'test',
+                },
+                {
+                    type: "thought" /* ResponseType.THOUGHT */,
+                    thought: 'thought',
+                },
+                {
+                    type: "title" /* ResponseType.TITLE */,
+                    title: 'title',
+                },
+                {
+                    type: "error" /* ResponseType.ERROR */,
+                    error: "abort" /* ErrorType.ABORT */,
+                },
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'test2',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'test2',
+                },
+                {
+                    type: "thought" /* ResponseType.THOUGHT */,
+                    thought: 'thought2',
+                },
+                {
+                    type: "title" /* ResponseType.TITLE */,
+                    title: 'title2',
+                },
+                {
+                    type: "action" /* ResponseType.ACTION */,
+                    code: 'action2',
+                    output: 'result2',
+                    canceled: false,
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'OBSERVATION: result2',
+                },
+                {
+                    type: "answer" /* ResponseType.ANSWER */,
+                    text: 'answer2',
+                },
+            ];
+            const request = agent.buildRequest({
+                input: 'test input',
+            });
+            assert.strictEqual(request.input, 'test input');
+            assert.deepStrictEqual(request.chat_history, [
+                {
+                    text: 'test2',
+                    entity: 1,
+                },
+                {
+                    entity: 2,
+                    text: 'THOUGHT: thought2\nTITLE: title2\nACTION\naction2\nSTOP',
+                },
+                {
+                    entity: 1,
+                    text: 'OBSERVATION: result2',
+                },
+                {
+                    entity: 2,
+                    text: 'answer2',
+                },
             ]);
         });
     });
@@ -120,42 +264,32 @@ describeWithEnvironment('AiAgent', () => {
             const agent = new AiAgentMock({
                 aidaClient: {},
             });
-            agent.chatNewHistoryForTesting = new Map([
-                [
-                    0,
-                    [
-                        {
-                            type: "user-query" /* ResponseType.USER_QUERY */,
-                            query: 'first question',
-                        },
-                        {
-                            type: "querying" /* ResponseType.QUERYING */,
-                            query: 'first enhancements',
-                        },
-                        {
-                            type: "answer" /* ResponseType.ANSWER */,
-                            text: 'first answer',
-                        },
-                    ],
-                ],
-                [
-                    1,
-                    [
-                        {
-                            type: "user-query" /* ResponseType.USER_QUERY */,
-                            query: 'second question',
-                        },
-                        {
-                            type: "querying" /* ResponseType.QUERYING */,
-                            query: 'second enhancements',
-                        },
-                        {
-                            type: "answer" /* ResponseType.ANSWER */,
-                            text: 'second answer',
-                        },
-                    ],
-                ],
-            ]);
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'first question',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'first enhancements',
+                },
+                {
+                    type: "answer" /* ResponseType.ANSWER */,
+                    text: 'first answer',
+                },
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'second question',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'second enhancements',
+                },
+                {
+                    type: "answer" /* ResponseType.ANSWER */,
+                    text: 'second answer',
+                },
+            ];
             const responses = await Array.fromAsync(agent.runFromHistory());
             assert.deepStrictEqual(responses, [
                 {

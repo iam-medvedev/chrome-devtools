@@ -68,6 +68,7 @@ export declare function createTextButton(text: string, clickHandler?: ((arg0: Ev
     jslogContext?: string;
     variant?: Buttons.Button.Variant;
     title?: string;
+    icon?: string;
 }): Buttons.Button.Button;
 export declare function createInput(className?: string, type?: string, jslogContext?: string): HTMLInputElement;
 export declare function createSelect(name: string, options: string[] | Map<string, string[]>[] | Set<string>): HTMLSelectElement;

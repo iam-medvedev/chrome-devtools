@@ -58,6 +58,7 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     ownerSplit(): SplitWidget | null;
     minimize(): void;
     restore(): void;
+    displayDebuggedTabReloadRequiredWarning(message: string): void;
     displayReloadRequiredWarning(message: string): void;
     displaySelectOverrideFolderInfobar(callback: () => void): void;
     private createInfoBarDiv;

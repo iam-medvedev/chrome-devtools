@@ -1,6 +1,6 @@
 import type * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
-import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import { type CompatibilityTracksAppender, type PopoverInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
 /**
  * This defines the order these markers will be rendered if they are at the
@@ -36,9 +36,5 @@ export declare class TimingsTrackAppender implements TrackAppender {
      * Gets the title an event added by this appender should be rendered with.
      */
     titleForEvent(event: Trace.Types.Events.Event): string;
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event: Trace.Types.Events.Event): HighlightedEntryInfo;
+    setPopoverInfo(event: Trace.Types.Events.Event, info: PopoverInfo): void;
 }

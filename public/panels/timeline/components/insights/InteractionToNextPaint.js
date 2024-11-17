@@ -6,8 +6,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -36,7 +35,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/In
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class InteractionToNextPaint extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-inp`;
-    insightCategory = Category.INP;
     internalName = 'inp';
     createOverlays() {
         if (!this.model) {
@@ -70,24 +68,13 @@ export class InteractionToNextPaint extends BaseInsightComponent {
             },
         ];
     }
-    #render(event) {
-        if (!this.model) {
-            return LitHtml.nothing;
-        }
+    #renderContent(event) {
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
         return html `
-        <div class="insights">
-            <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            internalName: this.internalName,
-            expanded: this.isActive(),
-        }}
-            @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-content" class="insight-section">
-                  ${html `<devtools-performance-table
-                    .data=${{
+      <div class="insight-section">
+        ${html `<devtools-performance-table
+          .data=${{
             insight: this,
             headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
             rows: [
@@ -105,23 +92,14 @@ export class InteractionToNextPaint extends BaseInsightComponent {
                 },
             ],
         }}>
-                  </devtools-performance-table>`}
-                </div>
-            </devtools-performance-sidebar-insight>
-        </div>`;
+        </devtools-performance-table>`}
+      </div>`;
         // clang-format on
-    }
-    getRelatedEvents() {
-        return this.model?.relatedEvents ?? [];
     }
     render() {
         const event = this.model?.longestInteractionEvent;
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const output = event && matchesCategory ? this.#render(event) : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        const output = event ? this.#renderContent(event) : LitHtml.nothing;
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-inp', InteractionToNextPaint);

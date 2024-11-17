@@ -15,7 +15,7 @@ export declare class ClassesPaneWidget extends UI.Widget.Widget {
     private onDOMMutated;
     private onSelectedNodeChanged;
     wasShown(): void;
-    private update;
+    update(): void;
     private onClick;
     private nodeClasses;
     private toggleClass;

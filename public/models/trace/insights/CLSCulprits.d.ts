@@ -1,6 +1,6 @@
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
-import type { InsightModel, InsightSetContext, RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
 export type CLSCulpritsInsightModel = InsightModel<{
     animationFailures: readonly NoncompositedAnimationFailure[];
     shifts: Map<Types.Events.SyntheticLayoutShift, LayoutShiftRootCausesData>;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
+import { InsightCategory } from './types.js';
 const UIStrings = {
     /**
      * @description Text to tell the user about the longest user interaction.
@@ -19,7 +20,12 @@ export function deps() {
     return ['UserInteractions'];
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.INP,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     const interactionEvents = parsedTrace.UserInteractions.interactionEventsWithNoNesting.filter(event => {

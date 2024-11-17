@@ -2106,41 +2106,46 @@ export class DataGridWidget extends UI.Widget.VBox {
 }
 export class DataGridWidgetElement extends UI.Widget.WidgetElement {
     #options;
+    widget;
     constructor() {
         super();
         // default values for options
         this.#options = {
-            implParams: {
-                displayName: 'dataGrid',
-                columns: [],
-            },
+            displayName: 'dataGrid',
+            columns: [],
             nodes: [],
         };
     }
     set options(options) {
         this.#options = options;
+        this.#updateGrid();
     }
     createWidget() {
-        const { implParams, markAsRoot, nodes, } = this.#options;
-        if (!this.#options.dataGridImpl) {
-            this.#options.dataGridImpl = new DataGridImpl(implParams);
-        }
-        this.#options.dataGridImpl.rootNode().removeChildren();
-        for (const node of nodes) {
-            this.#options.dataGridImpl.rootNode().appendChild(node);
-        }
+        const dataGridImpl = new DataGridImpl(this.#options);
         // Translate existing DataGridImpl ("ObjectWrapper") events to DOM CustomEvents so clients can
         // use lit templates to bind listeners.
-        this.#options.dataGridImpl.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, this.#selectedNode.bind(this));
-        this.#options.dataGridImpl.addEventListener("DeselectedNode" /* Events.DESELECTED_NODE */, this.#deselectedNode.bind(this));
-        this.#options.dataGridImpl.addEventListener("OpenedNode" /* Events.OPENED_NODE */, this.#openedNode.bind(this));
-        this.#options.dataGridImpl.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, this.#sortingChanged.bind(this));
-        this.#options.dataGridImpl.addEventListener("PaddingChanged" /* Events.PADDING_CHANGED */, this.#paddingChanged.bind(this));
-        const widget = this.#options.dataGridImpl.asWidget(this);
-        if (markAsRoot) {
-            widget.markAsRoot();
+        dataGridImpl.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, this.#selectedNode.bind(this));
+        dataGridImpl.addEventListener("DeselectedNode" /* Events.DESELECTED_NODE */, this.#deselectedNode.bind(this));
+        dataGridImpl.addEventListener("OpenedNode" /* Events.OPENED_NODE */, this.#openedNode.bind(this));
+        dataGridImpl.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, this.#sortingChanged.bind(this));
+        dataGridImpl.addEventListener("PaddingChanged" /* Events.PADDING_CHANGED */, this.#paddingChanged.bind(this));
+        this.widget = dataGridImpl.asWidget(this);
+        if (this.#options.markAsRoot) {
+            this.widget.markAsRoot();
         }
-        return widget;
+        this.#updateGrid();
+        return this.widget;
+    }
+    #updateGrid() {
+        if (this.widget) {
+            this.widget.dataGrid.rootNode().removeChildren();
+            for (const node of this.#options.nodes) {
+                this.widget.dataGrid.rootNode().appendChild(node);
+            }
+            if (this.#options.striped) {
+                this.widget.dataGrid.setStriped(true);
+            }
+        }
     }
     #selectedNode(event) {
         const domEvent = new CustomEvent('selectedNode', { detail: event.data });

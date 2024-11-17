@@ -19,6 +19,7 @@ export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timi
 export declare function traceWindowMicroSecondsToMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;
 export declare function traceWindowFromMilliSeconds(min: Types.Timing.MilliSeconds, max: Types.Timing.MilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export declare function traceWindowFromMicroSeconds(min: Types.Timing.MicroSeconds, max: Types.Timing.MicroSeconds): Types.Timing.TraceWindowMicroSeconds;
+export declare function traceWindowFromEvent(event: Types.Events.Event): Types.Timing.TraceWindowMicroSeconds;
 export interface BoundsIncludeTimeRange {
     timeRange: Types.Timing.TraceWindowMicroSeconds;
     bounds: Types.Timing.TraceWindowMicroSeconds;

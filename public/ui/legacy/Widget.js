@@ -30,6 +30,7 @@ import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as Helpers from '../components/helpers/helpers.js';
+import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import { Constraints, Size } from './Geometry.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
@@ -88,6 +89,7 @@ function decrementWidgetCounter(parentElement, childElement) {
         }
     }
 }
+let id = 0;
 export class Widget {
     element;
     contentElement;
@@ -106,6 +108,7 @@ export class Widget {
     constraintsInternal;
     invalidationsRequested;
     externallyManaged;
+    #id = `${this.constructor.name}_${id++}`;
     constructor(useShadowDom, delegatesFocus, element) {
         this.element = element || document.createElement('div');
         this.shadowRoot = this.element.shadowRoot || undefined;
@@ -579,6 +582,31 @@ export class Widget {
     markAsExternallyManaged() {
         assert(!this.parentWidgetInternal, 'Attempt to mark widget as externally managed after insertion to the DOM');
         this.externallyManaged = true;
+    }
+    /**
+     * Called by the RenderCoordinator to perform an update.
+     * This is not meant to be called directly. Instead, use update() to schedule an asynchronous update.
+     *
+     * @returns A promise that resolves when the update is complete.
+     */
+    doUpdate() {
+        return Promise.resolve();
+    }
+    /**
+     * Schedules an asynchronous update. The update will be deduplicated and executed with the animation frame.
+     */
+    update() {
+        void RenderCoordinator.RenderCoordinator.RenderCoordinator.instance().write(this.#id, () => this.doUpdate());
+    }
+    /**
+     * Returns a promise that resolves when the pending update is complete.
+     * Returns a resolved promise if there is no pending update.
+  `  *
+     * @returns A probleme that resolves when the pending update is complete.
+     */
+    pendingUpdate() {
+        return RenderCoordinator.RenderCoordinator.RenderCoordinator.instance().findPendingWrite(this.#id) ||
+            Promise.resolve();
     }
 }
 const storedScrollPositions = new WeakMap();

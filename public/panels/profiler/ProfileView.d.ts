@@ -35,7 +35,7 @@ export declare class ProfileView extends UI.View.SimpleView implements UI.Search
     searchableElement?: ProfileDataGridTree | ProfileFlameChart;
     profileDataGridTree?: ProfileDataGridTree;
     constructor();
-    static buildPopoverTable(entryInfo: {
+    static buildPopoverTable(popoverInfo: {
         title: string;
         value: string;
     }[]): Element;

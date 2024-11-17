@@ -5,8 +5,7 @@ import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import { BaseInsightComponent, shouldRenderForCategory } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { html } = LitHtml;
 const UIStrings = {
     /** Label for a table column that displays the name of a third-party provider. */
@@ -20,7 +19,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Th
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ThirdParties extends BaseInsightComponent {
     static litTagName = LitHtml.literal `devtools-performance-third-parties`;
-    insightCategory = Category.ALL;
     internalName = 'third-parties';
     #overlaysForEntity = new Map();
     createOverlays() {
@@ -47,7 +45,7 @@ export class ThirdParties extends BaseInsightComponent {
         }
         return overlays;
     }
-    #render(entries) {
+    #renderContent(entries) {
         if (!this.model) {
             return LitHtml.nothing;
         }
@@ -55,18 +53,10 @@ export class ThirdParties extends BaseInsightComponent {
         const topMainThreadTimeEntries = entries.sort((a, b) => b[1].mainThreadTime - a[1].mainThreadTime).slice(0, 6);
         // clang-format off
         return html `
-        <div class="insights">
-            <devtools-performance-sidebar-insight .data=${{
-            title: this.model.title,
-            description: this.model.description,
-            internalName: this.internalName,
-            expanded: this.isActive(),
-        }}
-            @insighttoggleclick=${this.onSidebarClick}>
-                <div slot="insight-content">
-                  <div class="insight-section">
-                    ${html `<devtools-performance-table
-                      .data=${{
+      <div>
+        <div class="insight-section">
+          ${html `<devtools-performance-table
+            .data=${{
             insight: this,
             headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnTransferSize)],
             rows: topTransferSizeEntries.map(([entity, summary]) => ({
@@ -77,12 +67,12 @@ export class ThirdParties extends BaseInsightComponent {
                 overlays: this.#overlaysForEntity.get(entity),
             })),
         }}>
-                    </devtools-performance-table>`}
-                  </div>
+          </devtools-performance-table>`}
+        </div>
 
-                  <div class="insight-section">
-                    ${html `<devtools-performance-table
-                      .data=${{
+        <div class="insight-section">
+          ${html `<devtools-performance-table
+            .data=${{
             insight: this,
             headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnBlockingTime)],
             rows: topMainThreadTimeEntries.map(([entity, summary]) => ({
@@ -93,26 +83,17 @@ export class ThirdParties extends BaseInsightComponent {
                 overlays: this.#overlaysForEntity.get(entity),
             })),
         }}>
-                    </devtools-performance-table>`}
-                  </div>
-                </div>
-            </devtools-performance-sidebar-insight>
-        </div>`;
+          </devtools-performance-table>`}
+        </div>
+      </div>`;
         // clang-format on
-    }
-    getRelatedEvents() {
-        return this.model?.relatedEvents ?? [];
     }
     render() {
         const model = this.model;
         const entries = model && [...model.summaryByEntity.entries()].filter(kv => kv[0] !== model.firstPartyEntity);
         const shouldShow = entries?.length;
-        const matchesCategory = shouldRenderForCategory({
-            activeCategory: this.data.activeCategory,
-            insightCategory: this.insightCategory,
-        });
-        const output = shouldShow && matchesCategory ? this.#render(entries) : LitHtml.nothing;
-        LitHtml.render(output, this.shadow, { host: this });
+        const output = shouldShow ? this.#renderContent(entries) : LitHtml.nothing;
+        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-third-parties', ThirdParties);

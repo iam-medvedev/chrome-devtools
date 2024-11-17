@@ -1,14 +1,14 @@
 import './NodeLink.js';
 import type { ViewportInsightModel } from '../../../../models/trace/insights/Viewport.js';
+import type * as Trace from '../../../../models/trace/trace.js';
 import type * as Overlays from '../../overlays/overlays.js';
-import { BaseInsightComponent } from './Helpers.js';
-import { Category } from './types.js';
+import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class Viewport extends BaseInsightComponent<ViewportInsightModel> {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    insightCategory: Category;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    getEstimatedSavingsTime(): Trace.Types.Timing.MilliSeconds | null;
     render(): void;
 }
 declare global {

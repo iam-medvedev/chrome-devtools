@@ -263,16 +263,12 @@ export class TimingsTrackAppender {
         if (Trace.Types.Events.isPerformanceMark(event)) {
             return `[mark]: ${event.name}`;
         }
+        if (Trace.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText) {
+            return event.args.tooltipText;
+        }
         return event.name;
     }
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event) {
-        const title = Trace.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText ?
-            event.args.tooltipText :
-            this.titleForEvent(event);
+    setPopoverInfo(event, info) {
         // If an event is a marker event, rather than show a duration of 0, we can instead show the time that the event happened, which is much more useful. We do this currently for:
         // Page load events: DCL, FCP and LCP
         // performance.mark() events
@@ -280,9 +276,8 @@ export class TimingsTrackAppender {
         if (Trace.Types.Events.isMarkerEvent(event) || Trace.Types.Events.isPerformanceMark(event) ||
             Trace.Types.Events.isTimeStamp(event)) {
             const timeOfEvent = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, this.#parsedTrace.Meta.traceBounds, this.#parsedTrace.Meta.navigationsByNavigationId, this.#parsedTrace.Meta.navigationsByFrameId);
-            return { title, formattedTime: getFormattedTime(timeOfEvent) };
+            info.formattedTime = getFormattedTime(timeOfEvent);
         }
-        return { title, formattedTime: getFormattedTime(event.dur) };
     }
 }
 //# sourceMappingURL=TimingsTrackAppender.js.map

@@ -18,7 +18,7 @@ export declare class LiveHeapProfileView extends UI.Widget.VBox {
     willHide(): void;
     settingChanged(value: Common.EventTarget.EventTargetEvent<boolean>): void;
     poll(): Promise<void>;
-    update(isolates: SDK.IsolateManager.Isolate[], profiles: (Protocol.HeapProfiler.SamplingHeapProfile | null)[]): void;
+    update(isolates?: SDK.IsolateManager.Isolate[], profiles?: (Protocol.HeapProfiler.SamplingHeapProfile | null)[]): void;
     onKeyDown(event: KeyboardEvent): void;
     revealSourceForSelectedNode(): void;
     sortingChanged(): void;

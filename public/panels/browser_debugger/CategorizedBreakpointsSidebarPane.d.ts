@@ -11,7 +11,7 @@ export declare abstract class CategorizedBreakpointsSidebarPane extends UI.Widge
     private createCategory;
     protected createBreakpoint(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint): void;
     protected getBreakpointFromPausedDetails(_details: SDK.DebuggerModel.DebuggerPausedDetails): SDK.CategorizedBreakpoint.CategorizedBreakpoint | null;
-    private update;
+    update(): void;
     private categoryCheckboxClicked;
     protected toggleBreakpoint(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean): void;
     private breakpointCheckboxClicked;

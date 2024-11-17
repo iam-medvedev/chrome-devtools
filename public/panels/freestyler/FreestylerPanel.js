@@ -141,6 +141,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #deleteHistoryEntryButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteChat), 'bin', undefined, 'freestyler.delete');
     #agents = new Set();
     #currentAgent;
+    #previousSameOriginContext;
     #selectedFile = null;
     #selectedElement = null;
     #selectedCallTree = null;
@@ -168,7 +169,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             onFeedbackSubmit: this.#handleFeedbackSubmit.bind(this),
             onCancelClick: this.#cancel.bind(this),
             onContextClick: this.#handleContextClick.bind(this),
-            onNewConversation: this.#newChat.bind(this),
+            onNewConversation: this.#handleNewChatRequest.bind(this),
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
             userInfo: {
                 accountImage: syncInfo.accountImage,
@@ -184,7 +185,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         const toolbarContainer = this.contentElement.createChild('div', 'freestyler-toolbar-container');
         const leftToolbar = new UI.Toolbar.Toolbar('freestyler-left-toolbar', toolbarContainer);
         const rightToolbar = new UI.Toolbar.Toolbar('freestyler-right-toolbar', toolbarContainer);
-        this.#newChatButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#newChat.bind(this));
+        this.#newChatButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#handleNewChatRequest.bind(this));
         leftToolbar.appendToolbarItem(this.#newChatButton);
         leftToolbar.appendSeparator();
         this.#historyEntriesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, event => {
@@ -195,8 +196,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
         leftToolbar.appendToolbarItem(this.#deleteHistoryEntryButton);
         const link = UI.XLink.XLink.create(AI_ASSISTANCE_SEND_FEEDBACK, i18nString(UIStrings.sendFeedback), undefined, undefined, 'freestyler.send-feedback');
         link.style.setProperty('display', null);
-        link.style.setProperty('text-decoration', 'none');
-        link.style.setProperty('padding', '0 var(--sys-size-3)');
+        link.style.setProperty('color', 'var(--sys-color-primary)');
+        link.style.setProperty('margin', '0 var(--sys-size-3)');
+        link.style.setProperty('height', 'calc(100% - 6px)');
         const linkItem = new UI.Toolbar.ToolbarItem(link);
         rightToolbar.appendToolbarItem(linkItem);
         rightToolbar.appendSeparator();
@@ -226,52 +228,37 @@ export class FreestylerPanel extends UI.Panel.Panel {
         }
     }
     #createAgent(agentType) {
+        const options = {
+            aidaClient: this.#aidaClient,
+            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
+        };
+        let agent;
         switch (agentType) {
-            case "freestyler" /* AgentType.FREESTYLER */:
-                return this.#createFreestylerAgent();
-            case "drjones-file" /* AgentType.DRJONES_FILE */:
-                return this.#createDrJonesFileAgent();
-            case "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */:
-                return this.#createDrJonesNetworkAgent();
-            case "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */:
-                return this.#createDrJonesPerformanceAgent();
+            case "freestyler" /* AgentType.FREESTYLER */: {
+                agent = new FreestylerAgent({
+                    ...options,
+                    changeManager: this.#changeManager,
+                });
+                break;
+            }
+            case "drjones-network-request" /* AgentType.DRJONES_NETWORK_REQUEST */: {
+                agent = new DrJonesNetworkAgent(options);
+                break;
+            }
+            case "drjones-file" /* AgentType.DRJONES_FILE */: {
+                agent = new DrJonesFileAgent(options);
+                break;
+            }
+            case "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */: {
+                agent = new DrJonesPerformanceAgent(options);
+                break;
+            }
         }
+        this.#agents.add(agent);
+        return agent;
     }
     #updateToolbarState() {
         this.#deleteHistoryEntryButton.setVisible(Boolean(this.#currentAgent && !this.#currentAgent.isEmpty));
-    }
-    #createFreestylerAgent() {
-        const agent = new FreestylerAgent({
-            aidaClient: this.#aidaClient,
-            changeManager: this.#changeManager,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-        });
-        this.#agents.add(agent);
-        return agent;
-    }
-    #createDrJonesFileAgent() {
-        const agent = new DrJonesFileAgent({
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-        });
-        this.#agents.add(agent);
-        return agent;
-    }
-    #createDrJonesNetworkAgent() {
-        const agent = new DrJonesNetworkAgent({
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-        });
-        this.#agents.add(agent);
-        return agent;
-    }
-    #createDrJonesPerformanceAgent() {
-        const agent = new DrJonesPerformanceAgent({
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-        });
-        this.#agents.add(agent);
-        return agent;
     }
     static async instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -312,7 +299,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#currentAgent = targetAgentType ? this.#createAgent(targetAgentType) : undefined;
         this.#viewProps.agentType = targetAgentType;
         this.#onContextSelectionChanged();
-        this.doUpdate();
+        void this.doUpdate();
     }
     wasShown() {
         this.registerCSSFiles([freestylerPanelStyles]);
@@ -335,7 +322,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 inspectElementToggled: this.#toggleSearchElementAction.toggled(),
                 selectedContext: this.#getConversationContext(),
             };
-        this.doUpdate();
+        void this.doUpdate();
         this.#freestylerEnabledSetting?.addChangeListener(this.#handleFreestylerEnabledSettingChanged, this);
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
         this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.#handleSearchElementActionToggled);
@@ -372,7 +359,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 accountFullName: syncInfo.accountFullName,
             };
             this.#viewProps.state = this.#getChatUiState();
-            this.doUpdate();
+            void this.doUpdate();
         }
     };
     #handleSearchElementActionToggled = (ev) => {
@@ -380,7 +367,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             return;
         }
         this.#viewProps.inspectElementToggled = ev.data;
-        this.doUpdate();
+        void this.doUpdate();
     };
     #handleDOMNodeFlavorChange = (ev) => {
         if (this.#selectedElement?.getItem() === ev.data) {
@@ -420,9 +407,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
             return;
         }
         this.#viewProps.state = nextChatUiState;
-        this.doUpdate();
+        void this.doUpdate();
     };
-    doUpdate() {
+    async doUpdate() {
         this.#updateToolbarState();
         this.view(this.#viewProps, this.#viewOutput, this.#contentContainer);
     }
@@ -515,7 +502,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanelFloatingButton);
         this.#viewProps.messages = [];
         this.#onContextSelectionChanged();
-        this.doUpdate();
+        void this.doUpdate();
         this.#viewProps.isReadOnly = false;
         void this.#doConversation(this.#currentAgent.runFromHistory());
     }
@@ -524,6 +511,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         const contextMenu = new UI.ContextMenu.ContextMenu(event, {
             x: boundingRect.left,
             y: boundingRect.bottom,
+            useSoftMenu: true,
         });
         for (const agent of [...this.#agents].reverse()) {
             if (agent.isEmpty) {
@@ -555,17 +543,18 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#currentAgent = undefined;
         this.#viewProps.messages = [];
         this.#viewProps.agentType = undefined;
-        this.doUpdate();
+        void this.doUpdate();
     }
     #onDeleteClicked() {
         if (this.#currentAgent) {
             this.#agents.delete(this.#currentAgent);
             this.#currentAgent = undefined;
+            this.#cancel();
         }
         this.#viewProps.messages = [];
         this.#selectDefaultAgentIfNeeded();
         this.#onContextSelectionChanged();
-        this.doUpdate();
+        void this.doUpdate();
         UI.ARIAUtils.alert(i18nString(UIStrings.chatDeleted));
     }
     async #switchAgent(agent) {
@@ -579,41 +568,52 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#viewProps.isReadOnly = true;
         await this.#doConversation(agent.runFromHistory());
     }
-    #newChat() {
+    #handleNewChatRequest() {
         this.#viewProps.messages = [];
         this.#viewProps.isLoading = false;
         this.#currentAgent = undefined;
         this.#cancel();
         this.#selectDefaultAgentIfNeeded();
-        this.doUpdate();
+        void this.doUpdate();
         UI.ARIAUtils.alert(i18nString(UIStrings.newChatCreated));
+    }
+    #handleCrossOriginChatCancellation() {
+        if (this.#previousSameOriginContext) {
+            this.#onContextSelectionChanged(this.#previousSameOriginContext);
+        }
     }
     #runAbortController = new AbortController();
     #cancel() {
         this.#runAbortController.abort();
         this.#viewProps.isLoading = false;
-        this.doUpdate();
+        void this.doUpdate();
     }
-    #onContextSelectionChanged() {
+    #onContextSelectionChanged(contextToRestore) {
         if (!this.#currentAgent) {
             this.#viewProps.blockedByCrossOrigin = false;
-            this.doUpdate();
+            void this.doUpdate();
             return;
         }
-        const currentContext = this.#getConversationContext();
+        const currentContext = contextToRestore ?? this.#getConversationContext();
         this.#viewProps.selectedContext = currentContext;
         if (!currentContext) {
             this.#viewProps.blockedByCrossOrigin = false;
             this.#viewProps.requiresNewConversation = false;
-            this.doUpdate();
+            void this.doUpdate();
             return;
         }
         this.#viewProps.blockedByCrossOrigin = !currentContext.isOriginAllowed(this.#currentAgent.origin);
+        if (!this.#viewProps.blockedByCrossOrigin) {
+            this.#previousSameOriginContext = currentContext;
+        }
+        if (this.#viewProps.blockedByCrossOrigin && this.#previousSameOriginContext) {
+            this.#viewProps.onCancelCrossOriginChat = this.#handleCrossOriginChatCancellation.bind(this);
+        }
         this.#viewProps.isReadOnly = this.#currentAgent.isHistoryEntry;
         this.#viewProps.requiresNewConversation = this.#currentAgent.type === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */ &&
             Boolean(this.#currentAgent.context) && this.#currentAgent.context !== currentContext;
         this.#viewProps.stripLinks = this.#viewProps.agentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */;
-        this.doUpdate();
+        void this.doUpdate();
     }
     #getConversationContext() {
         if (!this.#currentAgent) {
@@ -760,7 +760,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                     }
                 }
             }
-            this.doUpdate();
+            void this.doUpdate();
             this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }
     }

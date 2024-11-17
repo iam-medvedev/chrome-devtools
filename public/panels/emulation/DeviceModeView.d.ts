@@ -72,6 +72,6 @@ export declare class Ruler extends UI.Widget.VBox {
     constructor(horizontal: boolean, applyCallback: (arg0: number) => void);
     render(scale: number): void;
     onResize(): void;
-    private update;
+    update(): Promise<void>;
     private onMarkerClick;
 }

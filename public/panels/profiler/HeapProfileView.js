@@ -552,25 +552,25 @@ export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
             PerfUI.FlameChart.FlameChartTimelineData.create({ entryLevels, entryTotalTimes, entryStartTimes, groups: null });
         return this.timelineDataInternal;
     }
-    prepareHighlightedEntryInfo(entryIndex) {
+    preparePopoverElement(entryIndex) {
         const node = this.entryNodes[entryIndex];
         if (!node) {
             return null;
         }
-        const entryInfo = [];
-        function pushEntryInfoRow(title, value) {
-            entryInfo.push({ title, value });
+        const popoverInfo = [];
+        function pushRow(title, value) {
+            popoverInfo.push({ title, value });
         }
-        pushEntryInfoRow(i18nString(UIStrings.name), UI.UIUtils.beautifyFunctionName(node.functionName));
-        pushEntryInfoRow(i18nString(UIStrings.selfSize), i18n.ByteUtilities.bytesToString(node.self));
-        pushEntryInfoRow(i18nString(UIStrings.totalSize), i18n.ByteUtilities.bytesToString(node.total));
+        pushRow(i18nString(UIStrings.name), UI.UIUtils.beautifyFunctionName(node.functionName));
+        pushRow(i18nString(UIStrings.selfSize), i18n.ByteUtilities.bytesToString(node.self));
+        pushRow(i18nString(UIStrings.totalSize), i18n.ByteUtilities.bytesToString(node.total));
         const linkifier = new Components.Linkifier.Linkifier();
         const link = linkifier.maybeLinkifyConsoleCallFrame(this.heapProfilerModel ? this.heapProfilerModel.target() : null, node.callFrame);
         if (link) {
-            pushEntryInfoRow(i18nString(UIStrings.url), link.textContent);
+            pushRow(i18nString(UIStrings.url), link.textContent);
         }
         linkifier.dispose();
-        return ProfileView.buildPopoverTable(entryInfo);
+        return ProfileView.buildPopoverTable(popoverInfo);
     }
 }
 //# sourceMappingURL=HeapProfileView.js.map

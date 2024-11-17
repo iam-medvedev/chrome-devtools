@@ -139,14 +139,13 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private textPadding;
     private highlightedMarkerIndex;
     /**
-     * Represents the index of the entry that the user's mouse cursor is over.
-     * Note that this is updated as the user moves their cursor: they do not have
-     * to click for this to be updated.
+     * The index of the entry that's hovered (typically), or focused because of searchResult or other reasons.focused via searchResults, or focused by other means.
+     * Updated as the cursor moves. Meanwhile `selectedEntryIndex` is the entry that's been clicked.
      **/
     private highlightedEntryIndex;
     /**
      * Represents the index of the entry that is selected. For an entry to be
-     * selected, it has to be clicked by the user.
+     * selected, it has to be clicked by the user (generally).
      **/
     private selectedEntryIndex;
     private rawTimelineDataLength;
@@ -567,8 +566,8 @@ export interface FlameChartDataProvider {
     formatValue(value: number, precision?: number): string;
     maxStackDepth(): number;
     timelineData(rebuild?: boolean): FlameChartTimelineData | null;
-    prepareHighlightedEntryInfo(entryIndex: number): Element | null;
-    prepareHighlightedHiddenEntriesArrowInfo?(entryIndex: number): Element | null;
+    preparePopoverElement(entryIndex: number): Element | null;
+    preparePopoverForCollapsedArrow?(entryIndex: number): Element | null;
     canJumpToEntry(entryIndex: number): boolean;
     entryTitle(entryIndex: number): string | null;
     entryFont(entryIndex: number): string | null;

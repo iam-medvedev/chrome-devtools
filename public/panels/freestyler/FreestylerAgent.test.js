@@ -352,19 +352,20 @@ c`;
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatNewHistoryForTesting = new Map([[
-                    0,
-                    [
-                        {
-                            type: "querying" /* Freestyler.ResponseType.QUERYING */,
-                            query: 'question',
-                        },
-                        {
-                            type: "answer" /* Freestyler.ResponseType.ANSWER */,
-                            text: 'answer',
-                        },
-                    ],
-                ]]);
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'question',
+                },
+                {
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: 'question',
+                },
+                {
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
+                    text: 'answer',
+                },
+            ];
             assert.deepStrictEqual(agent.buildRequest({
                 input: 'test input',
             }), {
@@ -605,6 +606,53 @@ c`;
                     text: 'ANSWER: this is the answer',
                 },
             ]);
+        });
+        it('correctly handles chat_history in AIDA requests', async () => {
+            const requests = [];
+            let i = 0;
+            async function* generateAnswer(request) {
+                requests.push(request);
+                if (i !== 0) {
+                    yield {
+                        explanation: 'ANSWER: this is the actual answer',
+                        metadata: {},
+                        completed: true,
+                    };
+                    return;
+                }
+                yield {
+                    explanation: `THOUGHT: I am thinking.
+TITLE: thinking
+ACTION
+const data = {"test": "observation"};
+STOP`,
+                    metadata: {},
+                    completed: false,
+                };
+                i++;
+            }
+            const execJs = sinon.mock().once();
+            execJs.onCall(0).returns('test data');
+            const agent = new FreestylerAgent({
+                aidaClient: mockAidaClient(generateAnswer),
+                createExtensionScope,
+                execJs,
+            });
+            await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
+            assert.lengthOf(requests, 2, 'Unexpected number of AIDA requests');
+            assert.isUndefined(requests[0].chat_history, 'Unexpected chat history in the initial request');
+            assert.strictEqual(requests[0].input, '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test', 'Unexpected input in the initial request');
+            assert.deepStrictEqual(requests[1].chat_history, [
+                {
+                    entity: 1,
+                    text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
+                },
+                {
+                    entity: 1,
+                    text: 'THOUGHT: I am thinking.\nTITLE: thinking\nACTION\nconst data = {\"test\": \"observation\"};\nSTOP',
+                },
+            ], 'Unexpected chat history in the follow-up request');
+            assert.strictEqual(requests[1].input, 'OBSERVATION: test data', 'Unexpected input in the follow-up request');
         });
         it('generates an rpcId for the answer', async () => {
             async function* generateAnswer() {

@@ -23,6 +23,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         'in-range',
         'out-of-range',
         'visited',
+        'link',
         'checked',
         'indeterminate',
         'placeholder-shown',
@@ -193,8 +194,8 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         await assertExpectedPseudoClasses('progress', ['read-write', 'indeterminate']);
     });
     it('Shows the specific pseudo-classes for a and area with href', async () => {
-        await assertExpectedPseudoClasses('a', ['visited', 'read-write'], false, ['href', 'www.google.com']);
-        await assertExpectedPseudoClasses('area', ['visited', 'read-write'], false, ['href', 'www.google.com']);
+        await assertExpectedPseudoClasses('a', ['visited', 'link', 'read-write'], false, ['href', 'www.google.com']);
+        await assertExpectedPseudoClasses('area', ['visited', 'link', 'read-write'], false, ['href', 'www.google.com']);
     });
     it('Shows the specific pseudo-classes for a and area without href', async () => {
         await assertExpectedPseudoClasses('a', ['read-write']);

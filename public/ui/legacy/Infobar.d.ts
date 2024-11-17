@@ -1,4 +1,5 @@
 import type * as Common from '../../core/common/common.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import type { Widget } from './Widget.js';
 export declare class Infobar {
     #private;
@@ -36,6 +37,8 @@ export interface InfobarAction {
     highlight: boolean;
     delegate: (() => void) | null;
     dismiss: boolean;
+    buttonVariant?: Buttons.Button.Variant;
+    icon?: string;
     jslogContext?: string;
 }
 export declare const enum Type {

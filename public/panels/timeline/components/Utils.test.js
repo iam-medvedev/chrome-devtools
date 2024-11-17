@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './Utils.js';
 describeWithEnvironment('Utils', () => {
     describe('NumberWithUnit', () => {
@@ -43,6 +44,46 @@ describeWithEnvironment('Utils', () => {
             assert.deepStrictEqual(NumberWithUnit.parse('100[s]'), null);
             assert.deepStrictEqual(NumberWithUnit.parse('100[s'), null);
             assert.deepStrictEqual(NumberWithUnit.parse('100 s]('), null);
+        });
+    });
+    describe('networkResourceCategory', function () {
+        const { networkResourceCategory, NetworkCategory } = Utils;
+        const { ResourceType } = Protocol.Network;
+        const getCategory = networkResourceCategory;
+        let req;
+        before(async function () {
+            const events = await TraceLoader.fixtureContents(this, 'load-simple.json.gz');
+            const { parsedTrace } = await TraceLoader.executeTraceEngineOnFileContents(events);
+            req = parsedTrace.NetworkRequests.byId.get('2648544.35');
+        });
+        function tweakRequest(mimeType, resourceType = "Other" /* Protocol.Network.ResourceType.Other */) {
+            assert.exists(req);
+            req.args.data.mimeType = mimeType;
+            req.args.data.resourceType = resourceType;
+            return req;
+        }
+        it('uses resource type when available', () => {
+            assert.strictEqual(getCategory(tweakRequest('text/html', "Document" /* ResourceType.Document */)), NetworkCategory.DOC);
+            assert.strictEqual(getCategory(tweakRequest('text/css', "Stylesheet" /* ResourceType.Stylesheet */)), NetworkCategory.CSS);
+            assert.strictEqual(getCategory(tweakRequest('image/png', "Image" /* ResourceType.Image */)), NetworkCategory.IMG);
+            assert.strictEqual(getCategory(tweakRequest('video/webm', "Media" /* ResourceType.Media */)), NetworkCategory.MEDIA);
+            assert.strictEqual(getCategory(tweakRequest('font/woff2', "Font" /* ResourceType.Font */)), NetworkCategory.FONT);
+            assert.strictEqual(getCategory(tweakRequest('text/javascript', "Script" /* ResourceType.Script */)), NetworkCategory.JS);
+            assert.strictEqual(getCategory(tweakRequest('something/unknown', "WebSocket" /* ResourceType.WebSocket */)), NetworkCategory.JS);
+            assert.strictEqual(getCategory(tweakRequest('something/unknown', "Other" /* ResourceType.Other */)), NetworkCategory.OTHER);
+        });
+        it('falls back to mime type for older traces', () => {
+            assert.strictEqual(getCategory(tweakRequest('text/html')), NetworkCategory.DOC);
+            assert.strictEqual(getCategory(tweakRequest('text/css')), NetworkCategory.CSS);
+            assert.strictEqual(getCategory(tweakRequest('image/png')), NetworkCategory.IMG);
+            assert.strictEqual(getCategory(tweakRequest('video/webm')), NetworkCategory.MEDIA);
+            assert.strictEqual(getCategory(tweakRequest('font/woff2')), NetworkCategory.FONT);
+            assert.strictEqual(getCategory(tweakRequest('text/javascript')), NetworkCategory.JS);
+            assert.strictEqual(getCategory(tweakRequest('application/javascript')), NetworkCategory.JS);
+            assert.strictEqual(getCategory(tweakRequest('application/wasm')), NetworkCategory.WASM);
+            assert.strictEqual(getCategory(tweakRequest('application/x-font-woff')), NetworkCategory.FONT);
+            assert.strictEqual(getCategory(tweakRequest('application/font-woff2')), NetworkCategory.FONT);
+            assert.strictEqual(getCategory(tweakRequest('something/unknown')), NetworkCategory.OTHER);
         });
     });
 });

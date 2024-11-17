@@ -129,6 +129,6 @@ export declare class HeapFlameChartDataProvider extends ProfileFlameChartDataPro
     entryHasDeoptReason(_entryIndex: number): boolean;
     formatValue(value: number, _precision?: number): string;
     calculateTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    prepareHighlightedEntryInfo(entryIndex: number): Element | null;
+    preparePopoverElement(entryIndex: number): Element | null;
 }
 export {};

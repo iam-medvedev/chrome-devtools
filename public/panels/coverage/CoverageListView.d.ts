@@ -9,7 +9,7 @@ export declare class CoverageListView extends UI.Widget.VBox {
     private highlightRegExp;
     private dataGrid;
     constructor(isVisibleFilter: (arg0: URLCoverageInfo) => boolean);
-    update(coverageInfo: URLCoverageInfo[]): void;
+    update(coverageInfo?: URLCoverageInfo[]): void;
     updateSourceNodes(sourcesURLCoverageInfo: Map<Platform.DevToolsPath.UrlString, SourceURLCoverageInfo>, maxSize: number, node: GridNode): void;
     createSourceNodes(sourcesURLCoverageInfo: Map<Platform.DevToolsPath.UrlString, SourceURLCoverageInfo>, maxSize: number, node: GridNode): Promise<void>;
     reset(): void;

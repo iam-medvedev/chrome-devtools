@@ -34,7 +34,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -305,14 +304,12 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const sessionStorageIcon = IconButton.Icon.create('table');
         this.sessionStorageListTreeElement.setLeadingIcons([sessionStorageIcon]);
         storageTreeElement.appendChild(this.sessionStorageListTreeElement);
-        if (Root.Runtime.experiments.isEnabled("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */)) {
-            this.extensionStorageListTreeElement =
-                new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.extensionStorage), 'extension-storage');
-            this.extensionStorageListTreeElement.setLink('https://developer.chrome.com/docs/extensions/reference/api/storage/?utm_source=devtools');
-            const extensionStorageIcon = IconButton.Icon.create('table');
-            this.extensionStorageListTreeElement.setLeadingIcons([extensionStorageIcon]);
-            storageTreeElement.appendChild(this.extensionStorageListTreeElement);
-        }
+        this.extensionStorageListTreeElement =
+            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.extensionStorage), 'extension-storage');
+        this.extensionStorageListTreeElement.setLink('https://developer.chrome.com/docs/extensions/reference/api/storage/?utm_source=devtools');
+        const extensionStorageIcon = IconButton.Icon.create('table');
+        this.extensionStorageListTreeElement.setLeadingIcons([extensionStorageIcon]);
+        storageTreeElement.appendChild(this.extensionStorageListTreeElement);
         this.indexedDBListTreeElement = new IndexedDBTreeElement(panel);
         this.indexedDBListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/indexeddb/?utm_source=devtools');
         storageTreeElement.appendChild(this.indexedDBListTreeElement);
@@ -382,12 +379,10 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             modelAdded: (model) => this.domStorageModelAdded(model),
             modelRemoved: (model) => this.domStorageModelRemoved(model),
         }, { scoped: true });
-        if (Root.Runtime.experiments.isEnabled("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */)) {
-            SDK.TargetManager.TargetManager.instance().observeModels(ExtensionStorageModel, {
-                modelAdded: (model) => this.extensionStorageModelAdded(model),
-                modelRemoved: (model) => this.extensionStorageModelRemoved(model),
-            }, { scoped: true });
-        }
+        SDK.TargetManager.TargetManager.instance().observeModels(ExtensionStorageModel, {
+            modelAdded: (model) => this.extensionStorageModelAdded(model),
+            modelRemoved: (model) => this.extensionStorageModelRemoved(model),
+        }, { scoped: true });
         SDK.TargetManager.TargetManager.instance().observeModels(IndexedDBModel, {
             modelAdded: (model) => this.indexedDBModelAdded(model),
             modelRemoved: (model) => this.indexedDBModelRemoved(model),

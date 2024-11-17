@@ -95,7 +95,27 @@ export class ExecutionContextSelector {
         return Boolean(frame?.isOutermostFrame());
     }
     #onExecutionContextCreated(event) {
-        this.#switchContextIfNecessary(event.data);
+        if (this.#lastSelectedContextId === undefined) {
+            // We switch to the first context created (if applicable) but ignore sub-sequent
+            // worker context creations.
+            this.#switchContextIfNecessary(event.data);
+            return;
+        }
+        switch (event.data.target().type()) {
+            case SDK.Target.Type.AUCTION_WORKLET:
+            case SDK.Target.Type.SHARED_STORAGE_WORKLET:
+            case SDK.Target.Type.SHARED_WORKER:
+            case SDK.Target.Type.ServiceWorker:
+            case SDK.Target.Type.WORKLET:
+            case SDK.Target.Type.Worker:
+                return;
+            case SDK.Target.Type.BROWSER:
+            case SDK.Target.Type.FRAME:
+            case SDK.Target.Type.NODE:
+            case SDK.Target.Type.TAB:
+                this.#switchContextIfNecessary(event.data);
+                break;
+        }
     }
     #onExecutionContextDestroyed(event) {
         const executionContext = event.data;

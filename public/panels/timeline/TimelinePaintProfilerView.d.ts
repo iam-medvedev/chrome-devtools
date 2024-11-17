@@ -18,7 +18,7 @@ export declare class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidge
     setSnapshot(snapshot: SDK.PaintProfiler.PaintProfilerSnapshot): void;
     setEvent(paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel, event: Trace.Types.Events.Event): boolean;
     private updateWhenVisible;
-    private update;
+    update(): void;
     private releaseSnapshot;
     private onWindowChanged;
 }

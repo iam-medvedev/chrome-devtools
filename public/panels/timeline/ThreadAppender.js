@@ -507,22 +507,17 @@ export class ThreadAppender {
         }
         return Utils.EntryName.nameForEntry(entry, this.#parsedTrace);
     }
-    /**
-     * Returns the info shown when an event added by this appender
-     * is hovered in the timeline.
-     */
-    highlightedEntryInfo(event) {
-        let title = this.titleForEvent(event);
+    setPopoverInfo(event, info) {
         if (Trace.Types.Events.isParseHTML(event)) {
             const startLine = event.args['beginData']['startLine'];
             const endLine = event.args['endData'] && event.args['endData']['endLine'];
             const eventURL = event.args['beginData']['url'];
             const url = Bindings.ResourceUtils.displayNameForURL(eventURL);
             const range = (endLine !== -1 || endLine === startLine) ? `${startLine}...${endLine}` : startLine;
-            title += ` - ${url} [${range}]`;
+            info.title += ` - ${url} [${range}]`;
         }
         const selfTime = this.#parsedTrace.Renderer.entryToNode.get(event)?.selfTime;
-        return { title, formattedTime: getFormattedTime(event.dur, selfTime) };
+        info.formattedTime = getFormattedTime(event.dur, selfTime);
     }
 }
 //# sourceMappingURL=ThreadAppender.js.map

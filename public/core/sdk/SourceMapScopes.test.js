@@ -14,17 +14,30 @@ describe('decodeOriginalScopes', () => {
     });
     it('throws for missing "end" item', () => {
         const names = [];
-        const brokenScopes = new OriginalScopeBuilder(names).start(0, 0, 'global').build();
+        const brokenScopes = new OriginalScopeBuilder(names).start(0, 0, { kind: 'global' }).build();
         assert.throws(() => decodeOriginalScopes([brokenScopes], names), /Malformed/);
     });
     it('throws if positions of subsequent start/end items are not monotonically increasing', () => {
         const names = [];
-        const scopes = new OriginalScopeBuilder(names).start(0, 40, 'global').start(0, 25, 'function').end(0, 30).end(0, 50).build();
+        const scopes = new OriginalScopeBuilder(names)
+            .start(0, 40, { kind: 'global' })
+            .start(0, 25, { kind: 'function' })
+            .end(0, 30)
+            .end(0, 50)
+            .build();
         assert.throws(() => decodeOriginalScopes([scopes], names), /Malformed/);
+    });
+    it('decodes scopes without "kind"', () => {
+        const names = [];
+        const scope = new OriginalScopeBuilder(names).start(0, 0).end(5, 0).build();
+        const originalScopes = decodeOriginalScopes([scope], names);
+        assert.lengthOf(originalScopes, 1);
+        const { root } = originalScopes[0];
+        assert.isUndefined(root.kind);
     });
     it('decodes a global scope', () => {
         const names = [];
-        const scope = new OriginalScopeBuilder(names).start(0, 0, 'global').end(5, 0).build();
+        const scope = new OriginalScopeBuilder(names).start(0, 0, { kind: 'global' }).end(5, 0).build();
         const originalScopes = decodeOriginalScopes([scope], names);
         assert.lengthOf(originalScopes, 1);
         const { root, scopeForItemIndex } = originalScopes[0];
@@ -35,7 +48,12 @@ describe('decodeOriginalScopes', () => {
     });
     it('ignores all but the first global scope (multiple top-level siblings)', () => {
         const names = [];
-        const scope = new OriginalScopeBuilder(names).start(0, 0, 'global').end(5, 0).start(10, 0, 'global').end(20, 0).build();
+        const scope = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global' })
+            .end(5, 0)
+            .start(10, 0, { kind: 'global' })
+            .end(20, 0)
+            .build();
         const originalScopes = decodeOriginalScopes([scope], names);
         assert.lengthOf(originalScopes, 1);
         const { root, scopeForItemIndex } = originalScopes[0];
@@ -47,9 +65,9 @@ describe('decodeOriginalScopes', () => {
     it('decodes nested scopes', () => {
         const names = [];
         const scope = new OriginalScopeBuilder(names)
-            .start(0, 0, 'global')
-            .start(2, 5, 'function')
-            .start(4, 10, 'block')
+            .start(0, 0, { kind: 'global' })
+            .start(2, 5, { kind: 'function' })
+            .start(4, 10, { kind: 'block' })
             .end(6, 5)
             .end(8, 0)
             .end(40, 0)
@@ -71,10 +89,10 @@ describe('decodeOriginalScopes', () => {
     it('decodes sibling scopes', () => {
         const names = [];
         const scope = new OriginalScopeBuilder(names)
-            .start(0, 0, 'global')
-            .start(2, 5, 'function')
+            .start(0, 0, { kind: 'global' })
+            .start(2, 5, { kind: 'function' })
             .end(4, 0)
-            .start(6, 6, 'function')
+            .start(6, 6, { kind: 'function' })
             .end(8, 0)
             .end(10, 0)
             .build();
@@ -92,9 +110,9 @@ describe('decodeOriginalScopes', () => {
     it('decodes scope names', () => {
         const names = [];
         const scope = new OriginalScopeBuilder(names)
-            .start(0, 0, 'global')
-            .start(2, 5, 'class', 'FooClass')
-            .start(4, 10, 'function', 'fooMethod')
+            .start(0, 0, { kind: 'global' })
+            .start(2, 5, { kind: 'class', name: 'FooClass' })
+            .start(4, 10, { kind: 'function', name: 'fooMethod' })
             .end(6, 5)
             .end(8, 0)
             .end(40, 0)
@@ -110,9 +128,9 @@ describe('decodeOriginalScopes', () => {
     it('decodes variable names', () => {
         const names = [];
         const scope = new OriginalScopeBuilder(names)
-            .start(0, 0, 'global')
-            .start(2, 5, 'function', 'fooFunction', ['functionVarFoo'])
-            .start(4, 10, 'block', undefined, ['blockVarFoo', 'blockVarBar'])
+            .start(0, 0, { kind: 'global' })
+            .start(2, 5, { kind: 'function', name: 'fooFunction', variables: ['functionVarFoo'] })
+            .start(4, 10, { kind: 'block', variables: ['blockVarFoo', 'blockVarBar'] })
             .end(6, 5)
             .end(8, 0)
             .end(40, 0)
@@ -193,22 +211,27 @@ describe('decodeGeneratedRanges', () => {
     });
     it('throws if the definition references has an invalid source index', () => {
         const names = [];
-        const originEncodedScpoes = new OriginalScopeBuilder(names).start(2, 0, 'function').end(5, 0).build();
-        const originalScopes = decodeOriginalScopes([originEncodedScpoes], names);
+        const originEncodedScopes = new OriginalScopeBuilder(names).start(2, 0, { kind: 'function' }).end(5, 0).build();
+        const originalScopes = decodeOriginalScopes([originEncodedScopes], names);
         const range = new GeneratedRangeBuilder([]).start(0, 0, { definition: { sourceIdx: 1, scopeIdx: 0 } }).end(0, 20).build();
         assert.throws(() => decodeGeneratedRanges(range, originalScopes, []), /Invalid source index/);
     });
     it('throws if the definition references has an invalid scope index', () => {
         const names = [];
-        const originEncodedScpoes = new OriginalScopeBuilder(names).start(2, 0, 'function').end(5, 0).build();
-        const originalScopes = decodeOriginalScopes([originEncodedScpoes], names);
+        const originEncodedScopes = new OriginalScopeBuilder(names).start(2, 0, { kind: 'function' }).end(5, 0).build();
+        const originalScopes = decodeOriginalScopes([originEncodedScopes], names);
         const range = new GeneratedRangeBuilder([]).start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 4 } }).end(0, 20).build();
         assert.throws(() => decodeGeneratedRanges(range, originalScopes, []), /Invalid original scope index/);
     });
     it('decodes original scope (definition) references', () => {
         const names = [];
-        const originEncodedScpoes = new OriginalScopeBuilder(names).start(0, 0, 'global').start(5, 0, 'function').end(10, 0).end(20, 0).build();
-        const originalScopes = decodeOriginalScopes([originEncodedScpoes], names);
+        const originEncodedScopes = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global' })
+            .start(5, 0, { kind: 'function' })
+            .end(10, 0)
+            .end(20, 0)
+            .build();
+        const originalScopes = decodeOriginalScopes([originEncodedScopes], names);
         const range = new GeneratedRangeBuilder([])
             .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
             .start(0, 5, { definition: { sourceIdx: 0, scopeIdx: 1 } })
@@ -221,8 +244,18 @@ describe('decodeGeneratedRanges', () => {
     });
     it('decodes original scope (definition) references across multiple original sources', () => {
         const names = [];
-        const originEncodedScopes1 = new OriginalScopeBuilder(names).start(0, 0, 'global').start(5, 0, 'function').end(10, 0).end(20, 0).build();
-        const originEncodedScopes2 = new OriginalScopeBuilder(names).start(0, 0, 'global').start(5, 0, 'function').end(10, 0).end(20, 0).build();
+        const originEncodedScopes1 = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global' })
+            .start(5, 0, { kind: 'function' })
+            .end(10, 0)
+            .end(20, 0)
+            .build();
+        const originEncodedScopes2 = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global' })
+            .start(5, 0, { kind: 'function' })
+            .end(10, 0)
+            .end(20, 0)
+            .build();
         const originalScopes = decodeOriginalScopes([originEncodedScopes1, originEncodedScopes2], names);
         const range = new GeneratedRangeBuilder([])
             .start(0, 0)
@@ -238,15 +271,20 @@ describe('decodeGeneratedRanges', () => {
     });
     it('throws if an inlined range\'s callsite references an invalid source index', () => {
         const names = [];
-        const originEncodedScpoes = new OriginalScopeBuilder(names).start(2, 0, 'function').end(5, 0).build();
-        const originalScopes = decodeOriginalScopes([originEncodedScpoes], names);
+        const originEncodedScopes = new OriginalScopeBuilder(names).start(2, 0, { kind: 'function' }).end(5, 0).build();
+        const originalScopes = decodeOriginalScopes([originEncodedScopes], names);
         const range = new GeneratedRangeBuilder([]).start(0, 0, { callsite: { sourceIdx: 1, line: 0, column: 0 } }).end(0, 20).build();
         assert.throws(() => decodeGeneratedRanges(range, originalScopes, []), /Invalid source index/);
     });
     it('decodes multiple callsite references in the same source file and the same line', () => {
         const names = [];
-        const originEncodedScpoes = new OriginalScopeBuilder(names).start(0, 0, 'global').start(1, 0, 'function').end(4, 0).end(10, 0).build();
-        const originalScopes = decodeOriginalScopes([originEncodedScpoes], names);
+        const originEncodedScopes = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global' })
+            .start(1, 0, { kind: 'function' })
+            .end(4, 0)
+            .end(10, 0)
+            .build();
+        const originalScopes = decodeOriginalScopes([originEncodedScopes], names);
         const range = new GeneratedRangeBuilder([])
             .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
             .start(0, 5, { definition: { sourceIdx: 0, scopeIdx: 1 }, callsite: { sourceIdx: 0, line: 6, column: 0 } })
@@ -266,8 +304,13 @@ describe('decodeGeneratedRanges', () => {
     it('decodes multiple callsite refrences over multiple source files', () => {
         // A single function in the first file, is called in the first and second file. The bundler inlines both call-sites.
         const names = [];
-        const originalEncodedScopes1 = new OriginalScopeBuilder(names).start(0, 0, 'global').start(1, 0, 'function').end(4, 0).end(10, 0).build();
-        const originalEncodedScopes2 = new OriginalScopeBuilder(names).start(0, 0, 'global').end(10, 0).build();
+        const originalEncodedScopes1 = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global' })
+            .start(1, 0, { kind: 'function' })
+            .end(4, 0)
+            .end(10, 0)
+            .build();
+        const originalEncodedScopes2 = new OriginalScopeBuilder(names).start(0, 0, { kind: 'global' }).end(10, 0).build();
         const originalScopes = decodeOriginalScopes([originalEncodedScopes1, originalEncodedScopes2], names);
         const range = new GeneratedRangeBuilder([])
             .start(0, 0) // Pseudo root range so we can have multiple global ranges. This will be fixed soon in the spec.
@@ -290,7 +333,10 @@ describe('decodeGeneratedRanges', () => {
     });
     it('decodes bindings that are available/unavailable for the full range', () => {
         const names = [];
-        const originalEncodedScopes = new OriginalScopeBuilder(names).start(0, 0, 'global', undefined, ['foo', 'bar', 'baz']).end(10, 0).build();
+        const originalEncodedScopes = new OriginalScopeBuilder(names)
+            .start(0, 0, { kind: 'global', variables: ['foo', 'bar', 'baz'] })
+            .end(10, 0)
+            .build();
         const originalScopes = decodeOriginalScopes([originalEncodedScopes], names);
         const range = new GeneratedRangeBuilder(names)
             .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 }, bindings: ['x', undefined, 'y'] })
@@ -302,7 +348,7 @@ describe('decodeGeneratedRanges', () => {
     });
     it('decodes bindings that are available with different expressions throughout a range', () => {
         const names = [];
-        const originalEncodedScopes = new OriginalScopeBuilder(names).start(0, 0, 'global', undefined, ['foo']).end(10, 0).build();
+        const originalEncodedScopes = new OriginalScopeBuilder(names).start(0, 0, { kind: 'global', variables: ['foo'] }).end(10, 0).build();
         const originalScopes = decodeOriginalScopes([originalEncodedScopes], names);
         const range = new GeneratedRangeBuilder(names)
             .start(0, 0, {
@@ -323,19 +369,39 @@ describe('decodeGeneratedRanges', () => {
             { from: { line: 0, column: 60 }, to: { line: 0, column: 100 }, value: 'y' },
         ]);
     });
-    it('decodes the "isFunctionScope" flag', () => {
+    it('decodes the "isStackFrame" flag in original scopes', () => {
+        const names = [];
+        const originalEncodedScopes = new OriginalScopeBuilder(names).start(0, 0, { isStackFrame: true }).end(5, 0).build();
+        const [{ root }] = decodeOriginalScopes([originalEncodedScopes], names);
+        assert.isTrue(root.isStackFrame);
+    });
+    it('decodes the "isStackFrame" flag in generated ranges', () => {
         const range = new GeneratedRangeBuilder([])
             .start(0, 0)
-            .start(5, 0, { isFunctionScope: true })
+            .start(5, 0, { isStackFrame: true })
             .end(10, 0)
-            .start(20, 4, { isFunctionScope: false })
+            .start(20, 4, { isStackFrame: false })
             .end(30, 0)
             .end(40, 0)
             .build();
         const [generatedRange] = decodeGeneratedRanges(range, [], []);
         assert.lengthOf(generatedRange.children, 2);
-        assert.isTrue(generatedRange.children[0].isFunctionScope);
-        assert.isFalse(generatedRange.children[1].isFunctionScope);
+        assert.isTrue(generatedRange.children[0].isStackFrame);
+        assert.isFalse(generatedRange.children[1].isStackFrame);
+    });
+    it('decodes the "isHidden" flag', () => {
+        const range = new GeneratedRangeBuilder([])
+            .start(0, 0)
+            .start(5, 0, { isHidden: true })
+            .end(10, 0)
+            .start(20, 4)
+            .end(30, 0)
+            .end(40, 0)
+            .build();
+        const [generatedRange] = decodeGeneratedRanges(range, [], []);
+        assert.lengthOf(generatedRange.children, 2);
+        assert.isTrue(generatedRange.children[0].isHidden);
+        assert.isFalse(generatedRange.children[1].isHidden);
     });
 });
 //# sourceMappingURL=SourceMapScopes.test.js.map

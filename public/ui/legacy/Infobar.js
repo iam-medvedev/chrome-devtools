@@ -77,9 +77,12 @@ export class Infobar {
                 if (action.highlight) {
                     buttonClass += ' primary-button';
                 }
+                const buttonVariant = action.buttonVariant ?? "outlined" /* Buttons.Button.Variant.OUTLINED */;
                 const button = createTextButton(action.text, actionCallback, {
                     className: buttonClass,
                     jslogContext: action.jslogContext,
+                    variant: buttonVariant,
+                    icon: action.icon,
                 });
                 if (action.highlight && !this.#firstFocusableElement) {
                     this.#firstFocusableElement = button;

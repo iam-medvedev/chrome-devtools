@@ -31,7 +31,7 @@ export class SidebarInsightsTab extends HTMLElement {
     #parsedTrace = null;
     #insights = null;
     #activeInsight = null;
-    #selectedCategory = Insights.Types.Category.ALL;
+    #selectedCategory = Trace.Insights.Types.InsightCategory.ALL;
     /**
      * When a trace has sets of insights, we show an accordion with each
      * set within. A set can be specific to a single navigation, or include the

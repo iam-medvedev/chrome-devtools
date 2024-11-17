@@ -2,7 +2,7 @@ import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import { type ActionResponse, AgentType, AiAgent, type AidaRequestOptions, type ContextResponse, ConversationContext, type ParsedResponse, type SideEffectResponse } from './AiAgent.js';
+import { type ActionResponse, AgentType, AiAgent, type ContextResponse, ConversationContext, type ParsedResponse, type RequestOptions, type SideEffectResponse } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
@@ -38,7 +38,7 @@ export declare class FreestylerAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_FREESTYLER;
     get userTier(): string | undefined;
     get executionMode(): Root.Runtime.HostConfigFreestylerExecutionMode;
-    get options(): AidaRequestOptions;
+    get options(): RequestOptions;
     parseResponse(response: string): ParsedResponse;
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;

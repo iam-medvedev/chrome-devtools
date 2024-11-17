@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
-import { InsightWarning, } from './types.js';
+import { InsightCategory, InsightWarning, } from './types.js';
 const UIStrings = {
     /**
      * @description Title of an insight that provides the user with the list of network requests that blocked and therefore slowed down the page rendering and becoming visible to the user.
@@ -100,7 +100,12 @@ function computeSavings(parsedTrace, context, renderBlockingRequests) {
     return { metricSavings, requestIdToWastedMs };
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.LCP,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     if (!context.navigation) {

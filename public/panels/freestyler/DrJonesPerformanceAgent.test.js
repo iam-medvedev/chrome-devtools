@@ -46,19 +46,20 @@ describeWithEnvironment('DrJonesPerformanceAgent', () => {
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatNewHistoryForTesting = new Map([[
-                    0,
-                    [
-                        {
-                            type: "querying" /* ResponseType.QUERYING */,
-                            query: 'question',
-                        },
-                        {
-                            type: "answer" /* ResponseType.ANSWER */,
-                            text: 'answer',
-                        },
-                    ],
-                ]]);
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'question',
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: 'question',
+                },
+                {
+                    type: "answer" /* ResponseType.ANSWER */,
+                    text: 'answer',
+                },
+            ];
             assert.deepStrictEqual(agent.buildRequest({
                 input: 'test input',
             }), {
@@ -172,29 +173,30 @@ self: 3
             const enhancedQuery1 = await agent.enhanceQuery('What is this?', new CallTreeContext(mockAiCallTree));
             assert.strictEqual(enhancedQuery1, 'Mock call tree\n\n# User request\n\nWhat is this?');
             // Create history state of the above query
-            agent.chatNewHistoryForTesting = new Map([[
-                    0,
-                    [
+            agent.chatNewHistoryForTesting = [
+                {
+                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    query: 'What is this?',
+                },
+                {
+                    type: "context" /* ResponseType.CONTEXT */,
+                    title: 'Analyzing call tree',
+                    details: [
                         {
-                            type: "context" /* ResponseType.CONTEXT */,
-                            title: 'Analyzing call tree',
-                            details: [
-                                {
-                                    title: 'Selected call tree',
-                                    text: mockAiCallTree.serialize(),
-                                },
-                            ],
-                        },
-                        {
-                            type: "querying" /* ResponseType.QUERYING */,
-                            query: enhancedQuery1,
-                        },
-                        {
-                            type: "answer" /* ResponseType.ANSWER */,
-                            text: 'test answer',
+                            title: 'Selected call tree',
+                            text: mockAiCallTree.serialize(),
                         },
                     ],
-                ]]);
+                },
+                {
+                    type: "querying" /* ResponseType.QUERYING */,
+                    query: enhancedQuery1,
+                },
+                {
+                    type: "answer" /* ResponseType.ANSWER */,
+                    text: 'test answer',
+                },
+            ];
             const query2 = 'But what about this follow-up question?';
             const enhancedQuery2 = await agent.enhanceQuery(query2, new CallTreeContext(mockAiCallTree));
             assert.strictEqual(enhancedQuery2, query2);

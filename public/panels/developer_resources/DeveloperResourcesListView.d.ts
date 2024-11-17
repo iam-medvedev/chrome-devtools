@@ -9,7 +9,7 @@ export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     select(item: SDK.PageResourceLoader.PageResource): void;
     selectedItem(): SDK.PageResourceLoader.PageResource | null;
     private populateContextMenu;
-    update(items: Iterable<SDK.PageResourceLoader.PageResource>): void;
+    update(items?: Iterable<SDK.PageResourceLoader.PageResource>): void;
     reset(): void;
     updateFilterAndHighlight(highlightRegExp: RegExp | null): void;
     private sortingChanged;

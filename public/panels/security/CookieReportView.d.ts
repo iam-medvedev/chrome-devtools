@@ -1,6 +1,11 @@
+import type * as Common from '../../core/common/common.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare const i18nString: (id: string, values?: import("../../core/i18n/i18nTypes.js").Values | undefined) => import("../../core/platform/UIString.js").LocalizedString;
+export declare const i18nString: (id: string, values?: import("../../core/i18n/i18nTypes.js").Values | undefined) => Common.UIString.LocalizedString;
 export interface ViewInput {
+    gridData: DataGrid.DataGrid.DataGridNode<CookieReportNodeData>[];
+    onFilterChanged: () => void;
 }
 export interface ViewOutput {
     namedBitSetFilterUI?: UI.FilterBar.NamedBitSetFilterUI;
@@ -17,7 +22,10 @@ export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) =
 export declare class CookieReportView extends UI.Widget.VBox {
     #private;
     namedBitSetFilterUI?: UI.FilterBar.NamedBitSetFilterUI;
+    gridData: DataGrid.DataGrid.DataGridNode<CookieReportNodeData>[];
     constructor(element?: HTMLElement, view?: View);
-    doUpdate(): void;
+    doUpdate(): Promise<void>;
+    onFilterChanged(): void;
     wasShown(): void;
+    static getStatusString(status: IssuesManager.CookieIssue.CookieStatus): string;
 }

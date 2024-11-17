@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
-import { InsightWarning } from './types.js';
+import { InsightCategory, InsightWarning, } from './types.js';
 const UIStrings = {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
     title: 'Viewport not optimized for mobile',
@@ -18,7 +18,12 @@ export function deps() {
     return ['Meta', 'UserInteractions'];
 }
 function finalize(partialModel) {
-    return { title: i18nString(UIStrings.title), description: i18nString(UIStrings.description), ...partialModel };
+    return {
+        title: i18nString(UIStrings.title),
+        description: i18nString(UIStrings.description),
+        category: InsightCategory.INP,
+        ...partialModel,
+    };
 }
 export function generateInsight(parsedTrace, context) {
     const compositorEvents = parsedTrace.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {

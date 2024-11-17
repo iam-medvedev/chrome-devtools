@@ -46,7 +46,7 @@ import { LanguageExtensionEndpoint } from './LanguageExtensionEndpoint.js';
 import { RecorderExtensionEndpoint } from './RecorderExtensionEndpoint.js';
 import { RecorderPluginManager } from './RecorderPluginManager.js';
 const extensionOrigins = new WeakMap();
-const kAllowedOrigins = [].map(url => (new URL(url)).origin);
+const kPermittedSchemes = ['http:', 'https:', 'file:', 'data:', 'chrome-extension:', 'about:'];
 let extensionServerInstance;
 export class HostsPolicy {
     runtimeAllowedHosts;
@@ -1180,19 +1180,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         catch (exception) {
             return false;
         }
-        if (kAllowedOrigins.includes(parsedURL.origin)) {
-            return true;
-        }
-        if (parsedURL.protocol === 'chrome:' || parsedURL.protocol === 'devtools:' ||
-            parsedURL.protocol === 'chrome-untrusted:' || parsedURL.protocol === 'chrome-error:' ||
-            parsedURL.protocol === 'chrome-search:') {
-            return false;
-        }
-        if (parsedURL.protocol.startsWith('http') && parsedURL.hostname.match(/^chrome\.google\.com\.?$/) &&
-            parsedURL.pathname.startsWith('/webstore')) {
-            return false;
-        }
-        if (parsedURL.protocol.startsWith('http') && parsedURL.hostname.match(/^chromewebstore\.google\.com\.?$/)) {
+        if (!kPermittedSchemes.includes(parsedURL.protocol)) {
             return false;
         }
         if ((window.DevToolsAPI && window.DevToolsAPI.getOriginsForbiddenForExtensions &&
@@ -1200,7 +1188,29 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             []).includes(parsedURL.origin)) {
             return false;
         }
+        if (this.#isUrlFromChromeWebStore(parsedURL)) {
+            return false;
+        }
         return true;
+    }
+    /**
+     * Tests whether a given URL is from the Chrome web store to prevent the extension server from
+     * being injected. This is treated as separate from the `getOriginsForbiddenForExtensions` API because
+     * DevTools might not be being run from a native origin and we still want to lock down this specific
+     * origin from DevTools extensions.
+     *
+     * @param parsedURL The URL to check
+     * @returns `true` if the URL corresponds to the Chrome web store; otherwise `false`
+     */
+    static #isUrlFromChromeWebStore(parsedURL) {
+        if (parsedURL.protocol.startsWith('http') && parsedURL.hostname.match(/^chrome\.google\.com\.?$/) &&
+            parsedURL.pathname.startsWith('/webstore')) {
+            return true;
+        }
+        if (parsedURL.protocol.startsWith('http') && parsedURL.hostname.match(/^chromewebstore\.google\.com\.?$/)) {
+            return true;
+        }
+        return false;
     }
     disableExtensions() {
         this.extensionsEnabled = false;

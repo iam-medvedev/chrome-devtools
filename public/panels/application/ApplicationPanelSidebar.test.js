@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
@@ -154,7 +153,6 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         assert.deepEqual(sidebar.sharedStorageListTreeElement.view.getEventsForTesting(), EVENTS);
     });
     it('shows extension storage based on added models', async () => {
-        Root.Runtime.experiments.enableForTest("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */);
         for (const useTreeView of [false, true]) {
             Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
@@ -183,7 +181,6 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         }
     });
     it('does not add extension storage if already added by another model', async () => {
-        Root.Runtime.experiments.enableForTest("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */);
         Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
         // Fakes adding an ExtensionStorage to the ExtensionStorageModel for

@@ -77,7 +77,7 @@ export class ProfileFlameChartDataProvider {
     calculateTimelineData() {
         throw 'Not implemented.';
     }
-    prepareHighlightedEntryInfo(_entryIndex) {
+    preparePopoverElement(_entryIndex) {
         throw 'Not implemented.';
     }
     canJumpToEntry(entryIndex) {

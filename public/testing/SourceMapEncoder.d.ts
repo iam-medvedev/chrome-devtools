@@ -6,7 +6,12 @@ export declare class OriginalScopeBuilder {
     #private;
     /** The 'names' field of the SourceMap. The builder will modify it. */
     constructor(names: string[]);
-    start(line: number, column: number, kind: string, name?: string, variables?: string[]): this;
+    start(line: number, column: number, options?: {
+        name?: string;
+        kind?: string;
+        isStackFrame?: boolean;
+        variables?: string[];
+    }): this;
     end(line: number, column: number): this;
     build(): string;
 }
@@ -15,7 +20,8 @@ export declare class GeneratedRangeBuilder {
     /** The 'names' field of the SourceMap. The builder will modify it. */
     constructor(names: string[]);
     start(line: number, column: number, options?: {
-        isFunctionScope?: boolean;
+        isStackFrame?: boolean;
+        isHidden?: boolean;
         definition?: {
             sourceIdx: number;
             scopeIdx: number;

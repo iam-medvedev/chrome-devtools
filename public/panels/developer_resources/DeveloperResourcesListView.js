@@ -131,7 +131,7 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
             }, { jslogContext: 'copy-initiator-url' });
         }
     }
-    update(items) {
+    update(items = []) {
         let hadUpdates = false;
         const rootNode = this.dataGrid.rootNode();
         for (const item of items) {

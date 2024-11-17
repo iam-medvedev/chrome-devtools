@@ -300,7 +300,6 @@ export class MainImpl {
         Root.Runtime.experiments.register("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */, 'Performance panel: enable performance insights');
         Root.Runtime.experiments.register("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */, 'Performance panel: enable live metrics landing page');
         Root.Runtime.experiments.register("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */, 'Performance panel: enable server timings in the timeline');
-        Root.Runtime.experiments.register("extension-storage-viewer" /* Root.Runtime.ExperimentName.EXTENSION_STORAGE_VIEWER */, 'Extension storage in Application panel');
         Root.Runtime.experiments.register("floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */, 'Floating entry points for the AI assistance panel');
         Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.register("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */, 'Performance panel: enable dimming unrelated events in performance insights and search results');

@@ -73,6 +73,14 @@ styles.replaceSync(
     overflow: hidden;
     text-overflow: ellipsis;
     padding-inline: 2px;
+
+    &.link {
+      overflow: visible;
+
+      & > button.text-button.devtools-link {
+        background-color: inherit;
+      }
+    }
   }
 
   &.width-constrained {

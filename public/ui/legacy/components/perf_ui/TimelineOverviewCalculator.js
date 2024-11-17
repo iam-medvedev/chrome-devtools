@@ -6,13 +6,22 @@ import * as Trace from '../../../../models/trace/trace.js';
 export class TimelineOverviewCalculator {
     #minimumBoundary = Trace.Types.Timing.MilliSeconds(0);
     #maximumBoundary = Trace.Types.Timing.MilliSeconds(100);
-    workingArea;
+    #displayWidth = 0;
     navStartTimes;
+    /**
+     * Given a timestamp, returns its x position in the minimap.
+     *
+     * @param time
+     * @returns position in pixel
+     */
     computePosition(time) {
-        return (time - this.#minimumBoundary) / this.boundarySpan() * this.workingArea;
+        return (time - this.#minimumBoundary) / this.boundarySpan() * this.#displayWidth;
     }
     positionToTime(position) {
-        return Trace.Types.Timing.MilliSeconds(position / this.workingArea * this.boundarySpan() + this.#minimumBoundary);
+        if (this.#displayWidth === 0) {
+            return Trace.Types.Timing.MilliSeconds(0);
+        }
+        return Trace.Types.Timing.MilliSeconds(position / this.#displayWidth * this.boundarySpan() + this.#minimumBoundary);
     }
     setBounds(minimumBoundary, maximumBoundary) {
         this.#minimumBoundary = minimumBoundary;
@@ -22,7 +31,7 @@ export class TimelineOverviewCalculator {
         this.navStartTimes = navStartTimes;
     }
     setDisplayWidth(clientWidth) {
-        this.workingArea = clientWidth;
+        this.#displayWidth = clientWidth;
     }
     reset() {
         this.setBounds(Trace.Types.Timing.MilliSeconds(0), Trace.Types.Timing.MilliSeconds(100));
@@ -51,6 +60,11 @@ export class TimelineOverviewCalculator {
     zeroTime() {
         return this.#minimumBoundary;
     }
+    /**
+     * This function returns the time different between min time and max time of current minimap.
+     *
+     * @returns the time range in milliseconds
+     */
     boundarySpan() {
         return Trace.Types.Timing.MilliSeconds(this.#maximumBoundary - this.#minimumBoundary);
     }

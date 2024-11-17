@@ -258,7 +258,10 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         await this.model.deleteCacheEntry(this.cache, node.data.url());
         node.remove();
     }
-    update(cache) {
+    update(cache = null) {
+        if (!cache) {
+            return;
+        }
         this.cache = cache;
         this.resetDataGrid();
         void this.updateData(true);

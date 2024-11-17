@@ -203,9 +203,9 @@ export class ProfileView extends UI.View.SimpleView {
         this.resetButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.resetClicked, this);
         this.linkifierInternal = new Components.Linkifier.Linkifier(maxLinkLength);
     }
-    static buildPopoverTable(entryInfo) {
+    static buildPopoverTable(popoverInfo) {
         const table = document.createElement('table');
-        for (const entry of entryInfo) {
+        for (const entry of popoverInfo) {
             const row = table.createChild('tr');
             row.createChild('td').textContent = entry.title;
             row.createChild('td').textContent = entry.value;

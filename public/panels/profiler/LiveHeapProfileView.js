@@ -186,7 +186,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
             await new Promise(r => window.setTimeout(r, 3000));
         } while (this.currentPollId === pollId);
     }
-    update(isolates, profiles) {
+    update(isolates = [], profiles = []) {
         const dataByUrl = new Map();
         profiles.forEach((profile, index) => {
             if (profile) {

@@ -1,11 +1,8 @@
 import type * as Trace from '../../../models/trace/trace.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import type * as Overlays from '../overlays/overlays.js';
 export interface ActiveInsight {
-    name: string;
+    model: Trace.Insights.Types.InsightModel<{}>;
     insightSetKey: string;
-    overlays: Overlays.Overlays.TimelineOverlay[];
-    relatedEvents: Trace.Types.Events.Event[];
 }
 export declare class RemoveAnnotation extends Event {
     removedAnnotation: Trace.Types.File.Annotation;

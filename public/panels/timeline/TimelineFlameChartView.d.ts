@@ -115,6 +115,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
         event: Trace.Types.Events.Event;
         show: boolean;
     }): void;
+    overlays(): Overlays.Overlays.Overlays;
 }
 export declare class Selection {
     timelineSelection: TimelineSelection;
