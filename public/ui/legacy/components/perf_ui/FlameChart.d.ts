@@ -124,6 +124,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private chartViewport;
     private dataProvider;
     private candyStripePattern;
+    private candyStripePatternGray;
     private contextMenu?;
     private viewportElement;
     private canvas;
@@ -572,7 +573,7 @@ export interface FlameChartDataProvider {
     entryTitle(entryIndex: number): string | null;
     entryFont(entryIndex: number): string | null;
     entryColor(entryIndex: number): string;
-    decorateEntry(entryIndex: number, context: CanvasRenderingContext2D, text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number): boolean;
+    decorateEntry(entryIndex: number, context: CanvasRenderingContext2D, text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number, transformColor?: (color: string) => string): boolean;
     forceDecoration(entryIndex: number): boolean;
     forceDrawableLevel?(level: number): boolean;
     textColor(entryIndex: number): string;

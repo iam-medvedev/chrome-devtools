@@ -29,6 +29,8 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/security/CookieControlsTreeElement.ts",
+    "../../../../../../front_end/panels/security/CookieControlsView.ts",
     "../../../../../../front_end/panels/security/CookieReportTreeElement.ts",
     "../../../../../../front_end/panels/security/CookieReportView.ts",
     "../../../../../../front_end/panels/security/OriginTreeElement.ts",
@@ -61,6 +63,15 @@
     },
     {
       "path": "../network/forward/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/cards/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/switch/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

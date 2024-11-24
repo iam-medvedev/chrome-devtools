@@ -563,6 +563,9 @@ export class MetricCard extends HTMLElement {
         </div>
         ${fieldEnabled ? html `<hr class="divider">` : nothing}
         ${this.#renderCompareString()}
+        ${this.#data.warnings?.map(warning => html `
+          <div class="warning">${warning}</div>
+        `)}
         ${this.#renderEnvironmentRecommendations()}
         <slot name="extra-info"></slot>
       </div>

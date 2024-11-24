@@ -13,7 +13,7 @@ styles.replaceSync(
 
 .tree-outline {
   li.storage-group-list-item,
-  li.storage-group-list-item:not(:has(span[is="dt-checkbox"])) {
+  li.storage-group-list-item:not(:has(dt-checkbox)) {
     padding: 0 var(--sys-size-8) 0 var(--sys-size-3);
 
     &::before {

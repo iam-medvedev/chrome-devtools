@@ -680,6 +680,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             if (popoverInfo.additionalElements?.length) {
                 additionalContent.push(...popoverInfo.additionalElements);
             }
+            this.dispatchEventToListeners("FlameChartItemHovered" /* Events.FLAME_CHART_ITEM_HOVERED */, event);
         }
         else if (entryType === "Frame" /* EntryType.FRAME */) {
             const frame = this.entryData[entryIndex];
@@ -697,6 +698,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
         }
         else {
+            this.dispatchEventToListeners("FlameChartItemHovered" /* Events.FLAME_CHART_ITEM_HOVERED */, null);
             return null;
         }
         const popoverElement = document.createElement('div');
@@ -802,12 +804,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             ctx2.stroke();
         }
     }
-    drawFrame(entryIndex, context, barX, barY, barWidth, barHeight) {
+    drawFrame(entryIndex, context, barX, barY, barWidth, barHeight, transformColor) {
         const hPadding = 1;
         const frame = this.entryData[entryIndex];
         barX += hPadding;
         barWidth -= 2 * hPadding;
-        context.fillStyle = this.entryColor(entryIndex);
+        context.fillStyle = transformColor(this.entryColor(entryIndex));
         if (frame.dropped) {
             if (frame.isPartial) {
                 // For partially presented frame boxes, paint a yellow background with
@@ -852,10 +854,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         context.strokeRect(imageX - 0.5, imageY - 0.5, Math.min(barWidth - 1, imageWidth + 1), imageHeight);
         context.restore();
     }
-    decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio) {
+    decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio, transformColor) {
         const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Frame" /* EntryType.FRAME */) {
-            this.drawFrame(entryIndex, context, barX, barY, barWidth, barHeight);
+            this.drawFrame(entryIndex, context, barX, barY, barWidth, barHeight, transformColor);
             return true;
         }
         if (entryType === "Screenshot" /* EntryType.SCREENSHOT */) {

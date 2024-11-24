@@ -1,4 +1,5 @@
 export * from './AiAgent.js';
+export * from './AiHistoryStorage.js';
 export * from './ChangeManager.js';
 export * from './DrJonesFileAgent.js';
 export * from './DrJonesNetworkAgent.js';

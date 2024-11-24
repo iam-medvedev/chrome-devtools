@@ -41,6 +41,7 @@ const INSIGHT_NAME_TO_COMPONENT = {
     LCPDiscovery: Insights.LCPDiscovery.LCPDiscovery,
     CLSCulprits: Insights.CLSCulprits.CLSCulprits,
     RenderBlocking: Insights.RenderBlocking.RenderBlocking,
+    ImageDelivery: Insights.ImageDelivery.ImageDelivery,
     DocumentLatency: Insights.DocumentLatency.DocumentLatency,
     FontDisplay: Insights.FontDisplay.FontDisplay,
     Viewport: Insights.Viewport.Viewport,
@@ -156,7 +157,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
                 continue;
             }
             const model = models[name];
-            if (!model ||
+            if (!model || !model.shouldShow ||
                 !shouldRenderForCategory({ activeCategory: this.#data.activeCategory, insightCategory: model.category })) {
                 continue;
             }

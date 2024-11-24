@@ -173,14 +173,4 @@ export function formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding) {
     }
     return sourceMapDetails;
 }
-function setDebugFreestylerEnabled(enabled) {
-    if (enabled) {
-        localStorage.setItem('debugFreestylerEnabled', 'true');
-    }
-    else {
-        localStorage.removeItem('debugFreestylerEnabled');
-    }
-}
-// @ts-ignore
-globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;
 //# sourceMappingURL=DrJonesFileAgent.js.map

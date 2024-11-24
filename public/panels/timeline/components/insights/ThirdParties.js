@@ -89,11 +89,11 @@ export class ThirdParties extends BaseInsightComponent {
         // clang-format on
     }
     render() {
-        const model = this.model;
-        const entries = model && [...model.summaryByEntity.entries()].filter(kv => kv[0] !== model.firstPartyEntity);
-        const shouldShow = entries?.length;
-        const output = shouldShow ? this.#renderContent(entries) : LitHtml.nothing;
-        this.renderWithContent(output);
+        if (!this.model) {
+            return;
+        }
+        const entries = [...this.model.summaryByEntity.entries()].filter(kv => kv[0] !== this.model?.firstPartyEntity);
+        this.renderWithContent(this.#renderContent(entries));
     }
 }
 customElements.define('devtools-performance-third-parties', ThirdParties);

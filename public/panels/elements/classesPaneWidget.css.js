@@ -23,7 +23,7 @@ styles.replaceSync(
   justify-content: flex-start;
 }
 
-.styles-element-classes-pane [is="dt-checkbox"] {
+.styles-element-classes-pane dt-checkbox {
   margin-right: 15px;
 }
 

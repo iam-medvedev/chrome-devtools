@@ -27,6 +27,7 @@ styles.replaceSync(
   min-height: auto;
   display: flex;
   align-items: baseline;
+  font-variant-numeric: tabular-nums;
 }
 
 .status-dialog-line .label {

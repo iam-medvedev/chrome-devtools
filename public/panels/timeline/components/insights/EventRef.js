@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
@@ -63,5 +64,58 @@ export function eventRef(event) {
     title=${title}
   ></devtools-performance-event-ref>`;
 }
+class ImageRef extends HTMLElement {
+    #shadow = this.attachShadow({ mode: 'open' });
+    #boundRender = this.#render.bind(this);
+    #request;
+    #imagePaint;
+    connectedCallback() {
+        this.#shadow.adoptedStyleSheets = [baseInsightComponentStyles];
+    }
+    set request(request) {
+        this.#request = request;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set imagePaint(imagePaint) {
+        this.#imagePaint = imagePaint;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    #render() {
+        if (!this.#request) {
+            return;
+        }
+        // clang-format off
+        LitHtml.render(html `
+      <div class="image-ref">
+        ${this.#request.args.data.mimeType.includes('image') ? html `
+          <img
+            class="element-img"
+            src=${this.#request.args.data.url}
+            @error=${handleBadImage}/>
+        ` : LitHtml.nothing}
+        <span class="element-img-details">
+          ${eventRef(this.#request)}
+          <span class="element-img-details-size">${this.#imagePaint ?
+            `${this.#imagePaint.args.data.srcWidth}x${this.#imagePaint.args.data.srcHeight}` :
+            i18n.ByteUtilities.bytesToString(this.#request.args.data.decodedBodyLength ?? 0)}</span>
+        </span>
+      </div>
+    `, this.#shadow, { host: this });
+        // clang-format on
+    }
+}
+function handleBadImage(event) {
+    const img = event.target;
+    img.style.display = 'none';
+}
+export function imageRef(request, imagePaint) {
+    return html `
+    <devtools-performance-image-ref
+      .request=${request}
+      .imagePaint=${imagePaint}
+    ></devtools-performance-image-ref>
+  `;
+}
 customElements.define('devtools-performance-event-ref', EventRef);
+customElements.define('devtools-performance-image-ref', ImageRef);
 //# sourceMappingURL=EventRef.js.map

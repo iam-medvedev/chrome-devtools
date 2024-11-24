@@ -119,7 +119,7 @@ input[type="radio"] {
     margin-bottom: 0;
   }
 
-  &:not(:has(span[is="dt-checkbox"])) {
+  &:not(:has(dt-checkbox)) {
     margin-bottom: 6px;
   }
 }

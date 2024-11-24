@@ -123,7 +123,7 @@ styles.replaceSync(
   align-items: center;
   margin: auto;
 
-  &:has(span[is="dt-checkbox"]) {
+  &:has(dt-checkbox) {
     padding-bottom: 4px;
   }
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line rulesdir/es_modules_import
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
@@ -452,6 +453,42 @@ describe('Dialog', () => {
                 assert.fail('Dialog was closed');
                 return;
             }
+        });
+    });
+    describeWithLocale('rendering', () => {
+        it('do not render dialog header line if title is empty and there is no close button', async () => {
+            const dialog = new Dialogs.Dialog.Dialog();
+            dialog.closeButton = false;
+            dialog.dialogTitle = '';
+            Helpers.renderElementIntoDOM(dialog);
+            await coordinator.done();
+            assert.isNotNull(dialog.shadowRoot);
+            const dialogHeader = dialog.shadowRoot.querySelector('.dialog-header');
+            assert.notExists(dialogHeader);
+        });
+        it('should render a close button in the dialog if closeButton is true', async () => {
+            const dialog = new Dialogs.Dialog.Dialog();
+            dialog.closeButton = true;
+            Helpers.renderElementIntoDOM(dialog);
+            await coordinator.done();
+            assert.isNotNull(dialog.shadowRoot);
+            const dialogHeader = dialog.shadowRoot.querySelector('.dialog-header');
+            assert.exists(dialogHeader);
+            const closeButton = dialogHeader.querySelector('devtools-button');
+            assert.exists(closeButton);
+        });
+        it('should render dialog title if it is not empty', async () => {
+            const dialogTitle = 'Button dialog example';
+            const dialog = new Dialogs.Dialog.Dialog();
+            dialog.dialogTitle = dialogTitle;
+            Helpers.renderElementIntoDOM(dialog);
+            await coordinator.done();
+            assert.isNotNull(dialog.shadowRoot);
+            const dialogHeader = dialog.shadowRoot.querySelector('.dialog-header');
+            assert.exists(dialogHeader);
+            const dialogTitleElement = dialogHeader.querySelector('.dialog-header-text');
+            assert.exists(dialogTitleElement);
+            assert.strictEqual(dialogTitleElement.textContent, dialogTitle);
         });
     });
 });

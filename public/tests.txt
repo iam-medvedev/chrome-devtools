@@ -207,6 +207,7 @@ models/trace/helpers/TreeHelpers.test.js
 models/trace/insights/CLSCulprits.test.js
 models/trace/insights/DocumentLatency.test.js
 models/trace/insights/FontDisplay.test.js
+models/trace/insights/ImageDelivery.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LCPDiscovery.test.js
 models/trace/insights/LCPPhases.test.js
@@ -335,6 +336,7 @@ panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
 panels/freestyler/AiAgent.test.js
+panels/freestyler/AiHistoryStorage.test.js
 panels/freestyler/ChangeManager.test.js
 panels/freestyler/DrJonesFileAgent.test.js
 panels/freestyler/DrJonesNetworkAgent.test.js
@@ -409,6 +411,7 @@ panels/recorder/util/SharedObject.test.js
 panels/screencast/ScreencastApp.test.js
 panels/search/SearchResultsPane.test.js
 panels/search/SearchView.test.js
+panels/security/CookieControlsView.test.js
 panels/security/CookieReportView.test.js
 panels/security/SecurityModel.test.js
 panels/security/SecurityPanel.test.js
@@ -469,6 +472,7 @@ panels/timeline/components/Sidebar.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsightsTab.test.js
 panels/timeline/components/SidebarSingleInsightSet.test.js
+panels/timeline/components/TimelineSummary.test.js
 panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/BaseInsightComponent.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
@@ -493,6 +497,7 @@ panels/timeline/utils/SourceMapsResolver.test.js
 panels/utils/utils.test.js
 panels/web_audio/web_audio.test.js
 panels/webauthn/WebauthnPane.test.js
+panels/whats_new/ReleaseNote.test.js
 services/trace_bounds/TraceBounds.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
@@ -503,6 +508,7 @@ ui/components/chrome_link/ChromeLink.test.js
 ui/components/code_highlighter/CodeHighlighter.test.js
 ui/components/data_grid/DataGrid.test.js
 ui/components/data_grid/DataGridController.test.js
+ui/components/dialogs/ButtonDialog.test.js
 ui/components/dialogs/Dialog.test.js
 ui/components/dialogs/ShortcutDialog.test.js
 ui/components/diff_view/DiffView.test.js

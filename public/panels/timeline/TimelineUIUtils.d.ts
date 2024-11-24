@@ -43,12 +43,13 @@ export declare class TimelineUIUtils {
     private static generateInvalidationsForReason;
     private static aggregatedStatsForTraceEvent;
     static buildPicturePreviewContent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Paint, target: SDK.Target.Target): Promise<Element | null>;
-    static createEventDivider(event: Trace.Types.Events.Event, zeroTime: number): Element;
+    static createEventDivider(event: Trace.Types.Events.Event, zeroTime: number): HTMLDivElement;
     static visibleEventsFilter(): Trace.Extras.TraceFilter.TraceFilter;
     static categories(): Utils.EntryStyles.CategoryPalette;
     static generatePieChart(aggregatedStats: {
         [x: string]: number;
     }, selfCategory?: Utils.EntryStyles.TimelineCategory, selfTime?: number): Element;
+    static generateSummaryDetails(aggregatedStats: Record<string, number>, rangeStart: number, rangeEnd: number): Element;
     static generateDetailsContentForFrame(frame: Trace.Types.Events.LegacyTimelineFrame, filmStrip: Trace.Extras.FilmStrip.Data | null, filmStripFrame: Trace.Extras.FilmStrip.Frame | null): DocumentFragment;
     static frameDuration(frame: Trace.Types.Events.LegacyTimelineFrame): Element;
     static quadWidth(quad: number[]): number;

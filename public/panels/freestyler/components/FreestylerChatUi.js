@@ -13,7 +13,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
-const { html, Directives: { ifDefined } } = LitHtml;
+const { html, Directives: { ifDefined, ref } } = LitHtml;
 const UIStrings = {
     /**
      * @description The error message when the user is not logged in into Chrome.
@@ -204,6 +204,7 @@ const UIStringsNotTranslate = {
 const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
+const SCROLL_ROUNDING_OFFSET = 1;
 // The model returns multiline code blocks in an erroneous way with the language being in new line.
 // This renderer takes that into account and correctly updates the parsed multiline token with the language
 // correctly identified and stripped from the content.
@@ -255,6 +256,20 @@ export class FreestylerChatUi extends HTMLElement {
     #markdownRenderer = new MarkdownRendererWithCodeBlock();
     #scrollTop;
     #props;
+    #messagesContainerElement;
+    #mainElementRef = LitHtml.Directives.createRef();
+    #lastAnswerMarkdownView;
+    #messagesContainerResizeObserver = new ResizeObserver(() => this.#handleMessagesContainerResize());
+    /**
+     * Indicates whether the chat scroll position should be pinned to the bottom.
+     *
+     * This is true when:
+     *   - The scroll is at the very bottom, allowing new messages to push the scroll down automatically.
+     *   - The panel is initially rendered and the user hasn't scrolled yet.
+     *
+     * It is set to false when the user scrolls up to view previous messages.
+     */
+    #pinScrollToBottom = true;
     constructor(props) {
         super();
         this.#props = props;
@@ -267,6 +282,12 @@ export class FreestylerChatUi extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [freestylerChatUiStyles];
         this.#render();
+        if (this.#messagesContainerElement) {
+            this.#messagesContainerResizeObserver.observe(this.#messagesContainerElement);
+        }
+    }
+    disconnectedCallback() {
+        this.#messagesContainerResizeObserver.disconnect();
     }
     focusTextInput() {
         const textArea = this.#shadow.querySelector('.chat-input');
@@ -279,18 +300,33 @@ export class FreestylerChatUi extends HTMLElement {
         if (this.#scrollTop === undefined) {
             return;
         }
-        const scrollContainer = this.#shadow.querySelector('.chat-ui main');
-        if (!scrollContainer) {
+        if (!this.#mainElementRef?.value) {
             return;
         }
-        scrollContainer.scrollTop = this.#scrollTop;
+        this.#mainElementRef.value.scrollTop = this.#scrollTop;
     }
-    scrollToLastMessage() {
-        const message = this.#shadow.querySelector('.chat-message:last-child');
-        if (!message) {
+    finishTextAnimations() {
+        if (!this.#lastAnswerMarkdownView) {
             return;
         }
-        message.scrollIntoViewIfNeeded();
+        this.#lastAnswerMarkdownView.finishAnimations();
+    }
+    scrollToBottom() {
+        if (!this.#mainElementRef?.value) {
+            return;
+        }
+        this.#mainElementRef.value.scrollTop = this.#mainElementRef.value.scrollHeight;
+    }
+    #handleMessagesContainerResize() {
+        if (!this.#pinScrollToBottom) {
+            return;
+        }
+        if (!this.#mainElementRef?.value) {
+            return;
+        }
+        if (this.#pinScrollToBottom) {
+            this.#mainElementRef.value.scrollTop = this.#mainElementRef.value.scrollHeight;
+        }
     }
     #setInputText(text) {
         const textArea = this.#shadow.querySelector('.chat-input');
@@ -328,11 +364,32 @@ export class FreestylerChatUi extends HTMLElement {
                 return false;
         }
     };
+    #handleMessageContainerRef(el) {
+        this.#messagesContainerElement = el;
+        if (el) {
+            this.#messagesContainerResizeObserver.observe(el);
+        }
+        else {
+            this.#pinScrollToBottom = true;
+            this.#messagesContainerResizeObserver.disconnect();
+        }
+    }
+    #handleLastAnswerMarkdownViewRef(el) {
+        if (!el) {
+            this.#lastAnswerMarkdownView = undefined;
+            return;
+        }
+        if (el instanceof MarkdownView.MarkdownView.MarkdownView) {
+            this.#lastAnswerMarkdownView = el;
+        }
+    }
     #handleScroll = (ev) => {
         if (!ev.target || !(ev.target instanceof HTMLElement)) {
             return;
         }
         this.#scrollTop = ev.target.scrollTop;
+        this.#pinScrollToBottom =
+            ev.target.scrollTop + ev.target.clientHeight + SCROLL_ROUNDING_OFFSET > ev.target.scrollHeight;
     };
     #handleSubmit = (ev) => {
         ev.preventDefault();
@@ -387,7 +444,7 @@ export class FreestylerChatUi extends HTMLElement {
       ></devtools-user-action-row>`;
         // clang-format on
     }
-    #renderTextAsMarkdown(text) {
+    #renderTextAsMarkdown(text, { animate, ref: refFn } = {}) {
         let tokens = [];
         try {
             tokens = Marked.Marked.lexer(text);
@@ -407,7 +464,8 @@ export class FreestylerChatUi extends HTMLElement {
         }
         // clang-format off
         return html `<devtools-markdown-view
-      .data=${{ tokens, renderer: this.#markdownRenderer }}>
+      .data=${{ tokens, renderer: this.#markdownRenderer, animationEnabled: animate }}
+      ${refFn ? ref(refFn) : LitHtml.nothing}>
     </devtools-markdown-view>`;
         // clang-format on
     }
@@ -619,7 +677,7 @@ export class FreestylerChatUi extends HTMLElement {
             });
         })}
         ${message.answer
-            ? html `<p>${this.#renderTextAsMarkdown(message.answer)}</p>`
+            ? html `<p>${this.#renderTextAsMarkdown(message.answer, { animate: !this.#props.isReadOnly, ref: this.#handleLastAnswerMarkdownViewRef })}</p>`
             : LitHtml.nothing}
         ${this.#renderError(message)}
         <div class="actions">
@@ -675,7 +733,7 @@ export class FreestylerChatUi extends HTMLElement {
     #renderMessages = () => {
         // clang-format off
         return html `
-      <div class="messages-container">
+      <div class="messages-container" ${ref(this.#handleMessageContainerRef)}>
         ${this.#props.messages.map((message, _, array) => this.#renderChatMessage(message, {
             isLast: array.at(-1) === message,
         }))}
@@ -1041,7 +1099,7 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format off
         LitHtml.render(html `
       <div class="chat-ui">
-        <main @scroll=${this.#handleScroll}>
+        <main @scroll=${this.#handleScroll} ${ref(this.#mainElementRef)}>
           ${this.#renderMainContents()}
           ${this.#props.isReadOnly ?
             this.#renderReadOnlySection() :

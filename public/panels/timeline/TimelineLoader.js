@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 const UIStrings = {
@@ -125,6 +126,20 @@ export class TimelineLoader {
         }
         if ('metadata' in trace) {
             this.#metadata = trace.metadata;
+            // Older traces set these fields even when throttling is not active, while newer traces do not.
+            // Clear them out on load to simplify usage.
+            if (this.#metadata.cpuThrottling === 1) {
+                this.#metadata.cpuThrottling = undefined;
+            }
+            // This string is translated, so this only covers the english case and the current locale.
+            // Due to this, older traces in other locales will end up displaying "No throttling" in the trace history selector.
+            const noThrottlingString = typeof SDK.NetworkManager.NoThrottlingConditions.title === 'string' ?
+                SDK.NetworkManager.NoThrottlingConditions.title :
+                SDK.NetworkManager.NoThrottlingConditions.title();
+            if (this.#metadata.networkThrottling === 'No throttling' ||
+                this.#metadata.networkThrottling === noThrottlingString) {
+                this.#metadata.networkThrottling = undefined;
+            }
         }
     }
     async addEvents(events) {

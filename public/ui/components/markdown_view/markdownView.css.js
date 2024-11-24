@@ -23,7 +23,7 @@ styles.replaceSync(
 .animating {
   overflow: hidden;
   white-space: nowrap;
-  animation: typing 0.3s steps(40, end);
+  animation: typing 0.4s steps(40, end);
 }
 
 .pending {

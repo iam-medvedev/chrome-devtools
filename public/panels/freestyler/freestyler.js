@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export * from './AiAgent.js';
+export * from './AiHistoryStorage.js';
 export * from './ChangeManager.js';
 export * from './DrJonesFileAgent.js';
 export * from './DrJonesNetworkAgent.js';

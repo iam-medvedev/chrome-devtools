@@ -53,6 +53,7 @@
     "../../../../../../../front_end/panels/timeline/components/SidebarAnnotationsTab.test.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarInsightsTab.test.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarSingleInsightSet.test.ts",
+    "../../../../../../../front_end/panels/timeline/components/TimelineSummary.test.ts",
     "../../../../../../../front_end/panels/timeline/components/Utils.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

@@ -7,8 +7,8 @@ import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
+import { md } from '../../utils/Helpers.js';
 import baseInsightComponentStyles from './baseInsightComponent.css.js';
-import { md } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
 const { html } = LitHtml;
 const UIStrings = {

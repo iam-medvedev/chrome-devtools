@@ -137,6 +137,7 @@ export class UserActionRow extends HTMLElement {
         }
         this.#props.onFeedbackSubmit(this.#currentRating, input.value);
         this.#isShowingFeedbackForm = false;
+        this.#isSubmitButtonDisabled = true;
         this.#render();
     };
     #handleReportClick = () => {

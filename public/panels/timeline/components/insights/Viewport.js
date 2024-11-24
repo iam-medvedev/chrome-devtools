@@ -33,10 +33,10 @@ export class Viewport extends BaseInsightComponent {
         // clang-format on
     }
     render() {
-        const model = this.model;
-        const shouldShow = model && model.mobileOptimized === false;
-        const output = shouldShow ? this.#renderContent() : LitHtml.nothing;
-        this.renderWithContent(output);
+        if (!this.model) {
+            return;
+        }
+        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-viewport', Viewport);

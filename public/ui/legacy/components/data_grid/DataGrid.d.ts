@@ -185,8 +185,8 @@ export declare class DataGridNode<T> {
     isCreationNode: boolean;
     constructor(data?: DataGridData | null, hasChildren?: boolean);
     element(): Element;
-    protected createElement(): Element;
-    existingElement(): Element | null;
+    protected createElement(): HTMLElement;
+    existingElement(): HTMLElement | null;
     protected resetElement(): void;
     protected createCells(element: Element): void;
     get data(): DataGridData;

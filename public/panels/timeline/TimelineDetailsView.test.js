@@ -97,8 +97,9 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const selection = Timeline.TimelineSelection.selectionFromRangeMilliSeconds(bounds.min, bounds.max);
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
-        const title = detailsContentElement.querySelector('.timeline-details-chip-title');
-        assert.strictEqual(title?.innerText, 'Range:  0 ms – 5.39 s');
+        const component = detailsContentElement.querySelector('devtools-performance-timeline-summary');
+        const range = component?.shadowRoot?.querySelector('.summary-range');
+        assert.strictEqual(range?.innerText, 'Range:  0 ms – 5.39 s');
     });
 });
 //# sourceMappingURL=TimelineDetailsView.test.js.map

@@ -1965,6 +1965,45 @@ export class TimelineUIUtils {
         pieChartContainer.appendChild(pieChart);
         return element;
     }
+    // Generates a Summary component given a aggregated stats for categories.
+    static generateSummaryDetails(aggregatedStats, rangeStart, rangeEnd) {
+        let total = 0;
+        // Calculate total of all categories.
+        for (const categoryName in aggregatedStats) {
+            total += aggregatedStats[categoryName];
+        }
+        const element = document.createElement('div');
+        element.classList.add('timeline-details-view-summary');
+        const summaryTable = new TimelineComponents.TimelineSummary.TimelineSummary();
+        let categories = [];
+        // Get stats values from categories.
+        for (const categoryName in Utils.EntryStyles.getCategoryStyles()) {
+            const category = Utils.EntryStyles.getCategoryStyles()[categoryName];
+            if (category.name === Utils.EntryStyles.EventCategory.IDLE) {
+                continue;
+            }
+            const value = aggregatedStats[category.name];
+            if (!value) {
+                continue;
+            }
+            const title = category.title;
+            const color = category.getCSSValue();
+            categories.push({ value, color, title });
+        }
+        // Keeps the most useful categories on top.
+        categories = categories.sort((a, b) => b.value - a.value);
+        const start = Trace.Types.Timing.MilliSeconds(rangeStart);
+        const end = Trace.Types.Timing.MilliSeconds(rangeEnd);
+        summaryTable.data = {
+            rangeStart: start,
+            rangeEnd: end,
+            total,
+            categories,
+        };
+        const summaryTableContainer = element.createChild('div');
+        summaryTableContainer.appendChild(summaryTable);
+        return element;
+    }
     static generateDetailsContentForFrame(frame, filmStrip, filmStripFrame) {
         const contentHelper = new TimelineDetailsContentHelper(null, null);
         contentHelper.addSection(i18nString(UIStrings.frame));

@@ -36,7 +36,7 @@ styles.replaceSync(
   margin-left: 22px;
 }
 
-.profile-launcher-view-content p [is="dt-checkbox"] {
+.profile-launcher-view-content p dt-checkbox {
   display: flex;
 }
 

@@ -20,6 +20,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
+import { md } from '../utils/Helpers.js';
 import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
@@ -151,14 +152,9 @@ const UIStrings = {
      */
     percentDevices: '{PH1}% mobile, {PH2}% desktop',
     /**
-     * @description Text block explaining how to simulate different mobile and desktop devices. The placeholder at the end will be a link with the text "simulate different devices" translated separately.
-     * @example {simulate different devices} PH1
+     * @description Text block explaining how to simulate different mobile and desktop devices.
      */
-    useDeviceToolbar: 'Use the device toolbar to {PH1}.',
-    /**
-     * @description Text for a link that is inserted inside a larger text block that explains how to simulate different mobile and desktop devices.
-     */
-    simulateDifferentDevices: 'simulate different devices',
+    useDeviceToolbar: 'Use the [device toolbar](https://developer.chrome.com/docs/devtools/device-mode) and configure throttling to simulate real user environments and identify more performance issues.',
     /**
      * @description Text label for a checkbox that controls if the network cache is disabled.
      */
@@ -215,10 +211,6 @@ const UIStrings = {
      * @description Tooltip for a button that will remove everything from the currently selected log.
      */
     clearCurrentLog: 'Clear the current log',
-    /**
-     * @description Title for a section that contains more information about real user environments. This message is meant to prompt the user to understand the conditions experienced by real users.
-     */
-    realUserEnvironments: 'Real user environments',
     /**
      * @description Title for a page load phase that measures the time between when the page load starts and the time when the first byte of the initial document is downloaded.
      */
@@ -291,6 +283,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     #interactionsListEl;
     #layoutShiftsListEl;
     #listIsScrolling = false;
+    #deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
     constructor() {
         super();
         this.#toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
@@ -358,8 +351,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         liveMetrics.addEventListener("status" /* LiveMetrics.Events.STATUS */, this.#onMetricStatus, this);
         const cruxManager = CrUXManager.CrUXManager.instance();
         cruxManager.addEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
-        const emulationModel = this.#deviceModeModel();
-        emulationModel?.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
+        this.#deviceModeModel?.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
         if (cruxManager.getConfigSetting().get().enabled) {
             void this.#refreshFieldDataForCurrentPage();
         }
@@ -370,25 +362,11 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         this.#layoutShifts = liveMetrics.layoutShifts;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
-    #deviceModeModel() {
-        // This is wrapped in a try/catch because in some DevTools entry points
-        // (such as worker_app.ts) the Emulation panel is not included and as such
-        // the below code fails; it tries to instantiate the model which requires
-        // reading the value of a setting which has not been registered.
-        // In this case, we fallback to 'ALL'. See crbug.com/361515458 for an
-        // example bug that this resolves.
-        try {
-            return EmulationModel.DeviceModeModel.DeviceModeModel.instance();
-        }
-        catch {
-            return null;
-        }
-    }
     disconnectedCallback() {
         LiveMetrics.LiveMetrics.instance().removeEventListener("status" /* LiveMetrics.Events.STATUS */, this.#onMetricStatus, this);
         const cruxManager = CrUXManager.CrUXManager.instance();
         cruxManager.removeEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
-        this.#deviceModeModel()?.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
+        this.#deviceModeModel?.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
     }
     #renderLcpCard() {
         const fieldData = this.#getFieldMetricData('largest_contentful_paint');
@@ -402,6 +380,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
             tooltipContainer: this.#tooltipContainerEl,
+            warnings: this.#lcpValue?.warnings,
             phases: phases && [
                 [i18nString(UIStrings.timeToFirstByte), phases.timeToFirstByte],
                 [i18nString(UIStrings.resourceLoadDelay), phases.resourceLoadDelay],
@@ -432,6 +411,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
             tooltipContainer: this.#tooltipContainerEl,
+            warnings: this.#clsValue?.warnings,
         }}>
         ${clusterIsVisible ? html `
           <div class="related-info" slot="extra-info">
@@ -460,6 +440,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
             tooltipContainer: this.#tooltipContainerEl,
+            warnings: this.#inpValue?.warnings,
             phases: phases && [
                 [i18nString(UIStrings.inputDelay), phases.inputDelay],
                 [i18nString(UIStrings.processingDuration), phases.processingDuration],
@@ -502,7 +483,11 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
         // clang-format on
     }
-    #getNetworkRec() {
+    #getCpuRec() {
+        // TODO(cjamcl): will soon be set to recommended calibrated throttling - go/cpq:adaptive-throttling
+        return 4;
+    }
+    #getNetworkRecTitle() {
         const response = this.#getFieldMetricData('round_trip_time');
         if (!response?.percentiles) {
             return null;
@@ -513,6 +498,25 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         }
         if (rtt < RTT_MINIMUM) {
             return i18nString(UIStrings.tryDisablingThrottling);
+        }
+        const conditions = this.#getNetworkRec();
+        if (!conditions) {
+            return null;
+        }
+        const title = typeof conditions.title === 'function' ? conditions.title() : conditions.title;
+        return i18nString(UIStrings.tryUsingThrottling, { PH1: title });
+    }
+    #getNetworkRec() {
+        const response = this.#getFieldMetricData('round_trip_time');
+        if (!response?.percentiles) {
+            return null;
+        }
+        const rtt = Number(response.percentiles.p75);
+        if (!Number.isFinite(rtt)) {
+            return null;
+        }
+        if (rtt < RTT_MINIMUM) {
+            return null;
         }
         let closestPreset = null;
         let smallestDiff = Infinity;
@@ -531,11 +535,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             closestPreset = preset;
             smallestDiff = diff;
         }
-        if (!closestPreset) {
-            return null;
-        }
-        const title = typeof closestPreset.title === 'function' ? closestPreset.title() : closestPreset.title;
-        return i18nString(UIStrings.tryUsingThrottling, { PH1: title });
+        return closestPreset;
     }
     #getDeviceRec() {
         // `form_factors` metric is only populated if CrUX data is fetched for all devices.
@@ -550,30 +550,27 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderRecordingSettings() {
         const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
-        const deviceLinkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/device-mode', i18nString(UIStrings.simulateDifferentDevices));
-        const deviceMessage = i18n.i18n.getFormatLocalizedString(str_, UIStrings.useDeviceToolbar, { PH1: deviceLinkEl });
         const deviceRecEl = document.createElement('span');
         deviceRecEl.classList.add('environment-rec');
         deviceRecEl.textContent = this.#getDeviceRec() || i18nString(UIStrings.notEnoughData);
         const networkRecEl = document.createElement('span');
         networkRecEl.classList.add('environment-rec');
-        networkRecEl.textContent = this.#getNetworkRec() || i18nString(UIStrings.notEnoughData);
+        networkRecEl.textContent = this.#getNetworkRecTitle() || i18nString(UIStrings.notEnoughData);
         // clang-format off
         return html `
       <h3 class="card-title">${i18nString(UIStrings.environmentSettings)}</h3>
-      <div class="device-toolbar-description">${deviceMessage}</div>
+      <div class="device-toolbar-description">${md(i18nString(UIStrings.useDeviceToolbar))}</div>
       ${fieldEnabled ? html `
-        <div class="environment-recs-title">${i18nString(UIStrings.realUserEnvironments)}</div>
         <ul class="environment-recs-list">
           <li>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.device, { PH1: deviceRecEl })}</li>
           <li>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.network, { PH1: networkRecEl })}</li>
         </ul>
       ` : nothing}
       <div class="environment-option">
-        <devtools-cpu-throttling-selector></devtools-cpu-throttling-selector>
+        <devtools-cpu-throttling-selector .recommendedRate=${this.#getCpuRec()}></devtools-cpu-throttling-selector>
       </div>
       <div class="environment-option">
-        <devtools-network-throttling-selector></devtools-network-throttling-selector>
+        <devtools-network-throttling-selector .recommendedConditions=${this.#getNetworkRec()}></devtools-network-throttling-selector>
       </div>
       <div class="environment-option">
         <setting-checkbox
@@ -657,11 +654,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         }
     }
     #getAutoDeviceScope() {
-        const emulationModel = this.#deviceModeModel();
-        if (emulationModel === null) {
+        if (this.#deviceModeModel === null) {
             return 'ALL';
         }
-        if (emulationModel.isMobile()) {
+        if (this.#deviceModeModel.isMobile()) {
             if (this.#cruxPageResult?.[`${this.#fieldPageScope}-PHONE`]) {
                 return 'PHONE';
             }
@@ -756,8 +752,14 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.collectionPeriod, {
             PH1: dateEl,
         });
+        const warnings = this.#cruxPageResult?.warnings || [];
         return html `
-      <div class="field-data-message">${message}</div>
+      <div class="field-data-message">
+        <div>${message}</div>
+        ${warnings.map(warning => html `
+          <div class="field-data-warning">${warning}</div>
+        `)}
+      </div>
     `;
     }
     #renderFieldDataMessage() {

@@ -39,6 +39,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/freestyler/AiAgent.test.ts",
+    "../../../../../../front_end/panels/freestyler/AiHistoryStorage.test.ts",
     "../../../../../../front_end/panels/freestyler/ChangeManager.test.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesFileAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.test.ts",

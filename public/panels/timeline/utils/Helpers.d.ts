@@ -1,3 +1,6 @@
+import '../../../ui/components/markdown_view/markdown_view.js';
+import type * as Common from '../../../core/common/common.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 /**
  * Shortens URLs as much as possible while keeping important context.
  *
@@ -17,3 +20,10 @@ export declare function createUrlLabels(urls: URL[]): string[];
  * If the last path component is larger than maxChars characters, the middle is elided.
  */
 export declare function shortenUrl(url: URL, maxChars?: number): string;
+/**
+ * Returns a rendered MarkdownView component.
+ *
+ * This should only be used for markdown that is guaranteed to be valid,
+ * and not contain any user-generated content.
+ */
+export declare function md(markdown: Common.UIString.LocalizedString): LitHtml.TemplateResult;

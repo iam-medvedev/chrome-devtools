@@ -69,6 +69,10 @@ const UIStrings = {
      * section allows users to configure which DevTools data is synced via Chrome Sync.
      */
     sync: 'Sync',
+    /**
+     * @description Text for the privacy section of the page.
+     */
+    privacy: 'Privacy',
 };
 const str_ = i18n.i18n.registerUIStrings('core/common/SettingRegistration.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -148,6 +152,8 @@ export function getLocalizedSettingsCategory(category) {
             return i18n.i18n.lockedString('');
         case "SYNC" /* SettingCategory.SYNC */:
             return i18nString(UIStrings.sync);
+        case "PRIVACY" /* SettingCategory.PRIVACY */:
+            return i18nString(UIStrings.privacy);
     }
 }
 //# sourceMappingURL=SettingRegistration.js.map

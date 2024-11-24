@@ -14,6 +14,7 @@ import * as TimelinePanel from '../../panels/timeline/timeline.js';
 import * as TimelineUtils from '../../panels/timeline/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { AiHistoryStorage, } from './AiHistoryStorage.js';
 import { ChangeManager } from './ChangeManager.js';
 import { FreestylerChatUi, } from './components/FreestylerChatUi.js';
 import { DrJonesFileAgent, FileContext, } from './DrJonesFileAgent.js';
@@ -180,6 +181,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
             stripLinks: false,
             isReadOnly: false,
         };
+        for (const historyEntry of AiHistoryStorage.instance().getHistory()) {
+            this.#createAgent(historyEntry.type, historyEntry);
+        }
     }
     #createToolbar() {
         const toolbarContainer = this.contentElement.createChild('div', 'freestyler-toolbar-container');
@@ -227,7 +231,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             return;
         }
     }
-    #createAgent(agentType) {
+    #createAgent(agentType, history) {
         const options = {
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
@@ -253,6 +257,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 agent = new DrJonesPerformanceAgent(options);
                 break;
             }
+        }
+        if (history) {
+            agent.populateHistoryFromStorage(history);
         }
         this.#agents.add(agent);
         return agent;
@@ -493,18 +500,21 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (!targetAgentType) {
             return;
         }
+        let newAgent = false;
         if (!this.#currentAgent || this.#currentAgent.type !== targetAgentType || this.#currentAgent.isHistoryEntry ||
             targetAgentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */) {
             this.#currentAgent = this.#createAgent(targetAgentType);
+            newAgent = true;
         }
         this.#viewProps.agentType = this.#currentAgent.type;
         this.#viewOutput.freestylerChatUi?.focusTextInput();
-        Host.userMetrics.actionTaken(Host.UserMetrics.Action.FreestylerOpenedFromElementsPanelFloatingButton);
-        this.#viewProps.messages = [];
         this.#onContextSelectionChanged();
         void this.doUpdate();
-        this.#viewProps.isReadOnly = false;
-        void this.#doConversation(this.#currentAgent.runFromHistory());
+        if (newAgent) {
+            this.#viewProps.messages = [];
+            this.#viewProps.isReadOnly = false;
+            void this.#doConversation(this.#currentAgent.runFromHistory());
+        }
     }
     #onHistoryClicked(event) {
         const boundingRect = this.#historyEntriesButton.element.getBoundingClientRect();
@@ -543,11 +553,14 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#currentAgent = undefined;
         this.#viewProps.messages = [];
         this.#viewProps.agentType = undefined;
+        this.#runAbortController.abort();
+        void AiHistoryStorage.instance().deleteAll();
         void this.doUpdate();
     }
     #onDeleteClicked() {
         if (this.#currentAgent) {
             this.#agents.delete(this.#currentAgent);
+            void AiHistoryStorage.instance().deleteHistoryEntry(this.#currentAgent.id);
             this.#currentAgent = undefined;
             this.#cancel();
         }
@@ -663,6 +676,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             steps: [],
         };
         let step = { isLoading: true };
+        this.#viewProps.isLoading = true;
         for await (const data of generator) {
             step.sideEffect = undefined;
             switch (data.type) {
@@ -671,7 +685,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
                         entity: "user" /* ChatMessageEntity.USER */,
                         text: data.query,
                     });
-                    this.#viewProps.isLoading = true;
                     systemMessage = {
                         entity: "model" /* ChatMessageEntity.MODEL */,
                         steps: [],
@@ -740,13 +753,11 @@ export class FreestylerPanel extends UI.Panel.Panel {
                         systemMessage.steps.pop();
                     }
                     step.isLoading = false;
-                    this.#viewProps.isLoading = false;
                     break;
                 }
                 case "error" /* ResponseType.ERROR */: {
                     systemMessage.error = data.error;
                     systemMessage.rpcId = undefined;
-                    this.#viewProps.isLoading = false;
                     const lastStep = systemMessage.steps.at(-1);
                     if (lastStep) {
                         // Mark the last step as cancelled to make the UI feel better.
@@ -761,8 +772,17 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 }
             }
             void this.doUpdate();
-            this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
+            // This handles scrolling to the bottom for live conversations when:
+            // * User submits the query & the context step is shown.
+            // * There is a side effect dialog  shown.
+            if (!this.#viewProps.isReadOnly &&
+                (data.type === "context" /* ResponseType.CONTEXT */ || data.type === "side-effect" /* ResponseType.SIDE_EFFECT */)) {
+                this.#viewOutput.freestylerChatUi?.scrollToBottom();
+            }
         }
+        this.#viewProps.isLoading = false;
+        this.#viewOutput.freestylerChatUi?.finishTextAnimations();
+        void this.doUpdate();
     }
 }
 export class ActionDelegate {

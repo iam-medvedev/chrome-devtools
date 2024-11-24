@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/freestyler/AiAgent.ts",
+    "../../../../../../front_end/panels/freestyler/AiHistoryStorage.ts",
     "../../../../../../front_end/panels/freestyler/ChangeManager.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesFileAgent.ts",
     "../../../../../../front_end/panels/freestyler/DrJonesNetworkAgent.ts",

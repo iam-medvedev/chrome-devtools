@@ -37,6 +37,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
@@ -245,11 +246,6 @@ const UIStrings = {
      */
     stop: 'Stop',
     /**
-     *@description Time text content in Timeline Panel of the Performance panel
-     *@example {2.12} PH1
-     */
-    ssec: '{PH1} sec',
-    /**
      *
      * @description Text for exporting basic traces
      */
@@ -304,6 +300,22 @@ const UIStrings = {
      * @description Tooltip text for a button that takes the user back to the default view which shows performance metrics that are live.
      */
     backToLiveMetrics: 'Go back to the live metrics page',
+    /**
+     * @description Description of the Timeline in/out zoom action that appears in the Performance panel shortcuts dialog.
+     */
+    timelineZoomInOut: 'Timeline zoom in/out',
+    /**
+     * @description Description of the Timeline fast in/out zoom action that appears in the Performance panel shortcuts dialog.
+     */
+    timelineFastZoomInOut: 'Timeline fast zoom in/out',
+    /**
+     * @description Description of the Timeline up/down scroll action that appears in the Performance panel shortcuts dialog.
+     */
+    timelineScrollUpDown: 'Timeline up/down',
+    /**
+     * @description Description of the Timeline right/left panning action that appears in the Performance panel shortcuts dialog.
+     */
+    timelinePanLeftRight: 'Timeline right/left',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -401,6 +413,7 @@ export class TimelinePanel extends UI.Panel.Panel {
      */
     #pendingAriaMessage = null;
     #eventToRelatedInsights = new Map();
+    #shortcutsDialog = new ShortcutDialog.ShortcutDialog.ShortcutDialog();
     #onMainEntryHovered;
     constructor() {
         super('timeline');
@@ -932,12 +945,50 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
         if (Root.Runtime.experiments.isEnabled("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */)) {
-            // TODO: Fill the shortcuts dialog with shortcuts for the cuttently selected navigation option
-            const shortcutDialog = new ShortcutDialog.ShortcutDialog.ShortcutDialog();
-            shortcutDialog.data = { shortcuts: [{ title: 'Shortcut Title', bindings: ['Ctrl+E'] }] };
-            const dialogToolbarItem = new UI.Toolbar.ToolbarItem(shortcutDialog);
+            this.#shortcutsDialog.prependElement(this.#getNavigationSetting());
+            const dialogToolbarItem = new UI.Toolbar.ToolbarItem(this.#shortcutsDialog);
             this.panelRightToolbar.appendToolbarItem(dialogToolbarItem);
         }
+    }
+    #getNavigationSetting() {
+        const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
+        this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(currentNavSetting === 'classic') };
+        const navigationRadioButtons = document.createElement('form');
+        navigationRadioButtons.classList.add('nav-radio-buttons');
+        UI.ARIAUtils.markAsRadioGroup(navigationRadioButtons);
+        const modernNavRadioButton = UI.UIUtils.createRadioLabel('flamechart-selected-navigation', 'Modern', /* checked */ currentNavSetting === 'modern');
+        // Change EventListener is only triggered when the radio button is selected
+        modernNavRadioButton.radioElement.addEventListener('change', () => {
+            this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(/* isNavClassic */ false) };
+            Common.Settings.moduleSetting('flamechart-selected-navigation').set('modern');
+        });
+        const classicNavRadioButton = UI.UIUtils.createRadioLabel('flamechart-selected-navigation', 'Classic', /* checked */ currentNavSetting === 'classic');
+        classicNavRadioButton.radioElement.addEventListener('change', () => {
+            this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(/* isNavClassic */ true) };
+            Common.Settings.moduleSetting('flamechart-selected-navigation').set('classic');
+        });
+        navigationRadioButtons.appendChild(modernNavRadioButton);
+        navigationRadioButtons.appendChild(classicNavRadioButton);
+        return navigationRadioButtons;
+    }
+    #getShortcutsInfo(isNavClassic) {
+        if (isNavClassic) {
+            return [
+                { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll']] },
+                { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll'], ['W/S']] },
+                { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S']] },
+                { title: i18nString(UIStrings.timelinePanLeftRight), bindings: [['A/D']] },
+            ];
+        }
+        return [
+            { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Scroll'], ['Shift', 'up/down']] },
+            { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Cmd', 'Scroll'], ['W/S'], ['+/-']] },
+            { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
+            {
+                title: i18nString(UIStrings.timelinePanLeftRight),
+                bindings: [['A/D'], ['Shift', 'Scroll'], ['Shift', 'left/right']],
+            },
+        ];
     }
     createSettingsPane() {
         this.showSettingsPaneSetting =
@@ -963,7 +1014,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         throttlingPane.show(this.settingsPane.element);
         const cpuThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
         cpuThrottlingToolbar.appendText(i18nString(UIStrings.cpu));
-        this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
+        // TODO(crbug.com/311438203): need to get recommended like we do in LiveMetricsView
+        const recommendedRate = 4;
+        this.cpuThrottlingSelect =
+            MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector(recommendedRate);
         cpuThrottlingToolbar.appendToolbarItem(this.cpuThrottlingSelect);
         const networkThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
         networkThrottlingToolbar.appendText(i18nString(UIStrings.network));
@@ -982,7 +1036,9 @@ export class TimelinePanel extends UI.Panel.Panel {
     createNetworkConditionsSelect() {
         const toolbarItem = new UI.Toolbar.ToolbarComboBox(null, i18nString(UIStrings.networkConditions));
         toolbarItem.setMaxWidth(140);
-        MobileThrottling.ThrottlingManager.throttlingManager().decorateSelectWithNetworkThrottling(toolbarItem.selectElement());
+        // TODO(crbug.com/311438203): need to get recommended like we do in LiveMetricsView
+        const recommendedConditions = null;
+        MobileThrottling.ThrottlingManager.throttlingManager().decorateSelectWithNetworkThrottling(toolbarItem.selectElement(), recommendedConditions);
         return toolbarItem;
     }
     prepareToLoadTimeline() {
@@ -1841,8 +1897,17 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
             return;
         }
-        metadata = metadata ? metadata :
-            await Trace.Extras.Metadata.forNewRecording(isCpuProfile, recordingStartTime ?? undefined);
+        if (!metadata) {
+            const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
+            let emulatedDeviceTitle;
+            if (deviceModeModel?.type() === EmulationModel.DeviceModeModel.Type.Device) {
+                emulatedDeviceTitle = deviceModeModel.device()?.title ?? undefined;
+            }
+            else if (deviceModeModel?.type() === EmulationModel.DeviceModeModel.Type.Responsive) {
+                emulatedDeviceTitle = 'Responsive';
+            }
+            metadata = await Trace.Extras.Metadata.forNewRecording(isCpuProfile, recordingStartTime ?? undefined, emulatedDeviceTitle);
+        }
         try {
             await this.#executeNewTrace(collectedEvents, recordingIsFresh, metadata);
             const traceIndex = this.#traceEngineModel.lastTraceIndex();
@@ -1871,7 +1936,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 },
                 filmStripForPreview: Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace),
                 parsedTrace,
-                startTime: recordingStartTime ?? null,
+                metadata,
             });
         }
         catch (error) {
@@ -2181,7 +2246,7 @@ export class StatusPane extends UI.Widget.VBox {
     }
     startTimer() {
         this.startTime = Date.now();
-        this.timeUpdateTimer = window.setInterval(this.updateTimer.bind(this), 1000);
+        this.timeUpdateTimer = window.setInterval(this.updateTimer.bind(this), 100);
         this.updateTimer();
     }
     stopTimer() {
@@ -2197,8 +2262,8 @@ export class StatusPane extends UI.Widget.VBox {
         if (!this.timeUpdateTimer || !this.time) {
             return;
         }
-        const elapsed = (Date.now() - this.startTime) / 1000;
-        this.time.textContent = i18nString(UIStrings.ssec, { PH1: Math.round(elapsed) });
+        const seconds = (Date.now() - this.startTime) / 1000;
+        this.time.textContent = i18n.TimeUtilities.preciseSecondsToString(seconds, 1);
     }
     arrangeDialog(parent) {
         const isSmallDialog = parent.clientWidth < 325;

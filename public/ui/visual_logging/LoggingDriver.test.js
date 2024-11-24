@@ -407,6 +407,27 @@ describe('LoggingDriver', () => {
         [event] = await logging;
         assert.strictEqual(event.context, 1936227034);
     });
+    it('logs state with change of a label`s control', async () => {
+        const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
+        const label = document.createElement('label');
+        label.setAttribute('jslog', 'TreeItem; track: change');
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.checked = true;
+        input.style.display = 'none';
+        label.appendChild(input);
+        renderElementIntoDOM(label);
+        await VisualLoggingTesting.LoggingDriver.startLogging();
+        let logging = expectCall(recordChange);
+        input.dispatchEvent(new Event('change'));
+        let [event] = await logging;
+        assert.strictEqual(event.context, 1530936795);
+        input.checked = false;
+        logging = expectCall(recordChange);
+        input.dispatchEvent(new Event('change'));
+        [event] = await logging;
+        assert.strictEqual(event.context, 1936227034);
+    });
     it('logs hover', async () => {
         addLoggableElements();
         await VisualLoggingTesting.LoggingDriver.startLogging({ hoverLogThrottler: throttler });

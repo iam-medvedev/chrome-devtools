@@ -19,8 +19,8 @@ import { TimelineLayersView } from './TimelineLayersView.js';
 import { TimelinePaintProfilerView } from './TimelinePaintProfilerView.js';
 import { selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, } from './TimelineSelection.js';
 import { TimelineSelectorStatsView } from './TimelineSelectorStatsView.js';
-import { BottomUpTimelineTreeView, CallTreeTimelineTreeView } from './TimelineTreeView.js';
-import { TimelineDetailsContentHelper, TimelineUIUtils } from './TimelineUIUtils.js';
+import { BottomUpTimelineTreeView, CallTreeTimelineTreeView, TimelineTreeView } from './TimelineTreeView.js';
+import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
     /**
      *@description Text for the summary view
@@ -47,19 +47,13 @@ const UIStrings = {
      */
     layers: 'Layers',
     /**
-     *@description Text in Timeline Details View of the Performance panel
-     *@example {1ms} PH1
-     *@example {10ms} PH2
-     */
-    rangeSS: 'Range:  {PH1} – {PH2}',
-    /**
      *@description Title of the selector stats tab
      */
     selectorStats: 'Selector stats',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class TimelineDetailsView extends UI.Widget.VBox {
+export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     detailsLinkifier;
     tabbedPane;
     defaultDetailsWidget;
@@ -106,6 +100,9 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         const eventsView = new EventsTimelineTreeView(delegate);
         this.appendTab(Tab.EventLog, i18nString(UIStrings.eventLog), eventsView);
         this.rangeDetailViews.set(Tab.EventLog, eventsView);
+        this.rangeDetailViews.values().forEach(view => {
+            view.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data));
+        });
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
         this.#layoutShiftDetails = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
@@ -122,6 +119,11 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     }
     getDetailsContentElementForTest() {
         return this.defaultDetailsContentElement;
+    }
+    revealEventInTreeView(event) {
+        if (this.tabbedPane.visibleView instanceof TimelineTreeView) {
+            this.tabbedPane.visibleView.highlightEventInTree(event);
+        }
     }
     async #onTraceBoundsChange(event) {
         if (event.updateType === 'MINIMAP_BOUNDS') {
@@ -405,11 +407,8 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
         const startOffset = startTime - minBoundsMilli;
         const endOffset = endTime - minBoundsMilli;
-        const contentHelper = new TimelineDetailsContentHelper(null, null);
-        contentHelper.addSection(i18nString(UIStrings.rangeSS, { PH1: i18n.TimeUtilities.millisToString(startOffset), PH2: i18n.TimeUtilities.millisToString(endOffset) }));
-        const pieChart = TimelineUIUtils.generatePieChart(aggregatedStats);
-        contentHelper.appendElementRow('', pieChart);
-        this.setContent(contentHelper.fragment);
+        const summaryDetails = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset);
+        this.setContent(summaryDetails);
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();
         if (this.#selectedEvents && isSelectorStatsEnabled) {

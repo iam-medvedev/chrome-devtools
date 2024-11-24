@@ -150,14 +150,12 @@ export class LCPPhases extends BaseInsightComponent {
       </div>`;
         // clang-format on
     }
-    #hasDataToRender(phaseData) {
-        return phaseData ? phaseData.length > 0 : false;
-    }
     render() {
+        if (!this.model) {
+            return;
+        }
         const phaseData = this.#getPhaseData();
-        const shouldRender = this.#hasDataToRender(phaseData);
-        const output = shouldRender ? this.#renderContent(phaseData) : LitHtml.nothing;
-        this.renderWithContent(output);
+        this.renderWithContent(this.#renderContent(phaseData));
     }
 }
 customElements.define('devtools-performance-lcp-by-phases', LCPPhases);

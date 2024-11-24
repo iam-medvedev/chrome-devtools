@@ -153,6 +153,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     chartViewport;
     dataProvider;
     candyStripePattern;
+    candyStripePatternGray;
     contextMenu;
     viewportElement;
     canvas;
@@ -242,7 +243,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.dataProvider = dataProvider;
         this.viewportElement = this.chartViewport.viewportElement;
         this.canvas = this.viewportElement.createChild('canvas', 'fill');
-        this.candyStripePattern = null;
+        this.candyStripePattern = this.candyStripePatternGray = null;
         this.canvas.tabIndex = 0;
         UI.ARIAUtils.setLabel(this.canvas, i18nString(UIStrings.flameChart));
         UI.ARIAUtils.markAsTree(this.canvas);
@@ -438,7 +439,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
         this.dispatchEventToListeners("EntryHovered" /* Events.ENTRY_HOVERED */, -1);
     }
-    createCandyStripePattern() {
+    createCandyStripePattern(color) {
         // Set the candy stripe pattern to 17px so it repeats well.
         const size = 17;
         const candyStripeCanvas = document.createElement('canvas');
@@ -449,7 +450,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         ctx.translate(size * 0.5, size * 0.5);
         ctx.rotate(Math.PI * 0.25);
         ctx.translate(-size * 0.5, -size * 0.5);
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+        ctx.fillStyle = color;
         for (let x = -size; x < size * 2; x += 3) {
             ctx.fillRect(x, -size, 1, size * 3);
         }
@@ -1935,8 +1936,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                             // If the duration of the event is less than the start time to draw the candy stripes, then we have no stripes to draw.
                             continue;
                         }
-                        if (!this.candyStripePattern) {
-                            this.candyStripePattern = this.createCandyStripePattern();
+                        if (!this.candyStripePattern || !this.candyStripePatternGray) {
+                            const red = 'rgba(255, 0, 0, 0.8)';
+                            this.candyStripePattern = this.createCandyStripePattern(red);
+                            const parsedColor = Common.Color.parse(red);
+                            const dimmed = parsedColor?.asLegacyColor().grayscale().asString() ?? 'lightgrey';
+                            this.candyStripePatternGray = this.createCandyStripePattern(dimmed);
                         }
                         context.save();
                         context.beginPath();
@@ -1952,7 +1957,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                             startX: barXStart,
                             width: barXEnd - barXStart,
                         });
-                        context.fillStyle = this.candyStripePattern;
+                        context.fillStyle =
+                            this.#shouldDimEvent(entryIndex) ? this.candyStripePatternGray : this.candyStripePattern;
                         context.fill();
                         context.restore();
                         break;
@@ -1981,7 +1987,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         context.rect(barX, barY, barWidth, barHeight);
                         context.clip();
                         context.beginPath();
-                        context.fillStyle = 'red';
+                        context.fillStyle = this.#transformColor(entryIndex, 'red');
                         context.moveTo(barX + barWidth - triangleWidth, barY);
                         context.lineTo(barX + barWidth, barY);
                         context.lineTo(barX + barWidth, barY + triangleHeight);
@@ -2438,13 +2444,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 text = UI.UIUtils.trimTextMiddle(context, text, maxBarWidth);
             }
             const unclippedBarX = this.chartViewport.timeToPosition(entryStartTime);
-            if (this.dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixel)) {
+            if (this.dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixel, color => this.#transformColor(entryIndex, color))) {
                 continue;
             }
             if (!text || !text.length) {
                 continue;
             }
-            context.fillStyle = this.dataProvider.textColor(entryIndex);
+            context.fillStyle = this.#transformColor(entryIndex, this.dataProvider.textColor(entryIndex));
             context.fillText(text, barX + textPadding, barY + barHeight - this.textBaseline);
         }
         context.restore();
@@ -2586,7 +2592,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                     context.beginPath();
                     context.fillStyle = color;
                     context.fillRect(barX, y, barWidth, groupBarHeight - 1);
-                    this.dataProvider.decorateEntry(entryIndex, context, '', barX, y, barWidth, groupBarHeight, unclippedBarX, timeToPixel);
+                    this.dataProvider.decorateEntry(entryIndex, context, '', barX, y, barWidth, groupBarHeight, unclippedBarX, timeToPixel, color => this.#transformColor(entryIndex, color));
                     continue;
                 }
                 range.append(new Common.SegmentedRange.Segment(barX, endBarX, color));

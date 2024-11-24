@@ -40,10 +40,6 @@ export declare const UIStrings: {
      */
     CSSCustomStateDeprecatedSyntax: string;
     /**
-     * @description Warning displayed to developers when their website uses `inset-area` in CSS. They can simply switch their CSS to `position-area` and it will function in the same way.
-     */
-    CSSInsetAreaProperty: string;
-    /**
      * @description Warning displayed to developers when they hide the Cast button on a video element using the deprecated CSS selector instead of using the disableRemotePlayback attribute on the element.
      */
     CSSSelectorInternalMediaControlsOverlayCastButton: string;
@@ -67,10 +63,6 @@ export declare const UIStrings: {
      * @description Warning displayed to developers when the Geolocation API is used from an insecure origin (one that isn't localhost or doesn't use HTTPS) to notify them that this use is deprecated.
      */
     GeolocationInsecureOriginDeprecatedNotRemoved: string;
-    /**
-     * @description Warning displayed to developers when non-standard getInnerHTML function is called. This function is deprecated and will be removed.
-     */
-    GetInnerHTML: string;
     /**
      * @description This warning occurs when the `getUserMedia()` API is invoked on an insecure (e.g., HTTP) site. This is only permitted on secure sites (e.g., HTTPS).
      */

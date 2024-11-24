@@ -84,14 +84,13 @@ export declare function createIconLabel(options: {
 }): DevToolsIconLabel;
 export declare function createSlider(min: number, max: number, tabIndex: number): Element;
 export declare function setTitle(element: HTMLElement, title: string): void;
-export declare class CheckboxLabel extends HTMLSpanElement {
+export declare class CheckboxLabel extends HTMLElement {
     private readonly shadowRootInternal;
     checkboxElement: HTMLInputElement;
     textElement: HTMLElement;
     constructor();
     static create(title?: string, checked?: boolean, subtitle?: string, jslogContext?: string, small?: boolean): CheckboxLabel;
     private static lastId;
-    static constructorInternal: (() => Element) | null;
 }
 export declare class DevToolsIconLabel extends HTMLSpanElement {
     #private;

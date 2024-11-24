@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { getEventStyle } from './EntryStyles.js';
 const UIStrings = {
@@ -69,7 +68,7 @@ export function nameForEntry(entry, parsedTrace) {
     if (Trace.Types.Events.isSyntheticNetworkRequest(entry)) {
         const parsedURL = new Common.ParsedURL.ParsedURL(entry.args.data.url);
         const text = parsedURL.isValid ? `${parsedURL.displayName} (${parsedURL.host})` : entry.args.data.url || 'Network request';
-        return Platform.StringUtilities.trimEndWithMaxLength(text, 40);
+        return text;
     }
     if (Trace.Types.Events.isWebSocketCreate(entry)) {
         if (entry.args.data.url) {

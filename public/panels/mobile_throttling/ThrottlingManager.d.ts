@@ -1,3 +1,4 @@
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { NetworkThrottlingSelector } from './NetworkThrottlingSelector.js';
 export declare class ThrottlingManager {
@@ -13,13 +14,13 @@ export declare class ThrottlingManager {
     static instance(opts?: {
         forceNew: boolean | null;
     }): ThrottlingManager;
-    decorateSelectWithNetworkThrottling(selectElement: HTMLSelectElement): NetworkThrottlingSelector;
+    decorateSelectWithNetworkThrottling(selectElement: HTMLSelectElement, recommendedConditions?: SDK.NetworkManager.Conditions | null): NetworkThrottlingSelector;
     createOfflineToolbarCheckbox(): UI.Toolbar.ToolbarCheckbox;
     createMobileThrottlingButton(): UI.Toolbar.ToolbarMenuButton;
     private updatePanelIcon;
     setCPUThrottlingRate(rate: number): void;
     onCPUThrottlingRateChangedOnSDK(rate: number): void;
-    createCPUThrottlingSelector(): UI.Toolbar.ToolbarComboBox;
+    createCPUThrottlingSelector(recommendedRate?: number | null): UI.Toolbar.ToolbarComboBox;
     /** Hardware Concurrency doesn't store state in a setting. */
     createHardwareConcurrencySelector(): {
         numericInput: UI.Toolbar.ToolbarItem;

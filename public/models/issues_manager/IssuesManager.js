@@ -114,7 +114,7 @@ const issueCodeHandlers = new Map([
  * Each issue reported by the backend can result in multiple `Issue` instances.
  * Handlers are simple functions hard-coded into a map.
  */
-function createIssuesFromProtocolIssue(issuesModel, inspectorIssue) {
+export function createIssuesFromProtocolIssue(issuesModel, inspectorIssue) {
     const handler = issueCodeHandlers.get(inspectorIssue.code);
     if (handler) {
         return handler(issuesModel, inspectorIssue);

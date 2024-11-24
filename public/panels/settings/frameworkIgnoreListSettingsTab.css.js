@@ -58,7 +58,7 @@ styles.replaceSync(
   flex: auto;
 }
 
-.ignore-list-item > [is="dt-checkbox"] {
+.ignore-list-item > dt-checkbox {
   width: 100%;
 }
 

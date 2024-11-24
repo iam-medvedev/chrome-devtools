@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -66,6 +67,14 @@ const UIStrings = {
      *@description Display name for the Cookie Report table. This string is used by the data grid for accessibility.
      */
     report: 'Third-Party Cookie Report',
+    /**
+     *@description The main string the user sees when there are no cookie issues to show. This will take place of the table
+     */
+    emptyReport: 'Not a crumb left',
+    /**
+     *@description Explanation to the user that there were no third-party cookie related issues found which is why they are not seeing the table/report
+     */
+    emptyReportExplanation: 'No issues with third-party cookies found',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/CookieReportView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -94,19 +103,19 @@ export class CookieReportView extends UI.Widget.VBox {
     namedBitSetFilterUI;
     #cookieRows = new Map();
     #view;
+    dataGrid;
     gridData = [];
     constructor(element, view = (input, output, target) => {
         const dataGridOptions = {
             nodes: input.gridData,
             displayName: i18nString(UIStrings.report),
             columns: [
-                // TODO(crbug.com/365737493): Make the table sortable
-                { id: 'name', title: i18nString(UIStrings.name), weight: 1, sortable: false },
-                { id: 'domain', title: i18nString(UIStrings.domain), weight: 1, sortable: false },
-                { id: 'type', title: i18nString(UIStrings.type), weight: 1, sortable: false },
-                { id: 'platform', title: i18nString(UIStrings.platform), weight: 1, sortable: false },
-                { id: 'status', title: i18nString(UIStrings.status), weight: 1, sortable: false },
-                { id: 'recommendation', title: i18nString(UIStrings.recommendation), weight: 1, sortable: false },
+                { id: 'name', title: i18nString(UIStrings.name), weight: 1, sortable: true },
+                { id: 'domain', title: i18nString(UIStrings.domain), weight: 1, sortable: true },
+                { id: 'type', title: i18nString(UIStrings.type), weight: 1, sortable: true },
+                { id: 'platform', title: i18nString(UIStrings.platform), weight: 1, sortable: true },
+                { id: 'status', title: i18nString(UIStrings.status), weight: 1, sortable: true },
+                { id: 'recommendation', title: i18nString(UIStrings.recommendation), weight: 1, sortable: true },
             ],
             striped: true,
         };
@@ -117,26 +126,49 @@ export class CookieReportView extends UI.Widget.VBox {
               <div class="title">${i18nString(UIStrings.title)}</div>
               <div class="body">${i18nString(UIStrings.body)} <x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/prepare/audit-cookies" jslog=${VisualLogging.link('learn-more').track({ click: true })}>${i18nString(UIStrings.learnMoreLink)}</x-link></div>
             </div>
-            <devtools-named-bit-set-filter
-              class="filter"
-              @filterChanged=${() => input.onFilterChanged()}
-              .options=${{ items: filterItems }}
-              ${ref((el) => {
-            if (el instanceof UI.FilterBar.NamedBitSetFilterUIElement) {
-                output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
-            }
-        })}
-            ></devtools-named-bit-set-filter>
-            <!-- @ts-ignore -->
-            <devtools-data-grid-widget
-                .options=${dataGridOptions}
-              ></devtools-data-grid-widget>
+            ${input.gridData.length > 0 ?
+            html `
+                <devtools-named-bit-set-filter
+                  class="filter"
+                  @filterChanged=${input.onFilterChanged}
+                  .options=${{ items: filterItems }}
+                  ${ref((el) => {
+                if (el instanceof UI.FilterBar.NamedBitSetFilterUIElement) {
+                    output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
+                }
+            })}
+                ></devtools-named-bit-set-filter>
+                <!-- @ts-ignore -->
+                <devtools-data-grid-widget
+                  @sortingChanged=${input.onSortingChanged}
+                  .options=${dataGridOptions}
+                  ${UI.Widget.widgetRef(DataGrid.DataGrid.DataGridWidget, w => {
+                output.dataGrid = w.dataGrid;
+            })}
+                ></devtools-data-grid-widget>
+              ` :
+            html `
+                <div class="empty-report">
+                  <devtools-icon
+                    class="cookie-off"
+                    .name=${'cookie_off'}
+                  ></devtools-icon>
+                  <div class="empty-report-title">
+                    ${i18nString(UIStrings.emptyReport)}
+                  </div>
+                  <div class="body">
+                    ${i18nString(UIStrings.emptyReportExplanation)}
+                  </div>
+                </div>
+              `}
+
         </div>
     `, target, { host: this });
         // clang-format on
     }) {
         super(true, undefined, element);
         this.#view = view;
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueEventReceived, this);
         for (const issue of this.#issuesManager.issues()) {
@@ -151,6 +183,13 @@ export class CookieReportView extends UI.Widget.VBox {
         this.#view(this, this, this.contentElement);
     }
     onFilterChanged() {
+        this.update();
+    }
+    onSortingChanged() {
+        this.update();
+    }
+    #onPrimaryPageChanged() {
+        this.#cookieRows.clear();
         this.update();
     }
     #onIssueEventReceived(event) {
@@ -175,6 +214,35 @@ export class CookieReportView extends UI.Widget.VBox {
                 return this.namedBitSetFilterUI.accept(CookieReportView.getStatusString(row.status));
             }
             return true;
+        })
+            .sort((a, b) => {
+            if (!this.dataGrid) {
+                return 0;
+            }
+            const columnId = this.dataGrid.sortColumnId();
+            let result = 0;
+            if (columnId === 'name') {
+                result = a.name.localeCompare(b.name);
+            }
+            else if (columnId === 'domain') {
+                result = a.domain.localeCompare(b.domain);
+            }
+            else if (columnId === 'type') {
+                result = (a.type ?? i18nString(UIStrings.unknown)).localeCompare((b.type ?? i18nString(UIStrings.unknown)));
+            }
+            else if (columnId === 'platform') {
+                result = (a.platform ?? i18nString(UIStrings.unknown))
+                    .localeCompare((b.platform ?? i18nString(UIStrings.unknown)));
+            }
+            else if (columnId === 'status') {
+                result =
+                    CookieReportView.getStatusString(a.status).localeCompare(CookieReportView.getStatusString(b.status));
+            }
+            else if (columnId === 'recommendation') {
+                result = (a.recommendation ?? i18nString(UIStrings.unknown))
+                    .localeCompare((b.recommendation ?? i18nString(UIStrings.unknown)));
+            }
+            return this.dataGrid.isSortOrderAscending() ? result : -result;
         })
             .map(row => new DataGrid.DataGrid.DataGridNode({
             name: row.name,

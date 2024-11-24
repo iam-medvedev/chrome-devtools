@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 /**
  * This handler is responsible for the relationships between:
@@ -30,11 +31,13 @@ const paintImageByLazyPixelRef = new Map();
 // deliberately generic as in the future we might want to add more events that
 // have a relationship to a individual PaintImage event.
 const eventToPaintImage = new Map();
+const urlToPaintImage = new Map();
 export function reset() {
     paintImageEvents.clear();
     decodeLazyPixelRefEvents.clear();
     paintImageByLazyPixelRef.clear();
     eventToPaintImage.clear();
+    urlToPaintImage.clear();
 }
 export function handleEvent(event) {
     if (Types.Events.isPaintImage(event)) {
@@ -43,6 +46,10 @@ export function handleEvent(event) {
         forThread.push(event);
         forProcess.set(event.tid, forThread);
         paintImageEvents.set(event.pid, forProcess);
+        if (event.args.data.url) {
+            const paintsForUrl = Platform.MapUtilities.getWithDefault(urlToPaintImage, event.args.data.url, () => []);
+            paintsForUrl.push(event);
+        }
         return;
     }
     if (Types.Events.isDecodeLazyPixelRef(event) && typeof event.args?.LazyPixelRef !== 'undefined') {
@@ -103,6 +110,7 @@ export function data() {
     return {
         paintImageByDrawLazyPixelRef: paintImageByLazyPixelRef,
         paintImageForEvent: eventToPaintImage,
+        paintImageEventForUrl: urlToPaintImage,
     };
 }
 //# sourceMappingURL=ImagePaintingHandler.js.map

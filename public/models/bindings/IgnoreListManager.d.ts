@@ -29,6 +29,7 @@ export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObse
     private getGeneralRulesForUISourceCode;
     isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean;
     isUserIgnoreListedURL(url: Platform.DevToolsPath.UrlString | null, options?: IgnoreListGeneralRules): boolean;
+    getFirstMatchedRegex(url: Platform.DevToolsPath.UrlString): RegExp | null;
     private sourceMapAttached;
     private sourceMapDetached;
     private updateScriptRanges;

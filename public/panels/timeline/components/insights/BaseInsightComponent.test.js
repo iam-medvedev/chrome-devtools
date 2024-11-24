@@ -29,6 +29,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 title: 'LCP by Phase',
                 description: 'some description',
                 category: Trace.Insights.Types.InsightCategory.ALL,
+                shouldShow: true,
             };
             renderElementIntoDOM(component);
             await coordinator.done();
@@ -48,6 +49,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 title: 'LCP by Phase',
                 description: 'some description',
                 category: Trace.Insights.Types.InsightCategory.ALL,
+                shouldShow: true,
             };
             renderElementIntoDOM(component);
             await coordinator.done();

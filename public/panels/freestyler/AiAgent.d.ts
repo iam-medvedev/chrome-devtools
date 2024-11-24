@@ -76,26 +76,32 @@ export interface RequestOptions {
     temperature?: number;
     modelId?: string;
 }
-interface AgentOptions {
+export interface AgentOptions {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
 }
-interface ParsedResponseAnswer {
+export interface ParsedAnswer {
     answer: string;
     suggestions?: [string, ...string[]];
 }
-interface ParsedResponseStep {
+export interface ParsedStep {
     thought?: string;
     title?: string;
     action?: string;
 }
-export type ParsedResponse = ParsedResponseAnswer | ParsedResponseStep;
+export type ParsedResponse = ParsedAnswer | ParsedStep;
 export declare const enum AgentType {
     FREESTYLER = "freestyler",
     DRJONES_FILE = "drjones-file",
     DRJONES_NETWORK_REQUEST = "drjones-network-request",
     DRJONES_PERFORMANCE = "drjones-performance"
 }
+export interface SerializedAgent {
+    id: string;
+    type: AgentType;
+    history: HistoryEntryStorage;
+}
+export type HistoryEntryStorage = ResponseData[];
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
@@ -114,28 +120,28 @@ export declare abstract class AiAgent<T> {
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     constructor(opts: AgentOptions);
     get chatHistoryForTesting(): Array<Host.AidaClient.HistoryChunk>;
-    set chatNewHistoryForTesting(history: Array<ResponseData>);
+    set chatNewHistoryForTesting(history: HistoryEntryStorage);
+    get id(): string;
     get isEmpty(): boolean;
     get origin(): string | undefined;
     get context(): ConversationContext<T> | undefined;
     get title(): string | undefined;
     get isHistoryEntry(): boolean;
+    serialized(): SerializedAgent;
+    populateHistoryFromStorage(entry: SerializedAgent): void;
     aidaFetch(request: Host.AidaClient.AidaRequest, options?: {
         signal?: AbortSignal;
-    }): Promise<{
-        response: string;
+    }): AsyncGenerator<{
+        parsedResponse: ParsedResponse;
+        completed: boolean;
         rpcId?: number;
-    }>;
+    }, void, void>;
     buildRequest(opts: BuildRequestOptions): Host.AidaClient.AidaRequest;
     handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
     parseResponse(response: string): ParsedResponse;
-    formatHistoryChunkAnswer(text: string): string;
-    formatHistoryChunkObservation(observation: {
-        title?: string;
-        thought?: string;
-        action?: string;
-    }): string;
+    formatParsedAnswer({ answer }: ParsedAnswer): string;
+    formatParsedStep(step: ParsedStep): string;
     run(query: string, options: {
         signal?: AbortSignal;
         selected: ConversationContext<T> | null;
@@ -144,4 +150,4 @@ export declare abstract class AiAgent<T> {
 }
 export declare function isDebugMode(): boolean;
 export declare function debugLog(...log: unknown[]): void;
-export {};
+export declare function isHistoryEnabled(): boolean;

@@ -596,6 +596,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 'url-DESKTOP': null,
                 'url-PHONE': null,
                 'url-TABLET': null,
+                warnings: [],
             };
             sinon.stub(CrUXManager.CrUXManager.instance(), 'getFieldDataForCurrentPage').callsFake(async () => mockFieldData);
             CrUXManager.CrUXManager.instance().getConfigSetting().set({ enabled: true, override: '' });
@@ -651,6 +652,13 @@ describeWithMockConnection('LiveMetricsView', () => {
             assert.match(fieldMessage.textContent, /Not enough data/);
             const title = getLiveMetricsTitle(view);
             assert.strictEqual(title.innerText, 'Local and field metrics');
+        });
+        it('should display any warning from crux', async () => {
+            mockFieldData.warnings.push('Warning from crux');
+            const view = renderLiveMetrics();
+            await coordinator.done();
+            const fieldMessage = getFieldMessage(view);
+            assert.match(fieldMessage.textContent, /Warning from crux/);
         });
         it('should make initial request on render when crux is enabled', async () => {
             mockFieldData['url-ALL'] = createMockFieldData();
@@ -746,6 +754,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 assert.lengthOf(envRecs, 2);
                 assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.match(envRecs[1].textContent, /Slow 4G/);
+                const recNotice = view.shadowRoot.querySelector('.environment-option devtools-network-throttling-selector')
+                    ?.shadowRoot.querySelector('devtools-button');
+                assert.exists(recNotice);
             });
             it('should hide if no RTT data', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -755,6 +766,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const envRecs = getEnvironmentRecs(view);
                 assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.strictEqual(envRecs[1].textContent, 'Not enough data');
+                const recNotice = view.shadowRoot.querySelector('.environment-option devtools-network-throttling-selector')
+                    ?.shadowRoot.querySelector('devtools-button');
+                assert.notExists(recNotice);
             });
             it('should suggest no throttling for very low latency', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -766,6 +780,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const envRecs = getEnvironmentRecs(view);
                 assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.match(envRecs[1].textContent, /too fast to simulate with throttling/);
+                const recNotice = view.shadowRoot.querySelector('.environment-option devtools-network-throttling-selector')
+                    ?.shadowRoot.querySelector('devtools-button');
+                assert.notExists(recNotice);
             });
             it('should ignore presets that are generally too far off', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
@@ -777,6 +794,9 @@ describeWithMockConnection('LiveMetricsView', () => {
                 const envRecs = getEnvironmentRecs(view);
                 assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.strictEqual(envRecs[1].textContent, 'Not enough data');
+                const recNotice = view.shadowRoot.querySelector('.environment-option devtools-network-throttling-selector')
+                    ?.shadowRoot.querySelector('devtools-button');
+                assert.notExists(recNotice);
             });
         });
         describe('form factor recommendation', () => {

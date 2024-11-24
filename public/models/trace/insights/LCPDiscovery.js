@@ -30,6 +30,9 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
+        shouldShow: Boolean(partialModel.lcpRequest &&
+            (partialModel.shouldIncreasePriorityHint || partialModel.shouldPreloadImage ||
+                partialModel.shouldRemoveLazyLoading)),
         ...partialModel,
         relatedEvents,
     };

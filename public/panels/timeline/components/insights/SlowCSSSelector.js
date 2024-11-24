@@ -89,7 +89,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
         })}`;
         return links;
     }
-    renderSlowCSSSelector() {
+    #renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
@@ -147,13 +147,11 @@ export class SlowCSSSelector extends BaseInsightComponent {
       </div>`;
         // clang-format on
     }
-    #hasDataToRender() {
-        return this.model !== null && this.model.topElapsedMs.length !== 0 && this.model.topMatchAttempts.length !== 0;
-    }
     render() {
-        const shouldRender = this.#hasDataToRender();
-        const output = shouldRender ? this.renderSlowCSSSelector() : LitHtml.nothing;
-        this.renderWithContent(output);
+        if (!this.model) {
+            return;
+        }
+        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-slow-css-selector', SlowCSSSelector);

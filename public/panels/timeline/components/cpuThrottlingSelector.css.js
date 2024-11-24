@@ -12,13 +12,16 @@ styles.replaceSync(
  */
 
 :host {
-  display: inline-block;
+  display: flex;
+  align-items: center;
   max-width: 100%;
-  min-width: 50px;
+  height: 20px;
 }
 
 devtools-select-menu {
+  min-width: 160px;
   max-width: 100%;
+  height: 20px;
 }
 
 /*# sourceURL=cpuThrottlingSelector.css */

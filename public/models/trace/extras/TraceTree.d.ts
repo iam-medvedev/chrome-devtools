@@ -5,12 +5,17 @@ export declare class Node {
     totalTime: number;
     selfTime: number;
     id: string | symbol;
-    event: Types.Events.Event | null;
+    /** The first trace event encountered that necessitated the creation of this tree node. */
+    event: Types.Events.Event;
+    /** All of the trace events associated with this aggregate node.
+     * Minor: In the case of Event Log (EventsTimelineTreeView), the node is not aggregate and this will only hold 1 event, the same that's in this.event
+     */
+    events: Types.Events.Event[];
     parent: Node | null;
     groupId: string;
     isGroupNodeInternal: boolean;
     depth: number;
-    constructor(id: string | symbol, event: Types.Events.Event | null);
+    constructor(id: string | symbol, event: Types.Events.Event);
     isGroupNode(): boolean;
     hasChildren(): boolean;
     setHasChildren(_value: boolean): void;
@@ -26,7 +31,7 @@ export declare class TopDownNode extends Node {
     private hasChildrenInternal;
     childrenInternal: ChildrenCache | null;
     parent: TopDownNode | null;
-    constructor(id: string | symbol, event: Types.Events.Event | null, parent: TopDownNode | null);
+    constructor(id: string | symbol, event: Types.Events.Event, parent: TopDownNode | null);
     hasChildren(): boolean;
     setHasChildren(value: boolean): void;
     children(): ChildrenCache;
@@ -35,8 +40,6 @@ export declare class TopDownNode extends Node {
 }
 export declare class TopDownRootNode extends TopDownNode {
     readonly filter: (e: Types.Events.Event) => boolean;
-    /** This is all events passed in to create the tree, and it's very likely that it included events outside of the passed startTime/endTime as that filtering is done in `Helpers.Trace.forEachEvent` */
-    readonly events: Types.Events.Event[];
     readonly startTime: Types.Timing.MilliSeconds;
     readonly endTime: Types.Timing.MilliSeconds;
     eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null | undefined;
@@ -52,7 +55,6 @@ export declare class TopDownRootNode extends TopDownNode {
 }
 export declare class BottomUpRootNode extends Node {
     private childrenInternal;
-    readonly events: Types.Events.Event[];
     private textFilter;
     readonly filter: (e: Types.Events.Event) => boolean;
     readonly startTime: Types.Timing.MilliSeconds;
@@ -69,7 +71,8 @@ export declare class BottomUpRootNode extends Node {
 export declare class GroupNode extends Node {
     private readonly childrenInternal;
     isGroupNodeInternal: boolean;
-    constructor(id: string, parent: BottomUpRootNode | TopDownRootNode, event: Types.Events.Event);
+    events: Types.Events.Event[];
+    constructor(id: string, parent: BottomUpRootNode | TopDownRootNode, events: Types.Events.Event[]);
     addChild(child: BottomUpNode, selfTime: number, totalTime: number): void;
     hasChildren(): boolean;
     children(): ChildrenCache;

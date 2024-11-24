@@ -73,9 +73,11 @@ export declare class FreestylerChatUi extends HTMLElement {
     constructor(props: Props);
     set props(props: Props);
     connectedCallback(): void;
+    disconnectedCallback(): void;
     focusTextInput(): void;
     restoreScrollPosition(): void;
-    scrollToLastMessage(): void;
+    finishTextAnimations(): void;
+    scrollToBottom(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

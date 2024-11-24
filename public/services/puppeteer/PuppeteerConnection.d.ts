@@ -1,6 +1,6 @@
-import * as puppeteer from '../../third_party/puppeteer/puppeteer.js';
-import type * as Protocol from '../../generated/protocol.js';
 import type * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
+import * as puppeteer from '../../third_party/puppeteer/puppeteer.js';
 export declare class PuppeteerConnectionHelper {
     static connectPuppeteerToConnectionViaTab(options: {
         connection: SDK.Connections.ParallelConnectionInterface;

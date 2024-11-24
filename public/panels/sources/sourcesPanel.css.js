@@ -63,13 +63,13 @@ styles.replaceSync(
   margin-top: 0;
 }
 
-.scripts-debug-toolbar-drawer > [is="dt-checkbox"] {
+.scripts-debug-toolbar-drawer > dt-checkbox {
   display: none;
   padding-left: 3px;
   height: 28px;
 }
 
-.scripts-debug-toolbar-drawer.expanded > [is="dt-checkbox"] {
+.scripts-debug-toolbar-drawer.expanded > dt-checkbox {
   display: flex;
 }
 

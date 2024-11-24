@@ -65,10 +65,10 @@ export class RenderBlocking extends BaseInsightComponent {
         // clang-format on
     }
     render() {
-        const model = this.model;
-        const hasBlockingRequests = model?.renderBlockingRequests && model.renderBlockingRequests.length > 0;
-        const output = hasBlockingRequests ? this.#renderContent() : LitHtml.nothing;
-        this.renderWithContent(output);
+        if (!this.model) {
+            return;
+        }
+        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-render-blocking-requests', RenderBlocking);

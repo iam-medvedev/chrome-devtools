@@ -214,13 +214,6 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     #onIssueAdded(event) {
-        const excludeFromAggregate = [
-            "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */,
-            "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */,
-        ];
-        if (excludeFromAggregate.some(exclude => event.data.issue.code().includes(exclude))) {
-            return;
-        }
         this.#aggregateIssue(event.data.issue);
     }
     #onFullUpdateRequired() {
@@ -232,6 +225,13 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
         this.dispatchEventToListeners("FullUpdateRequired" /* Events.FULL_UPDATE_REQUIRED */);
     }
     #aggregateIssue(issue) {
+        const excludeFromAggregate = [
+            "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */,
+            "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */,
+        ];
+        if (excludeFromAggregate.some(exclude => issue.code().includes(exclude))) {
+            return;
+        }
         const map = issue.isHidden() ? this.#hiddenAggregatedIssuesByKey : this.#aggregatedIssuesByKey;
         const aggregatedIssue = this.#aggregateIssueByStatus(map, issue);
         this.dispatchEventToListeners("AggregatedIssueUpdated" /* Events.AGGREGATED_ISSUE_UPDATED */, aggregatedIssue);

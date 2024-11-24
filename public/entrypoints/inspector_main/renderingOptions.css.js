@@ -15,7 +15,7 @@ styles.replaceSync(
   padding: 12px;
 }
 
-[is="dt-checkbox"] {
+dt-checkbox {
   margin: 0 0 10px;
   flex: none;
 }

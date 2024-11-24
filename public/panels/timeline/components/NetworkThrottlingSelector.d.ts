@@ -1,7 +1,9 @@
 import '../../../ui/components/menus/menus.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 export declare class NetworkThrottlingSelector extends HTMLElement {
     #private;
     constructor();
+    set recommendedConditions(recommendedConditions: SDK.NetworkManager.Conditions | null);
     connectedCallback(): void;
     disconnectedCallback(): void;
 }

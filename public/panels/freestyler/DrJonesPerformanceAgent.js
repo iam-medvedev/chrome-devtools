@@ -194,14 +194,4 @@ export class DrJonesPerformanceAgent extends AiAgent {
         };
     }
 }
-function setDebugFreestylerEnabled(enabled) {
-    if (enabled) {
-        localStorage.setItem('debugFreestylerEnabled', 'true');
-    }
-    else {
-        localStorage.removeItem('debugFreestylerEnabled');
-    }
-}
-// @ts-ignore
-globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;
 //# sourceMappingURL=DrJonesPerformanceAgent.js.map

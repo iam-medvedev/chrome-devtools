@@ -1,14 +1,24 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as Buttons from '../buttons/buttons.js';
 import dialogStyles from './dialog.css.js';
 const { html } = LitHtml;
+const UIStrings = {
+    /**
+     * @description Title of close button for the shortcuts dialog.
+     */
+    close: 'Close',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/components/dialogs/Dialog.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const IS_DIALOG_SUPPORTED = 'HTMLDialogElement' in globalThis;
 // Height in pixels of the dialog's connector. The connector is represented as
@@ -43,6 +53,8 @@ export class Dialog extends HTMLElement {
         windowBoundsService: WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance(),
         closeOnESC: true,
         closeOnScroll: true,
+        closeButton: false,
+        dialogTitle: '',
         jslogContext: '',
     };
     #dialog = null;
@@ -125,6 +137,14 @@ export class Dialog extends HTMLElement {
     }
     set closeOnScroll(closeOnScroll) {
         this.#props.closeOnScroll = closeOnScroll;
+        this.#onStateChange();
+    }
+    set closeButton(closeButton) {
+        this.#props.closeButton = closeButton;
+        this.#onStateChange();
+    }
+    set dialogTitle(dialogTitle) {
+        this.#props.dialogTitle = dialogTitle;
         this.#onStateChange();
     }
     set jslogContext(jslogContext) {
@@ -521,6 +541,31 @@ export class Dialog extends HTMLElement {
     getDialogBounds() {
         return this.#dialogClientRect;
     }
+    #renderHeaderRow() {
+        // If the title is empty and close button is false, let's skip the header row.
+        if (!this.#props.dialogTitle && !this.#props.closeButton) {
+            return null;
+        }
+        // Disabled until https://crbug.com/1079231 is fixed.
+        // clang-format off
+        return html `
+      <div class="dialog-header">
+        <span class="dialog-header-text">${this.#props.dialogTitle}</span>
+        ${this.#props.closeButton ? html `
+          <devtools-button
+            @click=${this.#closeDialog}
+            .data=${{
+            variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+            iconName: 'cross',
+            title: i18nString(UIStrings.close),
+        }}
+            jslog=${VisualLogging.close().track({ click: true })}
+          ></devtools-button>
+        ` : LitHtml.nothing}
+      </div>
+    `;
+        // clang-format on
+    }
     #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('Dialog render was not scheduled');
@@ -541,7 +586,10 @@ export class Dialog extends HTMLElement {
       <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel}
               jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: 'Escape' }).parent('mapped')}>
         <div id="content">
-          <slot></slot>
+          ${this.#renderHeaderRow()}
+          <div class='dialog-content'>
+            <slot></slot>
+          </div>
         </div>
       </dialog>
     `, this.#shadow, { host: this });

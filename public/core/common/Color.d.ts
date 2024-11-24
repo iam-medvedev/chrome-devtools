@@ -298,7 +298,7 @@ export declare class Legacy implements Color {
     invert(): Legacy;
     /**
      * Returns a new color using the NTSC formula for making a RGB color grayscale.
-     * Note: this is ill-defined for colors with alpha, and alpha is not modified.
+     * Note: We override with an alpha of 50% to enhance the dimming effect.
      */
     grayscale(): Legacy;
     setAlpha(alpha: number): Legacy;

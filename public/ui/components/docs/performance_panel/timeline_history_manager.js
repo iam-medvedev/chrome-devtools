@@ -21,7 +21,7 @@ UI.ActionRegistration.registerActionExtension({
         return new Timeline.TimelinePanel.ActionDelegate();
     },
 });
-const { parsedTrace: parsedTrace1 } = await TraceLoader.TraceLoader.traceEngine(null, 'multiple-navigations.json.gz');
+const { parsedTrace: parsedTrace1, metadata: metadata1 } = await TraceLoader.TraceLoader.traceEngine(null, 'multiple-navigations.json.gz');
 TraceLoader.TraceLoader.initTraceBoundsManager(parsedTrace1);
 new Timeline.TimelineHistoryManager.TimelineHistoryManager().addRecording({
     data: {
@@ -30,9 +30,9 @@ new Timeline.TimelineHistoryManager.TimelineHistoryManager().addRecording({
     },
     filmStripForPreview: Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace1),
     parsedTrace: parsedTrace1,
-    startTime: null,
+    metadata: metadata1,
 });
-const { parsedTrace: parsedTrace2 } = await TraceLoader.TraceLoader.traceEngine(null, 'web-dev.json.gz');
+const { parsedTrace: parsedTrace2, metadata: metadata2 } = await TraceLoader.TraceLoader.traceEngine(null, 'web-dev.json.gz');
 TraceLoader.TraceLoader.initTraceBoundsManager(parsedTrace2);
 const container = document.querySelector('.container');
 if (!container) {
@@ -45,7 +45,7 @@ new Timeline.TimelineHistoryManager.TimelineHistoryManager().addRecording({
     },
     filmStripForPreview: Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace2),
     parsedTrace: parsedTrace2,
-    startTime: null,
+    metadata: metadata2,
 });
 await Timeline.TimelineHistoryManager.DropDown.show([0, 1], 1, container);
 //# sourceMappingURL=timeline_history_manager.js.map

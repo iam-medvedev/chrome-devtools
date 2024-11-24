@@ -9,7 +9,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import { AiAgent, ConversationContext, debugLog, isDebugMode, } from './AiAgent.js';
+import { AiAgent, ConversationContext, debugLog, } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
@@ -506,9 +506,6 @@ export class FreestylerAgent extends AiAgent {
                     };
                 }
                 const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
-                if (isDebugMode()) {
-                    window.dispatchEvent(new CustomEvent('freestylersideeffect', { detail: { confirm: sideEffectConfirmationPromiseWithResolvers.resolve } }));
-                }
                 yield {
                     type: "side-effect" /* ResponseType.SIDE_EFFECT */,
                     code: action,
@@ -555,8 +552,8 @@ export class FreestylerAgent extends AiAgent {
             '';
         return `${elementEnchantmentQuery}QUERY: ${query}`;
     }
-    formatHistoryChunkAnswer(text) {
-        return `ANSWER: ${text}`;
+    formatParsedAnswer({ answer }) {
+        return `ANSWER: ${answer}`;
     }
 }
 //# sourceMappingURL=FreestylerAgent.js.map

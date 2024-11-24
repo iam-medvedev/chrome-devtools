@@ -4,6 +4,7 @@
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { createFakeSetting, createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Security from './security.js';
 function getTestCookieIssue(readCookie, exclusionReason, warningReason, cookieName) {
     // if no exclusion or warning reason provided, use a default
@@ -29,9 +30,10 @@ function getTestCookieIssue(readCookie, exclusionReason, warningReason, cookieNa
 }
 describeWithMockConnection('CookieReportView', () => {
     let mockView;
+    let target;
     beforeEach(() => {
         mockView = sinon.stub();
-        createTarget();
+        target = createTarget();
         const showThirdPartyIssuesSetting = createFakeSetting('third party flag', true);
         IssuesManager.IssuesManager.IssuesManager.instance({
             forceNew: false,
@@ -99,6 +101,16 @@ describeWithMockConnection('CookieReportView', () => {
         globalThis.addIssueForTest(getTestCookieIssue(false));
         await view.pendingUpdate();
         assert.strictEqual(view.gridData.length, 1);
+    });
+    it('should have zero entries after the primary page was changed', async () => {
+        const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
+        // @ts-ignore
+        globalThis.addIssueForTest(getTestCookieIssue(true));
+        await view.pendingUpdate();
+        assert.strictEqual(view.gridData.length, 1);
+        navigate(getMainFrame(target));
+        await view.pendingUpdate();
+        assert.strictEqual(view.gridData.length, 0);
     });
 });
 //# sourceMappingURL=CookieReportView.test.js.map

@@ -648,7 +648,7 @@ STOP`,
                     text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    entity: 1,
+                    entity: 2,
                     text: 'THOUGHT: I am thinking.\nTITLE: thinking\nACTION\nconst data = {\"test\": \"observation\"};\nSTOP',
                 },
             ], 'Unexpected chat history in the follow-up request');
@@ -786,6 +786,39 @@ STOP`,
                     rpcId: 123,
                 },
             ]);
+        });
+        it('should execute an action only once even when the partial response contains an action', async () => {
+            const execJs = sinon.spy();
+            async function* generatePartialAndFullAction() {
+                yield {
+                    explanation: `THOUGHT: I am thinking.
+
+ACTION
+console.log('hel
+          `,
+                    metadata: {},
+                    completed: false,
+                };
+                sinon.assert.notCalled(execJs);
+                yield {
+                    explanation: `THOUGHT: I am thinking.
+
+ACTION
+console.log('hello');
+STOP
+          `,
+                    metadata: {},
+                    completed: true,
+                };
+            }
+            const agent = new FreestylerAgent({
+                aidaClient: mockAidaClient(generatePartialAndFullAction),
+                createExtensionScope,
+                execJs,
+            });
+            await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
+            sinon.assert.calledOnce(execJs);
+            assert.include(execJs.lastCall.args[0], 'console.log(\'hello\');');
         });
         it('generates a response if nothing is returned', async () => {
             async function* generateNothing() {
@@ -996,6 +1029,87 @@ ANSWER: this is the answer`,
             controller.abort();
             await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element), signal: controller.signal }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, []);
+        });
+    });
+    describe('history', () => {
+        let element;
+        beforeEach(() => {
+            mockHostConfig();
+            element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            // @ts-ignore
+            setAiAssistancePersistentHistory(true);
+        });
+        it('stores history via AiHistoryStorage', async () => {
+            let count = 0;
+            async function* generateMultipleTimes() {
+                if (count === 1) {
+                    yield {
+                        explanation: 'ANSWER: this is the answer',
+                        metadata: {},
+                        completed: true,
+                    };
+                    return;
+                }
+                count++;
+                yield {
+                    explanation: `THOUGHT: thought ${count}\nTITLE:test\nACTION\nconsole.log('test')\nSTOP\n`,
+                    metadata: {},
+                    completed: false,
+                };
+            }
+            const historyStub = sinon.stub(Freestyler.AiHistoryStorage.instance(), 'upsertHistoryEntry');
+            const execJs = sinon.spy(async () => 'undefined');
+            const agent = new FreestylerAgent({
+                aidaClient: mockAidaClient(generateMultipleTimes),
+                createExtensionScope,
+                execJs,
+            });
+            await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
+            assert.deepStrictEqual(historyStub.lastCall.args[0].history, [
+                {
+                    type: "user-query" /* Freestyler.ResponseType.USER_QUERY */,
+                    query: 'test',
+                },
+                {
+                    type: "context" /* Freestyler.ResponseType.CONTEXT */,
+                    title: 'Analyzing the prompt',
+                    details: [{
+                            text: '* Its selector is `undefined`',
+                            title: 'Data used',
+                        }],
+                },
+                {
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
+                },
+                {
+                    type: "title" /* Freestyler.ResponseType.TITLE */,
+                    title: 'test',
+                    rpcId: undefined,
+                },
+                {
+                    type: "thought" /* Freestyler.ResponseType.THOUGHT */,
+                    thought: 'thought 1',
+                    rpcId: undefined,
+                },
+                {
+                    type: "action" /* Freestyler.ResponseType.ACTION */,
+                    code: 'console.log(\'test\')',
+                    output: 'undefined',
+                    canceled: false,
+                    rpcId: undefined,
+                },
+                {
+                    type: "querying" /* Freestyler.ResponseType.QUERYING */,
+                    query: 'OBSERVATION: undefined',
+                },
+                {
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
+                    text: 'this is the answer',
+                    suggestions: undefined,
+                    rpcId: undefined,
+                },
+            ]);
         });
     });
     describe('HostConfigFreestylerExecutionMode', () => {

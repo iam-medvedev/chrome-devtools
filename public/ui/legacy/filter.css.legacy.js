@@ -109,7 +109,7 @@ export default {
   position: relative;
 }
 
-.filter-checkbox-filter > [is="dt-checkbox"] {
+.filter-checkbox-filter > dt-checkbox {
   display: flex;
   margin: auto 0;
 }

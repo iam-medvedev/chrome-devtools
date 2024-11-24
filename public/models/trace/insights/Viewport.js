@@ -22,6 +22,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.INP,
+        shouldShow: partialModel.mobileOptimized === false,
         ...partialModel,
     };
 }
