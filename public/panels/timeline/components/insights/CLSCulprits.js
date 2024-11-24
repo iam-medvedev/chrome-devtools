@@ -127,10 +127,10 @@ export class CLSCulprits extends BaseInsightComponent {
             return;
         }
         const culpritsByShift = this.model.shifts;
-        const clusters = this.model.clusters ?? [];
-        if (!clusters.length || !this.model.worstCluster) {
+        if (!this.model.clusters.length || !this.model.worstCluster) {
             return;
         }
+        // TODO: getTopCulprits needs to move to model.
         const causes = this.getTopCulprits(this.model.worstCluster, culpritsByShift);
         const hasCulprits = causes.length > 0;
         const output = hasCulprits ? this.#renderContent(causes, this.model.worstCluster) : LitHtml.nothing;

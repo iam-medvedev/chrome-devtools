@@ -701,7 +701,7 @@ function clickCheckbox(checkbox) {
     checkbox.dispatchEvent(event);
 }
 function getCheckbox(filterBar, title) {
-    const checkbox = filterBar.element.querySelector(`[title="${title}"] span`)?.shadowRoot?.querySelector('input') || null;
+    const checkbox = filterBar.element.querySelector(`[title="${title}"] dt-checkbox`)?.shadowRoot?.querySelector('input') || null;
     assert.instanceOf(checkbox, HTMLInputElement);
     return checkbox;
 }

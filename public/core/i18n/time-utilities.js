@@ -134,6 +134,21 @@ export function preciseMillisToString(ms, precision = 0) {
     }
     return formatter.format(ms);
 }
+const preciseSecondsToStringFormattersCache = new Map();
+export function preciseSecondsToString(ms, precision = 0) {
+    let formatter = preciseSecondsToStringFormattersCache.get(precision);
+    if (!formatter) {
+        formatter = defineFormatter({
+            style: 'unit',
+            unit: 'second',
+            unitDisplay: 'narrow',
+            minimumFractionDigits: precision,
+            maximumFractionDigits: precision,
+        });
+        preciseSecondsToStringFormattersCache.set(precision, formatter);
+    }
+    return formatter.format(ms);
+}
 export function secondsToString(seconds, higherResolution) {
     if (!isFinite(seconds)) {
         return '-';

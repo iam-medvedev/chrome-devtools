@@ -6,9 +6,11 @@ export declare const i18nString: (id: string, values?: import("../../core/i18n/i
 export interface ViewInput {
     gridData: DataGrid.DataGrid.DataGridNode<CookieReportNodeData>[];
     onFilterChanged: () => void;
+    onSortingChanged: () => void;
 }
 export interface ViewOutput {
     namedBitSetFilterUI?: UI.FilterBar.NamedBitSetFilterUI;
+    dataGrid?: DataGrid.DataGrid.DataGridImpl<CookieReportNodeData>;
 }
 export interface CookieReportNodeData {
     name: string;
@@ -22,10 +24,12 @@ export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) =
 export declare class CookieReportView extends UI.Widget.VBox {
     #private;
     namedBitSetFilterUI?: UI.FilterBar.NamedBitSetFilterUI;
+    dataGrid?: DataGrid.DataGrid.DataGridImpl<CookieReportNodeData>;
     gridData: DataGrid.DataGrid.DataGridNode<CookieReportNodeData>[];
     constructor(element?: HTMLElement, view?: View);
     doUpdate(): Promise<void>;
     onFilterChanged(): void;
+    onSortingChanged(): void;
     wasShown(): void;
     static getStatusString(status: IssuesManager.CookieIssue.CookieStatus): string;
 }

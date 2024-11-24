@@ -217,10 +217,6 @@ export class UserMetrics {
     styleTextCopied(value) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.StyleTextCopied" /* EnumeratedHistogram.StyleTextCopied */, value, 11 /* StyleTextCopied.MAX_VALUE */);
     }
-    manifestSectionSelected(sectionTitle) {
-        const code = ManifestSectionCodes[sectionTitle] || ManifestSectionCodes.OtherSection;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ManifestSectionSelected" /* EnumeratedHistogram.ManifestSectionSelected */, code, ManifestSectionCodes.MAX_VALUE);
-    }
     cssHintShown(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSHintShown" /* EnumeratedHistogram.CSSHintShown */, type, 14 /* CSSHintType.MAX_VALUE */);
     }

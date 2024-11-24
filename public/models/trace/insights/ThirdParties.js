@@ -35,6 +35,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
+        shouldShow: Boolean([...partialModel.summaryByEntity.entries()].find(kv => kv[0] !== partialModel.firstPartyEntity)),
         ...partialModel,
     };
 }

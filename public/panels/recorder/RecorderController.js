@@ -852,7 +852,8 @@ let RecorderController = class RecorderController extends LitElement {
     #getShortcutsInfo() {
         const getBindingForAction = (action) => {
             const shortcuts = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(action);
-            return shortcuts.map(shortcut => shortcut.title());
+            const shortcutsWithSplitBindings = shortcuts.map(shortcut => shortcut.title().split(/[\s+]+/).map(word => word.trim()));
+            return shortcutsWithSplitBindings;
         };
         return [
             {
@@ -863,7 +864,7 @@ let RecorderController = class RecorderController extends LitElement {
                 title: i18nString(UIStrings.replayRecording),
                 bindings: getBindingForAction("chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */),
             },
-            { title: i18nString(UIStrings.copyShortcut), bindings: [`${Host.Platform.isMac() ? '⌘ C' : 'Ctrl+C'}`] },
+            { title: i18nString(UIStrings.copyShortcut), bindings: Host.Platform.isMac() ? [['⌘', 'C']] : [['Ctrl', 'C']] },
             {
                 title: i18nString(UIStrings.toggleCode),
                 bindings: getBindingForAction("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */),

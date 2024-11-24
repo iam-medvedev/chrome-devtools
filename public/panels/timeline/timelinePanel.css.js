@@ -242,7 +242,6 @@ styles.replaceSync(
   user-select: text;
   text-overflow: ellipsis;
   overflow: hidden;
-  padding: 0 3px;
 }
 
 .timeline-details-warning .timeline-details-view-row-value {

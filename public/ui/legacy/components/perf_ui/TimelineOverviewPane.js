@@ -186,6 +186,23 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     getMarkers() {
         return this.markers;
     }
+    /**
+     * Dim the time marker outside the highlight time bounds.
+     *
+     * @param highlightBounds the time bounds to highlight, if it is empty, it means to highlight everything.
+     */
+    #dimMarkers(highlightBounds) {
+        for (const time of this.markers.keys()) {
+            const marker = this.markers.get(time);
+            if (!marker) {
+                continue;
+            }
+            const timeInMicroSeconds = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(time));
+            const dim = highlightBounds && !Trace.Helpers.Timing.timestampIsInBounds(highlightBounds, timeInMicroSeconds);
+            // `filter: grayscale(1)`  will make the element fully completely grayscale.
+            marker.style.filter = `grayscale(${dim ? 1 : 0})`;
+        }
+    }
     updateMarkers() {
         const filteredMarkers = new Map();
         for (const time of this.markers.keys()) {
@@ -329,6 +346,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     highlightBounds(bounds, withBracket) {
         const left = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.min));
         const right = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.max));
+        this.#dimMarkers(bounds);
         // Update the punch out rectangle to the not-to-desaturate time range.
         const punchRect = this.#dimHighlightSVG.querySelector('rect.punch');
         punchRect?.setAttribute('x', left.toString());
@@ -342,6 +360,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.#dimHighlightSVG.classList.remove('hidden');
     }
     clearBoundsHighlight() {
+        this.#dimMarkers();
         this.#dimHighlightSVG.classList.add('hidden');
     }
 }

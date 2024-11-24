@@ -11,16 +11,11 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-.shortcuts-dialog {
-  /* overwrite 'white-space: pre' in the toolbar item parent element */
-  white-space: nowrap;
-}
-
 .keybinds-category-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--sys-size-4) var(--sys-size-6) var(--sys-size-6) var(--sys-size-8);
+  padding: 0 var(--sys-size-6) var(--sys-size-5) var(--sys-size-8);
 }
 
 .keybinds-category-header-text {
@@ -31,16 +26,31 @@ styles.replaceSync(
 .keybinds-list {
   display: flex;
   flex-direction: column;
-  gap: var(--sys-size-4);
+  /* overwrite default\\'margin\\' and \\'padding\\' for the <ul> element */
   margin: 0;
-  padding: 0 var(--sys-size-8);
+  padding: 0;
 }
 
 .keybinds-list-item {
-  display: flex;
-  align-items: center;
+  display: grid;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 30px;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr var(--sys-size-11) 1fr;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-4) 0;
+
+  &:last-of-type {
+    border-bottom: unset;
+  }
+
+  .keybinds-list-title {
+    grid-row: 1/1;
+  }
+
+  .shortcuts-for-actions {
+    grid-area: auto / 3 / auto / span 1;
+  }
 }
 
 .keybinds-list-text {
@@ -54,6 +64,20 @@ styles.replaceSync(
 
 .keys-container {
   display: flex;
+  gap: var(--sys-size-3);
+}
+
+.shortcuts-for-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sys-size-3);
+}
+
+.nav-radio-buttons {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--sys-size-8);
   gap: var(--sys-size-3);
 }
 

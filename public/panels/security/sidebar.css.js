@@ -53,7 +53,7 @@ styles.replaceSync(
 .tree-outline span {
   font: var(--sys-typescale-body4-medium);
 
-  &:hover:not(:has(span[is="dt-checkbox"])) .selection {
+  &:hover:not(:has(dt-checkbox)) .selection {
     background: transparent;
   }
 }

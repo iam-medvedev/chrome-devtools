@@ -6,7 +6,15 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { type TimelineSelection } from './TimelineSelection.js';
-export declare class TimelineTreeView extends UI.Widget.VBox implements UI.SearchableView.Searchable {
+declare const TimelineTreeView_base: (new (...args: any[]) => {
+    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
+    addEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
+    once<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
+    removeEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: TimelineTreeView.Events.TREE_ROW_HOVERED): boolean;
+    dispatchEventToListeners<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
+}) & typeof UI.Widget.VBox;
+export declare class TimelineTreeView extends TimelineTreeView_base implements UI.SearchableView.Searchable {
     #private;
     private searchResults;
     linkifier: Components.Linkifier.Linkifier;
@@ -27,6 +35,7 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     private caseSensitiveButton;
     private regexButton;
     private matchWholeWord;
+    eventToTreeNode: WeakMap<Trace.Types.Events.Event, Trace.Extras.TraceTree.Node>;
     constructor();
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
     setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null): void;
@@ -35,13 +44,13 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     lastSelectedNode(): Trace.Extras.TraceTree.Node | null | undefined;
     updateContents(selection: TimelineSelection): void;
     setRange(startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): void;
+    highlightEventInTree(event: Trace.Types.Events.Event | null): void;
     filters(): Trace.Extras.TraceFilter.TraceFilter[];
     filtersWithoutTextFilter(): Trace.Extras.TraceFilter.TraceFilter[];
     textFilter(): TimelineRegExp;
     exposePercentages(): boolean;
     populateToolbar(toolbar: UI.Toolbar.Toolbar): void;
     selectedEvents(): Trace.Types.Events.Event[];
-    onHover(_node: Trace.Extras.TraceTree.Node | null): void;
     appendContextMenuItems(_contextMenu: UI.ContextMenu.ContextMenu, _node: Trace.Extras.TraceTree.Node): void;
     selectProfileNode(treeNode: Trace.Extras.TraceTree.Node, suppressSelectedEvent: boolean): void;
     refreshTree(): void;
@@ -53,7 +62,10 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     private updateDetailsForSelection;
     showDetailsForNode(_node: Trace.Extras.TraceTree.Node): boolean;
     private onMouseMove;
+    onHover(node: Trace.Extras.TraceTree.Node | null): void;
+    onGridNodeOpened(): void;
     private onContextMenu;
+    dataGridElementForEvent(event: Trace.Types.Events.Event | null): HTMLElement | null;
     dataGridNodeForTreeNode(treeNode: Trace.Extras.TraceTree.Node): GridNode | null;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, _shouldJump: boolean, _jumpBackwards?: boolean): void;
@@ -61,6 +73,14 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
     supportsRegexSearch(): boolean;
+}
+export declare namespace TimelineTreeView {
+    const enum Events {
+        TREE_ROW_HOVERED = "TreeRowHovered"
+    }
+    type EventTypes = {
+        [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
+    };
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
     protected populated: boolean;

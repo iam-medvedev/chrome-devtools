@@ -116,11 +116,11 @@ export class TraceLoader {
             TraceLoader.initTraceBoundsManager(fromCache.parsedTrace);
             Timeline.ModificationsManager.ModificationsManager.reset();
             Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
-            return { parsedTrace: fromCache.parsedTrace, insights: fromCache.insights };
+            return { parsedTrace: fromCache.parsedTrace, insights: fromCache.insights, metadata: fromCache.metadata };
         }
         const fileContents = await TraceLoader.fixtureContents(context, name);
         const parsedTraceData = await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
-        const cacheByName = traceEngineCache.get(name) || new Map();
+        const cacheByName = traceEngineCache.get(name) ?? new Map();
         cacheByName.set(configCacheKey, parsedTraceData);
         traceEngineCache.set(name, cacheByName);
         TraceLoader.initTraceBoundsManager(parsedTraceData.parsedTrace);
@@ -129,6 +129,7 @@ export class TraceLoader {
         return {
             parsedTrace: parsedTraceData.parsedTrace,
             insights: parsedTraceData.insights,
+            metadata: parsedTraceData.metadata,
         };
     }
     /**

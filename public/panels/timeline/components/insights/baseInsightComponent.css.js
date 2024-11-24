@@ -138,6 +138,15 @@ dd.dl-title {
   align-items: center;
 }
 
+.image-ref {
+  display: inline-flex;
+  align-items: center;
+
+  &:not(:empty) {
+    padding-top: var(--sys-size-5);
+  }
+}
+
 .element-img {
   width: var(--sys-size-13);
   height: var(--sys-size-13);
@@ -201,18 +210,9 @@ ul.insight-icon-results {
   color: var(--sys-color-state-disabled);
 }
 
-.lcp-element {
-  display: inline-flex;
-  align-items: center;
-}
-
 .insight-results:not(:last-child) {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding-bottom: var(--sys-size-5);
-}
-
-.lcp-element:not(:empty) {
-  padding: inherit;
 }
 
 /*# sourceURL=baseInsightComponent.css */

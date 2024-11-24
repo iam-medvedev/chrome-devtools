@@ -108,6 +108,9 @@
       "path": "../../panels/webauthn/meta-tsconfig.json"
     },
     {
+      "path": "../../panels/whats_new/meta-tsconfig.json"
+    },
+    {
       "path": "../main/bundle-tsconfig.json"
     },
     {

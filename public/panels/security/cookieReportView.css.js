@@ -34,10 +34,10 @@ styles.replaceSync(
   .title {
     font: var(--sys-typescale-headline4);
   }
+}
 
-  .body {
-    font: var(--sys-typescale-body4-regular);
-  }
+.body {
+  font: var(--sys-typescale-body4-regular);
 }
 
 .x-link {
@@ -54,6 +54,25 @@ styles.replaceSync(
 
 .data-grid {
   flex: auto;
+}
+
+.empty-report {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sys-size-2);
+  padding: var(--sys-size-11) var(--sys-size-6) 0 var(--sys-size-6);
+  flex-shrink: 0;
+  min-width: var(--sys-size-31);
+}
+
+.empty-report-title {
+  font: var(--sys-typescale-headline5);
+}
+
+.cookie-off {
+  width: var(--sys-size-11);
+  height: var(--sys-size-11);
 }
 
 /*# sourceURL=cookieReportView.css */

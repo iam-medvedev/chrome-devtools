@@ -18,6 +18,7 @@
         "relatedInsightChips.css.js",
         "sidebarAnnotationsTab.css.js",
         "sidebarInsightsTab.css.js",
-        "sidebarSingleInsightSet.css.js"
+        "sidebarSingleInsightSet.css.js",
+        "timelineSummary.css.js"
     ]
 }

@@ -6,6 +6,7 @@ export interface MetricCardData {
     histogram?: CrUXManager.MetricResponse['histogram'];
     tooltipContainer?: HTMLElement;
     phases?: Array<[string, number]>;
+    warnings?: string[];
 }
 export declare class MetricCard extends HTMLElement {
     #private;

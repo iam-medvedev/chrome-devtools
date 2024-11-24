@@ -1,8 +1,14 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
 import type { Issue, IssueKind } from './Issue.js';
 import { Events } from './IssuesManagerEvents.js';
 export { Events } from './IssuesManagerEvents.js';
+/**
+ * Each issue reported by the backend can result in multiple `Issue` instances.
+ * Handlers are simple functions hard-coded into a map.
+ */
+export declare function createIssuesFromProtocolIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): Issue[];
 export interface IssuesManagerCreationOptions {
     forceNew: boolean;
     /** Throw an error if this is not the first instance created */

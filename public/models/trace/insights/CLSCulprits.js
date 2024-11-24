@@ -313,6 +313,8 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.CLS,
+        // TODO: getTopCulprits in component needs to move to model so this can be set here.
+        shouldShow: true,
         ...partialModel,
     };
 }

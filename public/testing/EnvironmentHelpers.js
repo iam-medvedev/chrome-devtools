@@ -204,7 +204,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-eager-eval', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-user-activation-eval', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-trace-expand', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
-        createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-mouse-wheel-action', false, "enum" /* Common.Settings.SettingType.ENUM */),
+        createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-selected-navigation', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),

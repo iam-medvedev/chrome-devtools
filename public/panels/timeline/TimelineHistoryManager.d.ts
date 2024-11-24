@@ -1,4 +1,4 @@
-import * as Trace from '../../models/trace/trace.js';
+import type * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { TimelineMiniMap } from './TimelineMiniMap.js';
 /**
@@ -25,7 +25,7 @@ export interface NewHistoryRecordingData {
     data: TraceRecordingHistoryItem;
     filmStripForPreview: Trace.Extras.FilmStrip.Data | null;
     parsedTrace: Trace.Handlers.Types.ParsedTrace;
-    startTime: number | null;
+    metadata: Trace.Types.File.MetaData | null;
 }
 export declare class TimelineHistoryManager {
     #private;
@@ -53,17 +53,14 @@ export declare class TimelineHistoryManager {
     navigateToLandingPage(): void;
     private updateState;
     static previewElement(parsedTraceIndex: number): Element;
-    private static coarseAge;
     private title;
     private static dataForTraceIndex;
 }
 export declare const maxRecordings = 5;
-export declare const previewWidth = 450;
+export declare const previewWidth = 500;
 export interface PreviewData {
     preview: Element;
-    time: Element;
     lastUsed: number;
-    startTime: number | null;
     title: string;
 }
 export declare class DropDown implements UI.ListControl.ListDelegate<number> {

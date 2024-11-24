@@ -123,6 +123,7 @@ describeWithMockConnection('CrUXManager', () => {
                 'url-DESKTOP': mockResponse(),
                 'url-PHONE': mockResponse(),
                 'url-TABLET': null,
+                warnings: [],
             });
             assert.deepStrictEqual(fetchBodies, [
                 {
@@ -205,6 +206,7 @@ describeWithMockConnection('CrUXManager', () => {
                 'url-DESKTOP': null,
                 'url-PHONE': null,
                 'url-TABLET': null,
+                warnings: [],
             });
         });
         it('should cache responses', async () => {
@@ -261,6 +263,17 @@ describeWithMockConnection('CrUXManager', () => {
         let getFieldDataMock;
         beforeEach(() => {
             getFieldDataMock = sinon.stub(cruxManager, 'getFieldDataForPage');
+            getFieldDataMock.resolves({
+                'origin-ALL': mockResponse(),
+                'origin-DESKTOP': mockResponse(),
+                'origin-PHONE': mockResponse(),
+                'origin-TABLET': null,
+                'url-ALL': mockResponse(),
+                'url-DESKTOP': mockResponse(),
+                'url-PHONE': mockResponse(),
+                'url-TABLET': null,
+                warnings: [],
+            });
         });
         afterEach(() => {
             getFieldDataMock.restore();
@@ -274,14 +287,16 @@ describeWithMockConnection('CrUXManager', () => {
                 url: 'https://example.com/frame/',
                 isPrimaryFrame: () => false,
             });
-            await cruxManager.getFieldDataForCurrentPage();
+            const result = await cruxManager.getFieldDataForCurrentPage();
+            assert.deepStrictEqual(result.warnings, []);
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/main/');
         });
         it('should use URL override if set', async () => {
             target.setInspectedURL('https://example.com/inspected');
             cruxManager.getConfigSetting().set({ enabled: false, override: 'https://example.com/override', overrideEnabled: true });
-            await cruxManager.getFieldDataForCurrentPage();
+            const result = await cruxManager.getFieldDataForCurrentPage();
+            assert.deepStrictEqual(result.warnings, ['Field data is configured for a different URL than the current page.']);
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/override');
         });
@@ -294,7 +309,8 @@ describeWithMockConnection('CrUXManager', () => {
                         productionOrigin: 'https://example.com',
                     }],
             });
-            await cruxManager.getFieldDataForCurrentPage();
+            const result = await cruxManager.getFieldDataForCurrentPage();
+            assert.deepStrictEqual(result.warnings, ['Field data is configured for a different URL than the current page.']);
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/inspected');
         });
@@ -309,13 +325,15 @@ describeWithMockConnection('CrUXManager', () => {
                         productionOrigin: 'https://example.com',
                     }],
             });
-            await cruxManager.getFieldDataForCurrentPage();
+            const result = await cruxManager.getFieldDataForCurrentPage();
+            assert.deepStrictEqual(result.warnings, ['Field data is configured for a different URL than the current page.']);
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://google.com');
         });
         it('should use inspected URL if main document is unavailable', async () => {
             target.setInspectedURL('https://example.com/inspected');
-            await cruxManager.getFieldDataForCurrentPage();
+            const result = await cruxManager.getFieldDataForCurrentPage();
+            assert.deepStrictEqual(result.warnings, []);
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/inspected');
         });
@@ -324,7 +342,8 @@ describeWithMockConnection('CrUXManager', () => {
             const finishPromise = cruxManager.getFieldDataForCurrentPage();
             await triggerMicroTaskQueue();
             target.setInspectedURL('https://example.com/awaitInspected');
-            await finishPromise;
+            const result = await finishPromise;
+            assert.deepStrictEqual(result.warnings, []);
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/awaitInspected');
         });

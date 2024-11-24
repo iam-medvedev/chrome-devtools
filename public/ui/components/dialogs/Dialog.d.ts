@@ -27,6 +27,8 @@ export declare class Dialog extends HTMLElement {
     set dialogShownCallback(dialogShownCallback: (() => unknown) | null);
     set closeOnESC(closeOnESC: boolean);
     set closeOnScroll(closeOnScroll: boolean);
+    set closeButton(closeButton: boolean);
+    set dialogTitle(dialogTitle: string);
     set jslogContext(jslogContext: string);
     connectedCallback(): void;
     disconnectedCallback(): void;

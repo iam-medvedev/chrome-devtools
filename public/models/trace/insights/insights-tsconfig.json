@@ -33,6 +33,7 @@
     "../../../../../../../front_end/models/trace/insights/Common.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.ts",
     "../../../../../../../front_end/models/trace/insights/FontDisplay.ts",
+    "../../../../../../../front_end/models/trace/insights/ImageDelivery.ts",
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.ts",
     "../../../../../../../front_end/models/trace/insights/LCPDiscovery.ts",
     "../../../../../../../front_end/models/trace/insights/LCPPhases.ts",

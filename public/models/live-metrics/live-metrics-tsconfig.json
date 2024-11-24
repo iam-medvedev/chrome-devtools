@@ -48,6 +48,9 @@
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
+      "path": "../emulation/bundle-tsconfig.json"
+    },
+    {
       "path": "web-vitals-injected/web-vitals-injected-tsconfig.json"
     },
     {

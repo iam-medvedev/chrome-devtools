@@ -1011,8 +1011,14 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         this.#networkConditionsInternal = NoThrottlingConditions;
         this.#updatingInterceptionPatternsPromise = null;
         // TODO(allada) Remove these and merge it with request interception.
+        const blockedPatternChanged = () => {
+            this.updateBlockedPatterns();
+            this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
+        };
         this.#blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
+        this.#blockingEnabledSetting.addChangeListener(blockedPatternChanged);
         this.#blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
+        this.#blockedPatternsSetting.addChangeListener(blockedPatternChanged);
         this.#effectiveBlockedURLs = [];
         this.updateBlockedPatterns();
         this.#urlsForRequestInterceptor = new Platform.MapUtilities.Multimap();
@@ -1220,16 +1226,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     }
     setBlockedPatterns(patterns) {
         this.#blockedPatternsSetting.set(patterns);
-        this.updateBlockedPatterns();
-        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
     }
     setBlockingEnabled(enabled) {
         if (this.#blockingEnabledSetting.get() === enabled) {
             return;
         }
         this.#blockingEnabledSetting.set(enabled);
-        this.updateBlockedPatterns();
-        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
     }
     updateBlockedPatterns() {
         const urls = [];

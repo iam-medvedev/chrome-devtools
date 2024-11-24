@@ -152,6 +152,9 @@
   "core/common/SettingRegistration.ts | persistence": {
     "message": "Persistence"
   },
+  "core/common/SettingRegistration.ts | privacy": {
+    "message": "Privacy"
+  },
   "core/common/SettingRegistration.ts | rendering": {
     "message": "Rendering"
   },
@@ -1175,9 +1178,6 @@
   "generated/Deprecation.ts | CSSCustomStateDeprecatedSyntax": {
     "message": ":--customstatename is deprecated. Please use the :state(customstatename) syntax instead."
   },
-  "generated/Deprecation.ts | CSSInsetAreaProperty": {
-    "message": "The inset-area property is deprecated. Please use the position-area property instead."
-  },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
   },
@@ -1195,9 +1195,6 @@
   },
   "generated/Deprecation.ts | GeolocationInsecureOriginDeprecatedNotRemoved": {
     "message": "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
-  },
-  "generated/Deprecation.ts | GetInnerHTML": {
-    "message": "The getInnerHTML() function is deprecated, and will be removed from this browser very soon. Please use getHTML() instead."
   },
   "generated/Deprecation.ts | GetUserMediaInsecureOrigin": {
     "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
@@ -1376,6 +1373,9 @@
   "models/bindings/ResourceScriptMapping.ts | liveEditFailed": {
     "message": "LiveEdit failed: {PH1}"
   },
+  "models/crux-manager/CrUXManager.ts | fieldOverrideWarning": {
+    "message": "Field data is configured for a different URL than the current page."
+  },
   "models/emulation/DeviceModeModel.ts | devicePixelRatioMustBeANumberOr": {
     "message": "Device pixel ratio must be a number or blank."
   },
@@ -1553,6 +1553,9 @@
   "models/issues_manager/SharedDictionaryIssue.ts | compressionDictionaryTransport": {
     "message": "Compression Dictionary Transport"
   },
+  "models/live-metrics/LiveMetrics.ts | lcpEmulationWarning": {
+    "message": "Simulating a new device after the page loads can affect LCP. Reload the page after simulating a new device for accurate LCP data."
+  },
   "models/logs/logs-meta.ts | clear": {
     "message": "clear"
   },
@@ -1711,6 +1714,12 @@
   },
   "models/trace/insights/FontDisplay.ts | title": {
     "message": "Font display"
+  },
+  "models/trace/insights/ImageDelivery.ts | description": {
+    "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)"
+  },
+  "models/trace/insights/ImageDelivery.ts | title": {
+    "message": "Improve image delivery"
   },
   "models/trace/insights/InteractionToNextPaint.ts | description": {
     "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
@@ -7820,6 +7829,9 @@
   "panels/mobile_throttling/ThrottlingManager.ts | offline": {
     "message": "Offline"
   },
+  "panels/mobile_throttling/ThrottlingManager.ts | recommendedThrottling": {
+    "message": "{PH1} - recommended"
+  },
   "panels/mobile_throttling/ThrottlingManager.ts | resetConcurrency": {
     "message": "Reset to the default value"
   },
@@ -10529,6 +10541,54 @@
   "panels/search/SearchView.ts | searchInterrupted": {
     "message": "Search interrupted."
   },
+  "panels/security/CookieControlsView.ts | cardDisclaimer": {
+    "message": "Only when DevTools is open"
+  },
+  "panels/security/CookieControlsView.ts | cardTitle": {
+    "message": "Temporarily restrict third-party cookies"
+  },
+  "panels/security/CookieControlsView.ts | enterpriseDisclaimer": {
+    "message": "Your organization manages third-party cookie access for this site"
+  },
+  "panels/security/CookieControlsView.ts | enterpriseTooltip": {
+    "message": "This setting is managed by your organization"
+  },
+  "panels/security/CookieControlsView.ts | exceptions": {
+    "message": "Exceptions"
+  },
+  "panels/security/CookieControlsView.ts | exceptionsExplanation": {
+    "message": "Scenarios that grant access to third-party cookies"
+  },
+  "panels/security/CookieControlsView.ts | gracePeriod": {
+    "message": "grace period"
+  },
+  "panels/security/CookieControlsView.ts | gracePeriodExplanation": {
+    "message": "If this site or a site embedded on it is enrolled in the {PH1}, then the site can access third-party cookies"
+  },
+  "panels/security/CookieControlsView.ts | gracePeriodTitle": {
+    "message": "Third-party cookie grace period"
+  },
+  "panels/security/CookieControlsView.ts | heuristicExplanation": {
+    "message": "In {PH1} like pop-ups or redirects, a site embedded on this site can access third-party cookies"
+  },
+  "panels/security/CookieControlsView.ts | heuristicTitle": {
+    "message": "Heuristics based exception"
+  },
+  "panels/security/CookieControlsView.ts | scenarios": {
+    "message": "predefined scenarios"
+  },
+  "panels/security/CookieControlsView.ts | siteReloadMessage": {
+    "message": "To apply your updated controls, reload the page"
+  },
+  "panels/security/CookieControlsView.ts | viewDetails": {
+    "message": "View details"
+  },
+  "panels/security/CookieControlsView.ts | viewExplanation": {
+    "message": "Test how this site will perform if a user chooses to restrict third-party cookies in Chrome"
+  },
+  "panels/security/CookieControlsView.ts | viewTitle": {
+    "message": "Controls"
+  },
   "panels/security/CookieReportView.ts | allowed": {
     "message": "Allowed"
   },
@@ -10543,6 +10603,12 @@
   },
   "panels/security/CookieReportView.ts | domain": {
     "message": "Domain"
+  },
+  "panels/security/CookieReportView.ts | emptyReport": {
+    "message": "Not a crumb left"
+  },
+  "panels/security/CookieReportView.ts | emptyReportExplanation": {
+    "message": "No issues with third-party cookies found"
   },
   "panels/security/CookieReportView.ts | learnMoreLink": {
     "message": "Learn more about how third-party cookies are used"
@@ -10885,6 +10951,9 @@
   },
   "panels/security/SecurityPanelSidebar.ts | cookieReport": {
     "message": "Third-party cookies"
+  },
+  "panels/security/SecurityPanelSidebar.ts | flagControls": {
+    "message": "Controls"
   },
   "panels/security/SecurityPanelSidebar.ts | mainOrigin": {
     "message": "Main origin"
@@ -12629,6 +12698,12 @@
   "panels/timeline/components/CPUThrottlingSelector.ts | noThrottling": {
     "message": "No throttling"
   },
+  "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottling": {
+    "message": "{PH1} - recommended"
+  },
+  "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottlingReason": {
+    "message": "Consider changing setting to simulate real user environments"
+  },
   "panels/timeline/components/DetailsView.ts | forcedReflow": {
     "message": "Forced reflow"
   },
@@ -12799,6 +12874,15 @@
   },
   "panels/timeline/components/insights/FontDisplay.ts | wastedTimeColumn": {
     "message": "Wasted time"
+  },
+  "panels/timeline/components/insights/ImageDelivery.ts | optimizeFile": {
+    "message": "Optimize file size"
+  },
+  "panels/timeline/components/insights/ImageDelivery.ts | others": {
+    "message": "{PH1} others"
+  },
+  "panels/timeline/components/insights/ImageDelivery.ts | sizeAppropriately": {
+    "message": "Size appropriately"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
     "message": "Duration"
@@ -13043,9 +13127,6 @@
   "panels/timeline/components/LiveMetricsView.ts | processingDuration": {
     "message": "Processing duration"
   },
-  "panels/timeline/components/LiveMetricsView.ts | realUserEnvironments": {
-    "message": "Real user environments"
-  },
   "panels/timeline/components/LiveMetricsView.ts | resourceLoadDelay": {
     "message": "Resource load delay"
   },
@@ -13067,9 +13148,6 @@
   "panels/timeline/components/LiveMetricsView.ts | showInpInteraction": {
     "message": "Go to the INP interaction."
   },
-  "panels/timeline/components/LiveMetricsView.ts | simulateDifferentDevices": {
-    "message": "simulate different devices"
-  },
   "panels/timeline/components/LiveMetricsView.ts | tablet": {
     "message": "Tablet"
   },
@@ -13089,7 +13167,7 @@
     "message": "URL: {PH1}"
   },
   "panels/timeline/components/LiveMetricsView.ts | useDeviceToolbar": {
-    "message": "Use the device toolbar to {PH1}."
+    "message": "Use the [device toolbar](https://developer.chrome.com/docs/devtools/device-mode) and configure throttling to simulate real user environments and identify more performance issues."
   },
   "panels/timeline/components/LiveMetricsView.ts | worstCluster": {
     "message": "Worst cluster"
@@ -13325,6 +13403,12 @@
   "panels/timeline/components/NetworkThrottlingSelector.ts | presets": {
     "message": "Presets"
   },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottling": {
+    "message": "{PH1} - recommended"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottlingReason": {
+    "message": "Consider changing setting to simulate real user environments"
+  },
   "panels/timeline/components/RelatedInsightChips.ts | insightKeyword": {
     "message": "Insight"
   },
@@ -13376,6 +13460,12 @@
   "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
     "message": "{PH1}: {PH2} {PH3} score"
   },
+  "panels/timeline/components/TimelineSummary.ts | rangeSS": {
+    "message": "Range:  {PH1} – {PH2}"
+  },
+  "panels/timeline/components/TimelineSummary.ts | total": {
+    "message": "Total"
+  },
   "panels/timeline/components/Utils.ts | fms": {
     "message": "{PH1}[ms]()"
   },
@@ -13405,9 +13495,6 @@
   },
   "panels/timeline/EventsTimelineTreeView.ts | all": {
     "message": "All"
-  },
-  "panels/timeline/EventsTimelineTreeView.ts | Dms": {
-    "message": "{PH1} ms"
   },
   "panels/timeline/EventsTimelineTreeView.ts | durationFilter": {
     "message": "Duration filter"
@@ -13482,7 +13569,7 @@
     "message": "Main — {PH1}"
   },
   "panels/timeline/ThreadAppender.ts | onIgnoreList": {
-    "message": "On ignore list"
+    "message": "On ignore list ({rule})"
   },
   "panels/timeline/ThreadAppender.ts | raster": {
     "message": "Raster"
@@ -13580,9 +13667,6 @@
   "panels/timeline/TimelineDetailsView.ts | paintProfiler": {
     "message": "Paint profiler"
   },
-  "panels/timeline/TimelineDetailsView.ts | rangeSS": {
-    "message": "Range:  {PH1} – {PH2}"
-  },
   "panels/timeline/TimelineDetailsView.ts | selectorStats": {
     "message": "Selector stats"
   },
@@ -13643,29 +13727,20 @@
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Current session: {PH1}. {PH2}"
   },
+  "panels/timeline/TimelineHistoryManager.ts | dSlowdown": {
+    "message": "{PH1}× slowdown"
+  },
   "panels/timeline/TimelineHistoryManager.ts | landingPageTitle": {
     "message": "Live metrics"
   },
-  "panels/timeline/TimelineHistoryManager.ts | moments": {
-    "message": "moments"
-  },
   "panels/timeline/TimelineHistoryManager.ts | noRecordings": {
     "message": "(no recordings)"
-  },
-  "panels/timeline/TimelineHistoryManager.ts | sAgo": {
-    "message": "({PH1} ago)"
   },
   "panels/timeline/TimelineHistoryManager.ts | sD": {
     "message": "{PH1} #{PH2}"
   },
   "panels/timeline/TimelineHistoryManager.ts | selectTimelineSession": {
     "message": "Select timeline session"
-  },
-  "panels/timeline/TimelineHistoryManager.ts | sH": {
-    "message": "{PH1} h"
-  },
-  "panels/timeline/TimelineHistoryManager.ts | sM": {
-    "message": "{PH1} m"
   },
   "panels/timeline/TimelineLandingPage.ts | afterRecordingSelectAnAreaOf": {
     "message": "After recording, select an area of interest in the overview by dragging. Then, zoom and pan the timeline with the mousewheel or {PH1} keys. {PH2}"
@@ -13838,9 +13913,6 @@
   "panels/timeline/TimelinePanel.ts | SignificantOverheadDueToPaint": {
     "message": "- Significant overhead due to paint instrumentation"
   },
-  "panels/timeline/TimelinePanel.ts | ssec": {
-    "message": "{PH1} sec"
-  },
   "panels/timeline/TimelinePanel.ts | status": {
     "message": "Status"
   },
@@ -13852,6 +13924,18 @@
   },
   "panels/timeline/TimelinePanel.ts | time": {
     "message": "Time"
+  },
+  "panels/timeline/TimelinePanel.ts | timelineFastZoomInOut": {
+    "message": "Timeline fast zoom in/out"
+  },
+  "panels/timeline/TimelinePanel.ts | timelinePanLeftRight": {
+    "message": "Timeline right/left"
+  },
+  "panels/timeline/TimelinePanel.ts | timelineScrollUpDown": {
+    "message": "Timeline up/down"
+  },
+  "panels/timeline/TimelinePanel.ts | timelineZoomInOut": {
+    "message": "Timeline zoom in/out"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
     "message": "Copy table"
@@ -13900,9 +13984,6 @@
   },
   "panels/timeline/TimelineTreeView.ts | chromeExtensionsOverhead": {
     "message": "[Chrome extensions overhead]"
-  },
-  "panels/timeline/TimelineTreeView.ts | fms": {
-    "message": "{PH1} ms"
   },
   "panels/timeline/TimelineTreeView.ts | groupBy": {
     "message": "Group by"
@@ -14765,6 +14846,18 @@
   "panels/timeline/utils/EntryStyles.ts | xhrReadyStateChange": {
     "message": "XHR readyState change"
   },
+  "panels/timeline/utils/IgnoreList.ts | skip3rdPartyScripts": {
+    "message": "Marked with ignoreList in source map"
+  },
+  "panels/timeline/utils/IgnoreList.ts | skipAnonymousScripts": {
+    "message": "Anonymous script"
+  },
+  "panels/timeline/utils/IgnoreList.ts | skipContentScripts": {
+    "message": "Content script"
+  },
+  "panels/timeline/utils/IgnoreList.ts | unknown": {
+    "message": "Unknown"
+  },
   "panels/utils/utils.ts | requestContentHeadersOverridden": {
     "message": "Both request content and headers are overridden"
   },
@@ -14915,6 +15008,33 @@
   "panels/webauthn/WebauthnPane.ts | yes": {
     "message": "Yes"
   },
+  "panels/whats_new/ReleaseNoteView.ts | close": {
+    "message": "Close"
+  },
+  "panels/whats_new/ReleaseNoteView.ts | learnMore": {
+    "message": "Learn more"
+  },
+  "panels/whats_new/whats_new-meta.ts | bug": {
+    "message": "bug"
+  },
+  "panels/whats_new/whats_new-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
+    "message": "Don't show what's new after each update"
+  },
+  "panels/whats_new/whats_new-meta.ts | releaseNotes": {
+    "message": "Release notes"
+  },
+  "panels/whats_new/whats_new-meta.ts | reportADevtoolsIssue": {
+    "message": "Report a DevTools issue"
+  },
+  "panels/whats_new/whats_new-meta.ts | showWhatsNew": {
+    "message": "Show what's new"
+  },
+  "panels/whats_new/whats_new-meta.ts | showWhatsNewAfterEachUpdate": {
+    "message": "Show what's new after each update"
+  },
+  "panels/whats_new/whats_new-meta.ts | whatsNew": {
+    "message": "What's new"
+  },
   "ui/components/data_grid/DataGrid.ts | enterToSort": {
     "message": "Column sort state: {PH1}. Press enter to apply sorting filter"
   },
@@ -14945,10 +15065,10 @@
   "ui/components/data_grid/DataGridController.ts | sortingCanceled": {
     "message": "{PH1} sorting canceled"
   },
-  "ui/components/dialogs/IconDialog.ts | close": {
+  "ui/components/dialogs/Dialog.ts | close": {
     "message": "Close"
   },
-  "ui/components/dialogs/ShortcutDialog.ts | close": {
+  "ui/components/dialogs/IconDialog.ts | close": {
     "message": "Close"
   },
   "ui/components/dialogs/ShortcutDialog.ts | dialogTitle": {

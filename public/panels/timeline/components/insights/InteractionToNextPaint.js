@@ -97,9 +97,10 @@ export class InteractionToNextPaint extends BaseInsightComponent {
         // clang-format on
     }
     render() {
-        const event = this.model?.longestInteractionEvent;
-        const output = event ? this.#renderContent(event) : LitHtml.nothing;
-        this.renderWithContent(output);
+        if (!this.model?.longestInteractionEvent) {
+            return;
+        }
+        this.renderWithContent(this.#renderContent(this.model.longestInteractionEvent));
     }
 }
 customElements.define('devtools-performance-inp', InteractionToNextPaint);

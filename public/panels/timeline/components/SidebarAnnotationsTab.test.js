@@ -99,7 +99,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         await coordinator.done();
         assert.isNotNull(component.shadowRoot);
         const label = component.shadowRoot.querySelector('.annotation-identifier');
-        assert.strictEqual(label?.innerText, 'private-aggregation-test.js (shared-sto…');
+        assert.strictEqual(label?.innerText, 'private-aggregation-test.js (shared-storage-demo-content-producer.web.app)');
     });
     it('dispatches RemoveAnnotation Events when delete annotation button is clicked', async function () {
         const component = new SidebarAnnotationsTab();

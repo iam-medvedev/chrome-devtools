@@ -818,6 +818,65 @@ describeWithEnvironment('FreestylerPanel', () => {
                 blockedByCrossOrigin: true,
             }));
         });
+        it('should be able to continue same-origin requests', async () => {
+            const stub = getGetHostConfigStub({
+                devToolsFreestyler: {
+                    enabled: true,
+                },
+            });
+            panel = new Freestyler.FreestylerPanel(mockView, {
+                aidaClient: getTestAidaClient(),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
+            });
+            UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+            panel.handleAction('freestyler.elements-floating-button');
+            mockView.lastCall.args[0].onTextSubmit('test');
+            await drainMicroTasks();
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
+                {
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                    text: 'test',
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, sinon.createStubInstance(ElementsPanel.ElementsPanel.ElementsPanel));
+            panel.handleAction('freestyler.elements-floating-button');
+            mockView.lastCall.args[0].onTextSubmit('test2');
+            await drainMicroTasks();
+            assert.strictEqual(mockView.lastCall.args[0].isReadOnly, false);
+            assert.deepEqual(mockView.lastCall.args[0].messages, [
+                {
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                    text: 'test',
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+                {
+                    entity: "user" /* Freestyler.ChatMessageEntity.USER */,
+                    text: 'test2',
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            stub.restore();
+        });
     });
     describe('auto agent selection for panels', () => {
         describe('Elements panel', () => {

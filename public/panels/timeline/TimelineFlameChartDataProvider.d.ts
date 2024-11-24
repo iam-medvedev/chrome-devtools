@@ -76,7 +76,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private preparePatternCanvas;
     private drawFrame;
     private drawScreenshot;
-    decorateEntry(entryIndex: number, context: CanvasRenderingContext2D, text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number): boolean;
+    decorateEntry(entryIndex: number, context: CanvasRenderingContext2D, text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number, transformColor: (color: string) => string): boolean;
     forceDecoration(entryIndex: number): boolean;
     private appendHeader;
     createSelection(entryIndex: number): TimelineSelection | null;
@@ -100,10 +100,12 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
 }
 export declare const InstantEventVisibleDurationMs: Trace.Types.Timing.MilliSeconds;
 export declare const enum Events {
-    DATA_CHANGED = "DataChanged"
+    DATA_CHANGED = "DataChanged",
+    FLAME_CHART_ITEM_HOVERED = "FlameChartItemHovered"
 }
 export type EventTypes = {
     [Events.DATA_CHANGED]: void;
+    [Events.FLAME_CHART_ITEM_HOVERED]: Trace.Types.Events.Event | null;
 };
 export declare const enum EntryType {
     FRAME = "Frame",

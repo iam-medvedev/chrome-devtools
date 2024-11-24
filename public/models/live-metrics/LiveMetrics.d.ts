@@ -30,7 +30,10 @@ export declare const enum Events {
     STATUS = "status"
 }
 export type InteractionId = `interaction-${number}-${number}`;
-export type MetricValue = Pick<Spec.MetricChangeEvent, 'value'>;
+export interface MetricValue {
+    value: number;
+    warnings?: string[];
+}
 export interface LCPValue extends MetricValue {
     phases: Spec.LCPPhases;
     node?: SDK.DOMModel.DOMNode;

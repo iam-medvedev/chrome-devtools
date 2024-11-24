@@ -15,10 +15,11 @@ describeWithEnvironment('TimelineHistoryManager', function () {
     afterEach(() => {
         UI.ActionRegistry.ActionRegistry.reset();
         Root.Runtime.experiments.disableForTest("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */);
+        historyManager.cancelIfShowing();
     });
     it('shows the dropdown including a landing page link if the observations experiment is enabled', async function () {
         Root.Runtime.experiments.enableForTest("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */);
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         historyManager.addRecording({
             data: {
                 parsedTraceIndex: 1,
@@ -26,7 +27,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             },
             filmStripForPreview: null,
             parsedTrace,
-            startTime: null,
+            metadata,
         });
         const showPromise = historyManager.showHistoryDropDown();
         const glassPane = document.querySelector('div[data-devtools-glass-pane]');
@@ -35,14 +36,14 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         const menuItemText = Array.from(dropdown.querySelectorAll('[role="menuitem"]'), elem => {
             return elem.innerText.replaceAll('\n', '');
         });
-        assert.deepEqual(menuItemText, ['Live metrics', 'web.dev5.39 s']);
+        assert.deepEqual(menuItemText, ['Live metrics', 'web.dev1× slowdown, No throttling']);
         // Cancel the dropdown, which also resolves the show() promise, meaning we
         // don't leak it into other tests.
         historyManager.cancelIfShowing();
         await showPromise;
     });
     it('does not show if observations experiment is disabled + the user has not imported 2 traces', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         historyManager.addRecording({
             data: {
                 parsedTraceIndex: 1,
@@ -50,7 +51,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             },
             filmStripForPreview: null,
             parsedTrace,
-            startTime: null,
+            metadata,
         });
         const promise = historyManager.showHistoryDropDown();
         const glassPane = document.querySelector('div[data-devtools-glass-pane]');
@@ -60,7 +61,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         assert.isNull(result);
     });
     it('does not show the landing page link if the observations experiment is disabled', async function () {
-        const { parsedTrace: parsedTrace1 } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { parsedTrace: parsedTrace1, metadata: metadata1 } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         historyManager.addRecording({
             data: {
                 parsedTraceIndex: 1,
@@ -68,9 +69,9 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             },
             filmStripForPreview: null,
             parsedTrace: parsedTrace1,
-            startTime: null,
+            metadata: metadata1,
         });
-        const { parsedTrace: parsedTrace2 } = await TraceLoader.traceEngine(this, 'timings-track.json.gz');
+        const { parsedTrace: parsedTrace2, metadata: metadata2 } = await TraceLoader.traceEngine(this, 'timings-track.json.gz');
         historyManager.addRecording({
             data: {
                 parsedTraceIndex: 2,
@@ -78,7 +79,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             },
             filmStripForPreview: null,
             parsedTrace: parsedTrace2,
-            startTime: null,
+            metadata: metadata2,
         });
         const showPromise = historyManager.showHistoryDropDown();
         const glassPane = document.querySelector('div[data-devtools-glass-pane]');
@@ -88,8 +89,8 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             return elem.innerText.replaceAll('\n', '');
         });
         assert.deepEqual(menuItemText, [
-            'localhost3.16 s',
-            'web.dev5.39 s',
+            'localhost',
+            'web.dev1× slowdown, No throttling',
         ]);
         // Cancel the dropdown, which also resolves the show() promise, meaning we
         // don't leak it into other tests.
@@ -98,7 +99,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
     });
     it('can select from multiple parsed data objects', async function () {
         // Add two parsed data objects to the history manager.
-        const { parsedTrace: trace1Data } = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
+        const { parsedTrace: trace1Data, metadata: metadata1 } = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
         historyManager.addRecording({
             data: {
                 parsedTraceIndex: 1,
@@ -106,9 +107,9 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             },
             filmStripForPreview: null,
             parsedTrace: trace1Data,
-            startTime: null,
+            metadata: metadata1,
         });
-        const { parsedTrace: trace2Data } = await TraceLoader.traceEngine(this, 'slow-interaction-keydown.json.gz');
+        const { parsedTrace: trace2Data, metadata: metadata2 } = await TraceLoader.traceEngine(this, 'slow-interaction-keydown.json.gz');
         historyManager.addRecording({
             data: {
                 parsedTraceIndex: 2,
@@ -116,7 +117,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             },
             filmStripForPreview: null,
             parsedTrace: trace2Data,
-            startTime: null,
+            metadata: metadata2,
         });
         // Make sure the correct model is returned when
         // using the history manager to navigate between trace files..

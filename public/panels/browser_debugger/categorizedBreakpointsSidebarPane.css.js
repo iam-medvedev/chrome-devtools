@@ -51,7 +51,7 @@ styles.replaceSync(
   z-index: -1;
 }
 
-.source-code[is="dt-checkbox"] {
+dt-checkbox.source-code {
   max-width: 100%;
 }
 

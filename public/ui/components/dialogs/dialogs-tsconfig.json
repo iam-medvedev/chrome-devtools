@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/ui/components/dialogs/ButtonDialog.ts",
     "../../../../../../../front_end/ui/components/dialogs/Dialog.ts",
     "../../../../../../../front_end/ui/components/dialogs/IconDialog.ts",
     "../../../../../../../front_end/ui/components/dialogs/ShortcutDialog.ts",

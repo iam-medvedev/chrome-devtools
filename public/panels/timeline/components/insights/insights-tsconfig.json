@@ -35,6 +35,7 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/EventRef.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/FontDisplay.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Helpers.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/ImageDelivery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/InteractionToNextPaint.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",
@@ -67,9 +68,6 @@
       "path": "../../../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
-      "path": "../../../../third_party/marked/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
@@ -80,9 +78,6 @@
     },
     {
       "path": "../../../../ui/components/linkifier/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../../ui/components/markdown_view/bundle-tsconfig.json"
     },
     {
       "path": "../../../../ui/lit-html/bundle-tsconfig.json"

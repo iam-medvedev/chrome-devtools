@@ -321,6 +321,11 @@ export const NativeFunctions = [
         receivers: ["CallableFunction", "NewableFunction"]
     },
     {
+        name: "bind",
+        signatures: [["innerFunction", "?thisArg", "...args"]],
+        receivers: ["Performance"]
+    },
+    {
         name: "charAt",
         signatures: [["pos"]]
     },
@@ -809,6 +814,11 @@ export const NativeFunctions = [
     {
         name: "push",
         signatures: [["...items"]]
+    },
+    {
+        name: "reverse",
+        signatures: [["input", "?options"]],
+        receivers: ["MLGraphBuilder"]
     },
     {
         name: "sort",
@@ -6505,10 +6515,6 @@ export const NativeFunctions = [
         signatures: [["html", "?options"]]
     },
     {
-        name: "getInnerHTML",
-        signatures: [["?options"]]
-    },
-    {
         name: "scrollIntoViewIfNeeded",
         signatures: [["?centerIfNeeded"]]
     },
@@ -7724,6 +7730,10 @@ export const NativeFunctions = [
     {
         name: "takePhoto",
         signatures: [["?photoSettings"]]
+    },
+    {
+        name: "getAllRecords",
+        signatures: [["?options"]]
     },
     {
         name: "only",

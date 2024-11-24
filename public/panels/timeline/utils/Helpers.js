@@ -1,7 +1,11 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/markdown_view/markdown_view.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as Marked from '../../../third_party/marked/marked.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+const { html } = LitHtml;
 function createTrimmedUrlSearch(url) {
     const maxSearchValueLength = 8;
     let search = '';
@@ -80,5 +84,16 @@ export function shortenUrl(url, maxChars = 20) {
         }
     }
     return shortenedUrl;
+}
+/**
+ * Returns a rendered MarkdownView component.
+ *
+ * This should only be used for markdown that is guaranteed to be valid,
+ * and not contain any user-generated content.
+ */
+export function md(markdown) {
+    const tokens = Marked.Marked.lexer(markdown);
+    const data = { tokens };
+    return html `<devtools-markdown-view .data=${data}></devtools-markdown-view>`;
 }
 //# sourceMappingURL=Helpers.js.map

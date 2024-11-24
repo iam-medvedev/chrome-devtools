@@ -24,6 +24,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.INP,
+        shouldShow: Boolean(partialModel.fonts.find(font => font.wastedTime > 0)),
         ...partialModel,
     };
 }

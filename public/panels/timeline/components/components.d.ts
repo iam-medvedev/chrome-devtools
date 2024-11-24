@@ -15,5 +15,6 @@ import * as Sidebar from './Sidebar.js';
 import * as SidebarAnnotationsTab from './SidebarAnnotationsTab.js';
 import * as SidebarInsightsTab from './SidebarInsightsTab.js';
 import * as SidebarSingleInsightSet from './SidebarSingleInsightSet.js';
+import * as TimelineSummary from './TimelineSummary.js';
 import * as Utils from './Utils.js';
-export { Breadcrumbs, BreadcrumbsUI, CPUThrottlingSelector, DetailsView, FieldSettingsDialog, InteractionBreakdown, LayoutShiftDetails, LiveMetricsView, MetricCard, NetworkRequestDetails, NetworkRequestTooltip, NetworkThrottlingSelector, RelatedInsightChips, Sidebar, SidebarAnnotationsTab, SidebarInsightsTab, SidebarSingleInsightSet, Utils, };
+export { Breadcrumbs, BreadcrumbsUI, CPUThrottlingSelector, DetailsView, FieldSettingsDialog, InteractionBreakdown, LayoutShiftDetails, LiveMetricsView, MetricCard, NetworkRequestDetails, NetworkRequestTooltip, NetworkThrottlingSelector, RelatedInsightChips, Sidebar, SidebarAnnotationsTab, SidebarInsightsTab, SidebarSingleInsightSet, TimelineSummary, Utils, };

@@ -14,4 +14,5 @@ export declare function formatMicroSecondsAsMillisFixedExpanded(time: Platform.T
  */
 export declare function millisToString(ms: number, higherResolution?: boolean): string;
 export declare function preciseMillisToString(ms: number, precision?: number): string;
+export declare function preciseSecondsToString(ms: number, precision?: number): string;
 export declare function secondsToString(seconds: number, higherResolution?: boolean): string;

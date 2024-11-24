@@ -4,6 +4,7 @@
 import '../../../ui/components/menus/menus.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -30,16 +31,30 @@ const UIStrings = {
      * @example {2} PH1
      */
     dSlowdown: '{PH1}× slowdown',
+    /**
+     * @description Text label for a selection box showing that a specific option is recommended.
+     * @example {4x slowdown} PH1
+     */
+    recommendedThrottling: '{PH1} - recommended',
+    /**
+     * @description Text for why user should change a throttling setting.
+     */
+    recommendedThrottlingReason: 'Consider changing setting to simulate real user environments',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/CPUThrottlingSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CPUThrottlingSelector extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #currentRate;
+    #recommendedRate = null;
     constructor() {
         super();
         this.#currentRate = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate();
         this.#render();
+    }
+    set recommendedRate(recommendedRate) {
+        this.#recommendedRate = recommendedRate;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [cpuThrottlingSelectorStyles];
@@ -57,6 +72,14 @@ export class CPUThrottlingSelector extends HTMLElement {
         MobileThrottling.ThrottlingManager.throttlingManager().setCPUThrottlingRate(Number(event.itemValue));
     }
     #render = () => {
+        let recommendedInfoEl;
+        if (this.#recommendedRate && this.#currentRate === 1) {
+            recommendedInfoEl = html `<devtools-button
+        title=${i18nString(UIStrings.recommendedThrottlingReason)}
+        .iconName=${'info'}
+        .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+      ></devtools-button>`;
+        }
         const selectionTitle = this.#currentRate === 1 ? i18nString(UIStrings.noThrottling) :
             i18nString(UIStrings.dSlowdown, { PH1: this.#currentRate });
         // clang-format off
@@ -73,7 +96,10 @@ export class CPUThrottlingSelector extends HTMLElement {
             title=${i18nString(UIStrings.cpuThrottling, { PH1: selectionTitle })}
           >
           ${MobileThrottling.ThrottlingPresets.ThrottlingPresets.cpuThrottlingPresets.map(rate => {
-            const title = rate === 1 ? i18nString(UIStrings.noThrottling) : i18nString(UIStrings.dSlowdown, { PH1: rate });
+            let title = rate === 1 ? i18nString(UIStrings.noThrottling) : i18nString(UIStrings.dSlowdown, { PH1: rate });
+            if (rate === this.#recommendedRate) {
+                title = i18nString(UIStrings.recommendedThrottling, { PH1: title });
+            }
             const jslogContext = rate === 1 ? 'cpu-no-throttling' : `cpu-throttled-${rate}`;
             return html `
               <devtools-menu-item
@@ -86,6 +112,7 @@ export class CPUThrottlingSelector extends HTMLElement {
             `;
         })}
       </devtools-select-menu>
+      ${recommendedInfoEl}
     `;
         // clang-format on
         LitHtml.render(output, this.#shadow, { host: this });

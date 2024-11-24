@@ -1,3 +1,4 @@
+import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import type { TraceWindowMicroSeconds } from './Timing.js';
 import type { Event, LegacyTimelineFrame, ProcessID, SampleIndex, ThreadID } from './TraceEvents.js';
@@ -135,7 +136,9 @@ export interface Modifications {
 export interface MetaData {
     source?: 'DevTools';
     startTime?: string;
+    emulatedDeviceTitle?: string;
     networkThrottling?: string;
+    networkThrottlingConditions?: Omit<SDK.NetworkManager.Conditions, 'title'>;
     cpuThrottling?: number;
     hardwareConcurrency?: number;
     dataOrigin?: DataOrigin;

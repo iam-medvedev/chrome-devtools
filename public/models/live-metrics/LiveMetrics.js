@@ -3,10 +3,20 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
+const UIStrings = {
+    /**
+     * @description Warning text indicating that the Largest Contentful Paint (LCP) performance metric was affected by the user changing the simulated device.
+     */
+    lcpEmulationWarning: 'Simulating a new device after the page loads can affect LCP. Reload the page after simulating a new device for accurate LCP data.',
+};
+const str_ = i18n.i18n.registerUIStrings('models/live-metrics/LiveMetrics.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const LIVE_METRICS_WORLD_NAME = 'DevTools Performance Metrics';
 let liveMetricsInstance;
 class InjectedScript {
@@ -31,7 +41,9 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
     #interactions = new Map();
     #interactionsByGroupId = new Map();
     #layoutShifts = [];
+    #lastEmulationChangeTime;
     #mutex = new Common.Mutex.Mutex();
+    #deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
     constructor() {
         super();
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
@@ -111,6 +123,9 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         }
         return true;
     }
+    #onEmulationChanged() {
+        this.#lastEmulationChangeTime = Date.now();
+    }
     /**
      * DOM nodes can't be sent over a runtime binding, so we have to retrieve
      * them separately.
@@ -187,15 +202,20 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
     async #handleWebVitalsEvent(webVitalsEvent, executionContextId) {
         switch (webVitalsEvent.name) {
             case 'LCP': {
+                const warnings = [];
                 const lcpEvent = {
                     value: webVitalsEvent.value,
                     phases: webVitalsEvent.phases,
+                    warnings,
                 };
                 if (webVitalsEvent.nodeIndex !== undefined) {
                     const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
                     if (node) {
                         lcpEvent.node = node;
                     }
+                }
+                if (this.#lastEmulationChangeTime && Date.now() - this.#lastEmulationChangeTime < 500) {
+                    warnings.push(i18nString(UIStrings.lcpEmulationWarning));
                 }
                 this.#lcpValue = lcpEvent;
                 break;
@@ -408,6 +428,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             runImmediately: true,
         });
         this.#scriptIdentifier = identifier;
+        this.#deviceModeModel?.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
         this.#enabled = true;
     }
     async disable() {
@@ -432,6 +453,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             });
         }
         this.#scriptIdentifier = undefined;
+        this.#deviceModeModel?.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
         this.#enabled = false;
     }
 }

@@ -284,6 +284,11 @@ styles.replaceSync(
   margin-bottom: 12px;
 }
 
+.field-data-warning {
+  margin-top: 4px;
+  color: var(--sys-color-error);
+}
+
 .collection-period-range {
   font-weight: var(--ref-typeface-weight-medium);
 }
@@ -297,11 +302,6 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   display: flex;
   align-items: center;
   margin-top: 8px;
-}
-
-.environment-recs-title {
-  margin-top: 12px;
-  font-weight: var(--ref-typeface-weight-medium);
 }
 
 .environment-recs-list {

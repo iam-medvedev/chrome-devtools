@@ -6,7 +6,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-import { eventRef } from './EventRef.js';
+import { imageRef } from './EventRef.js';
 const { html } = LitHtml;
 const UIStrings = {
     /**
@@ -40,9 +40,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LCPDiscovery.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 function getImageData(model) {
-    if (!model) {
-        return null;
-    }
     if (model.lcpRequest === undefined) {
         return null;
     }
@@ -91,6 +88,9 @@ export class LCPDiscovery extends BaseInsightComponent {
         return i18n.i18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
     }
     createOverlays() {
+        if (!this.model) {
+            return [];
+        }
         const imageResults = getImageData(this.model);
         if (!imageResults || !imageResults.discoveryDelay) {
             return [];
@@ -120,29 +120,10 @@ export class LCPDiscovery extends BaseInsightComponent {
             },
         ];
     }
-    #handleBadImage(event) {
-        const img = event.target;
-        img.style.display = 'none';
-    }
-    #renderImage(imageData) {
-        // clang-format off
-        return html `
-      <div class="lcp-element">
-        ${imageData.request.args.data.mimeType.includes('image') ?
-            html `
-        <img
-          class="element-img"
-          src=${imageData.request.args.data.url}
-          @error=${this.#handleBadImage}
-           />` : LitHtml.nothing}
-        <span class="element-img-details">
-          ${eventRef(imageData.request)}
-          <span class="element-img-details-size">${i18n.ByteUtilities.bytesToString(imageData.request.args.data.decodedBodyLength ?? 0)}</span>
-        </span>
-      </div>`;
-        // clang-format on
-    }
     getEstimatedSavingsTime() {
+        if (!this.model) {
+            return null;
+        }
         return getImageData(this.model)?.estimatedSavings ?? null;
     }
     #renderContent(imageData) {
@@ -168,11 +149,14 @@ export class LCPDiscovery extends BaseInsightComponent {
             </li>
           </ul>
         </div>
-        ${this.#renderImage(imageData)}
+        ${imageRef(imageData.request)}
       </div>`;
         // clang-format on
     }
     render() {
+        if (!this.model) {
+            return;
+        }
         const imageResults = getImageData(this.model);
         const output = imageResults ? this.#renderContent(imageResults) : LitHtml.nothing;
         this.renderWithContent(output);

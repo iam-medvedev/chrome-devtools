@@ -8,7 +8,12 @@ export class Node {
     totalTime;
     selfTime;
     id;
+    /** The first trace event encountered that necessitated the creation of this tree node. */
     event;
+    /** All of the trace events associated with this aggregate node.
+     * Minor: In the case of Event Log (EventsTimelineTreeView), the node is not aggregate and this will only hold 1 event, the same that's in this.event
+     */
+    events;
     parent;
     groupId;
     isGroupNodeInternal;
@@ -18,6 +23,7 @@ export class Node {
         this.selfTime = 0;
         this.id = id;
         this.event = event;
+        this.events = [event];
         this.groupId = '';
         this.isGroupNodeInternal = false;
         this.depth = 0;
@@ -157,6 +163,9 @@ export class TopDownNode extends Node {
                 node.groupId = groupId;
                 children.set(id, node);
             }
+            else {
+                node.events.push(e);
+            }
             node.selfTime += duration;
             node.totalTime += duration;
             currentDirectChild = node;
@@ -209,8 +218,6 @@ export class TopDownNode extends Node {
 }
 export class TopDownRootNode extends TopDownNode {
     filter;
-    /** This is all events passed in to create the tree, and it's very likely that it included events outside of the passed startTime/endTime as that filtering is done in `Helpers.Trace.forEachEvent` */
-    events;
     startTime;
     endTime;
     eventGroupIdCallback;
@@ -220,7 +227,8 @@ export class TopDownRootNode extends TopDownNode {
     totalTime;
     selfTime;
     constructor(events, filters, startTime, endTime, doNotAggregate, eventGroupIdCallback, includeInstantEvents) {
-        super('', null, null);
+        super('', events[0], null);
+        this.event = events[0];
         this.root = this;
         this.events = events;
         this.filter = (e) => filters.every(f => f.accept(e));
@@ -245,14 +253,14 @@ export class TopDownRootNode extends TopDownNode {
         }
         const groupNodes = new Map();
         for (const node of flatNodes.values()) {
-            if (!node.event) {
-                continue;
-            }
             const groupId = this.eventGroupIdCallback(node.event);
             let groupNode = groupNodes.get(groupId);
             if (!groupNode) {
-                groupNode = new GroupNode(groupId, this, node.event);
+                groupNode = new GroupNode(groupId, this, node.events);
                 groupNodes.set(groupId, groupNode);
+            }
+            else {
+                groupNode.events.push(...node.events);
             }
             groupNode.addChild(node, node.selfTime, node.totalTime);
         }
@@ -265,7 +273,6 @@ export class TopDownRootNode extends TopDownNode {
 }
 export class BottomUpRootNode extends Node {
     childrenInternal;
-    events;
     textFilter;
     filter;
     startTime;
@@ -273,7 +280,7 @@ export class BottomUpRootNode extends Node {
     eventGroupIdCallback;
     totalTime;
     constructor(events, textFilter, filters, startTime, endTime, eventGroupIdCallback) {
-        super('', null);
+        super('', events[0]);
         this.childrenInternal = null;
         this.events = events;
         this.textFilter = textFilter;
@@ -337,6 +344,9 @@ export class BottomUpRootNode extends Node {
                 node = new BottomUpNode(root, id, event, false, root);
                 nodeById.set(id, node);
             }
+            else {
+                node.events.push(event);
+            }
             node.selfTime += selfTimeStack.pop() || 0;
             if (firstNodeStack.pop()) {
                 node.totalTime += totalTimeById.get(id) || 0;
@@ -361,14 +371,14 @@ export class BottomUpRootNode extends Node {
         }
         const groupNodes = new Map();
         for (const node of flatNodes.values()) {
-            if (!node.event) {
-                continue;
-            }
             const groupId = this.eventGroupIdCallback(node.event);
             let groupNode = groupNodes.get(groupId);
             if (!groupNode) {
-                groupNode = new GroupNode(groupId, this, node.event);
+                groupNode = new GroupNode(groupId, this, node.events);
                 groupNodes.set(groupId, groupNode);
+            }
+            else {
+                groupNode.events.push(...node.events);
             }
             groupNode.addChild(node, node.selfTime, node.selfTime);
         }
@@ -378,8 +388,10 @@ export class BottomUpRootNode extends Node {
 export class GroupNode extends Node {
     childrenInternal;
     isGroupNodeInternal;
-    constructor(id, parent, event) {
-        super(id, event);
+    events;
+    constructor(id, parent, events) {
+        super(id, events[0]);
+        this.events = events;
         this.childrenInternal = new Map();
         this.parent = parent;
         this.isGroupNodeInternal = true;
@@ -471,6 +483,9 @@ export class BottomUpNode extends Node {
                 const hasChildren = eventStack.length > self.depth;
                 node = new BottomUpNode(self.root, childId, event, hasChildren, self);
                 nodeById.set(childId, node);
+            }
+            else {
+                node.events.push(e);
             }
             const actualEndTime = currentEndTime !== undefined ? Math.min(currentEndTime, endTime) : endTime;
             const totalTime = actualEndTime - Math.max(currentStartTime, lastTimeMarker);

@@ -55,6 +55,8 @@ export interface CrUXResponse {
 }
 export type PageResult = {
     [K in `${PageScope}-${DeviceScope}`]: CrUXResponse | null;
+} & {
+    warnings: string[];
 };
 export interface OriginMapping {
     developmentOrigin: string;

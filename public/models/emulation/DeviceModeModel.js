@@ -160,6 +160,21 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
         }
         return deviceModeModelInstance;
     }
+    /**
+     * This wraps `instance()` in a try/catch because in some DevTools entry points
+     * (such as worker_app.ts) the Emulation panel is not included and as such
+     * the below code fails; it tries to instantiate the model which requires
+     * reading the value of a setting which has not been registered.
+     * See crbug.com/361515458 for an example bug that this resolves.
+     */
+    static tryInstance(opts) {
+        try {
+            return this.instance(opts);
+        }
+        catch {
+            return null;
+        }
+    }
     static widthValidator(value) {
         let valid = false;
         let errorMessage;

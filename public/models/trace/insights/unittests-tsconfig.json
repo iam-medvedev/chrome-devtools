@@ -41,6 +41,7 @@
     "../../../../../../../front_end/models/trace/insights/CLSCulprits.test.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.test.ts",
     "../../../../../../../front_end/models/trace/insights/FontDisplay.test.ts",
+    "../../../../../../../front_end/models/trace/insights/ImageDelivery.test.ts",
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.test.ts",
     "../../../../../../../front_end/models/trace/insights/LCPDiscovery.test.ts",
     "../../../../../../../front_end/models/trace/insights/LCPPhases.test.ts",

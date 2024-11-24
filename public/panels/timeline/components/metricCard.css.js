@@ -63,6 +63,11 @@ styles.replaceSync(
   font-weight: var(--ref-typeface-weight-medium);
 }
 
+.warning {
+  margin-top: 4px;
+  color: var(--sys-color-error);
+}
+
 .good-bg {
   background-color: var(--app-color-performance-good);
 }

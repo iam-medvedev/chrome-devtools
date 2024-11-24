@@ -26,7 +26,7 @@ styles.replaceSync(
   padding: 6px 10px;
   position: relative;
 
-  .time {
+  .metadata {
     margin-left: 3px;
   }
 
@@ -49,8 +49,12 @@ styles.replaceSync(
   height: 100%;
 }
 
+.text-details {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
 .text-details > span {
-  flex: 1 0;
   padding-left: var(--sys-size-5);
   padding-right: var(--sys-size-5);
 }
@@ -59,7 +63,7 @@ styles.replaceSync(
   font: var(--sys-typescale-body4-medium);
 }
 
-.text-details span.time {
+.text-details .metadata {
   color: var(--sys-color-token-subtle);
   font: var(--sys-typescale-body4-regular);
   text-align: right;

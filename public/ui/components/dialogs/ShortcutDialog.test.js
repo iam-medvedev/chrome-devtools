@@ -7,31 +7,32 @@ import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithLocale('ShortcutDialog', () => {
-    async function getShortcutDialog(open) {
+    async function getShortcutDialog(open, prependedElement) {
         const shortcutDialog = new Dialogs.ShortcutDialog.ShortcutDialog();
-        shortcutDialog.data = { shortcuts: [{ title: 'Shortcut Title', bindings: ['Ctrl+E'] }], open };
+        if (prependedElement) {
+            shortcutDialog.prependElement(prependedElement);
+        }
+        shortcutDialog.data = { shortcuts: [{ title: 'Shortcut Title', bindings: [['Ctrl+E']] }], open };
         Helpers.renderElementIntoDOM(shortcutDialog);
         await coordinator.done();
         return shortcutDialog;
     }
     function getDialogFromShortcutDialog(shortcutDialog) {
         assert.isNotNull(shortcutDialog.shadowRoot);
-        const dialog = shortcutDialog.shadowRoot.querySelector('devtools-dialog');
+        const dialog = shortcutDialog.shadowRoot.querySelector('devtools-button-dialog');
         if (!dialog) {
-            assert.fail('devtools-dialog not found');
+            assert.fail('devtools-button-dialog not found');
         }
         assert.instanceOf(dialog, HTMLElement);
         return dialog;
     }
-    it('should display dialog on initial render when provided prop', async () => {
-        const shortcutDialog = await getShortcutDialog(true);
+    it('prepends provided element to the dialog content', async () => {
+        const prependedElement = document.createElement('div');
+        prependedElement.classList.add('prepended-element');
+        const shortcutDialog = await getShortcutDialog(true, prependedElement);
         const dialog = getDialogFromShortcutDialog(shortcutDialog);
-        assert.isTrue(dialog.hasAttribute('open'));
-    });
-    it('should not display dialog on initial render by default', async () => {
-        const shortcutDialog = await getShortcutDialog();
-        const dialog = getDialogFromShortcutDialog(shortcutDialog);
-        assert.isFalse(dialog.hasAttribute('open'));
+        const prependedElementInShortcutDialog = dialog.querySelector('div.prepended-element');
+        assert.instanceOf(prependedElementInShortcutDialog, HTMLDivElement);
     });
 });
 //# sourceMappingURL=ShortcutDialog.test.js.map

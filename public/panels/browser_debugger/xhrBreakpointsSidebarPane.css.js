@@ -47,7 +47,7 @@ styles.replaceSync(
   background-color: var(--sys-color-tonal-container);
 }
 
-.breakpoint-entry [is="dt-checkbox"] {
+.breakpoint-entry dt-checkbox {
   max-width: 100%;
 }
 

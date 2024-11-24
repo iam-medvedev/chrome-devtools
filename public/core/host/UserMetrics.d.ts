@@ -34,7 +34,6 @@ export declare class UserMetrics {
     recordingCodeToggled(value: RecordingCodeToggled): void;
     recordingCopiedToClipboard(value: RecordingCopiedToClipboard): void;
     styleTextCopied(value: StyleTextCopied): void;
-    manifestSectionSelected(sectionTitle: string): void;
     cssHintShown(type: CSSHintType): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;

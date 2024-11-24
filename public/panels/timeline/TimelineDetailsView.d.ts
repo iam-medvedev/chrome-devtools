@@ -1,9 +1,19 @@
+import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
-export declare class TimelineDetailsView extends UI.Widget.VBox {
+import { TimelineTreeView } from './TimelineTreeView.js';
+declare const TimelineDetailsView_base: (new (...args: any[]) => {
+    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
+    addEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
+    once<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
+    removeEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: TimelineTreeView.Events.TREE_ROW_HOVERED): boolean;
+    dispatchEventToListeners<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
+}) & typeof UI.Widget.VBox;
+export declare class TimelineDetailsView extends TimelineDetailsView_base {
     #private;
     private readonly detailsLinkifier;
     private tabbedPane;
@@ -19,6 +29,7 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     constructor(delegate: TimelineModeViewDelegate);
     private selectorStatsView;
     getDetailsContentElementForTest(): HTMLElement;
+    revealEventInTreeView(event: Trace.Types.Events.Event | null): void;
     setModel(data: {
         parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
         selectedEvents: Trace.Types.Events.Event[] | null;
@@ -61,3 +72,4 @@ export declare enum Tab {
     LayerViewer = "layer-viewer",
     SelectorStats = "selector-stats"
 }
+export {};
