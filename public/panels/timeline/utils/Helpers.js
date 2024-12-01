@@ -3,9 +3,24 @@
 // found in the LICENSE file.
 import '../../../ui/components/markdown_view/markdown_view.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 const { html } = LitHtml;
+export function getThrottlingRecommendations() {
+    const cpuRate = 4; // TODO(crbug.com/311438112): suggest "mid-tier" mobile device when implemented.
+    let networkConditions = null;
+    const response = CrUXManager.CrUXManager.instance().getSelectedFieldMetricData('round_trip_time');
+    if (response?.percentiles) {
+        const rtt = Number(response.percentiles.p75);
+        networkConditions = MobileThrottling.ThrottlingPresets.ThrottlingPresets.getRecommendedNetworkPreset(rtt);
+    }
+    return {
+        cpuRate,
+        networkConditions,
+    };
+}
 function createTrimmedUrlSearch(url) {
     const maxSearchValueLength = 8;
     let search = '';

@@ -4,12 +4,15 @@
 import * as Common from '../common/common.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
-export var Entity;
-(function (Entity) {
-    Entity[Entity["UNKNOWN"] = 0] = "UNKNOWN";
-    Entity[Entity["USER"] = 1] = "USER";
-    Entity[Entity["SYSTEM"] = 2] = "SYSTEM";
-})(Entity || (Entity = {}));
+export var Role;
+(function (Role) {
+    // Unspecified role.
+    Role[Role["ROLE_UNSPECIFIED"] = 0] = "ROLE_UNSPECIFIED";
+    // The user.
+    Role[Role["USER"] = 1] = "USER";
+    // The model.
+    Role[Role["MODEL"] = 2] = "MODEL";
+})(Role || (Role = {}));
 export var FunctionalityType;
 (function (FunctionalityType) {
     // Unspecified functionality type.
@@ -57,10 +60,12 @@ export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 const CODE_CHUNK_SEPARATOR = '\n`````\n';
 export class AidaAbortError extends Error {
 }
+export class AidaBlockError extends Error {
+}
 export class AidaClient {
     static buildConsoleInsightsRequest(input) {
         const request = {
-            input,
+            current_message: { parts: [{ text: input }], role: Role.USER },
             client: CLIENT_NAME,
             functionality_type: FunctionalityType.EXPLAIN_ERROR,
             client_feature: ClientFeature.CHROME_CONSOLE_INSIGHTS,
@@ -177,6 +182,9 @@ export class AidaClient {
                             metadata.attributionMetadata = [];
                         }
                         metadata.attributionMetadata.push(result.metadata.attributionMetadata);
+                        if (result.metadata.attributionMetadata.attributionAction === RecitationAction.BLOCK) {
+                            throw new AidaBlockError();
+                        }
                     }
                 }
                 if ('textChunk' in result) {

@@ -12,7 +12,7 @@ styles.replaceSync(
  */
 
 :host {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 /*# sourceURL=buttonDialog.css */

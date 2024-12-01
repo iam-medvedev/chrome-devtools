@@ -138,7 +138,7 @@ const UIStrings = {
     /**
      *@description Title of an action in the sources tool to close all
      */
-    closeAll: 'Close All',
+    closeAll: 'Close all',
     /**
      *@description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor)
      */
@@ -877,6 +877,22 @@ UI.ActionRegistration.registerActionExtension({
         return new Sources.SourcesView.ActionDelegate();
     },
     title: i18nLazyString(UIStrings.closeAll),
+    bindings: [
+        {
+            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
+            shortcut: 'Ctrl+K W',
+            keybindSets: [
+                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
+            ],
+        },
+        {
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
+            shortcut: 'Meta+K W',
+            keybindSets: [
+                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
+            ],
+        },
+    ],
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'sources.jump-to-previous-location',

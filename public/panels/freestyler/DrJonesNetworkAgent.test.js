@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import { getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
@@ -35,14 +36,14 @@ describeWithMockConnection('DrJonesNetworkAgent', () => {
             const agent = new DrJonesNetworkAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ input: 'test input' }).options?.model_id, 'test model');
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
             const agent = new DrJonesNetworkAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ input: 'test input' }).options?.temperature, 1);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.temperature, 1);
         });
         it('structure matches the snapshot', () => {
             mockHostConfig('test model');
@@ -67,19 +68,19 @@ describeWithMockConnection('DrJonesNetworkAgent', () => {
                 },
             ];
             assert.deepStrictEqual(agent.buildRequest({
-                input: 'test input',
+                text: 'test input',
             }), {
-                input: 'test input',
+                current_message: { parts: [{ text: 'test input' }], role: Host.AidaClient.Role.USER },
                 client: 'CHROME_DEVTOOLS',
                 preamble: 'preamble',
-                chat_history: [
+                historical_contexts: [
                     {
-                        entity: 1,
-                        text: 'questions',
+                        role: 1,
+                        parts: [{ text: 'questions' }],
                     },
                     {
-                        entity: 2,
-                        text: 'answer',
+                        role: 2,
+                        parts: [{ text: 'answer' }],
                     },
                 ],
                 metadata: {
@@ -216,8 +217,9 @@ describeWithMockConnection('DrJonesNetworkAgent', () => {
             ]);
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
-                    entity: 1,
-                    text: `# Selected network request \nRequest: https://www.example.com
+                    role: 1,
+                    parts: [{
+                            text: `# Selected network request \nRequest: https://www.example.com
 
 Request headers:
 content-type: bar1
@@ -244,10 +246,11 @@ Request initiator chain:
 # User request
 
 test`,
+                        }],
                 },
                 {
-                    entity: 2,
-                    text: 'This is the answer',
+                    role: 2,
+                    parts: [{ text: 'This is the answer' }],
                 },
             ]);
         });

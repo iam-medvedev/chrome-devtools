@@ -12,6 +12,7 @@ import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import * as Icon from '../icon_button/icon_button.js';
 import { editorTheme } from './theme.js';
 const LINES_TO_SCAN_FOR_INDENTATION_GUESSING = 1000;
+const RECOMPUTE_INDENT_MAX_SIZE = 200;
 const UIStrings = {
     /**
      *@description Label text for the editor
@@ -178,12 +179,27 @@ export const codeFolding = DynamicSetting.bool('text-editor-code-folding', [
     }),
     CM.keymap.of(CM.foldKeymap),
 ]);
-const deriveIndentUnit = CM.Prec.highest(CM.indentUnit.compute([], (state) => {
-    const lines = state.doc.iterLines(1, Math.min(state.doc.lines + 1, LINES_TO_SCAN_FOR_INDENTATION_GUESSING));
+const AutoDetectIndent = CM.StateField.define({
+    create: state => detectIndentation(state.doc),
+    update: (indent, tr) => {
+        return tr.docChanged && preservedLength(tr.changes) <= RECOMPUTE_INDENT_MAX_SIZE ? detectIndentation(tr.state.doc) :
+            indent;
+    },
+    provide: f => CM.Prec.highest(CM.indentUnit.from(f)),
+});
+function preservedLength(ch) {
+    let len = 0;
+    ch.iterGaps((from, to, l) => {
+        len += l;
+    });
+    return len;
+}
+function detectIndentation(doc) {
+    const lines = doc.iterLines(1, Math.min(doc.lines + 1, LINES_TO_SCAN_FOR_INDENTATION_GUESSING));
     const indentUnit = TextUtils.TextUtils.detectIndentation(lines);
     return indentUnit ?? Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
-}));
-export const autoDetectIndent = DynamicSetting.bool('text-editor-auto-detect-indent', deriveIndentUnit);
+}
+export const autoDetectIndent = DynamicSetting.bool('text-editor-auto-detect-indent', AutoDetectIndent);
 function matcher(decorator) {
     return CM.ViewPlugin.define(view => ({
         decorations: decorator.createDeco(view),

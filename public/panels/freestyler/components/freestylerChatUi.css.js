@@ -157,6 +157,10 @@ styles.replaceSync(
   padding-right: var(--sys-size-3);
 }
 
+.chat-inline-button {
+  padding-left: 3px;
+}
+
 .chat-cancel-context-button {
   padding-bottom: 3px;
   padding-right: var(--sys-size-3);
@@ -250,7 +254,7 @@ styles.replaceSync(
   .resource-link,
   .resource-task {
     cursor: pointer;
-    padding: var(--sys-size-2) var(--sys-size-4);
+    padding: var(--sys-size-2) 3px;
     font: var(--sys-typescale-body4-size);
     border: var(--sys-size-1) solid var(--sys-color-divider);
     border-radius: var(--sys-shape-corner-extra-small);
@@ -258,6 +262,14 @@ styles.replaceSync(
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: var(--sys-size-32);
+
+    &.allow-overflow {
+      overflow: visible;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--sys-color-state-focus-ring);
+    }
 
     .icon,
     devtools-file-source-icon {

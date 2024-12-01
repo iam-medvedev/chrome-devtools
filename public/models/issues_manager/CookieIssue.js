@@ -208,6 +208,7 @@ export class CookieIssue extends Issue {
                 type: entity?.category,
                 platform: entity?.name,
                 status,
+                insight: this.#issueDetails.insight,
             };
         }
         return;

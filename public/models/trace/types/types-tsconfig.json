@@ -44,6 +44,9 @@
     },
     {
       "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../../crux-manager/bundle-tsconfig.json"
     }
   ]
 }

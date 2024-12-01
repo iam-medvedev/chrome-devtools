@@ -129,7 +129,8 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     getFilename(fileSystem) {
         const fileSystemPath = fileSystem.path();
         const lastIndexOfSlash = fileSystemPath.lastIndexOf('/');
-        return fileSystemPath.substr(lastIndexOfSlash + 1);
+        const lastPathComponent = fileSystemPath.substr(lastIndexOfSlash + 1);
+        return decodeURIComponent(lastPathComponent);
     }
     removeFileSystemClicked(fileSystem) {
         IsolatedFileSystemManager.instance().removeFileSystem(fileSystem);

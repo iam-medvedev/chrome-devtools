@@ -9,6 +9,7 @@ export declare class FileContext extends ConversationContext<Workspace.UISourceC
     getItem(): Workspace.UISourceCode.UISourceCode;
     getIcon(): HTMLElement;
     getTitle(): string;
+    refresh(): Promise<void>;
 }
 /**
  * One agent instance handles one conversation. Create a new agent

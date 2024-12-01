@@ -309,12 +309,18 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
     return rootCausesByShift;
 }
 function finalize(partialModel) {
+    let maxScore = 0;
+    for (const cluster of partialModel.clusters) {
+        if (cluster.clusterCumulativeScore > maxScore) {
+            maxScore = cluster.clusterCumulativeScore;
+        }
+    }
     return {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.CLS,
-        // TODO: getTopCulprits in component needs to move to model so this can be set here.
-        shouldShow: true,
+        // TODO: getTopCulprits in component needs to move to model so this can be set properly here.
+        shouldShow: maxScore > 0,
         ...partialModel,
     };
 }

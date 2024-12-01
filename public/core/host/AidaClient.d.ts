@@ -1,18 +1,26 @@
 import * as Common from '../common/common.js';
 import type { AidaClientResult } from './InspectorFrontendHostAPI.js';
-export declare enum Entity {
-    UNKNOWN = 0,
+export declare enum Role {
+    ROLE_UNSPECIFIED = 0,
     USER = 1,
-    SYSTEM = 2
+    MODEL = 2
 }
 export declare const enum Rating {
     SENTIMENT_UNSPECIFIED = "SENTIMENT_UNSPECIFIED",
     POSITIVE = "POSITIVE",
     NEGATIVE = "NEGATIVE"
 }
-export interface HistoryChunk {
-    text: string;
-    entity: Entity;
+export interface Content {
+    parts: Part[];
+    role: Role;
+}
+export interface Part {
+    text?: string;
+    inlineData?: MediaBlob;
+}
+export interface MediaBlob {
+    mimeType: string;
+    data: string;
 }
 export declare enum FunctionalityType {
     FUNCTIONALITY_TYPE_UNSPECIFIED = 0,
@@ -34,9 +42,9 @@ export declare enum UserTier {
     PUBLIC = 3
 }
 export interface AidaRequest {
-    input: string;
+    current_message?: Content;
     preamble?: string;
-    chat_history?: HistoryChunk[];
+    historical_contexts?: Content[];
     client: string;
     options?: {
         temperature?: number;
@@ -95,6 +103,8 @@ export declare const enum AidaAccessPreconditions {
 }
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
 export declare class AidaAbortError extends Error {
+}
+export declare class AidaBlockError extends Error {
 }
 export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;

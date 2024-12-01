@@ -11,6 +11,13 @@ import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
 import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
+/**
+ * This defines the order these markers will be rendered if they are at the
+ * same timestamp. The smaller number will be shown first - e.g. so if NavigationStart, MarkFCP,
+ * MarkLCPCandidate have the same timestamp, visually we
+ * will render [Nav][FCP][LCP] everytime.
+ */
+export declare const SORT_ORDER_PAGE_LOAD_MARKERS: Readonly<Record<string, number>>;
 declare const TimelineFlameChartView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
     addEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
@@ -52,6 +59,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
     containingElement(): HTMLElement;
+    setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
@@ -87,6 +95,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     revealEvent(event: Trace.Types.Events.Event): void;
     revealEventVertically(event: Trace.Types.Events.Event): void;
     setSelectionAndReveal(selection: TimelineSelection | null): void;
+    openSelectionDetailsView(selection: TimelineSelection | null): void;
     /**
      * Used to create multiple overlays at once without triggering a redraw for each one.
      */

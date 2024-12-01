@@ -49,4 +49,8 @@ export declare function setCategories(cats: CategoryPalette): void;
 export declare function visibleTypes(): string[];
 export declare function getTimelineMainEventCategories(): EventCategory[];
 export declare function setTimelineMainEventCategories(categories: EventCategory[]): void;
+export declare function markerDetailsForEvent(event: Trace.Types.Events.Event): {
+    color: string;
+    title: string;
+};
 export {};

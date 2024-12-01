@@ -14,6 +14,7 @@ import * as TimelinePanel from '../../panels/timeline/timeline.js';
 import * as TimelineUtils from '../../panels/timeline/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AiHistoryStorage, } from './AiHistoryStorage.js';
 import { ChangeManager } from './ChangeManager.js';
 import { FreestylerChatUi, } from './components/FreestylerChatUi.js';
@@ -55,13 +56,13 @@ const UIStrings = {
      */
     history: 'History',
     /**
-     *@description AI assistance UI text deleting the current chat session.
+     *@description AI assistance UI text deleting the current chat session from local history.
      */
-    deleteChat: 'Delete chat',
+    deleteChat: 'Delete local chat',
     /**
-     *@description AI assistance UI text that deletes all history entries.
+     *@description AI assistance UI text that deletes all local history entries.
      */
-    clearChatHistory: 'Clear chat history',
+    clearChatHistory: 'Clear local chats',
     /**
      *@description AI assistance UI text explains that he user had no pas conversations.
      */
@@ -187,6 +188,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     }
     #createToolbar() {
         const toolbarContainer = this.contentElement.createChild('div', 'freestyler-toolbar-container');
+        toolbarContainer.setAttribute('jslog', VisualLogging.toolbar().toString());
         const leftToolbar = new UI.Toolbar.Toolbar('freestyler-left-toolbar', toolbarContainer);
         const rightToolbar = new UI.Toolbar.Toolbar('freestyler-right-toolbar', toolbarContainer);
         this.#newChatButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#handleNewChatRequest.bind(this));
@@ -303,8 +305,18 @@ export class FreestylerPanel extends UI.Panel.Panel {
         else if (isPerformancePanelVisible && config.devToolsAiAssistancePerformanceAgent?.enabled) {
             targetAgentType = "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */;
         }
-        this.#currentAgent = targetAgentType ? this.#createAgent(targetAgentType) : undefined;
-        this.#viewProps.agentType = targetAgentType;
+        const agent = targetAgentType ? this.#createAgent(targetAgentType) : undefined;
+        this.#updateAgentState(agent);
+    }
+    #updateAgentState(agent) {
+        if (this.#currentAgent !== agent) {
+            this.#cancel();
+            this.#currentAgent = agent;
+            this.#viewProps.agentType = this.#currentAgent?.type;
+            this.#viewProps.messages = [];
+            this.#viewProps.isLoading = false;
+            this.#viewProps.isReadOnly = this.#currentAgent?.isHistoryEntry ?? false;
+        }
         this.#onContextSelectionChanged();
         void this.doUpdate();
     }
@@ -381,21 +393,21 @@ export class FreestylerPanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
-        this.#onContextSelectionChanged();
+        this.#updateAgentState(this.#currentAgent);
     };
     #handleNetworkRequestFlavorChange = (ev) => {
         if (this.#selectedRequest?.getItem() === ev.data) {
             return;
         }
         this.#selectedRequest = Boolean(ev.data) ? new RequestContext(ev.data) : null;
-        this.#onContextSelectionChanged();
+        this.#updateAgentState(this.#currentAgent);
     };
     #handleTraceEntryNodeFlavorChange = (ev) => {
         if (this.#selectedCallTree?.getItem() === ev.data) {
             return;
         }
         this.#selectedCallTree = Boolean(ev.data) ? new CallTreeContext(ev.data) : null;
-        this.#onContextSelectionChanged();
+        this.#updateAgentState(this.#currentAgent);
     };
     #handleUISourceCodeFlavorChange = (ev) => {
         const newFile = ev.data;
@@ -406,7 +418,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedFile = new FileContext(ev.data);
-        this.#onContextSelectionChanged();
+        this.#updateAgentState(this.#currentAgent);
     };
     #handleFreestylerEnabledSettingChanged = () => {
         const nextChatUiState = this.#getChatUiState();
@@ -500,21 +512,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (!targetAgentType) {
             return;
         }
-        let newAgent = false;
+        let agent = this.#currentAgent;
         if (!this.#currentAgent || this.#currentAgent.type !== targetAgentType || this.#currentAgent.isHistoryEntry ||
             targetAgentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */) {
-            this.#currentAgent = this.#createAgent(targetAgentType);
-            newAgent = true;
+            agent = this.#createAgent(targetAgentType);
         }
-        this.#viewProps.agentType = this.#currentAgent.type;
+        this.#updateAgentState(agent);
         this.#viewOutput.freestylerChatUi?.focusTextInput();
-        this.#onContextSelectionChanged();
-        void this.doUpdate();
-        if (newAgent) {
-            this.#viewProps.messages = [];
-            this.#viewProps.isReadOnly = false;
-            void this.#doConversation(this.#currentAgent.runFromHistory());
-        }
     }
     #onHistoryClicked(event) {
         const boundingRect = this.#historyEntriesButton.element.getBoundingClientRect();
@@ -550,49 +554,35 @@ export class FreestylerPanel extends UI.Panel.Panel {
     }
     #clearHistory() {
         this.#agents = new Set();
-        this.#currentAgent = undefined;
-        this.#viewProps.messages = [];
-        this.#viewProps.agentType = undefined;
-        this.#runAbortController.abort();
         void AiHistoryStorage.instance().deleteAll();
-        void this.doUpdate();
+        this.#updateAgentState();
     }
     #onDeleteClicked() {
         if (this.#currentAgent) {
             this.#agents.delete(this.#currentAgent);
             void AiHistoryStorage.instance().deleteHistoryEntry(this.#currentAgent.id);
-            this.#currentAgent = undefined;
-            this.#cancel();
         }
-        this.#viewProps.messages = [];
+        this.#updateAgentState();
         this.#selectDefaultAgentIfNeeded();
-        this.#onContextSelectionChanged();
-        void this.doUpdate();
         UI.ARIAUtils.alert(i18nString(UIStrings.chatDeleted));
     }
     async #switchAgent(agent) {
         if (this.#currentAgent === agent) {
             return;
         }
-        this.#currentAgent = agent;
-        this.#viewProps.messages = [];
-        this.#viewProps.agentType = agent.type;
-        this.#onContextSelectionChanged();
+        this.#updateAgentState(agent);
         this.#viewProps.isReadOnly = true;
         await this.#doConversation(agent.runFromHistory());
     }
     #handleNewChatRequest() {
-        this.#viewProps.messages = [];
-        this.#viewProps.isLoading = false;
-        this.#currentAgent = undefined;
-        this.#cancel();
+        this.#updateAgentState();
         this.#selectDefaultAgentIfNeeded();
-        void this.doUpdate();
         UI.ARIAUtils.alert(i18nString(UIStrings.newChatCreated));
     }
     #handleCrossOriginChatCancellation() {
         if (this.#previousSameOriginContext) {
             this.#onContextSelectionChanged(this.#previousSameOriginContext);
+            void this.doUpdate();
         }
     }
     #runAbortController = new AbortController();
@@ -604,7 +594,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #onContextSelectionChanged(contextToRestore) {
         if (!this.#currentAgent) {
             this.#viewProps.blockedByCrossOrigin = false;
-            void this.doUpdate();
             return;
         }
         const currentContext = contextToRestore ?? this.#getConversationContext();
@@ -612,7 +601,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (!currentContext) {
             this.#viewProps.blockedByCrossOrigin = false;
             this.#viewProps.requiresNewConversation = false;
-            void this.doUpdate();
             return;
         }
         this.#viewProps.blockedByCrossOrigin = !currentContext.isOriginAllowed(this.#currentAgent.origin);
@@ -622,11 +610,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (this.#viewProps.blockedByCrossOrigin && this.#previousSameOriginContext) {
             this.#viewProps.onCancelCrossOriginChat = this.#handleCrossOriginChatCancellation.bind(this);
         }
-        this.#viewProps.isReadOnly = this.#currentAgent.isHistoryEntry;
         this.#viewProps.requiresNewConversation = this.#currentAgent.type === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */ &&
             Boolean(this.#currentAgent.context) && this.#currentAgent.context !== currentContext;
         this.#viewProps.stripLinks = this.#viewProps.agentType === "drjones-performance" /* AgentType.DRJONES_PERFORMANCE */;
-        void this.doUpdate();
     }
     #getConversationContext() {
         if (!this.#currentAgent) {
@@ -768,6 +754,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
                         else if (lastStep.isLoading) {
                             systemMessage.steps.pop();
                         }
+                    }
+                    if (data.error === "block" /* ErrorType.BLOCK */) {
+                        systemMessage.answer = undefined;
                     }
                 }
             }

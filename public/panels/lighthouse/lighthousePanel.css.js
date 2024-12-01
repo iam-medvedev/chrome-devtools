@@ -11,11 +11,6 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-.toolbar {
-  background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
-}
-
 .lh-root {
   --report-menu-width: 0;
 
@@ -52,6 +47,11 @@ button.view-trace {
 .lighthouse-toolbar-container {
   display: flex;
   flex: none;
+}
+
+.lighthouse-toolbar-container > .toolbar {
+  background-color: var(--sys-color-cdt-base-container);
+  border-bottom: 1px solid var(--sys-color-divider);
 }
 
 .lighthouse-toolbar-container > :first-child {

@@ -58,7 +58,8 @@ export declare const enum MetricName {
     DCL = "DCL",
     TTI = "TTI",
     TBT = "TBT",
-    CLS = "CLS"
+    CLS = "CLS",
+    NAV = "Nav"
 }
 export interface MetricScore {
     metricName: MetricName;

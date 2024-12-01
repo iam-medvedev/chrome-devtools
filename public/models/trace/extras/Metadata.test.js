@@ -33,6 +33,7 @@ describeWithEnvironment('Trace Metadata', () => {
                 packetReordering: undefined,
                 targetLatency: undefined,
             },
+            cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
             emulatedDeviceTitle: undefined,
             hardwareConcurrency: 1,
@@ -67,6 +68,7 @@ describeWithEnvironment('Trace Metadata', () => {
                 targetLatency: undefined,
             },
             emulatedDeviceTitle: undefined,
+            cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
             hardwareConcurrency: 1,
         });
@@ -99,6 +101,7 @@ describeWithEnvironment('Trace Metadata', () => {
                 packetReordering: undefined,
                 targetLatency: undefined,
             },
+            cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
             emulatedDeviceTitle: undefined,
             hardwareConcurrency: undefined,

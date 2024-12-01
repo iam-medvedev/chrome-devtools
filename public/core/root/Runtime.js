@@ -205,6 +205,12 @@ export class Experiment {
 }
 // This must be constructed after the query parameters have been parsed.
 export const experiments = new ExperimentsSupport();
+export var GenAiEnterprisePolicyValue;
+(function (GenAiEnterprisePolicyValue) {
+    GenAiEnterprisePolicyValue[GenAiEnterprisePolicyValue["ALLOW"] = 0] = "ALLOW";
+    GenAiEnterprisePolicyValue[GenAiEnterprisePolicyValue["ALLOW_WITHOUT_LOGGING"] = 1] = "ALLOW_WITHOUT_LOGGING";
+    GenAiEnterprisePolicyValue[GenAiEnterprisePolicyValue["DISABLE"] = 2] = "DISABLE";
+})(GenAiEnterprisePolicyValue || (GenAiEnterprisePolicyValue = {}));
 export var HostConfigFreestylerExecutionMode;
 (function (HostConfigFreestylerExecutionMode) {
     HostConfigFreestylerExecutionMode["ALL_SCRIPTS"] = "ALL_SCRIPTS";

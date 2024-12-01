@@ -66,6 +66,20 @@ styles.replaceSync(
 .warning {
   margin-top: 4px;
   color: var(--sys-color-error);
+  font-size: var(--sys-typescale-body4-size);
+  line-height: var(--sys-typescale-body4-line-height);
+  display: flex;
+
+  &::before {
+    content: " ";
+    width: var(--sys-typescale-body4-line-height);
+    height: var(--sys-typescale-body4-line-height);
+    mask-size: var(--sys-typescale-body4-line-height);
+    mask-image: var(--image-file-warning);
+    background-color: var(--sys-color-error);
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
 }
 
 .good-bg {
@@ -97,17 +111,34 @@ styles.replaceSync(
 }
 
 .environment-recs {
-  margin: 12px 0;
+  margin: 9px 0;
 }
 
 .environment-recs > summary {
   font-weight: var(--ref-typeface-weight-medium);
   margin-bottom: 4px;
+  font-size: var(--sys-typescale-body4-size);
+  line-height: var(--sys-typescale-body4-line-height);
+  display: flex;
+
+  &::before {
+    content: " ";
+    width: var(--sys-typescale-body4-line-height);
+    height: var(--sys-typescale-body4-line-height);
+    mask-size: var(--sys-typescale-body4-line-height);
+    mask-image: var(--image-file-triangle-right);
+    background-color: var(--icon-default);
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+}
+
+details.environment-recs[open] > summary::before {
+  mask-image: var(--image-file-triangle-down);
 }
 
 .environment-recs-list {
   margin: 0;
-  padding-left: 20px;
 }
 
 .detailed-compare-text {

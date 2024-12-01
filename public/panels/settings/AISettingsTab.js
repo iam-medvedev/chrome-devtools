@@ -153,6 +153,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     #shadow = this.attachShadow({ mode: 'open' });
     #consoleInsightsSetting;
     #aiAssistanceSetting;
+    #aiAssistanceHistorySetting;
     #isConsoleInsightsSettingExpanded = false;
     #isAiAssistanceSettingExpanded = false;
     #aidaAvailability = "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */;
@@ -170,6 +171,14 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         }
         catch {
             this.#aiAssistanceSetting = undefined;
+        }
+        try {
+            this.#aiAssistanceHistorySetting =
+                // Name needs to match the one in AiHistoryStorage
+                Common.Settings.Settings.instance().moduleSetting('ai-assistance-history-entries');
+        }
+        catch {
+            this.#aiAssistanceHistorySetting = undefined;
         }
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     }
@@ -257,6 +266,10 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         this.#aiAssistanceSetting.set(!oldSettingValue);
         if (!oldSettingValue && !this.#isAiAssistanceSettingExpanded) {
             this.#isAiAssistanceSettingExpanded = true;
+        }
+        // If history was create create and the value changes to `false`
+        if (this.#aiAssistanceHistorySetting && !this.#aiAssistanceSetting.get()) {
+            this.#aiAssistanceHistorySetting.set([]);
         }
         void this.render();
     }

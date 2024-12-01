@@ -75,6 +75,48 @@ const UIStrings = {
      *@description Explanation to the user that there were no third-party cookie related issues found which is why they are not seeing the table/report
      */
     emptyReportExplanation: 'No issues with third-party cookies found',
+    /**
+     *@description String in Cookie Report table. This is used when a cookie's domain has an entry in the third-party cookie migration readiness list GitHub.
+     *@example {guidance} PH1
+     */
+    gitHubResource: 'Review {PH1} from third-party site.',
+    /**
+     *@description Label for a link to an entry in the third-party cookie migration readiness list GitHub.
+     */
+    guidance: 'guidance',
+    /**
+     *@description String in Cookie Report table. This is used when a cookie has a grace period exception.
+     *@example {reported issues} PH1
+     */
+    gracePeriod: 'Review {PH1}. Grace period exception is active.',
+    /**
+     *@description Label for a link to third-party cookie site compatability look-up.
+     */
+    reportedIssues: 'reported issues',
+    /**
+     *@description String in Cookie Report table. This is used when a cookie has a heuristics exception.
+     */
+    heuristics: 'Action needed later. Heuristics based exception is active',
+    /**
+     *@description String in Cookie Report table. This is used when a cookie's domain does not have an entry in the third-party cookie migration readiness list Github nor a grace period nor heuristics exception.
+     */
+    other: 'Contact third-party site for more info',
+    /**
+     *@description String representing the GitHubResource insight type. Used as filter chip text to allow the user to filter the table based on recommendation.
+     */
+    gitHubResourceTypeString: 'Github',
+    /**
+     *@description String representing the GracePeriod insight type. Used as filter chip text to allow the user to filter the table based on recommendation.
+     */
+    gracePeriodTypeString: 'Grace Period',
+    /**
+     *@description String representing the GitHubResource insight type. Used as filter chip text to allow the user to filter the table based on recommendation.
+     */
+    heuristicsTypeString: 'Heuristics',
+    /**
+     *@description String representing a null insight type. Used as filter chip text to allow the user to filter the table based on recommendation.
+     */
+    otherTypeString: 'Other',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/CookieReportView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -239,8 +281,7 @@ export class CookieReportView extends UI.Widget.VBox {
                     CookieReportView.getStatusString(a.status).localeCompare(CookieReportView.getStatusString(b.status));
             }
             else if (columnId === 'recommendation') {
-                result = (a.recommendation ?? i18nString(UIStrings.unknown))
-                    .localeCompare((b.recommendation ?? i18nString(UIStrings.unknown)));
+                result = CookieReportView.getInsightTypeString(a.insight).localeCompare(CookieReportView.getInsightTypeString(b.insight));
             }
             return this.dataGrid.isSortOrderAscending() ? result : -result;
         })
@@ -250,7 +291,7 @@ export class CookieReportView extends UI.Widget.VBox {
             type: row.type ?? i18nString(UIStrings.unknown),
             platform: row.platform ?? i18nString(UIStrings.unknown),
             status: CookieReportView.getStatusString(row.status),
-            recommendation: row.recommendation ?? i18nString(UIStrings.unknown),
+            recommendation: CookieReportView.getRecommendation(row.domain, row.insight),
         }));
     }
     wasShown() {
@@ -266,6 +307,52 @@ export class CookieReportView extends UI.Widget.VBox {
                 return i18nString(UIStrings.allowedByException);
             case 1 /* IssuesManager.CookieIssue.CookieStatus.ALLOWED */:
                 return i18nString(UIStrings.allowed);
+        }
+    }
+    static getInsightTypeString(insight) {
+        if (!insight) {
+            return i18nString(UIStrings.otherTypeString);
+        }
+        switch (insight.type) {
+            case "GitHubResource" /* Protocol.Audits.InsightType.GitHubResource */:
+                return i18nString(UIStrings.gitHubResourceTypeString);
+            case "GracePeriod" /* Protocol.Audits.InsightType.GracePeriod */:
+                return i18nString(UIStrings.gracePeriodTypeString);
+            case "Heuristics" /* Protocol.Audits.InsightType.Heuristics */:
+                return i18nString(UIStrings.heuristicsTypeString);
+            default:
+                return i18nString(UIStrings.otherTypeString);
+        }
+    }
+    static getRecommendation(domain, insight) {
+        const recElem = document.createElement('div');
+        render(CookieReportView.getRecommendationText(domain, insight), recElem, { host: this });
+        return recElem;
+    }
+    static getRecommendationText(domain, insight) {
+        if (!insight) {
+            return html `${i18nString(UIStrings.other)}`;
+        }
+        switch (insight.type) {
+            case "GitHubResource" /* Protocol.Audits.InsightType.GitHubResource */: {
+                const githubLink = UI.XLink.XLink.create(insight.tableEntryUrl ?
+                    insight.tableEntryUrl :
+                    'https://github.com/privacysandbox/privacy-sandbox-dev-support/blob/main/3pc-migration-readiness.md', i18nString(UIStrings.guidance), undefined, undefined, 'github-resource');
+                return html `${i18n.i18n.getFormatLocalizedString(str_, UIStrings.gitHubResource, {
+                    PH1: githubLink,
+                })}`;
+            }
+            case "GracePeriod" /* Protocol.Audits.InsightType.GracePeriod */: {
+                const gracePeriodLink = UI.XLink.XLink.create('https://developers.google.com/privacy-sandbox/cookies/dashboard?url=' +
+                    (domain.charAt(0) === '.' ? domain.substring(1) : domain), i18nString(UIStrings.reportedIssues), undefined, undefined, 'grace-period');
+                return html `${i18n.i18n.getFormatLocalizedString(str_, UIStrings.gracePeriod, {
+                    PH1: gracePeriodLink,
+                })}`;
+            }
+            case "Heuristics" /* Protocol.Audits.InsightType.Heuristics */:
+                return html `${i18nString(UIStrings.heuristics)}`;
+            default:
+                return html `${i18nString(UIStrings.other)}`;
         }
     }
 }

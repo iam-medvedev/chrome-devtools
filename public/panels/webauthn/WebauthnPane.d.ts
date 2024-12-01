@@ -12,6 +12,7 @@ declare class DataGridNode extends DataGrid.DataGrid.DataGridNode<DataGridNode> 
 export declare class WebauthnPaneImpl extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.WebAuthnModel.WebAuthnModel> {
     #private;
     readonly dataGrids: Map<Protocol.WebAuthn.AuthenticatorId, DataGrid.DataGrid.DataGridImpl<DataGridNode>>;
+    transportSelect: HTMLSelectElement | undefined;
     residentKeyCheckbox: HTMLInputElement | undefined;
     largeBlobCheckbox: HTMLInputElement | undefined;
     addAuthenticatorButton: Buttons.Button.Button | undefined;
@@ -19,6 +20,10 @@ export declare class WebauthnPaneImpl extends UI.Widget.VBox implements SDK.Targ
     modelAdded(model: SDK.WebAuthnModel.WebAuthnModel): void;
     modelRemoved(model: SDK.WebAuthnModel.WebAuthnModel): void;
     ownerViewDisposed(): Promise<void>;
+    /**
+     * Removes both the authenticator and its respective UI element.
+     */
+    removeAuthenticator(authenticatorId: Protocol.WebAuthn.AuthenticatorId): void;
     wasShown(): void;
 }
 export {};

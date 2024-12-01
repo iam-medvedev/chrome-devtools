@@ -80,7 +80,7 @@ styles.replaceSync(
 
 .settings-card-container-wrapper {
   scrollbar-gutter: stable;
-  padding-bottom: var(--sys-size-8);
+  padding: var(--sys-size-8) 0;
   overflow: auto;
   position: absolute;
   inset: var(--sys-size-8) 0 0;

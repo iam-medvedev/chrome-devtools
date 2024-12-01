@@ -3,6 +3,7 @@ export type StandardMetricNames = 'cumulative_layout_shift' | 'first_contentful_
 export type MetricNames = StandardMetricNames | 'form_factors';
 export type FormFactor = 'DESKTOP' | 'PHONE' | 'TABLET';
 export type DeviceScope = FormFactor | 'ALL';
+export type DeviceOption = DeviceScope | 'AUTO';
 export type PageScope = 'url' | 'origin';
 export type ConnectionType = 'offline' | 'slow-2G' | '2G' | '3G' | '4G';
 export interface CrUXRequest {
@@ -71,10 +72,14 @@ export interface ConfigSetting {
 export declare const DEVICE_SCOPE_LIST: DeviceScope[];
 export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
+    fieldDeviceOption: DeviceOption;
+    fieldPageScope: PageScope;
     private constructor();
     static instance(opts?: {
         forceNew: boolean | null;
     }): CrUXManager;
+    /** The most recent page result from the CrUX service. */
+    get pageResult(): PageResult | undefined;
     getConfigSetting(): Common.Settings.Setting<ConfigSetting>;
     isEnabled(): boolean;
     getFieldDataForPage(pageUrl: string): Promise<PageResult>;
@@ -88,6 +93,11 @@ export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<Even
      * the main document URL cannot be found.
      */
     getFieldDataForCurrentPage(): Promise<PageResult>;
+    refresh(): Promise<void>;
+    getSelectedDeviceScope(): DeviceScope;
+    getSelectedFieldResponse(): CrUXResponse | null | undefined;
+    getSelectedFieldMetricData(fieldMetric: StandardMetricNames): MetricResponse | undefined;
+    getFieldResponse(pageScope: PageScope, deviceScope: DeviceScope): CrUXResponse | null | undefined;
     setEndpointForTesting(endpoint: string): void;
 }
 export declare const enum Events {

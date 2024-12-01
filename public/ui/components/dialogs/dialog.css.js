@@ -70,6 +70,7 @@ dialog:focus-visible {
 
 .dialog-content {
   padding: 0 var(--sys-size-8);
+  overflow: hidden;
 }
 
 @keyframes slideIn {

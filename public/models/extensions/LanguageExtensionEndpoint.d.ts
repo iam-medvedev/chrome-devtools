@@ -3,13 +3,15 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
 export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLanguagePlugins.DebuggerLanguagePlugin {
     private readonly supportedScriptTypes;
-    private endpoint;
-    private extensionOrigin;
-    name: string;
-    constructor(extensionOrigin: string, name: string, supportedScriptTypes: {
+    private readonly endpoint;
+    private readonly extensionOrigin;
+    readonly allowFileAccess: boolean;
+    readonly name: string;
+    constructor(allowFileAccess: boolean, extensionOrigin: string, name: string, supportedScriptTypes: {
         language: string;
         symbol_types: Array<string>;
     }, port: MessagePort);
+    canAccessURL(url: string): boolean;
     handleScript(script: SDK.Script.Script): boolean;
     createPageResourceLoadInitiator(): SDK.PageResourceLoader.PageResourceLoadInitiator;
     /** Notify the plugin about a new script

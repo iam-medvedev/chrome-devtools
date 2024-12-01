@@ -52,6 +52,7 @@ export class ButtonDialog extends HTMLElement {
         .data=${{
             variant: this.#data.variant,
             iconName: this.#data.iconName,
+            disabled: this.#data.disabled,
             title: this.#data.iconTitle,
             jslogContext: this.#data.jslogContext,
         }}

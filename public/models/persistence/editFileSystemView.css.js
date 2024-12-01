@@ -15,12 +15,9 @@ styles.replaceSync(
   display: flex;
   flex-direction: column;
   min-height: var(--sys-size-16);
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding: var(--sys-size-5) var(--sys-size-6);
-
-  & > .url-header {
-    height: var(--sys-size-9);
-  }
+  border-bottom: var(--sys-size-1) solid var(--app-color-card-divider);
+  padding: var(--sys-size-4) var(--sys-size-6);
+  gap: var(--sys-size-4);
 
   & > .excluded-folder-url {
     color: var(--sys-color-on-surface-subtle);
@@ -65,11 +62,19 @@ styles.replaceSync(
 }
 
 .list {
-  border: none;
+  &:has(div) {
+    border: none;
+  }
 }
 
 .list-item {
-  padding: 0 var(--sys-size-6);
+  padding-left: var(--sys-size-11);
+
+  &:not(:last-child) {
+    .file-system-list-item {
+      border-bottom: var(--sys-size-1) solid var(--app-color-card-divider);
+    }
+  }
 }
 
 .editor-buttons {

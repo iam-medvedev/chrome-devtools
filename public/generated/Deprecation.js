@@ -213,13 +213,13 @@ export const UIStrings = {
      */
     UnloadHandler: "Unload event listeners are deprecated and will be removed.",
     /**
-     * @description This warning occurs when the website attempts to invoke the deprecated GPUAdapter `requestAdapterInfo()` method.
-     */
-    V8GPUAdapter_RequestAdapterInfo_Method: "The GPUAdapter `requestAdapterInfo()` method is deprecated, instead use the GPUAdapter `info` attribute.",
-    /**
      * @description A deprecation warning shown in the DevTools Issues tab. The placeholder is always the noun 'SharedArrayBuffer' which refers to a JavaScript construct. 'Extensions' refers to Chrome extensions. The warning is shown when Chrome Extensions attempt to use 'SharedArrayBuffer's under insecure circumstances.
      */
     V8SharedArrayBufferConstructedInExtensionWithoutIsolation: "Extensions should opt into cross-origin isolation to continue using `SharedArrayBuffer`. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/.",
+    /**
+     * @description This warning occurs when the website attempts to use the deprecated WebGPU limit `maxInterStageShaderComponents`.
+     */
+    WebGPULimitMaxInterStageShaderComponents: "The WebGPU limit `maxInterStageShaderComponents` is deprecated, instead use the WebGPU limit `maxInterStageShaderVariables`.",
     /**
      * @description Warning displayed to developers when the Web SQL API is used to let them know this API is deprecated.
      */
@@ -347,11 +347,11 @@ export const DEPRECATIONS_METADATA = {
     "UnloadHandler": {
         "chromeStatusFeature": 5579556305502208
     },
-    "V8GPUAdapter_RequestAdapterInfo_Method": {
-        "chromeStatusFeature": 5140787340509184
-    },
     "V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
         "milestone": 96
+    },
+    "WebGPULimitMaxInterStageShaderComponents": {
+        "chromeStatusFeature": 4853767735083008
     },
     "WebSQL": {
         "chromeStatusFeature": 5134293578285056,

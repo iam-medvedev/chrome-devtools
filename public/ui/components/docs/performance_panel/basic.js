@@ -93,9 +93,8 @@ const cpuprofileName = params.get('cpuprofile');
 const traceUrl = params.get('loadTimelineFromURL');
 const nodeMode = params.get('isNode');
 const isNodeMode = nodeMode === 'true' ? true : false;
-// These are both enabled by default in Chrome M131 and will be removed in M132.
+// This experiment is enabled by default in Chrome M131.
 Root.Runtime.experiments.setEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */, true);
-Root.Runtime.experiments.setEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */, true);
 const timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, isNode: isNodeMode });
 const container = document.getElementById('container');
 if (!container) {

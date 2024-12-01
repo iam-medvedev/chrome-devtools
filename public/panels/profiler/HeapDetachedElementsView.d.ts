@@ -33,6 +33,7 @@ export declare class DetachedElementsProfileType extends DetachedElementsProfile
     getDetachedElements(): Promise<void>;
     get treeItemTitle(): Common.UIString.LocalizedString;
     get description(): string;
+    isInstantProfile(): boolean;
     static readonly TypeId = "DetachedElements";
 }
 export declare namespace DetachedElementsProfileType {

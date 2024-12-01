@@ -460,7 +460,9 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         let handled = false;
         switch (keyboardEvent.key) {
             case Platform.KeyboardUtilities.ENTER_KEY:
-                this.onEnter(keyboardEvent);
+                if (!keyboardEvent.isComposing) { // Ignore ENTER to confirm selection in an IME
+                    this.onEnter(keyboardEvent);
+                }
                 return;
             case Platform.KeyboardUtilities.TAB_KEY:
                 if (keyboardEvent.shiftKey) {

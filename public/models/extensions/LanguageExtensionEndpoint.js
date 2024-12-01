@@ -24,14 +24,33 @@ export class LanguageExtensionEndpoint {
     supportedScriptTypes;
     endpoint;
     extensionOrigin;
+    allowFileAccess;
     name;
-    constructor(extensionOrigin, name, supportedScriptTypes, port) {
+    constructor(allowFileAccess, extensionOrigin, name, supportedScriptTypes, port) {
         this.name = name;
         this.extensionOrigin = extensionOrigin;
         this.supportedScriptTypes = supportedScriptTypes;
         this.endpoint = new LanguageExtensionEndpointImpl(this, port);
+        this.allowFileAccess = allowFileAccess;
+    }
+    canAccessURL(url) {
+        try {
+            return this.allowFileAccess || new URL(url).protocol !== 'file:';
+        }
+        catch (e) {
+            return false;
+        }
     }
     handleScript(script) {
+        try {
+            if (!this.canAccessURL(script.contentURL()) || (script.hasSourceURL && !this.canAccessURL(script.sourceURL)) ||
+                (script.debugSymbols?.externalURL && !this.canAccessURL(script.debugSymbols.externalURL))) {
+                return false;
+            }
+        }
+        catch (e) {
+            return false;
+        }
         const language = script.scriptLanguage();
         return language !== null && script.debugSymbols !== null && language === this.supportedScriptTypes.language &&
             this.supportedScriptTypes.symbol_types.includes(script.debugSymbols.type);
@@ -47,6 +66,9 @@ export class LanguageExtensionEndpoint {
     /** Notify the plugin about a new script
      */
     addRawModule(rawModuleId, symbolsURL, rawModule) {
+        if (!this.canAccessURL(symbolsURL) || !this.canAccessURL(rawModule.url)) {
+            return Promise.resolve([]);
+        }
         return this.endpoint.sendRequest("addRawModule" /* PrivateAPI.LanguageExtensionPluginCommands.AddRawModule */, { rawModuleId, symbolsURL, rawModule });
     }
     /**

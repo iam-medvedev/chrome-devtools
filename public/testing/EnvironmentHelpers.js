@@ -102,7 +102,6 @@ const REGISTERED_EXPERIMENTS = [
     'font-editor',
     "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
-    "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */,
     "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */,
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
@@ -113,6 +112,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
     "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
     "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
+    "timeline-ignore-list" /* Root.Runtime.ExperimentName.TIMELINE_IGNORE_LIST */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -206,7 +206,8 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-trace-expand', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-selected-navigation', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
-        createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'ai-assistance-history-entries', [], "array" /* Common.Settings.SettingType.ARRAY */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
@@ -392,6 +393,7 @@ export function getGetHostConfigStub(config) {
     return sinon.stub(settings, 'getHostConfig').returns({
         aidaAvailability: {
             disallowLogging: false,
+            enterprisePolicyValue: 0,
             ...config.aidaAvailability,
         },
         devToolsConsoleInsights: {

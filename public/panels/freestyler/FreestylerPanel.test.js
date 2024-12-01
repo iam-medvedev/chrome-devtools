@@ -680,7 +680,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             },
         ]);
         const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete chat\']');
+        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete local chat\']');
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.deepEqual(mockView.lastCall.args[0].messages, []);
@@ -715,7 +715,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             },
         ]);
         const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete chat\']');
+        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete local chat\']');
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.deepEqual(mockView.lastCall.args[0].messages, []);
@@ -766,7 +766,7 @@ describeWithEnvironment('FreestylerPanel', () => {
         let contextMenu = getMenu(() => {
             dispatchClickEvent(button);
         });
-        const clearAll = findMenuItemWithLabel(contextMenu.footerSection(), 'Clear chat history');
+        const clearAll = findMenuItemWithLabel(contextMenu.footerSection(), 'Clear local chats');
         assert.isDefined(clearAll);
         contextMenu.invokeHandler(clearAll.id());
         await drainMicroTasks();
@@ -1115,6 +1115,36 @@ describeWithEnvironment('FreestylerPanel', () => {
                 stub.restore();
             });
         });
+    });
+    it('erases previous partial response on blocked error', async () => {
+        async function* generateAnswerAndError() {
+            yield {
+                explanation: 'ANSWER: This is the first part of the answer.',
+                metadata: {},
+                completed: false,
+            };
+            throw new Host.AidaClient.AidaBlockError();
+        }
+        const mockAidaClient = {
+            fetch: generateAnswerAndError,
+            registerClientEvent: sinon.spy(),
+        };
+        const messages = [];
+        const viewMock = sinon.stub().callsFake((props) => {
+            messages.push(JSON.parse(JSON.stringify(props.messages[1])));
+        });
+        panel = new Freestyler.FreestylerPanel(viewMock, {
+            aidaClient: mockAidaClient,
+            aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+            syncInfo: getTestSyncInfo(),
+        });
+        panel.handleAction('freestyler.elements-floating-button');
+        viewMock.lastCall.args[0].onTextSubmit('test');
+        await drainMicroTasks();
+        assert.strictEqual(messages[2].answer, 'This is the first part of the answer.');
+        assert.isUndefined(messages[2].error);
+        assert.isUndefined(messages[3].answer);
+        assert.strictEqual(messages[3].error, 'block');
     });
 });
 //# sourceMappingURL=FreestylerPanel.test.js.map

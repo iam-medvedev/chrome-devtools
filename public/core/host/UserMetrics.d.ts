@@ -661,7 +661,6 @@ export declare enum DevtoolsExperiments {
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
-    'perf-panel-annotations' = 94,
     'timeline-rpp-sidebar' = 95,
     'timeline-observations' = 96,
     'timeline-server-timings' = 98,
@@ -669,7 +668,8 @@ export declare enum DevtoolsExperiments {
     'timeline-experimental-insights' = 102,
     'timeline-dim-unrelated-events' = 103,
     'timeline-alternative-navigation' = 104,
-    MAX_VALUE = 105
+    'timeline-ignore-list' = 105,
+    MAX_VALUE = 106
 }
 export declare const enum CSSPropertyDocumentation {
     SHOWN = 0,

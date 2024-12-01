@@ -615,6 +615,45 @@ describeWithDevtoolsExtension('Wasm extension API', {}, context => {
         assert.strictEqual(result.details[0], 'op');
     });
 });
+class StubLanguageExtension {
+    async addRawModule() {
+        return [];
+    }
+    async sourceLocationToRawLocation() {
+        return [];
+    }
+    async rawLocationToSourceLocation() {
+        return [];
+    }
+    async getScopeInfo() {
+        throw new Error('Method not implemented.');
+    }
+    async listVariablesInScope() {
+        return [];
+    }
+    async removeRawModule() {
+    }
+    async getFunctionInfo() {
+        return { frames: [] };
+    }
+    async getInlinedFunctionRanges() {
+        return [];
+    }
+    async getInlinedCalleesRanges() {
+        return [];
+    }
+    async getMappedLines() {
+        return undefined;
+    }
+    async evaluate() {
+        return null;
+    }
+    async getProperties() {
+        return [];
+    }
+    async releaseObject() {
+    }
+}
 describeWithDevtoolsExtension('Language Extension API', {}, context => {
     it('reports loaded resources', async () => {
         const target = createTarget();
@@ -637,4 +676,35 @@ describeWithDevtoolsExtension('Language Extension API', {}, context => {
         assert.deepEqual(resource, expectedResource);
     });
 });
+for (const allowFileAccess of [true, false]) {
+    describeWithDevtoolsExtension(`Language Extension API with {allowFileAccess: ${allowFileAccess}}`, { allowFileAccess }, context => {
+        let target;
+        beforeEach(() => {
+            target = createTarget();
+            const targetManager = target.targetManager();
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+            target.setInspectedURL('http://example.com');
+            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, targetManager, resourceMapping });
+            Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
+        });
+        it('passes allowFileAccess to the LanguageExtensionEndpoint', async () => {
+            const endpointSpy = sinon.spy(Extensions.LanguageExtensionEndpoint.LanguageExtensionEndpoint.prototype, 'handleScript');
+            const plugin = new StubLanguageExtension();
+            await context.chrome.devtools?.languageServices.registerLanguageExtensionPlugin(plugin, 'plugin', {
+                language: "JavaScript" /* Protocol.Debugger.ScriptLanguage.JavaScript */,
+                symbol_types: ["SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */],
+            });
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.isOk(debuggerModel);
+            debuggerModel.parsedScriptSource('0', 'file:///source/url', 0, 0, 100, 100, 0, '', {}, false, 'file:///source/url.map', false, false, 200, true, null, null, "JavaScript" /* Protocol.Debugger.ScriptLanguage.JavaScript */, [{
+                    type: "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */,
+                    externalURL: 'file:///source/url.map',
+                }], null);
+            assert.isTrue(endpointSpy.calledOnce);
+            assert.strictEqual(endpointSpy.thisValues[0]
+                .allowFileAccess, allowFileAccess);
+        });
+    });
+}
 //# sourceMappingURL=ExtensionServer.test.js.map

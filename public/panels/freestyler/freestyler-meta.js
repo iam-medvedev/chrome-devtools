@@ -106,17 +106,25 @@ Common.Settings.registerSettingExtension({
     reloadRequired: false,
     condition: isAnyFeatureAvailable,
     disabledCondition: config => {
-        if (isLocaleRestricted()) {
-            return { disabled: true, reason: i18nString(UIStrings.wrongLocale) };
-        }
         if (isGeoRestricted(config)) {
             return { disabled: true, reason: i18nString(UIStrings.geoRestricted) };
         }
         if (isPolicyRestricted(config)) {
             return { disabled: true, reason: i18nString(UIStrings.policyRestricted) };
         }
+        if (isLocaleRestricted()) {
+            return { disabled: true, reason: i18nString(UIStrings.wrongLocale) };
+        }
         return { disabled: false };
     },
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    settingName: 'ai-assistance-history-entries',
+    settingType: "array" /* Common.Settings.SettingType.ARRAY */,
+    title: i18nLazyString(UIStrings.enableAiAssistance),
+    defaultValue: [],
+    condition: isAnyFeatureAvailable,
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'freestyler.elements-floating-button',

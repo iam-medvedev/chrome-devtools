@@ -1,23 +1,23 @@
 export const generatedProperties: ({
+    inherited: boolean;
+    name: string;
+    keywords?: undefined;
+    longhands?: undefined;
+} | {
+    name: string;
+    inherited?: undefined;
+    keywords?: undefined;
+    longhands?: undefined;
+} | {
+    keywords: string[];
+    name: string;
+    inherited?: undefined;
+    longhands?: undefined;
+} | {
     longhands: string[];
     name: string;
     inherited?: undefined;
     keywords?: undefined;
-} | {
-    inherited: boolean;
-    name: string;
-    longhands?: undefined;
-    keywords?: undefined;
-} | {
-    name: string;
-    longhands?: undefined;
-    inherited?: undefined;
-    keywords?: undefined;
-} | {
-    keywords: string[];
-    name: string;
-    longhands?: undefined;
-    inherited?: undefined;
 } | {
     inherited: boolean;
     keywords: string[];

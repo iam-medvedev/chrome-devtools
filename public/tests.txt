@@ -124,6 +124,7 @@ models/emulation/DeviceModeModel.test.js
 models/emulation/EmulatedDevices.test.js
 models/extensions/ExtensionServer.test.js
 models/extensions/HostUrlPattern.test.js
+models/extensions/LanguageExtensionEndpoint.test.js
 models/extensions/RecorderPluginManager.test.js
 models/formatter/ScriptFormatter.test.js
 models/har/Importer.test.js
@@ -172,9 +173,12 @@ models/trace/extras/ThirdParties.test.js
 models/trace/extras/TraceFilter.test.js
 models/trace/extras/TraceTree.test.js
 models/trace/extras/URLForEntry.test.js
+models/trace/handlers/AnimationFramesHandler.test.js
 models/trace/handlers/AnimationHandler.test.js
+models/trace/handlers/AsyncCallStacksHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js
+models/trace/handlers/FlowsHandler.test.js
 models/trace/handlers/FramesHandler.test.js
 models/trace/handlers/GPUHandler.test.js
 models/trace/handlers/ImagePaintingHandler.test.js
@@ -460,6 +464,7 @@ panels/timeline/TimelineUIUtils.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/CPUThrottlingSelector.test.js
 panels/timeline/components/FieldSettingsDialog.test.js
+panels/timeline/components/IgnoreListSetting.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
 panels/timeline/components/LayoutShiftDetails.test.js
@@ -467,6 +472,7 @@ panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
+panels/timeline/components/OriginMap.test.js
 panels/timeline/components/RelatedInsightChips.test.js
 panels/timeline/components/Sidebar.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js

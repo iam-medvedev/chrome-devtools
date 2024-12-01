@@ -20,7 +20,6 @@ describeWithEnvironment('Sidebar', () => {
     }
     beforeEach(() => {
         enableFeatureForTest("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */);
-        enableFeatureForTest("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */);
     });
     it('renders with two tabs for insights & annotations', async function () {
         const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
