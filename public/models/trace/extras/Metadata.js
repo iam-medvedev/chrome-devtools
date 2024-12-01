@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Types from '../types/types.js';
-export async function forNewRecording(isCpuProfile, recordStartTime, emulatedDeviceTitle) {
+export async function forNewRecording(isCpuProfile, recordStartTime, emulatedDeviceTitle, cruxFieldData) {
     try {
         if (isCpuProfile) {
             // For CPU profile, only specify data origin
@@ -58,6 +58,7 @@ export async function forNewRecording(isCpuProfile, recordStartTime, emulatedDev
             networkThrottlingConditions,
             hardwareConcurrency,
             dataOrigin: "TraceEvents" /* Types.File.DataOrigin.TRACE_EVENTS */,
+            cruxFieldData,
         };
     }
     catch {

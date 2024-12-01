@@ -247,7 +247,7 @@ function getElementRoleTitle(role) {
     }
 }
 function getSelectorPreview(step) {
-    if (!step || !('selectors' in step)) {
+    if (!('selectors' in step)) {
         return '';
     }
     const ariaSelector = step.selectors.flat().find(selector => selector.startsWith('aria/'));
@@ -308,7 +308,7 @@ function viewFunction(input, _output, target) {
         step: input.step,
         section: input.section,
     });
-    const subtitle = input.step ? getSelectorPreview() : getSectionPreview();
+    const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview();
     // clang-format off
     LitHtml.render(html `
     <devtools-timeline-section .data=${{

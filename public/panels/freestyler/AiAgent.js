@@ -15,6 +15,13 @@ export class ConversationContext {
         // https://html.spec.whatwg.org/#ascii-serialisation-of-an-origin.
         return this.getOrigin() === agentOrigin;
     }
+    /**
+     * This method is called at the start of `AiAgent.run`.
+     * It will be overriden in subclasses to fetch data related to the context item.
+     */
+    async refresh() {
+        return;
+    }
 }
 export class AiAgent {
     static validTemperature(temperature) {
@@ -88,9 +95,6 @@ export class AiAgent {
         for await (rawResponse of this.#aidaClient.fetch(request, options)) {
             response = rawResponse.explanation;
             rpcId = rawResponse.metadata.rpcGlobalId ?? rpcId;
-            if (rawResponse.metadata.attributionMetadata?.some(meta => meta.attributionAction === Host.AidaClient.RecitationAction.BLOCK)) {
-                throw new Error('Attribution action does not allow providing the response');
-            }
             const parsedResponse = this.parseResponse(response);
             yield { rpcId, parsedResponse, completed: rawResponse.completed };
         }
@@ -106,12 +110,14 @@ export class AiAgent {
         localStorage.setItem('freestylerStructuredLog', JSON.stringify(this.#structuredLog));
     }
     buildRequest(opts) {
+        const currentMessage = { parts: [{ text: opts.text }], role: Host.AidaClient.Role.USER };
         const history = this.#chatHistoryForAida;
         const request = {
-            input: opts.input,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            current_message: currentMessage,
             preamble: this.preamble,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            chat_history: history.length ? history : undefined,
+            historical_contexts: history.length ? history : undefined,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
                 temperature: AiAgent.validTemperature(this.options.temperature),
@@ -167,8 +173,8 @@ STOP`;
             const text = this.formatParsedStep(currentParsedStep);
             if (text) {
                 history.push({
-                    entity: Host.AidaClient.Entity.SYSTEM,
-                    text,
+                    role: Host.AidaClient.Role.MODEL,
+                    parts: [{ text }],
                 });
                 currentParsedStep = {};
             }
@@ -184,15 +190,15 @@ STOP`;
                 case "querying" /* ResponseType.QUERYING */: {
                     flushCurrentStep();
                     history.push({
-                        entity: Host.AidaClient.Entity.USER,
-                        text: data.query,
+                        role: Host.AidaClient.Role.USER,
+                        parts: [{ text: data.query }],
                     });
                     break;
                 }
                 case "answer" /* ResponseType.ANSWER */:
                     history.push({
-                        entity: Host.AidaClient.Entity.SYSTEM,
-                        text: this.formatParsedAnswer({ answer: data.text }),
+                        role: Host.AidaClient.Role.MODEL,
+                        parts: [{ text: this.formatParsedAnswer({ answer: data.text }) }],
                     });
                     break;
                 case "title" /* ResponseType.TITLE */:
@@ -226,6 +232,7 @@ STOP`;
         if (this.#generatedFromHistory) {
             throw new Error('History entries are read-only.');
         }
+        await options.selected?.refresh();
         // First context set on the agent determines its origin from now on.
         if (options.selected && this.#origin === undefined && options.selected) {
             this.#origin = options.selected.getOrigin();
@@ -237,9 +244,7 @@ STOP`;
         const enhancedQuery = await this.enhanceQuery(query, options.selected);
         Host.userMetrics.freestylerQueryLength(enhancedQuery.length);
         // Request is built here to capture history up to this point.
-        let request = this.buildRequest({
-            input: enhancedQuery,
-        });
+        let request = this.buildRequest({ text: enhancedQuery });
         const response = {
             type: "user-query" /* ResponseType.USER_QUERY */,
             query,
@@ -269,7 +274,6 @@ STOP`;
                         yield {
                             type: "answer" /* ResponseType.ANSWER */,
                             text: parsedResponse.answer,
-                            rpcId,
                         };
                     }
                 }
@@ -280,16 +284,15 @@ STOP`;
                     const response = {
                         type: "error" /* ResponseType.ERROR */,
                         error: "abort" /* ErrorType.ABORT */,
-                        rpcId,
                     };
                     this.#addHistory(response);
                     yield response;
                     break;
                 }
+                const error = (err instanceof Host.AidaClient.AidaBlockError) ? "block" /* ErrorType.BLOCK */ : "unknown" /* ErrorType.UNKNOWN */;
                 const response = {
                     type: "error" /* ResponseType.ERROR */,
-                    error: "unknown" /* ErrorType.UNKNOWN */,
-                    rpcId,
+                    error,
                 };
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
                 this.#addHistory(response);
@@ -300,7 +303,6 @@ STOP`;
                 const response = {
                     type: "error" /* ResponseType.ERROR */,
                     error: "unknown" /* ErrorType.UNKNOWN */,
-                    rpcId,
                 };
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
                 this.#addHistory(response);
@@ -324,7 +326,6 @@ STOP`;
                     const response = {
                         type: "error" /* ResponseType.ERROR */,
                         error: "unknown" /* ErrorType.UNKNOWN */,
-                        rpcId,
                     };
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
                     this.#addHistory(response);
@@ -356,9 +357,7 @@ STOP`;
                 this.#addHistory(result);
                 query = `OBSERVATION: ${result.output}`;
                 // Capture history state for the next iteration query.
-                request = this.buildRequest({
-                    input: query,
-                });
+                request = this.buildRequest({ text: query });
                 yield result;
             }
             if (i === MAX_STEP - 1) {

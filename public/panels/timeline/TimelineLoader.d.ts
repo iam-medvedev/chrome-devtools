@@ -33,7 +33,6 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     write(chunk: string, endOfFile: boolean): Promise<void>;
     private reportErrorAndCancelLoading;
     close(): Promise<void>;
-    private isCpuProfile;
     private finalizeTrace;
     traceFinalizedForTest(): Promise<void>;
 }

@@ -217,7 +217,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     #newAuthenticatorSection;
     #newAuthenticatorForm;
     #protocolSelect;
-    #transportSelect;
+    transportSelect;
     #residentKeyCheckboxLabel;
     residentKeyCheckbox;
     #userVerificationCheckboxLabel;
@@ -405,20 +405,38 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         void this.#setVirtualAuthEnvEnabled(e.target.checked);
     }
     #updateEnabledTransportOptions(enabledOptions) {
-        if (!this.#transportSelect) {
+        if (!this.transportSelect) {
             return;
         }
-        const prevValue = this.#transportSelect.value;
-        this.#transportSelect.removeChildren();
+        const prevValue = this.transportSelect.value;
+        this.transportSelect.removeChildren();
         for (const option of enabledOptions) {
-            this.#transportSelect.appendChild(UI.UIUtils.createOption(option, option, option));
+            this.transportSelect.appendChild(UI.UIUtils.createOption(option, option, option));
         }
         // Make sure the currently selected value stays the same.
-        this.#transportSelect.value = prevValue;
+        this.transportSelect.value = prevValue;
         // If the new set does not include the previous value.
-        if (!this.#transportSelect.value) {
+        if (!this.transportSelect.value) {
             // Select the first available value.
-            this.#transportSelect.selectedIndex = 0;
+            this.transportSelect.selectedIndex = 0;
+        }
+        this.#updateInternalTransportAvailability();
+    }
+    #updateInternalTransportAvailability() {
+        if (!this.transportSelect?.options) {
+            return;
+        }
+        const hasInternal = Boolean(this.#availableAuthenticatorSetting.get().find(authenticator => authenticator.transport === "internal" /* Protocol.WebAuthn.AuthenticatorTransport.Internal */));
+        for (let i = 0; i < this.transportSelect.options.length; ++i) {
+            const option = this.transportSelect.options[i];
+            if (option.value === "internal" /* Protocol.WebAuthn.AuthenticatorTransport.Internal */) {
+                option.disabled = hasInternal;
+                // This relies on "internal" never being the first or only element.
+                if (i === this.transportSelect.selectedIndex) {
+                    --this.transportSelect.selectedIndex;
+                }
+                break;
+            }
         }
     }
     #updateNewAuthenticatorSectionOptions() {
@@ -489,9 +507,9 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         }
         const transportSelectTitle = UI.UIUtils.createLabel(i18nString(UIStrings.transport), 'authenticator-option-label');
         transportGroup.appendChild(transportSelectTitle);
-        this.#transportSelect = transportGroup.createChild('select', 'chrome-select');
-        this.#transportSelect.setAttribute('jslog', `${VisualLogging.dropDown('transport').track({ change: true })}`);
-        UI.ARIAUtils.bindLabelToControl(transportSelectTitle, this.#transportSelect);
+        this.transportSelect = transportGroup.createChild('select', 'chrome-select');
+        this.transportSelect.setAttribute('jslog', `${VisualLogging.dropDown('transport').track({ change: true })}`);
+        UI.ARIAUtils.bindLabelToControl(transportSelectTitle, this.transportSelect);
         // transportSelect will be populated in updateNewAuthenticatorSectionOptions.
         this.#residentKeyCheckboxLabel =
             UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.supportsResidentKeys), false, undefined, 'resident-key');
@@ -541,6 +559,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
             const mediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
             const prefersReducedMotion = mediaQueryList.matches;
             section.scrollIntoView({ block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+            this.#updateInternalTransportAvailability();
         }
     }
     async #addAuthenticatorSection(authenticatorId, options) {
@@ -561,7 +580,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         this.#activeAuthId = authenticatorId; // Newly added authenticator is automatically set as active.
         const removeButton = headerElement.createChild('button', 'text-button');
         removeButton.textContent = i18nString(UIStrings.remove);
-        removeButton.addEventListener('click', this.#removeAuthenticator.bind(this, authenticatorId));
+        removeButton.addEventListener('click', this.removeAuthenticator.bind(this, authenticatorId));
         removeButton.setAttribute('jslog', `${VisualLogging.action('webauthn.remove-authenticator').track({ click: true })}`);
         const toolbar = new UI.Toolbar.Toolbar('edit-name-toolbar', titleElement);
         const editName = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.editName), 'edit', undefined, 'edit-name');
@@ -677,7 +696,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     /**
      * Removes both the authenticator and its respective UI element.
      */
-    #removeAuthenticator(authenticatorId) {
+    removeAuthenticator(authenticatorId) {
         if (this.#authenticatorsView) {
             const child = this.#authenticatorsView.querySelector(`[data-authenticator-id=${CSS.escape(authenticatorId)}]`);
             if (child) {
@@ -705,17 +724,18 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
                 this.#activeAuthId = null;
             }
         }
+        this.#updateInternalTransportAvailability();
     }
     #createOptionsFromCurrentInputs() {
         // TODO(crbug.com/1034663): Add optionality for isUserVerified param.
-        if (!this.#protocolSelect || !this.#transportSelect || !this.residentKeyCheckbox ||
+        if (!this.#protocolSelect || !this.transportSelect || !this.residentKeyCheckbox ||
             !this.#userVerificationCheckbox || !this.largeBlobCheckbox) {
             throw new Error('Unable to create options from current inputs');
         }
         return {
             protocol: this.#protocolSelect.options[this.#protocolSelect.selectedIndex].value,
             ctap2Version: "ctap2_1" /* Protocol.WebAuthn.Ctap2Version.Ctap2_1 */,
-            transport: this.#transportSelect.options[this.#transportSelect.selectedIndex].value,
+            transport: this.transportSelect.options[this.transportSelect.selectedIndex].value,
             hasResidentKey: this.residentKeyCheckbox.checked,
             hasUserVerification: this.#userVerificationCheckbox.checked,
             hasLargeBlob: this.largeBlobCheckbox.checked,

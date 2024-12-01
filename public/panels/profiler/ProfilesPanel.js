@@ -240,6 +240,9 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.updateProfileTypeSpecificUI();
     }
     updateProfileTypeSpecificUI() {
+        if (this.selectedProfileType?.isInstantProfile()) {
+            this.toggleRecordButton.toggleOnClick(false);
+        }
         this.updateToggleRecordAction(this.toggleRecordAction.toggled());
     }
     reset() {

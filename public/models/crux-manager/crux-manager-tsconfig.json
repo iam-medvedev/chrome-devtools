@@ -40,6 +40,9 @@
     },
     {
       "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../emulation/bundle-tsconfig.json"
     }
   ]
 }

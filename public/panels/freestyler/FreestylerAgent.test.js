@@ -329,21 +329,21 @@ c`;
             const agent = new FreestylerAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ input: 'test input' }).options?.model_id, 'test model');
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
             const agent = new FreestylerAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ input: 'test input' }).options?.temperature, 1);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.temperature, 1);
         });
         it('builds a request with a user tier', async () => {
             mockHostConfig('test model', 1, 'PUBLIC');
             const agent = new FreestylerAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ input: 'test input' }).metadata?.user_tier, 3);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }).metadata?.user_tier, 3);
         });
         it('structure matches the snapshot', () => {
             mockHostConfig('test model');
@@ -367,19 +367,19 @@ c`;
                 },
             ];
             assert.deepStrictEqual(agent.buildRequest({
-                input: 'test input',
+                text: 'test input',
             }), {
-                input: 'test input',
+                current_message: { role: Host.AidaClient.Role.USER, parts: [{ text: 'test input' }] },
                 client: 'CHROME_DEVTOOLS',
                 preamble: 'preamble',
-                chat_history: [
+                historical_contexts: [
                     {
-                        entity: 1,
-                        text: 'question',
+                        role: 1,
+                        parts: [{ text: 'question' }],
                     },
                     {
-                        entity: 2,
-                        text: 'ANSWER: answer',
+                        role: 2,
+                        parts: [{ text: 'ANSWER: answer' }],
                     },
                 ],
                 metadata: {
@@ -598,16 +598,16 @@ c`;
             sinon.assert.notCalled(execJs);
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
-                    entity: 1,
-                    text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
+                    role: 1,
+                    parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
                 },
                 {
-                    entity: 2,
-                    text: 'ANSWER: this is the answer',
+                    role: 2,
+                    parts: [{ text: 'ANSWER: this is the answer' }],
                 },
             ]);
         });
-        it('correctly handles chat_history in AIDA requests', async () => {
+        it('correctly handles historical_contexts in AIDA requests', async () => {
             const requests = [];
             let i = 0;
             async function* generateAnswer(request) {
@@ -640,19 +640,26 @@ STOP`,
             });
             await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.lengthOf(requests, 2, 'Unexpected number of AIDA requests');
-            assert.isUndefined(requests[0].chat_history, 'Unexpected chat history in the initial request');
-            assert.strictEqual(requests[0].input, '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test', 'Unexpected input in the initial request');
-            assert.deepStrictEqual(requests[1].chat_history, [
+            assert.isUndefined(requests[0].historical_contexts, 'Unexpected historical contexts in the initial request');
+            assert.exists(requests[0].current_message);
+            assert.lengthOf(requests[0].current_message.parts, 1);
+            assert.strictEqual(requests[0].current_message.parts[0].text, '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test', 'Unexpected input text in the initial request');
+            assert.strictEqual(requests[0].current_message.role, Host.AidaClient.Role.USER);
+            assert.deepStrictEqual(requests[1].historical_contexts, [
                 {
-                    entity: 1,
-                    text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
+                    role: 1,
+                    parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
                 },
                 {
-                    entity: 2,
-                    text: 'THOUGHT: I am thinking.\nTITLE: thinking\nACTION\nconst data = {\"test\": \"observation\"};\nSTOP',
+                    role: 2,
+                    parts: [{
+                            text: 'THOUGHT: I am thinking.\nTITLE: thinking\nACTION\nconst data = {\"test\": \"observation\"};\nSTOP',
+                        }],
                 },
-            ], 'Unexpected chat history in the follow-up request');
-            assert.strictEqual(requests[1].input, 'OBSERVATION: test data', 'Unexpected input in the follow-up request');
+            ], 'Unexpected historical contexts in the follow-up request');
+            assert.exists(requests[1].current_message);
+            assert.lengthOf(requests[1].current_message.parts, 1);
+            assert.strictEqual(requests[1].current_message.parts[0].text, 'OBSERVATION: test data', 'Unexpected input in the follow-up request');
         });
         it('generates an rpcId for the answer', async () => {
             async function* generateAnswer() {
@@ -702,13 +709,10 @@ STOP`,
                     explanation: 'ANSWER: this is the answer',
                     metadata: {
                         rpcGlobalId: 123,
-                        attributionMetadata: [{
-                                attributionAction: Host.AidaClient.RecitationAction.BLOCK,
-                                citations: [],
-                            }],
                     },
-                    completed: true,
+                    completed: false,
                 };
+                throw new Host.AidaClient.AidaBlockError();
             }
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
@@ -735,9 +739,12 @@ STOP`,
                     query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
-                    rpcId: undefined,
+                    text: 'this is the answer',
+                    type: "answer" /* Freestyler.ResponseType.ANSWER */,
+                },
+                {
                     type: "error" /* Freestyler.ResponseType.ERROR */,
-                    error: "unknown" /* Freestyler.ErrorType.UNKNOWN */,
+                    error: "block" /* Freestyler.ErrorType.BLOCK */,
                 },
             ]);
         });
@@ -856,7 +863,6 @@ STOP
                 {
                     type: "error" /* Freestyler.ResponseType.ERROR */,
                     error: "unknown" /* Freestyler.ErrorType.UNKNOWN */,
-                    rpcId: undefined,
                 },
             ]);
             sinon.assert.notCalled(execJs);
@@ -965,36 +971,36 @@ ANSWER: this is the answer`,
             await Array.fromAsync(agent.run('test', { selected: new Freestyler.NodeContext(element) }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
-                    entity: 1,
-                    text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
+                    role: 1,
+                    parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
                 },
                 {
-                    entity: 2,
-                    text: 'THOUGHT: thought 1\nTITLE: test\nACTION\nconsole.log(\'test\')\nSTOP',
+                    role: 2,
+                    parts: [{ text: 'THOUGHT: thought 1\nTITLE: test\nACTION\nconsole.log(\'test\')\nSTOP' }],
                 },
                 {
-                    entity: 1,
-                    text: 'OBSERVATION: undefined',
+                    role: 1,
+                    parts: [{ text: 'OBSERVATION: undefined' }],
                 },
                 {
-                    entity: 2,
-                    text: 'THOUGHT: thought 2\nTITLE: test\nACTION\nconsole.log(\'test\')\nSTOP',
+                    role: 2,
+                    parts: [{ text: 'THOUGHT: thought 2\nTITLE: test\nACTION\nconsole.log(\'test\')\nSTOP' }],
                 },
                 {
-                    entity: 1,
-                    text: 'OBSERVATION: undefined',
+                    role: 1,
+                    parts: [{ text: 'OBSERVATION: undefined' }],
                 },
                 {
-                    entity: 2,
-                    text: 'THOUGHT: thought 3\nTITLE: test\nACTION\nconsole.log(\'test\')\nSTOP',
+                    role: 2,
+                    parts: [{ text: 'THOUGHT: thought 3\nTITLE: test\nACTION\nconsole.log(\'test\')\nSTOP' }],
                 },
                 {
-                    entity: 1,
-                    text: 'OBSERVATION: undefined',
+                    role: 1,
+                    parts: [{ text: 'OBSERVATION: undefined' }],
                 },
                 {
-                    entity: 2,
-                    text: 'ANSWER: this is the answer',
+                    role: 2,
+                    parts: [{ text: 'ANSWER: this is the answer' }],
                 },
             ]);
         });

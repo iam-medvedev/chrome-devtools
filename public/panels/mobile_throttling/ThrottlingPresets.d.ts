@@ -7,6 +7,7 @@ export declare class ThrottlingPresets {
     static getCustomConditions(): PlaceholderConditions;
     static getMobilePresets(): (Conditions | PlaceholderConditions)[];
     static getAdvancedMobilePresets(): Conditions[];
+    static getRecommendedNetworkPreset(rtt: number): SDK.NetworkManager.Conditions | null;
     static networkPresets: SDK.NetworkManager.Conditions[];
     static cpuThrottlingPresets: SDK.CPUThrottlingManager.CPUThrottlingRates[];
 }

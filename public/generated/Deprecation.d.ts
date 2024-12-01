@@ -208,13 +208,13 @@ export declare const UIStrings: {
      */
     UnloadHandler: string;
     /**
-     * @description This warning occurs when the website attempts to invoke the deprecated GPUAdapter `requestAdapterInfo()` method.
-     */
-    V8GPUAdapter_RequestAdapterInfo_Method: string;
-    /**
      * @description A deprecation warning shown in the DevTools Issues tab. The placeholder is always the noun 'SharedArrayBuffer' which refers to a JavaScript construct. 'Extensions' refers to Chrome extensions. The warning is shown when Chrome Extensions attempt to use 'SharedArrayBuffer's under insecure circumstances.
      */
     V8SharedArrayBufferConstructedInExtensionWithoutIsolation: string;
+    /**
+     * @description This warning occurs when the website attempts to use the deprecated WebGPU limit `maxInterStageShaderComponents`.
+     */
+    WebGPULimitMaxInterStageShaderComponents: string;
     /**
      * @description Warning displayed to developers when the Web SQL API is used to let them know this API is deprecated.
      */

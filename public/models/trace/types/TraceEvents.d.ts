@@ -994,6 +994,34 @@ export interface PairableAsyncInstant extends PairableAsync {
 export interface PairableAsyncEnd extends PairableAsync {
     ph: Phase.ASYNC_NESTABLE_END;
 }
+export interface AnimationFrame extends PairableAsync {
+    name: Name.ANIMATION_FRAME;
+    args?: AnimationFrameArgs;
+}
+export type AnimationFrameArgs = Args & {
+    animation_frame_timing_info: {
+        blocking_duration_ms: number;
+        duration_ms: number;
+        num_scripts: number;
+    };
+    id: string;
+};
+export interface AnimationFrameAsyncStart extends AnimationFrame {
+    ph: Phase.ASYNC_NESTABLE_START;
+}
+export interface AnimationFrameAsyncEnd extends AnimationFrame {
+    ph: Phase.ASYNC_NESTABLE_END;
+}
+export declare function isAnimationFrameAsyncStart(data: Event): data is AnimationFrameAsyncStart;
+export declare function isAnimationFrameAsyncEnd(data: Event): data is AnimationFrameAsyncEnd;
+export interface AnimationFramePresentation extends Event {
+    name: Name.ANIMATION_FRAME_PRESENTATION;
+    ph: Phase.ASYNC_NESTABLE_INSTANT;
+    args?: Args & {
+        id: string;
+    };
+}
+export declare function isAnimationFramePresentation(data: Event): data is AnimationFramePresentation;
 export interface UserTiming extends Event {
     id2?: {
         local?: string;
@@ -1166,6 +1194,7 @@ export interface SyntheticEventPair<T extends PairableAsync = PairableAsync> ext
     };
 }
 export type SyntheticPipelineReporterPair = SyntheticEventPair<PipelineReporter>;
+export type SyntheticAnimationFramePair = SyntheticEventPair<AnimationFrame>;
 export type SyntheticUserTimingPair = SyntheticEventPair<PerformanceMeasure>;
 export type SyntheticConsoleTimingPair = SyntheticEventPair<ConsoleTime>;
 export type SyntheticAnimationPair = SyntheticEventPair<Animation>;
@@ -1418,6 +1447,14 @@ export interface InvalidateLayout extends Instant {
     };
 }
 export declare function isInvalidateLayout(event: Event): event is InvalidateLayout;
+export interface DebuggerAsyncTaskScheduled extends Event {
+    name: Name.DEBUGGER_ASYNC_TASK_SCHEDULED;
+}
+export declare function isDebuggerAsyncTaskScheduled(event: Event): event is DebuggerAsyncTaskScheduled;
+export interface DebuggerAsyncTaskRun extends Event {
+    name: Name.DEBUGGER_ASYNC_TASK_RUN;
+}
+export declare function isDebuggerAsyncTaskRun(event: Event): event is DebuggerAsyncTaskRun;
 declare class ProfileIdTag {
     #private;
 }
@@ -1864,9 +1901,15 @@ export declare function isAbortPostTaskCallback(event: Event): event is RunPostT
 /**
  * Generally, before JS is executed, a trace event is dispatched that
  * parents the JS calls. These we call "invocation" events. This
- * function determines if an event is one of such.
+ * function determines if an event is one of such. Note: these are also
+ * commonly referred to as "JS entry points".
  */
 export declare function isJSInvocationEvent(event: Event): boolean;
+export interface FlowEvent extends Event {
+    id: number;
+    ph: Phase.FLOW_START | Phase.FLOW_END | Phase.FLOW_STEP;
+}
+export declare function isFlowPhaseEvent(event: Event): event is FlowEvent;
 /**
  * This is an exhaustive list of events we track in the Performance
  * panel. Note not all of them are necessarliry shown in the flame
@@ -1928,6 +1971,8 @@ export declare const enum Name {
     SCHEDULE_POST_TASK_CALLBACK = "SchedulePostTaskCallback",
     RUN_POST_TASK_CALLBACK = "RunPostTaskCallback",
     ABORT_POST_TASK_CALLBACK = "AbortPostTaskCallback",
+    DEBUGGER_ASYNC_TASK_RUN = "v8::Debugger::AsyncTaskRun",
+    DEBUGGER_ASYNC_TASK_SCHEDULED = "v8::Debugger::AsyncTaskScheduled",
     GC = "GCEvent",
     DOMGC = "BlinkGC.AtomicPhase",
     MAJOR_GC = "MajorGC",
@@ -2032,7 +2077,9 @@ export declare const enum Name {
     RENDER_FRAME_IMPL_CREATE_CHILD_FRAME = "RenderFrameImpl::createChildFrame",
     LAYOUT_IMAGE_UNSIZED = "LayoutImageUnsized",
     DOM_LOADING = "domLoading",
-    BEGIN_REMOTE_FONT_LOAD = "BeginRemoteFontLoad"
+    BEGIN_REMOTE_FONT_LOAD = "BeginRemoteFontLoad",
+    ANIMATION_FRAME = "AnimationFrame",
+    ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation"
 }
 export declare const Categories: {
     readonly Console: "blink.console";

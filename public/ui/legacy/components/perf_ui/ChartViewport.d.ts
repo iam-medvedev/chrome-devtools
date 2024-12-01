@@ -17,7 +17,6 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private vScrollElement;
     private vScrollContent;
     private readonly selectionOverlay;
-    private selectedTimeSpanLabel;
     private cursorElement;
     private isDraggingInternal;
     private totalHeight;
@@ -73,7 +72,6 @@ export declare class ChartViewport extends UI.Widget.VBox {
     setRangeSelection(startTime: number, endTime: number): void;
     onClick(event: Event): void;
     private rangeSelectionDragging;
-    private updateRangeSelectionOverlay;
     private onScroll;
     private onMouseOut;
     private updateCursorPosition;

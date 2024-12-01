@@ -87,7 +87,7 @@ export class TimelineLoader {
     static async loadFromURL(url, client) {
         const loader = new TimelineLoader(client);
         const stream = new Common.StringOutputStream.StringOutputStream();
-        await client.loadingStarted();
+        client.loadingStarted();
         const allowRemoteFilePaths = Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').get();
         Host.ResourceLoader.loadAsStream(url, null, stream, finishedCallback, allowRemoteFilePaths);
         async function finishedCallback(success, _headers, errorDescription) {
@@ -143,7 +143,7 @@ export class TimelineLoader {
         }
     }
     async addEvents(events) {
-        await this.client?.loadingStarted();
+        this.client?.loadingStarted();
         /**
          * See the `eventsPerChunk` comment in `models/trace/types/Configuration.ts`.
          *
@@ -154,7 +154,7 @@ export class TimelineLoader {
         for (let i = 0; i < events.length; i += eventsPerChunk) {
             const chunk = events.slice(i, i + eventsPerChunk);
             this.#collectEvents(chunk);
-            await this.client?.loadingProgress((i + chunk.length) / events.length);
+            this.client?.loadingProgress((i + chunk.length) / events.length);
             await new Promise(r => window.setTimeout(r, 0)); // Yield event loop to paint.
         }
         void this.close();
@@ -162,8 +162,7 @@ export class TimelineLoader {
     async cancel() {
         if (this.client) {
             await this.client.loadingComplete(
-            /* collectedEvents */ [], /* exclusiveFilter= */ null, /* isCpuProfile= */ false, 
-            /* recordingStartTime= */ null, /* metadata= */ null);
+            /* collectedEvents */ [], /* exclusiveFilter= */ null, /* metadata= */ null);
             this.client = null;
         }
         if (this.canceledCallback) {
@@ -181,7 +180,7 @@ export class TimelineLoader {
         }
         this.buffer += chunk;
         if (this.firstRawChunk) {
-            await this.client.loadingStarted();
+            this.client.loadingStarted();
             // Ensure we paint the loading dialog before continuing
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             this.firstRawChunk = false;
@@ -192,7 +191,7 @@ export class TimelineLoader {
             // For compressed traces, we can't provide a definite progress percentage. So, just keep it moving.
             // For other traces, calculate a loaded part.
             progress = progress > 1 ? progress - Math.floor(progress) : progress;
-            await this.client.loadingProgress(progress);
+            this.client.loadingProgress(progress);
         }
         if (endOfFile) {
             let trace;
@@ -217,15 +216,14 @@ export class TimelineLoader {
         if (!this.client) {
             return;
         }
-        await this.client.processingStarted();
+        this.client.processingStarted();
         await this.finalizeTrace();
     }
-    isCpuProfile() {
-        return this.#traceIsCPUProfile;
-    }
     async finalizeTrace() {
-        await this.client
-            .loadingComplete(this.#collectedEvents, this.filter, this.isCpuProfile(), /* recordingStartTime=*/ null, this.#metadata);
+        if (!this.#metadata && this.#traceIsCPUProfile) {
+            this.#metadata = { dataOrigin: "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */ };
+        }
+        await this.client.loadingComplete(this.#collectedEvents, this.filter, this.#metadata);
         this.#traceFinalizedCallbackForTest?.();
     }
     traceFinalizedForTest() {

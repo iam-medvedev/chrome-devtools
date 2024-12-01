@@ -84,6 +84,15 @@ export function isRenderFrameImplCreateChildFrame(event) {
 export function isLayoutImageUnsized(event) {
     return event.name === "LayoutImageUnsized" /* Name.LAYOUT_IMAGE_UNSIZED */;
 }
+export function isAnimationFrameAsyncStart(data) {
+    return data.name === "AnimationFrame" /* Name.ANIMATION_FRAME */ && data.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
+}
+export function isAnimationFrameAsyncEnd(data) {
+    return data.name === "AnimationFrame" /* Name.ANIMATION_FRAME */ && data.ph === "e" /* Phase.ASYNC_NESTABLE_END */;
+}
+export function isAnimationFramePresentation(data) {
+    return data.name === "AnimationFrame::Presentation" /* Name.ANIMATION_FRAME_PRESENTATION */;
+}
 export function isPipelineReporter(event) {
     return event.name === "PipelineReporter" /* Name.PIPELINE_REPORTER */;
 }
@@ -164,6 +173,12 @@ export function isLayout(event) {
 }
 export function isInvalidateLayout(event) {
     return event.name === "InvalidateLayout" /* Name.INVALIDATE_LAYOUT */;
+}
+export function isDebuggerAsyncTaskScheduled(event) {
+    return event.name === "v8::Debugger::AsyncTaskScheduled" /* Name.DEBUGGER_ASYNC_TASK_SCHEDULED */;
+}
+export function isDebuggerAsyncTaskRun(event) {
+    return event.name === "v8::Debugger::AsyncTaskRun" /* Name.DEBUGGER_ASYNC_TASK_RUN */;
 }
 class ProfileIdTag {
     #profileIdTag;
@@ -505,7 +520,8 @@ export function isAbortPostTaskCallback(event) {
 /**
  * Generally, before JS is executed, a trace event is dispatched that
  * parents the JS calls. These we call "invocation" events. This
- * function determines if an event is one of such.
+ * function determines if an event is one of such. Note: these are also
+ * commonly referred to as "JS entry points".
  */
 export function isJSInvocationEvent(event) {
     switch (event.name) {
@@ -523,6 +539,9 @@ export function isJSInvocationEvent(event) {
         return true;
     }
     return false;
+}
+export function isFlowPhaseEvent(event) {
+    return event.ph === "s" /* Phase.FLOW_START */ || event.ph === "t" /* Phase.FLOW_STEP */ || event.ph === "f" /* Phase.FLOW_END */;
 }
 // NOT AN EXHAUSTIVE LIST: just some categories we use and refer
 // to in multiple places.

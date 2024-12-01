@@ -71,6 +71,15 @@ export declare function prettyPrint(tree: Trace.Helpers.TreeHelpers.TraceEntryTr
 export declare function makeCompleteEvent(name: string, ts: number, dur: number, cat?: string, pid?: number, tid?: number): Trace.Types.Events.Complete;
 export declare function makeAsyncStartEvent(name: string, ts: number, pid?: number, tid?: number): Trace.Types.Events.Async;
 export declare function makeAsyncEndEvent(name: string, ts: number, pid?: number, tid?: number): Trace.Types.Events.Async;
+/**
+ * Builds a mock flow phase event.
+ */
+export declare function makeFlowPhaseEvent(name: string, ts: number, cat: string | undefined, ph: Trace.Types.Events.Phase.FLOW_START | Trace.Types.Events.Phase.FLOW_END | Trace.Types.Events.Phase.FLOW_STEP, id?: number, pid?: number, tid?: number): Trace.Types.Events.FlowEvent;
+/**
+ * Builds flow phase events for a list of events belonging to the same
+ * flow. `events` must be ordered.
+ */
+export declare function makeFlowEvents(events: Trace.Types.Events.Event[], flowId?: number): Trace.Types.Events.FlowEvent[];
 export declare function makeCompleteEventInMilliseconds(name: string, tsMillis: number, durMillis: number, cat?: string, pid?: number, tid?: number): Trace.Types.Events.Complete;
 /**
  * Builds a mock Instant.
@@ -84,13 +93,13 @@ export declare function makeBeginEvent(name: string, ts: number, cat?: string, p
  * Builds a mock End.
  */
 export declare function makeEndEvent(name: string, ts: number, cat?: string, pid?: number, tid?: number): Trace.Types.Events.End;
-export declare function makeProfileCall(functionName: string, tsMs: number, durMs: number, pid?: Trace.Types.Events.ProcessID, tid?: Trace.Types.Events.ThreadID, nodeId?: number, url?: string): Trace.Types.Events.SyntheticProfileCall;
+export declare function makeProfileCall(functionName: string, tsUs: number, durUs: number, pid?: number, tid?: number, nodeId?: number, url?: string): Trace.Types.Events.SyntheticProfileCall;
 export declare const DevToolsTimelineCategory = "disabled-by-default-devtools.timeline";
 /**
  * Mocks an object compatible with the return type of the
  * RendererHandler using only an array of ordered entries.
  */
-export declare function makeMockRendererHandlerData(entries: Trace.Types.Events.Event[]): Trace.Handlers.ModelHandlers.Renderer.RendererHandlerData;
+export declare function makeMockRendererHandlerData(entries: Trace.Types.Events.Event[], pid?: number, tid?: number): Trace.Handlers.ModelHandlers.Renderer.RendererHandlerData;
 /**
  * Mocks an object compatible with the return type of the
  * SamplesHandler using only an array of ordered profile calls.

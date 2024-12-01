@@ -388,6 +388,7 @@ export default {
    * Colors for cards.
    */
   --app-color-card-background: var(--sys-color-base-container-elevated);
+  --app-color-card-divider: color-mix(in sRGB, var(--ref-palette-neutral0) 6%, transparent);
 
   /**
   * Color for scrollable area shadow gradient
@@ -766,6 +767,7 @@ export default {
   /**
    * Colors for cards.
    */
+  --app-color-card-divider: color-mix(in sRGB, var(--ref-palette-neutral100) 10%, transparent);
   --app-color-card-background: var(--sys-color-surface2);
 
   /**

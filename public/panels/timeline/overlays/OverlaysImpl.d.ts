@@ -92,9 +92,19 @@ export interface TimestampMarker {
     timestamp: Trace.Types.Timing.MicroSeconds;
 }
 /**
+ * Represents a timings marker. This has a line that runs up the whole canvas.
+ * We can hold an array of entries, in the case we want to hold more than one with the same timestamp.
+ * The adjusted timestamp being the timestamp for the event adjusted by closest navigation.
+ */
+export interface TimingsMarker {
+    type: 'TIMINGS_MARKER';
+    entries: Trace.Types.Events.Event[];
+    adjustedTimestamp: Trace.Types.Timing.MicroSeconds;
+}
+/**
  * All supported overlay types.
  */
-export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | TimestampMarker | CandyStripedTimeRange;
+export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | TimestampMarker | CandyStripedTimeRange | TimingsMarker;
 export interface TimelineOverlaySetOptions {
     updateTraceWindow: boolean;
 }
@@ -142,6 +152,11 @@ export declare class TimeRangeMouseOverEvent extends Event {
 export declare class TimeRangeMouseOutEvent extends Event {
     static readonly eventName = "timerangemouseoutevent";
     constructor();
+}
+export declare class EventReferenceClick extends Event {
+    event: Trace.Types.Events.Event;
+    static readonly eventName = "eventreferenceclick";
+    constructor(event: Trace.Types.Events.Event);
 }
 /**
  * This class manages all the overlays that get drawn onto the performance

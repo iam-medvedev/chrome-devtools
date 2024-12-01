@@ -316,6 +316,7 @@ export class InspectorFrontendHostStub {
                 blockedByEnterprisePolicy: false,
                 blockedByGeo: false,
                 disallowLogging: true,
+                enterprisePolicyValue: 0,
             },
             devToolsConsoleInsights: {
                 modelId: '',

@@ -20,7 +20,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
-import { md } from '../utils/Helpers.js';
+import { getThrottlingRecommendations, md } from '../utils/Helpers.js';
 import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
@@ -28,7 +28,6 @@ const { html, nothing, Directives } = LitHtml;
 const { until } = Directives;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
-const RTT_COMPARISON_THRESHOLD = 200;
 const RTT_MINIMUM = 60;
 const UIStrings = {
     /**
@@ -273,9 +272,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     #inpValue;
     #interactions = new Map();
     #layoutShifts = [];
-    #cruxPageResult;
-    #fieldDeviceOption = 'AUTO';
-    #fieldPageScope = 'url';
+    #cruxManager = CrUXManager.CrUXManager.instance();
     #toggleRecordAction;
     #recordReloadAction;
     #logsEl;
@@ -327,23 +324,15 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             });
         });
     }
-    #onFieldDataChanged(event) {
-        this.#cruxPageResult = event.data;
+    #onFieldDataChanged() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onEmulationChanged() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     async #refreshFieldDataForCurrentPage() {
-        this.#cruxPageResult = await CrUXManager.CrUXManager.instance().getFieldDataForCurrentPage();
+        await this.#cruxManager.refresh();
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    }
-    #getSelectedFieldResponse() {
-        const deviceScope = this.#fieldDeviceOption === 'AUTO' ? this.#getAutoDeviceScope() : this.#fieldDeviceOption;
-        return this.#cruxPageResult?.[`${this.#fieldPageScope}-${deviceScope}`];
-    }
-    #getFieldMetricData(fieldMetric) {
-        return this.#getSelectedFieldResponse()?.record.metrics[fieldMetric];
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [liveMetricsViewStyles, metricValueStyles];
@@ -369,7 +358,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         this.#deviceModeModel?.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
     }
     #renderLcpCard() {
-        const fieldData = this.#getFieldMetricData('largest_contentful_paint');
+        const fieldData = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint');
         const node = this.#lcpValue?.node;
         const phases = this.#lcpValue?.phases;
         // clang-format off
@@ -400,7 +389,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format on
     }
     #renderClsCard() {
-        const fieldData = this.#getFieldMetricData('cumulative_layout_shift');
+        const fieldData = this.#cruxManager.getSelectedFieldMetricData('cumulative_layout_shift');
         const clusterIds = new Set(this.#clsValue?.clusterShiftIds || []);
         const clusterIsVisible = clusterIds.size > 0 && this.#layoutShifts.some(layoutShift => clusterIds.has(layoutShift.uniqueLayoutShiftId));
         // clang-format off
@@ -429,7 +418,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format on
     }
     #renderInpCard() {
-        const fieldData = this.#getFieldMetricData('interaction_to_next_paint');
+        const fieldData = this.#cruxManager.getSelectedFieldMetricData('interaction_to_next_paint');
         const phases = this.#inpValue?.phases;
         const interaction = this.#inpValue && this.#interactions.get(this.#inpValue.interactionId);
         // clang-format off
@@ -483,12 +472,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
         // clang-format on
     }
-    #getCpuRec() {
-        // TODO(cjamcl): will soon be set to recommended calibrated throttling - go/cpq:adaptive-throttling
-        return 4;
-    }
     #getNetworkRecTitle() {
-        const response = this.#getFieldMetricData('round_trip_time');
+        const response = this.#cruxManager.getSelectedFieldMetricData('round_trip_time');
         if (!response?.percentiles) {
             return null;
         }
@@ -499,47 +484,17 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (rtt < RTT_MINIMUM) {
             return i18nString(UIStrings.tryDisablingThrottling);
         }
-        const conditions = this.#getNetworkRec();
+        const conditions = MobileThrottling.ThrottlingPresets.ThrottlingPresets.getRecommendedNetworkPreset(rtt);
         if (!conditions) {
             return null;
         }
         const title = typeof conditions.title === 'function' ? conditions.title() : conditions.title;
         return i18nString(UIStrings.tryUsingThrottling, { PH1: title });
     }
-    #getNetworkRec() {
-        const response = this.#getFieldMetricData('round_trip_time');
-        if (!response?.percentiles) {
-            return null;
-        }
-        const rtt = Number(response.percentiles.p75);
-        if (!Number.isFinite(rtt)) {
-            return null;
-        }
-        if (rtt < RTT_MINIMUM) {
-            return null;
-        }
-        let closestPreset = null;
-        let smallestDiff = Infinity;
-        for (const preset of MobileThrottling.ThrottlingPresets.ThrottlingPresets.networkPresets) {
-            const { targetLatency } = preset;
-            if (!targetLatency) {
-                continue;
-            }
-            const diff = Math.abs(targetLatency - rtt);
-            if (diff > RTT_COMPARISON_THRESHOLD) {
-                continue;
-            }
-            if (smallestDiff < diff) {
-                continue;
-            }
-            closestPreset = preset;
-            smallestDiff = diff;
-        }
-        return closestPreset;
-    }
     #getDeviceRec() {
         // `form_factors` metric is only populated if CrUX data is fetched for all devices.
-        const fractions = this.#cruxPageResult?.[`${this.#fieldPageScope}-ALL`]?.record.metrics.form_factors?.fractions;
+        const fractions = this.#cruxManager.getFieldResponse(this.#cruxManager.fieldPageScope, 'ALL')
+            ?.record.metrics.form_factors?.fractions;
         if (!fractions) {
             return null;
         }
@@ -549,13 +504,14 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         });
     }
     #renderRecordingSettings() {
-        const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
+        const fieldEnabled = this.#cruxManager.getConfigSetting().get().enabled;
         const deviceRecEl = document.createElement('span');
         deviceRecEl.classList.add('environment-rec');
         deviceRecEl.textContent = this.#getDeviceRec() || i18nString(UIStrings.notEnoughData);
         const networkRecEl = document.createElement('span');
         networkRecEl.classList.add('environment-rec');
         networkRecEl.textContent = this.#getNetworkRecTitle() || i18nString(UIStrings.notEnoughData);
+        const recs = getThrottlingRecommendations();
         // clang-format off
         return html `
       <h3 class="card-title">${i18nString(UIStrings.environmentSettings)}</h3>
@@ -567,10 +523,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         </ul>
       ` : nothing}
       <div class="environment-option">
-        <devtools-cpu-throttling-selector .recommendedRate=${this.#getCpuRec()}></devtools-cpu-throttling-selector>
+        <devtools-cpu-throttling-selector .recommendedRate=${recs.cpuRate}></devtools-cpu-throttling-selector>
       </div>
       <div class="environment-option">
-        <devtools-network-throttling-selector .recommendedConditions=${this.#getNetworkRec()}></devtools-network-throttling-selector>
+        <devtools-network-throttling-selector .recommendedConditions=${recs.networkConditions}></devtools-network-throttling-selector>
       </div>
       <div class="environment-option">
         <setting-checkbox
@@ -585,7 +541,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format on
     }
     #getPageScopeLabel(pageScope) {
-        const key = this.#cruxPageResult?.[`${pageScope}-ALL`]?.record.key[pageScope];
+        const key = this.#cruxManager.pageResult?.[`${pageScope}-ALL`]?.record.key[pageScope];
         if (key) {
             return pageScope === 'url' ? i18nString(UIStrings.urlOptionWithKey, { PH1: key }) :
                 i18nString(UIStrings.originOptionWithKey, { PH1: key });
@@ -595,23 +551,23 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #onPageScopeMenuItemSelected(event) {
         if (event.itemValue === 'url') {
-            this.#fieldPageScope = 'url';
+            this.#cruxManager.fieldPageScope = 'url';
         }
         else {
-            this.#fieldPageScope = 'origin';
+            this.#cruxManager.fieldPageScope = 'origin';
         }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #renderPageScopeSetting() {
-        if (!CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled) {
+        if (!this.#cruxManager.getConfigSetting().get().enabled) {
             return LitHtml.nothing;
         }
         const urlLabel = this.#getPageScopeLabel('url');
         const originLabel = this.#getPageScopeLabel('origin');
-        const buttonTitle = this.#fieldPageScope === 'url' ? urlLabel : originLabel;
+        const buttonTitle = this.#cruxManager.fieldPageScope === 'url' ? urlLabel : originLabel;
         const accessibleTitle = i18nString(UIStrings.showFieldDataForPage, { PH1: buttonTitle });
         // If there is no data at all we should force users to switch pages or reconfigure CrUX.
-        const shouldDisable = !this.#cruxPageResult?.['url-ALL'] && !this.#cruxPageResult?.['origin-ALL'];
+        const shouldDisable = !this.#cruxManager.pageResult?.['url-ALL'] && !this.#cruxManager.pageResult?.['origin-ALL'];
         return html `
       <devtools-select-menu
         id="page-scope-select"
@@ -628,13 +584,13 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
       >
         <devtools-menu-item
           .value=${'url'}
-          .selected=${this.#fieldPageScope === 'url'}
+          .selected=${this.#cruxManager.fieldPageScope === 'url'}
         >
           ${urlLabel}
         </devtools-menu-item>
         <devtools-menu-item
           .value=${'origin'}
-          .selected=${this.#fieldPageScope === 'origin'}
+          .selected=${this.#cruxManager.fieldPageScope === 'origin'}
         >
           ${originLabel}
         </devtools-menu-item>
@@ -653,46 +609,31 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 return i18nString(UIStrings.tablet);
         }
     }
-    #getAutoDeviceScope() {
-        if (this.#deviceModeModel === null) {
-            return 'ALL';
-        }
-        if (this.#deviceModeModel.isMobile()) {
-            if (this.#cruxPageResult?.[`${this.#fieldPageScope}-PHONE`]) {
-                return 'PHONE';
-            }
-            return 'ALL';
-        }
-        if (this.#cruxPageResult?.[`${this.#fieldPageScope}-DESKTOP`]) {
-            return 'DESKTOP';
-        }
-        return 'ALL';
-    }
     #getLabelForDeviceOption(deviceOption) {
-        const deviceScope = deviceOption === 'AUTO' ? this.#getAutoDeviceScope() : deviceOption;
+        const deviceScope = this.#cruxManager.getSelectedDeviceScope();
         const deviceScopeLabel = this.#getDeviceScopeDisplayName(deviceScope);
         const baseLabel = deviceOption === 'AUTO' ? i18nString(UIStrings.auto, { PH1: deviceScopeLabel }) : deviceScopeLabel;
-        if (!this.#cruxPageResult) {
+        if (!this.#cruxManager.pageResult) {
             return i18nString(UIStrings.loadingOption, { PH1: baseLabel });
         }
-        const result = this.#cruxPageResult[`${this.#fieldPageScope}-${deviceScope}`];
+        const result = this.#cruxManager.getSelectedFieldResponse();
         if (!result) {
             return i18nString(UIStrings.needsDataOption, { PH1: baseLabel });
         }
         return baseLabel;
     }
     #onDeviceOptionMenuItemSelected(event) {
-        this.#fieldDeviceOption = event.itemValue;
+        this.#cruxManager.fieldDeviceOption = event.itemValue;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #renderDeviceScopeSetting() {
-        if (!CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled) {
+        if (!this.#cruxManager.getConfigSetting().get().enabled) {
             return LitHtml.nothing;
         }
         // If there is no data at all we should force users to try adjusting the page scope
         // before coming back to this option.
-        const shouldDisable = !this.#cruxPageResult?.[`${this.#fieldPageScope}-ALL`];
-        const currentDeviceLabel = this.#getLabelForDeviceOption(this.#fieldDeviceOption);
+        const shouldDisable = !this.#cruxManager.getFieldResponse(this.#cruxManager.fieldPageScope, 'ALL');
+        const currentDeviceLabel = this.#getLabelForDeviceOption(this.#cruxManager.fieldDeviceOption);
         // clang-format off
         return html `
       <devtools-select-menu
@@ -712,7 +653,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             return html `
             <devtools-menu-item
               .value=${deviceOption}
-              .selected=${this.#fieldDeviceOption === deviceOption}
+              .selected=${this.#cruxManager.fieldDeviceOption === deviceOption}
             >
               ${this.#getLabelForDeviceOption(deviceOption)}
             </devtools-menu-item>
@@ -723,7 +664,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format on
     }
     #getCollectionPeriodRange() {
-        const selectedResponse = this.#getSelectedFieldResponse();
+        const selectedResponse = this.#cruxManager.getSelectedFieldResponse();
         if (!selectedResponse) {
             return null;
         }
@@ -752,7 +693,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.collectionPeriod, {
             PH1: dateEl,
         });
-        const warnings = this.#cruxPageResult?.warnings || [];
+        const warnings = this.#cruxManager.pageResult?.warnings || [];
         return html `
       <div class="field-data-message">
         <div>${message}</div>
@@ -763,7 +704,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
     }
     #renderFieldDataMessage() {
-        if (CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled) {
+        if (this.#cruxManager.getConfigSetting().get().enabled) {
             return this.#renderCollectionPeriod();
         }
         const linkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/crux', i18n.i18n.lockedString('Chrome UX Report'));
@@ -940,7 +881,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format on
     }
     #render = () => {
-        const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
+        const fieldEnabled = this.#cruxManager.getConfigSetting().get().enabled;
         const liveMetricsTitle = fieldEnabled ? i18nString(UIStrings.localAndFieldMetrics) : i18nString(UIStrings.localMetrics);
         const helpLink = 'https://web.dev/articles/lab-and-field-data-differences#lab_data_versus_field_data';
         // clang-format off

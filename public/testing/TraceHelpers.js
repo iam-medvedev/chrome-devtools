@@ -220,6 +220,41 @@ export function makeAsyncEndEvent(name, ts, pid = 0, tid = 0) {
         ts: Trace.Types.Timing.MicroSeconds(ts),
     };
 }
+/**
+ * Builds a mock flow phase event.
+ */
+export function makeFlowPhaseEvent(name, ts, cat = '*', ph, id = 0, pid = 0, tid = 0) {
+    return {
+        args: {},
+        cat,
+        name,
+        id,
+        ph,
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(ts),
+        dur: Trace.Types.Timing.MicroSeconds(0),
+    };
+}
+/**
+ * Builds flow phase events for a list of events belonging to the same
+ * flow. `events` must be ordered.
+ */
+export function makeFlowEvents(events, flowId = 0) {
+    const lastEvent = events.at(-1);
+    const firstEvent = events.at(0);
+    if (!lastEvent || !firstEvent) {
+        return [];
+    }
+    const flowName = events[0].name;
+    const flowStart = makeFlowPhaseEvent(flowName, firstEvent.ts, firstEvent.cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, flowId, firstEvent.pid, firstEvent.tid);
+    const flowEnd = makeFlowPhaseEvent(flowName, lastEvent.ts, lastEvent.cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, flowId, lastEvent.pid, lastEvent.tid);
+    const flowSteps = [];
+    for (let i = 1; i < events.length - 1; i++) {
+        flowSteps.push(makeFlowPhaseEvent(flowName, events[i].ts, events[i].cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, flowId, events[i].pid, events[i].tid));
+    }
+    return [flowStart, ...flowSteps, flowEnd];
+}
 export function makeCompleteEventInMilliseconds(name, tsMillis, durMillis, cat = '*', pid = 0, tid = 0) {
     return makeCompleteEvent(name, Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(tsMillis)), Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(durMillis)), cat, pid, tid);
 }
@@ -266,7 +301,7 @@ export function makeEndEvent(name, ts, cat = '*', pid = 0, tid = 0) {
         ts: Trace.Types.Timing.MicroSeconds(ts),
     };
 }
-export function makeProfileCall(functionName, tsMs, durMs, pid = Trace.Types.Events.ProcessID(0), tid = Trace.Types.Events.ThreadID(0), nodeId = 0, url = '') {
+export function makeProfileCall(functionName, tsUs, durUs, pid = 0, tid = 0, nodeId = 0, url = '') {
     return {
         cat: '',
         name: 'ProfileCall',
@@ -274,10 +309,10 @@ export function makeProfileCall(functionName, tsMs, durMs, pid = Trace.Types.Eve
         sampleIndex: 0,
         profileId: Trace.Types.Events.ProfileID('fake-profile-id'),
         ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
-        pid,
-        tid,
-        ts: Trace.Types.Timing.MicroSeconds(tsMs),
-        dur: Trace.Types.Timing.MicroSeconds(durMs),
+        pid: Trace.Types.Events.ProcessID(pid),
+        tid: Trace.Types.Events.ThreadID(tid),
+        ts: Trace.Types.Timing.MicroSeconds(tsUs),
+        dur: Trace.Types.Timing.MicroSeconds(durUs),
         callFrame: {
             functionName,
             scriptId: '',
@@ -293,7 +328,7 @@ export const DevToolsTimelineCategory = 'disabled-by-default-devtools.timeline';
  * Mocks an object compatible with the return type of the
  * RendererHandler using only an array of ordered entries.
  */
-export function makeMockRendererHandlerData(entries) {
+export function makeMockRendererHandlerData(entries, pid = 1, tid = 1) {
     const { tree, entryToNode } = Trace.Helpers.TreeHelpers.treify(entries, { filter: { has: () => true } });
     const mockThread = {
         tree,
@@ -304,7 +339,7 @@ export function makeMockRendererHandlerData(entries) {
     const mockProcess = {
         url: 'url',
         isOnMainFrame: true,
-        threads: new Map([[1, mockThread]]),
+        threads: new Map([[tid, mockThread]]),
     };
     const renderereEvents = [];
     for (const entry of entries) {
@@ -313,7 +348,7 @@ export function makeMockRendererHandlerData(entries) {
         }
     }
     return {
-        processes: new Map([[1, mockProcess]]),
+        processes: new Map([[pid, mockProcess]]),
         compositorTileWorkers: new Map(),
         entryToNode,
         allTraceEntries: renderereEvents,
@@ -432,6 +467,10 @@ export function getMainThread(data) {
 export function getBaseTraceParseModelData(overrides = {}) {
     return {
         Animations: { animations: [] },
+        AnimationFrames: {
+            animationFrames: [],
+            presentationForFrame: new Map(),
+        },
         LayoutShifts: {
             clusters: [],
             clustersByNavigationId: new Map(),
@@ -562,6 +601,12 @@ export function getBaseTraceParseModelData(overrides = {}) {
             workerIdByThread: new Map(),
             workerSessionIdEvents: [],
             workerURLById: new Map(),
+        },
+        Flows: {
+            flows: [],
+        },
+        AsyncCallStacks: {
+            schedulerToRunEntryPoints: new Map(),
         },
         ...overrides,
     };

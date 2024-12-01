@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as EmulationModel from '../../models/emulation/emulation.js';
 const UIStrings = {
     /**
      * @description Warning message indicating that the user will see real user data for a URL which is different from the URL they are currently looking at.
@@ -33,6 +34,9 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     #mainDocumentUrl;
     #configSetting;
     #endpoint = DEFAULT_ENDPOINT;
+    #pageResult;
+    fieldDeviceOption = 'AUTO';
+    fieldPageScope = 'url';
     constructor() {
         super();
         /**
@@ -51,7 +55,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         const storageTypeForConsent = useSessionStorage ? "Session" /* Common.Settings.SettingStorageType.SESSION */ : "Global" /* Common.Settings.SettingStorageType.GLOBAL */;
         this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '', originMappings: [], overrideEnabled: false }, storageTypeForConsent);
         this.#configSetting.addChangeListener(() => {
-            void this.#automaticRefresh();
+            void this.refresh();
         });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#onFrameNavigated, this);
     }
@@ -61,6 +65,10 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
             cruxManagerInstance = new CrUXManager();
         }
         return cruxManagerInstance;
+    }
+    /** The most recent page result from the CrUX service. */
+    get pageResult() {
+        return this.#pageResult;
     }
     getConfigSetting() {
         return this.#configSetting;
@@ -92,6 +100,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
             await Promise.all(promises);
+            this.#pageResult = pageResult;
         }
         catch (err) {
             console.error(err);
@@ -130,6 +139,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         const urlForCrux = this.#configSetting.get().overrideEnabled ? this.#configSetting.get().override || '' :
             this.#getMappedUrl(currentUrl);
         const result = await this.getFieldDataForPage(urlForCrux);
+        this.#pageResult = result;
         if (currentUrl !== urlForCrux) {
             result.warnings.push(i18nString(UIStrings.fieldOverrideWarning));
         }
@@ -157,18 +167,19 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.#mainDocumentUrl = event.data.url;
-        await this.#automaticRefresh();
+        await this.refresh();
     }
-    async #automaticRefresh() {
+    async refresh() {
         // This does 2 things:
         // - Tells listeners to clear old data so it isn't shown during a URL transition
         // - Tells listeners to clear old data when field data is disabled.
+        this.#pageResult = undefined;
         this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, undefined);
         if (!this.#configSetting.get().enabled) {
             return;
         }
-        const pageResult = await this.getFieldDataForCurrentPage();
-        this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, pageResult);
+        this.#pageResult = await this.getFieldDataForCurrentPage();
+        this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, this.#pageResult);
     }
     #normalizeUrl(inputUrl) {
         const normalizedUrl = new URL(inputUrl);
@@ -223,6 +234,36 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
             throw new Error(`Failed to find data in CrUX response: ${JSON.stringify(responseData)}`);
         }
         return responseData;
+    }
+    #getAutoDeviceScope() {
+        const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
+        if (emulationModel === null) {
+            return 'ALL';
+        }
+        if (emulationModel.isMobile()) {
+            if (this.#pageResult?.[`${this.fieldPageScope}-PHONE`]) {
+                return 'PHONE';
+            }
+            return 'ALL';
+        }
+        if (this.#pageResult?.[`${this.fieldPageScope}-DESKTOP`]) {
+            return 'DESKTOP';
+        }
+        return 'ALL';
+    }
+    getSelectedDeviceScope() {
+        return this.fieldDeviceOption === 'AUTO' ? this.#getAutoDeviceScope() : this.fieldDeviceOption;
+    }
+    getSelectedFieldResponse() {
+        const pageScope = this.fieldPageScope;
+        const deviceScope = this.getSelectedDeviceScope();
+        return this.getFieldResponse(pageScope, deviceScope);
+    }
+    getSelectedFieldMetricData(fieldMetric) {
+        return this.getSelectedFieldResponse()?.record.metrics[fieldMetric];
+    }
+    getFieldResponse(pageScope, deviceScope) {
+        return this.#pageResult?.[`${pageScope}-${deviceScope}`];
     }
     setEndpointForTesting(endpoint) {
         this.#endpoint = endpoint;

@@ -58,7 +58,7 @@ details > summary {
 
 .content {
   max-width: 360px;
-  padding: 16px 20px 18px;
+  padding: 16px 4px 18px;
   box-sizing: border-box;
 }
 
@@ -70,6 +70,10 @@ details > summary {
 .origin-mapping-grid {
   border: 1px solid var(--sys-color-divider);
   margin-top: 8px;
+}
+
+.origin-mapping-description {
+  margin-bottom: 8px;
 }
 
 .origin-mapping-button-section {

@@ -7,3 +7,4 @@ export interface InitiatorsData {
     initiatorToEvents: Map<Types.Events.Event, Types.Events.Event[]>;
 }
 export declare function data(): InitiatorsData;
+export declare function deps(): ['Flows'];

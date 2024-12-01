@@ -4,22 +4,6 @@
 /* eslint-disable quotes, quote-props */
 export const generatedProperties = [
     {
-        "longhands": [
-            "animation-duration",
-            "animation-timing-function",
-            "animation-delay",
-            "animation-iteration-count",
-            "animation-direction",
-            "animation-fill-mode",
-            "animation-play-state",
-            "animation-name",
-            "animation-timeline",
-            "animation-range-start",
-            "animation-range-end"
-        ],
-        "name": "-alternative-animation-with-timeline"
-    },
-    {
         "inherited": true,
         "name": "-webkit-border-horizontal-spacing"
     },
@@ -781,7 +765,10 @@ export const generatedProperties = [
             "animation-direction",
             "animation-fill-mode",
             "animation-play-state",
-            "animation-name"
+            "animation-name",
+            "animation-timeline",
+            "animation-range-start",
+            "animation-range-end"
         ],
         "name": "animation"
     },
@@ -6451,10 +6438,6 @@ export const generatedAliasesFor = new Map([
     [
         "-webkit-align-self",
         "align-self"
-    ],
-    [
-        "-webkit-alternative-animation-with-timeline",
-        "-alternative-animation-with-timeline"
     ],
     [
         "-webkit-animation",

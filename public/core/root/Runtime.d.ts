@@ -75,7 +75,6 @@ export declare const enum ExperimentName {
     NETWORK_PANEL_FILTER_BAR_REDESIGN = "network-panel-filter-bar-redesign",
     AUTOFILL_VIEW = "autofill-view",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
-    TIMELINE_ANNOTATIONS = "perf-panel-annotations",
     TIMELINE_INSIGHTS = "timeline-rpp-sidebar",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_OBSERVATIONS = "timeline-observations",
@@ -84,7 +83,13 @@ export declare const enum ExperimentName {
     FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance",
     TIMELINE_EXPERIMENTAL_INSIGHTS = "timeline-experimental-insights",
     TIMELINE_DIM_UNRELATED_EVENTS = "timeline-dim-unrelated-events",
-    TIMELINE_ALTERNATIVE_NAVIGATION = "timeline-alternative-navigation"
+    TIMELINE_ALTERNATIVE_NAVIGATION = "timeline-alternative-navigation",
+    TIMELINE_IGNORE_LIST = "timeline-ignore-list"
+}
+export declare enum GenAiEnterprisePolicyValue {
+    ALLOW = 0,
+    ALLOW_WITHOUT_LOGGING = 1,
+    DISABLE = 2
 }
 export interface AidaAvailability {
     enabled: boolean;
@@ -92,6 +97,7 @@ export interface AidaAvailability {
     blockedByEnterprisePolicy: boolean;
     blockedByGeo: boolean;
     disallowLogging: boolean;
+    enterprisePolicyValue: number;
 }
 export interface HostConfigConsoleInsights {
     modelId: string;

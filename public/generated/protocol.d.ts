@@ -729,6 +729,24 @@ export declare namespace Audits {
         ReadCookie = "ReadCookie"
     }
     /**
+     * Represents the category of insight that a cookie issue falls under.
+     */
+    const enum InsightType {
+        GitHubResource = "GitHubResource",
+        GracePeriod = "GracePeriod",
+        Heuristics = "Heuristics"
+    }
+    /**
+     * Information about the suggested solution to a cookie issue.
+     */
+    interface CookieIssueInsight {
+        type: InsightType;
+        /**
+         * Link to table entry in third-party cookie migration readiness list.
+         */
+        tableEntryUrl?: string;
+    }
+    /**
      * This information is currently necessary, as the front-end has a difficult
      * time finding a specific cookie. With this, we can convey specific error
      * information without the cookie.
@@ -752,6 +770,10 @@ export declare namespace Audits {
         siteForCookies?: string;
         cookieUrl?: string;
         request?: AffectedRequest;
+        /**
+         * The recommended solution to the issue.
+         */
+        insight?: CookieIssueInsight;
     }
     const enum MixedContentResolutionStatus {
         MixedContentBlocked = "MixedContentBlocked",
@@ -830,7 +852,8 @@ export declare namespace Audits {
         CorpNotSameOriginAfterDefaultedToSameOriginByCoep = "CorpNotSameOriginAfterDefaultedToSameOriginByCoep",
         CorpNotSameOriginAfterDefaultedToSameOriginByDip = "CorpNotSameOriginAfterDefaultedToSameOriginByDip",
         CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip = "CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip",
-        CorpNotSameSite = "CorpNotSameSite"
+        CorpNotSameSite = "CorpNotSameSite",
+        SRIMessageSignatureMismatch = "SRIMessageSignatureMismatch"
     }
     /**
      * Details for a request that has been blocked with the BLOCKED_BY_RESPONSE
@@ -1682,18 +1705,21 @@ export declare namespace Browser {
         windowState?: WindowState;
     }
     const enum PermissionType {
-        AccessibilityEvents = "accessibilityEvents",
+        Ar = "ar",
         AudioCapture = "audioCapture",
-        BackgroundSync = "backgroundSync",
+        AutomaticFullscreen = "automaticFullscreen",
         BackgroundFetch = "backgroundFetch",
+        BackgroundSync = "backgroundSync",
+        CameraPanTiltZoom = "cameraPanTiltZoom",
         CapturedSurfaceControl = "capturedSurfaceControl",
         ClipboardReadWrite = "clipboardReadWrite",
         ClipboardSanitizedWrite = "clipboardSanitizedWrite",
         DisplayCapture = "displayCapture",
         DurableStorage = "durableStorage",
-        Flash = "flash",
         Geolocation = "geolocation",
+        HandTracking = "handTracking",
         IdleDetection = "idleDetection",
+        KeyboardLock = "keyboardLock",
         LocalFonts = "localFonts",
         Midi = "midi",
         MidiSysex = "midiSysex",
@@ -1701,16 +1727,19 @@ export declare namespace Browser {
         Notifications = "notifications",
         PaymentHandler = "paymentHandler",
         PeriodicBackgroundSync = "periodicBackgroundSync",
+        PointerLock = "pointerLock",
         ProtectedMediaIdentifier = "protectedMediaIdentifier",
         Sensors = "sensors",
-        StorageAccess = "storageAccess",
+        SmartCard = "smartCard",
         SpeakerSelection = "speakerSelection",
+        StorageAccess = "storageAccess",
         TopLevelStorageAccess = "topLevelStorageAccess",
         VideoCapture = "videoCapture",
-        VideoCapturePanTiltZoom = "videoCapturePanTiltZoom",
+        Vr = "vr",
         WakeLockScreen = "wakeLockScreen",
         WakeLockSystem = "wakeLockSystem",
         WebAppInstallation = "webAppInstallation",
+        WebPrinting = "webPrinting",
         WindowManagement = "windowManagement"
     }
     const enum PermissionSetting {
@@ -3520,7 +3549,7 @@ export declare namespace DOM {
     const enum PseudoType {
         FirstLine = "first-line",
         FirstLetter = "first-letter",
-        Check = "check",
+        Checkmark = "checkmark",
         Before = "before",
         After = "after",
         SelectArrow = "select-arrow",
@@ -3536,8 +3565,7 @@ export declare namespace DOM {
         FirstLineInherited = "first-line-inherited",
         ScrollMarker = "scroll-marker",
         ScrollMarkerGroup = "scroll-marker-group",
-        ScrollNextButton = "scroll-next-button",
-        ScrollPrevButton = "scroll-prev-button",
+        ScrollButton = "scroll-button",
         Scrollbar = "scrollbar",
         ScrollbarThumb = "scrollbar-thumb",
         ScrollbarButton = "scrollbar-button",
@@ -7914,7 +7942,8 @@ export declare namespace Network {
         CorpNotSameOriginAfterDefaultedToSameOriginByCoep = "corp-not-same-origin-after-defaulted-to-same-origin-by-coep",
         CorpNotSameOriginAfterDefaultedToSameOriginByDip = "corp-not-same-origin-after-defaulted-to-same-origin-by-dip",
         CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip = "corp-not-same-origin-after-defaulted-to-same-origin-by-coep-and-dip",
-        CorpNotSameSite = "corp-not-same-site"
+        CorpNotSameSite = "corp-not-same-site",
+        SriMessageSignatureMismatch = "sri-message-signature-mismatch"
     }
     /**
      * The reason why request was blocked.

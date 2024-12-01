@@ -1,5 +1,6 @@
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
+import type * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import type { TraceWindowMicroSeconds } from './Timing.js';
 import type { Event, LegacyTimelineFrame, ProcessID, SampleIndex, ThreadID } from './TraceEvents.js';
 export type TraceFile = {
@@ -144,6 +145,7 @@ export interface MetaData {
     dataOrigin?: DataOrigin;
     modifications?: Modifications;
     enhancedTraceVersion?: number;
+    cruxFieldData?: CrUXManager.PageResult[];
 }
 export type Contents = TraceFile | Event[];
 export declare function traceEventKeyToValues(key: SerializableKey): SerializableKeyValues;

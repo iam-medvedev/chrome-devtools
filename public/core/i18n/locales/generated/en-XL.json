@@ -1304,11 +1304,11 @@
   "generated/Deprecation.ts | UnloadHandler": {
     "message": "Ûńl̂óâd́ êv́êńt̂ ĺîśt̂én̂ér̂ś âŕê d́êṕr̂éĉát̂éd̂ án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂."
   },
-  "generated/Deprecation.ts | V8GPUAdapter_RequestAdapterInfo_Method": {
-    "message": "T̂h́ê ǴP̂ÚÂd́âṕt̂ér̂ requestAdapterInfo() ḿêt́ĥód̂ íŝ d́êṕr̂éĉát̂éd̂, ín̂śt̂éâd́ ûśê t́ĥé ĜṔÛÁd̂áp̂t́êŕ info ât́t̂ŕîb́ût́ê."
-  },
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Êx́t̂én̂śîón̂ś ŝh́ôúl̂d́ ôṕt̂ ín̂t́ô ćr̂óŝś-ôŕîǵîń îśôĺât́îón̂ t́ô ćôńt̂ín̂úê úŝín̂ǵ SharedArrayBuffer. Ŝéê h́t̂t́p̂ś://d̂év̂él̂óp̂ér̂.ćĥŕôḿê.ćôḿ/d̂óĉś/êx́t̂én̂śîón̂ś/m̂v́3/ĉŕôśŝ-ór̂íĝín̂-íŝól̂át̂íôń/."
+  },
+  "generated/Deprecation.ts | WebGPULimitMaxInterStageShaderComponents": {
+    "message": "T̂h́ê Ẃêb́ĜṔÛ ĺîḿît́ maxInterStageShaderComponents îś d̂ép̂ŕêćât́êd́, îńŝt́êád̂ úŝé t̂h́ê Ẃêb́ĜṔÛ ĺîḿît́ maxInterStageShaderVariables."
   },
   "generated/Deprecation.ts | WebSQL": {
     "message": "Ŵéb̂ ŚQ̂Ĺ îś d̂ép̂ŕêćât́êd́. P̂ĺêáŝé ûśê ŚQ̂Ĺît́ê Ẃêb́Âśŝém̂b́l̂ý ôŕ Îńd̂éx̂éd̂ D́ât́âb́âśê"
@@ -6621,10 +6621,10 @@
     "message": "Ĉh́ât́ d̂él̂ét̂éd̂"
   },
   "panels/freestyler/FreestylerPanel.ts | clearChatHistory": {
-    "message": "Ĉĺêár̂ ćĥát̂ h́îśt̂ór̂ý"
+    "message": "Ĉĺêár̂ ĺôćâĺ ĉh́ât́ŝ"
   },
   "panels/freestyler/FreestylerPanel.ts | deleteChat": {
-    "message": "D̂él̂ét̂é ĉh́ât́"
+    "message": "D̂él̂ét̂é l̂óĉál̂ ćĥát̂"
   },
   "panels/freestyler/FreestylerPanel.ts | help": {
     "message": "Ĥél̂ṕ"
@@ -7860,7 +7860,7 @@
     "message": "N̂ó îńt̂ér̂ńêt́ ĉón̂ńêćt̂ív̂ít̂ý"
   },
   "panels/mobile_throttling/ThrottlingPresets.ts | noThrottling": {
-    "message": "N̂ó t̂h́r̂ót̂t́l̂ín̂ǵ"
+    "message": "N̂ó ĈṔÛ án̂d́ n̂ó n̂ét̂ẃôŕk̂ t́ĥŕôt́t̂ĺîńĝ"
   },
   "panels/mobile_throttling/ThrottlingPresets.ts | slowGXCpuSlowdown": {
     "message": "Ŝĺôẃ 3Ĝ & 6x́ ĈṔÛ śl̂óŵd́ôẃn̂"
@@ -10610,11 +10610,38 @@
   "panels/security/CookieReportView.ts | emptyReportExplanation": {
     "message": "N̂ó îśŝúêś ŵít̂h́ t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîéŝ f́ôún̂d́"
   },
+  "panels/security/CookieReportView.ts | gitHubResource": {
+    "message": "R̂év̂íêẃ {PH1} f̂ŕôḿ t̂h́îŕd̂-ṕâŕt̂ý ŝít̂é."
+  },
+  "panels/security/CookieReportView.ts | gitHubResourceTypeString": {
+    "message": "Ĝít̂h́ûb́"
+  },
+  "panels/security/CookieReportView.ts | gracePeriod": {
+    "message": "R̂év̂íêẃ {PH1}. Ĝŕâćê ṕêŕîód̂ éx̂ćêṕt̂íôń îś âćt̂ív̂é."
+  },
+  "panels/security/CookieReportView.ts | gracePeriodTypeString": {
+    "message": "Ĝŕâćê Ṕêŕîód̂"
+  },
+  "panels/security/CookieReportView.ts | guidance": {
+    "message": "ĝúîd́âńĉé"
+  },
+  "panels/security/CookieReportView.ts | heuristics": {
+    "message": "Âćt̂íôń n̂éêd́êd́ l̂át̂ér̂. H́êúr̂íŝt́îćŝ b́âśêd́ êx́ĉép̂t́îón̂ íŝ áĉt́îv́ê"
+  },
+  "panels/security/CookieReportView.ts | heuristicsTypeString": {
+    "message": "Ĥéûŕîśt̂íĉś"
+  },
   "panels/security/CookieReportView.ts | learnMoreLink": {
     "message": "L̂éâŕn̂ ḿôŕê áb̂óût́ ĥóŵ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íêś âŕê úŝéd̂"
   },
   "panels/security/CookieReportView.ts | name": {
     "message": "N̂ám̂é"
+  },
+  "panels/security/CookieReportView.ts | other": {
+    "message": "Ĉón̂t́âćt̂ t́ĥír̂d́-p̂ár̂t́ŷ śît́ê f́ôŕ m̂ór̂é îńf̂ó"
+  },
+  "panels/security/CookieReportView.ts | otherTypeString": {
+    "message": "Ôt́ĥér̂"
   },
   "panels/security/CookieReportView.ts | platform": {
     "message": "P̂ĺât́f̂ór̂ḿ"
@@ -10624,6 +10651,9 @@
   },
   "panels/security/CookieReportView.ts | report": {
     "message": "T̂h́îŕd̂-Ṕâŕt̂ý Ĉóôḱîé R̂ép̂ór̂t́"
+  },
+  "panels/security/CookieReportView.ts | reportedIssues": {
+    "message": "r̂ép̂ór̂t́êd́ îśŝúêś"
   },
   "panels/security/CookieReportView.ts | status": {
     "message": "Ŝt́ât́ûś"
@@ -12207,7 +12237,7 @@
     "message": "B̂ŕêák̂ṕôín̂t́ŝ"
   },
   "panels/sources/sources-meta.ts | closeAll": {
-    "message": "Ĉĺôśê Ál̂ĺ"
+    "message": "Ĉĺôśê ál̂ĺ"
   },
   "panels/sources/sources-meta.ts | closeTheActiveTab": {
     "message": "Ĉĺôśê t́ĥé âćt̂ív̂é t̂áb̂"
@@ -12734,14 +12764,8 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "Ŵéb̂Śôćk̂ét̂ ṕr̂ót̂óĉól̂"
   },
-  "panels/timeline/components/FieldSettingsDialog.ts | add": {
-    "message": "Âd́d̂"
-  },
   "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
     "message": "Âd́v̂án̂ćêd́"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | alreadyMapped": {
-    "message": "\"{PH1}\" îś âĺr̂éâd́ŷ ḿâṕp̂éd̂ t́ô á p̂ŕôd́ûćt̂íôń ôŕîǵîń."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | cancel": {
     "message": "Ĉán̂ćêĺ"
@@ -12751,15 +12775,6 @@
   },
   "panels/timeline/components/FieldSettingsDialog.ts | configureFieldData": {
     "message": "Ĉón̂f́îǵûŕê f́îél̂d́ d̂át̂á f̂ét̂ćĥín̂ǵ"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | delete": {
-    "message": "D̂él̂ét̂é"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | developmentOrigin": {
-    "message": "D̂év̂él̂óp̂ḿêńt̂ ór̂íĝín̂"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | developmentOriginValue": {
-    "message": "D̂év̂él̂óp̂ḿêńt̂ ór̂íĝín̂: {PH1}"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | doesNotHaveSufficientData": {
     "message": "T̂h́ê Ćĥŕôḿê ÚX̂ Ŕêṕôŕt̂ d́ôéŝ ńôt́ ĥáv̂é ŝúf̂f́îćîén̂t́ r̂éâĺ-ŵór̂ĺd̂ śp̂éêd́ d̂át̂á f̂ór̂ t́ĥíŝ ṕâǵê."
@@ -12788,12 +12803,6 @@
   "panels/timeline/components/FieldSettingsDialog.ts | privacyDisclosure": {
     "message": "P̂ŕîv́âćŷ d́îśĉĺôśûŕê"
   },
-  "panels/timeline/components/FieldSettingsDialog.ts | productionOrigin": {
-    "message": "P̂ŕôd́ûćt̂íôń ôŕîǵîń"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | productionOriginValue": {
-    "message": "P̂ŕôd́ûćt̂íôń ôŕîǵîń: {PH1}"
-  },
   "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
     "message": "Ŝét̂ úp̂"
   },
@@ -12802,6 +12811,21 @@
   },
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreList": {
+    "message": "Îǵn̂ór̂é l̂íŝt́"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreListDescription": {
+    "message": "Âd́d̂ t́ĥéŝé êx́ĉĺûśîón̂ ŕûĺêś ŵóûĺd̂ śîḿp̂ĺîf́ŷ t́ĥé f̂ĺâḿê ćĥár̂t́."
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchS": {
+    "message": "Îǵn̂ór̂é ŝćr̂íp̂t́ŝ ẃĥóŝé n̂ám̂éŝ ḿât́ĉh́ ''{regex}''"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | removeRegex": {
+    "message": "R̂ém̂óv̂é t̂h́ê ŕêǵêx́: ''{regex}''"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | showIgnoreListSettingDialog": {
+    "message": "Ŝh́ôẃ îǵn̂ór̂é l̂íŝt́ ŝét̂t́îńĝ d́îál̂óĝ"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavings": {
     "message": "Êśt̂ śâv́îńĝś: {PH1}"
@@ -13408,6 +13432,21 @@
   },
   "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottlingReason": {
     "message": "Ĉón̂śîd́êŕ ĉh́âńĝín̂ǵ ŝét̂t́îńĝ t́ô śîḿûĺât́ê ŕêál̂ úŝér̂ én̂v́îŕôńm̂én̂t́ŝ"
+  },
+  "panels/timeline/components/OriginMap.ts | alreadyMapped": {
+    "message": "\"{PH1}\" îś âĺr̂éâd́ŷ ḿâṕp̂éd̂ t́ô á p̂ŕôd́ûćt̂íôń ôŕîǵîń."
+  },
+  "panels/timeline/components/OriginMap.ts | developmentOrigin": {
+    "message": "D̂év̂él̂óp̂ḿêńt̂ ór̂íĝín̂"
+  },
+  "panels/timeline/components/OriginMap.ts | invalidOrigin": {
+    "message": "\"{PH1}\" îś n̂ót̂ á v̂ál̂íd̂ ór̂íĝín̂ ór̂ ÚR̂Ĺ."
+  },
+  "panels/timeline/components/OriginMap.ts | pageHasNoData": {
+    "message": "T̂h́ê Ćĥŕôḿê ÚX̂ Ŕêṕôŕt̂ d́ôéŝ ńôt́ ĥáv̂é ŝúf̂f́îćîén̂t́ r̂éâĺ ûśêŕ d̂át̂á f̂ór̂ t́ĥíŝ ṕâǵê."
+  },
+  "panels/timeline/components/OriginMap.ts | productionOrigin": {
+    "message": "P̂ŕôd́ûćt̂íôń ôŕîǵîń"
   },
   "panels/timeline/components/RelatedInsightChips.ts | insightKeyword": {
     "message": "Îńŝíĝh́t̂"

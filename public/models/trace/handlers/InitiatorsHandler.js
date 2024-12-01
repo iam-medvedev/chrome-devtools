@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { data as flowsHandlerData } from './FlowsHandler.js';
 const lastScheduleStyleRecalcByFrame = new Map();
 // This tracks the last event that is considered to have invalidated the layout
 // for a given frame.
@@ -15,9 +16,6 @@ const lastInvalidationEventForFrame = new Map();
 // These are the same - just UpdateLayoutTree is what the event from Chromium
 // is called.
 const lastUpdateLayoutTreeByFrame = new Map();
-// This tracks postmessage dispatch and handler events for creating initiator association
-const postMessageHandlerEvents = [];
-const schedulePostMessageEventByTraceId = new Map();
 // These two maps store the same data but in different directions.
 // For a given event, tell me what its initiator was. An event can only have one initiator.
 const eventToInitiatorMap = new Map();
@@ -40,8 +38,6 @@ export function reset() {
     requestIdleCallbackEventsById.clear();
     webSocketCreateEventsById.clear();
     schedulePostTaskCallbackEventsById.clear();
-    schedulePostMessageEventByTraceId.clear();
-    postMessageHandlerEvents.length = 0;
 }
 function storeInitiator(data) {
     eventToInitiatorMap.set(data.event, data.initiator);
@@ -164,38 +160,26 @@ export function handleEvent(event) {
             storeInitiator({ event, initiator: matchingSchedule });
         }
     }
-    // Store schedulePostMessage Events by their traceIds.
-    // so they can be reconciled later with matching handlePostMessage events with same traceIds.
-    else if (Types.Events.isHandlePostMessage(event)) {
-        postMessageHandlerEvents.push(event);
-    }
-    else if (Types.Events.isSchedulePostMessage(event)) {
-        const traceId = event.args.data?.traceId;
-        if (traceId) {
-            schedulePostMessageEventByTraceId.set(traceId, event);
-        }
-    }
 }
-function finalizeInitiatorRelationship() {
-    for (const handlerEvent of postMessageHandlerEvents) {
-        const traceId = handlerEvent.args.data?.traceId;
-        const matchingSchedulePostMesssageEvent = schedulePostMessageEventByTraceId.get(traceId);
-        if (matchingSchedulePostMesssageEvent) {
-            // Set schedulePostMesssage events as initiators for handler events.
-            storeInitiator({ event: handlerEvent, initiator: matchingSchedulePostMesssageEvent });
+function createRelationshipsFromFlows() {
+    const flows = flowsHandlerData().flows;
+    for (let i = 0; i < flows.length; i++) {
+        const flow = flows[i];
+        for (let j = 0; j < flow.length - 1; j++) {
+            storeInitiator({ event: flow[j + 1], initiator: flow[j] });
         }
     }
 }
 export async function finalize() {
-    // During event processing, we may encounter initiators before the handler events themselves
-    // (e.g dispatch events on worker and handler events on the main thread)
-    // we don't want to miss out on events whose initiators haven't been processed yet
-    finalizeInitiatorRelationship();
+    createRelationshipsFromFlows();
 }
 export function data() {
     return {
         eventToInitiator: eventToInitiatorMap,
         initiatorToEvents: initiatorToEventsMap,
     };
+}
+export function deps() {
+    return ['Flows'];
 }
 //# sourceMappingURL=InitiatorsHandler.js.map

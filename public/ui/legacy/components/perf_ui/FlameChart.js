@@ -673,7 +673,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             isMouseOverRevealChildrenArrow === this.lastPopoverState.hiddenEntriesPopover) {
             return this.updatePopoverOffset();
         }
-        this.popoverElement.removeChildren();
         const data = this.timelineData();
         if (!data) {
             return;
@@ -684,14 +683,23 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.dataProvider.preparePopoverForCollapsedArrow?.(entryIndex) :
             entryIndex !== null && this.dataProvider.preparePopoverElement(entryIndex);
         if (popoverElement) {
-            this.popoverElement.appendChild(popoverElement);
-            this.updatePopoverOffset();
+            this.updatePopoverContents(popoverElement);
         }
         this.lastPopoverState = {
             entryIndex,
             groupIndex: -1,
             hiddenEntriesPopover: isMouseOverRevealChildrenArrow,
         };
+    }
+    updatePopoverContents(popoverElement) {
+        this.popoverElement.removeChildren();
+        this.popoverElement.appendChild(popoverElement);
+        this.updatePopoverOffset();
+        this.lastPopoverState.entryIndex = -1;
+    }
+    updateMouseOffset(mouseX, mouseY) {
+        this.lastMouseOffsetX = mouseX;
+        this.lastMouseOffsetY = mouseY;
     }
     #updatePopoverForGroup(groupIndex) {
         // Just update position if cursor is hovering the group name.
@@ -1151,27 +1159,26 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // to maintain, let's use |selectedEntryIndex|.
         this.contextMenu = this.dataProvider.customizedContextMenu?.(event, this.selectedEntryIndex, groupIndex) ??
             new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-            const annotationSection = this.contextMenu.section('annotations');
-            const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
-                this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: this.selectedEntryIndex, withLinkCreationButton: false });
-            }, {
-                jslogContext: 'timeline.annotations.create-entry-label',
-            });
-            labelEntryAnnotationOption.setShortcut('Double Click');
-            const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
-                this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.ENTRIES_LINK_ANNOTATION_CREATED */, { entryFromIndex: this.selectedEntryIndex });
-            }, {
-                jslogContext: 'timeline.annotations.create-entries-link',
-            });
-            linkEntriesAnnotationOption.setShortcut('Double Click');
-            annotationSection.appendItem(i18nString(UIStrings.deleteAnnotations), () => {
-                this.dataProvider.deleteAnnotationsForEntry?.(this.selectedEntryIndex);
-            }, {
-                disabled: !this.dataProvider.entryHasAnnotations?.(this.selectedEntryIndex),
-                jslogContext: 'timeline.annotations.delete-entry-annotations',
-            });
-        }
+        // Generate context menu entries for annotations.
+        const annotationSection = this.contextMenu.section('annotations');
+        const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
+            this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: this.selectedEntryIndex, withLinkCreationButton: false });
+        }, {
+            jslogContext: 'timeline.annotations.create-entry-label',
+        });
+        labelEntryAnnotationOption.setShortcut('Double Click');
+        const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
+            this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.ENTRIES_LINK_ANNOTATION_CREATED */, { entryFromIndex: this.selectedEntryIndex });
+        }, {
+            jslogContext: 'timeline.annotations.create-entries-link',
+        });
+        linkEntriesAnnotationOption.setShortcut('Double Click');
+        annotationSection.appendItem(i18nString(UIStrings.deleteAnnotations), () => {
+            this.dataProvider.deleteAnnotationsForEntry?.(this.selectedEntryIndex);
+        }, {
+            disabled: !this.dataProvider.entryHasAnnotations?.(this.selectedEntryIndex),
+            jslogContext: 'timeline.annotations.delete-entry-annotations',
+        });
         void this.contextMenu.show();
     }
     #handleFlameChartTransformEvent(event) {

@@ -20,7 +20,7 @@ export interface CookieReportInfo {
     type?: string;
     platform?: string;
     status: CookieStatus;
-    recommendation?: string;
+    insight?: Protocol.Audits.CookieIssueInsight;
 }
 export declare class CookieIssue extends Issue {
     #private;

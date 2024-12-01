@@ -71,6 +71,9 @@ export class FileContext extends ConversationContext {
     getTitle() {
         return this.#file.displayName();
     }
+    async refresh() {
+        await this.#file.requestContentData();
+    }
 }
 /**
  * One agent instance handles one conversation. Create a new agent
@@ -134,7 +137,8 @@ ${formatFileContent(selectedFile)}`,
     return lines.filter(line => line.trim() !== '').join('\n');
 }
 function formatFileContent(selectedFile) {
-    const content = selectedFile.contentType().isTextType() ? selectedFile.content() : '<binary data>';
+    const contentData = selectedFile.workingCopyContentData();
+    const content = contentData.isTextContent ? contentData.text : '<binary data>';
     const truncated = content.length > MAX_FILE_SIZE ? content.slice(0, MAX_FILE_SIZE) + '...' : content;
     return `\`\`\`
 ${truncated}

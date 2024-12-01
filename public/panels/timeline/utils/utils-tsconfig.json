@@ -58,6 +58,9 @@
       "path": "../../../models/bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../../../models/crux-manager/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../models/source_map_scopes/bundle-tsconfig.json"
     },
     {
@@ -68,6 +71,9 @@
     },
     {
       "path": "../../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../mobile_throttling/bundle-tsconfig.json"
     },
     {
       "path": "../../../third_party/marked/bundle-tsconfig.json"

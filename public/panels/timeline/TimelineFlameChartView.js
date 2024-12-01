@@ -36,6 +36,17 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+/**
+ * This defines the order these markers will be rendered if they are at the
+ * same timestamp. The smaller number will be shown first - e.g. so if NavigationStart, MarkFCP,
+ * MarkLCPCandidate have the same timestamp, visually we
+ * will render [Nav][FCP][LCP] everytime.
+ */
+export const SORT_ORDER_PAGE_LOAD_MARKERS = {
+    ["navigationStart" /* Trace.Types.Events.Name.NAVIGATION_START */]: 0,
+    ["firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */]: 1,
+    ["largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */]: 2,
+};
 export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     delegate;
     /**
@@ -92,6 +103,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #linkSelectionAnnotation = null;
     #currentInsightOverlays = [];
     #activeInsight = null;
+    #markers = [];
     #tooltipElement = document.createElement('div');
     // We use an symbol as the loggable for each group. This is because
     // groups can get re-built at times and we need a common reference to act as
@@ -240,16 +252,15 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.detailsSplitWidget.setMainWidget(this.chartSplitWidget);
         this.detailsSplitWidget.setSidebarWidget(this.detailsView);
         this.detailsSplitWidget.show(this.element);
+        // Event listeners for annotations.
         this.onMainAddEntryLabelAnnotation = this.onAddEntryLabelAnnotation.bind(this, this.mainDataProvider);
         this.onNetworkAddEntryLabelAnnotation = this.onAddEntryLabelAnnotation.bind(this, this.networkDataProvider);
         this.#onMainEntriesLinkAnnotationCreated = event => this.onEntriesLinkAnnotationCreate(this.mainDataProvider, event.data.entryFromIndex);
         this.#onNetworkEntriesLinkAnnotationCreated = event => this.onEntriesLinkAnnotationCreate(this.networkDataProvider, event.data.entryFromIndex);
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-            this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onMainAddEntryLabelAnnotation, this);
-            this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onNetworkAddEntryLabelAnnotation, this);
-            this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onMainEntriesLinkAnnotationCreated, this);
-            this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onNetworkEntriesLinkAnnotationCreated, this);
-        }
+        this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onMainAddEntryLabelAnnotation, this);
+        this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onNetworkAddEntryLabelAnnotation, this);
+        this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onMainEntriesLinkAnnotationCreated, this);
+        this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onNetworkEntriesLinkAnnotationCreated, this);
         this.detailsView.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => {
             if (!Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
                 return;
@@ -284,6 +295,11 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.networkFlameChart.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, event => {
             this.updateLinkSelectionAnnotationWithToEntry(this.networkDataProvider, event.data);
         }, this);
+        this.#overlays.addEventListener(Overlays.Overlays.EventReferenceClick.eventName, event => {
+            const eventRef = event;
+            const fromTraceEvent = selectionFromEvent(eventRef.event);
+            this.openSelectionDetailsView(fromTraceEvent);
+        });
         this.element.addEventListener('keydown', this.#keydownHandler.bind(this));
         this.element.addEventListener('pointerdown', this.#pointerDownHandler.bind(this));
         this.#boundRefreshAfterIgnoreList = this.#refreshAfterIgnoreList.bind(this);
@@ -341,6 +357,46 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         this.mainFlameChart.enableDimming(relatedMainIndices);
         this.networkFlameChart.enableDimming(relatedNetworkIndices);
+    }
+    #sortMarkersForPreferredVisualOrder(markers) {
+        markers.sort((m1, m2) => {
+            const m1Index = SORT_ORDER_PAGE_LOAD_MARKERS[m1.name] ?? Infinity;
+            const m2Index = SORT_ORDER_PAGE_LOAD_MARKERS[m2.name] ?? Infinity;
+            return m1Index - m2Index;
+        });
+    }
+    setMarkers(parsedTrace) {
+        if (!parsedTrace) {
+            return;
+        }
+        // Clear out any markers.
+        this.bulkRemoveOverlays(this.#markers);
+        const markerEvents = parsedTrace.PageLoadMetrics.allMarkerEvents;
+        // Set markers for Navigations, LCP, FCP.
+        const markers = markerEvents.filter(event => event.name === "navigationStart" /* Trace.Types.Events.Name.NAVIGATION_START */ ||
+            event.name === "largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */ ||
+            event.name === "firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */);
+        this.#sortMarkersForPreferredVisualOrder(markers);
+        const markerOverlays = [];
+        markers.forEach((marker, i) => {
+            const ts = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(marker, parsedTrace.Meta.traceBounds, parsedTrace.Meta.navigationsByNavigationId, parsedTrace.Meta.navigationsByFrameId);
+            // If any of the markers overlap in timing, lets put them on the same marker.
+            if (i > 0 && ts === markerOverlays[markerOverlays.length - 1].adjustedTimestamp) {
+                markerOverlays[markerOverlays.length - 1].entries.push(marker);
+                return;
+            }
+            const overlay = {
+                type: 'TIMINGS_MARKER',
+                entries: [marker],
+                adjustedTimestamp: ts,
+            };
+            markerOverlays.push(overlay);
+        });
+        this.#markers = markerOverlays;
+        if (this.#markers.length === 0) {
+            return;
+        }
+        this.bulkAddOverlays(this.#markers);
     }
     setOverlays(overlays, options) {
         this.bulkRemoveOverlays(this.#currentInsightOverlays);
@@ -678,27 +734,27 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
      */
     updateRangeSelection(startTime, endTime) {
         this.delegate.select(selectionFromRangeMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime)));
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-            const bounds = Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime));
-            // If the current time range annotation exists, the range selection
-            // for it is in progress and we need to update its bounds.
-            //
-            // When the range selection is finished, the current range is set to null.
-            // If the current selection is null, create a new time range annotations.
-            if (this.#timeRangeSelectionAnnotation) {
-                this.#timeRangeSelectionAnnotation.bounds = bounds;
-                ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
-            }
-            else {
-                this.#timeRangeSelectionAnnotation = {
-                    type: 'TIME_RANGE',
-                    label: '',
-                    bounds,
-                };
-                // Before creating a new range, make sure to delete the empty ranges.
-                ModificationsManager.activeManager()?.deleteEmptyRangeAnnotations();
-                ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation);
-            }
+        // We need to check if the user is updating the range because they are
+        // creating a time range annotation.
+        const bounds = Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime));
+        // If the current time range annotation exists, the range selection
+        // for it is in progress and we need to update its bounds.
+        //
+        // When the range selection is finished, the current range is set to null.
+        // If the current selection is null, create a new time range annotations.
+        if (this.#timeRangeSelectionAnnotation) {
+            this.#timeRangeSelectionAnnotation.bounds = bounds;
+            ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
+        }
+        else {
+            this.#timeRangeSelectionAnnotation = {
+                type: 'TIME_RANGE',
+                label: '',
+                bounds,
+            };
+            // Before creating a new range, make sure to delete the empty ranges.
+            ModificationsManager.activeManager()?.deleteEmptyRangeAnnotations();
+            ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation);
         }
     }
     getMainFlameChart() {
@@ -731,6 +787,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.updateSearchResults(false, false);
         this.refreshMainFlameChart();
         this.#updateFlameCharts();
+        this.setMarkers(newParsedTrace);
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {
@@ -936,6 +993,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (this.#linkSelectionAnnotation &&
             this.#linkSelectionAnnotation.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
             this.#clearLinkSelectionAnnotation(true);
+        }
+    }
+    // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
+    // their entry with a new UI. Becuase of that, thier entries can no longer be "selected" in the timings track,
+    // so if clicked, we only open their details view.
+    openSelectionDetailsView(selection) {
+        if (this.detailsView) {
+            void this.detailsView.setSelection(selection);
         }
     }
     /**

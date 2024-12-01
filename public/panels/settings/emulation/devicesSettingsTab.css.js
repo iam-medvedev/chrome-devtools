@@ -17,7 +17,9 @@ styles.replaceSync(
 }
 
 .list {
-  border: none;
+  &:has(div) {
+    border: none;
+  }
 }
 
 #custom-device-add-button {

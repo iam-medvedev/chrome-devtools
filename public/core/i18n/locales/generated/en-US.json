@@ -1304,11 +1304,11 @@
   "generated/Deprecation.ts | UnloadHandler": {
     "message": "Unload event listeners are deprecated and will be removed."
   },
-  "generated/Deprecation.ts | V8GPUAdapter_RequestAdapterInfo_Method": {
-    "message": "The GPUAdapter requestAdapterInfo() method is deprecated, instead use the GPUAdapter info attribute."
-  },
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
+  },
+  "generated/Deprecation.ts | WebGPULimitMaxInterStageShaderComponents": {
+    "message": "The WebGPU limit maxInterStageShaderComponents is deprecated, instead use the WebGPU limit maxInterStageShaderVariables."
   },
   "generated/Deprecation.ts | WebSQL": {
     "message": "Web SQL is deprecated. Please use SQLite WebAssembly or Indexed Database"
@@ -6621,10 +6621,10 @@
     "message": "Chat deleted"
   },
   "panels/freestyler/FreestylerPanel.ts | clearChatHistory": {
-    "message": "Clear chat history"
+    "message": "Clear local chats"
   },
   "panels/freestyler/FreestylerPanel.ts | deleteChat": {
-    "message": "Delete chat"
+    "message": "Delete local chat"
   },
   "panels/freestyler/FreestylerPanel.ts | help": {
     "message": "Help"
@@ -7860,7 +7860,7 @@
     "message": "No internet connectivity"
   },
   "panels/mobile_throttling/ThrottlingPresets.ts | noThrottling": {
-    "message": "No throttling"
+    "message": "No CPU and no network throttling"
   },
   "panels/mobile_throttling/ThrottlingPresets.ts | slowGXCpuSlowdown": {
     "message": "Slow 3G & 6x CPU slowdown"
@@ -10610,11 +10610,38 @@
   "panels/security/CookieReportView.ts | emptyReportExplanation": {
     "message": "No issues with third-party cookies found"
   },
+  "panels/security/CookieReportView.ts | gitHubResource": {
+    "message": "Review {PH1} from third-party site."
+  },
+  "panels/security/CookieReportView.ts | gitHubResourceTypeString": {
+    "message": "Github"
+  },
+  "panels/security/CookieReportView.ts | gracePeriod": {
+    "message": "Review {PH1}. Grace period exception is active."
+  },
+  "panels/security/CookieReportView.ts | gracePeriodTypeString": {
+    "message": "Grace Period"
+  },
+  "panels/security/CookieReportView.ts | guidance": {
+    "message": "guidance"
+  },
+  "panels/security/CookieReportView.ts | heuristics": {
+    "message": "Action needed later. Heuristics based exception is active"
+  },
+  "panels/security/CookieReportView.ts | heuristicsTypeString": {
+    "message": "Heuristics"
+  },
   "panels/security/CookieReportView.ts | learnMoreLink": {
     "message": "Learn more about how third-party cookies are used"
   },
   "panels/security/CookieReportView.ts | name": {
     "message": "Name"
+  },
+  "panels/security/CookieReportView.ts | other": {
+    "message": "Contact third-party site for more info"
+  },
+  "panels/security/CookieReportView.ts | otherTypeString": {
+    "message": "Other"
   },
   "panels/security/CookieReportView.ts | platform": {
     "message": "Platform"
@@ -10624,6 +10651,9 @@
   },
   "panels/security/CookieReportView.ts | report": {
     "message": "Third-Party Cookie Report"
+  },
+  "panels/security/CookieReportView.ts | reportedIssues": {
+    "message": "reported issues"
   },
   "panels/security/CookieReportView.ts | status": {
     "message": "Status"
@@ -12207,7 +12237,7 @@
     "message": "Breakpoints"
   },
   "panels/sources/sources-meta.ts | closeAll": {
-    "message": "Close All"
+    "message": "Close all"
   },
   "panels/sources/sources-meta.ts | closeTheActiveTab": {
     "message": "Close the active tab"
@@ -12734,14 +12764,8 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "WebSocket protocol"
   },
-  "panels/timeline/components/FieldSettingsDialog.ts | add": {
-    "message": "Add"
-  },
   "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
     "message": "Advanced"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | alreadyMapped": {
-    "message": "\"{PH1}\" is already mapped to a production origin."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | cancel": {
     "message": "Cancel"
@@ -12751,15 +12775,6 @@
   },
   "panels/timeline/components/FieldSettingsDialog.ts | configureFieldData": {
     "message": "Configure field data fetching"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | delete": {
-    "message": "Delete"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | developmentOrigin": {
-    "message": "Development origin"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | developmentOriginValue": {
-    "message": "Development origin: {PH1}"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | doesNotHaveSufficientData": {
     "message": "The Chrome UX Report does not have sufficient real-world speed data for this page."
@@ -12788,12 +12803,6 @@
   "panels/timeline/components/FieldSettingsDialog.ts | privacyDisclosure": {
     "message": "Privacy disclosure"
   },
-  "panels/timeline/components/FieldSettingsDialog.ts | productionOrigin": {
-    "message": "Production origin"
-  },
-  "panels/timeline/components/FieldSettingsDialog.ts | productionOriginValue": {
-    "message": "Production origin: {PH1}"
-  },
   "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
     "message": "Set up"
   },
@@ -12802,6 +12811,21 @@
   },
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreList": {
+    "message": "Ignore list"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreListDescription": {
+    "message": "Add these exclusion rules would simplify the flame chart."
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchS": {
+    "message": "Ignore scripts whose names match ''{regex}''"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | removeRegex": {
+    "message": "Remove the regex: ''{regex}''"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | showIgnoreListSettingDialog": {
+    "message": "Show ignore list setting dialog"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavings": {
     "message": "Est savings: {PH1}"
@@ -13408,6 +13432,21 @@
   },
   "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottlingReason": {
     "message": "Consider changing setting to simulate real user environments"
+  },
+  "panels/timeline/components/OriginMap.ts | alreadyMapped": {
+    "message": "\"{PH1}\" is already mapped to a production origin."
+  },
+  "panels/timeline/components/OriginMap.ts | developmentOrigin": {
+    "message": "Development origin"
+  },
+  "panels/timeline/components/OriginMap.ts | invalidOrigin": {
+    "message": "\"{PH1}\" is not a valid origin or URL."
+  },
+  "panels/timeline/components/OriginMap.ts | pageHasNoData": {
+    "message": "The Chrome UX Report does not have sufficient real user data for this page."
+  },
+  "panels/timeline/components/OriginMap.ts | productionOrigin": {
+    "message": "Production origin"
   },
   "panels/timeline/components/RelatedInsightChips.ts | insightKeyword": {
     "message": "Insight"

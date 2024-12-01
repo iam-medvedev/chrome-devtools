@@ -87,7 +87,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
             IsolatedFileSystemManager.instance().addEventListener(Events.ExcludedFolderRemoved, this.update, this),
         ];
         const excludedFoldersHeader = this.contentElement.createChild('div', 'excluded-folder-header');
-        excludedFoldersHeader.createChild('span', 'url-header').textContent = i18nString(UIStrings.url);
+        excludedFoldersHeader.createChild('span').textContent = i18nString(UIStrings.url);
         excludedFoldersHeader.createChild('span', 'excluded-folder-url').textContent = fileSystemPath;
         const excludeSubFoldersText = this.contentElement.createChild('span', 'exclude-subfolders-text');
         excludeSubFoldersText.textContent = i18nString(UIStrings.excludedFolders);

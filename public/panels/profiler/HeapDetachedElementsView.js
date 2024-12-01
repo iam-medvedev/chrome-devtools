@@ -105,6 +105,9 @@ export class DetachedElementsProfileType extends Common.ObjectWrapper.eventMixin
     get description() {
         return i18nString(UIStrings.detachedElementsDescription);
     }
+    isInstantProfile() {
+        return true;
+    }
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static TypeId = 'DetachedElements';
 }

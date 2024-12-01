@@ -771,4 +771,21 @@ export function getTimelineMainEventCategories() {
 export function setTimelineMainEventCategories(categories) {
     mainEventCategories = categories;
 }
+export function markerDetailsForEvent(event) {
+    let title = '';
+    let color = 'var(--color-text-primary)';
+    if (Trace.Types.Events.isFirstContentfulPaint(event)) {
+        color = 'var(--sys-color-green-bright)';
+        title = "FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */;
+    }
+    if (Trace.Types.Events.isLargestContentfulPaintCandidate(event)) {
+        color = 'var(--sys-color-green)';
+        title = "LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */;
+    }
+    if (Trace.Types.Events.isNavigationStart(event)) {
+        color = 'var(--color-text-primary)';
+        title = "Nav" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.NAV */;
+    }
+    return { color, title };
+}
 //# sourceMappingURL=EntryStyles.js.map

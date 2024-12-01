@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Root from '../../../../core/root/root.js';
 import * as Coordinator from '../../../components/render_coordinator/render_coordinator.js';
 import * as UI from '../../legacy.js';
 import chartViewPortStyles from './chartViewport.css.legacy.js';
@@ -18,7 +16,6 @@ export class ChartViewport extends UI.Widget.VBox {
     vScrollElement;
     vScrollContent;
     selectionOverlay;
-    selectedTimeSpanLabel;
     cursorElement;
     isDraggingInternal;
     totalHeight;
@@ -42,7 +39,6 @@ export class ChartViewport extends UI.Widget.VBox {
     isUpdateScheduled;
     cancelWindowTimesAnimation;
     #config;
-    #usingNewOverlayForTimeRange = Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */);
     constructor(delegate, config) {
         super();
         this.#config = config;
@@ -62,11 +58,7 @@ export class ChartViewport extends UI.Widget.VBox {
         this.vScrollContent = this.vScrollElement.createChild('div');
         this.vScrollElement.addEventListener('scroll', this.onScroll.bind(this), false);
         this.selectionOverlay = this.contentElement.createChild('div', 'chart-viewport-selection-overlay hidden');
-        this.selectedTimeSpanLabel = this.selectionOverlay.createChild('div', 'time-span');
         this.cursorElement = this.contentElement.createChild('div', 'chart-cursor-element hidden');
-        if (this.#usingNewOverlayForTimeRange) {
-            this.cursorElement.classList.add('using-new-overlays');
-        }
         this.reset();
         this.rangeSelectionStart = null;
         this.rangeSelectionEnd = null;
@@ -79,7 +71,6 @@ export class ChartViewport extends UI.Widget.VBox {
         this.rangeSelectionEnabled = false;
         this.rangeSelectionStart = null;
         this.rangeSelectionEnd = null;
-        this.updateRangeSelectionOverlay();
     }
     isDragging() {
         return this.isDraggingInternal;
@@ -219,13 +210,6 @@ export class ChartViewport extends UI.Widget.VBox {
         this.isDraggingInternal = true;
         this.selectionOffsetShiftX = event.offsetX - event.pageX;
         this.selectionStartX = event.offsetX;
-        if (!this.#usingNewOverlayForTimeRange) {
-            const style = this.selectionOverlay.style;
-            style.left = this.selectionStartX + 'px';
-            style.width = '1px';
-            this.selectedTimeSpanLabel.textContent = '';
-            this.selectionOverlay.classList.remove('hidden');
-        }
         return true;
     }
     endRangeSelection() {
@@ -248,7 +232,6 @@ export class ChartViewport extends UI.Widget.VBox {
         }
         this.rangeSelectionStart = Math.min(startTime, endTime);
         this.rangeSelectionEnd = Math.max(startTime, endTime);
-        this.updateRangeSelectionOverlay();
         this.delegate.updateRangeSelection(this.rangeSelectionStart, this.rangeSelectionEnd);
     }
     onClick(event) {
@@ -265,21 +248,6 @@ export class ChartViewport extends UI.Widget.VBox {
         const start = this.pixelToTime(this.selectionStartX || 0);
         const end = this.pixelToTime(x);
         this.setRangeSelection(start, end);
-    }
-    updateRangeSelectionOverlay() {
-        if (this.#usingNewOverlayForTimeRange) {
-            return;
-        }
-        const rangeSelectionStart = this.rangeSelectionStart || 0;
-        const rangeSelectionEnd = this.rangeSelectionEnd || 0;
-        const margin = 100;
-        const left = Platform.NumberUtilities.clamp(this.timeToPosition(rangeSelectionStart), -margin, this.offsetWidth + margin);
-        const right = Platform.NumberUtilities.clamp(this.timeToPosition(rangeSelectionEnd), -margin, this.offsetWidth + margin);
-        const style = this.selectionOverlay.style;
-        style.left = left + 'px';
-        style.width = (right - left) + 'px';
-        const timeSpan = rangeSelectionEnd - rangeSelectionStart;
-        this.selectedTimeSpanLabel.textContent = i18n.TimeUtilities.preciseMillisToString(timeSpan, 2);
     }
     onScroll() {
         this.scrollTop = this.vScrollElement.scrollTop;
@@ -391,7 +359,6 @@ export class ChartViewport extends UI.Widget.VBox {
         });
     }
     update() {
-        this.updateRangeSelectionOverlay();
         this.delegate.update();
     }
     setWindowTimes(startTime, endTime, animate) {

@@ -35,11 +35,7 @@ styles.replaceSync(
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr 30px 2fr 30px 30px;
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-
-  &:last-of-type {
-    border-bottom: unset;
-  }
+  border-top: var(--sys-size-1) solid var(--app-color-card-divider);
 }
 
 .keybinds-list-item:focus-visible {
@@ -114,13 +110,13 @@ styles.replaceSync(
   height: var(--sys-size-13);
   padding: var(--sys-size-4) var(--sys-size-7);
   white-space: nowrap;
+
+  + .keybinds-list-item-wrapper > .keybinds-list-item {
+    border-top: unset;
+  }
 }
 
-.keybinds-list-item-wrapper + .keybinds-header-wrapper {
-  margin-top: var(--sys-size-9);
-}
-
-.keybinds-list-item-wrapper:has(:not(.keybinds-category-header):hover),
+.keybinds-list-item-wrapper:has(.keybinds-list-item:hover),
 .keybinds-list-item-wrapper:has(
   .keybinds-list-item:not(.keybinds-editing)):focus-within {
   background: var(--sys-color-state-hover-on-subtle);

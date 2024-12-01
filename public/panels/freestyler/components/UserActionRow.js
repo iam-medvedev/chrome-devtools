@@ -127,6 +127,7 @@ export class UserActionRow extends HTMLElement {
     }
     #handleClose = () => {
         this.#isShowingFeedbackForm = false;
+        this.#isSubmitButtonDisabled = true;
         this.#render();
     };
     #handleSubmit = (ev) => {
@@ -241,9 +242,10 @@ export class UserActionRow extends HTMLElement {
           jslog=${VisualLogging.textField('feedback').track({ keydown: 'Enter' })}
         >
         <span class="feedback-disclaimer">${lockedString(UIStringsNotTranslate.disclaimer)}</span>
-        <devtools-button
-        aria-label=${lockedString(UIStringsNotTranslate.submit)}
-        .data=${{
+        <div>
+          <devtools-button
+          aria-label=${lockedString(UIStringsNotTranslate.submit)}
+          .data=${{
             type: 'submit',
             disabled: this.#isSubmitButtonDisabled,
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
@@ -251,7 +253,8 @@ export class UserActionRow extends HTMLElement {
             title: lockedString(UIStringsNotTranslate.submit),
             jslogContext: 'send',
         }}
-        >${lockedString(UIStringsNotTranslate.submit)}</devtools-button>
+          >${lockedString(UIStringsNotTranslate.submit)}</devtools-button>
+        </div>
       </div>
     </form>
     `;

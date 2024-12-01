@@ -12,13 +12,16 @@ styles.replaceSync(
  */
 
 .add-conditions-button {
-  margin-bottom: var(--sys-size-5);
+  margin: var(--sys-size-5) 0;
   border: none;
 }
 
 .conditions-list {
-  margin-top: var(--sys-size-3);
   flex: auto;
+
+  &:has(.list-item) {
+    margin-top: var(--sys-size-3);
+  }
 }
 
 .conditions-list-item {
@@ -33,7 +36,7 @@ styles.replaceSync(
 .conditions-list-text {
   text-overflow: ellipsis;
   overflow: hidden;
-  flex: 0 0 50px;
+  flex: 0 0 60px;
   user-select: none;
   color: var(--sys-color-on-surface);
   text-align: center;
@@ -80,6 +83,10 @@ styles.replaceSync(
   display: flex;
   flex-direction: row;
   margin: 6px 5px;
+
+  .conditions-list-title-text {
+    white-space: unset;
+  }
 }
 
 .conditions-edit-row input {
@@ -99,10 +106,8 @@ styles.replaceSync(
 }
 
 .conditions-edit-optional {
-  position: absolute;
-  bottom: -20px;
-  right: 0;
-  color: var(--sys-color-state-disabled);
+  margin-top: var(--sys-size-5);
+  color: var(--sys-color-on-surface-subtle);
 }
 
 .editor-buttons {
@@ -111,7 +116,7 @@ styles.replaceSync(
 
 .settings-card-container-wrapper {
   scrollbar-gutter: stable;
-  padding-bottom: var(--sys-size-8);
+  padding: var(--sys-size-8) 0;
   overflow: auto;
   position: absolute;
   inset: var(--sys-size-8) 0 0;

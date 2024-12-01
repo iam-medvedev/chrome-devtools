@@ -14,7 +14,8 @@ export declare const enum ResponseType {
 export declare const enum ErrorType {
     UNKNOWN = "unknown",
     ABORT = "abort",
-    MAX_STEPS = "max-steps"
+    MAX_STEPS = "max-steps",
+    BLOCK = "block"
 }
 export interface AnswerResponse {
     type: ResponseType.ANSWER;
@@ -25,7 +26,6 @@ export interface AnswerResponse {
 export interface ErrorResponse {
     type: ResponseType.ERROR;
     error: ErrorType;
-    rpcId?: number;
 }
 export interface ContextDetail {
     title: string;
@@ -70,7 +70,7 @@ export interface UserQuery {
 }
 export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
 export interface BuildRequestOptions {
-    input: string;
+    text: string;
 }
 export interface RequestOptions {
     temperature?: number;
@@ -108,6 +108,11 @@ export declare abstract class ConversationContext<T> {
     abstract getIcon(): HTMLElement;
     abstract getTitle(): string | ReturnType<typeof LitHtml.Directives.until>;
     isOriginAllowed(agentOrigin: string | undefined): boolean;
+    /**
+     * This method is called at the start of `AiAgent.run`.
+     * It will be overriden in subclasses to fetch data related to the context item.
+     */
+    refresh(): Promise<void>;
 }
 export declare abstract class AiAgent<T> {
     #private;
@@ -119,7 +124,7 @@ export declare abstract class AiAgent<T> {
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     constructor(opts: AgentOptions);
-    get chatHistoryForTesting(): Array<Host.AidaClient.HistoryChunk>;
+    get chatHistoryForTesting(): Array<Host.AidaClient.Content>;
     set chatNewHistoryForTesting(history: HistoryEntryStorage);
     get id(): string;
     get isEmpty(): boolean;

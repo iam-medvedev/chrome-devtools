@@ -270,6 +270,45 @@ describeWithMockConnection('WebAuthn pane', () => {
             });
             assert.strictEqual(dataGrid.rootNode().children.length, 0);
         });
+        it('disables "internal" if an internal authenticator exists', async () => {
+            const authenticatorId = 'authenticator-1';
+            let panel = new Webauthn.WebauthnPane.WebauthnPaneImpl();
+            let transport = panel.transportSelect;
+            if (!transport) {
+                assert.fail('Transport select is not present');
+            }
+            let internalTransportIndex = -1;
+            for (let i = 0; i < transport.options.length; ++i) {
+                if (transport.options[i].value === "internal" /* Protocol.WebAuthn.AuthenticatorTransport.Internal */) {
+                    internalTransportIndex = i;
+                    break;
+                }
+            }
+            assert.notEqual(internalTransportIndex, -1);
+            assert.isFalse(transport.options[internalTransportIndex].disabled);
+            // Add an internal authenticator.
+            transport.selectedIndex = internalTransportIndex;
+            const addAuthenticator = sinon.stub(model, 'addAuthenticator').resolves(authenticatorId);
+            panel.addAuthenticatorButton?.click();
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.strictEqual(addAuthenticator.called, inScope);
+            if (!inScope) {
+                return;
+            }
+            // The "internal" option should have been disabled, and another option selected.
+            assert.notEqual(transport.selectedIndex, internalTransportIndex);
+            assert.isTrue(transport.options[internalTransportIndex].disabled);
+            // Restoring the authenticator when loading the panel again should also cause "internal" to be disabled.
+            panel = new Webauthn.WebauthnPane.WebauthnPaneImpl();
+            transport = panel.transportSelect;
+            if (!transport) {
+                assert.fail('Transport select is not present');
+            }
+            assert.isTrue(transport.options[internalTransportIndex].disabled);
+            // Removing the internal authenticator should re-enable the option.
+            panel.removeAuthenticator(authenticatorId);
+            assert.isFalse(transport.options[internalTransportIndex].disabled);
+        });
     };
     describe('in scope', () => tests(true));
     describe('out of scope', () => tests(false));

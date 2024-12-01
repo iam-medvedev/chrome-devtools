@@ -296,7 +296,6 @@ export class MainImpl {
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
         Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Autofill panel', false, 'https://goo.gle/devtools-autofill-panel', 'https://crbug.com/329106326');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
-        Root.Runtime.experiments.register("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */, 'Performance panel: enable annotations');
         Root.Runtime.experiments.register("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */, 'Performance panel: enable performance insights');
         Root.Runtime.experiments.register("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */, 'Performance panel: enable live metrics landing page');
         Root.Runtime.experiments.register("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */, 'Performance panel: enable server timings in the timeline');
@@ -304,12 +303,12 @@ export class MainImpl {
         Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.register("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */, 'Performance panel: enable dimming unrelated events in performance insights and search results');
         Root.Runtime.experiments.register("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */, 'Performance panel: enable a switch to an alternative timeline navigation option');
+        Root.Runtime.experiments.register("timeline-ignore-list" /* Root.Runtime.ExperimentName.TIMELINE_IGNORE_LIST */, 'Performance panel: enable an ignore list setting dialog');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
             "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */,
             "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
-            "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */,
             "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
             "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),

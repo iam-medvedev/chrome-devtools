@@ -38,6 +38,8 @@ export declare class TimelineController implements Trace.TracingManager.TracingM
     dispose(): Promise<void>;
     startRecording(options: RecordingOptions): Promise<Protocol.ProtocolResponseWithError>;
     stopRecording(): Promise<void>;
+    private fetchFieldData;
+    private createMetadata;
     private waitForTracingToStop;
     private startRecordingWithCategories;
     warmupJsProfiler(): Promise<void>;
@@ -52,7 +54,7 @@ export interface Client {
     loadingStarted(): void;
     processingStarted(): void;
     loadingProgress(progress?: number): void;
-    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: Trace.Extras.TraceFilter.TraceFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: Trace.Extras.TraceFilter.TraceFilter | null, metadata: Trace.Types.File.MetaData | null): Promise<void>;
     loadingCompleteForTest(): void;
 }
 export interface RecordingOptions {
