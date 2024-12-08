@@ -138,11 +138,6 @@ export class DrJonesNetworkAgent extends AiAgent {
             '';
         return `${networkEnchantmentQuery}${query}`;
     }
-    parseResponse(response) {
-        return {
-            answer: response,
-        };
-    }
 }
 function formatLines(title, lines, maxLength) {
     let result = '';

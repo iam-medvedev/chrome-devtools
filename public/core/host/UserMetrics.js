@@ -244,28 +244,6 @@ export class UserMetrics {
     visualLoggingProcessingDone(timeInMilliseconds) {
         InspectorFrontendHostInstance.recordPerformanceHistogram('DevTools.VisualLogging.ProcessingTime', timeInMilliseconds);
     }
-    legacyResourceTypeFilterNumberOfSelectedChanged(itemCount) {
-        const boundItemCount = Math.max(Math.min(itemCount, ResourceType.MAX_VALUE - 1), 1);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LegacyResourceTypeFilterNumberOfSelectedChanged" /* EnumeratedHistogram.LegacyResourceTypeFilterNumberOfSelectedChanged */, boundItemCount, ResourceType.MAX_VALUE);
-    }
-    legacyResourceTypeFilterItemSelected(resourceTypeName) {
-        const resourceType = ResourceType[resourceTypeName];
-        if (resourceType === undefined) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LegacyResourceTypeFilterItemSelected" /* EnumeratedHistogram.LegacyResourceTypeFilterItemSelected */, resourceType, ResourceType.MAX_VALUE);
-    }
-    resourceTypeFilterNumberOfSelectedChanged(itemCount) {
-        const boundItemCount = Math.max(Math.min(itemCount, ResourceType.MAX_VALUE - 1), 1);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterNumberOfSelectedChanged" /* EnumeratedHistogram.ResourceTypeFilterNumberOfSelectedChanged */, boundItemCount, ResourceType.MAX_VALUE);
-    }
-    resourceTypeFilterItemSelected(resourceTypeName) {
-        const resourceType = ResourceType[resourceTypeName];
-        if (resourceType === undefined) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterItemSelected" /* EnumeratedHistogram.ResourceTypeFilterItemSelected */, resourceType, ResourceType.MAX_VALUE);
-    }
     freestylerQueryLength(numberOfCharacters) {
         InspectorFrontendHostInstance.recordCountHistogram('DevTools.Freestyler.QueryLength', numberOfCharacters, 0, 100_000, 100);
     }
@@ -901,8 +879,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
     DevtoolsExperiments[DevtoolsExperiments["floating-entry-points-for-ai-assistance"] = 101] = "floating-entry-points-for-ai-assistance";
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
@@ -1034,24 +1010,6 @@ export var IssueCreated;
     /* eslint-enable @typescript-eslint/naming-convention */
     IssueCreated[IssueCreated["MAX_VALUE"] = 86] = "MAX_VALUE";
 })(IssueCreated || (IssueCreated = {}));
-export var ResourceType;
-(function (ResourceType) {
-    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
-    ResourceType[ResourceType["all"] = 0] = "all";
-    ResourceType[ResourceType["Document"] = 1] = "Document";
-    ResourceType[ResourceType["JavaScript"] = 2] = "JavaScript";
-    ResourceType[ResourceType["Fetch and XHR"] = 3] = "Fetch and XHR";
-    ResourceType[ResourceType["CSS"] = 4] = "CSS";
-    ResourceType[ResourceType["Font"] = 5] = "Font";
-    ResourceType[ResourceType["Image"] = 6] = "Image";
-    ResourceType[ResourceType["Media"] = 7] = "Media";
-    ResourceType[ResourceType["Manifest"] = 8] = "Manifest";
-    ResourceType[ResourceType["WebSocket"] = 9] = "WebSocket";
-    ResourceType[ResourceType["WebAssembly"] = 10] = "WebAssembly";
-    ResourceType[ResourceType["Other"] = 11] = "Other";
-    /* eslint-enable @typescript-eslint/naming-convention */
-    ResourceType[ResourceType["MAX_VALUE"] = 12] = "MAX_VALUE";
-})(ResourceType || (ResourceType = {}));
 export var Language;
 (function (Language) {
     /* eslint-disable @typescript-eslint/naming-convention */

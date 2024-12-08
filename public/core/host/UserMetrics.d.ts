@@ -43,10 +43,6 @@ export declare class UserMetrics {
     animationPointDragged(dragType: AnimationPointDragType): void;
     workspacesPopulated(wallClockTimeInMilliseconds: number): void;
     visualLoggingProcessingDone(timeInMilliseconds: number): void;
-    legacyResourceTypeFilterNumberOfSelectedChanged(itemCount: number): void;
-    legacyResourceTypeFilterItemSelected(resourceTypeName: string): void;
-    resourceTypeFilterNumberOfSelectedChanged(itemCount: number): void;
-    resourceTypeFilterItemSelected(resourceTypeName: string): void;
     freestylerQueryLength(numberOfCharacters: number): void;
     freestylerEvalResponseSize(bytes: number): void;
 }
@@ -661,8 +657,6 @@ export declare enum DevtoolsExperiments {
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
-    'timeline-rpp-sidebar' = 95,
-    'timeline-observations' = 96,
     'timeline-server-timings' = 98,
     'floating-entry-points-for-ai-assistance' = 101,
     'timeline-experimental-insights' = 102,
@@ -810,21 +804,6 @@ export declare const enum DeveloperResourceScheme {
     FILE = 7,
     BLOB = 8,
     MAX_VALUE = 9
-}
-export declare enum ResourceType {
-    all = 0,
-    Document = 1,
-    JavaScript = 2,
-    'Fetch and XHR' = 3,
-    CSS = 4,
-    Font = 5,
-    Image = 6,
-    Media = 7,
-    Manifest = 8,
-    WebSocket = 9,
-    WebAssembly = 10,
-    Other = 11,
-    MAX_VALUE = 12
 }
 export declare enum Language {
     'af' = 1,

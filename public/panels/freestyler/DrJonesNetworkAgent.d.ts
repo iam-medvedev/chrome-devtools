@@ -1,6 +1,6 @@
 import * as Host from '../../core/host/host.js';
 import type * as SDK from '../../core/sdk/sdk.js';
-import { AgentType, AiAgent, type ContextResponse, ConversationContext, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { AgentType, AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class RequestContext extends ConversationContext<SDK.NetworkRequest.NetworkRequest> {
     #private;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
@@ -21,7 +21,6 @@ export declare class DrJonesNetworkAgent extends AiAgent<SDK.NetworkRequest.Netw
     get options(): RequestOptions;
     handleContextDetails(selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): Promise<string>;
-    parseResponse(response: string): ParsedResponse;
 }
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
 export declare function formatHeaders(title: string, headers: SDK.NetworkRequest.NameValue[]): string;

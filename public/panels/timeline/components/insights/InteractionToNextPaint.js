@@ -68,7 +68,11 @@ export class InteractionToNextPaint extends BaseInsightComponent {
             },
         ];
     }
-    #renderContent(event) {
+    renderContent() {
+        const event = this.model?.longestInteractionEvent;
+        if (!event) {
+            return LitHtml.nothing;
+        }
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
         return html `
@@ -95,12 +99,6 @@ export class InteractionToNextPaint extends BaseInsightComponent {
         </devtools-performance-table>`}
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (!this.model?.longestInteractionEvent) {
-            return;
-        }
-        this.renderWithContent(this.#renderContent(this.model.longestInteractionEvent));
     }
 }
 customElements.define('devtools-performance-inp', InteractionToNextPaint);

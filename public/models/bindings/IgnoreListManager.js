@@ -305,9 +305,9 @@ export class IgnoreListManager {
         if (!regexValue) {
             return;
         }
-        this.ignoreListRegex(regexValue, url);
+        this.addRegexToIgnoreList(regexValue, url);
     }
-    ignoreListRegex(regexValue, disabledForUrl) {
+    addRegexToIgnoreList(regexValue, disabledForUrl) {
         const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
         let found = false;
         for (let i = 0; i < regexPatterns.length; ++i) {
@@ -504,7 +504,7 @@ export class IgnoreListManager {
             // as entirely ignored.
             menuItems.push({
                 text: i18nString(UIStrings.addDirectoryToIgnoreList),
-                callback: this.ignoreListRegex.bind(this, regexValue),
+                callback: this.addRegexToIgnoreList.bind(this, regexValue),
                 jslogContext: 'add-directory-to-ignore-list',
             });
             menuItems.push(...this.getIgnoreListGeneralContextMenuItems(options));

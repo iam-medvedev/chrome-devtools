@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../../../core/root/root.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Timeline from '../../../../panels/timeline/timeline.js';
 import * as FrontendHelpers from '../../../../testing/EnvironmentHelpers.js';
@@ -10,7 +9,6 @@ import * as UI from '../../../legacy/legacy.js';
 import * as ComponentSetup from '../../helpers/helpers.js';
 await FrontendHelpers.initializeGlobalVars();
 await ComponentSetup.ComponentServerSetup.setup();
-Root.Runtime.experiments.setEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */, true);
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.show-history',
     category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,

@@ -6,11 +6,11 @@ import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory, InsightWarning, } from './types.js';
 const UIStrings = {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
-    title: 'Viewport not optimized for mobile',
+    title: 'Optimize viewport for mobile',
     /**
      * @description Text to tell the user how a viewport meta element can improve performance. \xa0 is a non-breaking space
      */
-    description: 'The page\'s viewport is not mobile-optimized, so tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/).',
+    description: 'Tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile.',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/Viewport.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

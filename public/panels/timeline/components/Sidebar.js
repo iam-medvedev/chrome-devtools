@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import * as Root from '../../../core/root/root.js';
 import * as Adorners from '../../../ui/components/adorners/adorners.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { SidebarAnnotationsTab } from './SidebarAnnotationsTab.js';
@@ -45,9 +44,7 @@ export class SidebarWidget extends UI.Widget.VBox {
     constructor() {
         super();
         this.setMinimumSize(MIN_SIDEBAR_WIDTH_PX, 0);
-        if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */)) {
-            this.#tabbedPane.appendTab("insights" /* SidebarTabs.INSIGHTS */, 'Insights', this.#insightsView, undefined, undefined, false, false, 0, 'timeline.insights-tab');
-        }
+        this.#tabbedPane.appendTab("insights" /* SidebarTabs.INSIGHTS */, 'Insights', this.#insightsView, undefined, undefined, false, false, 0, 'timeline.insights-tab');
         this.#tabbedPane.appendTab("annotations" /* SidebarTabs.ANNOTATIONS */, 'Annotations', this.#annotationsView, undefined, undefined, false, false, 1, 'timeline.annotations-tab');
         // Default the selected tab to Insights. In wasShown() we will change this
         // if this is a trace that has no insights.

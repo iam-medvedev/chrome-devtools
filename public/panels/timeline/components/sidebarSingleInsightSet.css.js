@@ -67,6 +67,14 @@ styles.replaceSync(
   }
 }
 
+.passed-insights-section {
+  margin-top: var(--sys-size-5);
+
+  summary {
+    font-weight: var(--ref-typeface-weight-medium);
+  }
+}
+
 /*# sourceURL=sidebarSingleInsightSet.css */
 `);
 

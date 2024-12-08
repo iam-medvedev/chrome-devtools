@@ -354,9 +354,5 @@ export declare const enum EnumeratedHistogram {
     CSSPropertyDocumentation = "DevTools.CSSPropertyDocumentation",
     SwatchActivated = "DevTools.SwatchActivated",
     AnimationPlaybackRateChanged = "DevTools.AnimationPlaybackRateChanged",
-    AnimationPointDragged = "DevTools.AnimationPointDragged",
-    LegacyResourceTypeFilterNumberOfSelectedChanged = "DevTools.LegacyResourceTypeFilterNumberOfSelectedChanged",
-    LegacyResourceTypeFilterItemSelected = "DevTools.LegacyResourceTypeFilterItemSelected",
-    ResourceTypeFilterNumberOfSelectedChanged = "DevTools.ResourceTypeFilterNumberOfSelectedChanged",
-    ResourceTypeFilterItemSelected = "DevTools.ResourceTypeFilterItemSelected"
+    AnimationPointDragged = "DevTools.AnimationPointDragged"
 }

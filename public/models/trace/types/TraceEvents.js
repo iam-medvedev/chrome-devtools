@@ -538,7 +538,14 @@ export function isJSInvocationEvent(event) {
     if (event.name.startsWith('v8') || event.name.startsWith('V8')) {
         return true;
     }
+    if (isConsoleTaskRun(event)) {
+        return true;
+    }
     return false;
+}
+export function isConsoleTaskRun(event) {
+    return isProfileCall(event) && event.callFrame.functionName === 'run' && event.callFrame.columnNumber === -1 &&
+        event.callFrame.lineNumber === -1;
 }
 export function isFlowPhaseEvent(event) {
     return event.ph === "s" /* Phase.FLOW_START */ || event.ph === "t" /* Phase.FLOW_STEP */ || event.ph === "f" /* Phase.FLOW_END */;

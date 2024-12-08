@@ -1721,6 +1721,18 @@
   "models/trace/insights/ImageDelivery.ts | title": {
     "message": "Improve image delivery"
   },
+  "models/trace/insights/ImageDelivery.ts | useCompression": {
+    "message": "Increasing the image compression factor could improve this image's download size. (Est {PH1})"
+  },
+  "models/trace/insights/ImageDelivery.ts | useModernFormat": {
+    "message": "Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size. (Est {PH1})"
+  },
+  "models/trace/insights/ImageDelivery.ts | useResponsiveSize": {
+    "message": "This image file is larger than it needs to be ({PH2}) for its displayed dimensions ({PH3}). Use responsive images to reduce the image download size. (Est {PH1})"
+  },
+  "models/trace/insights/ImageDelivery.ts | useVideoFormat": {
+    "message": "Using video formats instead of GIFs can improve the download size of animated content. (Est {PH1})"
+  },
   "models/trace/insights/InteractionToNextPaint.ts | description": {
     "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
   },
@@ -1758,10 +1770,10 @@
     "message": "Third parties"
   },
   "models/trace/insights/Viewport.ts | description": {
-    "message": "The page's viewport is not mobile-optimized, so tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
+    "message": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile."
   },
   "models/trace/insights/Viewport.ts | title": {
-    "message": "Viewport not optimized for mobile"
+    "message": "Optimize viewport for mobile"
   },
   "models/workspace/UISourceCode.ts | index": {
     "message": "(index)"
@@ -5669,12 +5681,6 @@
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "Ignored"
   },
-  "panels/elements/components/AdornerSettingsPane.ts | closeButton": {
-    "message": "Close"
-  },
-  "panels/elements/components/AdornerSettingsPane.ts | settingsTitle": {
-    "message": "Show badges"
-  },
   "panels/elements/components/AnchorFunctionLinkSwatch.ts | jumpToAnchorNode": {
     "message": "Jump to anchor node"
   },
@@ -5888,6 +5894,9 @@
   "panels/elements/elements-meta.ts | wordWrap": {
     "message": "Word wrap"
   },
+  "panels/elements/ElementsPanel.ts | adornerSettings": {
+    "message": "Badge settings"
+  },
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "Computed"
   },
@@ -6067,9 +6076,6 @@
   },
   "panels/elements/ElementsTreeElement.ts | valueIsTooLargeToEdit": {
     "message": "<value is too large to edit>"
-  },
-  "panels/elements/ElementsTreeOutline.ts | adornerSettings": {
-    "message": "Badge settings…"
   },
   "panels/elements/ElementsTreeOutline.ts | pageDom": {
     "message": "Page DOM"
@@ -12812,14 +12818,29 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
   },
+  "panels/timeline/components/IgnoreListSetting.ts | addNewRegex": {
+    "message": "Add a regular expression rule for the script's URL"
+  },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreList": {
     "message": "Ignore list"
   },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreListDescription": {
     "message": "Add these exclusion rules would simplify the flame chart."
   },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchNewRegex": {
+    "message": "Ignore scripts whose names match the new regex"
+  },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchS": {
     "message": "Ignore scripts whose names match ''{regex}''"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExists": {
+    "message": "Rule already exists"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternCannotBeEmpty": {
+    "message": "Rule can't be empty"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternMustBeAValidRegular": {
+    "message": "Rule must be a valid regular expression"
   },
   "panels/timeline/components/IgnoreListSetting.ts | removeRegex": {
     "message": "Remove the regex: ''{regex}''"
@@ -12904,9 +12925,6 @@
   },
   "panels/timeline/components/insights/ImageDelivery.ts | others": {
     "message": "{PH1} others"
-  },
-  "panels/timeline/components/insights/ImageDelivery.ts | sizeAppropriately": {
-    "message": "Size appropriately"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
     "message": "Duration"
@@ -13451,6 +13469,9 @@
   "panels/timeline/components/RelatedInsightChips.ts | insightKeyword": {
     "message": "Insight"
   },
+  "panels/timeline/components/RelatedInsightChips.ts | insightWithName": {
+    "message": "Insight: {PH1}"
+  },
   "panels/timeline/components/SidebarAnnotationsTab.ts | annotationGetStarted": {
     "message": "Annotate a trace for yourself and others"
   },
@@ -13498,6 +13519,9 @@
   },
   "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
     "message": "{PH1}: {PH2} {PH3} score"
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | passedInsights": {
+    "message": "Passed insights ({PH1})"
   },
   "panels/timeline/components/TimelineSummary.ts | rangeSS": {
     "message": "Range:  {PH1} – {PH2}"
@@ -13772,29 +13796,11 @@
   "panels/timeline/TimelineHistoryManager.ts | landingPageTitle": {
     "message": "Live metrics"
   },
-  "panels/timeline/TimelineHistoryManager.ts | noRecordings": {
-    "message": "(no recordings)"
-  },
   "panels/timeline/TimelineHistoryManager.ts | sD": {
     "message": "{PH1} #{PH2}"
   },
   "panels/timeline/TimelineHistoryManager.ts | selectTimelineSession": {
     "message": "Select timeline session"
-  },
-  "panels/timeline/TimelineLandingPage.ts | afterRecordingSelectAnAreaOf": {
-    "message": "After recording, select an area of interest in the overview by dragging. Then, zoom and pan the timeline with the mousewheel or {PH1} keys. {PH2}"
-  },
-  "panels/timeline/TimelineLandingPage.ts | clickTheRecordButtonSOrHitSTo": {
-    "message": "Click the record button {PH1} or hit {PH2} to start a new recording."
-  },
-  "panels/timeline/TimelineLandingPage.ts | clickTheReloadButtonSOrHitSTo": {
-    "message": "Click the reload button {PH1} or hit {PH2} to record the page load."
-  },
-  "panels/timeline/TimelineLandingPage.ts | learnmore": {
-    "message": "Learn more"
-  },
-  "panels/timeline/TimelineLandingPage.ts | wasd": {
-    "message": "WASD"
   },
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "Malformed timeline data: {PH1}"
@@ -15633,7 +15639,7 @@
     "message": "Delete annotations"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
-    "message": "Configure tracks…"
+    "message": "Configure tracks"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | eventSelectedFromGroup": {
     "message": "Selected a {PH1} event within {PH2}. Press \"enter\" to focus this event."

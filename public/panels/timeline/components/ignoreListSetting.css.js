@@ -31,6 +31,14 @@ styles.replaceSync(
   }
 }
 
+.new-regex-row {
+  display: flex;
+
+  .new-regex-text-input {
+    flex: auto;
+  }
+}
+
 /*# sourceURL=ignoreListSetting.css */
 `);
 

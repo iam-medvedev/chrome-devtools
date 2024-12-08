@@ -17,9 +17,8 @@ declare class ImageRef extends HTMLElement {
     #private;
     connectedCallback(): void;
     set request(request: Trace.Types.Events.SyntheticNetworkRequest);
-    set imagePaint(imagePaint: Trace.Types.Events.PaintImage | undefined);
 }
-export declare function imageRef(request: Trace.Types.Events.SyntheticNetworkRequest, imagePaint?: Trace.Types.Events.PaintImage): LitHtml.TemplateResult;
+export declare function imageRef(request: Trace.Types.Events.SyntheticNetworkRequest): LitHtml.TemplateResult;
 declare global {
     interface GlobalEventHandlersEventMap {
         [EventReferenceClick.eventName]: EventReferenceClick;

@@ -51,14 +51,12 @@ export interface SideEffectResponse {
     type: ResponseType.SIDE_EFFECT;
     code: string;
     confirm: (confirm: boolean) => void;
-    rpcId?: number;
 }
 export interface ActionResponse {
     type: ResponseType.ACTION;
     code: string;
     output: string;
     canceled: boolean;
-    rpcId?: number;
 }
 export interface QueryResponse {
     type: ResponseType.QUERYING;
@@ -114,6 +112,9 @@ export declare abstract class ConversationContext<T> {
      */
     refresh(): Promise<void>;
 }
+export interface AgentFunctionDefinition extends Host.AidaClient.FunctionDeclaration {
+    method: (...args: any[]) => Record<string, unknown>;
+}
 export declare abstract class AiAgent<T> {
     #private;
     static validTemperature(temperature: number | undefined): number | undefined;
@@ -123,6 +124,7 @@ export declare abstract class AiAgent<T> {
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
+    functionDefinitions: AgentFunctionDefinition[] | undefined;
     constructor(opts: AgentOptions);
     get chatHistoryForTesting(): Array<Host.AidaClient.Content>;
     set chatNewHistoryForTesting(history: HistoryEntryStorage);
@@ -132,6 +134,7 @@ export declare abstract class AiAgent<T> {
     get context(): ConversationContext<T> | undefined;
     get title(): string | undefined;
     get isHistoryEntry(): boolean;
+    get functionDeclarations(): Host.AidaClient.FunctionDeclaration[] | undefined;
     serialized(): SerializedAgent;
     populateHistoryFromStorage(entry: SerializedAgent): void;
     aidaFetch(request: Host.AidaClient.AidaRequest, options?: {
@@ -141,10 +144,10 @@ export declare abstract class AiAgent<T> {
         completed: boolean;
         rpcId?: number;
     }, void, void>;
-    buildRequest(opts: BuildRequestOptions): Host.AidaClient.AidaRequest;
-    handleAction(action: string, rpcId?: number): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
+    buildRequest(part: Host.AidaClient.Part): Host.AidaClient.AidaRequest;
+    handleAction(action: string): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
-    parseResponse(response: string): ParsedResponse;
+    parseResponse(response: Host.AidaClient.AidaResponse): ParsedResponse;
     formatParsedAnswer({ answer }: ParsedAnswer): string;
     formatParsedStep(step: ParsedStep): string;
     run(query: string, options: {

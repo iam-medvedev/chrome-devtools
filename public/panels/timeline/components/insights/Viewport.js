@@ -15,7 +15,7 @@ export class Viewport extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.INP ?? null;
     }
-    #renderContent() {
+    renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
@@ -31,12 +31,6 @@ export class Viewport extends BaseInsightComponent {
         </devtools-performance-node-link>` : LitHtml.nothing}
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
-        }
-        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-viewport', Viewport);

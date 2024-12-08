@@ -13,9 +13,13 @@ function getUserVisibleInsights(component) {
     assert.isOk(component.shadowRoot);
     return [...component.shadowRoot.querySelectorAll('[data-insight-name]')];
 }
+function getPassedInsights(component) {
+    assert.isOk(component.shadowRoot);
+    return [...component.shadowRoot.querySelectorAll('.passed-insights-section [data-insight-name]')];
+}
 describeWithEnvironment('SidebarSingleInsightSet', () => {
     it('renders a list of insights', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         assert.isOk(insights);
         // only one navigation in this trace.
         assert.strictEqual(insights.size, 1);
@@ -25,7 +29,6 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
         component.data = {
-            parsedTrace,
             insights,
             insightSetKey: navigationId,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
@@ -41,6 +44,21 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Render blocking requests',
             'Document request latency',
             'Third parties',
+            'INP by phase',
+            'Layout shift culprits',
+            'Improve image delivery',
+            'Optimize viewport for mobile',
+            'CSS Selector costs',
+        ]);
+        const passedInsightTitles = getPassedInsights(component).flatMap(component => {
+            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
+        });
+        assert.deepEqual(passedInsightTitles, [
+            'INP by phase',
+            'Layout shift culprits',
+            'Improve image delivery',
+            'Optimize viewport for mobile',
+            'CSS Selector costs',
         ]);
     });
     it('does not render experimental insights by default', async function () {
@@ -50,7 +68,6 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const firstNavigation = parsedTrace.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
         assert.isOk(firstNavigation);
         component.data = {
-            parsedTrace,
             insights,
             insightSetKey: firstNavigation,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
@@ -67,6 +84,22 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Layout shift culprits',
             'Improve image delivery',
             'Third parties',
+            'INP by phase',
+            'Render blocking requests',
+            'Document request latency',
+            'Optimize viewport for mobile',
+            'CSS Selector costs',
+        ]);
+        const passedInsightTitles = getPassedInsights(component).flatMap(component => {
+            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
+        });
+        // Does not include "font display", which is experimental.
+        assert.deepEqual(passedInsightTitles, [
+            'INP by phase',
+            'Render blocking requests',
+            'Document request latency',
+            'Optimize viewport for mobile',
+            'CSS Selector costs',
         ]);
     });
     it('renders experimental insights if the experiment is turned on', async function () {
@@ -77,7 +110,6 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const firstNavigation = parsedTrace.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
         assert.isOk(firstNavigation);
         component.data = {
-            parsedTrace,
             insights,
             insightSetKey: firstNavigation,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
@@ -87,7 +119,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
         });
-        // Does not include "font display", which is experimental.
+        // Includes "font display", which is experimental.
         assert.deepEqual(userVisibleTitles, [
             'LCP by phase',
             'LCP request discovery',
@@ -95,10 +127,25 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Improve image delivery',
             'Font display',
             'Third parties',
+            'INP by phase',
+            'Render blocking requests',
+            'Document request latency',
+            'Optimize viewport for mobile',
+            'CSS Selector costs',
+        ]);
+        const passedInsightTitles = getPassedInsights(component).flatMap(component => {
+            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
+        });
+        assert.deepEqual(passedInsightTitles, [
+            'INP by phase',
+            'Render blocking requests',
+            'Document request latency',
+            'Optimize viewport for mobile',
+            'CSS Selector costs',
         ]);
     });
     it('will render the active insight fully', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         assert.isOk(insights);
         // only one navigation in this trace.
         assert.strictEqual(insights.size, 1);
@@ -112,7 +159,6 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
         component.data = {
-            parsedTrace,
             insights,
             insightSetKey: navigationId,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,

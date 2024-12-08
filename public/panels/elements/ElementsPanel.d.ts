@@ -29,7 +29,6 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private currentSearchResultIndex;
     pendingNodeReveal: boolean;
     private readonly adornerManager;
-    private adornerSettingsPane;
     private readonly adornersByName;
     accessibilityTreeButton?: HTMLElement;
     domTreeButton?: HTMLElement;
@@ -98,7 +97,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private setupStyleTracking;
     private removeStyleTracking;
     private trackedCSSPropertiesUpdated;
-    showAdornerSettingsPane(): void;
+    populateAdornerSettingsContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
     isAdornerEnabled(adornerText: string): boolean;
     registerAdorner(adorner: Adorners.Adorner.Adorner): void;
     deregisterAdorner(adorner: Adorners.Adorner.Adorner): void;

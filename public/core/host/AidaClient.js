@@ -147,6 +147,7 @@ export class AidaClient {
         let chunk;
         const text = [];
         let inCodeChunk = false;
+        let functionCall = undefined;
         const metadata = { rpcGlobalId: 0 };
         while ((chunk = await stream.read())) {
             let textUpdated = false;
@@ -203,6 +204,12 @@ export class AidaClient {
                     text.push(result.codeChunk.code);
                     textUpdated = true;
                 }
+                else if ('functionCallChunk' in result) {
+                    functionCall = {
+                        name: result.functionCallChunk.functionCall.name,
+                        args: result.functionCallChunk.functionCall.args,
+                    };
+                }
                 else if ('error' in result) {
                     throw new Error(`Server responded: ${JSON.stringify(result)}`);
                 }
@@ -221,6 +228,7 @@ export class AidaClient {
         yield {
             explanation: text.join('') + (inCodeChunk ? CODE_CHUNK_SEPARATOR : ''),
             metadata,
+            functionCall,
             completed: true,
         };
     }

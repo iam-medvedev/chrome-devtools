@@ -241,7 +241,7 @@ styles.replaceSync(
   display: inline-block;
   user-select: text;
   text-overflow: ellipsis;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .timeline-details-warning .timeline-details-view-row-value {

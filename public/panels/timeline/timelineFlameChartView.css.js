@@ -59,6 +59,7 @@ styles.replaceSync(
 
 .overlay-type-ENTRY_OUTLINE {
   background-color: transparent;
+  border-width: 1px;
 
   &.outline-reason-ERROR {
     border-color: var(--sys-color-error-bright);
@@ -81,7 +82,7 @@ styles.replaceSync(
       transparent var(--red-stripe-width),
       transparent var(--white-stripe-width)
     );
-  border: 2px solid var(--sys-color-error-bright);
+  border: 1px solid var(--sys-color-error-bright);
 
   &.cut-off-bottom {
     border-bottom: none;

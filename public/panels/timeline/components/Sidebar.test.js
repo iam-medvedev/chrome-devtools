@@ -1,9 +1,8 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../../core/root/root.js';
 import { raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment, enableFeatureForTest } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Components from './components.js';
 describeWithEnvironment('Sidebar', () => {
@@ -18,9 +17,6 @@ describeWithEnvironment('Sidebar', () => {
         await raf();
         return sidebar;
     }
-    beforeEach(() => {
-        enableFeatureForTest("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */);
-    });
     it('renders with two tabs for insights & annotations', async function () {
         const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const sidebar = await renderSidebar(parsedTrace, insights);

@@ -30,32 +30,39 @@ describeWithEnvironment('FreestylerAgent', () => {
         const agent = new FreestylerAgent({
             aidaClient: {},
         });
+        function getParsedTextResponse(explanation) {
+            return agent.parseResponse({
+                explanation,
+                metadata: {},
+                completed: false,
+            });
+        }
         it('parses a thought', async () => {
             const payload = 'some response';
-            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
-            assert.deepStrictEqual(agent.parseResponse(`   THOUGHT: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`   THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
-            assert.deepStrictEqual(agent.parseResponse(`Something\n   THOUGHT: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`Something\n   THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
         });
         it('parses a answer', async () => {
             const payload = 'some response';
-            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`Something\n   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`Something\n   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
@@ -64,27 +71,27 @@ describeWithEnvironment('FreestylerAgent', () => {
             const payload = `a
 b
 c`;
-            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`Something\n   ANSWER: ${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`Something\n   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
                 action: 'action',
                 title: undefined,
                 thought: undefined,
@@ -94,22 +101,22 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}\nSTOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\n${payload}\n\nSTOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\n${payload}\n\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\n${payload}\n\nANSWER: answer`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\n${payload}\n\nANSWER: answer`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -120,7 +127,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -129,7 +136,7 @@ c`;
         it('parses a thought and title', async () => {
             const payload = 'some response';
             const title = 'this is the title';
-            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${payload}\nTITLE: ${title}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${payload}\nTITLE: ${title}`), {
                 thought: payload,
                 title,
             });
@@ -138,7 +145,7 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\`\`\`\n${payload}\n\`\`\`\nSTOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\`\`\`\n${payload}\n\`\`\`\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -148,7 +155,7 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n\`\`\`\`\`\njs\n${payload}\n\`\`\`\`\`\nSTOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\`\`\`\`\`\njs\n${payload}\n\`\`\`\`\`\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -159,7 +166,7 @@ c`;
   someKey: "value",
 }`;
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(agent.parseResponse(`THOUGHT:${thoughtPayload}\nACTION\n${actionPayload}\nSTOP`), {
+            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT:${thoughtPayload}\nACTION\n${actionPayload}\nSTOP`), {
                 action: actionPayload,
                 title: undefined,
                 thought: thoughtPayload,
@@ -168,7 +175,7 @@ c`;
         it('parses a thought and an answer', async () => {
             const answerPayload = 'answer';
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(agent.parseResponse(`THOUGHT:${thoughtPayload}\nANSWER:${answerPayload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT:${thoughtPayload}\nANSWER:${answerPayload}`), {
                 answer: answerPayload,
                 suggestions: undefined,
             });
@@ -177,7 +184,7 @@ c`;
             const answerPayload = 'answer';
             const suggestions = ['suggestion'];
             const suggestionsText = JSON.stringify(suggestions);
-            assert.deepStrictEqual(agent.parseResponse(`ANSWER:${answerPayload}\nSUGGESTIONS: ${suggestionsText}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ANSWER:${answerPayload}\nSUGGESTIONS: ${suggestionsText}`), {
                 answer: answerPayload,
                 suggestions,
             });
@@ -189,7 +196,7 @@ c`;
   someKey: "value",
 }`;
             const title = 'title';
-            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${thoughtPayload}\nTITLE: ${title}\nACTION\n${actionPayload}\nSTOP\nANSWER:${answerPayload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${thoughtPayload}\nTITLE: ${title}\nACTION\n${actionPayload}\nSTOP\nANSWER:${answerPayload}`), {
                 thought: thoughtPayload,
                 action: actionPayload,
                 title,
@@ -202,7 +209,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
                 action: payload,
                 thought: undefined,
                 title: undefined,
@@ -213,7 +220,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
                 action: payload,
                 thought: undefined,
                 title: undefined,
@@ -225,27 +232,27 @@ c`;
           styles
         };`;
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(agent.parseResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
                 action: payload,
                 thought: thoughtPayload,
                 title: undefined,
             });
         });
         it('parses a response as an answer', async () => {
-            assert.deepStrictEqual(agent.parseResponse('This is also an answer'), {
+            assert.deepStrictEqual(getParsedTextResponse('This is also an answer'), {
                 answer: 'This is also an answer',
                 suggestions: undefined,
             });
         });
         it('parses a response with no instruction tags as an answer and correctly parses suggestions', async () => {
-            assert.deepStrictEqual(agent.parseResponse('This is also an answer\nSUGGESTIONS: [\"suggestion\"]'), {
+            assert.deepStrictEqual(getParsedTextResponse('This is also an answer\nSUGGESTIONS: [\"suggestion\"]'), {
                 answer: 'This is also an answer',
                 suggestions: ['suggestion'],
             });
         });
         it('parses multi line thoughts', () => {
             const thoughtText = 'first line\nsecond line';
-            assert.deepStrictEqual(agent.parseResponse(`THOUGHT: ${thoughtText}`), {
+            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${thoughtText}`), {
                 thought: thoughtText,
                 title: undefined,
             });
@@ -643,7 +650,7 @@ STOP`,
             assert.isUndefined(requests[0].historical_contexts, 'Unexpected historical contexts in the initial request');
             assert.exists(requests[0].current_message);
             assert.lengthOf(requests[0].current_message.parts, 1);
-            assert.strictEqual(requests[0].current_message.parts[0].text, '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test', 'Unexpected input text in the initial request');
+            assert.deepStrictEqual(requests[0].current_message.parts[0], { text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }, 'Unexpected input text in the initial request');
             assert.strictEqual(requests[0].current_message.role, Host.AidaClient.Role.USER);
             assert.deepStrictEqual(requests[1].historical_contexts, [
                 {
@@ -659,7 +666,7 @@ STOP`,
             ], 'Unexpected historical contexts in the follow-up request');
             assert.exists(requests[1].current_message);
             assert.lengthOf(requests[1].current_message.parts, 1);
-            assert.strictEqual(requests[1].current_message.parts[0].text, 'OBSERVATION: test data', 'Unexpected input in the follow-up request');
+            assert.deepStrictEqual(requests[1].current_message.parts[0], { text: 'OBSERVATION: test data' }, 'Unexpected input in the follow-up request');
         });
         it('generates an rpcId for the answer', async () => {
             async function* generateAnswer() {
@@ -929,7 +936,6 @@ ANSWER: this is the answer`,
                     code: 'console.log(\'hello\');',
                     output: 'hello',
                     canceled: false,
-                    rpcId: undefined,
                 },
                 {
                     type: "querying" /* Freestyler.ResponseType.QUERYING */,
@@ -1103,7 +1109,6 @@ ANSWER: this is the answer`,
                     code: 'console.log(\'test\')',
                     output: 'undefined',
                     canceled: false,
-                    rpcId: undefined,
                 },
                 {
                     type: "querying" /* Freestyler.ResponseType.QUERYING */,

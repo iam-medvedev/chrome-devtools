@@ -43,6 +43,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
+import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -63,7 +64,6 @@ import { cpuprofileJsonGenerator, traceJsonGenerator } from './SaveFileFormatter
 import { TimelineController } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineHistoryManager } from './TimelineHistoryManager.js';
-import { TimelineLandingPage } from './TimelineLandingPage.js';
 import { TimelineLoader } from './TimelineLoader.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import timelinePanelStyles from './timelinePanel.css.js';
@@ -492,6 +492,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.getMainFlameChart().addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, this.#onMainEntryHovered);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this.flameChart, null);
         this.searchableViewInternal.setMinimumSize(0, 100);
+        this.searchableViewInternal.setMinimalSearchQuerySize(2); // At 1 it can introduce a bit of jank.
         this.searchableViewInternal.element.classList.add('searchable-view');
         this.searchableViewInternal.show(this.timelinePane.element);
         this.flameChart.show(this.searchableViewInternal.element);
@@ -902,15 +903,13 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.panelToolbar.appendToolbarItem(this.saveButton);
         // History
         this.panelToolbar.appendSeparator();
-        if (Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
-            this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
-            this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
-                this.#changeView({ mode: 'LANDING_PAGE' });
-                this.#historyManager.navigateToLandingPage();
-            });
-            this.panelToolbar.appendToolbarItem(this.homeButton);
-            this.panelToolbar.appendSeparator();
-        }
+        this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
+        this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
+            this.#changeView({ mode: 'LANDING_PAGE' });
+            this.#historyManager.navigateToLandingPage();
+        });
+        this.panelToolbar.appendToolbarItem(this.homeButton);
+        this.panelToolbar.appendSeparator();
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
         this.panelToolbar.registerCSSFiles([historyToolbarButtonStyles]);
         this.panelToolbar.appendSeparator();
@@ -973,8 +972,8 @@ export class TimelinePanel extends UI.Panel.Panel {
     #getShortcutsInfo(isNavClassic) {
         if (isNavClassic) {
             return [
-                { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll']] },
-                { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll'], ['W/S']] },
+                { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll'], ['Shift', '↑/↓']] },
+                { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll'], ['W/S'], ['+/-']] },
                 { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S']] },
                 { title: i18nString(UIStrings.timelinePanLeftRight), bindings: [['A/D']] },
             ];
@@ -988,7 +987,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
             {
                 title: i18nString(UIStrings.timelinePanLeftRight),
-                bindings: [['A/D'], ['Shift', 'Scroll'], ['Shift', '←/→']],
+                bindings: [['Shift', 'Scroll'], ['Shift', '←/→'], ['A/D']],
             },
         ];
     }
@@ -1690,11 +1689,19 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (traceInsightsSets) {
             for (const [insightSetKey, insightSet] of traceInsightsSets) {
                 for (const model of Object.values(insightSet.model)) {
-                    for (const event of model.relatedEvents ?? []) {
+                    let relatedEvents = model.relatedEvents;
+                    if (!relatedEvents) {
+                        relatedEvents = new Map();
+                    }
+                    else if (Array.isArray(relatedEvents)) {
+                        relatedEvents = new Map(relatedEvents.map(e => [e, []]));
+                    }
+                    for (const [event, messages] of relatedEvents.entries()) {
                         const relatedInsights = this.#eventToRelatedInsights.get(event) ?? [];
                         this.#eventToRelatedInsights.set(event, relatedInsights);
                         relatedInsights.push({
                             insightLabel: model.title,
+                            messages,
                             activateInsight: () => {
                                 this.#setActiveInsight({ model, insightSetKey });
                             },
@@ -1806,7 +1813,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.landingPage.show(this.statusPaneContainer);
             return;
         }
-        this.landingPage = new TimelineLandingPage(this.toggleRecordAction, { isNode });
+        this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new TimelineComponents.LiveMetricsView.LiveMetricsView());
+        this.landingPage.element.classList.add('timeline-landing-page', 'fill');
+        this.landingPage.contentElement.classList.add('fill');
         this.landingPage.show(this.statusPaneContainer);
     }
     #hideLandingPage() {

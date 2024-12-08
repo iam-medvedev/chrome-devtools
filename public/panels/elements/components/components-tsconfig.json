@@ -31,7 +31,6 @@
   "files": [
     "../../../../../../../front_end/panels/elements/components/AccessibilityTreeNode.ts",
     "../../../../../../../front_end/panels/elements/components/AdornerManager.ts",
-    "../../../../../../../front_end/panels/elements/components/AdornerSettingsPane.ts",
     "../../../../../../../front_end/panels/elements/components/AnchorFunctionLinkSwatch.ts",
     "../../../../../../../front_end/panels/elements/components/CSSHintDetailsView.ts",
     "../../../../../../../front_end/panels/elements/components/CSSPropertyDocsView.ts",

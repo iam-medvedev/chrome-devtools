@@ -68,16 +68,11 @@ class ImageRef extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #request;
-    #imagePaint;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [baseInsightComponentStyles];
     }
     set request(request) {
         this.#request = request;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set imagePaint(imagePaint) {
-        this.#imagePaint = imagePaint;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     #render() {
@@ -95,9 +90,7 @@ class ImageRef extends HTMLElement {
         ` : LitHtml.nothing}
         <span class="element-img-details">
           ${eventRef(this.#request)}
-          <span class="element-img-details-size">${this.#imagePaint ?
-            `${this.#imagePaint.args.data.srcWidth}x${this.#imagePaint.args.data.srcHeight}` :
-            i18n.ByteUtilities.bytesToString(this.#request.args.data.decodedBodyLength ?? 0)}</span>
+          <span class="element-img-details-size">${i18n.ByteUtilities.bytesToString(this.#request.args.data.decodedBodyLength ?? 0)}</span>
         </span>
       </div>
     `, this.#shadow, { host: this });
@@ -108,11 +101,10 @@ function handleBadImage(event) {
     const img = event.target;
     img.style.display = 'none';
 }
-export function imageRef(request, imagePaint) {
+export function imageRef(request) {
     return html `
     <devtools-performance-image-ref
       .request=${request}
-      .imagePaint=${imagePaint}
     ></devtools-performance-image-ref>
   `;
 }

@@ -263,7 +263,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             // And its y will start after the ruler (ruler's height is 17).
             flameChartView.getMainFlameChart().onContextMenu(new MouseEvent('contextmenu', { clientX: 0, clientY: 17 }));
             assert.strictEqual(flameChartView.getMainFlameChart().getContextMenu()?.defaultSection().items.length, 1);
-            assert.strictEqual(flameChartView.getMainFlameChart().getContextMenu()?.defaultSection().items.at(0)?.buildDescriptor().label, 'Configure tracks…');
+            assert.strictEqual(flameChartView.getMainFlameChart().getContextMenu()?.defaultSection().items.at(0)?.buildDescriptor().label, 'Configure tracks');
         });
         describe('Context Menu Actions For Thread tracks', function () {
             this.beforeEach(async () => {

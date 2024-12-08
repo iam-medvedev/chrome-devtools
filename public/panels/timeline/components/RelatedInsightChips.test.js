@@ -22,6 +22,7 @@ describeWithEnvironment('RelatedInsightChips', () => {
         const relatedInsight = {
             insightLabel: 'Some fake insight',
             activateInsight: () => { },
+            messages: [],
         };
         const relatedMap = new Map();
         relatedMap.set(FAKE_EVENT, [relatedInsight]);
@@ -36,11 +37,38 @@ describeWithEnvironment('RelatedInsightChips', () => {
         const text = getCleanTextContentFromElements(chips[0], 'button .insight-label');
         assert.deepEqual(text, ['Some fake insight']);
     });
+    it('renders any insight messages', async () => {
+        const relatedInsight = {
+            insightLabel: 'Some fake insight',
+            activateInsight: () => { },
+            messages: [
+                'Message 1',
+                'Message 2',
+            ],
+        };
+        const relatedMap = new Map();
+        relatedMap.set(FAKE_EVENT, [relatedInsight]);
+        const component = new Components.RelatedInsightChips.RelatedInsightChips();
+        renderElementIntoDOM(component);
+        component.activeEvent = FAKE_EVENT;
+        component.eventToRelatedInsightsMap = relatedMap;
+        await coordinator.done();
+        assert.isOk(component.shadowRoot);
+        const regularChips = component.shadowRoot.querySelectorAll('li.insight-chip');
+        assert.lengthOf(regularChips, 1);
+        const optimizationChips = component.shadowRoot.querySelectorAll('li.insight-message-box');
+        assert.lengthOf(optimizationChips, 2);
+        const text1 = getCleanTextContentFromElements(optimizationChips[0], 'button');
+        assert.deepEqual(text1, ['Insight: Some fake insight Message 1']);
+        const text2 = getCleanTextContentFromElements(optimizationChips[1], 'button');
+        assert.deepEqual(text2, ['Insight: Some fake insight Message 2']);
+    });
     it('calls the activateInsight function when the insight is clicked', async () => {
         const activateStub = sinon.stub();
         const relatedInsight = {
             insightLabel: 'Some fake insight',
             activateInsight: () => activateStub(),
+            messages: [],
         };
         const relatedMap = new Map();
         relatedMap.set(FAKE_EVENT, [relatedInsight]);

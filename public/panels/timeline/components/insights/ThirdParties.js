@@ -45,55 +45,57 @@ export class ThirdParties extends BaseInsightComponent {
         }
         return overlays;
     }
-    #renderContent(entries) {
+    renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
+        const entries = [...this.model.summaryByEntity.entries()].filter(kv => kv[0] !== this.model?.firstPartyEntity);
         const topTransferSizeEntries = entries.sort((a, b) => b[1].transferSize - a[1].transferSize).slice(0, 6);
         const topMainThreadTimeEntries = entries.sort((a, b) => b[1].mainThreadTime - a[1].mainThreadTime).slice(0, 6);
-        // clang-format off
-        return html `
-      <div>
+        const sections = [];
+        if (topTransferSizeEntries.length) {
+            // clang-format off
+            sections.push(html `
         <div class="insight-section">
-          ${html `<devtools-performance-table
+          <devtools-performance-table
             .data=${{
-            insight: this,
-            headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnTransferSize)],
-            rows: topTransferSizeEntries.map(([entity, summary]) => ({
-                values: [
-                    entity.name,
-                    i18n.ByteUtilities.bytesToString(summary.transferSize),
-                ],
-                overlays: this.#overlaysForEntity.get(entity),
-            })),
-        }}>
-          </devtools-performance-table>`}
+                insight: this,
+                headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnTransferSize)],
+                rows: topTransferSizeEntries.map(([entity, summary]) => ({
+                    values: [
+                        entity.name,
+                        i18n.ByteUtilities.bytesToString(summary.transferSize),
+                    ],
+                    overlays: this.#overlaysForEntity.get(entity),
+                })),
+            }}>
+          </devtools-performance-table>
         </div>
-
-        <div class="insight-section">
-          ${html `<devtools-performance-table
-            .data=${{
-            insight: this,
-            headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnBlockingTime)],
-            rows: topMainThreadTimeEntries.map(([entity, summary]) => ({
-                values: [
-                    entity.name,
-                    i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(summary.mainThreadTime)),
-                ],
-                overlays: this.#overlaysForEntity.get(entity),
-            })),
-        }}>
-          </devtools-performance-table>`}
-        </div>
-      </div>`;
-        // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
+      `);
+            // clang-format on
         }
-        const entries = [...this.model.summaryByEntity.entries()].filter(kv => kv[0] !== this.model?.firstPartyEntity);
-        this.renderWithContent(this.#renderContent(entries));
+        if (topMainThreadTimeEntries.length) {
+            // clang-format off
+            sections.push(html `
+        <div class="insight-section">
+          <devtools-performance-table
+            .data=${{
+                insight: this,
+                headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnBlockingTime)],
+                rows: topMainThreadTimeEntries.map(([entity, summary]) => ({
+                    values: [
+                        entity.name,
+                        i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(summary.mainThreadTime)),
+                    ],
+                    overlays: this.#overlaysForEntity.get(entity),
+                })),
+            }}>
+          </devtools-performance-table>
+        </div>
+      `);
+            // clang-format on
+        }
+        return html `${sections}`;
     }
 }
 customElements.define('devtools-performance-third-parties', ThirdParties);

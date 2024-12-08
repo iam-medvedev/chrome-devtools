@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-export class ExecutionError extends Error {
+export function formatError(message) {
+    return `Error: ${message}`;
 }
 export class SideEffectError extends Error {
 }
 /* istanbul ignore next */
 function stringifyObjectOnThePage() {
+    if (this instanceof Error) {
+        return `Error: ${this.message}`;
+    }
     const seenBefore = new WeakMap();
     return JSON.stringify(this, function replacer(key, value) {
         if (typeof value === 'object' && value !== null) {
@@ -58,7 +62,7 @@ async function stringifyRemoteObject(object) {
 export class FreestylerEvaluateAction {
     static async execute(functionDeclaration, args, executionContext, { throwOnSideEffect }) {
         if (executionContext.debuggerModel.selectedCallFrame()) {
-            throw new ExecutionError('Cannot evaluate JavaScript because the execution is paused on a breakpoint.');
+            return formatError('Cannot evaluate JavaScript because the execution is paused on a breakpoint.');
         }
         const response = await executionContext.callFunctionOn({
             functionDeclaration,
@@ -77,14 +81,14 @@ export class FreestylerEvaluateAction {
                 throw new Error('Response is not found');
             }
             if ('error' in response) {
-                throw new ExecutionError(response.error);
+                return formatError(response.error);
             }
             if (response.exceptionDetails) {
                 const exceptionDescription = response.exceptionDetails.exception?.description;
                 if (SDK.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
                     throw new SideEffectError(exceptionDescription);
                 }
-                throw new ExecutionError(exceptionDescription || 'JS exception');
+                return formatError(exceptionDescription ?? 'JS exception');
             }
             return stringifyRemoteObject(response.object);
         }

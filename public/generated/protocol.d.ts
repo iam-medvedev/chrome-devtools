@@ -3004,6 +3004,33 @@ export declare namespace CSS {
          */
         computedStyle: CSSComputedStyleProperty[];
     }
+    interface ResolveValuesRequest {
+        /**
+         * Substitution functions (var()/env()/attr()) and cascade-dependent
+         * keywords (revert/revert-layer) do not work.
+         */
+        values: string[];
+        /**
+         * Id of the node in whose context the expression is evaluated
+         */
+        nodeId: DOM.NodeId;
+        /**
+         * Only longhands and custom property names are accepted.
+         */
+        propertyName?: string;
+        /**
+         * Pseudo element type, only works for pseudo elements that generate
+         * elements in the tree, such as ::before and ::after.
+         */
+        pseudoType?: DOM.PseudoType;
+        /**
+         * Pseudo element custom ident.
+         */
+        pseudoIdentifier?: string;
+    }
+    interface ResolveValuesResponse extends ProtocolResponseWithError {
+        results: string[];
+    }
     interface GetInlineStylesForNodeRequest {
         nodeId: DOM.NodeId;
     }
@@ -3552,7 +3579,7 @@ export declare namespace DOM {
         Checkmark = "checkmark",
         Before = "before",
         After = "after",
-        SelectArrow = "select-arrow",
+        PickerIcon = "picker-icon",
         Marker = "marker",
         Backdrop = "backdrop",
         Column = "column",
@@ -9837,6 +9864,9 @@ export declare namespace Network {
         blockedCookies: BlockedSetCookieWithReason[];
         /**
          * Raw response headers as they were received over the wire.
+         * Duplicate headers in the response are represented as a single key with their values
+         * concatentated using `\n` as the separator.
+         * See also `headersText` that contains verbatim text for HTTP/1.*.
          */
         headers: Headers;
         /**
@@ -9882,6 +9912,9 @@ export declare namespace Network {
         requestId: RequestId;
         /**
          * Raw response headers as they were received over the wire.
+         * Duplicate headers in the response are represented as a single key with their values
+         * concatentated using `\n` as the separator.
+         * See also `headersText` that contains verbatim text for HTTP/1.*.
          */
         headers: Headers;
     }
@@ -16044,6 +16077,16 @@ export declare namespace Preload {
         nodeIds: DOM.BackendNodeId[];
     }
     /**
+     * Chrome manages different types of preloads together using a
+     * concept of preloading pipeline. For example, if a site uses a
+     * SpeculationRules for prerender, Chrome first starts a prefetch and
+     * then upgrades it to prerender.
+     *
+     * CDP events for them are emitted separately but they share
+     * `PreloadPipelineId`.
+     */
+    type PreloadPipelineId = OpaqueIdentifier<string, 'Protocol.Preload.PreloadPipelineId'>;
+    /**
      * List of FinalStatus reasons for Prerender2.
      */
     const enum PrerenderFinalStatus {
@@ -16201,6 +16244,7 @@ export declare namespace Preload {
      */
     interface PrefetchStatusUpdatedEvent {
         key: PreloadingAttemptKey;
+        pipelineId: PreloadPipelineId;
         /**
          * The frame id of the frame initiating prefetch.
          */
@@ -16215,6 +16259,7 @@ export declare namespace Preload {
      */
     interface PrerenderStatusUpdatedEvent {
         key: PreloadingAttemptKey;
+        pipelineId: PreloadPipelineId;
         status: PreloadingStatus;
         prerenderStatus?: PrerenderFinalStatus;
         /**

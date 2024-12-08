@@ -5,7 +5,6 @@
     },
     "files": [
         "accessibilityTreeNode.css.js",
-        "adornerSettingsPane.css.js",
         "anchorFunctionLinkSwatch.css.js",
         "computedStyleProperty.css.js",
         "computedStyleTrace.css.js",

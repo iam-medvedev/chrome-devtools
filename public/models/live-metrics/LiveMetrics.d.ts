@@ -6,7 +6,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     #private;
     private constructor();
     static instance(opts?: {
-        forceNew: boolean | null;
+        forceNew?: boolean;
     }): LiveMetrics;
     get lcpValue(): LCPValue | undefined;
     get clsValue(): CLSValue | undefined;

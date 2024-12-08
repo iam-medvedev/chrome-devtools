@@ -1,7 +1,7 @@
 import * as Host from '../../core/host/host.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
-import { AgentType, AiAgent, type ContextResponse, ConversationContext, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { AgentType, AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class FileContext extends ConversationContext<Workspace.UISourceCode.UISourceCode> {
     #private;
     constructor(file: Workspace.UISourceCode.UISourceCode);
@@ -23,7 +23,6 @@ export declare class DrJonesFileAgent extends AiAgent<Workspace.UISourceCode.UIS
     get options(): RequestOptions;
     handleContextDetails(selectedFile: ConversationContext<Workspace.UISourceCode.UISourceCode> | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, selectedFile: ConversationContext<Workspace.UISourceCode.UISourceCode> | null): Promise<string>;
-    parseResponse(response: string): ParsedResponse;
 }
 export declare function formatFile(selectedFile: Workspace.UISourceCode.UISourceCode): string;
 export declare function formatSourceMapDetails(selectedFile: Workspace.UISourceCode.UISourceCode, debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): string;

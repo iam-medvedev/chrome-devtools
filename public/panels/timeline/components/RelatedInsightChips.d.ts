@@ -1,6 +1,7 @@
 import type * as Trace from '../../../models/trace/trace.js';
 export interface RelatedInsight {
     insightLabel: string;
+    messages: string[];
     activateInsight: () => void;
 }
 export type EventToRelatedInsightsMap = Map<Trace.Types.Events.Event, RelatedInsight[]>;

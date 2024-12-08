@@ -92,7 +92,7 @@ describeWithEnvironment('AiAgent', () => {
                 serverSideLoggingEnabled: false,
             });
             const request = agent.buildRequest({ text: 'test input' });
-            assert.strictEqual(request.current_message?.parts[0].text, 'test input');
+            assert.deepStrictEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.strictEqual(request.historical_contexts, undefined);
         });
         it('builds a request with a sessionId', async () => {
@@ -107,7 +107,7 @@ describeWithEnvironment('AiAgent', () => {
                 aidaClient: {},
             });
             const request = agent.buildRequest({ text: 'test input' });
-            assert.strictEqual(request.current_message?.parts[0].text, 'test input');
+            assert.deepStrictEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.strictEqual(request.preamble, 'preamble');
             assert.strictEqual(request.historical_contexts, undefined);
         });
@@ -148,7 +148,7 @@ describeWithEnvironment('AiAgent', () => {
                 },
             ];
             const request = agent.buildRequest({ text: 'test input' });
-            assert.strictEqual(request.current_message?.parts[0].text, 'test input');
+            assert.deepStrictEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.deepStrictEqual(request.historical_contexts, [
                 {
                     parts: [{ text: 'test' }],
@@ -195,7 +195,7 @@ describeWithEnvironment('AiAgent', () => {
                 },
             ];
             const request = agent.buildRequest({ text: 'test input' });
-            assert.strictEqual(request.current_message?.parts[0].text, 'test input');
+            assert.deepStrictEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.deepStrictEqual(request.historical_contexts, undefined);
         });
         it('builds a request with aborted query in history before a real request', async () => {
@@ -255,7 +255,7 @@ describeWithEnvironment('AiAgent', () => {
                 },
             ];
             const request = agent.buildRequest({ text: 'test input' });
-            assert.strictEqual(request.current_message?.parts[0].text, 'test input');
+            assert.deepStrictEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.deepStrictEqual(request.historical_contexts, [
                 {
                     parts: [{ text: 'test2' }],

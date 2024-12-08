@@ -1,5 +1,6 @@
 import type { CLSCulpritsInsightModel } from '../../../../models/trace/insights/CLSCulprits.js';
 import * as Trace from '../../../../models/trace/trace.js';
+import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class CLSCulprits extends BaseInsightComponent<CLSCulpritsInsightModel> {
@@ -11,7 +12,7 @@ export declare class CLSCulprits extends BaseInsightComponent<CLSCulpritsInsight
      * getTopCulprits gets the top 3 shift root causes based on worst cluster.
      */
     getTopCulprits(cluster: Trace.Types.Events.SyntheticLayoutShiftCluster, culpritsByShift: Map<Trace.Types.Events.LayoutShift, Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData>): string[];
-    render(): void;
+    renderContent(): LitHtml.LitTemplate;
 }
 declare global {
     interface HTMLElementTagNameMap {
