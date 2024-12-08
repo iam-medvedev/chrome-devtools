@@ -106,35 +106,36 @@ export class CLSCulprits extends BaseInsightComponent {
     #clickEvent(event) {
         this.dispatchEvent(new EventReferenceClick(event));
     }
-    #renderContent(culprits, worstCluster) {
-        const ts = Trace.Types.Timing.MicroSeconds(worstCluster.ts - (this.data.parsedTrace?.Meta.traceBounds.min ?? 0));
+    renderContent() {
+        if (!this.model || !this.bounds) {
+            return LitHtml.nothing;
+        }
+        if (!this.model.clusters.length || !this.model.worstCluster) {
+            return LitHtml.nothing;
+        }
+        const worstCluster = this.model.worstCluster;
+        const culpritsByShift = this.model.shifts;
+        // TODO: getTopCulprits needs to move to model.
+        const culprits = this.getTopCulprits(worstCluster, culpritsByShift);
+        if (culprits.length === 0) {
+            return LitHtml.nothing;
+        }
+        const ts = Trace.Types.Timing.MicroSeconds(worstCluster.ts - this.bounds.min);
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // clang-format off
         return html `
       <div class="insight-section">
         <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <button type="button" class="timeline-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</button></span>
-          <p>${i18nString(UIStrings.topCulprits)}:</p>
-              ${culprits.map(culprit => {
+          <p class="list-title">${i18nString(UIStrings.topCulprits)}:</p>
+          <ul class="worst-culprits">
+            ${culprits.map(culprit => {
             return html `
-                  <li>${culprit}</li>
-                `;
+                <li>${culprit}</li>
+              `;
         })}
+          </ul>
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
-        }
-        const culpritsByShift = this.model.shifts;
-        if (!this.model.clusters.length || !this.model.worstCluster) {
-            return;
-        }
-        // TODO: getTopCulprits needs to move to model.
-        const causes = this.getTopCulprits(this.model.worstCluster, culpritsByShift);
-        const hasCulprits = causes.length > 0;
-        const output = hasCulprits ? this.#renderContent(causes, this.model.worstCluster) : LitHtml.nothing;
-        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-cls-culprits', CLSCulprits);

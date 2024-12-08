@@ -126,8 +126,12 @@ export class LCPDiscovery extends BaseInsightComponent {
         }
         return getImageData(this.model)?.estimatedSavings ?? null;
     }
-    #renderContent(imageData) {
+    renderContent() {
         if (!this.model) {
+            return LitHtml.nothing;
+        }
+        const imageData = getImageData(this.model);
+        if (!imageData) {
             return LitHtml.nothing;
         }
         // clang-format off
@@ -152,14 +156,6 @@ export class LCPDiscovery extends BaseInsightComponent {
         ${imageRef(imageData.request)}
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
-        }
-        const imageResults = getImageData(this.model);
-        const output = imageResults ? this.#renderContent(imageResults) : LitHtml.nothing;
-        this.renderWithContent(output);
     }
 }
 customElements.define('devtools-performance-lcp-discovery', LCPDiscovery);

@@ -229,7 +229,6 @@ export declare class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWr
     private contextMenu?;
     private activeFiltersCount;
     private activeFiltersCountAdorner;
-    private hasChanged;
     constructor();
     showMoreFiltersContextMenu(event: Common.EventTarget.EventTargetEvent<Event>): void;
     selectedFilters(): string[];

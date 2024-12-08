@@ -39,16 +39,19 @@ export class RenderBlocking extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    #renderContent() {
+    renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
         const MAX_REQUESTS = 3;
         const topRequests = this.model.renderBlockingRequests.slice(0, MAX_REQUESTS);
+        if (!topRequests.length) {
+            return LitHtml.nothing;
+        }
         // clang-format off
         return html `
       <div class="insight-section">
-        ${html `<devtools-performance-table
+        <devtools-performance-table
           .data=${{
             insight: this,
             headers: [i18nString(UIStrings.renderBlockingRequest), i18nString(UIStrings.duration)],
@@ -60,15 +63,10 @@ export class RenderBlocking extends BaseInsightComponent {
                 overlays: [this.#createOverlayForRequest(request)],
             })),
         }}>
-        </devtools-performance-table>`}
-      </div>`;
+        </devtools-performance-table>
+      </div>
+    `;
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
-        }
-        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-render-blocking-requests', RenderBlocking);

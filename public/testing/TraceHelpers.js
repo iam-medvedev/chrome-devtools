@@ -605,8 +605,9 @@ export function getBaseTraceParseModelData(overrides = {}) {
         Flows: {
             flows: [],
         },
-        AsyncCallStacks: {
+        AsyncJSCalls: {
             schedulerToRunEntryPoints: new Map(),
+            asyncCallToScheduler: new Map(),
         },
         ...overrides,
     };

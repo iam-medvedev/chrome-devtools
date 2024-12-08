@@ -2202,7 +2202,6 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
     contextMenu;
     activeFiltersCount;
     activeFiltersCountAdorner;
-    hasChanged = false;
     constructor() {
         super();
         this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('network-hide-data-url', false);
@@ -2235,12 +2234,10 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
         this.updateTooltip();
     }
     #onSettingChanged() {
-        this.hasChanged = true;
         this.dispatchEventToListeners("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */);
     }
     showMoreFiltersContextMenu(event) {
         const mouseEvent = event.data;
-        this.hasChanged = false;
         this.networkHideDataURLSetting.addChangeListener(this.#onSettingChanged.bind(this));
         this.networkHideChromeExtensionsSetting.addChangeListener(this.#onSettingChanged.bind(this));
         this.networkShowBlockedCookiesOnlySetting.addChangeListener(this.#onSettingChanged.bind(this));

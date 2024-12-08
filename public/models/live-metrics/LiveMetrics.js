@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
@@ -48,7 +47,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         super();
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
     }
-    static instance(opts = { forceNew: null }) {
+    static instance(opts = { forceNew: false }) {
         const { forceNew } = opts;
         if (!liveMetricsInstance || forceNew) {
             liveMetricsInstance = new LiveMetrics();
@@ -391,9 +390,6 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async enable() {
-        if (!Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
-            return;
-        }
         if (Host.InspectorFrontendHost.isUnderTest()) {
             // Enabling this impacts a lot of layout tests; we will work on fixing
             // them but for now it is easier to not run this page in layout tests.
@@ -401,6 +397,10 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         if (!this.#target || this.#enabled) {
+            return;
+        }
+        // Only frame targets will actually give us CWV
+        if (this.#target.type() !== SDK.Target.Type.FRAME) {
             return;
         }
         const domModel = this.#target.model(SDK.DOMModel.DOMModel);

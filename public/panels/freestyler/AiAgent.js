@@ -31,6 +31,7 @@ export class AiAgent {
     #sessionId = crypto.randomUUID();
     #aidaClient;
     #serverSideLoggingEnabled;
+    functionDefinitions;
     #generatedFromHistory = false;
     /**
      * Historical responses.
@@ -76,6 +77,15 @@ export class AiAgent {
     get isHistoryEntry() {
         return this.#generatedFromHistory;
     }
+    get functionDeclarations() {
+        return this.functionDefinitions?.map(call => {
+            return {
+                name: call.name,
+                description: call.description,
+                parameters: call.parameters,
+            };
+        });
+    }
     serialized() {
         return {
             id: this.id,
@@ -89,36 +99,49 @@ export class AiAgent {
         this.#generatedFromHistory = true;
     }
     async *aidaFetch(request, options) {
-        let rawResponse = undefined;
+        let aidaResponse = undefined;
         let response = '';
         let rpcId;
-        for await (rawResponse of this.#aidaClient.fetch(request, options)) {
-            response = rawResponse.explanation;
-            rpcId = rawResponse.metadata.rpcGlobalId ?? rpcId;
-            const parsedResponse = this.parseResponse(response);
-            yield { rpcId, parsedResponse, completed: rawResponse.completed };
+        for await (aidaResponse of this.#aidaClient.fetch(request, options)) {
+            response = aidaResponse.explanation;
+            rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
+            if (aidaResponse.functionCall) {
+                throw new Error('Function calling not supported yet');
+            }
+            const parsedResponse = this.parseResponse(aidaResponse);
+            yield {
+                rpcId,
+                parsedResponse,
+                completed: aidaResponse.completed,
+            };
         }
         debugLog({
             request,
-            response: rawResponse,
+            response: aidaResponse,
         });
         this.#structuredLog.push({
             request: structuredClone(request),
             response,
-            rawResponse,
+            aidaResponse,
         });
         localStorage.setItem('freestylerStructuredLog', JSON.stringify(this.#structuredLog));
     }
-    buildRequest(opts) {
-        const currentMessage = { parts: [{ text: opts.text }], role: Host.AidaClient.Role.USER };
+    buildRequest(part) {
+        const currentMessage = {
+            parts: [part],
+            role: Host.AidaClient.Role.USER,
+        };
         const history = this.#chatHistoryForAida;
+        const declarations = this.functionDeclarations;
         const request = {
+            client: Host.AidaClient.CLIENT_NAME,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             current_message: currentMessage,
             preamble: this.preamble,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             historical_contexts: history.length ? history : undefined,
-            client: Host.AidaClient.CLIENT_NAME,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            ...(declarations ? { function_declarations: declarations } : {}),
             options: {
                 temperature: AiAgent.validTemperature(this.options.temperature),
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -143,8 +166,11 @@ export class AiAgent {
         return query;
     }
     parseResponse(response) {
+        if (response.functionCall && response.completed) {
+            throw new Error('Function calling not supported yet');
+        }
         return {
-            answer: response,
+            answer: response.explanation,
         };
     }
     formatParsedAnswer({ answer }) {
@@ -191,14 +217,18 @@ STOP`;
                     flushCurrentStep();
                     history.push({
                         role: Host.AidaClient.Role.USER,
-                        parts: [{ text: data.query }],
+                        parts: [{
+                                text: data.query,
+                            }],
                     });
                     break;
                 }
                 case "answer" /* ResponseType.ANSWER */:
                     history.push({
                         role: Host.AidaClient.Role.MODEL,
-                        parts: [{ text: this.formatParsedAnswer({ answer: data.text }) }],
+                        parts: [{
+                                text: this.formatParsedAnswer({ answer: data.text }),
+                            }],
                     });
                     break;
                 case "title" /* ResponseType.TITLE */:
@@ -353,7 +383,7 @@ STOP`;
                 yield response;
             }
             if (action) {
-                const result = yield* this.handleAction(action, rpcId);
+                const result = yield* this.handleAction(action);
                 this.#addHistory(result);
                 query = `OBSERVATION: ${result.output}`;
                 // Capture history state for the next iteration query.

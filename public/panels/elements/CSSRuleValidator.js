@@ -99,7 +99,7 @@ export class CSSRuleValidator {
 }
 export class AlignContentValidator extends CSSRuleValidator {
     constructor() {
-        super(['align-content']);
+        super(['align-content', 'place-content']);
     }
     getMetricType() {
         return 1 /* Host.UserMetrics.CSSHintType.ALIGN_CONTENT */;
@@ -256,8 +256,6 @@ export class GridItemValidator extends CSSRuleValidator {
 export class FlexOrGridItemValidator extends CSSRuleValidator {
     constructor() {
         super([
-            'place-self',
-            'align-self',
             'order',
         ]);
     }
@@ -285,11 +283,8 @@ export class FlexOrGridItemValidator extends CSSRuleValidator {
 }
 export class FlexGridValidator extends CSSRuleValidator {
     constructor() {
-        super([
-            'justify-content',
-            'place-content', // Shorthand	<'align-content'> <'justify-content'>?
-            'align-items',
-        ]);
+        // justify-content is specified to affect multicol, but we don't implement that yet.
+        super(['justify-content']);
     }
     getMetricType() {
         return 6 /* Host.UserMetrics.CSSHintType.FLEX_GRID */;
@@ -304,7 +299,7 @@ export class FlexGridValidator extends CSSRuleValidator {
         if (parentComputedStyles && (isFlexContainer(parentComputedStyles) || isGridContainer(parentComputedStyles))) {
             const reasonContainerDisplayName = buildPropertyValue(parentComputedStyles.get('display'));
             const reasonPropertyName = buildPropertyName(propertyName);
-            const reasonAlternativePropertyName = buildPropertyName(propertyName === 'justify-content' ? 'justify-self' : 'align-self');
+            const reasonAlternativePropertyName = buildPropertyName('justify-self');
             return new Hint(i18nString(UIStrings.flexGridContainerPropertyRuleReason, {
                 CONTAINER_DISPLAY_NAME: reasonContainerDisplayName,
                 PROPERTY_NAME: reasonPropertyName,

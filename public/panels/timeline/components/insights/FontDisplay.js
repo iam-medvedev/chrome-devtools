@@ -36,7 +36,7 @@ export class FontDisplay extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    #renderContent() {
+    renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
@@ -60,12 +60,6 @@ export class FontDisplay extends BaseInsightComponent {
         </devtools-performance-table>`}
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
-        }
-        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-font-display', FontDisplay);

@@ -44,13 +44,14 @@ export declare enum InsightCategory {
     LCP = "LCP",
     CLS = "CLS"
 }
+export type RelatedEventsMap = Map<Types.Events.Event, string[]>;
 export type InsightModel<R extends Record<string, unknown>> = R & {
     title: Common.UIString.LocalizedString;
     description: Common.UIString.LocalizedString;
     category: InsightCategory;
     /** True if there is anything of interest to display to the user. */
     shouldShow: boolean;
-    relatedEvents?: Types.Events.Event[];
+    relatedEvents?: RelatedEventsMap | Types.Events.Event[];
     warnings?: InsightWarning[];
     metricSavings?: MetricSavings;
 };

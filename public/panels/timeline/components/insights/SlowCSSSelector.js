@@ -89,7 +89,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
         })}`;
         return links;
     }
-    #renderContent() {
+    renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
@@ -97,61 +97,67 @@ export class SlowCSSSelector extends BaseInsightComponent {
         const cssModel = target?.model(SDK.CSSModel.CSSModel);
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
         // clang-format off
-        return html `
-      <div>
-        <div class="insight-section">
-          ${html `<devtools-performance-table
-            .data=${{
-            insight: this,
-            headers: [i18nString(UIStrings.total), ''],
-            rows: [
-                { values: [i18nString(UIStrings.elapsed), i18n.TimeUtilities.millisToString(this.model.totalElapsedMs)] },
-                { values: [i18nString(UIStrings.matchAttempts), this.model.totalMatchAttempts] },
-                { values: [i18nString(UIStrings.matchCount), this.model.totalMatchCount] },
-            ],
-        }}>
-          </devtools-performance-table>`}
-        </div>
-        <div class="insight-section">
-          ${html `<devtools-performance-table
-            .data=${{
-            insight: this,
-            headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.elapsed)],
-            rows: this.model.topElapsedMs.map(selector => {
-                return {
-                    values: [
-                        html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-                        time(Trace.Types.Timing.MicroSeconds(selector['elapsed (us)']))
-                    ],
-                };
-            }),
-        }}>
-          </devtools-performance-table>`}
-        </div>
-        <div class="insight-section">
-          ${html `<devtools-performance-table
-            .data=${{
-            insight: this,
-            headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.matchAttempts)],
-            rows: this.model.topMatchAttempts.map(selector => {
-                return {
-                    values: [
-                        html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-                        selector['match_attempts']
-                    ],
-                };
-            }),
-        }}>
-          </devtools-performance-table>`}
-        </div>
-      </div>`;
+        const sections = [html `
+      <div class="insight-section">
+        <devtools-performance-table
+          .data=${{
+                insight: this,
+                headers: [i18nString(UIStrings.total), ''],
+                rows: [
+                    { values: [i18nString(UIStrings.elapsed), i18n.TimeUtilities.millisToString(this.model.totalElapsedMs)] },
+                    { values: [i18nString(UIStrings.matchAttempts), this.model.totalMatchAttempts] },
+                    { values: [i18nString(UIStrings.matchCount), this.model.totalMatchCount] },
+                ],
+            }}>
+        </devtools-performance-table>
+      </div>
+    `];
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
+        if (this.model.topElapsedMs.length) {
+            // clang-format off
+            sections.push(html `
+        <div class="insight-section">
+          <devtools-performance-table
+            .data=${{
+                insight: this,
+                headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.elapsed)],
+                rows: this.model.topElapsedMs.map(selector => {
+                    return {
+                        values: [
+                            html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
+                            time(Trace.Types.Timing.MicroSeconds(selector['elapsed (us)']))
+                        ],
+                    };
+                }),
+            }}>
+          </devtools-performance-table>
+        </div>
+      `);
+            // clang-format on
         }
-        this.renderWithContent(this.#renderContent());
+        if (this.model.topMatchAttempts.length) {
+            // clang-format off
+            sections.push(html `
+        <div class="insight-section">
+          <devtools-performance-table
+            .data=${{
+                insight: this,
+                headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.matchAttempts)],
+                rows: this.model.topMatchAttempts.map(selector => {
+                    return {
+                        values: [
+                            html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
+                            selector['match_attempts']
+                        ],
+                    };
+                }),
+            }}>
+          </devtools-performance-table>
+        </div>
+      `);
+            // clang-format on
+        }
+        return html `${sections}`;
     }
 }
 customElements.define('devtools-performance-slow-css-selector', SlowCSSSelector);

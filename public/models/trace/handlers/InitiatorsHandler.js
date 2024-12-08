@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { data as AsyncJSCallsHandlerData } from './AsyncJSCallsHandler.js';
 import { data as flowsHandlerData } from './FlowsHandler.js';
 const lastScheduleStyleRecalcByFrame = new Map();
 // This tracks the last event that is considered to have invalidated the layout
@@ -22,20 +23,14 @@ const eventToInitiatorMap = new Map();
 // For a given event, tell me what events it initiated. An event can initiate
 // multiple events, hence why the value for this map is an array.
 const initiatorToEventsMap = new Map();
-const requestAnimationFrameEventsById = new Map();
-const timerInstallEventsById = new Map();
-const requestIdleCallbackEventsById = new Map();
 const webSocketCreateEventsById = new Map();
 const schedulePostTaskCallbackEventsById = new Map();
 export function reset() {
     lastScheduleStyleRecalcByFrame.clear();
     lastInvalidationEventForFrame.clear();
     lastUpdateLayoutTreeByFrame.clear();
-    timerInstallEventsById.clear();
     eventToInitiatorMap.clear();
     initiatorToEventsMap.clear();
-    requestAnimationFrameEventsById.clear();
-    requestIdleCallbackEventsById.clear();
     webSocketCreateEventsById.clear();
     schedulePostTaskCallbackEventsById.clear();
 }
@@ -45,6 +40,16 @@ function storeInitiator(data) {
     eventsForInitiator.push(data.event);
     initiatorToEventsMap.set(data.initiator, eventsForInitiator);
 }
+/**
+ * IMPORTANT: Before adding support for new initiator relationships in
+ * trace events consider using Perfetto's flow API on the events in
+ * question, so that they get automatically computed.
+ * @see {@link flowsHandlerData}
+ *
+ * The events manually computed here were added before we had support
+ * for flow events. As such they should be migrated to use the flow
+ * API so that no manual parsing is needed.
+ */
 export function handleEvent(event) {
     if (Types.Events.isScheduleStyleRecalculation(event)) {
         lastScheduleStyleRecalcByFrame.set(event.args.data.frame, event);
@@ -103,42 +108,6 @@ export function handleEvent(event) {
         // Now clear the last invalidation for the frame: the last invalidation has been linked to a Layout event, so it cannot be the initiator for any future layouts.
         lastInvalidationEventForFrame.delete(event.args.beginData.frame);
     }
-    else if (Types.Events.isRequestAnimationFrame(event)) {
-        requestAnimationFrameEventsById.set(event.args.data.id, event);
-    }
-    else if (Types.Events.isFireAnimationFrame(event)) {
-        // If we get a fire event, that means we should have had the
-        // RequestAnimationFrame event by now. If so, we can set that as the
-        // initiator for the fire event.
-        const matchingRequestEvent = requestAnimationFrameEventsById.get(event.args.data.id);
-        if (matchingRequestEvent) {
-            storeInitiator({
-                event,
-                initiator: matchingRequestEvent,
-            });
-        }
-    }
-    else if (Types.Events.isTimerInstall(event)) {
-        timerInstallEventsById.set(event.args.data.timerId, event);
-    }
-    else if (Types.Events.isTimerFire(event)) {
-        const matchingInstall = timerInstallEventsById.get(event.args.data.timerId);
-        if (matchingInstall) {
-            storeInitiator({ event, initiator: matchingInstall });
-        }
-    }
-    else if (Types.Events.isRequestIdleCallback(event)) {
-        requestIdleCallbackEventsById.set(event.args.data.id, event);
-    }
-    else if (Types.Events.isFireIdleCallback(event)) {
-        const matchingRequestEvent = requestIdleCallbackEventsById.get(event.args.data.id);
-        if (matchingRequestEvent) {
-            storeInitiator({
-                event,
-                initiator: matchingRequestEvent,
-            });
-        }
-    }
     else if (Types.Events.isWebSocketCreate(event)) {
         webSocketCreateEventsById.set(event.args.data.identifier, event);
     }
@@ -170,8 +139,17 @@ function createRelationshipsFromFlows() {
         }
     }
 }
+function createRelationshipsFromAsyncJSCalls() {
+    const asyncCallPairs = AsyncJSCallsHandlerData().schedulerToRunEntryPoints.entries();
+    for (const [asyncCaller, asyncCallees] of asyncCallPairs) {
+        for (const asyncCallee of asyncCallees) {
+            storeInitiator({ event: asyncCallee, initiator: asyncCaller });
+        }
+    }
+}
 export async function finalize() {
     createRelationshipsFromFlows();
+    createRelationshipsFromAsyncJSCalls();
 }
 export function data() {
     return {
@@ -180,6 +158,6 @@ export function data() {
     };
 }
 export function deps() {
-    return ['Flows'];
+    return ['Flows', 'AsyncJSCalls'];
 }
 //# sourceMappingURL=InitiatorsHandler.js.map

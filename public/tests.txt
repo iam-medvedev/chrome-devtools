@@ -169,13 +169,14 @@ models/trace/extras/FetchNodes.test.js
 models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
 models/trace/extras/Metadata.test.js
+models/trace/extras/StackTraceForEvent.test.js
 models/trace/extras/ThirdParties.test.js
 models/trace/extras/TraceFilter.test.js
 models/trace/extras/TraceTree.test.js
 models/trace/extras/URLForEntry.test.js
 models/trace/handlers/AnimationFramesHandler.test.js
 models/trace/handlers/AnimationHandler.test.js
-models/trace/handlers/AsyncCallStacksHandler.test.js
+models/trace/handlers/AsyncJSCallsHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js
 models/trace/handlers/FlowsHandler.test.js
@@ -481,6 +482,7 @@ panels/timeline/components/SidebarSingleInsightSet.test.js
 panels/timeline/components/TimelineSummary.test.js
 panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/BaseInsightComponent.test.js
+panels/timeline/components/insights/CLSCulprits.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
 panels/timeline/overlays/components/TimespanBreakdownOverlay.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js

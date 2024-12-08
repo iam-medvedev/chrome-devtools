@@ -84,6 +84,8 @@ export function getFormattedTime(totalTime, selfTime) {
 }
 /**
  * Returns the first level that is available for an event.
+ * Important: if you are walking through an array of events and calling this,
+ * the events MUST be sorted.
  */
 export function getEventLevel(event, lastTimestampByLevel) {
     let level = 0;

@@ -123,10 +123,11 @@ export class LCPPhases extends BaseInsightComponent {
         overlays.push(this.#overlay);
         return overlays;
     }
-    #renderContent(phaseData) {
+    renderContent() {
         if (!this.model) {
             return LitHtml.nothing;
         }
+        const phaseData = this.#getPhaseData();
         const rows = phaseData.map(({ phase, percent }) => {
             const section = this.#overlay?.sections.find(section => phase === section.label);
             return {
@@ -149,13 +150,6 @@ export class LCPPhases extends BaseInsightComponent {
         </devtools-performance-table>`}
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (!this.model) {
-            return;
-        }
-        const phaseData = this.#getPhaseData();
-        this.renderWithContent(this.#renderContent(phaseData));
     }
 }
 customElements.define('devtools-performance-lcp-by-phases', LCPPhases);

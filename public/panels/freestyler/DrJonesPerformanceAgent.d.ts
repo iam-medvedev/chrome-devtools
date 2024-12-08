@@ -1,6 +1,6 @@
 import * as Host from '../../core/host/host.js';
 import * as TimelineUtils from '../../panels/timeline/utils/utils.js';
-import { AgentType, AiAgent, type ContextResponse, ConversationContext, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { AgentType, AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class CallTreeContext extends ConversationContext<TimelineUtils.AICallTree.AICallTree> {
     #private;
     constructor(callTree: TimelineUtils.AICallTree.AICallTree);
@@ -21,5 +21,4 @@ export declare class DrJonesPerformanceAgent extends AiAgent<TimelineUtils.AICal
     get options(): RequestOptions;
     handleContextDetails(aiCallTree: ConversationContext<TimelineUtils.AICallTree.AICallTree> | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, aiCallTree: ConversationContext<TimelineUtils.AICallTree.AICallTree> | null): Promise<string>;
-    parseResponse(response: string): ParsedResponse;
 }

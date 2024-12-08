@@ -32,6 +32,7 @@ export declare function waitForScrollLeft<T extends Element>(element: T, desired
  */
 export declare function dispatchClickEvent<T extends Element>(element: T, options?: MouseEventInit): void;
 export declare function dispatchMouseUpEvent<T extends Element>(element: T, options?: MouseEventInit): void;
+export declare function dispatchBlurEvent<T extends Element>(element: T, options?: FocusEventInit): void;
 export declare function dispatchFocusEvent<T extends Element>(element: T, options?: FocusEventInit): void;
 export declare function dispatchFocusOutEvent<T extends Element>(element: T, options?: FocusEventInit): void;
 /**
@@ -82,6 +83,11 @@ export declare function stripLitHtmlCommentNodes(text: string): string;
  * Multiple consecutive newLine and space characters are removed.
  */
 export declare function getCleanTextContentFromElements(el: ShadowRoot | HTMLElement, selector: string): string[];
+/**
+ * Returns the text content for the first element matching the given `selector` within the provided `el`.
+ * Will error if no element is found matching the selector.
+ */
+export declare function getCleanTextContentFromSingleElement(el: ShadowRoot | HTMLElement, selector: string): string;
 export declare function assertNodeTextContent(component: NodeText.NodeText.NodeText, expectedContent: string): void;
 export declare function querySelectorErrorOnMissing<T extends HTMLElement = HTMLElement>(parent: HTMLElement, selector: string): T;
 export {};

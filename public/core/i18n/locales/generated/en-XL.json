@@ -1721,6 +1721,18 @@
   "models/trace/insights/ImageDelivery.ts | title": {
     "message": "Îḿp̂ŕôv́ê ím̂áĝé d̂él̂ív̂ér̂ý"
   },
+  "models/trace/insights/ImageDelivery.ts | useCompression": {
+    "message": "Îńĉŕêáŝín̂ǵ t̂h́ê ím̂áĝé ĉóm̂ṕr̂éŝśîón̂ f́âćt̂ór̂ ćôúl̂d́ îḿp̂ŕôv́ê t́ĥíŝ ím̂áĝé'ŝ d́ôẃn̂ĺôád̂ śîźê. (Éŝt́ {PH1})"
+  },
+  "models/trace/insights/ImageDelivery.ts | useModernFormat": {
+    "message": "Ûśîńĝ á m̂ód̂ér̂ń îḿâǵê f́ôŕm̂át̂ (Ẃêb́P̂, ÁV̂ÍF̂) ór̂ ín̂ćr̂éâśîńĝ t́ĥé îḿâǵê ćôḿp̂ŕêśŝíôń ĉóûĺd̂ ím̂ṕr̂óv̂é t̂h́îś îḿâǵê'ś d̂óŵńl̂óâd́ ŝíẑé. (Êśt̂ {PH1})"
+  },
+  "models/trace/insights/ImageDelivery.ts | useResponsiveSize": {
+    "message": "T̂h́îś îḿâǵê f́îĺê íŝ ĺâŕĝér̂ t́ĥán̂ ít̂ ńêéd̂ś t̂ó b̂é ({PH2}) f̂ór̂ ít̂ś d̂íŝṕl̂áŷéd̂ d́îḿêńŝíôńŝ ({PH3}). Úŝé r̂éŝṕôńŝív̂é îḿâǵêś t̂ó r̂éd̂úĉé t̂h́ê ím̂áĝé d̂óŵńl̂óâd́ ŝíẑé. (Êśt̂ {PH1})"
+  },
+  "models/trace/insights/ImageDelivery.ts | useVideoFormat": {
+    "message": "Ûśîńĝ v́îd́êó f̂ór̂ḿât́ŝ ín̂śt̂éâd́ ôf́ ĜÍF̂ś ĉán̂ ím̂ṕr̂óv̂é t̂h́ê d́ôẃn̂ĺôád̂ śîźê óf̂ án̂ím̂át̂éd̂ ćôńt̂én̂t́. (Êśt̂ {PH1})"
+  },
   "models/trace/insights/InteractionToNextPaint.ts | description": {
     "message": "Ŝt́âŕt̂ ín̂v́êśt̂íĝát̂ín̂ǵ ŵít̂h́ t̂h́ê ĺôńĝéŝt́ p̂h́âśê. [D́êĺâýŝ ćâń b̂é m̂ín̂ím̂íẑéd̂](https://web.dev/articles/optimize-inp#optimize_interactions). T́ô ŕêd́ûćê ṕr̂óĉéŝśîńĝ d́ûŕât́îón̂, [óp̂t́îḿîźê t́ĥé m̂áîń-t̂h́r̂éâd́ ĉóŝt́ŝ](https://web.dev/articles/optimize-long-tasks), óf̂t́êń ĴŚ."
   },
@@ -1758,10 +1770,10 @@
     "message": "T̂h́îŕd̂ ṕâŕt̂íêś"
   },
   "models/trace/insights/Viewport.ts | description": {
-    "message": "T̂h́ê ṕâǵê'ś v̂íêẃp̂ór̂t́ îś n̂ót̂ ḿôb́îĺê-óp̂t́îḿîźêd́, ŝó t̂áp̂ ín̂t́êŕâćt̂íôńŝ ḿâý b̂é [d̂él̂áŷéd̂ b́ŷ úp̂ t́ô 300 ḿŝ](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
+    "message": "T̂áp̂ ín̂t́êŕâćt̂íôńŝ ḿâý b̂é [d̂él̂áŷéd̂ b́ŷ úp̂ t́ô 300 ḿŝ](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) íf̂ t́ĥé v̂íêẃp̂ór̂t́ îś n̂ót̂ óp̂t́îḿîźêd́ f̂ór̂ ḿôb́îĺê."
   },
   "models/trace/insights/Viewport.ts | title": {
-    "message": "V̂íêẃp̂ór̂t́ n̂ót̂ óp̂t́îḿîźêd́ f̂ór̂ ḿôb́îĺê"
+    "message": "Ôṕt̂ím̂íẑé v̂íêẃp̂ór̂t́ f̂ór̂ ḿôb́îĺê"
   },
   "models/workspace/UISourceCode.ts | index": {
     "message": "(îńd̂éx̂)"
@@ -5669,12 +5681,6 @@
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "Îǵn̂ór̂éd̂"
   },
-  "panels/elements/components/AdornerSettingsPane.ts | closeButton": {
-    "message": "Ĉĺôśê"
-  },
-  "panels/elements/components/AdornerSettingsPane.ts | settingsTitle": {
-    "message": "Ŝh́ôẃ b̂ád̂ǵêś"
-  },
   "panels/elements/components/AnchorFunctionLinkSwatch.ts | jumpToAnchorNode": {
     "message": "Ĵúm̂ṕ t̂ó âńĉh́ôŕ n̂ód̂é"
   },
@@ -5888,6 +5894,9 @@
   "panels/elements/elements-meta.ts | wordWrap": {
     "message": "Ŵór̂d́ ŵŕâṕ"
   },
+  "panels/elements/ElementsPanel.ts | adornerSettings": {
+    "message": "B̂ád̂ǵê śêt́t̂ín̂ǵŝ"
+  },
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "Ĉóm̂ṕût́êd́"
   },
@@ -6067,9 +6076,6 @@
   },
   "panels/elements/ElementsTreeElement.ts | valueIsTooLargeToEdit": {
     "message": "<v̂ál̂úê íŝ t́ôó l̂ár̂ǵê t́ô éd̂ít̂>"
-  },
-  "panels/elements/ElementsTreeOutline.ts | adornerSettings": {
-    "message": "B̂ád̂ǵê śêt́t̂ín̂ǵŝ…"
   },
   "panels/elements/ElementsTreeOutline.ts | pageDom": {
     "message": "P̂áĝé D̂ÓM̂"
@@ -12812,14 +12818,29 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
   },
+  "panels/timeline/components/IgnoreListSetting.ts | addNewRegex": {
+    "message": "Âd́d̂ á r̂éĝúl̂ár̂ éx̂ṕr̂éŝśîón̂ ŕûĺê f́ôŕ t̂h́ê śĉŕîṕt̂'ś ÛŔL̂"
+  },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreList": {
     "message": "Îǵn̂ór̂é l̂íŝt́"
   },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreListDescription": {
     "message": "Âd́d̂ t́ĥéŝé êx́ĉĺûśîón̂ ŕûĺêś ŵóûĺd̂ śîḿp̂ĺîf́ŷ t́ĥé f̂ĺâḿê ćĥár̂t́."
   },
+  "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchNewRegex": {
+    "message": "Îǵn̂ór̂é ŝćr̂íp̂t́ŝ ẃĥóŝé n̂ám̂éŝ ḿât́ĉh́ t̂h́ê ńêẃ r̂éĝéx̂"
+  },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchS": {
     "message": "Îǵn̂ór̂é ŝćr̂íp̂t́ŝ ẃĥóŝé n̂ám̂éŝ ḿât́ĉh́ ''{regex}''"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExists": {
+    "message": "R̂úl̂é âĺr̂éâd́ŷ éx̂íŝt́ŝ"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternCannotBeEmpty": {
+    "message": "R̂úl̂é ĉán̂'t́ b̂é êḿp̂t́ŷ"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternMustBeAValidRegular": {
+    "message": "R̂úl̂é m̂úŝt́ b̂é â v́âĺîd́ r̂éĝúl̂ár̂ éx̂ṕr̂éŝśîón̂"
   },
   "panels/timeline/components/IgnoreListSetting.ts | removeRegex": {
     "message": "R̂ém̂óv̂é t̂h́ê ŕêǵêx́: ''{regex}''"
@@ -12904,9 +12925,6 @@
   },
   "panels/timeline/components/insights/ImageDelivery.ts | others": {
     "message": "{PH1} ôt́ĥér̂ś"
-  },
-  "panels/timeline/components/insights/ImageDelivery.ts | sizeAppropriately": {
-    "message": "Ŝíẑé âṕp̂ŕôṕr̂íât́êĺŷ"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
     "message": "D̂úr̂át̂íôń"
@@ -13451,6 +13469,9 @@
   "panels/timeline/components/RelatedInsightChips.ts | insightKeyword": {
     "message": "Îńŝíĝh́t̂"
   },
+  "panels/timeline/components/RelatedInsightChips.ts | insightWithName": {
+    "message": "Îńŝíĝh́t̂: {PH1}"
+  },
   "panels/timeline/components/SidebarAnnotationsTab.ts | annotationGetStarted": {
     "message": "Âńn̂ót̂át̂é â t́r̂áĉé f̂ór̂ ýôúr̂śêĺf̂ án̂d́ ôt́ĥér̂ś"
   },
@@ -13498,6 +13519,9 @@
   },
   "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
     "message": "{PH1}: {PH2} {PH3} ŝćôŕê"
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | passedInsights": {
+    "message": "P̂áŝśêd́ îńŝíĝh́t̂ś ({PH1})"
   },
   "panels/timeline/components/TimelineSummary.ts | rangeSS": {
     "message": "R̂án̂ǵê:  {PH1} – {PH2}"
@@ -13772,29 +13796,11 @@
   "panels/timeline/TimelineHistoryManager.ts | landingPageTitle": {
     "message": "L̂ív̂é m̂ét̂ŕîćŝ"
   },
-  "panels/timeline/TimelineHistoryManager.ts | noRecordings": {
-    "message": "(n̂ó r̂éĉór̂d́îńĝś)"
-  },
   "panels/timeline/TimelineHistoryManager.ts | sD": {
     "message": "{PH1} #{PH2}"
   },
   "panels/timeline/TimelineHistoryManager.ts | selectTimelineSession": {
     "message": "Ŝél̂éĉt́ t̂ím̂él̂ín̂é ŝéŝśîón̂"
-  },
-  "panels/timeline/TimelineLandingPage.ts | afterRecordingSelectAnAreaOf": {
-    "message": "Âf́t̂ér̂ ŕêćôŕd̂ín̂ǵ, ŝél̂éĉt́ âń âŕêá ôf́ îńt̂ér̂éŝt́ îń t̂h́ê óv̂ér̂v́îéŵ b́ŷ d́r̂áĝǵîńĝ. T́ĥén̂, źôóm̂ án̂d́ p̂án̂ t́ĥé t̂ím̂él̂ín̂é ŵít̂h́ t̂h́ê ḿôúŝéŵh́êél̂ ór̂ {PH1} ḱêýŝ. {PH2}"
-  },
-  "panels/timeline/TimelineLandingPage.ts | clickTheRecordButtonSOrHitSTo": {
-    "message": "Ĉĺîćk̂ t́ĥé r̂éĉór̂d́ b̂út̂t́ôń {PH1} ôŕ ĥít̂ {PH2} t́ô śt̂ár̂t́ â ńêẃ r̂éĉór̂d́îńĝ."
-  },
-  "panels/timeline/TimelineLandingPage.ts | clickTheReloadButtonSOrHitSTo": {
-    "message": "Ĉĺîćk̂ t́ĥé r̂él̂óâd́ b̂út̂t́ôń {PH1} ôŕ ĥít̂ {PH2} t́ô ŕêćôŕd̂ t́ĥé p̂áĝé l̂óâd́."
-  },
-  "panels/timeline/TimelineLandingPage.ts | learnmore": {
-    "message": "L̂éâŕn̂ ḿôŕê"
-  },
-  "panels/timeline/TimelineLandingPage.ts | wasd": {
-    "message": "ŴÁŜD́"
   },
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "M̂ál̂f́ôŕm̂éd̂ t́îḿêĺîńê d́ât́â: {PH1}"
@@ -15633,7 +15639,7 @@
     "message": "D̂él̂ét̂é âńn̂ót̂át̂íôńŝ"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
-    "message": "Ĉón̂f́îǵûŕê t́r̂áĉḱŝ…"
+    "message": "Ĉón̂f́îǵûŕê t́r̂áĉḱŝ"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | eventSelectedFromGroup": {
     "message": "Ŝél̂éĉt́êd́ â {PH1} év̂én̂t́ ŵít̂h́îń {PH2}. P̂ŕêśŝ \"én̂t́êŕ\" t̂ó f̂óĉúŝ t́ĥíŝ év̂én̂t́."

@@ -40,7 +40,7 @@
   "files": [
     "../../../../../../../front_end/models/trace/handlers/AnimationFramesHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/AnimationHandler.test.ts",
-    "../../../../../../../front_end/models/trace/handlers/AsyncCallStacksHandler.test.ts",
+    "../../../../../../../front_end/models/trace/handlers/AsyncJSCallsHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/AuctionWorkletsHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/ExtensionTraceDataHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/FlowsHandler.test.ts",

@@ -160,6 +160,7 @@ class NavigationEmulator {
         assert.strictEqual(json['prerender'][0]['urls'].length, 1);
         const prerenderUrl = 'https://example.com' + json['prerender'][0]['urls'][0];
         this.prerenderStatusUpdatedEvent = {
+            pipelineId: 'test-pipeline-id',
             key: {
                 loaderId: this.loaderId,
                 action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
@@ -239,6 +240,9 @@ function createSummaryView(target) {
     return view;
 }
 describeWithMockConnection('PreloadingRuleSetView', () => {
+    beforeEach(() => {
+        SDK.ChildTargetManager.ChildTargetManager.install();
+    });
     it('renders grid and details', async () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();
@@ -389,6 +393,9 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
     });
 });
 describeWithMockConnection('PreloadingAttemptView', () => {
+    beforeEach(() => {
+        SDK.ChildTargetManager.ChildTargetManager.install();
+    });
     it('renders grid and details', async () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();
@@ -734,6 +741,9 @@ describeWithMockConnection('PreloadingAttemptView', () => {
     });
 });
 describeWithMockConnection('PreloadingSummaryView', () => {
+    beforeEach(() => {
+        SDK.ChildTargetManager.ChildTargetManager.install();
+    });
     it('shows information of preloading of the last page', async () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();
@@ -782,6 +792,9 @@ async function testWarnings(event, headerExpected, sectionsExpected) {
     assert.deepEqual(zip2(headers, sections), sectionsExpected);
 }
 describeWithMockConnection('PreloadingWarningsView', () => {
+    beforeEach(() => {
+        SDK.ChildTargetManager.ChildTargetManager.install();
+    });
     it('shows no warnings if holdback flags are disabled', async () => {
         await testWarnings({
             disabledByPreference: false,

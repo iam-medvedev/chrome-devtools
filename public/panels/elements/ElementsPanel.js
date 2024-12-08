@@ -133,6 +133,10 @@ const UIStrings = {
      * @description Accessible name for the DOM tree explorer view.
      */
     domTreeExplorer: 'DOM tree explorer',
+    /**
+     * @description A context menu item to reveal a submenu with badge settings.
+     */
+    adornerSettings: 'Badge settings',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementsPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -170,7 +174,6 @@ export class ElementsPanel extends UI.Panel.Panel {
     currentSearchResultIndex;
     pendingNodeReveal;
     adornerManager;
-    adornerSettingsPane;
     adornersByName;
     accessibilityTreeButton;
     domTreeButton;
@@ -248,7 +251,6 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.currentSearchResultIndex = -1; // -1 represents the initial invalid state
         this.pendingNodeReveal = false;
         this.adornerManager = new ElementsComponents.AdornerManager.AdornerManager(Common.Settings.Settings.instance().moduleSetting('adorner-settings'));
-        this.adornerSettingsPane = null;
         this.adornersByName = new Map();
     }
     initializeFullAccessibilityTreeView() {
@@ -990,28 +992,22 @@ export class ElementsPanel extends UI.Panel.Panel {
             void ElementsComponents.LayoutPane.LayoutPane.instance().render();
         }
     }
-    showAdornerSettingsPane() {
-        // Delay the initialization of the pane to the first showing
-        // since usually this pane won't be used.
-        if (!this.adornerSettingsPane) {
-            this.adornerSettingsPane = new ElementsComponents.AdornerSettingsPane.AdornerSettingsPane();
-            this.adornerSettingsPane.addEventListener('adornersettingupdated', (event) => {
-                const { adornerName, isEnabledNow, newSettings } = event.data;
-                const adornersToUpdate = this.adornersByName.get(adornerName);
+    populateAdornerSettingsContextMenu(contextMenu) {
+        const adornerSubMenu = contextMenu.viewSection().appendSubMenuItem(i18nString(UIStrings.adornerSettings), false, 'show-adorner-settings');
+        const adornerSettings = this.adornerManager.getSettings();
+        for (const [adorner, isEnabled] of adornerSettings) {
+            adornerSubMenu.defaultSection().appendCheckboxItem(adorner, () => {
+                const updatedIsEnabled = !isEnabled;
+                const adornersToUpdate = this.adornersByName.get(adorner);
                 if (adornersToUpdate) {
-                    for (const adorner of adornersToUpdate) {
-                        isEnabledNow ? adorner.show() : adorner.hide();
+                    for (const adornerToUpdate of adornersToUpdate) {
+                        updatedIsEnabled ? adornerToUpdate.show() : adornerToUpdate.hide();
                     }
                 }
-                this.adornerManager.updateSettings(newSettings);
-            });
-            this.searchableViewInternal.element.prepend(this.adornerSettingsPane);
+                this.adornerManager.getSettings().set(adorner, updatedIsEnabled);
+                this.adornerManager.updateSettings(adornerSettings);
+            }, { checked: isEnabled, jslogContext: adorner });
         }
-        const adornerSettings = this.adornerManager.getSettings();
-        this.adornerSettingsPane.data = {
-            settings: adornerSettings,
-        };
-        this.adornerSettingsPane.show();
     }
     isAdornerEnabled(adornerText) {
         return this.adornerManager.isAdornerEnabled(adornerText);

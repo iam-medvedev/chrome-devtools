@@ -57,6 +57,20 @@ export declare class ChartViewport extends UI.Widget.VBox {
     scrollOffset(): number;
     chartHeight(): number;
     setBoundaries(zeroTime: number, totalTime: number): void;
+    /**
+     * The mouse wheel can results in flamechart zoom, scroll and pan actions, depending on the scroll deltas and the selected navigation:
+     *
+     * Classic navigation:
+     * 1. Mouse Wheel --> Zoom
+     * 2. Mouse Wheel + Shift --> Scroll
+     * 3. Trackpad: Mouse Wheel AND horizontal scroll (deltaX > deltaY): --> Pan left/right
+     *
+     * Modern navigation:
+     * 1. Mouse Wheel -> Scroll
+     * 2. Mouse Wheel + Shift -> Pan left/right
+     * 3. Mouse Wheel + Ctrl/Cmd -> Zoom
+     * 4. Trackpad: Mouse Wheel AND horizontal scroll (deltaX > deltaY): --> Zoom
+     */
     private onMouseWheel;
     private startDragging;
     private dragging;
@@ -82,7 +96,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private showCursor;
     private onChartKeyDown;
     private onChartKeyUp;
-    private handleZoomPanKeys;
+    private handleZoomPanScrollKeys;
     private handleZoomGesture;
     private handlePanGesture;
     private requestWindowTimes;

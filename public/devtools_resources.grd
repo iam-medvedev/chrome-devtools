@@ -1045,6 +1045,7 @@
       <include file="models/trace/extras/FilmStrip.js" name="MODELS_TRACE_EXTRAS_FILMSTRIP_JS" resource_path="models/trace/extras/FilmStrip.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/MainThreadActivity.js" name="MODELS_TRACE_EXTRAS_MAINTHREADACTIVITY_JS" resource_path="models/trace/extras/MainThreadActivity.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/Metadata.js" name="MODELS_TRACE_EXTRAS_METADATA_JS" resource_path="models/trace/extras/Metadata.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/extras/StackTraceForEvent.js" name="MODELS_TRACE_EXTRAS_STACKTRACEFOREVENT_JS" resource_path="models/trace/extras/StackTraceForEvent.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/ThirdParties.js" name="MODELS_TRACE_EXTRAS_THIRDPARTIES_JS" resource_path="models/trace/extras/ThirdParties.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/TimelineJSProfile.js" name="MODELS_TRACE_EXTRAS_TIMELINEJSPROFILE_JS" resource_path="models/trace/extras/TimelineJSProfile.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/TraceFilter.js" name="MODELS_TRACE_EXTRAS_TRACEFILTER_JS" resource_path="models/trace/extras/TraceFilter.js" type="BINDATA" compress="false"/>
@@ -1052,7 +1053,7 @@
       <include file="models/trace/extras/URLForEntry.js" name="MODELS_TRACE_EXTRAS_URLFORENTRY_JS" resource_path="models/trace/extras/URLForEntry.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AnimationFramesHandler.js" name="MODELS_TRACE_HANDLERS_ANIMATIONFRAMESHANDLER_JS" resource_path="models/trace/handlers/AnimationFramesHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AnimationHandler.js" name="MODELS_TRACE_HANDLERS_ANIMATIONHANDLER_JS" resource_path="models/trace/handlers/AnimationHandler.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/handlers/AsyncCallStacksHandler.js" name="MODELS_TRACE_HANDLERS_ASYNCCALLSTACKSHANDLER_JS" resource_path="models/trace/handlers/AsyncCallStacksHandler.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/handlers/AsyncJSCallsHandler.js" name="MODELS_TRACE_HANDLERS_ASYNCJSCALLSHANDLER_JS" resource_path="models/trace/handlers/AsyncJSCallsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AuctionWorkletsHandler.js" name="MODELS_TRACE_HANDLERS_AUCTIONWORKLETSHANDLER_JS" resource_path="models/trace/handlers/AuctionWorkletsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/ExtensionTraceDataHandler.js" name="MODELS_TRACE_HANDLERS_EXTENSIONTRACEDATAHANDLER_JS" resource_path="models/trace/handlers/ExtensionTraceDataHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/FlowsHandler.js" name="MODELS_TRACE_HANDLERS_FLOWSHANDLER_JS" resource_path="models/trace/handlers/FlowsHandler.js" type="BINDATA" compress="false"/>
@@ -1349,7 +1350,6 @@
       <include file="panels/elements/classesPaneWidget.css.js" name="PANELS_ELEMENTS_CLASSESPANEWIDGET_CSS_JS" resource_path="panels/elements/classesPaneWidget.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/AccessibilityTreeNode.js" name="PANELS_ELEMENTS_COMPONENTS_ACCESSIBILITYTREENODE_JS" resource_path="panels/elements/components/AccessibilityTreeNode.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/AdornerManager.js" name="PANELS_ELEMENTS_COMPONENTS_ADORNERMANAGER_JS" resource_path="panels/elements/components/AdornerManager.js" type="BINDATA" compress="false"/>
-      <include file="panels/elements/components/AdornerSettingsPane.js" name="PANELS_ELEMENTS_COMPONENTS_ADORNERSETTINGSPANE_JS" resource_path="panels/elements/components/AdornerSettingsPane.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/AnchorFunctionLinkSwatch.js" name="PANELS_ELEMENTS_COMPONENTS_ANCHORFUNCTIONLINKSWATCH_JS" resource_path="panels/elements/components/AnchorFunctionLinkSwatch.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/CSSHintDetailsView.js" name="PANELS_ELEMENTS_COMPONENTS_CSSHINTDETAILSVIEW_JS" resource_path="panels/elements/components/CSSHintDetailsView.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/CSSPropertyDocsView.js" name="PANELS_ELEMENTS_COMPONENTS_CSSPROPERTYDOCSVIEW_JS" resource_path="panels/elements/components/CSSPropertyDocsView.js" type="BINDATA" compress="false"/>
@@ -1367,7 +1367,6 @@
       <include file="panels/elements/components/QueryContainer.js" name="PANELS_ELEMENTS_COMPONENTS_QUERYCONTAINER_JS" resource_path="panels/elements/components/QueryContainer.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/StylePropertyEditor.js" name="PANELS_ELEMENTS_COMPONENTS_STYLEPROPERTYEDITOR_JS" resource_path="panels/elements/components/StylePropertyEditor.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/accessibilityTreeNode.css.js" name="PANELS_ELEMENTS_COMPONENTS_ACCESSIBILITYTREENODE_CSS_JS" resource_path="panels/elements/components/accessibilityTreeNode.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/elements/components/adornerSettingsPane.css.js" name="PANELS_ELEMENTS_COMPONENTS_ADORNERSETTINGSPANE_CSS_JS" resource_path="panels/elements/components/adornerSettingsPane.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/anchorFunctionLinkSwatch.css.js" name="PANELS_ELEMENTS_COMPONENTS_ANCHORFUNCTIONLINKSWATCH_CSS_JS" resource_path="panels/elements/components/anchorFunctionLinkSwatch.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/computedStyleProperty.css.js" name="PANELS_ELEMENTS_COMPONENTS_COMPUTEDSTYLEPROPERTY_CSS_JS" resource_path="panels/elements/components/computedStyleProperty.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/computedStyleTrace.css.js" name="PANELS_ELEMENTS_COMPONENTS_COMPUTEDSTYLETRACE_CSS_JS" resource_path="panels/elements/components/computedStyleTrace.css.js" type="BINDATA" compress="false"/>
@@ -1804,7 +1803,6 @@
       <include file="panels/timeline/TimelineFlameChartNetworkDataProvider.js" name="PANELS_TIMELINE_TIMELINEFLAMECHARTNETWORKDATAPROVIDER_JS" resource_path="panels/timeline/TimelineFlameChartNetworkDataProvider.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineFlameChartView.js" name="PANELS_TIMELINE_TIMELINEFLAMECHARTVIEW_JS" resource_path="panels/timeline/TimelineFlameChartView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineHistoryManager.js" name="PANELS_TIMELINE_TIMELINEHISTORYMANAGER_JS" resource_path="panels/timeline/TimelineHistoryManager.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/TimelineLandingPage.js" name="PANELS_TIMELINE_TIMELINELANDINGPAGE_JS" resource_path="panels/timeline/TimelineLandingPage.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineLayersView.js" name="PANELS_TIMELINE_TIMELINELAYERSVIEW_JS" resource_path="panels/timeline/TimelineLayersView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineLoader.js" name="PANELS_TIMELINE_TIMELINELOADER_JS" resource_path="panels/timeline/TimelineLoader.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineMiniMap.js" name="PANELS_TIMELINE_TIMELINEMINIMAP_JS" resource_path="panels/timeline/TimelineMiniMap.js" type="BINDATA" compress="false"/>

@@ -14,9 +14,57 @@ export interface Content {
     parts: Part[];
     role: Role;
 }
-export interface Part {
-    text?: string;
-    inlineData?: MediaBlob;
+export type Part = {
+    text: string;
+} | {
+    functionCall: {
+        name: string;
+        args: Record<string, unknown>;
+    };
+} | {
+    functionResponse: {
+        name: string;
+        response: Record<string, unknown>;
+    };
+} | {
+    inlineData: MediaBlob;
+};
+export declare const enum ParametersTypes {
+    STRING = 1,
+    NUMBER = 2,
+    INTEGER = 3,
+    BOOLEAN = 4,
+    ARRAY = 5,
+    OBJECT = 6
+}
+interface BaseFunctionParam {
+    description: string;
+    nullable?: boolean;
+}
+interface FunctionPrimitiveParams extends BaseFunctionParam {
+    type: ParametersTypes.BOOLEAN | ParametersTypes.INTEGER | ParametersTypes.STRING | ParametersTypes.BOOLEAN;
+}
+interface FunctionArrayParam extends BaseFunctionParam {
+    type: ParametersTypes.ARRAY;
+    items: FunctionPrimitiveParams[];
+}
+interface FunctionObjectParam extends BaseFunctionParam {
+    type: ParametersTypes.OBJECT;
+    properties: {
+        [Key in string]: FunctionPrimitiveParams | FunctionArrayParam;
+    };
+}
+/**
+ * More about function declaration can be read at
+ * https://ai.google.dev/gemini-api/docs/function-calling
+ */
+export interface FunctionDeclaration {
+    name: string;
+    /**
+     * A description for the LLM to understand what the specific function will do once called.
+     */
+    description: string;
+    parameters: FunctionObjectParam | FunctionPrimitiveParams;
 }
 export interface MediaBlob {
     mimeType: string;
@@ -42,10 +90,11 @@ export declare enum UserTier {
     PUBLIC = 3
 }
 export interface AidaRequest {
+    client: string;
     current_message?: Content;
     preamble?: string;
     historical_contexts?: Content[];
-    client: string;
+    function_declarations?: FunctionDeclaration[];
     options?: {
         temperature?: number;
         model_id?: string;
@@ -86,6 +135,10 @@ export interface AttributionMetadata {
     attributionAction: RecitationAction;
     citations: Citation[];
 }
+export interface AidaFunctionCallResponse {
+    name: string;
+    args: Record<string, unknown>;
+}
 export interface AidaResponseMetadata {
     rpcGlobalId?: number;
     attributionMetadata?: AttributionMetadata[];
@@ -93,6 +146,7 @@ export interface AidaResponseMetadata {
 export interface AidaResponse {
     explanation: string;
     metadata: AidaResponseMetadata;
+    functionCall?: AidaFunctionCallResponse;
     completed: boolean;
 }
 export declare const enum AidaAccessPreconditions {
@@ -129,3 +183,4 @@ export declare const enum Events {
 export type EventTypes = {
     [Events.AIDA_AVAILABILITY_CHANGED]: void;
 };
+export {};

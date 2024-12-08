@@ -142,10 +142,27 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         const results = await getAllResults(provider);
         assert.deepStrictEqual(results, [
-            { explanation: 'hello ', metadata: { rpcGlobalId: 123 }, completed: false },
-            { explanation: 'hello brave ', metadata: { rpcGlobalId: 123 }, completed: false },
-            { explanation: 'hello brave new world!', metadata: { rpcGlobalId: 123 }, completed: false },
-            { explanation: 'hello brave new world!', metadata: { rpcGlobalId: 123 }, completed: true },
+            {
+                explanation: 'hello ',
+                metadata: { rpcGlobalId: 123 },
+                completed: false,
+            },
+            {
+                explanation: 'hello brave ',
+                metadata: { rpcGlobalId: 123 },
+                completed: false,
+            },
+            {
+                explanation: 'hello brave new world!',
+                metadata: { rpcGlobalId: 123 },
+                completed: false,
+            },
+            {
+                explanation: 'hello brave new world!',
+                metadata: { rpcGlobalId: 123 },
+                functionCall: undefined,
+                completed: true,
+            },
         ]);
     });
     it('handles single square bracket as a chunk', async () => {
@@ -161,8 +178,17 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         const results = await getAllResults(provider);
         assert.deepStrictEqual(results, [
-            { explanation: 'hello world', metadata: { rpcGlobalId: 123 }, completed: false },
-            { explanation: 'hello world', metadata: { rpcGlobalId: 123 }, completed: true },
+            {
+                explanation: 'hello world',
+                metadata: { rpcGlobalId: 123 },
+                completed: false,
+            },
+            {
+                explanation: 'hello world',
+                metadata: { rpcGlobalId: 123 },
+                functionCall: undefined,
+                completed: true,
+            },
         ]);
     });
     it('handles chunked response with multiple objects per chunk', async () => {
@@ -239,6 +265,7 @@ describeWithEnvironment('AidaClient', () => {
                     'If it were so, it was a grievous fault,\n' +
                     'And grievously hath Caesar answer’d it.\n',
                 metadata: { rpcGlobalId: 123 },
+                functionCall: undefined,
                 completed: true,
             },
         ]);
@@ -296,6 +323,7 @@ describeWithEnvironment('AidaClient', () => {
                         },
                     ],
                 },
+                functionCall: undefined,
                 completed: true,
             },
         ]);

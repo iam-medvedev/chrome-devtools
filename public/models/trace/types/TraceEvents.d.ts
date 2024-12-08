@@ -1449,6 +1449,9 @@ export interface InvalidateLayout extends Instant {
 export declare function isInvalidateLayout(event: Event): event is InvalidateLayout;
 export interface DebuggerAsyncTaskScheduled extends Event {
     name: Name.DEBUGGER_ASYNC_TASK_SCHEDULED;
+    args: Args & {
+        taskName: string;
+    };
 }
 export declare function isDebuggerAsyncTaskScheduled(event: Event): event is DebuggerAsyncTaskScheduled;
 export interface DebuggerAsyncTaskRun extends Event {
@@ -1905,6 +1908,7 @@ export declare function isAbortPostTaskCallback(event: Event): event is RunPostT
  * commonly referred to as "JS entry points".
  */
 export declare function isJSInvocationEvent(event: Event): boolean;
+export declare function isConsoleTaskRun(event: Event): boolean;
 export interface FlowEvent extends Event {
     id: number;
     ph: Phase.FLOW_START | Phase.FLOW_END | Phase.FLOW_STEP;

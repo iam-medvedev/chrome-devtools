@@ -94,7 +94,7 @@ const UIStrings = {
     /**
      *@description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
      */
-    enterTrackConfigurationMode: 'Configure tracks…',
+    enterTrackConfigurationMode: 'Configure tracks',
     /**
      *@description Shown in the context menu when right clicking on a track header to allow the user to exit track configuration mode.
      */
@@ -209,7 +209,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #font;
     #groupTreeRoot;
     #searchResultEntryIndex = null;
-    #searchResultHighlightElements = [];
     #searchResultEntries = null;
     #inTrackConfigEditMode = false;
     #linkSelectionAnnotationIsInProgress = false;
@@ -396,18 +395,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.dispatchEventToListeners("EntryHovered" /* Events.ENTRY_HOVERED */, entryIndex);
     }
     highlightAllEntries(entries) {
-        // To avoid too many highlights when the search regex matches too many entries,
-        // for example, when user only types in "e" as the search query,
-        // We only highlight the search results when the number of matches is less than or equal to 200.
-        // TODO: current behavior is a bit jank, esp. with dimming treatment always being applied.
-        //       Can we lift this restriction - maybe by adding a stroke in canvas, which should be faster?
-        const MAX_HIGHLIGHTED_SEARCH_ELEMENTS = 200;
-        for (const entry of entries.slice(0, MAX_HIGHLIGHTED_SEARCH_ELEMENTS)) {
-            const searchElement = this.viewportElement.createChild('div', 'flame-chart-search-element');
-            this.#searchResultHighlightElements.push(searchElement);
-            searchElement.id = entry.toString();
-            this.updateElementPosition(searchElement, entry);
-        }
         if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
             this.#searchResultEntries = entries;
             // Must redraw for the dimming treatment (#searchResultEntries overrides entryIndicesToNotDim).
@@ -415,10 +402,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
     }
     removeSearchResultHighlights() {
-        for (const element of this.#searchResultHighlightElements) {
-            element.remove();
-        }
-        this.#searchResultHighlightElements = [];
         this.#searchResultEntries = null;
         // Must redraw for the dimming treatment (to turn it off / revert back to entryIndicesToNotDim).
         this.draw();
@@ -1076,7 +1059,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.#inTrackConfigEditMode) {
             return;
         }
-        this.contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        this.contextMenu = new UI.ContextMenu.ContextMenu(event);
         const label = i18nString(UIStrings.enterTrackConfigurationMode);
         this.contextMenu.defaultSection().appendItem(label, () => {
             this.#enterEditMode();
@@ -1089,7 +1072,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.#inTrackConfigEditMode === false) {
             return;
         }
-        this.contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        this.contextMenu = new UI.ContextMenu.ContextMenu(event);
         const label = i18nString(UIStrings.exitTrackConfigurationMode);
         this.contextMenu.defaultSection().appendItem(label, () => {
             this.#exitEditMode();
@@ -1158,21 +1141,19 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // |highlightedEntryIndex| might be correct, but to make the code easier
         // to maintain, let's use |selectedEntryIndex|.
         this.contextMenu = this.dataProvider.customizedContextMenu?.(event, this.selectedEntryIndex, groupIndex) ??
-            new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+            new UI.ContextMenu.ContextMenu(event);
         // Generate context menu entries for annotations.
         const annotationSection = this.contextMenu.section('annotations');
-        const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
+        annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
             this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: this.selectedEntryIndex, withLinkCreationButton: false });
         }, {
             jslogContext: 'timeline.annotations.create-entry-label',
         });
-        labelEntryAnnotationOption.setShortcut('Double Click');
-        const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
+        annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
             this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.ENTRIES_LINK_ANNOTATION_CREATED */, { entryFromIndex: this.selectedEntryIndex });
         }, {
             jslogContext: 'timeline.annotations.create-entries-link',
         });
-        linkEntriesAnnotationOption.setShortcut('Double Click');
         annotationSection.appendItem(i18nString(UIStrings.deleteAnnotations), () => {
             this.dataProvider.deleteAnnotationsForEntry?.(this.selectedEntryIndex);
         }, {
@@ -1270,10 +1251,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 barWidth > minWidth;
         };
         let allFilteredIndexes = [];
-        for (const [color, { indexes }] of colorBuckets) {
+        for (const [color, { indexes, shouldDim }] of colorBuckets) {
             const filteredIndexes = indexes.filter(entryIndexIsInTrack);
             allFilteredIndexes = [...allFilteredIndexes, ...filteredIndexes];
-            this.#drawGenericEvents(context, timelineData, color, filteredIndexes);
+            this.#drawGenericEvents(context, timelineData, color, filteredIndexes, shouldDim);
         }
         const filteredTitleIndices = titleIndices.filter(entryIndexIsInTrack);
         this.drawEventTitles(context, timelineData, filteredTitleIndices, canvasWidth);
@@ -1836,15 +1817,20 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 barWidth > 10;
         };
         let wideEntryExists = false;
-        for (const [color, { indexes }] of colorBuckets) {
+        for (const [color, { indexes, shouldDim }] of colorBuckets) {
             if (!wideEntryExists) {
                 wideEntryExists = indexes.some(entryIndexIsInTrack);
             }
-            this.#drawGenericEvents(context, timelineData, color, indexes);
+            this.#drawGenericEvents(context, timelineData, color, indexes, shouldDim);
         }
         this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.CHART_PLAYABLE_STATE_CHANGED */, wideEntryExists);
-        this.#drawCustomSymbols(context, timelineData);
-        this.drawMarkers(context, timelineData, markerIndices);
+        if (!this.#inTrackConfigEditMode) {
+            // In configuration mode, we do not render the actual flame chart, so we
+            // can skip checking for any custom symbols on any tracks.
+            this.#drawCustomSymbols(context, timelineData);
+            // Markers get in the way of the UI for editing, so hide them in edit mode.
+            this.drawMarkers(context, timelineData, markerIndices);
+        }
         this.drawEventTitles(context, timelineData, titleIndices, canvasWidth);
         // If there is a `forceDecoration` function, it will be called in `drawEventTitles`, which will overwrite the
         // default decorations, so we need to call this function after the `drawEventTitles`.
@@ -1888,9 +1874,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.#searchResultEntryIndex !== null) {
             this.showPopoverForSearchResult(this.#searchResultEntryIndex);
         }
-        for (const element of this.#searchResultHighlightElements) {
-            this.updateElementPosition(element, Number(element.id));
-        }
         this.updateMarkerHighlight();
     }
     /**
@@ -1898,7 +1881,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      * in the timeline like the Main Thread flamechart and the timings track.
      * Drawn on a color by color basis to minimize the amount of times context.style is switched.
      */
-    #drawGenericEvents(context, timelineData, color, indexes) {
+    #drawGenericEvents(context, timelineData, color, indexes, shouldDim) {
         context.save();
         context.beginPath();
         for (let i = 0; i < indexes.length; ++i) {
@@ -1907,11 +1890,35 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             if (this.#indexToDrawOverride.has(entryIndex)) {
                 continue;
             }
+            // Doesn't draw a rect, just adds the rect into the current path
             this.#drawEventRect(context, timelineData, entryIndex);
+        }
+        if (!shouldDim) {
+            // In some scenarios we want to draw outlines around events for added visual contrast.
+            // But we only do this if the events are not being dimmed.
+            this.#maybeAddOutlines(context, color);
         }
         context.fillStyle = color;
         context.fill();
         context.restore();
+    }
+    /**
+     * Adds dark outlines to the paths being drawn onto the canvas context if:
+     * 1. We are in a dimming state
+     * 2. The user has searched the flamechart using Cmd/Ctrl-F
+     *
+     * @param context - the canvas context to call stroke() on. Assumes there are a series of paths ready to be stroked.
+     * @param color - the fill color being used for the paths in the canvas context.
+     */
+    #maybeAddOutlines(context, color) {
+        // We only want to add outlines when in a dimming state and the user has searched for something.
+        if (!this.entryIndicesToNotDim && !this.#searchResultEntries) {
+            return;
+        }
+        // This foregroundColor is near-black in light mode, and vice-versa. Color mix so it's a good contrast, but still has the base flavor.
+        const foregroundColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-on-base');
+        context.strokeStyle = `color-mix(in srgb, ${color}, ${foregroundColor} 60%)`;
+        context.stroke();
     }
     /**
      * Draws decorations onto events. {@see FlameChartDecoration}.
@@ -2177,10 +2184,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 }
                 lastDrawOffset = barX;
                 if (this.entryColorsCache) {
+                    const shouldDim = this.#shouldDimEvent(entryIndex);
                     const color = this.getColorForEntry(entryIndex);
+                    // TODO(paulirish): The above ran shouldDimEvent twice, if perf is noticeable we could decompose and refactor transformColor/etc
                     let bucket = colorBuckets.get(color);
                     if (!bucket) {
-                        bucket = { indexes: [] };
+                        bucket = { indexes: [], shouldDim };
                         colorBuckets.set(color, bucket);
                     }
                     bucket.indexes.push(entryIndex);
@@ -2397,6 +2406,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const entryStartTime = entryStartTimes[entryIndex];
             const entryTotalTime = entryTotalTimes[entryIndex];
             const level = entryLevels[entryIndex];
+            // Skip if the group for this event has been hidden.
+            const group = this.dataProvider.groupForEvent?.(entryIndex);
+            if (group?.hidden) {
+                continue;
+            }
             const unclippedXStart = this.chartViewport.timeToPosition(entryStartTime);
             const unclippedXEnd = this.chartViewport.timeToPosition(entryStartTime + entryTotalTime);
             const x = unclippedXStart;

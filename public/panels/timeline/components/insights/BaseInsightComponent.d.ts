@@ -5,7 +5,7 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import type { TableState } from './Table.js';
 export interface BaseInsightData {
-    parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
+    bounds: Trace.Types.Timing.TraceWindowMicroSeconds | null;
     /** The key into `insights` that contains this particular insight. */
     insightSetKey: string | null;
 }
@@ -21,8 +21,9 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> e
     set selected(selected: boolean);
     get selected(): boolean;
     set model(model: T);
-    set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace | null);
     set insightSetKey(insightSetKey: string | null);
+    get bounds(): Trace.Types.Timing.TraceWindowMicroSeconds | null;
+    set bounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds | null);
     /**
      * Replaces the initial insight overlays with the ones provided.
      *
@@ -35,8 +36,7 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> e
     toggleTemporaryOverlays(overlays: Overlays.Overlays.TimelineOverlay[] | null, options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     getInitialOverlays(): Overlays.Overlays.TimelineOverlay[];
     protected abstract createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    protected abstract render(): void;
+    protected abstract renderContent(): LitHtml.LitTemplate;
     getEstimatedSavingsTime(): Trace.Types.Timing.MilliSeconds | null;
     getEstimatedSavingsBytes(): number | null;
-    protected renderWithContent(content: LitHtml.LitTemplate): void;
 }

@@ -1,5 +1,6 @@
 import './Table.js';
 import type { ThirdPartiesInsightModel } from '../../../../models/trace/insights/ThirdParties.js';
+import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class ThirdParties extends BaseInsightComponent<ThirdPartiesInsightModel> {
@@ -7,7 +8,7 @@ export declare class ThirdParties extends BaseInsightComponent<ThirdPartiesInsig
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    render(): void;
+    renderContent(): LitHtml.LitTemplate;
 }
 declare global {
     interface HTMLElementTagNameMap {

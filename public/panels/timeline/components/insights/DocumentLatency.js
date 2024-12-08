@@ -121,7 +121,7 @@ export class DocumentLatency extends BaseInsightComponent {
     getEstimatedSavingsBytes() {
         return this.model?.data?.uncompressedResponseBytes ?? null;
     }
-    #renderContent() {
+    renderContent() {
         if (!this.model?.data) {
             return LitHtml.nothing;
         }
@@ -141,12 +141,6 @@ export class DocumentLatency extends BaseInsightComponent {
         </ul>
       </div>`;
         // clang-format on
-    }
-    render() {
-        if (this.model?.data === undefined) {
-            return;
-        }
-        this.renderWithContent(this.#renderContent());
     }
 }
 customElements.define('devtools-performance-document-latency', DocumentLatency);

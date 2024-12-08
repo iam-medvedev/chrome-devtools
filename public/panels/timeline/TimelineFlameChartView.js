@@ -379,16 +379,16 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#sortMarkersForPreferredVisualOrder(markers);
         const markerOverlays = [];
         markers.forEach((marker, i) => {
-            const ts = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(marker, parsedTrace.Meta.traceBounds, parsedTrace.Meta.navigationsByNavigationId, parsedTrace.Meta.navigationsByFrameId);
+            const adjustedTimestamp = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(marker, parsedTrace.Meta.traceBounds, parsedTrace.Meta.navigationsByNavigationId, parsedTrace.Meta.navigationsByFrameId);
             // If any of the markers overlap in timing, lets put them on the same marker.
-            if (i > 0 && ts === markerOverlays[markerOverlays.length - 1].adjustedTimestamp) {
+            if (i > 0 && marker.ts === markerOverlays[markerOverlays.length - 1].entries[0].ts) {
                 markerOverlays[markerOverlays.length - 1].entries.push(marker);
                 return;
             }
             const overlay = {
                 type: 'TIMINGS_MARKER',
                 entries: [marker],
-                adjustedTimestamp: ts,
+                adjustedTimestamp,
             };
             markerOverlays.push(overlay);
         });
@@ -420,8 +420,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
             // The insight's `relatedEvents` property likely already includes the events associated with
             // and overlay, but just in case not, include both arrays. Duplicates are fine.
-            const relatedEvents = [...entries, ...this.#activeInsight?.model.relatedEvents || []];
-            this.#dimInsightRelatedEvents(relatedEvents);
+            let relatedEventsList = this.#activeInsight?.model.relatedEvents;
+            if (!relatedEventsList) {
+                relatedEventsList = [];
+            }
+            else if (relatedEventsList instanceof Map) {
+                relatedEventsList = Array.from(relatedEventsList.keys());
+            }
+            this.#dimInsightRelatedEvents([...entries, ...relatedEventsList]);
         }
         if (options.updateTraceWindow) {
             const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(this.#currentInsightOverlays);

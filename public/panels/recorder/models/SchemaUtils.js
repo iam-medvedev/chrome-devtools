@@ -16,7 +16,12 @@ export function createViewportStep(viewport) {
     };
 }
 export function createEmulateNetworkConditionsStep(conditions) {
-    return { type: StepType.EmulateNetworkConditions, ...conditions };
+    return {
+        type: StepType.EmulateNetworkConditions,
+        download: conditions.download,
+        upload: conditions.upload,
+        latency: conditions.latency,
+    };
 }
 export function areSelectorsEqual(stepA, stepB) {
     if ('selectors' in stepA && 'selectors' in stepB) {

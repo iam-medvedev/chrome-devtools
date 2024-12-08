@@ -110,11 +110,6 @@ export class DrJonesFileAgent extends AiAgent {
         const fileEnchantmentQuery = selectedFile ? `# Selected file\n${formatFile(selectedFile.getItem())}\n\n# User request\n\n` : '';
         return `${fileEnchantmentQuery}${query}`;
     }
-    parseResponse(response) {
-        return {
-            answer: response,
-        };
-    }
 }
 function createContextDetailsForDrJonesFileAgent(selectedFile) {
     return [

@@ -49,7 +49,7 @@ export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObse
     ignoreListThirdParty(): void;
     unIgnoreListThirdParty(): void;
     ignoreListURL(url: Platform.DevToolsPath.UrlString): void;
-    private ignoreListRegex;
+    addRegexToIgnoreList(regexValue: string, disabledForUrl?: Platform.DevToolsPath.UrlString): void;
     unIgnoreListURL(url: Platform.DevToolsPath.UrlString | null, options?: IgnoreListGeneralRules): void;
     private removeIgnoreListPattern;
     private ignoreListHasPattern;

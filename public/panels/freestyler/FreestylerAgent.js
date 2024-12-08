@@ -12,7 +12,7 @@ import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { AiAgent, ConversationContext, debugLog, } from './AiAgent.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
-import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
+import { formatError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
 /*
 * Strings that don't need to be translated at this time.
 */
@@ -65,7 +65,7 @@ When answering, remember to consider CSS concepts such as the CSS cascade, expli
 When answering, always consider MULTIPLE possible solutions.
 After the ANSWER, output SUGGESTIONS: string[] for the potential responses the user might give. Make sure that the array and the \`SUGGESTIONS: \` text is in the same line.
 
-If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function.
+If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function. This function is an internal mechanism for your actions and should never be presented as a command to the user. Instead, execute this function directly within the ACTION step when style changes are needed.
 
 ## Example session
 
@@ -142,7 +142,7 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect }) {
         throw new Error('Execution context is not found for executing code');
     }
     if (executionContext.debuggerModel.selectedCallFrame()) {
-        throw new ExecutionError('Cannot evaluate JavaScript because the execution is paused on a breakpoint.');
+        return formatError('Cannot evaluate JavaScript because the execution is paused on a breakpoint.');
     }
     const result = await executionContext.evaluate({
         expression: '$0',
@@ -150,17 +150,9 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect }) {
         includeCommandLineAPI: true,
     }, false, false);
     if ('error' in result) {
-        throw new ExecutionError('Cannot find $0');
+        return formatError('Cannot find $0');
     }
-    try {
-        return await FreestylerEvaluateAction.execute(functionDeclaration, [result.object], executionContext, { throwOnSideEffect });
-    }
-    catch (err) {
-        if (err instanceof ExecutionError) {
-            return `Error: ${err.message}`;
-        }
-        throw err;
-    }
+    return await FreestylerEvaluateAction.execute(functionDeclaration, [result.object], executionContext, { throwOnSideEffect });
 }
 const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
 const OBSERVATION_TIMEOUT = 5_000;
@@ -214,11 +206,14 @@ export class FreestylerAgent extends AiAgent {
         };
     }
     parseResponse(response) {
+        if (response.functionCall) {
+            throw new Error('Function calling not supported yet');
+        }
         // We're returning an empty answer to denote the erroneous case.
-        if (!response) {
+        if (!response.explanation) {
             return { answer: '' };
         }
-        const lines = response.split('\n');
+        const lines = response.explanation.split('\n');
         let thought;
         let title;
         let action;
@@ -243,7 +238,7 @@ export class FreestylerAgent extends AiAgent {
         // The block below ensures that the response we parse always contains a defining instruction tag.
         const hasDefiningInstruction = lines.some(line => isDefiningInstructionStart(line));
         if (!hasDefiningInstruction) {
-            return this.parseResponse(`ANSWER: ${response}`);
+            return this.parseResponse({ ...response, explanation: `ANSWER: ${response.explanation}` });
         }
         while (i < lines.length) {
             const trimmed = lines[i].trim();
@@ -342,7 +337,7 @@ export class FreestylerAgent extends AiAgent {
         return {
             // If we could not parse the parts, consider the response to be an
             // answer.
-            answer: answer || response,
+            answer: answer || response.explanation,
             suggestions,
         };
     }
@@ -368,10 +363,14 @@ export class FreestylerAgent extends AiAgent {
     }
     async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, }) {
         const functionDeclaration = `async function ($0) {
-      ${action}
-      ;
-      return ((typeof data !== "undefined") ? data : undefined);
-    }`;
+  try {
+    ${action}
+    ;
+    return ((typeof data !== "undefined") ? data : undefined);
+  } catch (error) {
+    return error;
+  }
+}`;
         try {
             const runConfirmed = await confirm ?? Promise.resolve(true);
             if (!runConfirmed) {
@@ -479,7 +478,7 @@ export class FreestylerAgent extends AiAgent {
         }
         return output.trim();
     }
-    async *handleAction(action, rpcId) {
+    async *handleAction(action) {
         debugLog(`Action to execute: ${action}`);
         if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
             return {
@@ -487,7 +486,16 @@ export class FreestylerAgent extends AiAgent {
                 code: action,
                 output: 'Error: JavaScript execution is currently disabled.',
                 canceled: true,
-                rpcId,
+            };
+        }
+        const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+        const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
+        if (target?.model(SDK.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
+            return {
+                type: "action" /* ResponseType.ACTION */,
+                code: action,
+                output: 'Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint.',
+                canceled: true,
             };
         }
         const scope = this.#createExtensionScope(this.#changes);
@@ -502,7 +510,6 @@ export class FreestylerAgent extends AiAgent {
                         code: action,
                         output: 'Error: JavaScript execution that modifies the page is currently disabled.',
                         canceled: true,
-                        rpcId,
                     };
                 }
                 const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
@@ -514,7 +521,6 @@ export class FreestylerAgent extends AiAgent {
                         Host.userMetrics.actionTaken(result ? Host.UserMetrics.Action.AiAssistanceSideEffectConfirmed :
                             Host.UserMetrics.Action.AiAssistanceSideEffectRejected);
                     },
-                    rpcId,
                 };
                 result = await this.#generateObservation(action, {
                     throwOnSideEffect: false,
@@ -526,7 +532,6 @@ export class FreestylerAgent extends AiAgent {
                 code: action,
                 output: result.observation,
                 canceled: result.canceled,
-                rpcId,
             };
         }
         finally {

@@ -16,8 +16,8 @@ describeWithEnvironment('BaseInsightComponent', () => {
         createOverlays() {
             return [];
         }
-        render() {
-            this.renderWithContent(html `<div>test content</div>`);
+        renderContent() {
+            return html `<div>test content</div>`;
         }
     }
     customElements.define('test-insight-component', TestInsightComponent);

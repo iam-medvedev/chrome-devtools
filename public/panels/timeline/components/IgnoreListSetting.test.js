@@ -5,11 +5,11 @@ import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { dispatchBlurEvent, dispatchFocusEvent, dispatchInputEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
-describeWithEnvironment('isIgnoreListedEntry', () => {
+describeWithEnvironment('Ignore List Setting', () => {
     async function renderIgnoreListSetting() {
         const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
         const component = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
@@ -28,6 +28,13 @@ describeWithEnvironment('isIgnoreListedEntry', () => {
                 disabled: !checkboxShadow.querySelector('input')?.checked,
             };
         });
+    }
+    function getNewRegexInput(component) {
+        assert.isNotNull(component.shadowRoot);
+        const newRegexRow = component.shadowRoot.querySelector('.new-regex-row');
+        const newRegexInput = newRegexRow?.querySelector('.new-regex-text-input');
+        assert.exists(newRegexInput);
+        return newRegexInput;
     }
     before(() => {
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -95,15 +102,143 @@ describeWithEnvironment('isIgnoreListedEntry', () => {
         rule1RemoveButton?.click();
         assert.isFalse(isRegexInIgnoredList('rule 1'));
     });
+    it('Able to render the add new regex row correctly', async () => {
+        const component = await renderIgnoreListSetting();
+        assert.isNotNull(component.shadowRoot);
+        const newRegexRows = component.shadowRoot.querySelectorAll('.new-regex-row');
+        // There should only be one add new regex row.
+        assert.strictEqual(newRegexRows.length, 1);
+        // There are two elements, one is checkbox, one is the input
+        const newRegexCheckboxes = newRegexRows[0].querySelectorAll('dt-checkbox');
+        assert.strictEqual(newRegexCheckboxes.length, 1);
+        const newRegexInputs = newRegexRows[0].querySelectorAll('.new-regex-text-input');
+        assert.strictEqual(newRegexInputs.length, 1);
+    });
+    it('Able to add an ignore list rule', async () => {
+        // Now there should only by 1 rule (`/node_modules/|/bower_components/`)
+        assert.isFalse(isRegexInIgnoredList('rule 1'));
+        const component = await renderIgnoreListSetting();
+        const newRegexInput = getNewRegexInput(component);
+        newRegexInput.value = 'rule 1';
+        dispatchBlurEvent(newRegexInput);
+        assert.isTrue(isRegexInIgnoredList('rule 1'));
+    });
+    it('Do not add a duplicate ignore list rule', async () => {
+        disableIgnoreRegex('rule 1');
+        assert.isTrue(isIgnoreRegexDisabled('rule 1'));
+        const component = await renderIgnoreListSetting();
+        const newRegexInput = getNewRegexInput(component);
+        newRegexInput.value = 'rule 1';
+        dispatchBlurEvent(newRegexInput);
+        assert.isFalse(isIgnoreRegexDisabled('rule 1'));
+    });
+    describe('preview the result', () => {
+        it('Add an empty regex when focusing on the input', async () => {
+            const regexPatterns = getIgnoredRegexes();
+            // There is a default rule `/node_modules/|/bower_components/`, and the 'rule 1' we added.
+            assert.strictEqual(regexPatterns.length, 2);
+            const component = await renderIgnoreListSetting();
+            const newRegexInput = getNewRegexInput(component);
+            dispatchFocusEvent(newRegexInput);
+            assert.strictEqual(regexPatterns.length, 3);
+            // We need this to simulate the 'finish editing', so it can remove the temp regex. Otherwise the future tests will
+            // be messed up.
+            // The 'finish editing' part will be tested later
+            dispatchBlurEvent(newRegexInput);
+        });
+        it('Update the regex when user typing', async () => {
+            const regexPatterns = getIgnoredRegexes();
+            // There is a default rule `/node_modules/|/bower_components/`, and the 'rule 1' we added.
+            assert.strictEqual(regexPatterns.length, 2);
+            const component = await renderIgnoreListSetting();
+            const newRegexInput = getNewRegexInput(component);
+            dispatchFocusEvent(newRegexInput);
+            assert.strictEqual(regexPatterns.length, 3);
+            // After the focus event, the temp regex (last one) is still empty.
+            assert.strictEqual(regexPatterns[2].pattern, '');
+            // Simulate user's typing
+            newRegexInput.value = 'r';
+            dispatchInputEvent(newRegexInput);
+            // After the input event, the temp regex (last one) is updated.
+            assert.strictEqual(regexPatterns[2].pattern, 'r');
+            // We need this to simulate the 'finish editing' with empty input, so it can remove the temp regex. Otherwise the
+            // future tests will be messed up.
+            // The 'finish editing' part will be tested later
+            newRegexInput.value = '';
+            dispatchBlurEvent(newRegexInput);
+        });
+        it('Add the regex when user finish typing', async () => {
+            const regexPatterns = getIgnoredRegexes();
+            // There is a default rule `/node_modules/|/bower_components/`, and the 'rule 1' we added.
+            assert.strictEqual(regexPatterns.length, 2);
+            const component = await renderIgnoreListSetting();
+            const newRegexInput = getNewRegexInput(component);
+            dispatchFocusEvent(newRegexInput);
+            newRegexInput.value = 'rule 2';
+            assert.strictEqual(regexPatterns.length, 3);
+            dispatchBlurEvent(newRegexInput);
+            // When add a valid rule, the temp regex won't be removed.
+            assert.strictEqual(regexPatterns.length, 3);
+            assert.strictEqual(regexPatterns[2].pattern, 'rule 2');
+        });
+        it('Remove the invalid regex when user finish typing', async () => {
+            const regexPatterns = getIgnoredRegexes();
+            // There is a default rule `/node_modules/|/bower_components/`, and the 'rule 1', 'rule 2' we added.
+            assert.strictEqual(regexPatterns.length, 3);
+            const component = await renderIgnoreListSetting();
+            const newRegexInput = getNewRegexInput(component);
+            dispatchFocusEvent(newRegexInput);
+            // This is a duplicate rule, so it is invalid.
+            newRegexInput.value = 'rule 2';
+            assert.strictEqual(regexPatterns.length, 4);
+            dispatchBlurEvent(newRegexInput);
+            // When add an invalid rule, the temp regex will be removed.
+            assert.strictEqual(regexPatterns.length, 3);
+        });
+    });
 });
-function ignoreRegex(regexValue) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
+describeWithEnvironment('Pattern validator', () => {
+    it('Can validate the valid pattern', () => {
+        const validPattern = '^hello$';
+        const result = TimelineComponents.IgnoreListSetting.patternValidator([], validPattern);
+        assert.isTrue(result.valid);
+    });
+    it('Returns the reason for the empty pattern', () => {
+        const emptyPattern = '';
+        const result = TimelineComponents.IgnoreListSetting.patternValidator([], emptyPattern);
+        assert.isFalse(result.valid);
+        assert.strictEqual(result.errorMessage, 'Rule can\'t be empty');
+    });
+    it('Returns the reason for the existed pattern', () => {
+        const duplicatePattern = 'abc';
+        const existedRegex = { pattern: duplicatePattern, disabled: false };
+        const result = TimelineComponents.IgnoreListSetting.patternValidator([existedRegex], duplicatePattern);
+        assert.isFalse(result.valid);
+        assert.strictEqual(result.errorMessage, 'Rule already exists');
+    });
+    it('Returns true for the disabled existed pattern', () => {
+        const duplicatePattern = 'abc';
+        const existedRegex = { pattern: duplicatePattern, disabled: true };
+        const result = TimelineComponents.IgnoreListSetting.patternValidator([existedRegex], duplicatePattern);
+        assert.isTrue(result.valid);
+    });
+    it('Returns the reason for the invalid pattern', () => {
+        const invalidPattern = '[';
+        const result = TimelineComponents.IgnoreListSetting.patternValidator([], invalidPattern);
+        assert.isFalse(result.valid);
+        assert.strictEqual(result.errorMessage, 'Rule must be a valid regular expression');
+    });
+});
+function getIgnoredRegexes() {
+    return Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
         .getAsArray();
+}
+function ignoreRegex(regexValue) {
+    const regexPatterns = getIgnoredRegexes();
     regexPatterns.push({ pattern: regexValue, disabled: false });
 }
 function disableIgnoreRegex(regexValue) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
-        .getAsArray();
+    const regexPatterns = getIgnoredRegexes();
     for (const regexPattern of regexPatterns) {
         if (regexPattern.pattern === regexValue) {
             regexPattern.disabled = true;
@@ -112,8 +247,7 @@ function disableIgnoreRegex(regexValue) {
     }
 }
 function isIgnoreRegexDisabled(regexValue) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
-        .getAsArray();
+    const regexPatterns = getIgnoredRegexes();
     for (const regexPattern of regexPatterns) {
         if (regexPattern.pattern === regexValue) {
             return regexPattern.disabled ?? false;
@@ -125,8 +259,7 @@ function isIgnoreRegexDisabled(regexValue) {
  * Returns if the regex is in the ignore list, no matter if it is disabled.
  */
 function isRegexInIgnoredList(regexValue) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
-        .getAsArray();
+    const regexPatterns = getIgnoredRegexes();
     for (const regexPattern of regexPatterns) {
         if (regexPattern.pattern === regexValue) {
             return true;

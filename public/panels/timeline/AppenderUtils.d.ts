@@ -35,6 +35,8 @@ export declare function buildTrackHeader(jslogContext: VisualLoggingTrackName | 
 export declare function getFormattedTime(totalTime?: Trace.Types.Timing.MicroSeconds, selfTime?: Trace.Types.Timing.MicroSeconds): string;
 /**
  * Returns the first level that is available for an event.
+ * Important: if you are walking through an array of events and calling this,
+ * the events MUST be sorted.
  */
 export declare function getEventLevel(event: Trace.Types.Events.Event, lastTimestampByLevel: LastTimestampByLevel): number;
 export declare function addDecorationToEvent(timelineData: PerfUI.FlameChart.FlameChartTimelineData, eventIndex: number, decoration: PerfUI.FlameChart.FlameChartDecoration): void;

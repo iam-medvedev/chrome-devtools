@@ -1,6 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
-export declare class ExecutionError extends Error {
-}
+export declare function formatError(message: string): string;
 export declare class SideEffectError extends Error {
 }
 export interface Options {

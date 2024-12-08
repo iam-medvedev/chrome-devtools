@@ -43,11 +43,11 @@ export class BaseInsightComponent extends HTMLElement {
         return this.#model;
     }
     data = {
-        parsedTrace: null,
+        bounds: null,
         insightSetKey: null,
     };
     // eslint-disable-next-line rulesdir/no_bound_component_methods
-    #boundRender = this.render.bind(this);
+    #boundRender = this.#render.bind(this);
     sharedTableState = {
         selectedRowEl: null,
         selectionIsSticky: false,
@@ -76,12 +76,15 @@ export class BaseInsightComponent extends HTMLElement {
         this.#model = model;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
-    set parsedTrace(parsedTrace) {
-        this.data.parsedTrace = parsedTrace;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
     set insightSetKey(insightSetKey) {
         this.data.insightSetKey = insightSetKey;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    get bounds() {
+        return this.data.bounds;
+    }
+    set bounds(bounds) {
+        this.data.bounds = bounds;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     #dispatchInsightToggle() {
@@ -150,6 +153,13 @@ export class BaseInsightComponent extends HTMLElement {
         this.#initialOverlays = this.createOverlays();
         return this.#initialOverlays;
     }
+    #render() {
+        if (!this.model) {
+            return;
+        }
+        const output = this.renderContent();
+        this.#renderWithContent(output);
+    }
     getEstimatedSavingsTime() {
         return null;
     }
@@ -184,8 +194,8 @@ export class BaseInsightComponent extends HTMLElement {
         }
         return null;
     }
-    renderWithContent(content) {
-        if (content === LitHtml.nothing || !this.#model) {
+    #renderWithContent(content) {
+        if (!this.#model) {
             LitHtml.render(LitHtml.nothing, this.#shadowRoot, { host: this });
             return;
         }

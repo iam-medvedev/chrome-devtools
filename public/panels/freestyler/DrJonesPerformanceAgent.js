@@ -188,10 +188,5 @@ export class DrJonesPerformanceAgent extends AiAgent {
         const perfEnhancementQuery = aiCallTree ? `${treeStr}\n\n# User request\n\n` : '';
         return `${perfEnhancementQuery}${query}`;
     }
-    parseResponse(response) {
-        return {
-            answer: response,
-        };
-    }
 }
 //# sourceMappingURL=DrJonesPerformanceAgent.js.map

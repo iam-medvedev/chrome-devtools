@@ -1,7 +1,6 @@
 import * as Trace from '../../../models/trace/trace.js';
 import type { ActiveInsight } from './Sidebar.js';
 export interface SidebarSingleInsightSetData {
-    parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
     insights: Trace.Insights.Types.TraceInsightSets | null;
     insightSetKey: Trace.Types.Events.NavigationId | null;
     activeCategory: Trace.Insights.Types.InsightCategory;

@@ -15,6 +15,11 @@ styles.replaceSync(
   box-sizing: border-box;
 }
 
+:host {
+  container-type: inline-size; /* stylelint-disable-line property-no-unknown */
+  container-name: ai-settings; /* stylelint-disable-line property-no-unknown */
+}
+
 .shared-disclaimer {
   background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
   border-radius: var(--sys-size-5);
@@ -161,7 +166,8 @@ styles.replaceSync(
   flex-direction: column;
 }
 
-@media (min-width: 640px) {
+/* stylelint-disable-next-line at-rule-no-unknown */
+@container ai-settings (min-width: 480px) {
   .settings-container-wrapper {
     align-items: center;
   }

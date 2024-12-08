@@ -19,6 +19,11 @@ const UIStrings = {
      *@example {poor} PH3
      */
     metricScore: '{PH1}: {PH2} {PH3} score',
+    /**
+     * @description Summary text for an expandable dropdown that contains all insights in a passing state.
+     * @example {4} PH1
+     */
+    passedInsights: 'Passed insights ({PH1})',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/SidebarSingleInsightSet.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -52,7 +57,6 @@ export class SidebarSingleInsightSet extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
     #data = {
-        parsedTrace: null,
         insights: null,
         insightSetKey: null,
         activeCategory: Trace.Insights.Types.InsightCategory.ALL,
@@ -145,19 +149,21 @@ export class SidebarSingleInsightSet extends HTMLElement {
     </div>
     `;
     }
-    #renderInsights(insightSets, parsedTrace, insightSetKey) {
+    #renderInsights(insightSets, insightSetKey) {
         const includeExperimental = Root.Runtime.experiments.isEnabled("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */);
-        const models = insightSets?.get(insightSetKey)?.model;
-        if (!models) {
+        const insightSet = insightSets?.get(insightSetKey);
+        if (!insightSet) {
             return LitHtml.nothing;
         }
-        const components = [];
+        const models = insightSet.model;
+        const shownInsights = [];
+        const passedInsights = [];
         for (const [name, componentClass] of Object.entries(INSIGHT_NAME_TO_COMPONENT)) {
             if (!includeExperimental && EXPERIMENTAL_INSIGHTS.has(name)) {
                 continue;
             }
             const model = models[name];
-            if (!model || !model.shouldShow ||
+            if (!model ||
                 !shouldRenderForCategory({ activeCategory: this.#data.activeCategory, insightCategory: model.category })) {
                 continue;
             }
@@ -166,18 +172,35 @@ export class SidebarSingleInsightSet extends HTMLElement {
         <${componentClass.litTagName}
           .selected=${this.#data.activeInsight?.model === model}
           .model=${model}
-          .parsedTrace=${parsedTrace}
+          .bounds=${insightSet.bounds}
           .insightSetKey=${insightSetKey}
         </${componentClass.litTagName}>
       </div>`;
             // clang-format on
-            components.push(component);
+            if (model.shouldShow) {
+                shownInsights.push(component);
+            }
+            else {
+                passedInsights.push(component);
+            }
         }
-        return html `${components}`;
+        // clang-format off
+        return html `
+      ${shownInsights}
+      ${passedInsights.length ? html `
+        <details class="passed-insights-section">
+          <summary>${i18nString(UIStrings.passedInsights, {
+            PH1: passedInsights.length,
+        })}</summary>
+          ${passedInsights}
+        </details>
+      ` : LitHtml.nothing}
+    `;
+        // clang-format on
     }
     #render() {
-        const { parsedTrace, insights, insightSetKey, } = this.#data;
-        if (!parsedTrace || !insights || !insightSetKey) {
+        const { insights, insightSetKey, } = this.#data;
+        if (!insights || !insightSetKey) {
             LitHtml.render(html ``, this.#shadow, { host: this });
             return;
         }
@@ -185,7 +208,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         LitHtml.render(html `
       <div class="navigation">
         ${this.#renderMetrics(insightSetKey)}
-        ${this.#renderInsights(insights, parsedTrace, insightSetKey)}
+        ${this.#renderInsights(insights, insightSetKey)}
         </div>
       `, this.#shadow, { host: this });
         // clang-format on

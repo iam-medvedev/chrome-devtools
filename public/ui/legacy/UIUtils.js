@@ -1345,11 +1345,14 @@ export function createFileSelectorElement(callback, accept) {
     }
     fileSelectorElement.style.display = 'none';
     fileSelectorElement.tabIndex = -1;
-    fileSelectorElement.onchange = () => {
-        if (fileSelectorElement.files) {
+    fileSelectorElement.addEventListener('change', () => {
+        if (fileSelectorElement.files?.length) {
             callback(fileSelectorElement.files[0]);
         }
-    };
+    });
+    fileSelectorElement.addEventListener('click', () => {
+        fileSelectorElement.value = '';
+    });
     return fileSelectorElement;
 }
 export const MaxLengthForDisplayedURLs = 150;

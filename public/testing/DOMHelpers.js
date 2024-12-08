@@ -102,6 +102,10 @@ export function dispatchMouseUpEvent(element, options = {}) {
     const clickEvent = new MouseEvent('mouseup', options);
     element.dispatchEvent(clickEvent);
 }
+export function dispatchBlurEvent(element, options = {}) {
+    const focusEvent = new FocusEvent('blur', options);
+    element.dispatchEvent(focusEvent);
+}
 export function dispatchFocusEvent(element, options = {}) {
     const focusEvent = new FocusEvent('focus', options);
     element.dispatchEvent(focusEvent);
@@ -207,6 +211,15 @@ export function getCleanTextContentFromElements(el, selector) {
     return elements.map(element => {
         return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, ' ') : '';
     });
+}
+/**
+ * Returns the text content for the first element matching the given `selector` within the provided `el`.
+ * Will error if no element is found matching the selector.
+ */
+export function getCleanTextContentFromSingleElement(el, selector) {
+    const element = el.querySelector(selector);
+    assert.isOk(element, `Could not find element with selector ${selector}`);
+    return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, ' ') : '';
 }
 export function assertNodeTextContent(component, expectedContent) {
     assert.isNotNull(component.shadowRoot);
