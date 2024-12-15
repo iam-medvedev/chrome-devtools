@@ -1,4 +1,5 @@
 import * as UI from '../../ui/legacy/legacy.js';
+import { type ComputedStyleModel } from './ComputedStyleModel.js';
 export declare class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     #private;
     private computedStyleModel;
@@ -9,7 +10,7 @@ export declare class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWid
     private readonly noMatchesElement;
     private readonly linkifier;
     private readonly imagePreviewPopover;
-    constructor();
+    constructor(computedStyleModel: ComputedStyleModel);
     onResize(): void;
     wasShown(): void;
     willHide(): void;

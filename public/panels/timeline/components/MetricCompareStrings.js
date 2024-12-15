@@ -80,7 +80,7 @@ const UIStrings = {
      */
     poorSummarized: 'Your local {PH1} value of {PH2} is poor.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -88,7 +88,7 @@ const UIStrings = {
      */
     goodGoodDetailedCompare: 'Your local {PH1} value of {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} value of {PH3} is good.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -96,7 +96,7 @@ const UIStrings = {
      */
     goodNeedsImprovementDetailedCompare: 'Your local {PH1} value of {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} needs improvement.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -104,7 +104,7 @@ const UIStrings = {
      */
     goodPoorDetailedCompare: 'Your local {PH1} value of {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is poor.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -112,7 +112,7 @@ const UIStrings = {
      */
     needsImprovementGoodDetailedCompare: 'Your local {PH1} value of {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is good.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -120,7 +120,7 @@ const UIStrings = {
      */
     needsImprovementNeedsImprovementDetailedCompare: 'Your local {PH1} value of {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} value of {PH3} needs improvement.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -128,7 +128,7 @@ const UIStrings = {
      */
     needsImprovementPoorDetailedCompare: 'Your local {PH1} value of {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is poor.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -136,7 +136,7 @@ const UIStrings = {
      */
     poorGoodDetailedCompare: 'Your local {PH1} value of {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is good.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3
@@ -144,7 +144,7 @@ const UIStrings = {
      */
     poorNeedsImprovementDetailedCompare: 'Your local {PH1} value of {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} needs improvement.',
     /**
-     * @description Text block that compares a local metric value to real user experiences. "field data" refers to performance data collected from real users on the site. "local" refers to a developers local testing environment.
+     * @description Text block that compares a local metric value to real user experiences. "field data" should be interpreted as "real user data". "local" refers to a developers local testing environment.
      * @example {LCP} PH1
      * @example {500 ms} PH2
      * @example {400 ms} PH3

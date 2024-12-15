@@ -220,6 +220,10 @@ export default {
   --sys-color-surface3: color-mix(in sRGB, var(--ref-palette-primary40) 11%, var(--ref-palette-neutral99));
   --sys-color-surface2: color-mix(in sRGB, var(--ref-palette-primary40) 8%, var(--ref-palette-neutral99));
   --sys-color-surface1: color-mix(in sRGB, var(--ref-palette-primary40) 5%, var(--ref-palette-neutral99));
+
+  /* Header surfaces */
+  --sys-color-header-container: var(--ref-palette-primary95);
+
   /* Chrome DevTools Design System */
 
   /* Prominent accent colors for icons */
@@ -398,6 +402,11 @@ export default {
    * Colors for element panel sidebar subtitle
    */
   --app-color-element-sidebar-subtitle: var(--ref-palette-neutral50);
+
+  /**
+   * Color for input driver for AI assistance chat
+   */
+  --app-color-ai-assistance-input-divider: rgb(0 0 0 / 10%);
 }
 
 :root.baseline-default {
@@ -620,6 +629,9 @@ export default {
   --sys-color-surface2: color-mix(in sRGB, var(--ref-palette-primary80) 8%, var(--ref-palette-neutral10));
   --sys-color-surface1: color-mix(in sRGB, var(--ref-palette-primary80) 5%, var(--ref-palette-neutral10));
 
+  /* Header surface */
+  --sys-color-header-container: var(--ref-palette-neutral25);
+
   /* Chrome DevTools Design System */
 
   /* Prominent accent colors for icons */
@@ -778,6 +790,11 @@ export default {
    * Colors for element panel sidebar subtitle
    */
   --app-color-element-sidebar-subtitle: var(--sys-color-token-subtle);
+
+  /**
+   * Color for input driver for AI assistance chat
+   */
+  --app-color-ai-assistance-input-divider: rgb(255 255 255 / 15%);
 }
 
 /*# sourceURL=themeColors.css */

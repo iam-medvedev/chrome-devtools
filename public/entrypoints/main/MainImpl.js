@@ -463,7 +463,34 @@ export class MainImpl {
         this.#resolveReadyForTestPromise();
         // Asynchronously run the extensions.
         window.setTimeout(this.#lateInitialization.bind(this), 100);
+        await this.#maybeInstallVeInspectionBinding();
         MainImpl.timeEnd('Main._initializeTarget');
+    }
+    async #maybeInstallVeInspectionBinding() {
+        const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const url = primaryPageTarget?.targetInfo()?.url;
+        const origin = url ? Common.ParsedURL.ParsedURL.extractOrigin(url) : undefined;
+        const binding = '__devtools_ve_inspection_binding__';
+        if (primaryPageTarget && await VisualLogging.isUnderInspection(origin)) {
+            const runtimeModel = primaryPageTarget.model(SDK.RuntimeModel.RuntimeModel);
+            await runtimeModel?.addBinding({ name: binding });
+            runtimeModel?.addEventListener(SDK.RuntimeModel.Events.BindingCalled, event => {
+                if (event.data.name === binding) {
+                    VisualLogging.setVeDebuggingEnabled(event.data.payload === 'true', (query) => {
+                        VisualLogging.setVeDebuggingEnabled(false);
+                        void runtimeModel?.defaultExecutionContext()?.evaluate({
+                            expression: `window.inspect(${JSON.stringify(query)})`,
+                            includeCommandLineAPI: false,
+                            silent: true,
+                            returnByValue: false,
+                            generatePreview: false,
+                        }, 
+                        /* userGesture */ false, 
+                        /* awaitPromise */ false);
+                    });
+                }
+            });
+        }
     }
     // TODO(crbug.com/350668580) Move this to AISettingsTab once the setting is only available
     // there and not in the general settings screen anymore.

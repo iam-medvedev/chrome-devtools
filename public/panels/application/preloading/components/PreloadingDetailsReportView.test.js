@@ -33,21 +33,88 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
     it('renders prerendering details', async () => {
         const url = 'https://example.com/prerendered.html';
         const data = {
-            preloadingAttempt: {
-                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                key: {
-                    loaderId: 'loaderId',
-                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                    url,
-                    targetHint: undefined,
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                {
+                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+                    prefetchStatus: "PrefetchResponseUsed" /* Protocol.Preload.PrefetchStatus.PrefetchResponseUsed */,
+                    requestId: 'requestId:1',
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
                 },
-                status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
-                prerenderStatus: null,
-                disallowedMojoInterface: null,
-                mismatchedHeaders: null,
-                ruleSetIds: ['ruleSetId'],
-                nodeIds: [1],
-            },
+                {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                },
+            ]),
+            ruleSets: [
+                {
+                    id: 'ruleSetId',
+                    loaderId: 'loaderId',
+                    sourceText: `
+{
+  "prefetch": [
+    {
+      "source": "list",
+      "urls": ["/subresource.js"]
+    }
+  ]
+}
+`,
+                },
+            ],
+            pageURL: 'https://example.com/',
+        };
+        const component = await renderPreloadingDetailsReportView(data);
+        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
+        const values = getCleanTextContentFromElements(report, 'devtools-report-value');
+        assert.deepEqual(zip2(keys, values), [
+            ['URL', url],
+            ['Action', 'Prerender'],
+            ['Status', 'Speculative load is running.'],
+            ['Rule set', 'example.com/'],
+        ]);
+    });
+    // Prerender2FallbackPrefetchSpecRules disabled case.
+    it('doesn\'t render (automatically fell back to prefetch) if prerender alone', async () => {
+        const url = 'https://example.com/prerendered.html';
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                }]),
             ruleSets: [
                 {
                     id: 'ruleSetId',
@@ -82,21 +149,39 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
     it('renders prerendering details with cancelled reason', async () => {
         const url = 'https://example.com/prerendered.html';
         const data = {
-            preloadingAttempt: {
-                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                key: {
-                    loaderId: 'loaderId',
-                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                    url,
-                    targetHint: undefined,
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                {
+                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+                    prefetchStatus: "PrefetchResponseUsed" /* Protocol.Preload.PrefetchStatus.PrefetchResponseUsed */,
+                    requestId: 'requestId:1',
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
                 },
-                status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
-                prerenderStatus: "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */,
-                disallowedMojoInterface: 'device.mojom.GamepadMonitor',
-                mismatchedHeaders: null,
-                ruleSetIds: ['ruleSetId'],
-                nodeIds: [1],
-            },
+                {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prerenderStatus: "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */,
+                    disallowedMojoInterface: 'device.mojom.GamepadMonitor',
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                },
+            ]),
             ruleSets: [
                 {
                     id: 'ruleSetId',
@@ -121,8 +206,8 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
             ['URL', url],
-            ['Action', 'Prerender'],
-            ['Status', 'Speculative load failed.'],
+            ['Action', 'Prerender (automatically fell back to prefetch)'],
+            ['Status', 'Speculative load failed, but fallback to prefetch succeeded.'],
             [
                 'Failure reason',
                 'The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: device.mojom.GamepadMonitor)',
@@ -138,20 +223,21 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
         };
         const url = 'https://example.com/prefetch.html';
         const data = {
-            preloadingAttempt: {
-                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                key: {
-                    loaderId: 'loaderId',
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    url,
-                    targetHint: undefined,
-                },
-                status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
-                prefetchStatus: "PrefetchFailedNon2XX" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNon2XX */,
-                requestId: 'requestId:1',
-                ruleSetIds: ['ruleSetId'],
-                nodeIds: [1],
-            },
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prefetchStatus: "PrefetchFailedNon2XX" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNon2XX */,
+                    requestId: 'requestId:1',
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                }]),
             ruleSets: [
                 {
                     id: 'ruleSetId',
@@ -194,20 +280,21 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
         };
         const url = 'https://example.com/prefetch.html';
         const data = {
-            preloadingAttempt: {
-                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                key: {
-                    loaderId: 'loaderId',
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    url,
-                    targetHint: undefined,
-                },
-                status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
-                prefetchStatus: null,
-                requestId: 'requestId:1',
-                ruleSetIds: ['ruleSetId'],
-                nodeIds: [1],
-            },
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
+                    prefetchStatus: null,
+                    requestId: 'requestId:1',
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                }]),
             ruleSets: [
                 {
                     id: 'ruleSetId',
@@ -242,5 +329,6 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             ['Rule set', 'example.com/speculation-rules.json'],
         ]);
     });
+    // TODO: Add test for pipeline
 });
 //# sourceMappingURL=PreloadingDetailsReportView.test.js.map

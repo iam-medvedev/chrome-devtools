@@ -4,6 +4,7 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import * as HandlerHelpers from './helpers.js';
 import { data as metaHandlerData } from './MetaHandler.js';
 const MILLISECONDS_TO_MICROSECONDS = 1000;
 const SECONDS_TO_MICROSECONDS = 1000000;
@@ -14,6 +15,16 @@ const requestsByOrigin = new Map();
 const requestsByTime = [];
 const networkRequestEventByInitiatorUrl = new Map();
 const eventToInitiatorMap = new Map();
+/**
+ * These are to store ThirdParty data relationships between entities and events. To reduce iterating through data
+ * more than we have to, here we start building the caches. After this, the RendererHandler will update
+ * the relationships. When handling ThirdParty references, use the one in the RendererHandler instead.
+ */
+const entityMappings = {
+    eventsByEntity: new Map(),
+    entityByEvent: new Map(),
+    createdEntityCache: new Map(),
+};
 function storeTraceEventWithRequestId(requestId, key, value) {
     if (!requestMap.has(requestId)) {
         requestMap.set(requestId, {});
@@ -50,6 +61,9 @@ export function reset() {
     networkRequestEventByInitiatorUrl.clear();
     eventToInitiatorMap.clear();
     webSocketData.clear();
+    entityMappings.eventsByEntity.clear();
+    entityMappings.entityByEvent.clear();
+    entityMappings.createdEntityCache.clear();
 }
 export function handleEvent(event) {
     if (Types.Events.isResourceChangePriority(event)) {
@@ -372,6 +386,8 @@ export async function finalize() {
         requests.all.push(networkEvent);
         requestsByTime.push(networkEvent);
         requestsById.set(networkEvent.args.data.requestId, networkEvent);
+        // Update entity relationships for network events.
+        HandlerHelpers.updateEventForEntities(networkEvent, entityMappings);
         const initiatorUrl = networkEvent.args.data.initiator?.url ||
             Helpers.Trace.getZeroIndexedStackTraceForEvent(networkEvent)?.at(0)?.url;
         if (initiatorUrl) {
@@ -397,6 +413,11 @@ export function data() {
         byTime: requestsByTime,
         eventToInitiator: eventToInitiatorMap,
         webSocket: [...webSocketData.values()],
+        entityMappings: {
+            entityByEvent: new Map(entityMappings.entityByEvent),
+            eventsByEntity: new Map(entityMappings.eventsByEntity),
+            createdEntityCache: new Map(entityMappings.createdEntityCache),
+        },
     };
 }
 export function deps() {

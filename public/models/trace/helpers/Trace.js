@@ -29,6 +29,18 @@ export function stackTraceForEvent(event) {
     if (Types.Events.isSyntheticUserTiming(event)) {
         return stackTraceForEvent(event.rawSourceEvent);
     }
+    if (Types.Events.isFunctionCall(event)) {
+        const data = event.args.data;
+        if (!data) {
+            return null;
+        }
+        const { columnNumber, lineNumber, url, scriptId, functionName } = data;
+        if (lineNumber === undefined || functionName === undefined || columnNumber === undefined ||
+            scriptId === undefined || url === undefined) {
+            return null;
+        }
+        return [{ columnNumber, lineNumber, url, scriptId, functionName }];
+    }
     return null;
 }
 export function extractOriginFromTrace(firstNavigationURL) {
@@ -323,6 +335,7 @@ export function getZeroIndexedStackTraceForEvent(event) {
         switch (event.name) {
             case "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */:
             case "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */:
+            case "FunctionCall" /* Types.Events.Name.FUNCTION_CALL */:
             case "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */: {
                 return makeZeroBasedCallFrame(callFrame);
             }

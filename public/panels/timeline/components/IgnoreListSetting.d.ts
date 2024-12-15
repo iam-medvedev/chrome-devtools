@@ -18,9 +18,7 @@ declare global {
  * @param inputValue new regex in string format
  * @returns if the regex is valid and if not, why it is invalid
  */
-export declare function patternValidator(existingRegexes: Common.Settings.RegExpSettingItem[], inputValue: string): ({
-    valid: true;
-} | {
-    valid: false;
-    errorMessage: string;
-});
+export declare function patternValidator(existingRegexes: Common.Settings.RegExpSettingItem[], inputValue: string): {
+    valid: boolean;
+    message?: string;
+};

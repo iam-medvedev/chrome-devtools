@@ -39,6 +39,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/network/BlockedURLsPane.test.ts",
+    "../../../../../../front_end/panels/network/NetworkConfigView.test.ts",
     "../../../../../../front_end/panels/network/NetworkDataGridNode.test.ts",
     "../../../../../../front_end/panels/network/NetworkItemView.test.ts",
     "../../../../../../front_end/panels/network/NetworkLogView.test.ts",
@@ -53,7 +54,8 @@
     "../../../../../../front_end/panels/network/RequestTimingView.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
   ],
   "references": [
     {
@@ -64,6 +66,9 @@
     },
     {
       "path": "../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {
       "path": "../../core/platform/bundle-tsconfig.json"

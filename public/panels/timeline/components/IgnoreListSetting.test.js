@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
-import { dispatchBlurEvent, dispatchFocusEvent, dispatchInputEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchBlurEvent, dispatchFocusEvent, dispatchInputEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('Ignore List Setting', () => {
     async function renderIgnoreListSetting() {
-        const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
         const component = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
         renderElementIntoDOM(component);
         await coordinator.done();
@@ -35,6 +36,12 @@ describeWithEnvironment('Ignore List Setting', () => {
         const newRegexInput = newRegexRow?.querySelector('.new-regex-text-input');
         assert.exists(newRegexInput);
         return newRegexInput;
+    }
+    function getValidationResultElement(component) {
+        assert.isNotNull(component.shadowRoot);
+        const validationResultElement = component.shadowRoot.querySelector('.input-validation');
+        assert.exists(validationResultElement);
+        return validationResultElement;
     }
     before(() => {
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -132,6 +139,60 @@ describeWithEnvironment('Ignore List Setting', () => {
         dispatchBlurEvent(newRegexInput);
         assert.isFalse(isIgnoreRegexDisabled('rule 1'));
     });
+    it('Do not show warning message for valid rule', async () => {
+        const component = await renderIgnoreListSetting();
+        const newRegexInput = getNewRegexInput(component);
+        dispatchFocusEvent(newRegexInput);
+        newRegexInput.value = 'rule 2';
+        dispatchInputEvent(newRegexInput);
+        await coordinator.done();
+        const validationResultElement = component.shadowRoot?.querySelector('.input-validation');
+        assert.notExists(validationResultElement);
+        // We need this to simulate the 'finish editing' with empty input, so it can remove the temp regex. Otherwise the
+        // future tests will be messed up.
+        // The 'finish editing' part will be tested later
+        newRegexInput.value = '';
+        dispatchBlurEvent(newRegexInput);
+    });
+    it('Show error message for invalid rule', async () => {
+        // One example of invalid rule is duplicate input.
+        assert.isTrue(isRegexInIgnoredList('rule 1'));
+        const component = await renderIgnoreListSetting();
+        const newRegexInput = getNewRegexInput(component);
+        dispatchFocusEvent(newRegexInput);
+        newRegexInput.value = 'rule 1';
+        dispatchInputEvent(newRegexInput);
+        await coordinator.done();
+        const validationResultElement = getValidationResultElement(component);
+        assert.isFalse(validationResultElement.hidden);
+        assert.isTrue(validationResultElement.classList.contains('input-validation-error'));
+        assert.isNotEmpty(validationResultElement.textContent);
+        // We need this to simulate the 'finish editing' with empty input, so it can remove the temp regex. Otherwise the
+        // future tests will be messed up.
+        // The 'finish editing' part will be tested later
+        newRegexInput.value = '';
+        dispatchBlurEvent(newRegexInput);
+    });
+    it('Show warning message for valid rule with warning message', async () => {
+        // One example of valid rule with warning message is when a rule is disabled and it is added again.
+        disableIgnoreRegex('rule 1');
+        assert.isTrue(isIgnoreRegexDisabled('rule 1'));
+        const component = await renderIgnoreListSetting();
+        const newRegexInput = getNewRegexInput(component);
+        dispatchFocusEvent(newRegexInput);
+        newRegexInput.value = 'rule 1';
+        dispatchInputEvent(newRegexInput);
+        await coordinator.done();
+        const validationResultElement = getValidationResultElement(component);
+        assert.isFalse(validationResultElement.hidden);
+        assert.isFalse(validationResultElement.classList.contains('input-validation-error'));
+        assert.isNotEmpty(validationResultElement.textContent);
+        // We need this to simulate the 'finish editing' with empty input, so it can remove the temp regex. Otherwise the
+        // future tests will be messed up.
+        // The 'finish editing' part will be tested later
+        newRegexInput.value = '';
+        dispatchBlurEvent(newRegexInput);
+    });
     describe('preview the result', () => {
         it('Add an empty regex when focusing on the input', async () => {
             const regexPatterns = getIgnoredRegexes();
@@ -195,6 +256,15 @@ describeWithEnvironment('Ignore List Setting', () => {
             // When add an invalid rule, the temp regex will be removed.
             assert.strictEqual(regexPatterns.length, 3);
         });
+        it('Clear the input when `Escape` is pressed', async () => {
+            const component = await renderIgnoreListSetting();
+            const newRegexInput = getNewRegexInput(component);
+            // This is a duplicate rule, so it is invalid.
+            newRegexInput.value = 'rule 2';
+            dispatchKeyDownEvent(newRegexInput, { key: Platform.KeyboardUtilities.ESCAPE_KEY });
+            // When add an invalid rule, the temp regex will be removed.
+            assert.strictEqual('', newRegexInput.value);
+        });
     });
 });
 describeWithEnvironment('Pattern validator', () => {
@@ -207,26 +277,27 @@ describeWithEnvironment('Pattern validator', () => {
         const emptyPattern = '';
         const result = TimelineComponents.IgnoreListSetting.patternValidator([], emptyPattern);
         assert.isFalse(result.valid);
-        assert.strictEqual(result.errorMessage, 'Rule can\'t be empty');
+        assert.strictEqual(result.message, 'Rule can\'t be empty');
     });
     it('Returns the reason for the existed pattern', () => {
         const duplicatePattern = 'abc';
         const existedRegex = { pattern: duplicatePattern, disabled: false };
         const result = TimelineComponents.IgnoreListSetting.patternValidator([existedRegex], duplicatePattern);
         assert.isFalse(result.valid);
-        assert.strictEqual(result.errorMessage, 'Rule already exists');
+        assert.strictEqual(result.message, 'Rule already exists');
     });
     it('Returns true for the disabled existed pattern', () => {
         const duplicatePattern = 'abc';
         const existedRegex = { pattern: duplicatePattern, disabled: true };
         const result = TimelineComponents.IgnoreListSetting.patternValidator([existedRegex], duplicatePattern);
         assert.isTrue(result.valid);
+        assert.strictEqual(result.message, 'This rule already exists but is disabled. Saving this value will re-enable the rule');
     });
     it('Returns the reason for the invalid pattern', () => {
         const invalidPattern = '[';
         const result = TimelineComponents.IgnoreListSetting.patternValidator([], invalidPattern);
         assert.isFalse(result.valid);
-        assert.strictEqual(result.errorMessage, 'Rule must be a valid regular expression');
+        assert.strictEqual(result.message, 'Rule must be a valid regular expression');
     });
 });
 function getIgnoredRegexes() {

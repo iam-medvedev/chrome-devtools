@@ -13,7 +13,7 @@ export interface PreloadingGridData {
 }
 export interface PreloadingGridRow {
     id: string;
-    attempt: SDK.PreloadingModel.PreloadingAttempt;
+    pipeline: SDK.PreloadingModel.PreloadPipeline;
     ruleSets: Protocol.Preload.RuleSet[];
 }
 export declare class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {

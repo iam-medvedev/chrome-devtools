@@ -10,6 +10,10 @@ styles.replaceSync(
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+.ignore-list-setting-content {
+  width: 280px;
+}
+
 .ignore-list-setting-description {
   margin-bottom: 5px;
 }
@@ -36,6 +40,36 @@ styles.replaceSync(
 
   .new-regex-text-input {
     flex: auto;
+  }
+
+  .harmony-input[type="text"] {
+    /* padding: 3px 6px; */
+    /* height: 24px; */
+    border: 1px solid var(--sys-color-neutral-outline);
+    border-radius: 4px;
+    outline: none;
+
+    &.error-input,
+    &:invalid {
+      border-color: var(--sys-color-error);
+    }
+
+    &:not(.error-input):not(:invalid):focus {
+      border-color: var(--sys-color-state-focus-ring);
+    }
+
+    &:not(.error-input):not(:invalid):hover:not(:focus) {
+      background: var(--sys-color-state-hover-on-subtle);
+    }
+  }
+}
+
+.input-validation {
+  /* 24px is the size of the checkbox, add this margin-left so the text can align with the input */
+  margin: 5px 0 5px 24px;
+
+  &.input-validation-error {
+    color: var(--sys-color-error);
   }
 }
 

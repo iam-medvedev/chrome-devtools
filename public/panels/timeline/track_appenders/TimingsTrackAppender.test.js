@@ -8,7 +8,6 @@ import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
-    Timeline.ExtensionDataGatherer.ExtensionDataGatherer.instance().modelChanged(parsedTrace);
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.timingsTrackAppender();
 }
@@ -280,7 +279,6 @@ describeWithEnvironment('TimingTrackAppender', function () {
         });
         describe('toggling', function () {
             it('Does not append extension data when the configuration is set to disabled', async function () {
-                Timeline.ExtensionDataGatherer.ExtensionDataGatherer.removeInstance();
                 entryData = [];
                 flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
                 entryTypeByLevel = [];

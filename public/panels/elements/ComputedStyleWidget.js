@@ -39,7 +39,6 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as ElementsComponents from './components/components.js';
-import { ComputedStyleModel } from './ComputedStyleModel.js';
 import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { PlatformFontsWidget } from './PlatformFontsWidget.js';
@@ -196,10 +195,11 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     imagePreviewPopover;
     #computedStylesTree = new TreeOutline.TreeOutline.TreeOutline();
     #treeData;
-    constructor() {
+    constructor(computedStyleModel) {
         super(true);
         this.contentElement.classList.add('styles-sidebar-computed-style-widget');
-        this.computedStyleModel = new ComputedStyleModel();
+        this.computedStyleModel = computedStyleModel;
+        this.computedStyleModel.addEventListener("CSSModelChanged" /* Events.CSS_MODEL_CHANGED */, this.update, this);
         this.computedStyleModel.addEventListener("ComputedStyleChanged" /* Events.COMPUTED_STYLE_CHANGED */, this.update, this);
         this.showInheritedComputedStylePropertiesSetting =
             Common.Settings.Settings.instance().createSetting('show-inherited-computed-style-properties', false);
@@ -231,22 +231,17 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         const fontsWidget = new PlatformFontsWidget(this.computedStyleModel);
         fontsWidget.show(this.contentElement);
     }
-    #handleNodeChange(event) {
-        void this.computedStyleModel.cssModel()?.trackComputedStyleUpdatesForNode(event.data?.id);
-    }
     onResize() {
         const isNarrow = this.contentElement.offsetWidth < 260;
         this.#computedStylesTree.classList.toggle('computed-narrow', isNarrow);
     }
     wasShown() {
+        UI.Context.Context.instance().setFlavor(ComputedStyleWidget, this);
         super.wasShown();
         this.registerCSSFiles([computedStyleSidebarPaneStyles]);
-        void this.computedStyleModel.cssModel()?.trackComputedStyleUpdatesForNode(this.computedStyleModel.node()?.id);
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleNodeChange, this);
     }
     willHide() {
-        void this.computedStyleModel.cssModel()?.trackComputedStyleUpdatesForNode(undefined);
-        UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleNodeChange, this);
+        UI.Context.Context.instance().setFlavor(ComputedStyleWidget, null);
     }
     async doUpdate() {
         const [nodeStyles, matchedStyles] = await Promise.all([this.computedStyleModel.fetchComputedStyle(), this.fetchMatchedCascade()]);
@@ -399,7 +394,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
                 traceElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this, matchedStyles, data.property));
                 return html `${traceElement}`;
             }
-            return html `<span style="cursor: text; color: var(--sys-color-token-subtle);">${data.name}</span>`;
+            return html `<span style="cursor: text; color: var(--sys-color-on-surface-subtle);">${data.name}</span>`;
         };
     }
     buildTreeNode(propertyTraces, propertyName, propertyValue, isInherited) {

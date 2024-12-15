@@ -59,9 +59,9 @@ export interface TimeRangeLabel {
 /**
  * Given a list of overlays, this method will calculate the smallest possible
  * trace window that will contain all of the overlays.
- * `overlays` is expected to be non-empty.
+ * `overlays` is expected to be non-empty, and this will return `null` if it is empty.
  */
-export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): Trace.Types.Timing.TraceWindowMicroSeconds;
+export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): Trace.Types.Timing.TraceWindowMicroSeconds | null;
 /**
  * Get a list of entries for a given overlay.
  */

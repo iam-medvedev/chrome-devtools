@@ -20,19 +20,20 @@ describeWithEnvironment('PreloadingGrid', () => {
         await assertRenderResult({
             rows: [{
                     id: 'id',
-                    attempt: {
-                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        key: {
-                            loaderId: 'loaderId:1',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                             action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                            url: 'https://example.com/prefetched.html',
-                        },
-                        status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
-                        prefetchStatus: null,
-                        requestId: 'requestId:1',
-                        ruleSetIds: ['ruleSetId:0.1'],
-                        nodeIds: [1],
-                    },
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://example.com/prefetched.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                            prefetchStatus: null,
+                            requestId: 'requestId:1',
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        }]),
                     ruleSets: [
                         {
                             id: 'ruleSetId:0.1',
@@ -59,19 +60,20 @@ describeWithEnvironment('PreloadingGrid', () => {
         await assertRenderResult({
             rows: [{
                     id: 'id',
-                    attempt: {
-                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        key: {
-                            loaderId: 'loaderId:1',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                             action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                            url: 'https://cross-origin.example.com/prefetched.html',
-                        },
-                        status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
-                        prefetchStatus: null,
-                        requestId: 'requestId:1',
-                        ruleSetIds: ['ruleSetId:0.1'],
-                        nodeIds: [1],
-                    },
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://cross-origin.example.com/prefetched.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                            prefetchStatus: null,
+                            requestId: 'requestId:1',
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        }]),
                     ruleSets: [
                         {
                             id: 'ruleSetId:0.1',
@@ -98,19 +100,20 @@ describeWithEnvironment('PreloadingGrid', () => {
         await assertRenderResult({
             rows: [{
                     id: 'id',
-                    attempt: {
-                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        key: {
-                            loaderId: 'loaderId:1',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                             action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                            url: 'https://example.com/prefetched.html',
-                        },
-                        status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
-                        prefetchStatus: null,
-                        requestId: 'requestId:1',
-                        ruleSetIds: ['ruleSetId:0.1'],
-                        nodeIds: [],
-                    },
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://example.com/prefetched.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                            prefetchStatus: null,
+                            requestId: 'requestId:1',
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [],
+                        }]),
                     ruleSets: [
                         {
                             id: 'ruleSetId:0.1',
@@ -139,36 +142,38 @@ describeWithEnvironment('PreloadingGrid', () => {
             rows: [
                 {
                     id: 'id',
-                    attempt: {
-                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        key: {
-                            loaderId: 'loaderId:1',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                             action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                            url: 'https://example.com/rule-set-missing.html',
-                        },
-                        status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
-                        prefetchStatus: null,
-                        requestId: 'requestId:1',
-                        ruleSetIds: ['ruleSetId:0.1'],
-                        nodeIds: [1],
-                    },
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://example.com/rule-set-missing.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                            prefetchStatus: null,
+                            requestId: 'requestId:1',
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        }]),
                     ruleSets: [],
                 },
                 {
                     id: 'id',
-                    attempt: {
-                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        key: {
-                            loaderId: 'loaderId:1',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                             action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                            url: 'https://example.com/multiple-rule-sets.html',
-                        },
-                        status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
-                        prefetchStatus: null,
-                        requestId: 'requestId:2',
-                        ruleSetIds: ['ruleSetId:0.2', 'ruleSetId:0.3'],
-                        nodeIds: [1],
-                    },
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://example.com/multiple-rule-sets.html',
+                            },
+                            pipelineId: 'pipelineId:2',
+                            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                            prefetchStatus: null,
+                            requestId: 'requestId:2',
+                            ruleSetIds: ['ruleSetId:0.2', 'ruleSetId:0.3'],
+                            nodeIds: [1],
+                        }]),
                     ruleSets: [
                         {
                             id: 'ruleSetId:0.2',
@@ -212,21 +217,21 @@ describeWithEnvironment('PreloadingGrid', () => {
         const grid = await assertRenderResult({
             rows: [{
                     id: 'id',
-                    attempt: {
-                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        key: {
-                            loaderId: 'loaderId:1',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                             action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                            url: 'https://example.com/prerendered.html',
-                        },
-                        status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
-                        prerenderStatus: "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */,
-                        disallowedMojoInterface: 'device.mojom.GamepadMonitor',
-                        mismatchedHeaders: null,
-                        requestId: 'requestId:1',
-                        ruleSetIds: ['ruleSetId:0.1'],
-                        nodeIds: [1],
-                    },
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                                url: 'https://example.com/prerendered.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                            prerenderStatus: "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */,
+                            disallowedMojoInterface: 'device.mojom.GamepadMonitor',
+                            mismatchedHeaders: null,
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        }]),
                     ruleSets: [
                         {
                             id: 'ruleSetId:0.1',
@@ -251,6 +256,143 @@ describeWithEnvironment('PreloadingGrid', () => {
                 'Prerender',
                 'example.com/',
                 'Failure - The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: device.mojom.GamepadMonitor)',
+            ],
+        ]);
+        assert.isNotNull(grid.shadowRoot);
+        const cell = getCellByIndexes(grid.shadowRoot, { row: 1, column: 3 });
+        const div = cell.querySelector('div');
+        assert.strictEqual(div.getAttribute('style'), 'color:var(--sys-color-error);');
+        const icon = div.children[0];
+        assert.include(icon.shadowRoot.innerHTML, 'cross-circle-filled');
+    });
+    it('shows a warning if a prerender fallbacks to prefetch', async () => {
+        const grid = await assertRenderResult({
+            rows: [{
+                    id: 'id',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                        {
+                            action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://example.com/prerendered.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+                            prefetchStatus: "PrefetchResponseUsed" /* Protocol.Preload.PrefetchStatus.PrefetchResponseUsed */,
+                            requestId: 'requestId:1',
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        },
+                        {
+                            action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                                url: 'https://example.com/prerendered.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                            prerenderStatus: "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */,
+                            disallowedMojoInterface: 'device.mojom.GamepadMonitor',
+                            mismatchedHeaders: null,
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        },
+                    ]),
+                    ruleSets: [
+                        {
+                            id: 'ruleSetId:0.1',
+                            loaderId: 'loaderId:1',
+                            sourceText: `
+{
+  "prerender":[
+    {
+      "source": "list",
+      "urls": ["/prerendered.html"]
+    }
+  ]
+}
+`,
+                        },
+                    ],
+                }],
+            pageURL: 'https://example.com/',
+        }, ['URL', 'Action', 'Rule set', 'Status'], [
+            [
+                '/prerendered.html',
+                'Prerender',
+                'example.com/',
+                'Prefetch fallback ready',
+            ],
+        ]);
+        assert.isNotNull(grid.shadowRoot);
+        const cell = getCellByIndexes(grid.shadowRoot, { row: 1, column: 3 });
+        const div = cell.querySelector('div');
+        assert.strictEqual(div.getAttribute('style'), 'color:var(--sys-color-orange-bright);');
+        const icon = div.children[0];
+        assert.include(icon.shadowRoot.innerHTML, 'warning-filled');
+    });
+    it('shows failure if both prefetch and prerender failed', async () => {
+        const grid = await assertRenderResult({
+            rows: [{
+                    id: 'id',
+                    pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                        {
+                            action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                                url: 'https://example.com/prerendered.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                            prefetchStatus: "PrefetchFailedNon2XX" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNon2XX */,
+                            requestId: 'requestId:1',
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        },
+                        {
+                            action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                            key: {
+                                loaderId: 'loaderId:1',
+                                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                                url: 'https://example.com/prerendered.html',
+                            },
+                            pipelineId: 'pipelineId:1',
+                            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                            prerenderStatus: "PrerenderFailedDuringPrefetch" /* Protocol.Preload.PrerenderFinalStatus.PrerenderFailedDuringPrefetch */,
+                            disallowedMojoInterface: null,
+                            mismatchedHeaders: null,
+                            ruleSetIds: ['ruleSetId:0.1'],
+                            nodeIds: [1],
+                        },
+                    ]),
+                    ruleSets: [
+                        {
+                            id: 'ruleSetId:0.1',
+                            loaderId: 'loaderId:1',
+                            sourceText: `
+{
+  "prerender":[
+    {
+      "source": "list",
+      "urls": ["/prerendered.html"]
+    }
+  ]
+}
+`,
+                        },
+                    ],
+                }],
+            pageURL: 'https://example.com/',
+        }, ['URL', 'Action', 'Rule set', 'Status'], [
+            [
+                '/prerendered.html',
+                'Prerender',
+                'example.com/',
+                // TODO(kenoss): Add string for Protocol.Preload.PrerenderFinalStatus.PrerenderFailedDuringPrefetch.
+                'Failure -',
             ],
         ]);
         assert.isNotNull(grid.shadowRoot);

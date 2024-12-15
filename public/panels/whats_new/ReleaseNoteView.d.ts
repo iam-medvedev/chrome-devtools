@@ -1,19 +1,18 @@
-import '../../ui/components/markdown_view/markdown_view.js';
+import * as Marked from '../../third_party/marked/marked.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class ReleaseNoteViewWrapper extends UI.Widget.VBox {
-    releaseNoteElement: ReleaseNoteView;
-    constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ReleaseNoteViewWrapper;
+import { type ReleaseNote } from './ReleaseNoteText.js';
+export interface ViewInput {
+    markdownContent: Marked.Marked.Token[][];
+    getReleaseNote: () => ReleaseNote;
+    openNewTab: (link: string) => void;
 }
-export declare class ReleaseNoteView extends HTMLElement {
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type ViewOutput = unknown;
+export declare function getMarkdownContent(): Promise<Marked.Marked.Token[][]>;
+export declare class ReleaseNoteView extends UI.Widget.VBox {
     #private;
-    connectedCallback(): void;
+    constructor(element?: HTMLElement, view?: View);
     static getFileContent(): Promise<string>;
-}
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-release-note-view': ReleaseNoteView;
-    }
+    doUpdate(): Promise<void>;
+    wasShown(): void;
 }

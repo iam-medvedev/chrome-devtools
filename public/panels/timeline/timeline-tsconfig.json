@@ -40,7 +40,6 @@
     "../../../../../../front_end/panels/timeline/EntriesFilter.ts",
     "../../../../../../front_end/panels/timeline/EventsSerializer.ts",
     "../../../../../../front_end/panels/timeline/EventsTimelineTreeView.ts",
-    "../../../../../../front_end/panels/timeline/ExtensionDataGatherer.ts",
     "../../../../../../front_end/panels/timeline/ExtensionTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/FreshRecording.ts",
     "../../../../../../front_end/panels/timeline/GPUTrackAppender.ts",
@@ -76,7 +75,8 @@
     "../../../../../../front_end/panels/timeline/UIDevtoolsUtils.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
   ],
   "references": [
     {

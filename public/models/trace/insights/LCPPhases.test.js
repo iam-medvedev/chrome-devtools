@@ -2,16 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
-import { TraceLoader } from '../../../testing/TraceLoader.js';
+import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import * as Types from '../types/types.js';
-export async function processTrace(testContext, traceFile) {
-    const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
-    if (!insights) {
-        throw new Error('No insights');
-    }
-    return { data: parsedTrace, insights };
-}
 describeWithEnvironment('LCPPhases', function () {
     it('calculates text lcp phases', async () => {
         const { data, insights } = await processTrace(this, 'lcp-web-font.json.gz');

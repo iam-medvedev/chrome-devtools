@@ -5,6 +5,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as Root from '../root/root.js';
+import { RehydratingConnection } from './RehydratingConnection.js';
 export class MainConnection {
     onMessage;
     #onDisconnect;
@@ -228,6 +229,9 @@ export async function initMainConnection(createRootTarget, websocketConnectionLo
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }
 function createMainConnection(websocketConnectionLost) {
+    if (Root.Runtime.getPathName().includes('rehydrated_devtools_app')) {
+        return new RehydratingConnection();
+    }
     const wsParam = Root.Runtime.Runtime.queryParam('ws');
     const wssParam = Root.Runtime.Runtime.queryParam('wss');
     if (wsParam || wssParam) {

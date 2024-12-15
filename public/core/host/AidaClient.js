@@ -21,6 +21,7 @@ export var FunctionalityType;
     FunctionalityType[FunctionalityType["CHAT"] = 1] = "CHAT";
     // The explain error functionality.
     FunctionalityType[FunctionalityType["EXPLAIN_ERROR"] = 2] = "EXPLAIN_ERROR";
+    FunctionalityType[FunctionalityType["AGENTIC_CHAT"] = 5] = "AGENTIC_CHAT";
 })(FunctionalityType || (FunctionalityType = {}));
 export var ClientFeature;
 (function (ClientFeature) {
@@ -28,14 +29,14 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CLIENT_FEATURE_UNSPECIFIED"] = 0] = "CLIENT_FEATURE_UNSPECIFIED";
     // Chrome console insights feature.
     ClientFeature[ClientFeature["CHROME_CONSOLE_INSIGHTS"] = 1] = "CHROME_CONSOLE_INSIGHTS";
-    // Chrome freestyler.
-    ClientFeature[ClientFeature["CHROME_FREESTYLER"] = 2] = "CHROME_FREESTYLER";
-    // Chrome DrJones Network Agent.
-    ClientFeature[ClientFeature["CHROME_DRJONES_NETWORK_AGENT"] = 7] = "CHROME_DRJONES_NETWORK_AGENT";
-    // Chrome DrJones Performance Agent.
-    ClientFeature[ClientFeature["CHROME_DRJONES_PERFORMANCE_AGENT"] = 8] = "CHROME_DRJONES_PERFORMANCE_AGENT";
-    // Chrome DrJones File Agent.
-    ClientFeature[ClientFeature["CHROME_DRJONES_FILE_AGENT"] = 9] = "CHROME_DRJONES_FILE_AGENT";
+    // Chrome AI Assistance Styling Agent.
+    ClientFeature[ClientFeature["CHROME_STYLING_AGENT"] = 2] = "CHROME_STYLING_AGENT";
+    // Chrome AI Assistance Network Agent.
+    ClientFeature[ClientFeature["CHROME_NETWORK_AGENT"] = 7] = "CHROME_NETWORK_AGENT";
+    // Chrome AI Assistance Performance Agent.
+    ClientFeature[ClientFeature["CHROME_PERFORMANCE_AGENT"] = 8] = "CHROME_PERFORMANCE_AGENT";
+    // Chrome AI Assistance File Agent.
+    ClientFeature[ClientFeature["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {
@@ -147,7 +148,7 @@ export class AidaClient {
         let chunk;
         const text = [];
         let inCodeChunk = false;
-        let functionCall = undefined;
+        const functionCalls = [];
         const metadata = { rpcGlobalId: 0 };
         while ((chunk = await stream.read())) {
             let textUpdated = false;
@@ -205,10 +206,10 @@ export class AidaClient {
                     textUpdated = true;
                 }
                 else if ('functionCallChunk' in result) {
-                    functionCall = {
+                    functionCalls.push({
                         name: result.functionCallChunk.functionCall.name,
                         args: result.functionCallChunk.functionCall.args,
-                    };
+                    });
                 }
                 else if ('error' in result) {
                     throw new Error(`Server responded: ${JSON.stringify(result)}`);
@@ -228,7 +229,8 @@ export class AidaClient {
         yield {
             explanation: text.join('') + (inCodeChunk ? CODE_CHUNK_SEPARATOR : ''),
             metadata,
-            functionCall,
+            functionCalls: functionCalls.length ? functionCalls :
+                undefined,
             completed: true,
         };
     }

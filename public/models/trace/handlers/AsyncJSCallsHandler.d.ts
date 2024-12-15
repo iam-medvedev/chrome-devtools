@@ -1,5 +1,5 @@
 import * as Types from '../types/types.js';
-declare const schedulerToRunEntryPoints: Map<Types.Events.SyntheticProfileCall, Types.Events.Event[]>;
+declare const schedulerToRunEntryPoints: Map<Types.Events.SyntheticProfileCall, Types.Events.Event>;
 declare const asyncCallToScheduler: Map<Types.Events.SyntheticProfileCall, {
     taskName: string;
     scheduler: Types.Events.SyntheticProfileCall;

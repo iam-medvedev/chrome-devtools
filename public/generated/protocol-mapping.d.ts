@@ -1239,6 +1239,13 @@ export namespace ProtocolMapping {
       paramsType: [Protocol.CSS.ForcePseudoStateRequest];
       returnType: void;
     };
+    /**
+     * Ensures that the given node is in its starting-style state.
+     */
+    'CSS.forceStartingStyle': {
+      paramsType: [Protocol.CSS.ForceStartingStyleRequest];
+      returnType: void;
+    };
     'CSS.getBackgroundColors': {
       paramsType: [Protocol.CSS.GetBackgroundColorsRequest];
       returnType: Protocol.CSS.GetBackgroundColorsResponse;
@@ -1267,6 +1274,14 @@ export namespace ProtocolMapping {
     'CSS.getInlineStylesForNode': {
       paramsType: [Protocol.CSS.GetInlineStylesForNodeRequest];
       returnType: Protocol.CSS.GetInlineStylesForNodeResponse;
+    };
+    /**
+     * Returns the styles coming from animations & transitions
+     * including the animation & transition styles coming from inheritance chain.
+     */
+    'CSS.getAnimatedStylesForNode': {
+      paramsType: [Protocol.CSS.GetAnimatedStylesForNodeRequest];
+      returnType: Protocol.CSS.GetAnimatedStylesForNodeResponse;
     };
     /**
      * Returns requested styles for a DOM node identified by `nodeId`.

@@ -33,7 +33,7 @@ styles.replaceSync(
 .message {
   line-height: 18px;
   font-size: 12px;
-  color: var(--override-markdown-view-message-color, --sys-color-token-subtle);
+  color: var(--sys-color-on-surface);
   user-select: text;
 }
 
@@ -83,10 +83,6 @@ devtools-code-block {
 .devtools-link {
   color: var(--sys-color-primary);
   outline-offset: 2px;
-  text-decoration: none;
-}
-
-.devtools-link:hover {
   text-decoration: underline;
 }
 

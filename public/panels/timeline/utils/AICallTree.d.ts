@@ -5,7 +5,7 @@ export declare class AICallTree {
     parsedTrace: Trace.Handlers.Types.ParsedTrace;
     constructor(selectedNode: Trace.Extras.TraceTree.Node, rootNode: Trace.Extras.TraceTree.TopDownRootNode, parsedTrace: Trace.Handlers.Types.ParsedTrace);
     static from(selectedEvent: Trace.Types.Events.Event, events: Trace.Types.Events.Event[], parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree;
-    /** Define precisely how the call tree is serialized. Typically called from within `DrJonesPerformanceAgent` */
+    /** Define precisely how the call tree is serialized. Typically called from within `PerformanceAgent` */
     serialize(): string;
     static stringifyNode(node: Trace.Extras.TraceTree.Node, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node, nodeToIdMap: Map<Trace.Extras.TraceTree.Node, number>, allUrls: string[]): string;
     logDebug(): void;

@@ -44,6 +44,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AccessibilityTreeView } from './AccessibilityTreeView.js';
 import { ColorSwatchPopoverIcon } from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
+import { ComputedStyleModel } from './ComputedStyleModel.js';
 import { ComputedStyleWidget } from './ComputedStyleWidget.js';
 import elementsPanelStyles from './elementsPanel.css.js';
 import { ElementsTreeElementHighlighter } from './ElementsTreeElementHighlighter.js';
@@ -234,9 +235,10 @@ export class ElementsPanel extends UI.Panel.Panel {
             this.crumbNodeSelected(event);
         });
         crumbsContainer.appendChild(this.breadcrumbs);
-        this.stylesWidget = StylesSidebarPane.instance();
-        this.computedStyleWidget = new ComputedStyleWidget();
-        this.metricsWidget = new MetricsSidebarPane();
+        const computedStyleModel = new ComputedStyleModel();
+        this.stylesWidget = new StylesSidebarPane(computedStyleModel);
+        this.computedStyleWidget = new ComputedStyleWidget(computedStyleModel);
+        this.metricsWidget = new MetricsSidebarPane(computedStyleModel);
         Common.Settings.Settings.instance()
             .moduleSetting('sidebar-position')
             .addChangeListener(this.updateSidebarPosition.bind(this));

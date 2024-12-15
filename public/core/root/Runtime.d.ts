@@ -143,6 +143,9 @@ export interface HostConfigEnableOriginBoundCookies {
     portBindingEnabled: boolean;
     schemeBindingEnabled: boolean;
 }
+export interface HostConfigAnimationStylesInStylesTab {
+    enabled: boolean;
+}
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
@@ -158,6 +161,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
      */
     isOffTheRecord: boolean;
     devToolsEnableOriginBoundCookies: HostConfigEnableOriginBoundCookies;
+    devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
 }>;
 /**
  * When defining conditions make sure that objects used by the function have

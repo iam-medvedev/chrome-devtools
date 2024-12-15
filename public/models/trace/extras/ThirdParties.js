@@ -2,70 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
+import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import * as URLForEntry from './URLForEntry.js';
-/**
- * Returns the origin portion of a Chrome extension URL.
- */
-function getChromeExtensionOrigin(url) {
-    return url.protocol + '//' + url.host;
-}
-function makeUpChromeExtensionEntity(entityCache, url, extensionName) {
-    const parsedUrl = new URL(url);
-    const origin = getChromeExtensionOrigin(parsedUrl);
-    const host = new URL(origin).host;
-    const name = extensionName || host;
-    const cachedEntity = entityCache.get(origin);
-    if (cachedEntity) {
-        return cachedEntity;
-    }
-    const chromeExtensionEntity = {
-        name,
-        company: name,
-        category: 'Chrome Extension',
-        homepage: 'https://chromewebstore.google.com/detail/' + host,
-        categories: [],
-        domains: [],
-        averageExecutionTime: 0,
-        totalExecutionTime: 0,
-        totalOccurrences: 0,
-    };
-    entityCache.set(origin, chromeExtensionEntity);
-    return chromeExtensionEntity;
-}
-export function makeUpEntity(entityCache, url) {
-    if (url.startsWith('chrome-extension:')) {
-        return makeUpChromeExtensionEntity(entityCache, url);
-    }
-    // Make up an entity only for valid http/https URLs.
-    if (!url.startsWith('http')) {
-        return;
-    }
-    // NOTE: Lighthouse uses a tld database to determine the root domain, but here
-    // we are using third party web's database. Doesn't really work for the case of classifying
-    // domains 3pweb doesn't know about, so it will just give us a guess.
-    const rootDomain = ThirdPartyWeb.ThirdPartyWeb.getRootDomain(url);
-    if (!rootDomain) {
-        return;
-    }
-    if (entityCache.has(rootDomain)) {
-        return entityCache.get(rootDomain);
-    }
-    const unrecognizedEntity = {
-        name: rootDomain,
-        company: rootDomain,
-        category: '',
-        categories: [],
-        domains: [rootDomain],
-        averageExecutionTime: 0,
-        totalExecutionTime: 0,
-        totalOccurrences: 0,
-        isUnrecognized: true,
-    };
-    entityCache.set(rootDomain, unrecognizedEntity);
-    return unrecognizedEntity;
-}
 function getSelfTimeByUrl(parsedTrace, bounds) {
     const selfTimeByUrl = new Map();
     for (const process of parsedTrace.Renderer.processes.values()) {
@@ -85,7 +24,7 @@ function getSelfTimeByUrl(parsedTrace, bounds) {
                     if (!node || !node.selfTime) {
                         continue;
                     }
-                    const url = URLForEntry.getNonResolved(parsedTrace, event);
+                    const url = Handlers.Helpers.getNonResolvedURL(event, parsedTrace);
                     if (!url) {
                         continue;
                     }
@@ -101,7 +40,7 @@ export function getEntitiesByRequest(requests) {
     const madeUpEntityCache = new Map();
     for (const request of requests) {
         const url = request.args.data.url;
-        const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(madeUpEntityCache, url);
+        const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? Handlers.Helpers.makeUpEntity(madeUpEntityCache, url);
         if (entity) {
             entityByRequest.set(request, entity);
         }

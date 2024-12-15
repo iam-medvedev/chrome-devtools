@@ -6,19 +6,26 @@ import { VisualElements } from './LoggingConfig.js';
 import { getLoggingState } from './LoggingState.js';
 let veDebuggingEnabled = false;
 let debugPopover = null;
+let hightlightedElement = null;
 const nonDomDebugElements = new WeakMap();
-function setVeDebuggingEnabled(enabled) {
+let onInspect = undefined;
+export function setVeDebuggingEnabled(enabled, inpsect) {
     veDebuggingEnabled = enabled;
     if (enabled && !debugPopover) {
         debugPopover = document.createElement('div');
         debugPopover.classList.add('ve-debug');
         debugPopover.style.position = 'absolute';
-        debugPopover.style.bottom = '100px';
-        debugPopover.style.left = '100px';
-        debugPopover.style.background = 'black';
-        debugPopover.style.color = 'white';
+        debugPopover.style.background = 'var(--sys-color-cdt-base-container)';
+        debugPopover.style.borderRadius = '2px';
+        debugPopover.style.padding = '8px';
+        debugPopover.style.boxShadow = 'var(--drop-shadow)';
         debugPopover.style.zIndex = '100000';
         document.body.appendChild(debugPopover);
+    }
+    onInspect = inpsect;
+    if (!enabled && hightlightedElement) {
+        hightlightedElement.style.backgroundColor = '';
+        hightlightedElement.style.outline = '';
     }
 }
 // @ts-ignore
@@ -28,19 +35,23 @@ export function processForDebugging(loggable) {
     if (!veDebuggingEnabled || !loggingState || loggingState.processedForDebugging) {
         return;
     }
-    if (loggable instanceof Element) {
+    if (loggable instanceof HTMLElement) {
         processElementForDebugging(loggable, loggingState);
     }
     else {
         processNonDomLoggableForDebugging(loggable, loggingState);
     }
 }
-function showDebugPopover(content) {
+function showDebugPopover(content, rect) {
     if (!debugPopover) {
         return;
     }
+    if (rect) {
+        debugPopover.style.left = `${rect.left}px`;
+        debugPopover.style.top = `${rect.bottom + 8}px`;
+    }
     debugPopover.style.display = 'block';
-    debugPopover.innerHTML = content;
+    debugPopover.textContent = content;
 }
 function processElementForDebugging(element, loggingState) {
     if (element.tagName === 'OPTION') {
@@ -50,18 +61,36 @@ function processElementForDebugging(element, loggingState) {
         }
     }
     else {
-        element.style.outline = 'solid 1px red';
+        element.addEventListener('mousedown', event => {
+            if (event.currentTarget === hightlightedElement && onInspect && debugPopover && veDebuggingEnabled) {
+                onInspect(debugPopover.textContent || '');
+                event.stopImmediatePropagation();
+                event.preventDefault();
+            }
+        }, { capture: true });
         element.addEventListener('mouseenter', () => {
+            if (!veDebuggingEnabled) {
+                return;
+            }
+            if (hightlightedElement) {
+                hightlightedElement.style.backgroundColor = '';
+                hightlightedElement.style.outline = '';
+            }
+            element.style.backgroundColor = '#A7C3E4';
+            element.style.outline = 'dashed 1px #7327C6';
+            hightlightedElement = element;
             assertNotNullOrUndefined(debugPopover);
             const pathToRoot = [loggingState];
             let ancestor = loggingState.parent;
             while (ancestor) {
-                pathToRoot.push(ancestor);
+                pathToRoot.unshift(ancestor);
                 ancestor = ancestor.parent;
             }
-            showDebugPopover(pathToRoot.map(s => debugString(s.config)).join('<br>'));
+            showDebugPopover(pathToRoot.map(s => elementKey(s.config)).join(' > '), element.getBoundingClientRect());
         }, { capture: true });
         element.addEventListener('mouseleave', () => {
+            element.style.backgroundColor = '';
+            element.style.outline = '';
             assertNotNullOrUndefined(debugPopover);
             debugPopover.style.display = 'none';
         }, { capture: true });
@@ -234,6 +263,9 @@ function processNonDomLoggableForDebugging(loggable, loggingState) {
         debugElement.style.marginLeft = '10px';
         parentDebugElement.appendChild(debugElement);
     }
+}
+function elementKey(config) {
+    return `${VisualElements[config.ve]}${config.context ? `: ${config.context}` : ''}`;
 }
 export function debugString(config) {
     const components = [VisualElements[config.ve]];

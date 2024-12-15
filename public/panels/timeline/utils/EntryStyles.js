@@ -46,6 +46,10 @@ const UIStrings = {
      */
     task: 'Task',
     /**
+     *@description Text in Timeline UIUtils of the Performance panel
+     */
+    consoleTaskRun: 'Run console task',
+    /**
      *@description Text for other types of items
      */
     other: 'Other',
@@ -733,6 +737,7 @@ export function maybeInitSylesMap() {
         ["SchedulePostTaskCallback" /* Trace.Types.Events.Name.SCHEDULE_POST_TASK_CALLBACK */]: new TimelineRecordStyle(i18nString(UIStrings.schedulePostTaskCallback), defaultCategoryStyles.scripting),
         ["RunPostTaskCallback" /* Trace.Types.Events.Name.RUN_POST_TASK_CALLBACK */]: new TimelineRecordStyle(i18nString(UIStrings.runPostTaskCallback), defaultCategoryStyles.scripting),
         ["AbortPostTaskCallback" /* Trace.Types.Events.Name.ABORT_POST_TASK_CALLBACK */]: new TimelineRecordStyle(i18nString(UIStrings.abortPostTaskCallback), defaultCategoryStyles.scripting),
+        ["V8Console::runTask" /* Trace.Types.Events.Name.V8_CONSOLE_RUN_TASK */]: new TimelineRecordStyle(i18nString(UIStrings.consoleTaskRun), defaultCategoryStyles.scripting),
     };
     return eventStylesMap;
 }

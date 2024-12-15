@@ -5,7 +5,7 @@ import * as LoggingConfig from './LoggingConfig.js';
 import * as LoggingDriver from './LoggingDriver.js';
 import * as LoggingEvents from './LoggingEvents.js';
 import * as NonDomState from './NonDomState.js';
-export { setVeDebugLoggingEnabled } from './Debugging.js';
+export { setVeDebugLoggingEnabled, setVeDebuggingEnabled } from './Debugging.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions } from './LoggingEvents.js';
 export const logClick = (loggable, event, options = {}) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(loggable, event, options);
@@ -18,6 +18,16 @@ export function registerLoggable(loggable, config, parent) {
     }
     NonDomState.registerLoggable(loggable, LoggingConfig.parseJsLog(config), parent || undefined);
     void LoggingDriver.scheduleProcessing();
+}
+export async function isUnderInspection(origin) {
+    if (!origin) {
+        return false;
+    }
+    const context = await LoggingEvents.contextAsNumber(origin);
+    if (!context) {
+        return false;
+    }
+    return [431010711, -1313957874, -1093325535].includes(context);
 }
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the

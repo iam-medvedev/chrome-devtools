@@ -20,7 +20,7 @@ export function getReleaseNote() {
 }
 let releaseNote = {
     version: 73,
-    header: 'Highlights from the Chrome 132 update',
+    header: 'What\'s new in DevTools 132',
     markdownLinks: [
         {
             key: 'ai-assistance',

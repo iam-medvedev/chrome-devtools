@@ -451,8 +451,8 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
     }
     updateStandardDevices() {
         const devices = new Set();
-        for (const extension of emulatedDevices) {
-            const device = EmulatedDevice.fromJSONV1(extension);
+        for (const emulatedDevice of emulatedDevices) {
+            const device = EmulatedDevice.fromJSONV1(emulatedDevice);
             if (device) {
                 devices.add(device);
             }
@@ -480,6 +480,9 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         return success;
+    }
+    static rawEmulatedDevicesForTest() {
+        return emulatedDevices;
     }
     standard() {
         return [...this.#standardInternal];
@@ -622,7 +625,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '11', 'architecture': '', 'model': 'Pixel 3', 'mobile': true },
         'type': 'phone',
     },
@@ -642,7 +645,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '13', 'architecture': '', 'model': 'Pixel 5', 'mobile': true },
         'type': 'phone',
     },
@@ -662,7 +665,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '8.0.0', 'architecture': '', 'model': 'SM-G955U', 'mobile': true },
         'type': 'phone',
     },
@@ -682,7 +685,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '13', 'architecture': '', 'model': 'SM-G981B', 'mobile': true },
         'type': 'phone',
     },
@@ -759,7 +762,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36',
         'type': 'tablet',
     },
     {
@@ -881,7 +884,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch'],
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36',
         'user-agent-metadata': { 'platform': 'Windows', 'platformVersion': '11.0', 'architecture': '', 'model': 'UX9702AA', 'mobile': false },
         'type': 'tablet',
         'modes': [
@@ -915,7 +918,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '8.0.0', 'architecture': '', 'model': 'SM-G955U', 'mobile': true },
         'type': 'phone',
     },
@@ -939,7 +942,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.188 Safari/537.36 CrKey/1.54.250320',
+        'user-agent': 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36 CrKey/1.54.250320',
         'type': 'tablet',
         'modes': [{ 'title': 'default', 'orientation': 'horizontal' }],
     },
@@ -963,7 +966,7 @@ const emulatedDevices = [
             },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.109 Safari/537.36 CrKey/1.54.248666',
+        'user-agent': 'Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36 CrKey/1.54.248666',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '', 'architecture': '', 'model': '', 'mobile': false },
         'type': 'tablet',
         'modes': [{ 'title': 'default', 'orientation': 'horizontal' }],
@@ -1293,7 +1296,7 @@ const emulatedDevices = [
             'vertical': { 'width': 393, 'height': 786 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '9', 'architecture': '', 'model': 'Pixel 3', 'mobile': true },
         'type': 'phone',
     },
@@ -1306,7 +1309,7 @@ const emulatedDevices = [
             'vertical': { 'width': 353, 'height': 745 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '10', 'architecture': '', 'model': 'Pixel 4', 'mobile': true },
         'type': 'phone',
     },
@@ -1356,7 +1359,7 @@ const emulatedDevices = [
             'vertical': { 'width': 640, 'height': 360 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Mobile Safari/537.36 Edge/14.14263',
+        'user-agent': 'Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36 Edge/14.14263',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '4.2.1', 'architecture': '', 'model': 'Lumia 550', 'mobile': true },
         'type': 'phone',
     },
@@ -1369,7 +1372,7 @@ const emulatedDevices = [
             'vertical': { 'width': 360, 'height': 640 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Mobile Safari/537.36 Edge/14.14263',
+        'user-agent': 'Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36 Edge/14.14263',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '4.2.1', 'architecture': '', 'model': 'Lumia 950', 'mobile': true },
         'type': 'phone',
     },
@@ -1409,7 +1412,7 @@ const emulatedDevices = [
             'vertical': { 'width': 360, 'height': 740 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '7.0', 'architecture': '', 'model': 'SM-G950U', 'mobile': true },
         'type': 'phone',
     },
@@ -1422,7 +1425,7 @@ const emulatedDevices = [
             'vertical': { 'width': 320, 'height': 658 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.111 Mobile Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '8.0.0', 'architecture': '', 'model': 'SM-G965U', 'mobile': true },
         'type': 'phone',
     },
@@ -1435,7 +1438,7 @@ const emulatedDevices = [
             'vertical': { 'width': 712, 'height': 1138 },
         },
         'capabilities': ['touch', 'mobile'],
-        'user-agent': 'Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.80 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36',
         'user-agent-metadata': { 'platform': 'Android', 'platformVersion': '8.1.0', 'architecture': '', 'model': 'SM-T837A', 'mobile': false },
         'type': 'phone',
     },

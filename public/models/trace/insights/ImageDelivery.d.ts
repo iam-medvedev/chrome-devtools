@@ -25,6 +25,7 @@ export type ImageOptimization = {
 export interface OptimizableImage {
     request: Types.Events.SyntheticNetworkRequest;
     optimizations: ImageOptimization[];
+    byteSavings: number;
     /**
      * If the an image resource has multiple `PaintImage`s, we compare its intrinsic size to the largest of the displayed sizes.
      *
@@ -35,5 +36,6 @@ export interface OptimizableImage {
 }
 export type ImageDeliveryInsightModel = InsightModel<{
     optimizableImages: OptimizableImage[];
+    totalByteSavings: number;
 }>;
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): ImageDeliveryInsightModel;

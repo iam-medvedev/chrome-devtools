@@ -15,11 +15,14 @@ const NETWORK_RESIZE_ELEM_HEIGHT_PX = 8;
 /**
  * Given a list of overlays, this method will calculate the smallest possible
  * trace window that will contain all of the overlays.
- * `overlays` is expected to be non-empty.
+ * `overlays` is expected to be non-empty, and this will return `null` if it is empty.
  */
 export function traceWindowContainingOverlays(overlays) {
     let minTime = Trace.Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
     let maxTime = Trace.Types.Timing.MicroSeconds(Number.NEGATIVE_INFINITY);
+    if (overlays.length === 0) {
+        return null;
+    }
     for (const overlay of overlays) {
         const windowForOverlay = traceWindowForOverlay(overlay);
         if (windowForOverlay.min < minTime) {
@@ -531,11 +534,7 @@ export class Overlays extends EventTarget {
                 break;
             }
             case 'ENTRY_OUTLINE': {
-                const selectedOverlay = this.overlaysOfType('ENTRY_SELECTED')?.at(0);
-                // Check if this entry has also been selected by the user. If it has,
-                // do not show the outline, but only show the selected outline.
-                const outlinedEntryIsSelected = Boolean(selectedOverlay && selectedOverlay.entry === overlay.entry);
-                if (!outlinedEntryIsSelected && this.entryIsVisibleOnChart(overlay.entry)) {
+                if (this.entryIsVisibleOnChart(overlay.entry)) {
                     this.#setOverlayElementVisibility(element, true);
                     this.#positionEntryBorderOutlineType(overlay.entry, element);
                 }
@@ -739,52 +738,71 @@ export class Overlays extends EventTarget {
             if (!entryFromWrapper) {
                 return;
             }
-            const fromEntryParams = this.#positionEntryBorderOutlineType(entriesToConnect.entryFrom, entryFromWrapper);
-            if (!fromEntryParams) {
-                // Something went wrong, we should always have parameters for the 'from' entry
-                return;
-            }
-            const { entryHeight: fromEntryHeight, entryWidth: fromEntryWidth, cutOffHeight: fromCutOffHeight = 0, x: fromEntryX, y: fromEntryY, } = fromEntryParams;
             const entryFromVisibility = this.entryIsVisibleOnChart(entryFrom) && !fromEntryInCollapsedTrack;
             const entryToVisibility = entryTo ? this.entryIsVisibleOnChart(entryTo) && !toEntryInCollapsedTrack : false;
+            // If the entry is not currently visible, draw the arrow to the edge of the screen towards the entry on the Y-axis.
+            let fromEntryX = 0;
+            let fromEntryY = this.#yCoordinateForNotVisibleEntry(entryFrom);
+            // If the entry is visible, draw the arrow to the entry.
+            if (entryFromVisibility) {
+                const fromEntryParams = this.#positionEntryBorderOutlineType(entriesToConnect.entryFrom, entryFromWrapper);
+                if (fromEntryParams) {
+                    const fromEntryHeight = fromEntryParams?.entryHeight;
+                    const fromEntryWidth = fromEntryParams?.entryWidth;
+                    const fromCutOffHeight = fromEntryParams?.cutOffHeight;
+                    fromEntryX = fromEntryParams?.x;
+                    fromEntryY = fromEntryParams?.y;
+                    component.fromEntryCoordinateAndDimentions =
+                        { x: fromEntryX, y: fromEntryY, length: fromEntryWidth, height: fromEntryHeight - fromCutOffHeight };
+                }
+                else {
+                    // Something went if the entry is visible and we cannot get its' parameters.
+                    return;
+                }
+            }
             // If `fromEntry` is not visible and the link creation is not started yet, meaning that
             // only the button to create the link is displayed, delete the whole overlay.
             if (!entryFromVisibility && overlay.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
                 this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
             }
-            // If the 'from' entry is visible, set the entry Y as an arrow start coordinate. Ff not, get the canvas edge coordinate to for the arrow to start from.
-            const yPixelForFromArrow = (entryFromVisibility ? fromEntryY : this.#yCoordinateForNotVisibleEntry(entryFrom)) ?? 0;
+            // If entryTo exists, pass the coordinates and dimentions of the entry that the arrow snaps to.
+            // If it does not, the event tracking mouse coordinates updates 'to coordinates' so the arrow follows the mouse instead.
+            const entryToWrapper = component.entryToWrapper();
+            if (entryTo && entryToWrapper) {
+                let toEntryX = 0;
+                // If the 'to' entry is visible, set the entry Y as an arrow coordinate to point to. If not, get the canvas edge coordate to point the arrow to.
+                let toEntryY = this.#yCoordinateForNotVisibleEntry(entryTo);
+                if (entryToVisibility) {
+                    const toEntryParams = this.#positionEntryBorderOutlineType(entryTo, entryToWrapper);
+                    if (toEntryParams) {
+                        const toEntryHeight = toEntryParams?.entryHeight;
+                        const toEntryWidth = toEntryParams?.entryWidth;
+                        const toCutOffHeight = toEntryParams?.cutOffHeight;
+                        toEntryX = toEntryParams?.x;
+                        toEntryY = toEntryParams?.y;
+                        component.toEntryCoordinateAndDimentions = {
+                            x: toEntryX,
+                            y: toEntryY,
+                            length: toEntryWidth,
+                            height: toEntryHeight - toCutOffHeight,
+                        };
+                    }
+                    else {
+                        // Something went if the entry is visible and we cannot get its' parameters.
+                        return;
+                    }
+                }
+            }
+            else if (this.#lastMouseOffsetX && this.#lastMouseOffsetY) {
+                // The second coordinate for in progress link gets updated on mousemove
+                this.#entriesLinkInProgress = overlay;
+            }
             component.fromEntryIsSource = entryFromIsSource;
             component.toEntryIsSource = entryToIsSource;
             component.entriesVisibility = {
                 fromEntryVisibility: entryFromVisibility,
                 toEntryVisibility: entryToVisibility,
             };
-            component.fromEntryCoordinateAndDimentions =
-                { x: fromEntryX, y: yPixelForFromArrow, length: fromEntryWidth, height: fromEntryHeight - fromCutOffHeight };
-            // If entryTo exists, pass the coordinates and dimentions of the entry that the arrow snaps to.
-            // If it does not, the event tracking mouse coordinates updates 'to coordinates' so the arrow follows the mouse instead.
-            const entryToWrapper = component.entryToWrapper();
-            if (entryTo && entryToWrapper) {
-                const toEntryParams = this.#positionEntryBorderOutlineType(entryTo, entryToWrapper);
-                if (!toEntryParams) {
-                    // Something went wrong, we should have those parameters if 'to' entry exists
-                    return;
-                }
-                const { entryHeight: toEntryHeight, entryWidth: toEntryWidth, cutOffHeight: toCutOffHeight = 0, x: toEntryX, y: toEntryY, } = toEntryParams;
-                // If the 'to' entry is visible, set the entry Y as an arrow coordinate to point to. If not, get the canvas edge coordate to point the arrow to.
-                const yPixelForToArrow = this.entryIsVisibleOnChart(entryTo) ? toEntryY : this.#yCoordinateForNotVisibleEntry(entryTo) ?? 0;
-                component.toEntryCoordinateAndDimentions = {
-                    x: toEntryX,
-                    y: yPixelForToArrow,
-                    length: toEntryWidth,
-                    height: toEntryHeight - toCutOffHeight,
-                };
-            }
-            else if (this.#lastMouseOffsetX && this.#lastMouseOffsetY) {
-                // The second coordinate for in progress link gets updated on mousemove
-                this.#entriesLinkInProgress = overlay;
-            }
         }
     }
     /**

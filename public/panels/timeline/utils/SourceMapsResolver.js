@@ -15,8 +15,6 @@ export class SourceMappingsUpdated extends Event {
         });
     }
 }
-// Resolved code location data is keyed based on
-// ProcessID=>ThreadID=> Call frame key.
 // The code location key is created as a concatenation of its fields.
 export const resolvedCodeLocationDataNames = new Map();
 export class SourceMapsResolver extends EventTarget {
@@ -51,6 +49,10 @@ export class SourceMapsResolver extends EventTarget {
      *
      * TODO(andoli): This can return incorrect scripts if the target page has been reloaded since the trace.
      */
+    static resolvedCodeLocationForCallFrame(callFrame) {
+        const codeLocationKey = this.keyForCodeLocation(callFrame);
+        return resolvedCodeLocationDataNames.get(codeLocationKey) ?? null;
+    }
     static resolvedCodeLocationForEntry(entry) {
         let callFrame = null;
         if (Trace.Types.Events.isProfileCall(entry)) {
@@ -63,8 +65,7 @@ export class SourceMapsResolver extends EventTarget {
             }
             callFrame = stackTrace[0];
         }
-        const codeLocationKey = this.keyForCodeLocation(callFrame);
-        return resolvedCodeLocationDataNames.get(entry.pid)?.get(entry.tid)?.get(codeLocationKey) ?? null;
+        return SourceMapsResolver.resolvedCodeLocationForCallFrame(callFrame);
     }
     static resolvedURLForEntry(parsedTrace, entry) {
         const resolvedCallFrameURL = SourceMapsResolver.resolvedCodeLocationForEntry(entry)?.devtoolsLocation?.uiSourceCode.url();
@@ -73,20 +74,15 @@ export class SourceMapsResolver extends EventTarget {
         }
         // If no source mapping was found for an entry's URL, then default
         // to the URL value contained in the event itself, if any.
-        const url = Trace.Extras.URLForEntry.getNonResolved(parsedTrace, entry);
+        const url = Trace.Handlers.Helpers.getNonResolvedURL(entry, parsedTrace);
         if (url) {
             return Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url)?.url() ?? url;
         }
         return null;
     }
-    static storeResolvedNodeDataForEntry(pid, tid, callFrame, resolvedCodeLocationData) {
-        const resolvedForPid = resolvedCodeLocationDataNames.get(pid) ||
-            new Map();
-        const resolvedForTid = resolvedForPid.get(tid) || new Map();
+    static storeResolvedCodeDataForCallFrame(callFrame, resolvedCodeLocationData) {
         const keyForCallFrame = this.keyForCodeLocation(callFrame);
-        resolvedForTid.set(keyForCallFrame, resolvedCodeLocationData);
-        resolvedForPid.set(tid, resolvedForTid);
-        resolvedCodeLocationDataNames.set(pid, resolvedForPid);
+        resolvedCodeLocationDataNames.set(keyForCallFrame, resolvedCodeLocationData);
     }
     async install() {
         for (const threadToProfileMap of this.#parsedTrace.Samples.profilesInProcess.values()) {
@@ -134,7 +130,7 @@ export class SourceMapsResolver extends EventTarget {
         // is attach. If not, we do not notify the flamechart that mappings
         // were updated, since that would trigger a rerender.
         let updatedMappings = false;
-        for (const [pid, threadsInProcess] of this.#parsedTrace.Samples.profilesInProcess) {
+        for (const [, threadsInProcess] of this.#parsedTrace.Samples.profilesInProcess) {
             for (const [tid, threadProfile] of threadsInProcess) {
                 const nodes = threadProfile.parsedProfile.nodes() ?? [];
                 const target = this.#targetForThread(tid);
@@ -152,7 +148,7 @@ export class SourceMapsResolver extends EventTarget {
                     const uiLocation = location &&
                         await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
                     updatedMappings ||= Boolean(uiLocation);
-                    SourceMapsResolver.storeResolvedNodeDataForEntry(pid, tid, node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
+                    SourceMapsResolver.storeResolvedCodeDataForCallFrame(node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
                 }
             }
         }

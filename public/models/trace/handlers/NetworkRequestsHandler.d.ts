@@ -1,4 +1,5 @@
 import * as Types from '../types/types.js';
+import * as HandlerHelpers from './helpers.js';
 import type { HandlerName } from './types.js';
 export interface WebSocketTraceDataForFrame {
     frame: string;
@@ -23,6 +24,7 @@ interface NetworkRequestData {
     byTime: Types.Events.SyntheticNetworkRequest[];
     eventToInitiator: Map<Types.Events.SyntheticNetworkRequest, Types.Events.SyntheticNetworkRequest>;
     webSocket: WebSocketTraceData[];
+    entityMappings: HandlerHelpers.EntityMappings;
 }
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;

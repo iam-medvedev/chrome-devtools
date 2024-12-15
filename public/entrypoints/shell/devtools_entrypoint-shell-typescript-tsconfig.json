@@ -32,7 +32,8 @@
     "../../../../../../front_end/entrypoints/shell/shell.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
   ],
   "references": [
     {
@@ -54,6 +55,9 @@
       "path": "../../models/persistence/meta-tsconfig.json"
     },
     {
+      "path": "../../panels/ai_assistance/meta-tsconfig.json"
+    },
+    {
       "path": "../../panels/application/meta-tsconfig.json"
     },
     {
@@ -70,9 +74,6 @@
     },
     {
       "path": "../../panels/explain/meta-tsconfig.json"
-    },
-    {
-      "path": "../../panels/freestyler/meta-tsconfig.json"
     },
     {
       "path": "../../panels/linear_memory_inspector/meta-tsconfig.json"

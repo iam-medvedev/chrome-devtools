@@ -11,7 +11,6 @@ import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
-    Timeline.ExtensionDataGatherer.ExtensionDataGatherer.instance().modelChanged(parsedTrace);
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.allVisibleTrackAppenders().filter(track => track.appenderName === 'Extension');
 }
@@ -22,7 +21,6 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        Timeline.ExtensionDataGatherer.ExtensionDataGatherer.removeInstance();
         ({ parsedTrace } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz'));
         extensionTrackAppenders = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         let level = 0;
@@ -96,7 +94,6 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             ];
             const traceExtensionData = await createTraceExtensionDataFromTestInput(extensionData);
             const testParsedTrace = getBaseTraceParseModelData({ ExtensionTraceData: traceExtensionData });
-            Timeline.ExtensionDataGatherer.ExtensionDataGatherer.removeInstance();
             entryData = [];
             flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
             entryTypeByLevel = [];
@@ -179,7 +176,6 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     });
     describe('toggling', function () {
         it('Does not append extension data when the configuration is set to disabled', async function () {
-            Timeline.ExtensionDataGatherer.ExtensionDataGatherer.removeInstance();
             entryData = [];
             flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
             entryTypeByLevel = [];

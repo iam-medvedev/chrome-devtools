@@ -275,7 +275,7 @@ describeWithEnvironment('Overlays', () => {
             const overlayDOM = container.querySelector('.overlay-type-ENTRY_SELECTED');
             assert.isOk(overlayDOM);
         });
-        it('does not render an ENTRY_OUTLINE if the entry is also the ENTRY_SELECTED entry', async function () {
+        it('renders an ENTRY_OUTLINE even if the entry is also the ENTRY_SELECTED entry', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
             const event = charts.mainProvider.eventByIndex?.(50);
@@ -294,8 +294,8 @@ describeWithEnvironment('Overlays', () => {
                 entry: event,
             });
             await overlays.update();
-            const outlineNowHidden = container.querySelector('.overlay-type-ENTRY_OUTLINE')?.style.display === 'none';
-            assert.isTrue(outlineNowHidden, 'The ENTRY_OUTLINE should be hidden');
+            const outlineStillVisible = container.querySelector('.overlay-type-ENTRY_OUTLINE')?.style.display === 'block';
+            assert.isTrue(outlineStillVisible, 'The ENTRY_OUTLINE should be visible');
         });
         it('only ever renders a single selected overlay', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -760,8 +760,15 @@ describeWithEnvironment('Overlays', () => {
                 outlineReason: 'INFO',
             };
             const traceWindow = Overlays.Overlays.traceWindowContainingOverlays([overlay1, overlay2]);
+            if (!traceWindow) {
+                throw new Error('No trace window for overlays');
+            }
             assert.strictEqual(traceWindow.min, 0);
             assert.strictEqual(traceWindow.max, 105);
+        });
+        it('returns null for no overlays', () => {
+            const traceWindow = Overlays.Overlays.traceWindowContainingOverlays([]);
+            assert.isNull(traceWindow);
         });
     });
     describe('jslogcontext for overlays', () => {

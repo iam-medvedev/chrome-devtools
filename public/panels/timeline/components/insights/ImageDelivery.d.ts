@@ -9,6 +9,7 @@ export declare class ImageDelivery extends BaseInsightComponent<ImageDeliveryIns
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    getEstimatedSavingsBytes(): number | null;
     renderContent(): LitHtml.LitTemplate;
 }
 declare global {

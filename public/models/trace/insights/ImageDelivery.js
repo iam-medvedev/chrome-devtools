@@ -155,9 +155,17 @@ export function generateInsight(parsedTrace, context) {
                 optimizations.push({ type: ImageOptimizationType.ADJUST_COMPRESSION, byteSavings });
             }
         }
+        // At this point (before looking at image size), the # of optimizations should only ever be 1 or 0
+        // Math.max handles both cases correctly, and is defensive against future patches that would add
+        // more than 1 format-specific optimization by this point.
+        const imageByteSavingsFromFormat = Math.max(0, ...optimizations.map(o => o.byteSavings));
+        let imageByteSavings = imageByteSavingsFromFormat;
         const wastedPixelRatio = 1 - (largestImageDisplayPixels / imageFilePixels);
         if (wastedPixelRatio > 0) {
             const byteSavings = Math.round(wastedPixelRatio * imageBytes);
+            // This will compound the byte savings from any potential format changes with the image size
+            // optimization added here.
+            imageByteSavings += Math.round(wastedPixelRatio * (imageBytes - imageByteSavingsFromFormat));
             optimizations.push({
                 type: ImageOptimizationType.RESPONSIVE_SIZE,
                 byteSavings,
@@ -177,11 +185,13 @@ export function generateInsight(parsedTrace, context) {
                 request,
                 largestImagePaint,
                 optimizations,
+                byteSavings: imageByteSavings,
             });
         }
     }
     return finalize({
         optimizableImages,
+        totalByteSavings: optimizableImages.reduce((total, img) => total + img.byteSavings, 0),
     });
 }
 //# sourceMappingURL=ImageDelivery.js.map

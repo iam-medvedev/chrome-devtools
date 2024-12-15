@@ -3,14 +3,6 @@
 // found in the LICENSE file.
 import * as VisualLogging from './visual_logging-testing.js';
 describe('LoggingDriver', () => {
-    it('marks loggable elements for debugging', async () => {
-        // @ts-ignore
-        globalThis.setVeDebuggingEnabled(true);
-        const element = document.createElement('div');
-        VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1 });
-        VisualLogging.Debugging.processForDebugging(element);
-        assert.strictEqual(element.style.outline, 'red solid 1px');
-    });
     it('builds a debug string', () => {
         assert.strictEqual(VisualLogging.Debugging.debugString({ ve: 1 }), 'TreeItem');
         assert.strictEqual(VisualLogging.Debugging.debugString({ ve: 1, context: '42' }), 'TreeItem; context: 42');

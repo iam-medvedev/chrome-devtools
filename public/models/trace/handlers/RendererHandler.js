@@ -5,7 +5,9 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as auctionWorkletsData } from './AuctionWorkletsHandler.js';
+import * as HandlerHelpers from './helpers.js';
 import { data as metaHandlerData } from './MetaHandler.js';
+import { data as networkRequestHandlerData } from './NetworkRequestsHandler.js';
 import { data as samplesHandlerData } from './SamplesHandler.js';
 /**
  * This handler builds the hierarchy of trace events and profile calls
@@ -19,6 +21,11 @@ import { data as samplesHandlerData } from './SamplesHandler.js';
  * event type.
  */
 const processes = new Map();
+const entityMappings = {
+    eventsByEntity: new Map(),
+    entityByEvent: new Map(),
+    createdEntityCache: new Map(),
+};
 // We track the compositor tile worker thread name events so that at the end we
 // can return these keyed by the process ID. These are used in the frontend to
 // show the user the rasterization thread(s) on the main frame as tracks.
@@ -36,6 +43,8 @@ const makeRendererThread = () => ({
     name: null,
     entries: [],
     profileCalls: [],
+    layoutEvents: [],
+    updateLayoutTreeEvents: [],
 });
 const getOrCreateRendererProcess = (processes, pid) => {
     return Platform.MapUtilities.getWithDefault(processes, pid, makeRendererProcess);
@@ -49,6 +58,9 @@ export function handleUserConfig(userConfig) {
 export function reset() {
     processes.clear();
     entryToNode.clear();
+    entityMappings.eventsByEntity.clear();
+    entityMappings.entityByEvent.clear();
+    entityMappings.createdEntityCache.clear();
     allTraceEntries.length = 0;
     completeEventStack.length = 0;
     compositorTileWorkers.length = 0;
@@ -77,9 +89,22 @@ export function handleEvent(event) {
         thread.entries.push(event);
         allTraceEntries.push(event);
     }
+    if (Types.Events.isLayout(event)) {
+        const process = getOrCreateRendererProcess(processes, event.pid);
+        const thread = getOrCreateRendererThread(process, event.tid);
+        thread.layoutEvents.push(event);
+    }
+    if (Types.Events.isUpdateLayoutTree(event)) {
+        const process = getOrCreateRendererProcess(processes, event.pid);
+        const thread = getOrCreateRendererThread(process, event.tid);
+        thread.updateLayoutTreeEvents.push(event);
+    }
 }
 export async function finalize() {
     const { mainFrameId, rendererProcessesByFrame, threadsInProcess } = metaHandlerData();
+    const { entityMappings: networkEntityMappings } = networkRequestHandlerData();
+    // Build on top of the created entity cache to avoid de-dupes of entities that are made up.
+    entityMappings.createdEntityCache = new Map(networkEntityMappings.createdEntityCache);
     assignMeta(processes, mainFrameId, rendererProcessesByFrame, threadsInProcess);
     sanitizeProcesses(processes);
     buildHierarchy(processes);
@@ -92,6 +117,11 @@ export function data() {
         compositorTileWorkers: new Map(gatherCompositorThreads()),
         entryToNode: new Map(entryToNode),
         allTraceEntries: [...allTraceEntries],
+        entityMappings: {
+            entityByEvent: new Map(entityMappings.entityByEvent),
+            eventsByEntity: new Map(entityMappings.eventsByEntity),
+            createdEntityCache: new Map(entityMappings.createdEntityCache),
+        },
     };
 }
 function gatherCompositorThreads() {
@@ -282,6 +312,7 @@ export function buildHierarchy(processes, options) {
             // Update the entryToNode map with the entries from this thread
             for (const [entry, node] of treeData.entryToNode) {
                 entryToNode.set(entry, node);
+                HandlerHelpers.updateEventForEntities(entry, entityMappings);
             }
         }
     }
@@ -315,6 +346,6 @@ export function makeCompleteEvent(event) {
     return syntheticComplete;
 }
 export function deps() {
-    return ['Meta', 'Samples', 'AuctionWorklets'];
+    return ['Meta', 'Samples', 'AuctionWorklets', 'NetworkRequests'];
 }
 //# sourceMappingURL=RendererHandler.js.map

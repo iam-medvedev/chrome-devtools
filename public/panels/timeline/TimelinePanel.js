@@ -414,6 +414,12 @@ export class TimelinePanel extends UI.Panel.Panel {
     #pendingAriaMessage = null;
     #eventToRelatedInsights = new Map();
     #shortcutsDialog = new Dialogs.ShortcutDialog.ShortcutDialog();
+    /**
+     * Navigation radio buttons located in the shortcuts dialog.
+     */
+    #navigationRadioButtons = document.createElement('form');
+    #modernNavRadioButton = UI.UIUtils.createRadioLabel('flamechart-selected-navigation', 'Modern');
+    #classicNavRadioButton = UI.UIUtils.createRadioLabel('flamechart-selected-navigation', 'Classic');
     #onMainEntryHovered;
     constructor() {
         super('timeline');
@@ -504,7 +510,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#splitWidget.show(this.element);
         this.flameChart.overlays().addEventListener(Overlays.Overlays.TimeRangeMouseOverEvent.eventName, event => {
             const { overlay } = event;
-            const overlayBounds = overlay && Overlays.Overlays.traceWindowContainingOverlays([overlay]);
+            const overlayBounds = Overlays.Overlays.traceWindowContainingOverlays([overlay]);
+            if (!overlayBounds) {
+                return;
+            }
             this.#minimapComponent.highlightBounds(overlayBounds, /* withBracket */ false);
         });
         this.flameChart.overlays().addEventListener(Overlays.Overlays.TimeRangeMouseOutEvent.eventName, () => {
@@ -520,7 +529,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideOverlays.eventName, event => {
             const { overlays, options } = event;
             this.flameChart.setOverlays(overlays, options);
-            const overlaysBounds = overlays && Overlays.Overlays.traceWindowContainingOverlays(overlays);
+            const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(overlays);
             if (overlaysBounds) {
                 this.#minimapComponent.highlightBounds(overlaysBounds, /* withBracket */ true);
             }
@@ -943,39 +952,52 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
         if (Root.Runtime.experiments.isEnabled("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */)) {
-            this.#shortcutsDialog.prependElement(this.#getNavigationSetting());
+            this.#setupNavigationSetting();
+            this.#shortcutsDialog.prependElement(this.#navigationRadioButtons);
             const dialogToolbarItem = new UI.Toolbar.ToolbarItem(this.#shortcutsDialog);
+            dialogToolbarItem.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('timeline.shortcuts-dialog-toggle')}`);
             this.panelRightToolbar.appendToolbarItem(dialogToolbarItem);
+            // The setting could have been changed from the Devtools Settings. Therefore, we
+            // need to update the radio buttons selection when the dialog is open.
+            this.#shortcutsDialog.addEventListener('click', this.#updateNavigationSettingSelection.bind(this));
         }
     }
-    #getNavigationSetting() {
+    #setupNavigationSetting() {
         const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
         this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(currentNavSetting === 'classic') };
-        const navigationRadioButtons = document.createElement('form');
-        navigationRadioButtons.classList.add('nav-radio-buttons');
-        UI.ARIAUtils.markAsRadioGroup(navigationRadioButtons);
-        const modernNavRadioButton = UI.UIUtils.createRadioLabel('flamechart-selected-navigation', 'Modern', /* checked */ currentNavSetting === 'modern');
+        this.#navigationRadioButtons.classList.add('nav-radio-buttons');
+        UI.ARIAUtils.markAsRadioGroup(this.#navigationRadioButtons);
         // Change EventListener is only triggered when the radio button is selected
-        modernNavRadioButton.radioElement.addEventListener('change', () => {
+        this.#modernNavRadioButton.radioElement.addEventListener('change', () => {
             this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(/* isNavClassic */ false) };
-            Common.Settings.moduleSetting('flamechart-selected-navigation').set('modern');
+            Common.Settings.moduleSetting('timeline.select-modern-navigation').set('modern');
         });
-        const classicNavRadioButton = UI.UIUtils.createRadioLabel('flamechart-selected-navigation', 'Classic', /* checked */ currentNavSetting === 'classic');
-        classicNavRadioButton.radioElement.addEventListener('change', () => {
+        this.#classicNavRadioButton.radioElement.addEventListener('change', () => {
             this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(/* isNavClassic */ true) };
-            Common.Settings.moduleSetting('flamechart-selected-navigation').set('classic');
+            Common.Settings.moduleSetting('timeline.select-classic-navigation').set('classic');
         });
-        navigationRadioButtons.appendChild(modernNavRadioButton);
-        navigationRadioButtons.appendChild(classicNavRadioButton);
-        return navigationRadioButtons;
+        this.#navigationRadioButtons.appendChild(this.#modernNavRadioButton);
+        this.#modernNavRadioButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('flamechart-select-modern-navigation')}`);
+        this.#navigationRadioButtons.appendChild(this.#classicNavRadioButton);
+        this.#classicNavRadioButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('flamechart-select-classic-navigation')}`);
+        return this.#navigationRadioButtons;
+    }
+    #updateNavigationSettingSelection() {
+        const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
+        if (currentNavSetting === 'classic') {
+            this.#classicNavRadioButton.radioElement.checked = true;
+        }
+        else if (currentNavSetting === 'modern') {
+            this.#modernNavRadioButton.radioElement.checked = true;
+        }
     }
     #getShortcutsInfo(isNavClassic) {
         if (isNavClassic) {
             return [
                 { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll'], ['Shift', '↑/↓']] },
                 { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll'], ['W/S'], ['+/-']] },
-                { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S']] },
-                { title: i18nString(UIStrings.timelinePanLeftRight), bindings: [['A/D']] },
+                { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
+                { title: i18nString(UIStrings.timelinePanLeftRight), bindings: [['Shift', '←/→'], ['A/D']] },
             ];
         }
         return [
@@ -1178,9 +1200,41 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
-        this.prepareToLoadTimeline();
-        this.loader = await TimelineLoader.loadFromFile(file, this);
+        const maximumTraceFileLengthToDetermineEnhancedTraces = 5000;
+        // We are expecting to locate the enhanced traces version within the first 5000
+        // characters of the trace file if the given trace file is enhanced traces.
+        // Doing so can avoid serializing the whole trace while needing to serialize
+        // it again in rehydrated session for enhanced traces.
+        const blob = file.slice(0, maximumTraceFileLengthToDetermineEnhancedTraces);
+        const content = await blob.text();
+        if (content.includes('enhancedTraceVersion')) {
+            await window.scheduler?.postTask(() => {
+                this.#launchRehydratedSession(file);
+            }, { priority: 'background' });
+        }
+        else {
+            this.loader = await TimelineLoader.loadFromFile(file, this);
+            this.prepareToLoadTimeline();
+        }
         this.createFileSelector();
+    }
+    #launchRehydratedSession(file) {
+        let rehydratingWindow = null;
+        let pathToLaunch = null;
+        const url = new URL(window.location.href);
+        const pathToEntrypoint = url.pathname.slice(0, url.pathname.lastIndexOf('/'));
+        url.pathname = `${pathToEntrypoint}/rehydrated_devtools_app.html`;
+        pathToLaunch = url.toString();
+        // Clarifying the window the code is referring to
+        const hostWindow = window;
+        function onMessageHandler(ev) {
+            if (url && ev.data && ev.data.type === 'REHYDRATING_WINDOW_READY') {
+                rehydratingWindow?.postMessage({ type: 'REHYDRATING_TRACE_FILE', traceFile: file }, url.origin);
+            }
+            hostWindow.removeEventListener('message', onMessageHandler);
+        }
+        hostWindow.addEventListener('message', onMessageHandler);
+        rehydratingWindow = hostWindow.open(pathToLaunch, /* target: */ undefined, 'noopener=false,popup=true');
     }
     async loadFromURL(url) {
         if (this.state !== "Idle" /* State.IDLE */) {

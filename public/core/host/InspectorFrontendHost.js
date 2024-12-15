@@ -339,6 +339,9 @@ export class InspectorFrontendHostStub {
                 portBindingEnabled: false,
                 schemeBindingEnabled: false,
             },
+            devToolsAnimationStylesInStylesTab: {
+                enabled: false,
+            },
             isOffTheRecord: false,
         };
         if ('hostConfigForTesting' in globalThis) {

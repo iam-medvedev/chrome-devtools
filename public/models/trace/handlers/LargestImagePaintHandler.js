@@ -16,7 +16,6 @@ import { data as networkRequestsData } from './NetworkRequestsHandler.js';
  * `LargestContentfulPaint::Candidate` will have. So, when we find an image
  * paint candidate, we can store it, keying it on the node ID.
  * Then, when it comes to finding the network request for an LCP image, we can
- *
  * use the nodeId from the LCP candidate to find the image candidate. That image
  * candidate also contains a `imageUrl` property, which will have the full URL
  * to the image.
@@ -24,16 +23,22 @@ import { data as networkRequestsData } from './NetworkRequestsHandler.js';
 const imageByDOMNodeId = new Map();
 const lcpRequestByNavigation = new Map();
 const lcpPaintEventByNavigation = new Map();
-let currentNavigation;
+/**
+ * We track the latest navigation that happened because we want to relate each
+ * LargestImagePaintCandidate to the navigation it occurred after, but we have
+ * to track navigations per-frame to avoid us reading a navigation from one
+ * frame and treating it as the latest navigation across all frames.
+ */
+const lastNavigationPerFrame = new Map();
 export function reset() {
     imageByDOMNodeId.clear();
     lcpRequestByNavigation.clear();
     lcpPaintEventByNavigation.clear();
-    currentNavigation = null;
+    lastNavigationPerFrame.clear();
 }
 export function handleEvent(event) {
-    if (Types.Events.isNavigationStart(event)) {
-        currentNavigation = event;
+    if (Types.Events.isNavigationStart(event) && event.args.frame) {
+        lastNavigationPerFrame.set(event.args.frame, event);
         return;
     }
     if (!Types.Events.isLargestImagePaintCandidate(event)) {
@@ -43,7 +48,12 @@ export function handleEvent(event) {
         return;
     }
     imageByDOMNodeId.set(event.args.data.DOMNodeId, event);
-    lcpPaintEventByNavigation.set(currentNavigation, event);
+    // Now relate this LargestImagePaintCandidate event to the last navigation
+    // that occurred within the same frame.
+    const navigationForEvent = lastNavigationPerFrame.get(event.args.frame);
+    if (navigationForEvent) {
+        lcpPaintEventByNavigation.set(navigationForEvent, event);
+    }
 }
 export async function finalize() {
     const requests = networkRequestsData().byTime;

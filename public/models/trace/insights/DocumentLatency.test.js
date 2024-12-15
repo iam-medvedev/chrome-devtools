@@ -2,17 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { createContextForNavigation, getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
+import { createContextForNavigation, getFirstOrError, getInsightOrError, processTrace, } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 import * as Types from '../types/types.js';
-export async function processTrace(testContext, traceFile) {
-    const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
-    if (!insights) {
-        throw new Error('No insights');
-    }
-    return { data: parsedTrace, insights };
-}
 describeWithEnvironment('DocumentLatency', function () {
     it('reports savings for main document with redirects', async () => {
         const { data, insights } = await processTrace(this, 'lantern/redirect/trace.json.gz');
