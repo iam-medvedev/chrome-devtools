@@ -53,7 +53,7 @@ export class AICallTree {
         // instance.logDebug();
         return instance;
     }
-    /** Define precisely how the call tree is serialized. Typically called from within `DrJonesPerformanceAgent` */
+    /** Define precisely how the call tree is serialized. Typically called from within `PerformanceAgent` */
     serialize() {
         const nodeToIdMap = new Map();
         // Keep a map of URLs. We'll output a LUT to keep size down.

@@ -48,7 +48,6 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsComponents from './components/components.js';
-import { ComputedStyleModel } from './ComputedStyleModel.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
@@ -165,7 +164,6 @@ const HIGHLIGHTABLE_PROPERTIES = [
     { mode: 'align-items', properties: ['align-items'] },
     { mode: 'flexibility', properties: ['flex', 'flex-basis', 'flex-grow', 'flex-shrink'] },
 ];
-let stylesSidebarPaneInstance;
 export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsSidebarPane) {
     currentToolbarPane;
     animatedToolbarPane;
@@ -204,14 +202,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     #copyChangesButton;
     #updateAbortController;
     #updateComputedStylesAbortController;
-    static instance(opts) {
-        if (!stylesSidebarPaneInstance || opts?.forceNew) {
-            stylesSidebarPaneInstance = new StylesSidebarPane();
-        }
-        return stylesSidebarPaneInstance;
-    }
-    constructor() {
-        super(true /* delegatesFocus */);
+    constructor(computedStyleModel) {
+        super(computedStyleModel, true /* delegatesFocus */);
         this.setMinimumSize(96, 26);
         this.registerCSSFiles([stylesSidebarPaneStyles]);
         Common.Settings.Settings.instance().moduleSetting('text-editor-indent').addChangeListener(this.update.bind(this));
@@ -223,7 +215,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.lastFilterChange = null;
         this.visibleSections = null;
         this.toolbarPaneElement = this.createStylesSidebarToolbar();
-        this.computedStyleModelInternal = new ComputedStyleModel();
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingSelectorOrStyle);
         this.sectionsContainer = this.contentElement.createChild('div');
@@ -247,7 +238,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.sectionBlocks = [];
         this.idleCallbackManager = null;
         this.needsForceUpdate = false;
-        stylesSidebarPaneInstance = this;
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
         this.contentElement.addEventListener('copy', this.clipboardCopy.bind(this));
         this.resizeThrottler = new Common.Throttler.Throttler(100);
@@ -1851,7 +1841,7 @@ export class ActionDelegate {
         switch (actionId) {
             case 'elements.new-style-rule': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.NewStyleRuleAdded);
-                void StylesSidebarPane.instance().createNewRuleInViaInspectorStyleSheet();
+                void ElementsPanel.instance().stylesWidget.createNewRuleInViaInspectorStyleSheet();
                 return true;
             }
         }
@@ -1881,7 +1871,7 @@ export class ButtonProvider {
         return buttonProviderInstance;
     }
     longClicked(event) {
-        StylesSidebarPane.instance().onAddButtonLongClick(event);
+        ElementsPanel.instance().stylesWidget.onAddButtonLongClick(event);
     }
     item() {
         return this.button;

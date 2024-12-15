@@ -28,7 +28,7 @@ describe('Release Note', () => {
             persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
             order: 1,
             async loadView() {
-                return WhatsNew.ReleaseNoteView.ReleaseNoteViewWrapper.instance();
+                return new WhatsNew.ReleaseNoteView.ReleaseNoteView();
             },
         });
         // This setting is used to determine if the What's New panel needs to be shown.

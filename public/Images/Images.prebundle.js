@@ -21,7 +21,6 @@ style.setProperty('--image-file-popoverArrows', 'url(\"' + new URL('./popoverArr
 style.setProperty('--image-file-toolbarResizerVertical', 'url(\"' + new URL('./toolbarResizerVertical.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-touchCursor_2x', 'url(\"' + new URL('./touchCursor_2x.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-touchCursor', 'url(\"' + new URL('./touchCursor.png', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-whatsnew', 'url(\"' + new URL('./whatsnew.avif', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-3d-center', 'url(\"' + new URL('./src/3d-center.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-3d-pan', 'url(\"' + new URL('./src/3d-pan.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-3d-rotate', 'url(\"' + new URL('./src/3d-rotate.svg', import.meta.url).toString() + '\")');
@@ -270,6 +269,7 @@ style.setProperty('--image-file-undo', 'url(\"' + new URL('./src/undo.svg', impo
 style.setProperty('--image-file-warning-filled', 'url(\"' + new URL('./src/warning-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-warning', 'url(\"' + new URL('./src/warning.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-watch', 'url(\"' + new URL('./src/watch.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-whatsnew', 'url(\"' + new URL('./src/whatsnew.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-width', 'url(\"' + new URL('./src/width.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-zoom-in', 'url(\"' + new URL('./src/zoom-in.svg', import.meta.url).toString() + '\")');
 

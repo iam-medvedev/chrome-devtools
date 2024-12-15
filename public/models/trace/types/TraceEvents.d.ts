@@ -1853,13 +1853,8 @@ export declare function isV8Compile(event: Event): event is V8Compile;
 export interface FunctionCall extends Complete {
     name: Name.FUNCTION_CALL;
     args: Args & {
-        data?: {
+        data?: Partial<CallFrame> & {
             frame?: string;
-            columnNumber?: number;
-            lineNumber?: number;
-            functionName?: string;
-            scriptId?: number;
-            url?: string;
         };
     };
 }
@@ -1908,7 +1903,10 @@ export declare function isAbortPostTaskCallback(event: Event): event is RunPostT
  * commonly referred to as "JS entry points".
  */
 export declare function isJSInvocationEvent(event: Event): boolean;
-export declare function isConsoleTaskRun(event: Event): boolean;
+export interface ConsoleRunTask extends Event {
+    name: Name.V8_CONSOLE_RUN_TASK;
+}
+export declare function isConsoleRunTask(event: Event): event is ConsoleRunTask;
 export interface FlowEvent extends Event {
     id: number;
     ph: Phase.FLOW_START | Phase.FLOW_END | Phase.FLOW_STEP;
@@ -1972,6 +1970,7 @@ export declare const enum Name {
     CRYPTO_DO_VERIFY = "DoVerify",
     CRYPTO_DO_VERIFY_REPLY = "DoVerifyReply",
     V8_EXECUTE = "V8.Execute",
+    V8_CONSOLE_RUN_TASK = "V8Console::runTask",
     SCHEDULE_POST_TASK_CALLBACK = "SchedulePostTaskCallback",
     RUN_POST_TASK_CALLBACK = "RunPostTaskCallback",
     ABORT_POST_TASK_CALLBACK = "AbortPostTaskCallback",

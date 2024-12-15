@@ -29,14 +29,14 @@ export async function finalize() {
             // Unexpected async call trace data shape, ignore.
             continue;
         }
-        const asyncEntryPoints = findFirstJsInvocationsForAsyncTaskRun(asyncTaskRun, entryToNode);
-        if (!asyncEntryPoints) {
+        const asyncEntryPoint = findFirstJsInvocationForAsyncTaskRun(asyncTaskRun, entryToNode);
+        if (!asyncEntryPoint) {
             // Unexpected async call trace data shape, ignore.
             continue;
         }
         // Set scheduler -> schedulee mapping.
         // The schedulee being the JS entrypoint
-        schedulerToRunEntryPoints.set(asyncCaller, asyncEntryPoints);
+        schedulerToRunEntryPoints.set(asyncCaller, asyncEntryPoint);
         // Set schedulee -> scheduler mapping.
         // The schedulees being the JS calls (instead of the entrypoints as
         // above, for usage ergonomics).
@@ -68,22 +68,19 @@ function findNearestProfileCallAncestor(asyncTaskScheduled, entryToNode) {
  * returns events that end up in the flame chart.
  */
 function acceptJSInvocationsPredicate(event) {
-    return Types.Events.isJSInvocationEvent(event) && !event.name.startsWith('v8') && !event.name.startsWith('V8');
+    const eventIsConsoleRunTask = event.name === "V8Console::runTask" /* Types.Events.Name.V8_CONSOLE_RUN_TASK */;
+    const eventIsV8EntryPoint = event.name.startsWith('v8') || event.name.startsWith('V8');
+    return Types.Events.isJSInvocationEvent(event) && (eventIsConsoleRunTask || !eventIsV8EntryPoint);
 }
 /**
  * Given a DebuggerAsyncTaskRun event, returns its closest JS entry
- * point descendants, which represent the task being scheduled.
- *
- * We return multiple entry points beacuse some of these are built
- * from samples (like `consoleTask.run()` ). Because of limitations with
- * sampling, multiple entry points can mistakenly be made from a single
- * entry point, so we return all of them to ensure the async stack is
- * in every event that applies.
+ * point descendant, which contains the task being scheduled.
  */
-function findFirstJsInvocationsForAsyncTaskRun(asyncTaskRun, entryToNode) {
+function findFirstJsInvocationForAsyncTaskRun(asyncTaskRun, entryToNode) {
     // Ignore descendants of other DebuggerAsyncTaskRuns since they
     // are part of another async task and have to be handled separately
-    return findFirstDescendantsOfType(asyncTaskRun, entryToNode, acceptJSInvocationsPredicate, Types.Events.isDebuggerAsyncTaskRun);
+    return findFirstDescendantsOfType(asyncTaskRun, entryToNode, acceptJSInvocationsPredicate, Types.Events.isDebuggerAsyncTaskRun)
+        .at(0);
 }
 /**
  * Given an async task run event, returns the top level call frames
@@ -114,7 +111,7 @@ function findFirstJSCallsForAsyncTaskRun(asyncTaskRun, entryToNode) {
     return findFirstDescendantsOfType(asyncTaskRun, entryToNode, Types.Events.isProfileCall, Types.Events.isDebuggerAsyncTaskRun);
 }
 /**
- * Given a root event returns all the top level descendants that meet a
+ * Given a root event returns all the first descendants that meet a
  * predicate condition (predicateAccept) while ignoring subtrees whose
  * top event meets an ignore condition (predicateIgnore).
  */

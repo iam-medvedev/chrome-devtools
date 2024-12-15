@@ -31,6 +31,7 @@
   "files": [
     "../../../../../../../front_end/models/trace/insights/CLSCulprits.ts",
     "../../../../../../../front_end/models/trace/insights/Common.ts",
+    "../../../../../../../front_end/models/trace/insights/DOMSize.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.ts",
     "../../../../../../../front_end/models/trace/insights/FontDisplay.ts",
     "../../../../../../../front_end/models/trace/insights/ImageDelivery.ts",
@@ -40,12 +41,14 @@
     "../../../../../../../front_end/models/trace/insights/Models.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.ts",
     "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.ts",
+    "../../../../../../../front_end/models/trace/insights/Statistics.ts",
     "../../../../../../../front_end/models/trace/insights/ThirdParties.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.ts",
     "../../../../../../../front_end/models/trace/insights/types.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
   ],
   "references": [
     {

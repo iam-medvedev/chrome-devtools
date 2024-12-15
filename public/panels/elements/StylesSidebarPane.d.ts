@@ -6,7 +6,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type ComputedStyleChangedEvent } from './ComputedStyleModel.js';
+import type { ComputedStyleModel, CSSModelChangedEvent } from './ComputedStyleModel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 import { type StylePropertyTreeElement } from './StylePropertyTreeElement.js';
@@ -50,10 +50,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private readonly boundOnScroll;
     private readonly imagePreviewPopover;
     activeCSSAngle: InlineEditor.CSSAngle.CSSAngle | null;
-    static instance(opts?: {
-        forceNew: boolean;
-    }): StylesSidebarPane;
-    constructor();
+    constructor(computedStyleModel: ComputedStyleModel);
     addPopover(element: Node, popover: {
         contents: () => HTMLElement | undefined;
         jslogContext?: string;
@@ -87,7 +84,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private fetchMatchedCascade;
     setEditingStyle(editing: boolean, _treeElement?: StylePropertyTreeElement): void;
     setActiveProperty(treeElement: StylePropertyTreeElement | null): void;
-    onCSSModelChanged(event: Common.EventTarget.EventTargetEvent<ComputedStyleChangedEvent>): void;
+    onCSSModelChanged(event: Common.EventTarget.EventTargetEvent<CSSModelChangedEvent>): void;
     refreshComputedStyles(): Promise<void>;
     focusedSectionIndex(): number;
     continueEditingElement(sectionIndex: number, propertyIndex: number): void;

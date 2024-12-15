@@ -41,14 +41,14 @@ interface BaseFunctionParam {
     description: string;
     nullable?: boolean;
 }
-interface FunctionPrimitiveParams extends BaseFunctionParam {
+export interface FunctionPrimitiveParams extends BaseFunctionParam {
     type: ParametersTypes.BOOLEAN | ParametersTypes.INTEGER | ParametersTypes.STRING | ParametersTypes.BOOLEAN;
 }
 interface FunctionArrayParam extends BaseFunctionParam {
     type: ParametersTypes.ARRAY;
     items: FunctionPrimitiveParams[];
 }
-interface FunctionObjectParam extends BaseFunctionParam {
+export interface FunctionObjectParam extends BaseFunctionParam {
     type: ParametersTypes.OBJECT;
     properties: {
         [Key in string]: FunctionPrimitiveParams | FunctionArrayParam;
@@ -73,15 +73,16 @@ export interface MediaBlob {
 export declare enum FunctionalityType {
     FUNCTIONALITY_TYPE_UNSPECIFIED = 0,
     CHAT = 1,
-    EXPLAIN_ERROR = 2
+    EXPLAIN_ERROR = 2,
+    AGENTIC_CHAT = 5
 }
 export declare enum ClientFeature {
     CLIENT_FEATURE_UNSPECIFIED = 0,
     CHROME_CONSOLE_INSIGHTS = 1,
-    CHROME_FREESTYLER = 2,
-    CHROME_DRJONES_NETWORK_AGENT = 7,
-    CHROME_DRJONES_PERFORMANCE_AGENT = 8,
-    CHROME_DRJONES_FILE_AGENT = 9
+    CHROME_STYLING_AGENT = 2,
+    CHROME_NETWORK_AGENT = 7,
+    CHROME_PERFORMANCE_AGENT = 8,
+    CHROME_FILE_AGENT = 9
 }
 export declare enum UserTier {
     USER_TIER_UNSPECIFIED = 0,
@@ -146,7 +147,7 @@ export interface AidaResponseMetadata {
 export interface AidaResponse {
     explanation: string;
     metadata: AidaResponseMetadata;
-    functionCall?: AidaFunctionCallResponse;
+    functionCalls?: [AidaFunctionCallResponse, ...AidaFunctionCallResponse[]];
     completed: boolean;
 }
 export declare const enum AidaAccessPreconditions {

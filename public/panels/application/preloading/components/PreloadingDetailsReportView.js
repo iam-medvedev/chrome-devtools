@@ -47,6 +47,10 @@ const UIStrings = {
     /**
      *@description Description: status
      */
+    automaticallyFellBackToPrefetch: '(automatically fell back to prefetch)',
+    /**
+     *@description Description: status
+     */
     detailedStatusNotTriggered: 'Speculative load attempt is not yet triggered.',
     /**
      *@description Description: status
@@ -68,6 +72,10 @@ const UIStrings = {
      *@description Description: status
      */
     detailedStatusFailure: 'Speculative load failed.',
+    /**
+     *@description Description: status
+     */
+    detailedStatusFallbackToPrefetch: 'Speculative load failed, but fallback to prefetch succeeded.',
     /**
      *@description button: Contents of button to inspect prerendered page
      */
@@ -135,23 +143,22 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
                 // clang-format on
                 return;
             }
-            const detailedStatus = PreloadingUIUtils.detailedStatus(this.#data.preloadingAttempt);
+            const pipeline = this.#data.pipeline;
             const pageURL = this.#data.pageURL;
+            const isFallbackToPrefetch = pipeline.getPrerender()?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */ &&
+                (pipeline.getPrefetch()?.status === "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */ ||
+                    pipeline.getPrefetch()?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */);
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(html `
-        <devtools-report .data=${{ reportTitle: 'Speculative Loading Attempt' }}
-        jslog=${VisualLogging.section('preloading-details')}>
+        <devtools-report
+          .data=${{ reportTitle: 'Speculative Loading Attempt' }}
+          jslog=${VisualLogging.section('preloading-details')}>
           <devtools-report-section-header>${i18nString(UIStrings.detailsDetailedInformation)}</devtools-report-section-header>
 
           ${this.#url()}
-          ${this.#action()}
-
-          <devtools-report-key>${i18nString(UIStrings.detailsStatus)}</devtools-report-key>
-          <devtools-report-value>
-            ${detailedStatus}
-          </devtools-report-value>
-
+          ${this.#action(isFallbackToPrefetch)}
+          ${this.#status(isFallbackToPrefetch)}
           ${this.#maybePrefetchFailureReason()}
           ${this.#maybePrerenderFailureReason()}
 
@@ -163,7 +170,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     }
     #url() {
         assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.preloadingAttempt;
+        const attempt = this.#data.pipeline.getOriginallyTriggered();
         let value;
         if (attempt.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */ && attempt.requestId !== undefined) {
             // Disabled until https://crbug.com/1079231 is fixed.
@@ -201,10 +208,14 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     `;
         // clang-format on
     }
-    #action() {
+    #action(isFallbackToPrefetch) {
         assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.preloadingAttempt;
-        const action = PreloadingString.capitalizedAction(this.#data.preloadingAttempt.action);
+        const attempt = this.#data.pipeline.getOriginallyTriggered();
+        const action = PreloadingString.capitalizedAction(attempt.action);
+        let maybeFellback = LitHtml.nothing;
+        if (isFallbackToPrefetch) {
+            maybeFellback = html `${i18nString(UIStrings.automaticallyFellBackToPrefetch)}`;
+        }
         let maybeInspectButton = LitHtml.nothing;
         (() => {
             if (attempt.action !== "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) {
@@ -245,15 +256,28 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         <devtools-report-value>
           <div class="text-ellipsis" title="">
             ${action}
+            ${maybeFellback}
             ${maybeInspectButton}
           </div>
         </devtools-report-value>
     `;
         // clang-format on
     }
+    #status(isFallbackToPrefetch) {
+        assertNotNullOrUndefined(this.#data);
+        const attempt = this.#data.pipeline.getOriginallyTriggered();
+        const detailedStatus = isFallbackToPrefetch ? i18nString(UIStrings.detailedStatusFallbackToPrefetch) :
+            PreloadingUIUtils.detailedStatus(attempt);
+        return html `
+        <devtools-report-key>${i18nString(UIStrings.detailsStatus)}</devtools-report-key>
+        <devtools-report-value>
+          ${detailedStatus}
+        </devtools-report-value>
+    `;
+    }
     #maybePrefetchFailureReason() {
         assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.preloadingAttempt;
+        const attempt = this.#data.pipeline.getOriginallyTriggered();
         if (attempt.action !== "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */) {
             return LitHtml.nothing;
         }
@@ -270,7 +294,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     }
     #maybePrerenderFailureReason() {
         assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.preloadingAttempt;
+        const attempt = this.#data.pipeline.getOriginallyTriggered();
         if (attempt.action !== "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) {
             return LitHtml.nothing;
         }

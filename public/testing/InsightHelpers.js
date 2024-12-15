@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../models/trace/trace.js';
+import { TraceLoader } from './TraceLoader.js';
+export async function processTrace(testContext, traceFile) {
+    const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(testContext, traceFile);
+    if (!insights) {
+        throw new Error('No insights');
+    }
+    return { data: parsedTrace, insights, metadata };
+}
 export function createContextForNavigation(parsedTrace, navigation, frameId) {
     if (!navigation.args.data?.navigationId) {
         throw new Error('expected navigationId');

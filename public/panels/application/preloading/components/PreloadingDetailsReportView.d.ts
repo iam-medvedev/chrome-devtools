@@ -8,7 +8,7 @@ import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_
 import * as UI from '../../../../ui/legacy/legacy.js';
 export type PreloadingDetailsReportViewData = PreloadingDetailsReportViewDataInternal | null;
 interface PreloadingDetailsReportViewDataInternal {
-    preloadingAttempt: SDK.PreloadingModel.PreloadingAttempt;
+    pipeline: SDK.PreloadingModel.PreloadPipeline;
     ruleSets: Protocol.Preload.RuleSet[];
     pageURL: Platform.DevToolsPath.UrlString;
     requestResolver?: Logs.RequestResolver.RequestResolver;

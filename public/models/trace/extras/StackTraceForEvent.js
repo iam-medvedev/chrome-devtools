@@ -6,7 +6,7 @@ export const stackTraceForEventInTrace = new Map();
 export function clearCacheForTrace(parsedTrace) {
     stackTraceForEventInTrace.delete(parsedTrace);
 }
-export function get(event, parsedTrace, options) {
+export function get(event, parsedTrace) {
     let cacheForTrace = stackTraceForEventInTrace.get(parsedTrace);
     if (!cacheForTrace) {
         cacheForTrace = new Map();
@@ -19,11 +19,11 @@ export function get(event, parsedTrace, options) {
     if (!Types.Events.isProfileCall(event)) {
         return null;
     }
-    const result = getForProfileCall(event, parsedTrace, options);
+    const result = getForProfileCall(event, parsedTrace);
     cacheForTrace.set(event, result);
     return result;
 }
-function getForProfileCall(event, parsedTrace, options) {
+function getForProfileCall(event, parsedTrace) {
     // When working with a CPU profile the renderer handler won't have
     // entries in its tree.
     const entryToNode = parsedTrace.Renderer.entryToNode.size > 0 ? parsedTrace.Renderer.entryToNode : parsedTrace.Samples.entryToNode;
@@ -56,8 +56,7 @@ function getForProfileCall(event, parsedTrace, options) {
             stackTrace.description = stackTrace.description || stackTraceFromCache.description;
             break;
         }
-        const ignorelisted = options?.isIgnoreListedCallback && options?.isIgnoreListedCallback(currentEntry);
-        if (!ignorelisted && !isNativeJSFunction(currentEntry.callFrame)) {
+        if (!isNativeJSFunction(currentEntry.callFrame)) {
             stackTrace.callFrames.push(currentEntry.callFrame);
         }
         const maybeAsyncParentEvent = parsedTrace.AsyncJSCalls.asyncCallToScheduler.get(currentEntry);

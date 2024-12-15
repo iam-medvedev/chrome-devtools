@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as AICallTree from './AICallTree.js';
+import * as EntityMapper from './EntityMapper.js';
 import * as EntryName from './EntryName.js';
 import * as EntryStyles from './EntryStyles.js';
 import * as Helpers from './Helpers.js';
@@ -9,5 +10,5 @@ import * as IgnoreList from './IgnoreList.js';
 import * as ImageCache from './ImageCache.js';
 import * as NetworkRequest from './NetworkRequest.js';
 import * as SourceMapsResolver from './SourceMapsResolver.js';
-export { AICallTree, EntryName, EntryStyles, Helpers, IgnoreList, ImageCache, NetworkRequest, SourceMapsResolver, };
+export { AICallTree, EntityMapper, EntryName, EntryStyles, Helpers, IgnoreList, ImageCache, NetworkRequest, SourceMapsResolver, };
 //# sourceMappingURL=utils.js.map

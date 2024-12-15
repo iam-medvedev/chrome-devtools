@@ -2,18 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
-import { TraceLoader } from '../../../testing/TraceLoader.js';
+import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { Models } from './insights.js';
-export async function processTrace(testContext, traceFile) {
-    const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
-    if (!insights) {
-        throw new Error('No insights');
-    }
-    return { data: parsedTrace, insights };
-}
 // Root cause invalidation window.
 const INVALIDATION_WINDOW = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
 describeWithEnvironment('CLSCulprits', function () {

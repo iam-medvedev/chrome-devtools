@@ -9,14 +9,13 @@ export declare const enum RehydratingConnectionState {
     REHYDRATED = 3
 }
 export declare class RehydratingConnection implements ProtocolClient.InspectorBackend.Connection {
+    #private;
     rehydratingConnectionState: RehydratingConnectionState;
     onDisconnect: ((arg0: string) => void) | null;
     onMessage: ((arg0: Object) => void) | null;
     traceEvents: unknown[];
     sessions: Map<number, RehydratingSessionBase>;
-    private static rehydratingConnectionInstance;
-    private constructor();
-    static instance(): RehydratingConnection;
+    constructor();
     startHydration(logPayload: string): Promise<boolean>;
     setOnMessage(onMessage: (arg0: (Object | string)) => void): void;
     setOnDisconnect(onDisconnect: (arg0: string) => void): void;

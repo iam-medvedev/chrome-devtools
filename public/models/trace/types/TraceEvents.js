@@ -532,20 +532,20 @@ export function isJSInvocationEvent(event) {
         case "v8.evaluateModule" /* Name.EVALUATE_MODULE */:
         case "EventDispatch" /* Name.EVENT_DISPATCH */:
         case "V8.Execute" /* Name.V8_EXECUTE */:
+        case "V8Console::runTask" /* Name.V8_CONSOLE_RUN_TASK */:
             return true;
     }
     // Also consider any new v8 trace events. (eg 'V8.RunMicrotasks' and 'v8.run')
     if (event.name.startsWith('v8') || event.name.startsWith('V8')) {
         return true;
     }
-    if (isConsoleTaskRun(event)) {
+    if (isConsoleRunTask(event)) {
         return true;
     }
     return false;
 }
-export function isConsoleTaskRun(event) {
-    return isProfileCall(event) && event.callFrame.functionName === 'run' && event.callFrame.columnNumber === -1 &&
-        event.callFrame.lineNumber === -1;
+export function isConsoleRunTask(event) {
+    return event.name === "V8Console::runTask" /* Name.V8_CONSOLE_RUN_TASK */;
 }
 export function isFlowPhaseEvent(event) {
     return event.ph === "s" /* Phase.FLOW_START */ || event.ph === "t" /* Phase.FLOW_STEP */ || event.ph === "f" /* Phase.FLOW_END */;

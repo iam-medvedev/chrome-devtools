@@ -7,7 +7,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -17,12 +17,14 @@ import * as ElementsComponents from './components/components.js';
 import * as Elements from './elements.js';
 describeWithMockConnection('StylePropertyTreeElement', () => {
     let stylesSidebarPane;
+    let computedStyleModel;
     let mockStylePropertiesSection;
     let mockCssStyleDeclaration;
     let mockMatchedStyles;
     let mockVariableMap;
     beforeEach(async () => {
-        stylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane.instance({ forceNew: true });
+        computedStyleModel = new Elements.ComputedStyleModel.ComputedStyleModel();
+        stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
         mockVariableMap = {
             '--a': 'red',
             '--b': 'blue',
@@ -1354,6 +1356,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
     describe('Autocompletion', function () {
         let promptStub;
         beforeEach(async () => {
+            stubNoopSettings();
             promptStub = sinon.stub(Elements.StylesSidebarPane.CSSPropertyPrompt.prototype, 'initialize').resolves([]);
             setMockConnectionResponseHandler('CSS.enable', () => ({}));
             const cssModel = new SDK.CSSModel.CSSModel(createTarget());

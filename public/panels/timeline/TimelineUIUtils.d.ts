@@ -37,7 +37,7 @@ export declare class TimelineUIUtils {
     private static renderEventJson;
     private static renderObjectJson;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | Trace.Types.Events.CallFrame[]): Protocol.Runtime.StackTrace;
-    private static generateCauses;
+    static generateCauses(event: Trace.Types.Events.Event, contentHelper: TimelineDetailsContentHelper, parsedTrace: Trace.Handlers.Types.ParsedTrace): Promise<void>;
     private static createEntryLink;
     private static generateInvalidationsList;
     private static generateInvalidationsForReason;

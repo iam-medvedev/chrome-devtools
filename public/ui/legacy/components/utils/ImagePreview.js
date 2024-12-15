@@ -117,19 +117,21 @@ export class ImagePreview {
                             Platform.NumberUtilities.aspectRatio(intrinsicWidth, intrinsicHeight);
                     }
                 }
-                // File size
-                const fileRow = container.createChild('tr', 'row');
-                fileRow.createChild('td', `title ${align}`).textContent = i18nString(UIStrings.fileSize);
-                fileRow.createChild('td', 'description').textContent = resourceSizeText;
-                // Current source
-                const originalRow = container.createChild('tr', 'row');
-                originalRow.createChild('td', `title ${align}`).textContent = i18nString(UIStrings.currentSource);
-                const sourceText = Platform.StringUtilities.trimMiddle(imageURL, 100);
-                const sourceLink = originalRow.createChild('td', 'description description-link').createChild('span', 'source-link');
-                sourceLink.textContent = sourceText;
-                sourceLink.addEventListener('click', () => {
-                    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(imageURL);
-                });
+                if (!options.hideFileData) {
+                    // File size
+                    const fileRow = container.createChild('tr', 'row');
+                    fileRow.createChild('td', `title ${align}`).textContent = i18nString(UIStrings.fileSize);
+                    fileRow.createChild('td', 'description').textContent = resourceSizeText;
+                    // Current source
+                    const originalRow = container.createChild('tr', 'row');
+                    originalRow.createChild('td', `title ${align}`).textContent = i18nString(UIStrings.currentSource);
+                    const sourceText = Platform.StringUtilities.trimMiddle(imageURL, 100);
+                    const sourceLink = originalRow.createChild('td', 'description description-link').createChild('span', 'source-link');
+                    sourceLink.textContent = sourceText;
+                    sourceLink.addEventListener('click', () => {
+                        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(imageURL);
+                    });
+                }
                 resolve(shadowBoundary);
             }
         });

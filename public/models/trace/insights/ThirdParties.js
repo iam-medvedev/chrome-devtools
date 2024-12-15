@@ -4,6 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
 import * as Extras from '../extras/extras.js';
+import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory } from './types.js';
 const UIStrings = {
@@ -52,7 +53,7 @@ export function generateInsight(parsedTrace, context) {
     const { entityByRequest, madeUpEntityCache, summaries } = Extras.ThirdParties.getSummariesAndEntitiesForTraceBounds(parsedTrace, context.bounds, networkRequests);
     const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) ||
-        Extras.ThirdParties.makeUpEntity(madeUpEntityCache, firstPartyUrl);
+        Handlers.Helpers.makeUpEntity(madeUpEntityCache, firstPartyUrl);
     return finalize({
         relatedEvents: getRelatedEvents(summaries, firstPartyEntity),
         entityByRequest,

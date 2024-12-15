@@ -1,4 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
+import type { ComputedStyleModel } from './ComputedStyleModel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 export declare class MetricsSidebarPane extends ElementsSidebarPane {
     originalPropertyData: SDK.CSSProperty.CSSProperty | null;
@@ -7,7 +8,7 @@ export declare class MetricsSidebarPane extends ElementsSidebarPane {
     private highlightMode;
     private boxElements;
     private isEditingMetrics?;
-    constructor();
+    constructor(computedStyleModel: ComputedStyleModel);
     doUpdate(): Promise<void>;
     onCSSModelChanged(): void;
     /**

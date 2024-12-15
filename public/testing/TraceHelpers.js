@@ -335,6 +335,8 @@ export function makeMockRendererHandlerData(entries, pid = 1, tid = 1) {
         name: 'thread',
         entries,
         profileCalls: entries.filter(Trace.Types.Events.isProfileCall),
+        layoutEvents: entries.filter(Trace.Types.Events.isLayout),
+        updateLayoutTreeEvents: entries.filter(Trace.Types.Events.isUpdateLayoutTree),
     };
     const mockProcess = {
         url: 'url',
@@ -352,6 +354,11 @@ export function makeMockRendererHandlerData(entries, pid = 1, tid = 1) {
         compositorTileWorkers: new Map(),
         entryToNode,
         allTraceEntries: renderereEvents,
+        entityMappings: {
+            entityByEvent: new Map(),
+            eventsByEntity: new Map(),
+            createdEntityCache: new Map(),
+        },
     };
 }
 /**
@@ -515,6 +522,11 @@ export function getBaseTraceParseModelData(overrides = {}) {
             compositorTileWorkers: new Map(),
             entryToNode: new Map(),
             allTraceEntries: [],
+            entityMappings: {
+                entityByEvent: new Map(),
+                eventsByEntity: new Map(),
+                createdEntityCache: new Map(),
+            },
         },
         Screenshots: {
             all: [],
@@ -539,6 +551,11 @@ export function getBaseTraceParseModelData(overrides = {}) {
             byOrigin: new Map(),
             byTime: [],
             webSocket: [],
+            entityMappings: {
+                entityByEvent: new Map(),
+                eventsByEntity: new Map(),
+                createdEntityCache: new Map(),
+            },
         },
         GPU: {
             mainGPUThreadTasks: [],

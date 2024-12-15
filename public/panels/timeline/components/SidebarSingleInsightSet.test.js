@@ -131,6 +131,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Render blocking requests',
             'Document request latency',
             'Optimize viewport for mobile',
+            'Optimize DOM size',
             'CSS Selector costs',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
@@ -141,6 +142,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Render blocking requests',
             'Document request latency',
             'Optimize viewport for mobile',
+            'Optimize DOM size',
             'CSS Selector costs',
         ]);
     });

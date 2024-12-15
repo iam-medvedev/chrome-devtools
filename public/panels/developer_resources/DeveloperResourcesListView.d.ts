@@ -12,6 +12,7 @@ export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     update(items?: Iterable<SDK.PageResourceLoader.PageResource>): void;
     reset(): void;
     updateFilterAndHighlight(highlightRegExp: RegExp | null): void;
+    getNumberOfVisibleItems(): number;
     private sortingChanged;
     wasShown(): void;
 }

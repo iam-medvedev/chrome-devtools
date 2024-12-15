@@ -145,7 +145,8 @@ export class EnhancedTracesParser {
         return scriptId + '@' + isolate;
     }
     isTraceEvent(event) {
-        return 'cat' in event && 'pid' in event;
+        return 'cat' in event && 'pid' in event &&
+            'args' in event && 'data' in event.args;
     }
     isTargetRundownEvent(event) {
         return this.isTraceEvent(event) && event.cat === 'disabled-by-default-devtools.target-rundown';

@@ -4,6 +4,7 @@
 import '../../../ui/components/menus/menus.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
@@ -24,7 +25,7 @@ const UIStrings = {
     /**
      * @description Text description for ignore list setting.
      */
-    ignoreListDescription: 'Add these exclusion rules would simplify the flame chart.',
+    ignoreListDescription: 'Add regular expression rules to remove matching scripts from the flame chart.',
     /**
      *@description Pattern title in Framework Ignore List Settings Tab of the Settings
      *@example {ad.*?} regex
@@ -57,6 +58,10 @@ const UIStrings = {
      *@description Error message in Framework Ignore List settings pane that declares pattern must be a valid regular expression
      */
     patternMustBeAValidRegular: 'Rule must be a valid regular expression',
+    /**
+     *@description Error message in Framework Ignore List settings pane that declares pattern already exits
+     */
+    patternAlreadyExistsWillBeEnables: 'This rule already exists but is disabled. Saving this value will re-enable the rule',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/IgnoreListSetting.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -65,11 +70,13 @@ export class IgnoreListSetting extends HTMLElement {
     #renderBound = this.#render.bind(this);
     #ignoreListEnabled = Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing');
     #regexPatterns = this.#getSkipStackFramesPatternSetting().getAsArray();
-    #newItemCheckbox = UI.UIUtils.CheckboxLabel.create(
+    #newRegexCheckbox = UI.UIUtils.CheckboxLabel.create(
     /* title*/ undefined, /* checked*/ false, /* subtitle*/ undefined, 
     /* jslogContext*/ 'timeline.ignore-list-new-regex.checkbox');
-    #newItemInput = UI.UIUtils.createInput(
+    #newRegexInput = UI.UIUtils.createInput(
     /* className*/ 'new-regex-text-input', /* type*/ 'text', /* jslogContext*/ 'timeline.ignore-list-new-regex.text');
+    #newRegexIsValid = true;
+    #newRegexValidationMessage;
     #editingRegexSetting = null;
     constructor() {
         super();
@@ -92,7 +99,7 @@ export class IgnoreListSetting extends HTMLElement {
         return Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
     }
     #startEditing() {
-        this.#editingRegexSetting = { pattern: this.#newItemInput.value, disabled: false, disabledForUrl: undefined };
+        this.#editingRegexSetting = { pattern: this.#newRegexInput.value, disabled: false, disabledForUrl: undefined };
         // We need to push the temp regex here to update the flame chart.
         // We are using the "skip-stack-frames-pattern" setting to determine which is rendered on flame chart. And the push
         // here will update the setting's value.
@@ -113,11 +120,11 @@ export class IgnoreListSetting extends HTMLElement {
         this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
     }
     #resetInput() {
-        this.#newItemCheckbox.checkboxElement.checked = false;
-        this.#newItemInput.value = '';
+        this.#newRegexCheckbox.checkboxElement.checked = false;
+        this.#newRegexInput.value = '';
     }
-    #onNewRegexAdded() {
-        const newRegex = this.#newItemInput.value.trim();
+    #addNewRegexToIgnoreList() {
+        const newRegex = this.#newRegexInput.value.trim();
         this.#finishEditing();
         const { valid } = patternValidator(this.#getExistingRegexes(), newRegex);
         if (!valid) {
@@ -128,11 +135,20 @@ export class IgnoreListSetting extends HTMLElement {
         this.#resetInput();
     }
     #handleKeyDown(event) {
-        // When user press the 'Enter' or 'Escape', the current regex will be added and user can keep adding more regexes.
-        if (event.key === 'Enter' || event.key === 'Escape') {
-            this.#onNewRegexAdded();
+        // When user press the 'Enter', the current regex will be added and user can keep adding more regexes.
+        if (event.key === Platform.KeyboardUtilities.ENTER_KEY) {
+            this.#addNewRegexToIgnoreList();
             this.#startEditing();
             return;
+        }
+        // When user press the 'Escape', it means cancel the editing, so the current regex won't be added and the input will
+        // lose focus.
+        if (event.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
+            // Escape key will close the dialog, and toggle the `Console` drawer. So we need to ignore other listeners.
+            event.stopImmediatePropagation();
+            this.#finishEditing();
+            this.#resetInput();
+            this.#newRegexInput.blur();
         }
     }
     /**
@@ -151,22 +167,40 @@ export class IgnoreListSetting extends HTMLElement {
         return this.#regexPatterns;
     }
     #handleInputChange() {
+        const newRegex = this.#newRegexInput.value.trim();
         // Enable the rule if the text input field is not empty.
-        this.#newItemCheckbox.checkboxElement.checked = Boolean(this.#newItemInput.value.trim());
+        this.#newRegexCheckbox.checkboxElement.checked = Boolean(newRegex);
+        const { valid, message } = patternValidator(this.#getExistingRegexes(), newRegex);
+        this.#newRegexInput.classList.toggle('error-input', !valid);
+        UI.ARIAUtils.setInvalid(this.#newRegexInput, !valid);
+        this.#newRegexIsValid = valid;
+        this.#newRegexValidationMessage = message;
         if (this.#editingRegexSetting) {
-            this.#editingRegexSetting.pattern = this.#newItemInput.value.trim();
+            this.#editingRegexSetting.pattern = this.#newRegexInput.value.trim();
             this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
         }
     }
     #initAddNewItem() {
+        this.#newRegexInput.placeholder = '/framework\\.js$';
         const checkboxHelpText = i18nString(UIStrings.ignoreScriptsWhoseNamesMatchNewRegex);
         const inputHelpText = i18nString(UIStrings.addNewRegex);
-        UI.Tooltip.Tooltip.install(this.#newItemCheckbox, checkboxHelpText);
-        UI.Tooltip.Tooltip.install(this.#newItemInput, inputHelpText);
-        this.#newItemInput.addEventListener('blur', this.#onNewRegexAdded.bind(this), false);
-        this.#newItemInput.addEventListener('keydown', this.#handleKeyDown.bind(this), false);
-        this.#newItemInput.addEventListener('input', this.#handleInputChange.bind(this), false);
-        this.#newItemInput.addEventListener('focus', this.#startEditing.bind(this), false);
+        UI.Tooltip.Tooltip.install(this.#newRegexCheckbox, checkboxHelpText);
+        UI.Tooltip.Tooltip.install(this.#newRegexInput, inputHelpText);
+        this.#newRegexInput.addEventListener('blur', this.#addNewRegexToIgnoreList.bind(this), false);
+        this.#newRegexInput.addEventListener('keydown', this.#handleKeyDown.bind(this), false);
+        this.#newRegexInput.addEventListener('input', this.#handleInputChange.bind(this), false);
+        this.#newRegexInput.addEventListener('focus', this.#startEditing.bind(this), false);
+    }
+    #renderNewRegexRow() {
+        const classes = LitHtml.Directives.classMap({
+            'input-validation': true,
+            'input-validation-error': !this.#newRegexIsValid,
+        });
+        return html `
+      <div class='new-regex-row'>${this.#newRegexCheckbox}${this.#newRegexInput}</div>
+      ${this.#newRegexValidationMessage ? html `<div class=${classes}>${this.#newRegexValidationMessage}</div>` :
+            LitHtml.nothing}
+    `;
     }
     #onRegexEnableToggled(regex, checkbox) {
         regex.disabled = !checkbox.checkboxElement.checked;
@@ -224,7 +258,7 @@ export class IgnoreListSetting extends HTMLElement {
         <div class='ignore-list-setting-content'>
           <div class='ignore-list-setting-description'>${i18nString(UIStrings.ignoreListDescription)}</div>
           ${this.#getExistingRegexes().map(this.#renderItem.bind(this))}
-          <div class='new-regex-row'>${this.#newItemCheckbox}${this.#newItemInput}</div>
+          ${this.#renderNewRegexRow()}
         </div>
       </devtools-button-dialog>
     `;
@@ -244,12 +278,15 @@ customElements.define('devtools-perf-ignore-list-setting', IgnoreListSetting);
 export function patternValidator(existingRegexes, inputValue) {
     const pattern = inputValue.trim();
     if (!pattern.length) {
-        return { valid: false, errorMessage: i18nString(UIStrings.patternCannotBeEmpty) };
+        return { valid: false, message: i18nString(UIStrings.patternCannotBeEmpty) };
     }
     for (let i = 0; i < existingRegexes.length; ++i) {
         const regexPattern = existingRegexes[i];
-        if (regexPattern.pattern === pattern && !regexPattern.disabled && regexPattern.disabledForUrl === undefined) {
-            return { valid: false, errorMessage: i18nString(UIStrings.patternAlreadyExists) };
+        if (regexPattern.pattern === pattern) {
+            if (regexPattern.disabled || regexPattern.disabledForUrl) {
+                return { valid: true, message: i18nString(UIStrings.patternAlreadyExistsWillBeEnables) };
+            }
+            return { valid: false, message: i18nString(UIStrings.patternAlreadyExists) };
         }
     }
     let regex;
@@ -259,7 +296,7 @@ export function patternValidator(existingRegexes, inputValue) {
     catch (e) {
     }
     if (!regex) {
-        return { valid: false, errorMessage: i18nString(UIStrings.patternMustBeAValidRegular) };
+        return { valid: false, message: i18nString(UIStrings.patternMustBeAValidRegular) };
     }
     return { valid: true };
 }

@@ -24,6 +24,7 @@ export interface ParseOptions {
      * @default false
      */
     isCPUProfile?: boolean;
+    metadata?: Types.File.MetaData;
 }
 export declare class TraceProcessor extends EventTarget {
     #private;
@@ -34,6 +35,11 @@ export declare class TraceProcessor extends EventTarget {
     parse(traceEvents: readonly Types.Events.Event[], options: ParseOptions): Promise<void>;
     get parsedTrace(): Handlers.Types.ParsedTrace | null;
     get insights(): Insights.Types.TraceInsightSets | null;
+    /**
+     * Sort the insight models based on the impact of each insight's estimated savings, additionally weighted by the
+     * worst metrics according to field data (if present).
+     */
+    sortInsightSet(insights: Insights.Types.TraceInsightSets, insightSet: Insights.Types.InsightSet, metadata: Types.File.MetaData | null): void;
 }
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are

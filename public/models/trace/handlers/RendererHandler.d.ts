@@ -1,5 +1,6 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import * as HandlerHelpers from './helpers.js';
 import { type FrameProcessData } from './MetaHandler.js';
 import type { HandlerName } from './types.js';
 export declare function handleUserConfig(userConfig: Types.Configuration.Configuration): void;
@@ -83,6 +84,7 @@ export interface RendererHandlerData {
      * samples.
      */
     allTraceEntries: Types.Events.Event[];
+    entityMappings: HandlerHelpers.EntityMappings;
 }
 export interface RendererProcess {
     url: string | null;
@@ -97,5 +99,7 @@ export interface RendererThread {
      */
     entries: Types.Events.Event[];
     profileCalls: Types.Events.SyntheticProfileCall[];
+    layoutEvents: Types.Events.Layout[];
+    updateLayoutTreeEvents: Types.Events.UpdateLayoutTree[];
     tree?: Helpers.TreeHelpers.TraceEntryTree;
 }

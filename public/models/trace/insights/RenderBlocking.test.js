@@ -2,16 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getInsightOrError } from '../../../testing/InsightHelpers.js';
-import { TraceLoader } from '../../../testing/TraceLoader.js';
+import { getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import * as Trace from '../../trace/trace.js';
-export async function processTrace(testContext, traceFile) {
-    const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
-    if (!insights) {
-        throw new Error('No insights');
-    }
-    return { data: parsedTrace, insights };
-}
 describeWithEnvironment('RenderBlocking', function () {
     it('finds render blocking requests', async () => {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');

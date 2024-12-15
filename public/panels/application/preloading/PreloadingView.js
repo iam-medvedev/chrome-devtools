@@ -277,6 +277,8 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
 }
 export class PreloadingAttemptView extends UI.Widget.VBox {
     model;
+    // Note that we use id of (representative) preloading attempt while we show pipelines in grid.
+    // This is because `NOT_TRIGGERED` preloading attempts don't have pipeline id and we can use it.
     focusedPreloadingAttemptId = null;
     warningsContainer;
     warningsView = new PreloadingWarningsView();
@@ -350,26 +352,28 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
             this.preloadingDetails.data = null;
         }
         else {
+            const pipeline = this.model.getPipeline(preloadingAttempt);
             const ruleSets = preloadingAttempt.ruleSetIds.map(id => this.model.getRuleSetById(id)).filter(x => x !== null);
             this.preloadingDetails.data = {
-                preloadingAttempt,
+                pipeline,
                 ruleSets,
                 pageURL: pageURL(),
             };
         }
     }
     render() {
-        // Update preloaidng grid
+        // Update preloading grid
         const filteringRuleSetId = this.ruleSetSelector.getSelected();
-        const rows = this.model.getPreloadingAttempts(filteringRuleSetId).map(({ id, value }) => {
+        const rows = this.model.getRepresentativePreloadingAttempts(filteringRuleSetId).map(({ id, value }) => {
             const attempt = value;
+            const pipeline = this.model.getPipeline(attempt);
             const ruleSets = attempt.ruleSetIds.flatMap(id => {
                 const ruleSet = this.model.getRuleSetById(id);
                 return ruleSet === null ? [] : [ruleSet];
             });
             return {
                 id,
-                attempt,
+                pipeline,
                 ruleSets,
             };
         });
@@ -430,8 +434,8 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
         this.usedPreloading.data = {
             pageURL: SDK.TargetManager.TargetManager.instance().scopeTarget()?.inspectedURL() ||
                 '',
-            previousAttempts: this.model.getPreloadingAttemptsOfPreviousPage().map(({ value }) => value),
-            currentAttempts: this.model.getPreloadingAttempts(null).map(({ value }) => value),
+            previousAttempts: this.model.getRepresentativePreloadingAttemptsOfPreviousPage().map(({ value }) => value),
+            currentAttempts: this.model.getRepresentativePreloadingAttempts(null).map(({ value }) => value),
         };
     }
     getUsedPreloadingForTest() {

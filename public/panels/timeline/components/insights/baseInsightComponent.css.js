@@ -11,10 +11,6 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-:host {
-  --markdown-link-text-decoration-style: underline;
-}
-
 .insight {
   display: block;
   position: relative;

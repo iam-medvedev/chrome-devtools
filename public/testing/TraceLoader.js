@@ -71,6 +71,17 @@ export class TraceLoader {
         return events;
     }
     /**
+     * Load the metadata from a trace file (throws if not present).
+     **/
+    static async metadata(context, name) {
+        const contents = await TraceLoader.fixtureContents(context, name);
+        const metadata = 'metadata' in contents ? contents.metadata : null;
+        if (!metadata) {
+            throw new Error('expected metadata but found none');
+        }
+        return metadata;
+    }
+    /**
      * Load an array of raw events from the trace file.
      * Will default to typing those events using the types from Trace Engine, but
      * can be overriden by passing the legacy EventPayload type as the generic.

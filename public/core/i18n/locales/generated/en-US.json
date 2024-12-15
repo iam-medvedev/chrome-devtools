@@ -440,6 +440,12 @@
   "core/sdk/PageResourceLoader.ts | loadCanceledDueToReloadOf": {
     "message": "Load canceled due to reload of inspected page"
   },
+  "core/sdk/RehydratingConnection.ts | errorLoadingLog": {
+    "message": "Error loading log"
+  },
+  "core/sdk/RehydratingConnection.ts | noHostWindow": {
+    "message": "Can not find host window"
+  },
   "core/sdk/RehydratingConnection.ts | noSourceText": {
     "message": "No source text available"
   },
@@ -1709,6 +1715,12 @@
   "models/trace/insights/DocumentLatency.ts | title": {
     "message": "Document request latency"
   },
+  "models/trace/insights/DOMSize.ts | description": {
+    "message": "A large DOM will increase memory usage, cause longer style calculations, and produce costly layout reflows which impact page responsiveness. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/)."
+  },
+  "models/trace/insights/DOMSize.ts | title": {
+    "message": "Optimize DOM size"
+  },
   "models/trace/insights/FontDisplay.ts | description": {
     "message": "Consider setting [font-display](https://developer.chrome.com/blog/font-display) to swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
   },
@@ -2197,6 +2209,87 @@
   },
   "panels/accessibility/SourceOrderView.ts | thereMayBeADelayInDisplaying": {
     "message": "There may be a delay in displaying source order for elements with many children"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | aiAssistance": {
+    "message": "AI assistance"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | askAi": {
+    "message": "Ask AI"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | enableAiAssistance": {
+    "message": "Enable AI assistance"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | geoRestricted": {
+    "message": "This feature is unavailable in your region"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | policyRestricted": {
+    "message": "This setting is managed by your administrator"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | showAiAssistance": {
+    "message": "Show AI assistance"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | wrongLocale": {
+    "message": "To use this feature, set your language preference to English in DevTools settings"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | chatDeleted": {
+    "message": "Chat deleted"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | clearChatHistory": {
+    "message": "Clear local chats"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | deleteChat": {
+    "message": "Delete local chat"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | help": {
+    "message": "Help"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | history": {
+    "message": "History"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | newChat": {
+    "message": "New chat"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | newChatCreated": {
+    "message": "New chat created"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | noPastConversations": {
+    "message": "No past conversations"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | sendFeedback": {
+    "message": "Send feedback"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | settings": {
+    "message": "Settings"
+  },
+  "panels/ai_assistance/components/ChatView.ts | followTheSteps": {
+    "message": "Follow the steps above to ask a question"
+  },
+  "panels/ai_assistance/components/ChatView.ts | inputDisclaimerForEmptyState": {
+    "message": "This is an experimental AI feature and won't always get it right."
+  },
+  "panels/ai_assistance/components/ChatView.ts | learnAbout": {
+    "message": "Learn about AI in DevTools"
+  },
+  "panels/ai_assistance/components/ChatView.ts | notLoggedIn": {
+    "message": "This feature is only available when you are signed into Chrome with your Google account"
+  },
+  "panels/ai_assistance/components/ChatView.ts | offline": {
+    "message": "Check your internet connection and try again"
+  },
+  "panels/ai_assistance/components/ChatView.ts | settingsLink": {
+    "message": "AI assistance in Settings"
+  },
+  "panels/ai_assistance/components/ChatView.ts | turnOnForStyles": {
+    "message": "Turn on {PH1} to get help with understanding CSS styles"
+  },
+  "panels/ai_assistance/components/ChatView.ts | turnOnForStylesAndRequests": {
+    "message": "Turn on {PH1} to get help with styles and network requests"
+  },
+  "panels/ai_assistance/components/ChatView.ts | turnOnForStylesRequestsAndFiles": {
+    "message": "Turn on {PH1} to get help with styles, network requests, and files"
+  },
+  "panels/ai_assistance/components/ChatView.ts | turnOnForStylesRequestsPerformanceAndFiles": {
+    "message": "Turn on {PH1} to get help with styles, network requests, performance, and files"
   },
   "panels/animation/animation-meta.ts | animations": {
     "message": "Animations"
@@ -3809,6 +3902,9 @@
   "panels/application/preloading/components/MismatchedPreloadingGrid.ts | url": {
     "message": "URL"
   },
+  "panels/application/preloading/components/PreloadingDetailsReportView.ts | automaticallyFellBackToPrefetch": {
+    "message": "(automatically fell back to prefetch)"
+  },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | buttonClickToInspect": {
     "message": "Click to inspect prerendered page"
   },
@@ -3820,6 +3916,9 @@
   },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailedStatusFailure": {
     "message": "Speculative load failed."
+  },
+  "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailedStatusFallbackToPrefetch": {
+    "message": "Speculative load failed, but fallback to prefetch succeeded."
   },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailedStatusNotTriggered": {
     "message": "Speculative load attempt is not yet triggered."
@@ -3904,6 +4003,9 @@
   },
   "panels/application/preloading/components/PreloadingGrid.ts | action": {
     "message": "Action"
+  },
+  "panels/application/preloading/components/PreloadingGrid.ts | prefetchFallbackReady": {
+    "message": "Prefetch fallback ready"
   },
   "panels/application/preloading/components/PreloadingGrid.ts | ruleSet": {
     "message": "Rule set"
@@ -5654,6 +5756,12 @@
   "panels/developer_resources/DeveloperResourcesView.ts | loadHttpsDeveloperResources": {
     "message": "Load HTTP(S) developer resources through the website you inspect, not through DevTools"
   },
+  "panels/developer_resources/DeveloperResourcesView.ts | noResourceMatches": {
+    "message": "No resource matches"
+  },
+  "panels/developer_resources/DeveloperResourcesView.ts | numberOfResourceMatch": {
+    "message": "{n, plural, =1 {# resource matches} other {# resources match}}"
+  },
   "panels/developer_resources/DeveloperResourcesView.ts | resources": {
     "message": "{n, plural, =1 {# resource} other {# resources}}"
   },
@@ -6571,87 +6679,6 @@
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, set your language preference to English in DevTools settings"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | followTheSteps": {
-    "message": "Follow the steps above to ask a question"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimerForEmptyState": {
-    "message": "This is an experimental AI feature and won't always get it right."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | learnAbout": {
-    "message": "Learn about AI in DevTools"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | notLoggedIn": {
-    "message": "This feature is only available when you are signed into Chrome with your Google account"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | offline": {
-    "message": "Check your internet connection and try again"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | settingsLink": {
-    "message": "AI assistance in Settings"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | turnOnForStyles": {
-    "message": "Turn on {PH1} to get help with understanding CSS styles"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | turnOnForStylesAndRequests": {
-    "message": "Turn on {PH1} to get help with styles and network requests"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | turnOnForStylesRequestsAndFiles": {
-    "message": "Turn on {PH1} to get help with styles, network requests, and files"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | turnOnForStylesRequestsPerformanceAndFiles": {
-    "message": "Turn on {PH1} to get help with styles, network requests, performance, and files"
-  },
-  "panels/freestyler/freestyler-meta.ts | aiAssistance": {
-    "message": "AI assistance"
-  },
-  "panels/freestyler/freestyler-meta.ts | askAi": {
-    "message": "Ask AI"
-  },
-  "panels/freestyler/freestyler-meta.ts | enableAiAssistance": {
-    "message": "Enable AI assistance"
-  },
-  "panels/freestyler/freestyler-meta.ts | geoRestricted": {
-    "message": "This feature is unavailable in your region"
-  },
-  "panels/freestyler/freestyler-meta.ts | policyRestricted": {
-    "message": "This setting is managed by your administrator"
-  },
-  "panels/freestyler/freestyler-meta.ts | showAiAssistance": {
-    "message": "Show AI assistance"
-  },
-  "panels/freestyler/freestyler-meta.ts | wrongLocale": {
-    "message": "To use this feature, set your language preference to English in DevTools settings"
-  },
-  "panels/freestyler/FreestylerPanel.ts | chatDeleted": {
-    "message": "Chat deleted"
-  },
-  "panels/freestyler/FreestylerPanel.ts | clearChatHistory": {
-    "message": "Clear local chats"
-  },
-  "panels/freestyler/FreestylerPanel.ts | deleteChat": {
-    "message": "Delete local chat"
-  },
-  "panels/freestyler/FreestylerPanel.ts | help": {
-    "message": "Help"
-  },
-  "panels/freestyler/FreestylerPanel.ts | history": {
-    "message": "History"
-  },
-  "panels/freestyler/FreestylerPanel.ts | newChat": {
-    "message": "New chat"
-  },
-  "panels/freestyler/FreestylerPanel.ts | newChatCreated": {
-    "message": "New chat created"
-  },
-  "panels/freestyler/FreestylerPanel.ts | noPastConversations": {
-    "message": "No past conversations"
-  },
-  "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
-    "message": "Send feedback"
-  },
-  "panels/freestyler/FreestylerPanel.ts | settings": {
-    "message": "Settings"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
@@ -11451,7 +11478,7 @@
     "message": "User agent client hints are an alternative to the user agent string that identify the browser and the device in a more structured way with better privacy accounting."
   },
   "panels/settings/emulation/DevicesSettingsTab.ts | addCustomDevice": {
-    "message": "Add custom device..."
+    "message": "Add custom device"
   },
   "panels/settings/emulation/DevicesSettingsTab.ts | customDevices": {
     "message": "Custom devices"
@@ -11499,7 +11526,7 @@
     "message": "Add a regular expression rule for the script's URL"
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | addPattern": {
-    "message": "Add regex rule..."
+    "message": "Add regex rule"
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | automaticallyIgnoreListKnownThirdPartyScripts": {
     "message": "Known third-party scripts from source maps"
@@ -12825,7 +12852,7 @@
     "message": "Ignore list"
   },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreListDescription": {
-    "message": "Add these exclusion rules would simplify the flame chart."
+    "message": "Add regular expression rules to remove matching scripts from the flame chart."
   },
   "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchNewRegex": {
     "message": "Ignore scripts whose names match the new regex"
@@ -12835,6 +12862,9 @@
   },
   "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExists": {
     "message": "Rule already exists"
+  },
+  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExistsWillBeEnables": {
+    "message": "This rule already exists but is disabled. Saving this value will re-enable the rule"
   },
   "panels/timeline/components/IgnoreListSetting.ts | patternCannotBeEmpty": {
     "message": "Rule can't be empty"
@@ -12868,6 +12898,12 @@
   },
   "panels/timeline/components/insights/CLSCulprits.ts | layoutShiftCluster": {
     "message": "Layout shift cluster @ {PH1}"
+  },
+  "panels/timeline/components/insights/CLSCulprits.ts | noCulprits": {
+    "message": "Could not detect any layout shift culprits"
+  },
+  "panels/timeline/components/insights/CLSCulprits.ts | noLayoutShifts": {
+    "message": "No layout shifts"
   },
   "panels/timeline/components/insights/CLSCulprits.ts | topCulprits": {
     "message": "Top layout shift culprits"
@@ -12914,11 +12950,17 @@
   "panels/timeline/components/insights/DocumentLatency.ts | uncompressedDownload": {
     "message": "Uncompressed download"
   },
+  "panels/timeline/components/insights/DOMSize.ts | noLargeRenderTasks": {
+    "message": "No rendering tasks impacted by DOM size"
+  },
   "panels/timeline/components/insights/FontDisplay.ts | fontColumn": {
     "message": "Font"
   },
   "panels/timeline/components/insights/FontDisplay.ts | wastedTimeColumn": {
     "message": "Wasted time"
+  },
+  "panels/timeline/components/insights/ImageDelivery.ts | noOptimizableImages": {
+    "message": "No optimizable images"
   },
   "panels/timeline/components/insights/ImageDelivery.ts | optimizeFile": {
     "message": "Optimize file size"
@@ -12931,6 +12973,9 @@
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | inputDelay": {
     "message": "Input delay"
+  },
+  "panels/timeline/components/insights/InteractionToNextPaint.ts | noInteractions": {
+    "message": "No interactions detected"
   },
   "panels/timeline/components/insights/InteractionToNextPaint.ts | phase": {
     "message": "Phase"
@@ -12953,6 +12998,12 @@
   "panels/timeline/components/insights/LCPDiscovery.ts | lcpLoadDelay": {
     "message": "LCP image loaded {PH1} after earliest start point."
   },
+  "panels/timeline/components/insights/LCPDiscovery.ts | noLcp": {
+    "message": "No LCP detected"
+  },
+  "panels/timeline/components/insights/LCPDiscovery.ts | noLcpResource": {
+    "message": "No LCP resource detected because the LCP is not an image"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | requestDiscoverable": {
     "message": "Request is discoverable in initial document"
   },
@@ -12961,6 +13012,9 @@
   },
   "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
     "message": "Element render delay"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | noLcp": {
+    "message": "No LCP detected"
   },
   "panels/timeline/components/insights/LCPPhases.ts | percentLCP": {
     "message": "% of LCP"
@@ -12980,11 +13034,17 @@
   "panels/timeline/components/insights/RenderBlocking.ts | duration": {
     "message": "Duration"
   },
+  "panels/timeline/components/insights/RenderBlocking.ts | noRenderBlocking": {
+    "message": "No render blocking requests for this navigation"
+  },
   "panels/timeline/components/insights/RenderBlocking.ts | renderBlockingRequest": {
     "message": "Request"
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | elapsed": {
     "message": "Elapsed time"
+  },
+  "panels/timeline/components/insights/SlowCSSSelector.ts | enableSelectorData": {
+    "message": "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings."
   },
   "panels/timeline/components/insights/SlowCSSSelector.ts | matchAttempts": {
     "message": "Match attempts"
@@ -13006,6 +13066,9 @@
   },
   "panels/timeline/components/insights/ThirdParties.ts | columnTransferSize": {
     "message": "Transfer size"
+  },
+  "panels/timeline/components/insights/ThirdParties.ts | noThirdParties": {
+    "message": "No third parties found"
   },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
@@ -13390,9 +13453,6 @@
   },
   "panels/timeline/components/NetworkRequestDetails.ts | no": {
     "message": "No"
-  },
-  "panels/timeline/components/NetworkRequestDetails.ts | preview": {
-    "message": "Preview"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | priority": {
     "message": "Priority"
@@ -14591,6 +14651,9 @@
   "panels/timeline/utils/EntryStyles.ts | computeIntersections": {
     "message": "Compute intersections"
   },
+  "panels/timeline/utils/EntryStyles.ts | consoleTaskRun": {
+    "message": "Run console task"
+  },
   "panels/timeline/utils/EntryStyles.ts | consoleTime": {
     "message": "Console time"
   },
@@ -15053,11 +15116,8 @@
   "panels/webauthn/WebauthnPane.ts | yes": {
     "message": "Yes"
   },
-  "panels/whats_new/ReleaseNoteView.ts | close": {
-    "message": "Close"
-  },
-  "panels/whats_new/ReleaseNoteView.ts | learnMore": {
-    "message": "Learn more"
+  "panels/whats_new/ReleaseNoteView.ts | seeFeatures": {
+    "message": "See all new features"
   },
   "panels/whats_new/whats_new-meta.ts | bug": {
     "message": "bug"
@@ -15692,11 +15752,14 @@
   "ui/legacy/components/perf_ui/OverviewGrid.ts | rightResizer": {
     "message": "Right Resizer"
   },
+  "ui/legacy/components/perf_ui/perf_ui-meta.ts | classic": {
+    "message": "Classic"
+  },
   "ui/legacy/components/perf_ui/perf_ui-meta.ts | collectGarbage": {
     "message": "Collect garbage"
   },
-  "ui/legacy/components/perf_ui/perf_ui-meta.ts | flamechartMouseWheelAction": {
-    "message": "Flamechart mouse wheel action:"
+  "ui/legacy/components/perf_ui/perf_ui-meta.ts | flamechartSelectedNavigation": {
+    "message": "Flamechart navigation:"
   },
   "ui/legacy/components/perf_ui/perf_ui-meta.ts | hideLiveMemoryAllocation": {
     "message": "Hide live memory allocation annotations"
@@ -15704,14 +15767,11 @@
   "ui/legacy/components/perf_ui/perf_ui-meta.ts | liveMemoryAllocationAnnotations": {
     "message": "Live memory allocation annotations"
   },
-  "ui/legacy/components/perf_ui/perf_ui-meta.ts | scroll": {
-    "message": "Scroll"
+  "ui/legacy/components/perf_ui/perf_ui-meta.ts | modern": {
+    "message": "Modern"
   },
   "ui/legacy/components/perf_ui/perf_ui-meta.ts | showLiveMemoryAllocation": {
     "message": "Show live memory allocation annotations"
-  },
-  "ui/legacy/components/perf_ui/perf_ui-meta.ts | zoom": {
-    "message": "Zoom"
   },
   "ui/legacy/components/perf_ui/PieChart.ts | total": {
     "message": "Total"
@@ -16147,6 +16207,12 @@
   },
   "ui/legacy/TabbedPane.ts | moreTabs": {
     "message": "More tabs"
+  },
+  "ui/legacy/TabbedPane.ts | moveTabLeft": {
+    "message": "Move left"
+  },
+  "ui/legacy/TabbedPane.ts | moveTabRight": {
+    "message": "Move right"
   },
   "ui/legacy/TabbedPane.ts | previewFeature": {
     "message": "Preview feature"

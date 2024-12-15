@@ -9,7 +9,6 @@ import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { getEventLevel, getFormattedTime } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
-import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
@@ -17,6 +16,7 @@ import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
 import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
+import { TimelinePanel } from './TimelinePanel.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
 import * as TimelineUtils from './utils/utils.js';
 let showPostMessageEvents;
@@ -149,7 +149,10 @@ export class CompatibilityTracksAppender {
         }
     }
     #addExtensionAppenders() {
-        const tracks = ExtensionDataGatherer.instance().getExtensionData().extensionTrackData;
+        if (!TimelinePanel.extensionDataVisibilitySetting().get()) {
+            return;
+        }
+        const tracks = this.#parsedTrace.ExtensionTraceData.extensionTrackData;
         for (const trackData of tracks) {
             this.#allTrackAppenders.push(new ExtensionTrackAppender(this, trackData));
         }

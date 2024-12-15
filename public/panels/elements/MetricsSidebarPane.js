@@ -42,8 +42,8 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
     highlightMode;
     boxElements;
     isEditingMetrics;
-    constructor() {
-        super();
+    constructor(computedStyleModel) {
+        super(computedStyleModel);
         this.originalPropertyData = null;
         this.previousPropertyDataCandidate = null;
         this.inlineStyle = null;

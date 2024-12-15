@@ -20,8 +20,10 @@ export declare class PreloadingModel extends SDKModel<EventTypes> {
     getAllRuleSets(): WithId<Protocol.Preload.RuleSetId, Protocol.Preload.RuleSet>[];
     getPreloadCountsByRuleSetId(): Map<Protocol.Preload.RuleSetId | null, Map<PreloadingStatus, number>>;
     getPreloadingAttemptById(id: PreloadingAttemptId): PreloadingAttempt | null;
-    getPreloadingAttempts(ruleSetId: Protocol.Preload.RuleSetId | null): WithId<PreloadingAttemptId, PreloadingAttempt>[];
-    getPreloadingAttemptsOfPreviousPage(): WithId<PreloadingAttemptId, PreloadingAttempt>[];
+    getRepresentativePreloadingAttempts(ruleSetId: Protocol.Preload.RuleSetId | null): WithId<PreloadingAttemptId, PreloadingAttempt>[];
+    getRepresentativePreloadingAttemptsOfPreviousPage(): WithId<PreloadingAttemptId, PreloadingAttempt>[];
+    private getPipelineById;
+    getPipeline(attempt: PreloadingAttempt): PreloadPipeline;
     private onPrimaryPageChanged;
     onRuleSetUpdated(event: Protocol.Preload.RuleSetUpdatedEvent): void;
     onRuleSetRemoved(event: Protocol.Preload.RuleSetRemovedEvent): void;
@@ -52,6 +54,7 @@ export type PreloadingAttempt = PrefetchAttempt | PrerenderAttempt;
 export interface PrefetchAttempt {
     action: Protocol.Preload.SpeculationAction.Prefetch;
     key: Protocol.Preload.PreloadingAttemptKey;
+    pipelineId: Protocol.Preload.PreloadPipelineId | null;
     status: PreloadingStatus;
     prefetchStatus: Protocol.Preload.PrefetchStatus | null;
     requestId: Protocol.Network.RequestId;
@@ -61,6 +64,7 @@ export interface PrefetchAttempt {
 export interface PrerenderAttempt {
     action: Protocol.Preload.SpeculationAction.Prerender;
     key: Protocol.Preload.PreloadingAttemptKey;
+    pipelineId: Protocol.Preload.PreloadPipelineId | null;
     status: PreloadingStatus;
     prerenderStatus: Protocol.Preload.PrerenderFinalStatus | null;
     disallowedMojoInterface: string | null;
@@ -72,6 +76,7 @@ export type PreloadingAttemptInternal = PrefetchAttemptInternal | PrerenderAttem
 export interface PrefetchAttemptInternal {
     action: Protocol.Preload.SpeculationAction.Prefetch;
     key: Protocol.Preload.PreloadingAttemptKey;
+    pipelineId: Protocol.Preload.PreloadPipelineId | null;
     status: PreloadingStatus;
     prefetchStatus: Protocol.Preload.PrefetchStatus | null;
     requestId: Protocol.Network.RequestId;
@@ -79,8 +84,18 @@ export interface PrefetchAttemptInternal {
 export interface PrerenderAttemptInternal {
     action: Protocol.Preload.SpeculationAction.Prerender;
     key: Protocol.Preload.PreloadingAttemptKey;
+    pipelineId: Protocol.Preload.PreloadPipelineId | null;
     status: PreloadingStatus;
     prerenderStatus: Protocol.Preload.PrerenderFinalStatus | null;
     disallowedMojoInterface: string | null;
     mismatchedHeaders: Protocol.Preload.PrerenderMismatchedHeaders[] | null;
+}
+export declare class PreloadPipeline {
+    private inner;
+    constructor(inner: Map<Protocol.Preload.SpeculationAction, PreloadingAttempt>);
+    static newFromAttemptsForTesting(attempts: PreloadingAttempt[]): PreloadPipeline;
+    getOriginallyTriggered(): PreloadingAttempt;
+    getPrefetch(): PreloadingAttempt | null;
+    getPrerender(): PreloadingAttempt | null;
+    getAttempts(): PreloadingAttempt[];
 }

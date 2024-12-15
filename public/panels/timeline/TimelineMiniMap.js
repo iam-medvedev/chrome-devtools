@@ -178,16 +178,11 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     }
     #setMarkers(parsedTrace) {
         const markers = new Map();
-        const { Meta, PageLoadMetrics } = parsedTrace;
-        // Add markers for navigation start times.
+        const { Meta } = parsedTrace;
+        // Only add markers for navigation start times.
         const navStartEvents = Meta.mainFrameNavigations;
         const minTimeInMilliseconds = Trace.Helpers.Timing.microSecondsToMilliseconds(Meta.traceBounds.min);
         for (const event of navStartEvents) {
-            const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
-            markers.set(startTime, TimelineUIUtils.createEventDivider(event, minTimeInMilliseconds));
-        }
-        // Now add markers for the page load events
-        for (const event of PageLoadMetrics.allMarkerEvents) {
             const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
             markers.set(startTime, TimelineUIUtils.createEventDivider(event, minTimeInMilliseconds));
         }

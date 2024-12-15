@@ -130,7 +130,7 @@ function contextFromKeyCodes(event) {
     components.push(lowerCaseKey);
     return components.join('-');
 }
-async function contextAsNumber(context) {
+export async function contextAsNumber(context) {
     if (typeof context === 'undefined') {
         return undefined;
     }

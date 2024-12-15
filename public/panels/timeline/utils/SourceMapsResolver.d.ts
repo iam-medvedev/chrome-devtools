@@ -12,7 +12,7 @@ export declare class SourceMappingsUpdated extends Event {
     static readonly eventName = "sourcemappingsupdated";
     constructor();
 }
-export declare const resolvedCodeLocationDataNames: Map<Trace.Types.Events.ProcessID, Map<Trace.Types.Events.ThreadID, Map<string, ResolvedCodeLocationData | null>>>;
+export declare const resolvedCodeLocationDataNames: Map<string, ResolvedCodeLocationData | null>;
 export declare class SourceMapsResolver extends EventTarget {
     #private;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
@@ -31,9 +31,10 @@ export declare class SourceMapsResolver extends EventTarget {
      *
      * TODO(andoli): This can return incorrect scripts if the target page has been reloaded since the trace.
      */
+    static resolvedCodeLocationForCallFrame(callFrame: Protocol.Runtime.CallFrame): ResolvedCodeLocationData | null;
     static resolvedCodeLocationForEntry(entry: Trace.Types.Events.Event): ResolvedCodeLocationData | null;
     static resolvedURLForEntry(parsedTrace: Trace.Handlers.Types.ParsedTrace, entry: Trace.Types.Events.Event): Platform.DevToolsPath.UrlString | null;
-    static storeResolvedNodeDataForEntry(pid: Trace.Types.Events.ProcessID, tid: Trace.Types.Events.ThreadID, callFrame: Protocol.Runtime.CallFrame, resolvedCodeLocationData: ResolvedCodeLocationData): void;
+    static storeResolvedCodeDataForCallFrame(callFrame: Protocol.Runtime.CallFrame, resolvedCodeLocationData: ResolvedCodeLocationData): void;
     install(): Promise<void>;
     /**
      * Removes the event listeners and stops tracking newly added sourcemaps.

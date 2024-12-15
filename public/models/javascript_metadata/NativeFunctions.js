@@ -5275,11 +5275,23 @@ export const NativeFunctions = [
     },
     {
         name: "atob",
-        signatures: [["data"]]
+        signatures: [["data"]],
+        receivers: ["Window", "WorkerGlobalScope"]
+    },
+    {
+        name: "atob",
+        signatures: [["atob"]],
+        receivers: ["Window", "ShadowRealmGlobalScope", "WorkerGlobalScope"]
     },
     {
         name: "btoa",
-        signatures: [["data"]]
+        signatures: [["data"]],
+        receivers: ["Window", "WorkerGlobalScope"]
+    },
+    {
+        name: "btoa",
+        signatures: [["btoa"]],
+        receivers: ["Window", "ShadowRealmGlobalScope", "WorkerGlobalScope"]
     },
     {
         name: "clearInterval",
@@ -6462,13 +6474,7 @@ export const NativeFunctions = [
     },
     {
         name: "caretPositionFromPoint",
-        signatures: [["x", "y", "?options"]],
-        receivers: ["Document"]
-    },
-    {
-        name: "caretPositionFromPoint",
-        signatures: [["x"]],
-        receivers: ["TextMetrics"]
+        signatures: [["x", "y", "?options"]]
     },
     {
         name: "hasPrivateToken",
@@ -6871,6 +6877,10 @@ export const NativeFunctions = [
         signatures: [["sw", "sh", "?settings"], ["data", "sw", "?sh", "?settings"]]
     },
     {
+        name: "getIndexFromOffset",
+        signatures: [["x"]]
+    },
+    {
         name: "getSelectionRects",
         signatures: [["start", "end"]]
     },
@@ -7268,16 +7278,8 @@ export const NativeFunctions = [
         signatures: [["input", "?options"]]
     },
     {
-        name: "supportsType",
-        signatures: [["type"]]
-    },
-    {
-        name: "supportsFormat",
-        signatures: [["format"]]
-    },
-    {
-        name: "supportsLength",
-        signatures: [["length"]]
+        name: "createOptionsAvailable",
+        signatures: [["options"]]
     },
     {
         name: "languageAvailable",
@@ -7447,7 +7449,7 @@ export const NativeFunctions = [
     },
     {
         name: "fillTextCluster",
-        signatures: [["textCluster", "x", "y"]]
+        signatures: [["textCluster", "x", "y", "?options"]]
     },
     {
         name: "createMesh2DVertexBuffer",

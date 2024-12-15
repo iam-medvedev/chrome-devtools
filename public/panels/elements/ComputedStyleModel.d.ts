@@ -6,11 +6,15 @@ export declare class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapp
     private eventListeners;
     private frameResizedTimer?;
     private computedStylePromise?;
+    private currentTrackedNodeId?;
     constructor();
+    dispose(): void;
     node(): SDK.DOMModel.DOMNode | null;
     cssModel(): SDK.CSSModel.CSSModel | null;
+    private evaluateTrackingComputedStyleUpdatesForNode;
     private onNodeChanged;
     private updateModel;
+    private onCSSModelChanged;
     private onComputedStyleChanged;
     private onDOMModelChanged;
     private onFrameResized;
@@ -18,11 +22,13 @@ export declare class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapp
     fetchComputedStyle(): Promise<ComputedStyle | null>;
 }
 export declare const enum Events {
+    CSS_MODEL_CHANGED = "CSSModelChanged",
     COMPUTED_STYLE_CHANGED = "ComputedStyleChanged"
 }
-export type ComputedStyleChangedEvent = SDK.CSSStyleSheetHeader.CSSStyleSheetHeader | SDK.CSSModel.StyleSheetChangedEvent | SDK.CSSModel.PseudoStateForcedEvent | SDK.CSSModel.ComputedStyleUpdatedEvent | null | void;
+export type CSSModelChangedEvent = SDK.CSSStyleSheetHeader.CSSStyleSheetHeader | SDK.CSSModel.StyleSheetChangedEvent | SDK.CSSModel.PseudoStateForcedEvent | null | void;
 export type EventTypes = {
-    [Events.COMPUTED_STYLE_CHANGED]: ComputedStyleChangedEvent;
+    [Events.CSS_MODEL_CHANGED]: CSSModelChangedEvent;
+    [Events.COMPUTED_STYLE_CHANGED]: void;
 };
 export declare class ComputedStyle {
     node: SDK.DOMModel.DOMNode;

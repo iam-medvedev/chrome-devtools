@@ -318,7 +318,7 @@ export class ChartViewport extends UI.Widget.VBox {
             return;
         }
         const zoomFactor = keyboardEvent.shiftKey ? 0.8 : 0.3;
-        const panOffset = keyboardEvent.shiftKey ? 320 : 160;
+        const panOffset = 160;
         const scrollOffset = 50;
         switch (keyboardEvent.code) {
             case 'KeyA':
@@ -343,6 +343,16 @@ export class ChartViewport extends UI.Widget.VBox {
             case 'ArrowDown':
                 if (keyboardEvent.shiftKey) {
                     this.vScrollElement.scrollTop += scrollOffset;
+                }
+                break;
+            case 'ArrowLeft':
+                if (keyboardEvent.shiftKey) {
+                    this.handlePanGesture(-panOffset, /* animate */ true);
+                }
+                break;
+            case 'ArrowRight':
+                if (keyboardEvent.shiftKey) {
+                    this.handlePanGesture(panOffset, /* animate */ true);
                 }
                 break;
             default:

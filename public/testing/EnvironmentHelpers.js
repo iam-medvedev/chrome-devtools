@@ -437,6 +437,10 @@ export function getGetHostConfigStub(config) {
             schemeBindingEnabled: false,
             ...config.devToolsEnableOriginBoundCookies,
         },
+        devToolsAnimationStylesInStylesTab: {
+            enabled: false,
+            ...config.devToolsAnimationStylesInStylesTab,
+        },
         isOffTheRecord: false,
     });
 }

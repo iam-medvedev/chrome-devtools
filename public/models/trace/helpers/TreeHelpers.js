@@ -146,7 +146,7 @@ export class AINode {
         const selfLongEnough = (node) => node.selfDuration === undefined || node.selfDuration >= (isJS(node) ? minJsSelf : minSelf);
         return AINode.#filterRecursive(list, node => longEnough(node) && selfLongEnough(node));
     }
-    // Invoked from DrJonesPerformanceAgent
+    // Invoked from PerformanceAgent
     sanitize() {
         if (this.children) {
             this.children = AINode.#removeInexpensiveNodesRecursively(this.children, {

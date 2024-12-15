@@ -1,9 +1,9 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
 import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
-import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import * as Extensions from './extensions/extensions.js';
 import { TimelineFlameChartMarker } from './TimelineFlameChartView.js';
+import { TimelinePanel } from './TimelinePanel.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -31,10 +31,13 @@ export class TimingsTrackAppender {
     #colorGenerator;
     #compatibilityBuilder;
     #parsedTrace;
+    #extensionMarkers;
     constructor(compatibilityBuilder, parsedTrace, colorGenerator) {
         this.#compatibilityBuilder = compatibilityBuilder;
         this.#colorGenerator = colorGenerator;
         this.#parsedTrace = parsedTrace;
+        const extensionDataEnabled = TimelinePanel.extensionDataVisibilitySetting().get();
+        this.#extensionMarkers = extensionDataEnabled ? this.#parsedTrace.ExtensionTraceData.extensionMarkers : [];
     }
     /**
      * Appends into the flame chart data the data corresponding to the
@@ -46,8 +49,7 @@ export class TimingsTrackAppender {
      * appended the track's events.
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
-        const extensionMarkers = ExtensionDataGatherer.instance().getExtensionData().extensionMarkers;
-        const extensionMarkersAreEmpty = extensionMarkers.length === 0;
+        const extensionMarkersAreEmpty = this.#extensionMarkers.length === 0;
         const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(m));
         const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(m));
         const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents;
@@ -87,8 +89,7 @@ export class TimingsTrackAppender {
      */
     #appendExtensionsAtLevel(currentLevel) {
         let markers = [];
-        markers = markers.concat(ExtensionDataGatherer.instance().getExtensionData().extensionMarkers)
-            .sort((m1, m2) => m1.ts - m2.ts);
+        markers = markers.concat(this.#extensionMarkers).sort((m1, m2) => m1.ts - m2.ts);
         if (markers.length === 0) {
             return currentLevel;
         }

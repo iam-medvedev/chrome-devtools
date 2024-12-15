@@ -160,12 +160,12 @@ class NavigationEmulator {
         assert.strictEqual(json['prerender'][0]['urls'].length, 1);
         const prerenderUrl = 'https://example.com' + json['prerender'][0]['urls'][0];
         this.prerenderStatusUpdatedEvent = {
-            pipelineId: 'test-pipeline-id',
             key: {
                 loaderId: this.loaderId,
                 action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                 url: prerenderUrl,
             },
+            pipelineId: `pipelineId:0.${this.seq}`,
             status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
         };
         dispatchEvent(this.primaryTarget, 'Preload.prerenderStatusUpdated', this.prerenderStatusUpdatedEvent);

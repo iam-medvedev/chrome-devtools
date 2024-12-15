@@ -1,6 +1,7 @@
 import type { Loggable } from './Loggable.js';
 import { type LoggingConfig } from './LoggingConfig.js';
 import { type LoggingState } from './LoggingState.js';
+export declare function setVeDebuggingEnabled(enabled: boolean, inpsect?: (query: string) => void): void;
 export declare function processForDebugging(loggable: Loggable): void;
 type EventType = 'Click' | 'Drag' | 'Hover' | 'Change' | 'KeyDown' | 'Resize';
 export declare function processEventForDebugging(event: EventType, state: LoggingState | null, extraInfo?: EventAttributes): void;

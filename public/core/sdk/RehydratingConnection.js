@@ -1,13 +1,44 @@
 // Copyright (c) 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/**
+ * This file is the implementation of a protocol `Connection` object
+ *  which is central to the rehydrated devtools feature. The premise of
+ * this feature is that the enhanced traces will contain enough
+ * information to power this class with all metadata needed. This class
+ * then interacts with rehydrated devtools in a way that produces the
+ * equivalent result as live debugging session.
+ *
+ * It's much more of a state machine than the other Connection
+ * implementations, which simply interact with a network protocol in
+ * one way or another.
+ *
+ * Note on the methodology to derive runtime/debugger domain behavior below:
+ * We can use protocol monitor in the devtools to look at how dt-fe
+ * communicates with the backend, and it's also how majority of the behavior
+ * in the rehydrated sesion was derived at the first place. In the event of
+ * adding more support and capability to rehydrated session, developers will
+ * want to look at protocol monitor to imitate the behavior in a real session
+ *
+ */
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../i18n/i18n.js';
+import { UserVisibleError } from '../platform/platform.js';
 import * as EnhancedTraces from './EnhancedTracesParser.js';
+import { TraceObject } from './TraceObject.js';
 const UIStrings = {
     /**
      * @description Text that appears when no source text is available for the given script
      */
     noSourceText: 'No source text available',
+    /**
+     * @description Text to indicate rehydrating connection cannot find host window
+     */
+    noHostWindow: 'Can not find host window',
+    /**
+     * @description Text to indicate that there is an error loading the log
+     */
+    errorLoadingLog: 'Error loading log',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/RehydratingConnection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -17,14 +48,37 @@ export class RehydratingConnection {
     onMessage = null;
     traceEvents = [];
     sessions = new Map();
-    static rehydratingConnectionInstance = null;
+    #rehydratingWindow;
+    #onReceiveHostWindowPayloadBound = this.#onReceiveHostWindowPayload.bind(this);
     constructor() {
+        // If we're invoking this class, we're in the rehydrating pop-up window. Rename window for clarity.
+        this.#rehydratingWindow = window;
+        this.#setupMessagePassing();
     }
-    static instance() {
-        if (!this.rehydratingConnectionInstance) {
-            this.rehydratingConnectionInstance = new RehydratingConnection();
+    #setupMessagePassing() {
+        this.#rehydratingWindow.addEventListener('message', this.#onReceiveHostWindowPayloadBound);
+        if (!this.#rehydratingWindow.opener) {
+            throw new UserVisibleError.UserVisibleError(i18nString(UIStrings.noHostWindow));
         }
-        return this.rehydratingConnectionInstance;
+        this.#rehydratingWindow.opener.postMessage({ type: 'REHYDRATING_WINDOW_READY' });
+    }
+    /**
+     * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
+     * the trace event and all necessary data to power a rehydrated session.
+     */
+    #onReceiveHostWindowPayload(event) {
+        if (event.data.type === 'REHYDRATING_TRACE_FILE') {
+            const { traceFile } = event.data;
+            const reader = new FileReader();
+            reader.onload = async () => {
+                await this.startHydration(reader.result);
+            };
+            reader.onerror = () => {
+                throw new UserVisibleError.UserVisibleError(i18nString(UIStrings.errorLoadingLog));
+            };
+            reader.readAsText(traceFile);
+        }
+        this.#rehydratingWindow.removeEventListener('message', this.#onReceiveHostWindowPayloadBound);
     }
     async startHydration(logPayload) {
         // OnMessage should've been set before hydration, and the connection should
@@ -62,8 +116,14 @@ export class RehydratingConnection {
             sessionId += 1;
             this.sessions.set(sessionId, new RehydratingSession(sessionId, target, executionContexts, scripts, this));
         }
-        this.rehydratingConnectionState = 3 /* RehydratingConnectionState.REHYDRATED */;
+        await this.#onRehydrated();
         return true;
+    }
+    async #onRehydrated() {
+        this.rehydratingConnectionState = 3 /* RehydratingConnectionState.REHYDRATED */;
+        // Use revealer to load trace into performance panel
+        const trace = new TraceObject(this.traceEvents);
+        await Common.Revealer.reveal(trace);
     }
     setOnMessage(onMessage) {
         this.onMessage = onMessage;

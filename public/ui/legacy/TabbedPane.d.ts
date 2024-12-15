@@ -73,6 +73,9 @@ export declare class TabbedPane extends TabbedPane_base {
     selectTab(id: string, userGesture?: boolean, forceFocus?: boolean): boolean;
     selectNextTab(): void;
     selectPrevTab(): void;
+    getTabIndex(id: string): number;
+    moveTabBackward(id: string, index: number): void;
+    moveTabForward(id: string, index: number): void;
     lastOpenedTabIds(tabsCount: number): string[];
     setTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
     setSuffixElement(id: string, suffixElement: HTMLElement | null): void;

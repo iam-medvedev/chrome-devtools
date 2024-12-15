@@ -399,6 +399,7 @@ describeWithEnvironment('ThreadAppender', function () {
                 Meta: {
                     traceIsGeneric: false,
                 },
+                ExtensionTraceData: { entryToNode: new Map(), extensionMarkers: [], extensionTrackData: [] },
             };
             // Add the script to ignore list and then append the flamechart data
             ignoreListManager.ignoreListURL(SCRIPT_TO_IGNORE);

@@ -95,7 +95,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #gameTimeout = setTimeout(() => ({}), 0);
     #overlaysContainer = document.createElement('div');
     #overlays;
-    // Tracks the in-progress time range annotation when the user shift clicks + drags, or when the user uses the keyboard
+    // Tracks the in-progress time range annotation when the user alt/option clicks + drags, or when the user uses the keyboard
     #timeRangeSelectionAnnotation = null;
     // Keep track of the link annotation that hasn't been fully selected yet.
     // We only store it here when only 'entryFrom' has been selected and
@@ -431,14 +431,16 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         if (options.updateTraceWindow) {
             const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(this.#currentInsightOverlays);
-            // Trace window covering all overlays expanded by 100% so that the overlays cover 50% of the visible window.
-            const expandedBounds = Trace.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, traceBounds, 100);
-            // Set the timeline visible window and ignore the minimap bounds. This
-            // allows us to pick a visible window even if the overlays are outside of
-            // the current breadcrumb. If this happens, the event listener for
-            // BoundsManager changes in TimelineMiniMap will detect it and activate
-            // the correct breadcrumb for us.
-            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+            if (overlaysBounds) {
+                // Trace window covering all overlays expanded by 100% so that the overlays cover 50% of the visible window.
+                const expandedBounds = Trace.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, traceBounds, 100);
+                // Set the timeline visible window and ignore the minimap bounds. This
+                // allows us to pick a visible window even if the overlays are outside of
+                // the current breadcrumb. If this happens, the event listener for
+                // BoundsManager changes in TimelineMiniMap will detect it and activate
+                // the correct breadcrumb for us.
+                TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+            }
         }
         // Reveal entry if we have one.
         if (entries.length !== 0) {
@@ -574,10 +576,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         const timeRangeIncrementValue = visibleWindow.range * 0.02;
         switch (event.key) {
             // ArrowLeft + ArrowRight adjusts the right hand bound (the max) of the time range
-            // Shift + ArrowRight also starts a range if there isn't one already
+            // alt/option + ArrowRight also starts a range if there isn't one already
             case 'ArrowRight': {
                 if (!this.#timeRangeSelectionAnnotation) {
-                    if (event.shiftKey) {
+                    if (event.altKey) {
                         let startTime = visibleWindow.min;
                         // Prefer the start time of the selected event, if there is one.
                         if (this.#currentSelection) {

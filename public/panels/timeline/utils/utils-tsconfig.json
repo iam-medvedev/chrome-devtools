@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../../front_end/panels/timeline/utils/AICallTree.ts",
+    "../../../../../../../front_end/panels/timeline/utils/EntityMapper.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryName.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
@@ -39,7 +40,8 @@
     "../../../../../../../front_end/panels/timeline/utils/SourceMapsResolver.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
   ],
   "references": [
     {
