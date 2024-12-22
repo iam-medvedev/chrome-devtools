@@ -37,8 +37,8 @@ export function extractExtensionEntries(timings) {
         const extensionSyntheticEntry = {
             name: timing.name,
             ph: "X" /* Types.Events.Phase.COMPLETE */,
-            pid: Types.Events.ProcessID(0),
-            tid: Types.Events.ThreadID(0),
+            pid: timing.pid,
+            tid: timing.tid,
             ts: timing.ts,
             dur: timing.dur,
             cat: 'devtools.extension',

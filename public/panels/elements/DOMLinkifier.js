@@ -58,7 +58,7 @@ export const decorateNodeLabel = function (node, parentElement, options) {
             const classesElement = parentElement.createChild('span', 'extra node-label-class');
             for (let i = 0; i < classes.length; ++i) {
                 const className = classes[i];
-                if (className && !foundClasses.has(className)) {
+                if (className && !options.hiddenClassList?.includes(className) && !foundClasses.has(className)) {
                     const part = '.' + className;
                     title += part;
                     UI.UIUtils.createTextChild(classesElement, part);

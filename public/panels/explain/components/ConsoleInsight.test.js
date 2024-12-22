@@ -93,7 +93,7 @@ describeWithEnvironment('ConsoleInsight', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: true,
             disabledCondition: () => {
-                return { disabled: true, reason: 'disabled for test' };
+                return { disabled: true, reasons: ['disabled for test'] };
             },
         });
         component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
@@ -184,6 +184,38 @@ describeWithEnvironment('ConsoleInsight', () => {
         await drainMicroTasks();
         const content = component.shadowRoot.querySelector('main').innerText.trim();
         assert.strictEqual(content, 'Check your internet connection and try again.');
+    });
+    it('displays factuality metadata as related content', async () => {
+        function getAidaClientWithMetadata() {
+            return {
+                async *fetch() {
+                    yield {
+                        explanation: 'test',
+                        metadata: {
+                            rpcGlobalId: 0,
+                            factualityMetadata: {
+                                facts: [
+                                    { sourceUri: 'https://www.firstSource.test/someInfo' },
+                                    { sourceUri: 'https://www.anotherSource.test/page' },
+                                ],
+                            },
+                        },
+                        completed: true,
+                    };
+                },
+                registerClientEvent: sinon.spy(),
+            };
+        }
+        component = new Explain.ConsoleInsight(getTestPromptBuilder(), getAidaClientWithMetadata(), "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        renderElementIntoDOM(component);
+        await drainMicroTasks();
+        const details = component.shadowRoot.querySelector('details');
+        assert.strictEqual(details.querySelector('summary').textContent?.trim(), 'Sources and related content');
+        const xLinks = details.querySelectorAll('x-link');
+        assert.strictEqual(xLinks[0].textContent?.trim(), 'https://www.firstSource.test/someInfo');
+        assert.strictEqual(xLinks[0].getAttribute('href'), 'https://www.firstSource.test/someInfo');
+        assert.strictEqual(xLinks[1].textContent?.trim(), 'https://www.anotherSource.test/page');
+        assert.strictEqual(xLinks[1].getAttribute('href'), 'https://www.anotherSource.test/page');
     });
 });
 //# sourceMappingURL=ConsoleInsight.test.js.map

@@ -536,6 +536,9 @@ export const generatedPropertyValues: {
     "mask-type": {
         values: string[];
     };
+    "masonry-fill": {
+        values: string[];
+    };
     "masonry-slack": {
         values: string[];
     };
@@ -680,6 +683,9 @@ export const generatedPropertyValues: {
     "scroll-behavior": {
         values: string[];
     };
+    "scroll-initial-target": {
+        values: string[];
+    };
     "scroll-marker-group": {
         values: string[];
     };
@@ -714,9 +720,6 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "scroll-snap-type": {
-        values: string[];
-    };
-    "scroll-start-target": {
         values: string[];
     };
     "scrollbar-color": {

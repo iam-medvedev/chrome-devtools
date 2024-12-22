@@ -17,6 +17,23 @@ describeWithEnvironment('Release Note View', () => {
                     link: 'https://google.com.com/#topic-1',
                 },
             ],
+            videoLinks: [
+                {
+                    description: 'Highlight from the Chrome 132 update',
+                    link: 'https://developer.chrome.com/blog/new-in-devtools-132/',
+                    type: "WhatsNew" /* WhatsNew.ReleaseNoteText.VideoType.WHATS_NEW */,
+                },
+                {
+                    description: 'DevTools tips',
+                    link: 'https://developer.chrome.com/blog/devtools-tips-39',
+                    type: "DevtoolsTips" /* WhatsNew.ReleaseNoteText.VideoType.DEVTOOLS_TIPS */,
+                },
+                {
+                    description: 'Other',
+                    link: 'https://developer.chrome.com/',
+                    type: "Other" /* WhatsNew.ReleaseNoteText.VideoType.OTHER */,
+                },
+            ],
             link: 'https://google.com',
         });
     });
@@ -69,16 +86,8 @@ describeWithEnvironment('Release Note View', () => {
         const markdown = releaseNoteView.contentElement.querySelector('devtools-markdown-view');
         assert.isNotNull(markdown);
     });
-    it('renders link to video', async () => {
-        sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(CONTENT1));
-        const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
-        await releaseNoteView.pendingUpdate();
-        const link = releaseNoteView.contentElement.querySelector('x-link');
-        assert.isNotNull(link);
-        assert.deepStrictEqual(link.href, 'https://google.com/');
-    });
     it('renders button that links to blogpost', async () => {
-        sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(CONTENT1));
+        sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
         const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
         await releaseNoteView.pendingUpdate();
         const button = releaseNoteView.contentElement.querySelector('devtools-button');
@@ -87,6 +96,32 @@ describeWithEnvironment('Release Note View', () => {
         button.click();
         assert.strictEqual(openInNewTabStub.callCount, 1);
         assert.isTrue(openInNewTabStub.firstCall.calledWith('https://google.com'), 'openInNewTab was not called with the expected URL.');
+    });
+    it('renders video links with description text', async () => {
+        sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
+        const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
+        await releaseNoteView.pendingUpdate();
+        const videos = releaseNoteView.contentElement.querySelectorAll('.video-container > x-link');
+        assert.lengthOf(videos, 3);
+        const releaseNotes = WhatsNew.ReleaseNoteText.getReleaseNote();
+        const descriptions = Array.from(videos).map(n => n.innerText.trim());
+        const expectedDescriptions = releaseNotes.videoLinks.map(video => video.description);
+        assert.deepStrictEqual(descriptions, expectedDescriptions);
+    });
+    it('renders expected thumbnails', async () => {
+        sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
+        const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
+        await releaseNoteView.pendingUpdate();
+        const thumbnails = releaseNoteView.contentElement.querySelectorAll('.thumbnail');
+        assert.lengthOf(thumbnails, 3);
+        const thumbnailFilepaths = Array.from(thumbnails).map(n => n.src);
+        const expectedThumbnails = [
+            WhatsNew.ReleaseNoteView.WHATS_NEW_THUMBNAIL,
+            WhatsNew.ReleaseNoteView.DEVTOOLS_TIPS_THUMBNAIL,
+            WhatsNew.ReleaseNoteView.GENERAL_THUMBNAIL,
+        ];
+        const expectedFilepaths = expectedThumbnails.map(src => new URL(src, import.meta.url).toString());
+        assert.deepStrictEqual(thumbnailFilepaths, expectedFilepaths);
     });
 });
 //# sourceMappingURL=ReleaseNoteView.test.js.map

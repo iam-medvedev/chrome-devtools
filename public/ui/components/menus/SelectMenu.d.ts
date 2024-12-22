@@ -23,8 +23,7 @@ export interface SelectMenuData {
     buttonTitle: string | TitleCallback;
     /**
      * Determines if an arrow, pointing to the opposite side of
-     * the dialog, is shown at the end of the button. If
-     * showconnector is set to true the arrow is always shown.
+     * the dialog, is shown at the end of the button.
      * Defaults to false.
      */
     showArrow: boolean;
@@ -36,12 +35,6 @@ export interface SelectMenuData {
      * Defaults to false.
      */
     sideButton: boolean;
-    /**
-     * Determines if a connector from the dialog to the button
-     * is shown.
-     * Defaults to false.
-     */
-    showConnector: boolean;
     /**
      * Whether the menu button is disabled.
      * Defaults to false.
@@ -71,8 +64,6 @@ export declare class SelectMenu extends HTMLElement {
     set position(position: Dialogs.Dialog.DialogVerticalPosition);
     get horizontalAlignment(): Dialogs.Dialog.DialogHorizontalAlignment;
     set horizontalAlignment(horizontalAlignment: Dialogs.Dialog.DialogHorizontalAlignment);
-    get showConnector(): boolean;
-    set showConnector(showConnector: boolean);
     get showArrow(): boolean;
     set showArrow(showArrow: boolean);
     get sideButton(): boolean;

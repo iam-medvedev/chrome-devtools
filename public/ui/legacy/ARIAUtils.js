@@ -111,9 +111,6 @@ export function markAsOption(element) {
 export function markAsRadioGroup(element) {
     element.setAttribute('role', 'radiogroup');
 }
-export function markAsHidden(element) {
-    element.setAttribute('aria-hidden', 'true');
-}
 export function markAsSlider(element, min = 0, max = 100) {
     element.setAttribute('role', 'slider');
     element.setAttribute('aria-valuemin', String(min));
@@ -191,7 +188,7 @@ export function unsetExpandable(element) {
     element.removeAttribute('aria-expanded');
 }
 export function setHidden(element, value) {
-    element.setAttribute('aria-hidden', (Boolean(value)).toString());
+    element.setAttribute('aria-hidden', value.toString());
 }
 export function setLevel(element, level) {
     element.setAttribute('aria-level', level.toString());

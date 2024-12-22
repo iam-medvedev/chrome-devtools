@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -28,6 +27,10 @@ const UIStrings = {
      *@description the title shown when the user is viewing the landing page which is showing live performance metrics that are updated automatically.
      */
     landingPageTitle: 'Live metrics',
+    /**
+     * @description the title shown when the user is viewing the landing page which can be used to make a new performance recording.
+     */
+    nodeLandingPageTitle: 'New recording',
     /**
      *@description Text in Timeline History Manager of the Performance panel
      *@example {example.com} PH1
@@ -70,12 +73,15 @@ export class TimelineHistoryManager {
     enabled;
     lastActiveTrace = null;
     #minimapComponent;
-    constructor(minimapComponent) {
+    #landingPageTitle;
+    constructor(minimapComponent, isNode) {
         this.recordings = [];
         this.#minimapComponent = minimapComponent;
         this.action = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.show-history');
         this.nextNumberByDomain = new Map();
         this.buttonInternal = new ToolbarButton(this.action);
+        this.#landingPageTitle =
+            isNode ? i18nString(UIStrings.nodeLandingPageTitle) : i18nString(UIStrings.landingPageTitle);
         UI.ARIAUtils.markAsMenuButton(this.buttonInternal.element);
         this.clear();
         // Attempt to reuse the overviews coming from the panel's minimap
@@ -108,23 +114,6 @@ export class TimelineHistoryManager {
         ];
         this.totalHeight = this.allOverviews.reduce((acc, entry) => acc + entry.height, 0);
         this.enabled = true;
-        CrUXManager.CrUXManager.instance().addEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, () => {
-            this.#updateLandingPageTitleIfActive();
-        });
-    }
-    /**
-     * If the user changes the CrUX consent status, the title shown in the
-     * dropdown could be outdated, as we show "Local" or "Local and field"
-     * depending on if the user has consented.
-     * This method will be called whenever the CrUXManager detects a change, and
-     * we use it as a chance to re-evaluate if the title needs changing or not.
-     */
-    #updateLandingPageTitleIfActive() {
-        if (this.lastActiveTrace?.type === 'LANDING_PAGE') {
-            const title = this.title(this.lastActiveTrace);
-            this.buttonInternal.setTitle(title);
-            this.buttonInternal.setText(title);
-        }
     }
     addRecording(newInput) {
         const filmStrip = newInput.filmStripForPreview;
@@ -162,7 +151,7 @@ export class TimelineHistoryManager {
         this.recordings = [];
         this.lastActiveTrace = null;
         this.updateState();
-        this.buttonInternal.setText(i18nString(UIStrings.landingPageTitle));
+        this.buttonInternal.setText(this.#landingPageTitle);
         this.nextNumberByDomain.clear();
     }
     #getActiveTraceIndexForListControl() {
@@ -179,7 +168,7 @@ export class TimelineHistoryManager {
             return null;
         }
         // DropDown.show() function finishes when the dropdown menu is closed via selection or losing focus
-        const activeTraceIndex = await DropDown.show(this.recordings.map(recording => recording.parsedTraceIndex), this.#getActiveTraceIndexForListControl(), this.buttonInternal.element);
+        const activeTraceIndex = await DropDown.show(this.recordings.map(recording => recording.parsedTraceIndex), this.#getActiveTraceIndexForListControl(), this.buttonInternal.element, this.#landingPageTitle);
         if (activeTraceIndex === null) {
             return null;
         }
@@ -252,7 +241,7 @@ export class TimelineHistoryManager {
     }
     title(item) {
         if (item.type === 'LANDING_PAGE') {
-            return i18nString(UIStrings.landingPageTitle);
+            return this.#landingPageTitle;
         }
         const data = TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
         if (!data) {
@@ -355,7 +344,9 @@ export class DropDown {
     listControl;
     focusRestorer;
     selectionDone;
-    constructor(availableparsedTraceIndexes) {
+    #landingPageTitle;
+    constructor(availableparsedTraceIndexes, landingPageTitle) {
+        this.#landingPageTitle = landingPageTitle;
         this.glassPane = new UI.GlassPane.GlassPane();
         this.glassPane.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
         this.glassPane.setOutsideClickCallback(() => this.close(null));
@@ -379,13 +370,13 @@ export class DropDown {
         this.focusRestorer = new UI.UIUtils.ElementFocusRestorer(this.listControl.element);
         this.selectionDone = null;
     }
-    static show(availableparsedTraceIndexes, activeparsedTraceIndex, anchor) {
+    static show(availableparsedTraceIndexes, activeparsedTraceIndex, anchor, landingPageTitle = i18nString(UIStrings.landingPageTitle)) {
         if (DropDown.instance) {
             return Promise.resolve(null);
         }
         const availableDropdownChoices = [...availableparsedTraceIndexes];
         availableDropdownChoices.unshift(LANDING_PAGE_INDEX_DROPDOWN_CHOICE);
-        const instance = new DropDown(availableDropdownChoices);
+        const instance = new DropDown(availableDropdownChoices, landingPageTitle);
         return instance.show(anchor, activeparsedTraceIndex);
     }
     static cancelIfShowing() {
@@ -461,7 +452,7 @@ export class DropDown {
         const icon = IconButton.Icon.create('arrow-back');
         div.appendChild(icon);
         const text = document.createElement('span');
-        text.innerText = i18nString(UIStrings.landingPageTitle);
+        text.innerText = this.#landingPageTitle;
         div.appendChild(text);
         return div;
     }

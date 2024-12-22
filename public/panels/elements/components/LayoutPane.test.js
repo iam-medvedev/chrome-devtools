@@ -41,8 +41,12 @@ describeWithMockConnection('LayoutPane', () => {
         });
     }
     it('renders settings', async () => {
-        Common.Settings.Settings.instance().moduleSetting('show-grid-line-labels').setTitle('Enum setting title');
-        Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes').setTitle('Boolean setting title');
+        Common.Settings.Settings.instance()
+            .moduleSetting('show-grid-line-labels')
+            .setTitle('Enum setting title');
+        Common.Settings.Settings.instance()
+            .moduleSetting('show-grid-track-sizes')
+            .setTitle('Boolean setting title');
         const component = await renderComponent();
         assert.deepEqual(queryLabels(component, '[data-enum-setting]'), [{ label: 'Enum setting title', input: 'SELECT' }]);
         assert.deepEqual(queryLabels(component, '[data-boolean-setting]'), [{ label: 'Boolean setting title', input: 'INPUT' }, { label: '', input: 'INPUT' }, { label: '', input: 'INPUT' }]);

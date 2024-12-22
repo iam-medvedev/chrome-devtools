@@ -448,7 +448,7 @@ export class ConsoleView extends UI.Widget.VBox {
         // FIXME: This is a workaround for the selection machinery bug. See crbug.com/410899
         const selectAllFixer = this.messagesElement.createChild('div', 'console-view-fix-select-all');
         selectAllFixer.textContent = '.';
-        UI.ARIAUtils.markAsHidden(selectAllFixer);
+        UI.ARIAUtils.setHidden(selectAllFixer, true);
         this.registerShortcuts();
         this.messagesElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), false);
         // Filters need to be re-applied to a console message when the message's live location changes.

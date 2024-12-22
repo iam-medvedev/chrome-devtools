@@ -105,6 +105,7 @@ export declare function makeMockRendererHandlerData(entries: Trace.Types.Events.
  * SamplesHandler using only an array of ordered profile calls.
  */
 export declare function makeMockSamplesHandlerData(profileCalls: Trace.Types.Events.SyntheticProfileCall[]): Trace.Handlers.ModelHandlers.Samples.SamplesHandlerData;
+export declare function makeMockEntityData(events: Trace.Types.Events.Event[]): Trace.Handlers.Helpers.EntityMappings;
 export declare class FakeFlameChartProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     minimumBoundary(): number;
     hasTrackConfigurationMode(): boolean;

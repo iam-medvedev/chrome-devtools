@@ -22,7 +22,6 @@ export class Menu extends HTMLElement {
         origin: null,
         open: false,
         position: "auto" /* Dialogs.Dialog.DialogVerticalPosition.AUTO */,
-        showConnector: false,
         showDivider: false,
         showSelectedItem: true,
         horizontalAlignment: "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */,
@@ -52,13 +51,6 @@ export class Menu extends HTMLElement {
     }
     set position(position) {
         this.#props.position = position;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    get showConnector() {
-        return this.#props.showConnector;
-    }
-    set showConnector(showConnector) {
-        this.#props.showConnector = showConnector;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     get showDivider() {
@@ -311,7 +303,6 @@ export class Menu extends HTMLElement {
         @clickoutsidedialog=${this.#closeDialog}
         @forceddialogclose=${this.#closeDialog}
         .position=${this.position}
-        .showConnector=${this.showConnector}
         .origin=${this.origin}
         .dialogShownCallback=${this.#dialogDeployed.bind(this)}
         .horizontalAlignment=${this.horizontalAlignment}

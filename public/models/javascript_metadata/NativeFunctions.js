@@ -3496,11 +3496,6 @@ export const NativeFunctions = [
         signatures: [["?measureName"]]
     },
     {
-        name: "getEntries",
-        signatures: [["?options"]],
-        receivers: ["Performance"]
-    },
-    {
         name: "getEntriesByName",
         signatures: [["name", "?type"], ["name", "?entryType"]]
     },
@@ -6525,10 +6520,6 @@ export const NativeFunctions = [
         signatures: [["root", "node", "?init"]]
     },
     {
-        name: "moveBefore",
-        signatures: [["node", "child"]]
-    },
-    {
         name: "Observable",
         signatures: [["callback"]]
     },
@@ -6559,6 +6550,10 @@ export const NativeFunctions = [
     {
         name: "last",
         signatures: [["?options"]]
+    },
+    {
+        name: "moveBefore",
+        signatures: [["node", "child"]]
     },
     {
         name: "expand",
@@ -7270,6 +7265,10 @@ export const NativeFunctions = [
         signatures: [["feature"]]
     },
     {
+        name: "availability",
+        signatures: [["?options"]]
+    },
+    {
         name: "rewrite",
         signatures: [["input", "?options"]]
     },
@@ -7293,11 +7292,6 @@ export const NativeFunctions = [
         name: "detect",
         signatures: [["input", "?options"]],
         receivers: ["AILanguageDetector"]
-    },
-    {
-        name: "detect",
-        signatures: [["input"]],
-        receivers: ["LanguageDetector"]
     },
     {
         name: "detect",
@@ -7596,10 +7590,6 @@ export const NativeFunctions = [
     {
         name: "EventSource",
         signatures: [["url", "?eventSourceInitDict"]]
-    },
-    {
-        name: "FileSystemChangeRecord",
-        signatures: [["root", "changedHandle", "relativePathComponents", "type", "?relativePathMovedFrom"]]
     },
     {
         name: "queryPermission",

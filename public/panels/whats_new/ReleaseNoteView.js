@@ -19,6 +19,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/whats_new/ReleaseNoteView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const WHATS_NEW_THUMBNAIL = '../../Images/whatsnew.svg';
+export const DEVTOOLS_TIPS_THUMBNAIL = '../../Images/devtools-tips.svg';
+export const GENERAL_THUMBNAIL = '../../Images/devtools-thumbnail.svg';
 export async function getMarkdownContent() {
     const markdown = await ReleaseNoteView.getFileContent();
     const markdownAst = Marked.Marked.lexer(markdown);
@@ -62,14 +65,18 @@ export class ReleaseNoteView extends UI.Widget.VBox {
 
         <div class="feature-container">
           <div class="video-container">
-            <x-link
-              href=${releaseNote.link}
-              jslog=${VisualLogging.link().track({ click: true }).context('learn-more')}>
-                <div class="video">
-                  <img class="thumbnail" src=${new URL('../../Images/whatsnew.svg', import.meta.url).toString()}>
-                  <div class="thumbnail-description"><span>${releaseNote.header}</span></div>
-                </div>
-            </x-link>
+            ${releaseNote.videoLinks.map((value) => {
+            return html `
+                <x-link
+                href=${value.link}
+                jslog=${VisualLogging.link().track({ click: true }).context('learn-more')}>
+                  <div class="video">
+                    <img class="thumbnail" src=${input.getThumbnailPath(value.type ?? "WhatsNew" /* VideoType.WHATS_NEW */)}>
+                    <div class="thumbnail-description"><span>${value.description}</span></div>
+                  </div>
+              </x-link>
+              `;
+        })}
           </div>
           ${markdownContent.map((markdown) => {
             return html `<div class="feature"><devtools-markdown-view slot="content" .data=${{ tokens: markdown }}></devtools-markdown-view></div>`;
@@ -99,7 +106,23 @@ export class ReleaseNoteView extends UI.Widget.VBox {
             getReleaseNote,
             openNewTab: this.#openNewTab,
             markdownContent,
+            getThumbnailPath: this.#getThumbnailPath,
         }, this, this.contentElement);
+    }
+    #getThumbnailPath(type) {
+        let img;
+        switch (type) {
+            case "WhatsNew" /* VideoType.WHATS_NEW */:
+                img = WHATS_NEW_THUMBNAIL;
+                break;
+            case "DevtoolsTips" /* VideoType.DEVTOOLS_TIPS */:
+                img = DEVTOOLS_TIPS_THUMBNAIL;
+                break;
+            case "Other" /* VideoType.OTHER */:
+                img = GENERAL_THUMBNAIL;
+                break;
+        }
+        return new URL(img, import.meta.url).toString();
     }
     #openNewTab(link) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(link);

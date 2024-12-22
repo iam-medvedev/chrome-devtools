@@ -491,7 +491,7 @@ describeWithEnvironment('AiAgent', () => {
             called = 0;
             constructor(opts) {
                 super(opts);
-                this.functionDeclarations.set('testFn', {
+                this.declareFunction('testFn', {
                     description: 'test fn description',
                     parameters: { type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */, properties: {}, description: 'arg description' },
                     handler: this.#test.bind(this),

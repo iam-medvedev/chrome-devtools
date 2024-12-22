@@ -188,7 +188,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     renderItem(item, _editable) {
         const element = document.createElement('div');
         const listSetting = this.setting;
-        const checkbox = UI.UIUtils.CheckboxLabel.create(item.pattern, !item.disabled, undefined, 'settings.ignore-list-pattern');
+        const checkbox = UI.UIUtils.CheckboxLabel.createWithStringLiteral(item.pattern, !item.disabled, undefined, 'settings.ignore-list-pattern');
         const helpText = i18nString(UIStrings.ignoreScriptsWhoseNamesMatchS, { PH1: item.pattern });
         UI.Tooltip.Tooltip.install(checkbox, helpText);
         checkbox.checkboxElement.ariaLabel = helpText;

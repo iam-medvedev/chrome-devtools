@@ -37,4 +37,5 @@ export declare class CookieReportView extends UI.Widget.VBox {
     static getInsightTypeString(insight?: Protocol.Audits.CookieIssueInsight): string;
     static getRecommendation(domain: string, insight?: Protocol.Audits.CookieIssueInsight): HTMLElement;
     static getRecommendationText(domain: string, insight?: Protocol.Audits.CookieIssueInsight): LitHtml.TemplateResult;
+    static getCookieTypeString(type?: string): string;
 }

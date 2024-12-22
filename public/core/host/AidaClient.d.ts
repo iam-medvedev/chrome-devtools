@@ -46,7 +46,7 @@ export interface FunctionPrimitiveParams extends BaseFunctionParam {
 }
 interface FunctionArrayParam extends BaseFunctionParam {
     type: ParametersTypes.ARRAY;
-    items: FunctionPrimitiveParams[];
+    items: FunctionPrimitiveParams;
 }
 export interface FunctionObjectParam extends BaseFunctionParam {
     type: ParametersTypes.OBJECT;
@@ -64,7 +64,7 @@ export interface FunctionDeclaration {
      * A description for the LLM to understand what the specific function will do once called.
      */
     description: string;
-    parameters: FunctionObjectParam | FunctionPrimitiveParams;
+    parameters: FunctionObjectParam | FunctionPrimitiveParams | FunctionArrayParam;
 }
 export interface MediaBlob {
     mimeType: string;
@@ -82,7 +82,8 @@ export declare enum ClientFeature {
     CHROME_STYLING_AGENT = 2,
     CHROME_NETWORK_AGENT = 7,
     CHROME_PERFORMANCE_AGENT = 8,
-    CHROME_FILE_AGENT = 9
+    CHROME_FILE_AGENT = 9,
+    CHROME_PATCH_AGENT = 12
 }
 export declare enum UserTier {
     USER_TIER_UNSPECIFIED = 0,
@@ -90,9 +91,10 @@ export declare enum UserTier {
     BETA = 2,
     PUBLIC = 3
 }
+export type RpcGlobalId = string | number;
 export interface AidaRequest {
     client: string;
-    current_message?: Content;
+    current_message: Content;
     preamble?: string;
     historical_contexts?: Content[];
     function_declarations?: FunctionDeclaration[];
@@ -109,7 +111,7 @@ export interface AidaRequest {
     client_feature?: ClientFeature;
 }
 export interface AidaDoConversationClientEvent {
-    corresponding_aida_rpc_global_id: number;
+    corresponding_aida_rpc_global_id: RpcGlobalId;
     disable_user_content_logging: boolean;
     do_conversation_client_event: {
         user_feedback: {
@@ -140,9 +142,16 @@ export interface AidaFunctionCallResponse {
     name: string;
     args: Record<string, unknown>;
 }
+export interface FactualityFact {
+    sourceUri?: string;
+}
+export interface FactualityMetadata {
+    facts: FactualityFact[];
+}
 export interface AidaResponseMetadata {
-    rpcGlobalId?: number;
-    attributionMetadata?: AttributionMetadata[];
+    rpcGlobalId?: RpcGlobalId;
+    attributionMetadata?: AttributionMetadata;
+    factualityMetadata?: FactualityMetadata;
 }
 export interface AidaResponse {
     explanation: string;

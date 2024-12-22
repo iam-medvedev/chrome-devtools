@@ -70,8 +70,8 @@ export class ConsoleViewport {
         // Use Unicode ZERO WIDTH NO-BREAK SPACE, which avoids contributing any height to the element's layout overflow.
         this.topGapElement.textContent = '\uFEFF';
         this.bottomGapElement.textContent = '\uFEFF';
-        UI.ARIAUtils.markAsHidden(this.topGapElement);
-        UI.ARIAUtils.markAsHidden(this.bottomGapElement);
+        UI.ARIAUtils.setHidden(this.topGapElement, true);
+        UI.ARIAUtils.setHidden(this.bottomGapElement, true);
         this.provider = provider;
         this.element.addEventListener('scroll', this.onScroll.bind(this), false);
         this.element.addEventListener('copy', this.onCopy.bind(this), false);

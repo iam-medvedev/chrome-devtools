@@ -15,7 +15,7 @@ import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
  * This defines the order these markers will be rendered if they are at the
  * same timestamp. The smaller number will be shown first - e.g. so if NavigationStart, MarkFCP,
  * MarkLCPCandidate have the same timestamp, visually we
- * will render [Nav][FCP][LCP] everytime.
+ * will render [Nav][FCP][DCL][LCP] everytime.
  */
 export declare const SORT_ORDER_PAGE_LOAD_MARKERS: Readonly<Record<string, number>>;
 declare const TimelineFlameChartView_base: (new (...args: any[]) => {
@@ -59,6 +59,8 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
     containingElement(): HTMLElement;
+    dimEvents(events: Trace.Types.Events.Event[]): void;
+    disableAllDimming(): void;
     setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;

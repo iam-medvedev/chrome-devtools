@@ -1,11 +1,19 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
+import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 export const stackTraceForEventInTrace = new Map();
 export function clearCacheForTrace(parsedTrace) {
     stackTraceForEventInTrace.delete(parsedTrace);
 }
+/**
+ * This util builds a stack trace that includes async calls for a given
+ * event. It leverages data we collect from sampling to deduce sync
+ * stacks and trace event instrumentation on the V8 debugger to stitch
+ * them together.
+ */
 export function get(event, parsedTrace) {
     let cacheForTrace = stackTraceForEventInTrace.get(parsedTrace);
     if (!cacheForTrace) {
@@ -16,11 +24,16 @@ export function get(event, parsedTrace) {
     if (resultFromCache) {
         return resultFromCache;
     }
-    if (!Types.Events.isProfileCall(event)) {
-        return null;
+    let result = null;
+    if (Types.Events.isProfileCall(event)) {
+        result = getForProfileCall(event, parsedTrace);
     }
-    const result = getForProfileCall(event, parsedTrace);
-    cacheForTrace.set(event, result);
+    else if (Types.Extensions.isSyntheticExtensionEntry(event)) {
+        result = getForExtensionEntry(event, parsedTrace);
+    }
+    if (result) {
+        cacheForTrace.set(event, result);
+    }
     return result;
 }
 function getForProfileCall(event, parsedTrace) {
@@ -80,6 +93,56 @@ function getForProfileCall(event, parsedTrace) {
         node = node.parent;
     }
     return topStackTrace;
+}
+/**
+ * Finds the JS call in which an extension entry was injected (the
+ * code location that called the extension API), and returns its stack
+ * trace.
+ */
+function getForExtensionEntry(event, parsedTrace) {
+    const eventCallPoint = Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.[0];
+    if (!eventCallPoint) {
+        return null;
+    }
+    const eventCallTime = Types.Events.isPerformanceMeasureBegin(event.rawSourceEvent) ?
+        event.rawSourceEvent.args.callTime :
+        event.rawSourceEvent.args.data?.callTime;
+    if (eventCallTime === undefined) {
+        return null;
+    }
+    const callsInThread = parsedTrace.Renderer.processes.get(event.pid)?.threads.get(event.tid)?.profileCalls;
+    if (!callsInThread) {
+        return null;
+    }
+    const matchByName = callsInThread.filter(e => {
+        return e.callFrame.functionName === eventCallPoint.functionName;
+    });
+    const lastCallBeforeEventIndex = Platform.ArrayUtilities.nearestIndexFromEnd(matchByName, profileCall => profileCall.ts <= eventCallTime);
+    const firstCallAfterEventIndex = Platform.ArrayUtilities.nearestIndexFromBeginning(matchByName, profileCall => profileCall.ts >= eventCallTime);
+    const lastCallBeforeEvent = typeof lastCallBeforeEventIndex === 'number' && matchByName.at(lastCallBeforeEventIndex);
+    const firstCallAfterEvent = typeof firstCallAfterEventIndex === 'number' && matchByName.at(firstCallAfterEventIndex);
+    let closestMatchingProfileCall;
+    if (!lastCallBeforeEvent && !firstCallAfterEvent) {
+        return null;
+    }
+    if (!lastCallBeforeEvent) {
+        // Per the check above firstCallAfterEvent is guaranteed to exist
+        // but ts is unaware, so we cast the type.
+        closestMatchingProfileCall = firstCallAfterEvent;
+    }
+    else if (!firstCallAfterEvent) {
+        closestMatchingProfileCall = lastCallBeforeEvent;
+    }
+    else if (Helpers.Trace.eventContainsTimestamp(lastCallBeforeEvent, eventCallTime)) {
+        closestMatchingProfileCall = lastCallBeforeEvent;
+    } // pick the closest when the choice isn't clear.
+    else if (eventCallTime - lastCallBeforeEvent.ts < firstCallAfterEvent.ts - eventCallTime) {
+        closestMatchingProfileCall = lastCallBeforeEvent;
+    }
+    else {
+        closestMatchingProfileCall = firstCallAfterEvent;
+    }
+    return get(closestMatchingProfileCall, parsedTrace);
 }
 /**
  * Determines if a function is a native JS API (like setTimeout,

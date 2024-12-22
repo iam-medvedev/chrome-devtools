@@ -408,6 +408,9 @@ export function isBeginRemoteFontLoad(event) {
 export function isPerformanceMeasure(event) {
     return isUserTiming(event) && isPhaseAsync(event.ph);
 }
+export function isPerformanceMeasureBegin(event) {
+    return isPerformanceMeasure(event) && event.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
+}
 export function isPerformanceMark(event) {
     return isUserTiming(event) && (event.ph === "R" /* Phase.MARK */ || event.ph === "I" /* Phase.INSTANT */);
 }

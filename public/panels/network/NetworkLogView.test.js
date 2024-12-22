@@ -110,22 +110,22 @@ describeWithMockConnection('NetworkLogView', () => {
         const request = createNetworkRequest('http://localhost', {
             requestHeaders: [{ name: 'cookie', value: 'eva="Sg4="' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -H \'cookie: eva=\"Sg4=\"\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -H ^"cookie: eva=^\\^"Sg4=^\\^"^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'eva=\"Sg4=\"\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"eva=^\\^"Sg4=^\\^"^"');
     });
     it('generates a valid curl command when header values contain percentages', async () => {
         const request = createNetworkRequest('http://localhost', {
             requestHeaders: [{ name: 'cookie', value: 'eva=%22Sg4%3D%22' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -H \'cookie: eva=%22Sg4%3D%22\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -H ^"cookie: eva=^%^22Sg4^%^3D^%^22^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'eva=%22Sg4%3D%22\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"eva=^%^22Sg4^%^3D^%^22^"');
     });
     it('generates a valid curl command when header values contain newline and ampersand', async () => {
         const request = createNetworkRequest('http://localhost', {
             requestHeaders: [{ name: 'cookie', value: 'query=evil\n\n & cmd /c calc.exe \n\n' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -H $\'cookie: query=evil\\n\\n & cmd /c calc.exe \\n\\n\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -H ^\"cookie: query=evil^\n\n^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\n\\n & cmd /c calc.exe \\n\\n\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -b ^\"query=evil^\n\n^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
     });
     function createNetworkLogView(filterBar) {
         if (!filterBar) {

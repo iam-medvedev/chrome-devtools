@@ -31,7 +31,7 @@ export class AiAgent {
     #sessionId = crypto.randomUUID();
     #aidaClient;
     #serverSideLoggingEnabled;
-    functionDeclarations = new Map();
+    #functionDeclarations = new Map();
     #generatedFromHistory = false;
     /**
      * Historical responses.
@@ -49,7 +49,19 @@ export class AiAgent {
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
     }
     get chatHistoryForTesting() {
-        return this.#buildChatHistoryForAida();
+        return this.buildChatHistoryForAida();
+    }
+    declareFunction(name, declaration) {
+        if (this.#functionDeclarations.has(name)) {
+            throw new Error(`Duplicate function declaration ${name}`);
+        }
+        this.#functionDeclarations.set(name, declaration);
+    }
+    async callFunction(name, args) {
+        const call = this.#functionDeclarations.get(name);
+        return (call ? await call.handler(args) : {
+            error: `Function ${name} is not found.`,
+        });
     }
     set chatNewHistoryForTesting(history) {
         this.#history = history;
@@ -79,7 +91,7 @@ export class AiAgent {
     }
     #buildFunctionDeclarationsForAida() {
         const result = [];
-        for (const [name, definition] of this.functionDeclarations.entries()) {
+        for (const [name, definition] of this.#functionDeclarations.entries()) {
             result.push({
                 name,
                 description: definition.description,
@@ -107,9 +119,6 @@ export class AiAgent {
         for await (aidaResponse of this.#aidaClient.fetch(request, options)) {
             response = aidaResponse.explanation;
             rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
-            if (aidaResponse.functionCalls) {
-                throw new Error('Function calling not supported yet');
-            }
             const parsedResponse = this.parseResponse(aidaResponse);
             yield {
                 rpcId,
@@ -133,7 +142,7 @@ export class AiAgent {
             parts: [part],
             role: Host.AidaClient.Role.USER,
         };
-        const history = this.#buildChatHistoryForAida();
+        const history = this.buildChatHistoryForAida();
         const declarations = this.#buildFunctionDeclarationsForAida();
         const request = {
             client: Host.AidaClient.CLIENT_NAME,
@@ -194,7 +203,7 @@ STOP`;
         }
         return text;
     }
-    #buildChatHistoryForAida() {
+    buildChatHistoryForAida() {
         const history = [];
         let currentParsedStep = {};
         let lastRunStartIdx = 0;
@@ -256,10 +265,7 @@ STOP`;
     }
     #addHistory(data) {
         this.#history.push(data);
-        // Remove condition to store the history in storage
-        if (isHistoryEnabled()) {
-            void AiHistoryStorage.instance().upsertHistoryEntry(this.serialized());
-        }
+        void AiHistoryStorage.instance().upsertHistoryEntry(this.serialized());
     }
     async *run(query, options) {
         if (this.#generatedFromHistory) {
@@ -314,10 +320,7 @@ STOP`;
             catch (err) {
                 debugLog('Error calling the AIDA API', err);
                 if (err instanceof Host.AidaClient.AidaAbortError) {
-                    const response = {
-                        type: "error" /* ResponseType.ERROR */,
-                        error: "abort" /* ErrorType.ABORT */,
-                    };
+                    const response = this.#createAbortResponse();
                     this.#addHistory(response);
                     yield response;
                     break;
@@ -386,7 +389,13 @@ STOP`;
                 yield response;
             }
             if (action) {
-                const result = yield* this.handleAction(action);
+                const result = yield* this.handleAction(action, { signal: options.signal });
+                if (options?.signal?.aborted) {
+                    const response = this.#createAbortResponse();
+                    this.#addHistory(response);
+                    yield response;
+                    break;
+                }
                 this.#addHistory(result);
                 query = `OBSERVATION: ${result.output}`;
                 // Capture history state for the next iteration query.
@@ -417,6 +426,12 @@ STOP`;
             yield entry;
         }
     }
+    #createAbortResponse() {
+        return {
+            type: "error" /* ResponseType.ERROR */,
+            error: "abort" /* ErrorType.ABORT */,
+        };
+    }
 }
 export function isDebugMode() {
     return Boolean(localStorage.getItem('debugFreestylerEnabled'));
@@ -438,17 +453,4 @@ function setDebugFreestylerEnabled(enabled) {
 }
 // @ts-ignore
 globalThis.setDebugFreestylerEnabled = setDebugFreestylerEnabled;
-export function isHistoryEnabled() {
-    return Boolean(localStorage.getItem('persistentHistoryAiAssistance'));
-}
-function setAiAssistancePersistentHistory(enabled) {
-    if (enabled) {
-        localStorage.setItem('persistentHistoryAiAssistance', 'true');
-    }
-    else {
-        localStorage.removeItem('persistentHistoryAiAssistance');
-    }
-}
-// @ts-ignore
-globalThis.setAiAssistancePersistentHistory = setAiAssistancePersistentHistory;
 //# sourceMappingURL=AiAgent.js.map

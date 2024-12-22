@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
@@ -17,6 +18,7 @@ import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import { FileAgent, FileContext, } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext, } from './agents/NetworkAgent.js';
+import { PatchAgent, ProjectContext } from './agents/PatchAgent.js';
 import { CallTreeContext, PerformanceAgent } from './agents/PerformanceAgent.js';
 import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
 import styles from './aiAssistancePanel.css.js';
@@ -114,6 +116,12 @@ function createFileContext(file) {
     }
     return new FileContext(file);
 }
+function createProjectContext(project) {
+    if (!project) {
+        return null;
+    }
+    return new ProjectContext(project);
+}
 function createRequestContext(request) {
     if (!request) {
         return null;
@@ -144,6 +152,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #agents = new Set();
     #currentAgent;
     #previousSameOriginContext;
+    #project = null;
     #selectedFile = null;
     #selectedElement = null;
     #selectedCallTree = null;
@@ -259,6 +268,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 agent = new PerformanceAgent(options);
                 break;
             }
+            case "patch" /* AgentType.PATCH */: {
+                agent = new PatchAgent(options);
+                break;
+            }
         }
         if (history) {
             agent.populateHistoryFromStorage(history);
@@ -335,6 +348,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#selectedCallTree =
                 createCallTreeContext(UI.Context.Context.instance().flavor(TimelineUtils.AICallTree.AICallTree)),
             this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode)),
+            this.#project =
+                createProjectContext(UI.Context.Context.instance().flavor(Persistence.FileSystemWorkspaceBinding.FileSystem)),
             this.#viewProps = {
                 ...this.#viewProps,
                 agentType: this.#currentAgent?.type,
@@ -349,6 +364,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(Persistence.FileSystemWorkspaceBinding.FileSystem, this.#handlePersistenceFileSystemChange);
         UI.Context.Context.instance().addFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().addFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().addFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
@@ -431,6 +447,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedFile = new FileContext(ev.data);
         this.#updateAgentState(this.#currentAgent);
     };
+    #handlePersistenceFileSystemChange = (ev) => {
+        const newProject = ev.data;
+        if (!newProject) {
+            return;
+        }
+        if (this.#project?.getItem() === newProject) {
+            return;
+        }
+        this.#project = new ProjectContext(ev.data);
+        this.#updateAgentState(this.#currentAgent);
+    };
     #handleAiAssistanceEnabledSettingChanged = () => {
         const nextChatUiState = this.#getChatUiState();
         if (this.#viewProps.state === nextChatUiState) {
@@ -484,6 +511,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         let targetAgentType;
         switch (actionId) {
+            case 'ai-assistance.filesystem': {
+                // TODO: metrics if needed.
+                targetAgentType = "patch" /* AgentType.PATCH */;
+                break;
+            }
             case 'freestyler.elements-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromElementsPanelFloatingButton);
                 targetAgentType = "freestyler" /* AgentType.STYLING */;
@@ -643,6 +675,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             case "drjones-performance" /* AgentType.PERFORMANCE */:
                 context = this.#selectedCallTree;
                 break;
+            case "patch" /* AgentType.PATCH */:
+                context = this.#project;
+                break;
         }
         return context;
     }
@@ -794,7 +829,8 @@ export class ActionDelegate {
             case 'drjones.network-panel-context':
             case 'drjones.performance-panel-context':
             case 'drjones.sources-floating-button':
-            case 'drjones.sources-panel-context': {
+            case 'drjones.sources-panel-context':
+            case 'ai-assistance.filesystem': {
                 void (async () => {
                     const view = UI.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
                     if (view) {

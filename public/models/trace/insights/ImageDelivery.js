@@ -118,6 +118,9 @@ export function generateInsight(parsedTrace, context) {
         if (request.args.data.resourceType !== 'Image') {
             continue;
         }
+        if (request.args.data.mimeType === 'image/svg+xml') {
+            continue;
+        }
         const imagePaints = parsedTrace.ImagePainting.paintImageEventForUrl.get(request.args.data.url)?.filter(isWithinContext);
         // This will filter out things like preloaded image requests where an image file is downloaded
         // but never rendered on the page.

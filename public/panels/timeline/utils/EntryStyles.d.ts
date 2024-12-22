@@ -1,3 +1,4 @@
+import type * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
 export declare enum EventCategory {
     DRAWING = "drawing",
@@ -23,11 +24,11 @@ export declare class TimelineRecordStyle {
 export declare class TimelineCategory {
     #private;
     name: EventCategory;
-    title: string;
+    title: Platform.UIString.LocalizedString;
     visible: boolean;
     childColor: string;
     colorInternal: string;
-    constructor(name: EventCategory, title: string, visible: boolean, childColor: string, color: string);
+    constructor(name: EventCategory, title: Platform.UIString.LocalizedString, visible: boolean, childColor: string, color: string);
     get hidden(): boolean;
     get color(): string;
     getCSSValue(): string;

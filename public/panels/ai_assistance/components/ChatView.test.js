@@ -85,6 +85,8 @@ css
     function getProp(options) {
         const noop = () => { };
         const messages = options.messages ?? [];
+        const selectedContext = sinon.createStubInstance(Freestyler.NodeContext);
+        selectedContext.getTitle.returns('');
         return {
             onTextSubmit: noop,
             onInspectElementClick: noop,
@@ -97,7 +99,7 @@ css
             agentType: "freestyler" /* Freestyler.AgentType.STYLING */,
             aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             messages,
-            selectedContext: new Freestyler.NodeContext({}),
+            selectedContext,
             isLoading: false,
             canShowFeedbackForm: false,
             userInfo: {},

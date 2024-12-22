@@ -1007,30 +1007,6 @@ Common.Settings.registerSettingExtension({
     },
 });
 Common.Settings.registerSettingExtension({
-    category: "PRIVACY" /* Common.Settings.SettingCategory.PRIVACY */,
-    title: i18nLazyString(UIStrings.disableCache),
-    settingName: 'cookie-control-override-enabled',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    storageType: "Global" /* Common.Settings.SettingStorageType.GLOBAL */,
-    defaultValue: false,
-});
-Common.Settings.registerSettingExtension({
-    category: "PRIVACY" /* Common.Settings.SettingCategory.PRIVACY */,
-    title: i18nLazyString(UIStrings.disableCache),
-    settingName: 'grace-period-mitigation-disabled',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    storageType: "Global" /* Common.Settings.SettingStorageType.GLOBAL */,
-    defaultValue: false,
-});
-Common.Settings.registerSettingExtension({
-    category: "PRIVACY" /* Common.Settings.SettingCategory.PRIVACY */,
-    title: i18nLazyString(UIStrings.disableCache),
-    settingName: 'heuristic-mitigation-disabled',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    storageType: "Global" /* Common.Settings.SettingStorageType.GLOBAL */,
-    defaultValue: false,
-});
-Common.Settings.registerSettingExtension({
     category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
     title: i18nLazyString(UIStrings.emulateAutoDarkMode),
     settingName: 'emulate-auto-dark-mode',

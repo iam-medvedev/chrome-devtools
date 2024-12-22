@@ -403,6 +403,26 @@ export function makeMockSamplesHandlerData(profileCalls) {
         entryToNode,
     };
 }
+export function makeMockEntityData(events) {
+    const eventsByEntity = new Map();
+    const entityByEvent = new Map();
+    const createdEntityCache = new Map();
+    events.forEach(event => {
+        const entity = Trace.Handlers.Helpers.getEntityForEvent(event, createdEntityCache);
+        if (!entity) {
+            return;
+        }
+        if (eventsByEntity.has(entity)) {
+            const events = eventsByEntity.get(entity) ?? [];
+            events?.push(event);
+        }
+        else {
+            eventsByEntity.set(entity, [event]);
+        }
+        entityByEvent.set(event, entity);
+    });
+    return { eventsByEntity, entityByEvent, createdEntityCache };
+}
 export class FakeFlameChartProvider {
     minimumBoundary() {
         return 0;

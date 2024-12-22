@@ -35,7 +35,6 @@ export declare function markAsMultiSelectable(element: Element): void;
  */
 export declare function markAsOption(element: Element): void;
 export declare function markAsRadioGroup(element: Element): void;
-export declare function markAsHidden(element: Element): void;
 export declare function markAsSlider(element: Element, min?: number | undefined, max?: number | undefined): void;
 export declare function markAsHeading(element: Element, level: number): void;
 export declare function markAsPoliteLiveRegion(element: Element, isAtomic: boolean): void;

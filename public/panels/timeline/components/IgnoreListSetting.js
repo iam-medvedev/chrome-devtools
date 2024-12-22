@@ -168,8 +168,9 @@ export class IgnoreListSetting extends HTMLElement {
     }
     #handleInputChange() {
         const newRegex = this.#newRegexInput.value.trim();
+        const newRegexIsNotEmpty = Boolean(newRegex);
         // Enable the rule if the text input field is not empty.
-        this.#newRegexCheckbox.checkboxElement.checked = Boolean(newRegex);
+        this.#newRegexCheckbox.checkboxElement.checked = newRegexIsNotEmpty;
         const { valid, message } = patternValidator(this.#getExistingRegexes(), newRegex);
         this.#newRegexInput.classList.toggle('error-input', !valid);
         UI.ARIAUtils.setInvalid(this.#newRegexInput, !valid);
@@ -177,6 +178,7 @@ export class IgnoreListSetting extends HTMLElement {
         this.#newRegexValidationMessage = message;
         if (this.#editingRegexSetting) {
             this.#editingRegexSetting.pattern = this.#newRegexInput.value.trim();
+            this.#editingRegexSetting.disabled = !newRegexIsNotEmpty;
             this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
         }
     }
@@ -217,7 +219,7 @@ export class IgnoreListSetting extends HTMLElement {
         this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
     }
     #renderItem(regex, index) {
-        const checkboxWithLabel = UI.UIUtils.CheckboxLabel.create(regex.pattern, !regex.disabled, /* subtitle*/ undefined, /* jslogContext*/ 'timeline.ignore-list-pattern');
+        const checkboxWithLabel = UI.UIUtils.CheckboxLabel.createWithStringLiteral(regex.pattern, !regex.disabled, /* subtitle*/ undefined, /* jslogContext*/ 'timeline.ignore-list-pattern');
         const helpText = i18nString(UIStrings.ignoreScriptsWhoseNamesMatchS, { regex: regex.pattern });
         UI.Tooltip.Tooltip.install(checkboxWithLabel, helpText);
         checkboxWithLabel.checkboxElement.ariaLabel = helpText;

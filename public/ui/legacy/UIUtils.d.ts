@@ -89,7 +89,9 @@ export declare class CheckboxLabel extends HTMLElement {
     checkboxElement: HTMLInputElement;
     textElement: HTMLElement;
     constructor();
-    static create(title?: string, checked?: boolean, subtitle?: string, jslogContext?: string, small?: boolean): CheckboxLabel;
+    static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
+    /** Only to be used when the checkbox label is 'generated' (a regex, a className, etc). Most checkboxes should be create()'d with UIStrings */
+    static createWithStringLiteral(title?: string, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
     private static lastId;
 }
 export declare class DevToolsIconLabel extends HTMLSpanElement {

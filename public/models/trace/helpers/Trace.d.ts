@@ -1,20 +1,24 @@
 import type * as Protocol from '../../../generated/protocol.js';
 import type * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Types from '../types/types.js';
-type MatchedPairType<T extends Types.Events.PairableAsync> = Types.Events.SyntheticEventPair<T>;
 type MatchingPairableAsyncEvents = {
     begin: Types.Events.PairableAsyncBegin | null;
     end: Types.Events.PairableAsyncEnd | null;
     instant?: Types.Events.PairableAsyncInstant[];
 };
 /**
- * Extracts the raw stack trace of known trace events. Most likely than
+ * Extracts the raw stack trace in known trace events. Most likely than
  * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
  * the stack with zero based numbering. Since some trace events are
  * one based this function can yield unexpected results when used
  * indiscriminately.
+ *
+ * Note: this only returns the stack trace contained in the payload of
+ * an event, which only contains the synchronous portion of the call
+ * stack. If you want to obtain the whole stack trace you might need to
+ * use the @see Trace.Extras.StackTraceForEvent util.
  */
-export declare function stackTraceForEvent(event: Types.Events.Event): Types.Events.CallFrame[] | null;
+export declare function stackTraceInEvent(event: Types.Events.Event): Types.Events.CallFrame[] | null;
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.Events.Event> = Map<Types.Events.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.Events.Event>(event: T, eventsInProcessThread: Map<Types.Events.ProcessID, EventsInThread<T>>): void;
@@ -37,7 +41,7 @@ export declare function sortTraceEventsInPlace(events: {
  */
 export declare function mergeEventsInOrder<T1 extends Types.Events.Event, T2 extends Types.Events.Event>(eventsArray1: readonly T1[], eventsArray2: readonly T2[]): (T1 | T2)[];
 export declare function getNavigationForTraceEvent(event: Types.Events.Event, eventFrameId: string, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Events.NavigationStart | null;
-export declare function extractId(event: Types.Events.PairableAsync | MatchedPairType<Types.Events.PairableAsync>): string | undefined;
+export declare function extractId(event: Types.Events.PairableAsync | Types.Events.SyntheticEventPair<Types.Events.PairableAsync>): string | undefined;
 export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.MicroSeconds, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, {
     frame: Types.Events.TraceFrame;
     window: Types.Timing.TraceWindowMicroSeconds;
@@ -65,8 +69,8 @@ export declare function createSortedSyntheticEvents<T extends Types.Events.Paira
     begin: Types.Events.PairableAsyncBegin | null;
     end: Types.Events.PairableAsyncEnd | null;
     instant?: Types.Events.PairableAsyncInstant[];
-}>, syntheticEventCallback?: (syntheticEvent: MatchedPairType<T>) => void): MatchedPairType<T>[];
-export declare function createMatchedSortedSyntheticEvents<T extends Types.Events.PairableAsync>(unpairedAsyncEvents: T[], syntheticEventCallback?: (syntheticEvent: MatchedPairType<T>) => void): MatchedPairType<T>[];
+}>, syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Types.Events.SyntheticEventPair<T>[];
+export declare function createMatchedSortedSyntheticEvents<T extends Types.Events.PairableAsync>(unpairedAsyncEvents: T[], syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Types.Events.SyntheticEventPair<T>[];
 /**
  * Different trace events return line/column numbers that are 1 or 0 indexed.
  * This function knows which events return 1 indexed numbers and normalizes
@@ -81,6 +85,11 @@ export declare function getZeroIndexedLineAndColumnForEvent(event: Types.Events.
  * that are 1 or 0 indexed.
  * This function knows which events return 1 indexed numbers and normalizes
  * them. The UI expects 0 indexed line numbers, so that is what we return.
+ *
+ * Note: this only returns the stack trace contained in the payload of
+ * an event, which only contains the synchronous portion of the call
+ * stack. If you want to obtain the whole stack trace you might need to
+ * use the @see Trace.Extras.StackTraceForEvent util.
  */
 export declare function getZeroIndexedStackTraceForEvent(event: Types.Events.Event): Types.Events.CallFrame[] | null;
 /**
@@ -134,4 +143,9 @@ export interface ForEachEventConfig {
 export declare function forEachEvent(events: Types.Events.Event[], config: ForEachEventConfig): void;
 export declare function eventHasCategory(event: Types.Events.Event, category: string): boolean;
 export declare function nodeIdForInvalidationEvent(event: Types.Events.InvalidationTrackingEvent): Protocol.DOM.BackendNodeId | null;
+/**
+ * This compares Types.Events.CallFrame with Protocol.Runtime.CallFrame and checks for equality.
+ */
+export declare function isMatchingCallFrame(eventFrame: Types.Events.CallFrame, nodeFrame: Protocol.Runtime.CallFrame): boolean;
+export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.MicroSeconds): boolean;
 export {};

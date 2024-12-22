@@ -205,7 +205,7 @@ export class NetworkRequestDetails extends HTMLElement {
         if (!this.#networkRequest) {
             return null;
         }
-        const hasStackTrace = Trace.Helpers.Trace.stackTraceForEvent(this.#networkRequest) !== null;
+        const hasStackTrace = Trace.Helpers.Trace.stackTraceInEvent(this.#networkRequest) !== null;
         // If we have a stack trace, that is the most reliable way to get the initiator data and display a link to the source.
         if (hasStackTrace) {
             const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(this.#networkRequest)?.at(0) ?? null;

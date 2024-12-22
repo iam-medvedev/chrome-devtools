@@ -22,6 +22,8 @@ export default {
 :root {
   height: 100%;
   overflow: hidden;
+  /* stylelint-disable-next-line property-no-unknown */
+  interpolate-size: allow-keywords;
   /**
    * NOTE: please don't add to these colours!
    * We are migrating to a new set of theme colors (see below for details) and over time these colors will be deprecated / removed.
@@ -570,7 +572,8 @@ span[is="dt-icon-label"] {
 }
 
 ::selection {
-  background-color: var(--sys-color-tonal-container);
+  background-color: var(--sys-color-state-text-highlight);
+  color: var(--sys-color-state-on-text-highlight);
 }
 
 button.link {

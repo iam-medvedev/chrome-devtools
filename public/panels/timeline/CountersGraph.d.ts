@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -67,7 +68,7 @@ export declare class CounterUI {
     private readonly verticalPadding;
     private currentValueLabel;
     private marker;
-    constructor(countersPane: CountersGraph, title: string, settingsKey: string, graphColor: string, counter: Counter, formatter?: (arg0: number) => string);
+    constructor(countersPane: CountersGraph, title: Common.UIString.LocalizedString, settingsKey: string, graphColor: string, counter: Counter, formatter?: (arg0: number) => string);
     reset(): void;
     setRange(minValue: number, maxValue: number): void;
     private toggleCounterGraph;

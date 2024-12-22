@@ -82,7 +82,7 @@ export declare const enum ExperimentName {
     TIMELINE_EXPERIMENTAL_INSIGHTS = "timeline-experimental-insights",
     TIMELINE_DIM_UNRELATED_EVENTS = "timeline-dim-unrelated-events",
     TIMELINE_ALTERNATIVE_NAVIGATION = "timeline-alternative-navigation",
-    TIMELINE_IGNORE_LIST = "timeline-ignore-list"
+    TIMELINE_THIRD_PARTY_DEPENDENCIES = "timeline-third-party-dependencies"
 }
 export declare enum GenAiEnterprisePolicyValue {
     ALLOW = 0,
@@ -146,6 +146,12 @@ export interface HostConfigEnableOriginBoundCookies {
 export interface HostConfigAnimationStylesInStylesTab {
     enabled: boolean;
 }
+export interface HostConfigThirdPartyCookieControls {
+    thirdPartyCookieRestrictionEnabled: boolean;
+    thirdPartyCookieMetadataEnabled: boolean;
+    thirdPartyCookieHeuristicsEnabled: boolean;
+    managedBlockThirdPartyCookies: string | boolean;
+}
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
@@ -162,6 +168,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     isOffTheRecord: boolean;
     devToolsEnableOriginBoundCookies: HostConfigEnableOriginBoundCookies;
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
+    thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
 }>;
 /**
  * When defining conditions make sure that objects used by the function have

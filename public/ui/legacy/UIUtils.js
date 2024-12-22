@@ -1077,6 +1077,11 @@ export class CheckboxLabel extends HTMLElement {
         element.checkboxElement.classList.toggle('small', small);
         return element;
     }
+    /** Only to be used when the checkbox label is 'generated' (a regex, a className, etc). Most checkboxes should be create()'d with UIStrings */
+    static createWithStringLiteral(title, checked, subtitle, jslogContext, small) {
+        const stringLiteral = title;
+        return CheckboxLabel.create(stringLiteral, checked, subtitle, jslogContext, small);
+    }
     static lastId = 0;
 }
 // Skip registerCustomElement flow as it's incompatible with Safari with this specific custom element.

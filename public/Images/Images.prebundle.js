@@ -104,6 +104,8 @@ style.setProperty('--image-file-database', 'url(\"' + new URL('./src/database.sv
 style.setProperty('--image-file-deployed', 'url(\"' + new URL('./src/deployed.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-device-fold', 'url(\"' + new URL('./src/device-fold.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-devices', 'url(\"' + new URL('./src/devices.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-devtools-thumbnail', 'url(\"' + new URL('./src/devtools-thumbnail.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-devtools-tips', 'url(\"' + new URL('./src/devtools-tips.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-devtools', 'url(\"' + new URL('./src/devtools.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-bottom', 'url(\"' + new URL('./src/dock-bottom.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-left', 'url(\"' + new URL('./src/dock-left.svg', import.meta.url).toString() + '\")');

@@ -223,14 +223,14 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
 }
 export declare class ToolbarCheckbox extends ToolbarItem<void> {
     inputElement: HTMLInputElement;
-    constructor(text: string, tooltip?: string, listener?: ((arg0: MouseEvent) => void), jslogContext?: string, small?: boolean);
+    constructor(text: Common.UIString.LocalizedString, tooltip?: Common.UIString.LocalizedString, listener?: ((arg0: MouseEvent) => void), jslogContext?: string, small?: boolean);
     checked(): boolean;
     setChecked(value: boolean): void;
     applyEnabledState(enabled: boolean): void;
     setIndeterminate(indeterminate: boolean): void;
 }
 export declare class ToolbarSettingCheckbox extends ToolbarCheckbox {
-    constructor(setting: Common.Settings.Setting<boolean>, tooltip?: string, alternateTitle?: string);
+    constructor(setting: Common.Settings.Setting<boolean>, tooltip?: Common.UIString.LocalizedString, alternateTitle?: Common.UIString.LocalizedString);
 }
 export declare function registerToolbarItem(registration: ToolbarItemRegistration): void;
 export interface ToolbarItemRegistration {

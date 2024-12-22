@@ -1151,6 +1151,9 @@
   "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
+  "entrypoints/node_app/NodeMain.ts | NodejsTitleS": {
+    "message": "DevTools - Node.js: {PH1}"
+  },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Main"
   },
@@ -2220,16 +2223,16 @@
     "message": "Enable AI assistance"
   },
   "panels/ai_assistance/ai_assistance-meta.ts | geoRestricted": {
-    "message": "This feature is unavailable in your region"
+    "message": "This feature is unavailable in your region."
   },
   "panels/ai_assistance/ai_assistance-meta.ts | policyRestricted": {
-    "message": "This setting is managed by your administrator"
+    "message": "This setting is managed by your administrator."
   },
   "panels/ai_assistance/ai_assistance-meta.ts | showAiAssistance": {
     "message": "Show AI assistance"
   },
   "panels/ai_assistance/ai_assistance-meta.ts | wrongLocale": {
-    "message": "To use this feature, set your language preference to English in DevTools settings"
+    "message": "To use this feature, set your language preference to English in DevTools settings."
   },
   "panels/ai_assistance/AiAssistancePanel.ts | chatDeleted": {
     "message": "Chat deleted"
@@ -6632,6 +6635,9 @@
   "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
     "message": "(opens in a new tab)"
   },
+  "panels/explain/components/ConsoleInsight.ts | references": {
+    "message": "Sources and related content"
+  },
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
   },
@@ -6672,13 +6678,13 @@
     "message": "Understand this warning"
   },
   "panels/explain/explain-meta.ts | geoRestricted": {
-    "message": "This feature is unavailable in your region"
+    "message": "This feature is unavailable in your region."
   },
   "panels/explain/explain-meta.ts | policyRestricted": {
-    "message": "This setting is managed by your administrator"
+    "message": "This setting is managed by your administrator."
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
-    "message": "To use this feature, set your language preference to English in DevTools settings"
+    "message": "To use this feature, set your language preference to English in DevTools settings."
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
@@ -10622,17 +10628,35 @@
   "panels/security/CookieControlsView.ts | viewTitle": {
     "message": "Controls"
   },
+  "panels/security/CookieReportView.ts | adCookieTypeString": {
+    "message": "Advertising"
+  },
   "panels/security/CookieReportView.ts | allowed": {
     "message": "Allowed"
   },
   "panels/security/CookieReportView.ts | allowedByException": {
     "message": "Allowed By Exception"
   },
+  "panels/security/CookieReportView.ts | analyticsCookieTypeString": {
+    "message": "Analytics"
+  },
   "panels/security/CookieReportView.ts | blocked": {
     "message": "Blocked"
   },
   "panels/security/CookieReportView.ts | body": {
     "message": "Third-party cookies that might be restricted by users, depending on their settings. If a user chooses to restrict cookies, then this site might not work for them."
+  },
+  "panels/security/CookieReportView.ts | cdnCookieTypeString": {
+    "message": "CDN"
+  },
+  "panels/security/CookieReportView.ts | consentProviderCookieTypeString": {
+    "message": "Consent Provider"
+  },
+  "panels/security/CookieReportView.ts | contentCookieTypeString": {
+    "message": "Content"
+  },
+  "panels/security/CookieReportView.ts | customerSuccessCookieTypeString": {
+    "message": "Customer Success"
   },
   "panels/security/CookieReportView.ts | domain": {
     "message": "Domain"
@@ -10646,13 +10670,13 @@
   "panels/security/CookieReportView.ts | gitHubResource": {
     "message": "Review {PH1} from third-party site."
   },
-  "panels/security/CookieReportView.ts | gitHubResourceTypeString": {
+  "panels/security/CookieReportView.ts | gitHubResourceInsightTypeString": {
     "message": "Github"
   },
   "panels/security/CookieReportView.ts | gracePeriod": {
     "message": "Review {PH1}. Grace period exception is active."
   },
-  "panels/security/CookieReportView.ts | gracePeriodTypeString": {
+  "panels/security/CookieReportView.ts | gracePeriodInsightTypeString": {
     "message": "Grace Period"
   },
   "panels/security/CookieReportView.ts | guidance": {
@@ -10661,11 +10685,17 @@
   "panels/security/CookieReportView.ts | heuristics": {
     "message": "Action needed later. Heuristics based exception is active"
   },
-  "panels/security/CookieReportView.ts | heuristicsTypeString": {
+  "panels/security/CookieReportView.ts | heuristicsInisightTypeString": {
     "message": "Heuristics"
+  },
+  "panels/security/CookieReportView.ts | hostingCookieTypeString": {
+    "message": "Hosting"
   },
   "panels/security/CookieReportView.ts | learnMoreLink": {
     "message": "Learn more about how third-party cookies are used"
+  },
+  "panels/security/CookieReportView.ts | marketingCookieTypeString": {
+    "message": "Marketing"
   },
   "panels/security/CookieReportView.ts | name": {
     "message": "Name"
@@ -10673,7 +10703,10 @@
   "panels/security/CookieReportView.ts | other": {
     "message": "Contact third-party site for more info"
   },
-  "panels/security/CookieReportView.ts | otherTypeString": {
+  "panels/security/CookieReportView.ts | otherCookieTypeString": {
+    "message": "Other"
+  },
+  "panels/security/CookieReportView.ts | otherInsightTypeString": {
     "message": "Other"
   },
   "panels/security/CookieReportView.ts | platform": {
@@ -10688,8 +10721,14 @@
   "panels/security/CookieReportView.ts | reportedIssues": {
     "message": "reported issues"
   },
+  "panels/security/CookieReportView.ts | socialCookieTypeString": {
+    "message": "Social"
+  },
   "panels/security/CookieReportView.ts | status": {
     "message": "Status"
+  },
+  "panels/security/CookieReportView.ts | tagManagerCookieTypeString": {
+    "message": "Tag Manager"
   },
   "panels/security/CookieReportView.ts | title": {
     "message": "Third-party cookies"
@@ -10699,6 +10738,12 @@
   },
   "panels/security/CookieReportView.ts | unknown": {
     "message": "Unknown"
+  },
+  "panels/security/CookieReportView.ts | utilityCookieTypeString": {
+    "message": "Utility"
+  },
+  "panels/security/CookieReportView.ts | videoCookieTypeString": {
+    "message": "Video"
   },
   "panels/security/security-meta.ts | security": {
     "message": "Security"
@@ -11282,17 +11327,20 @@
   "panels/sensors/SensorsView.ts | timezoneId": {
     "message": "Timezone ID"
   },
-  "panels/settings/AISettingsTab.ts | adminSettings": {
-    "message": "Depending on your Google account management and/or region, Google may refrain from data collection. Depending on your organization’s settings, features available to managed users may vary."
-  },
   "panels/settings/AISettingsTab.ts | ageRestricted": {
-    "message": "This feature is only available to users who are 18 years of age or older"
+    "message": "This feature is only available to users who are 18 years of age or older."
   },
   "panels/settings/AISettingsTab.ts | boostYourProductivity": {
     "message": "Boost your productivity with AI"
   },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
+  },
+  "panels/settings/AISettingsTab.ts | dataCollection": {
+    "message": "Depending on your region, Google may refrain from data collection."
+  },
+  "panels/settings/AISettingsTab.ts | dataCollectionNoLogging": {
+    "message": "Your content will not be used by human reviewers to improve AI. Your organization may change these settings at any time. Depending on your Google account management and/or region, Google may refrain from data collection."
   },
   "panels/settings/AISettingsTab.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
@@ -13208,6 +13256,12 @@
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
   },
+  "panels/timeline/components/LiveMetricsView.ts | nodeClickToRecord": {
+    "message": "Record a performance timeline of the connected Node process."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | nodePerformanceTimeline": {
+    "message": "Node performance"
+  },
   "panels/timeline/components/LiveMetricsView.ts | notEnoughData": {
     "message": "Not enough data"
   },
@@ -13856,6 +13910,9 @@
   "panels/timeline/TimelineHistoryManager.ts | landingPageTitle": {
     "message": "Live metrics"
   },
+  "panels/timeline/TimelineHistoryManager.ts | nodeLandingPageTitle": {
+    "message": "New recording"
+  },
   "panels/timeline/TimelineHistoryManager.ts | sD": {
     "message": "{PH1} #{PH2}"
   },
@@ -13897,6 +13954,9 @@
   },
   "panels/timeline/TimelinePanel.ts | description": {
     "message": "Description"
+  },
+  "panels/timeline/TimelinePanel.ts | dimThirdParties": {
+    "message": "Dim 3rd Parties"
   },
   "panels/timeline/TimelinePanel.ts | disableJavascriptSamples": {
     "message": "Disable JavaScript samples"
@@ -13964,9 +14024,6 @@
   "panels/timeline/TimelinePanel.ts | NetworkThrottlingIsEnabled": {
     "message": "- Network throttling is enabled"
   },
-  "panels/timeline/TimelinePanel.ts | performanceExtension": {
-    "message": "Extension data"
-  },
   "panels/timeline/TimelinePanel.ts | processed": {
     "message": "Processed"
   },
@@ -13999,6 +14056,9 @@
   },
   "panels/timeline/TimelinePanel.ts | SelectorStatsEnabled": {
     "message": "- Selector stats is enabled"
+  },
+  "panels/timeline/TimelinePanel.ts | showCustomtracks": {
+    "message": "Show custom tracks"
   },
   "panels/timeline/TimelinePanel.ts | showDataAddedByExtensions": {
     "message": "Show data added by extensions of the Performance panel"
@@ -15171,9 +15231,6 @@
     "message": "{PH1} sorting canceled"
   },
   "ui/components/dialogs/Dialog.ts | close": {
-    "message": "Close"
-  },
-  "ui/components/dialogs/IconDialog.ts | close": {
     "message": "Close"
   },
   "ui/components/dialogs/ShortcutDialog.ts | dialogTitle": {

@@ -147,11 +147,6 @@ styles.replaceSync(
   flex-grow: 0;
 }
 
-.service-workers-this-origin,
-.service-workers-other-origin {
-  min-width: max-content;
-}
-
 .service-worker-has-current .service-workers-other-origin {
   margin-top: 16px;
   border-top: 1px solid var(--sys-color-divider);

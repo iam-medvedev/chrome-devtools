@@ -866,6 +866,10 @@ export class DOMNode {
         }
         return this.domModel().nodeForId(response.nodeId);
     }
+    classNames() {
+        const classes = this.getAttribute('class');
+        return classes ? classes.split(/\s+/) : [];
+    }
 }
 (function (DOMNode) {
     let ShadowRootTypes;

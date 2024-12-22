@@ -34,9 +34,13 @@ export interface MetricValue {
     value: number;
     warnings?: string[];
 }
+export interface NodeRef {
+    node: SDK.DOMModel.DOMNode;
+    link: Node;
+}
 export interface LCPValue extends MetricValue {
     phases: Spec.LCPPhases;
-    node?: SDK.DOMModel.DOMNode;
+    nodeRef?: NodeRef;
 }
 export interface INPValue extends MetricValue {
     phases: Spec.INPPhases;
@@ -48,9 +52,7 @@ export interface CLSValue extends MetricValue {
 export interface LayoutShift {
     score: number;
     uniqueLayoutShiftId: Spec.UniqueLayoutShiftId;
-    affectedNodes: Array<{
-        node: SDK.DOMModel.DOMNode;
-    }>;
+    affectedNodeRefs: NodeRef[];
 }
 export interface Interaction {
     interactionId: InteractionId;
@@ -61,7 +63,7 @@ export interface Interaction {
     nextPaintTime: number;
     phases: Spec.INPPhases;
     longAnimationFrameTimings: Spec.PerformanceLongAnimationFrameTimingJSON[];
-    node?: SDK.DOMModel.DOMNode;
+    nodeRef?: NodeRef;
 }
 export interface StatusEvent {
     lcp?: LCPValue;

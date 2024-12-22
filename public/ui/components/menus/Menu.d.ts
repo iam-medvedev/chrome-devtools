@@ -15,12 +15,6 @@ export interface MenuData {
      */
     origin: Dialogs.Dialog.DialogOrigin;
     /**
-     * Determines if a connector from the dialog to it's origin
-     * is shown.
-     * Defaults to false.
-     */
-    showConnector: boolean;
-    /**
      * Determines if dividing lines between the menu's options
      * are shown.
      * Defaults to false.
@@ -52,8 +46,6 @@ export declare class Menu extends HTMLElement {
     set open(open: boolean);
     get position(): Dialogs.Dialog.DialogVerticalPosition;
     set position(position: Dialogs.Dialog.DialogVerticalPosition);
-    get showConnector(): boolean;
-    set showConnector(showConnector: boolean);
     get showDivider(): boolean;
     set showDivider(showDivider: boolean);
     get showSelectedItem(): boolean;

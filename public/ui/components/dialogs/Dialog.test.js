@@ -34,7 +34,6 @@ describe('Dialog', () => {
             host.style.width = '100px';
             host.style.height = '100px';
             dialog.position = "top" /* Dialogs.Dialog.DialogVerticalPosition.TOP */;
-            dialog.showConnector = true;
             dialog.origin = host;
         });
         it('places the Dialog hit area correctly', async () => {
@@ -67,7 +66,6 @@ describe('Dialog', () => {
             content.style.padding = '0 1em';
             content.innerHTML = 'Hi';
             dialog.horizontalAlignment = "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */;
-            dialog.showConnector = true;
             dialog.origin = host;
             // Set the dialog's "window" to be the container element we just created.
             dialog.windowBoundsService = new DialogExampleWindowBoundsServiceFactory(container);
@@ -115,7 +113,6 @@ describe('Dialog', () => {
             content.style.padding = '0 1em';
             content.innerHTML = 'Hello, World<br/> I am <br/> a Dialog!';
             dialog.position = "auto" /* Dialogs.Dialog.DialogVerticalPosition.AUTO */;
-            dialog.showConnector = true;
             dialog.origin = host;
             // Set the dialog's "window" to be the container element we just created.
             dialog.windowBoundsService = new DialogExampleWindowBoundsServiceFactory(container);
@@ -150,7 +147,6 @@ describe('Dialog', () => {
             content.style.padding = '0 1em';
             content.innerHTML = 'Hello, World<br/> I am <br/> a Dialog!';
             dialog.position = "auto" /* Dialogs.Dialog.DialogVerticalPosition.AUTO */;
-            dialog.showConnector = true;
             dialog.origin = host;
             // Set the dialog's "window" to be the container element we just created.
             dialog.windowBoundsService = new DialogExampleWindowBoundsServiceFactory(container);
@@ -206,6 +202,7 @@ describe('Dialog', () => {
         });
         describe('with an anchor and possible overflow', () => {
             const CONTAINER_WIDTH = 500;
+            const CONTAINER_HEIGHT = 500;
             const HOST_OFFSET = 100;
             const HOST_HEIGHT = 100;
             const devtoolsDialog = new Dialogs.Dialog.Dialog();
@@ -216,7 +213,7 @@ describe('Dialog', () => {
                 // of DevTools bounding element.
                 container = document.createElement('div');
                 container.style.width = `${CONTAINER_WIDTH}px`;
-                container.style.height = `${CONTAINER_WIDTH}px`;
+                container.style.height = `${CONTAINER_HEIGHT}px`;
                 container.style.position = 'fixed';
                 container.style.top = '0';
                 container.style.left = '0';
@@ -260,7 +257,7 @@ describe('Dialog', () => {
                 const dialogLeftBorderLimitPosition = dialogWidth + dialogLeft + Dialogs.Dialog.DIALOG_PADDING_FROM_WINDOW -
                     2 * Dialogs.Dialog.DIALOG_SIDE_PADDING;
                 assert.strictEqual(dialogLeftBorderLimitPosition, CONTAINER_WIDTH);
-                assert.strictEqual(dialog.clientHeight, CONTAINER_WIDTH - Dialogs.Dialog.CONNECTOR_HEIGHT - HOST_HEIGHT - HOST_OFFSET +
+                assert.strictEqual(dialog.clientHeight, CONTAINER_HEIGHT - Dialogs.Dialog.DIALOG_PADDING_FROM_WINDOW - HOST_HEIGHT - HOST_OFFSET +
                     2 * Dialogs.Dialog.DIALOG_VERTICAL_PADDING);
             });
             it('sets the max width and height correctly when the dialog\'s content dimensions exceed the viewport and the dialog is anchored to the right', async () => {
@@ -464,7 +461,8 @@ describe('Dialog', () => {
             await coordinator.done();
             assert.isNotNull(dialog.shadowRoot);
             const dialogHeader = dialog.shadowRoot.querySelector('.dialog-header');
-            assert.notExists(dialogHeader);
+            assert.exists(dialogHeader);
+            assert.isEmpty(dialogHeader.children);
         });
         it('should render a close button in the dialog if closeButton is true', async () => {
             const dialog = new Dialogs.Dialog.Dialog();
