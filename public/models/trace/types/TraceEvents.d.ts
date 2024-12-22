@@ -1048,6 +1048,7 @@ export interface PerformanceMeasureBegin extends PairableUserTiming {
     args: Args & {
         detail?: string;
         stackTrace?: CallFrame[];
+        callTime?: MicroSeconds;
     };
     ph: Phase.ASYNC_NESTABLE_START;
 }
@@ -1058,6 +1059,7 @@ export interface PerformanceMark extends UserTiming {
         data?: ArgsData & {
             detail?: string;
             stackTrace?: CallFrame[];
+            callTime?: MicroSeconds;
         };
     };
     ph: Phase.INSTANT | Phase.MARK | Phase.ASYNC_NESTABLE_INSTANT;
@@ -1169,14 +1171,14 @@ export interface PipelineReporter extends Event {
     };
 }
 export declare function isPipelineReporter(event: Event): event is PipelineReporter;
-export interface SyntheticBased<Ph extends Phase = Phase> extends Event {
+export interface SyntheticBased<Ph extends Phase = Phase, T extends Event = Event> extends Event {
     ph: Ph;
-    rawSourceEvent: Event;
+    rawSourceEvent: T;
     _tag: 'SyntheticEntryTag';
 }
 export declare function isSyntheticBased(event: Event): event is SyntheticBased;
-export interface SyntheticEventPair<T extends PairableAsync = PairableAsync> extends SyntheticBased {
-    rawSourceEvent: Event;
+export interface SyntheticEventPair<T extends PairableAsync = PairableAsync> extends SyntheticBased<Phase, T> {
+    rawSourceEvent: T;
     name: T['name'];
     cat: T['cat'];
     id?: string;
@@ -1544,6 +1546,7 @@ export declare function isUserTiming(event: Event): event is UserTiming;
 export declare function isDomLoading(event: Event): event is DomLoading;
 export declare function isBeginRemoteFontLoad(event: Event): event is BeginRemoteFontLoad;
 export declare function isPerformanceMeasure(event: Event): event is PerformanceMeasure;
+export declare function isPerformanceMeasureBegin(event: Event): event is PerformanceMeasureBegin;
 export declare function isPerformanceMark(event: Event): event is PerformanceMark;
 export declare function isConsoleTime(event: Event): event is ConsoleTime;
 export declare function isTimeStamp(event: Event): event is TimeStamp;

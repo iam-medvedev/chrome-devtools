@@ -123,6 +123,10 @@ const UIStrings = {
      * @description Text for a link to Chrome DevTools Settings.
      */
     settingsLink: '`Console insights` in Settings',
+    /**
+     * @description The title of the list of references/recitations that were used to generate the insight.
+     */
+    references: 'Sources and related content',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/components/ConsoleInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -477,6 +481,33 @@ export class ConsoleInsight extends HTMLElement {
     </x-link>`;
         // clang-format on
     }
+    #maybeRenderRelatedContent() {
+        if (this.#state.type !== "insight" /* State.INSIGHT */ || !this.#state.metadata.factualityMetadata?.facts.length) {
+            return LitHtml.nothing;
+        }
+        // clang-format off
+        return html `
+      <details jslog=${VisualLogging.expand('references').track({ click: true })}>
+        <summary>${i18nString(UIStrings.references)}</summary>
+        <ul>
+          ${this.#state.metadata?.factualityMetadata?.facts.map(fact => {
+            return fact.sourceUri ? html `
+              <li>
+                <x-link
+                  href=${fact.sourceUri}
+                  class="link"
+                  jslog=${VisualLogging.link('references.console-insights').track({ click: true })}
+                >
+                  ${fact.sourceUri}
+                </x-link>
+              </li>
+            ` : LitHtml.nothing;
+        })}
+        </ul>
+      </details>
+    `;
+        // clang-format on
+    }
     #renderMain() {
         const jslog = `${VisualLogging.section(this.#state.type).track({ resize: true })}`;
         // clang-format off
@@ -499,7 +530,8 @@ export class ConsoleInsight extends HTMLElement {
           ${this.#state.validMarkdown ? html `<devtools-markdown-view
               .data=${{ tokens: this.#state.tokens, renderer: this.#renderer, animationEnabled: true }}>
             </devtools-markdown-view>` : this.#state.explanation}
-          <details style="--list-height: ${(this.#state.sources.length + (this.#state.isPageReloadRecommended ? 1 : 0)) * 20}px;" jslog=${VisualLogging.expand('sources').track({ click: true })}>
+          ${this.#maybeRenderRelatedContent()}
+          <details jslog=${VisualLogging.expand('sources').track({ click: true })}>
             <summary>${i18nString(UIStrings.inputData)}</summary>
             <devtools-console-insight-sources-list .sources=${this.#state.sources} .isPageReloadRecommended=${this.#state.isPageReloadRecommended}>
             </devtools-console-insight-sources-list>
@@ -689,10 +721,14 @@ export class ConsoleInsight extends HTMLElement {
             <devtools-button
               data-rating=${'true'}
               .data=${{
-                    variant: "icon" /* Buttons.Button.Variant.ICON */,
+                    variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-up',
-                    active: this.#selectedRating !== undefined && this.#selectedRating,
+                    toggledIconName: 'thumb-up',
+                    toggleOnClick: false,
+                    toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+                    disabled: this.#selectedRating !== undefined,
+                    toggled: this.#selectedRating === true,
                     title: i18nString(UIStrings.goodResponse),
                     jslogContext: 'thumbs-up',
                 }}
@@ -701,10 +737,14 @@ export class ConsoleInsight extends HTMLElement {
             <devtools-button
               data-rating=${'false'}
               .data=${{
-                    variant: "icon" /* Buttons.Button.Variant.ICON */,
+                    variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-down',
-                    active: this.#selectedRating !== undefined && !this.#selectedRating,
+                    toggledIconName: 'thumb-down',
+                    toggleOnClick: false,
+                    toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+                    disabled: this.#selectedRating !== undefined,
+                    toggled: this.#selectedRating === false,
                     title: i18nString(UIStrings.badResponse),
                     jslogContext: 'thumbs-down',
                 }}

@@ -24,8 +24,7 @@ import { getThrottlingRecommendations, md } from '../utils/Helpers.js';
 import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
-const { html, nothing, Directives } = LitHtml;
-const { until } = Directives;
+const { html, nothing } = LitHtml;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
 const RTT_MINIMUM = 60;
@@ -262,11 +261,20 @@ const UIStrings = {
      * @description Tooltip text for a button that will open the Chrome DevTools console to and log additional details about a user interaction.
      */
     logToConsole: 'Log additional interaction data to the console',
+    /**
+     * @description Title of a view that can be used to analyze the performance of a Node process as a timeline. "Node" is a product name and should not be translated.
+     */
+    nodePerformanceTimeline: 'Node performance',
+    /**
+     * @description Description of a view that can be used to analyze the performance of a Node process as a timeline. "Node" is a product name and should not be translated.
+     */
+    nodeClickToRecord: 'Record a performance timeline of the connected Node process.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LiveMetricsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
+    #isNode = false;
     #lcpValue;
     #clsValue;
     #inpValue;
@@ -285,6 +293,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         super();
         this.#toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.#recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
+    }
+    set isNode(isNode) {
+        this.#isNode = isNode;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onMetricStatus(event) {
         this.#lcpValue = event.data.lcp;
@@ -359,7 +371,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderLcpCard() {
         const fieldData = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint');
-        const node = this.#lcpValue?.node;
+        const nodeLink = this.#lcpValue?.nodeRef?.link;
         const phases = this.#lcpValue?.phases;
         // clang-format off
         return html `
@@ -377,10 +389,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 [i18nString(UIStrings.elementRenderDelay), phases.elementRenderDelay],
             ],
         }}>
-        ${node ? html `
+        ${nodeLink ? html `
             <div class="related-info" slot="extra-info">
               <span class="related-info-label">${i18nString(UIStrings.lcpElement)}</span>
-              <span class="related-info-link">${until(Common.Linkifier.Linkifier.linkify(node))}</span>
+              <span class="related-info-link">${nodeLink}</span>
             </div>
           `
             : nothing}
@@ -577,7 +589,6 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         .showArrow=${true}
         .sideButton=${false}
         .showSelectedItem=${true}
-        .showConnector=${false}
         .buttonTitle=${buttonTitle}
         .disabled=${shouldDisable}
         title=${accessibleTitle}
@@ -650,7 +661,6 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         .showArrow=${true}
         .sideButton=${false}
         .showSelectedItem=${true}
-        .showConnector=${false}
         .buttonTitle=${i18nString(UIStrings.device, { PH1: currentDeviceLabel })}
         .disabled=${shouldDisable}
         title=${i18nString(UIStrings.showFieldDataForDevice, { PH1: currentDeviceLabel })}
@@ -784,7 +794,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 html `<span class="interaction-inp-chip" title=${i18nString(UIStrings.inpInteraction)}>INP</span>`
                 : nothing}
                   </span>
-                  <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
+                  <span class="interaction-node">${interaction.nodeRef?.link}</span>
                   ${isP98Excluded ? html `<devtools-icon
                     class="interaction-info"
                     name="info"
@@ -875,8 +885,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             <li id=${layoutShift.uniqueLayoutShiftId} class="log-item layout-shift" tabindex="-1">
               <div class="layout-shift-score">Layout shift score: ${metricValue}</div>
               <div class="layout-shift-nodes">
-                ${layoutShift.affectedNodes.map(({ node }) => html `
-                  <div class="layout-shift-node">${until(Common.Linkifier.Linkifier.linkify(node))}</div>
+                ${layoutShift.affectedNodeRefs.map(({ link }) => html `
+                  <div class="layout-shift-node">${link}</div>
                 `)}
               </div>
             </li>
@@ -886,7 +896,22 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
         // clang-format on
     }
+    #renderNodeView() {
+        return html `
+      <div class="node-view">
+        <main>
+          <h2 class="section-title">${i18nString(UIStrings.nodePerformanceTimeline)}</h2>
+          <div class="node-description">${i18nString(UIStrings.nodeClickToRecord)}</div>
+          <div class="record-action-card">${this.#renderRecordAction(this.#toggleRecordAction)}</div>
+        </main>
+      </div>
+    `;
+    }
     #render = () => {
+        if (this.#isNode) {
+            LitHtml.render(this.#renderNodeView(), this.#shadow, { host: this });
+            return;
+        }
         const fieldEnabled = this.#cruxManager.getConfigSetting().get().enabled;
         const liveMetricsTitle = fieldEnabled ? i18nString(UIStrings.localAndFieldMetrics) : i18nString(UIStrings.localMetrics);
         const helpLink = 'https://web.dev/articles/lab-and-field-data-differences#lab_data_versus_field_data';

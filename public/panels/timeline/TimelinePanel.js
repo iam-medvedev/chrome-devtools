@@ -262,7 +262,7 @@ const UIStrings = {
     /**
      Label for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
      */
-    performanceExtension: 'Extension data',
+    showCustomtracks: 'Show custom tracks',
     /**
      * @description Tooltip for the the sidebar toggle in the Performance panel. Command to open/show the sidebar.
      */
@@ -316,6 +316,10 @@ const UIStrings = {
      * @description Description of the Timeline right/left panning action that appears in the Performance panel shortcuts dialog.
      */
     timelinePanLeftRight: 'Timeline right/left',
+    /**
+     * @description Title for the Dim 3rd Parties checkbox.
+     */
+    dimThirdParties: 'Dim 3rd Parties',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -341,6 +345,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     timelinePane;
     #minimapComponent = new TimelineMiniMap();
     #viewMode = { mode: 'LANDING_PAGE' };
+    #dimThirdPartiesSetting = null;
     /**
      * We get given any filters for a new trace when it is recorded/imported.
      * Because the user can then use the dropdown to navigate to another trace,
@@ -387,6 +392,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     });
     #traceEngineModel;
     #sourceMapsResolver = null;
+    #entityMapper = null;
     #onSourceMapsNodeNamesResolvedBound = this.#onSourceMapsNodeNamesResolved.bind(this);
     #onChartPlayableStateChangeBound;
     #sidebarToggleButton = this.#splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showSidebar), i18nString(UIStrings.hideSidebar), 
@@ -414,6 +420,12 @@ export class TimelinePanel extends UI.Panel.Panel {
     #pendingAriaMessage = null;
     #eventToRelatedInsights = new Map();
     #shortcutsDialog = new Dialogs.ShortcutDialog.ShortcutDialog();
+    /**
+     * Track if the user has opened the shortcuts dialog before. We do this so that the
+     * very first time the performance panel is open after the shortcuts dialog ships, we can
+     * automatically pop it open to aid discovery.
+     */
+    #userHadShortcutsDialogOpenedOnce = Common.Settings.Settings.instance().createSetting('timeline.user-had-shortcuts-dialog-opened-once', false);
     /**
      * Navigation radio buttons located in the shortcuts dialog.
      */
@@ -449,7 +461,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.millisecondsToRecordAfterLoadEvent = 5000;
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
-        this.#historyManager = new TimelineHistoryManager(this.#minimapComponent);
+        this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
         this.traceLoadStart = null;
         this.disableCaptureJSProfileSetting =
             Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false);
@@ -465,9 +477,15 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false);
         this.showMemorySetting.setTitle(i18nString(UIStrings.memory));
         this.showMemorySetting.addChangeListener(this.onMemoryModeChanged, this);
+        if (Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */)) {
+            this.#dimThirdPartiesSetting =
+                Common.Settings.Settings.instance().createSetting('timeline-dim-third-parties', false);
+            this.#dimThirdPartiesSetting.setTitle(i18nString(UIStrings.dimThirdParties));
+            this.#dimThirdPartiesSetting.addChangeListener(this.onDimThirdPartiesChanged, this);
+        }
         this.#thirdPartyTracksSetting = TimelinePanel.extensionDataVisibilitySetting();
         this.#thirdPartyTracksSetting.addChangeListener(this.#extensionDataVisibilityChanged, this);
-        this.#thirdPartyTracksSetting.setTitle(i18nString(UIStrings.performanceExtension));
+        this.#thirdPartyTracksSetting.setTitle(i18nString(UIStrings.showCustomtracks));
         const timelineToolbarContainer = this.element.createChild('div', 'timeline-toolbar-container');
         timelineToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.panelToolbar = new UI.Toolbar.Toolbar('timeline-main-toolbar', timelineToolbarContainer);
@@ -744,6 +762,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.#setModelForActiveTrace();
                 this.#removeStatusPane();
                 this.#showSidebarIfRequired();
+                this.#dimThirdPartiesIfRequired(newMode.traceIndex);
                 return;
             }
             case 'STATUS_PANE_OVERLAY': {
@@ -912,13 +931,15 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.panelToolbar.appendToolbarItem(this.saveButton);
         // History
         this.panelToolbar.appendSeparator();
-        this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
-        this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
-            this.#changeView({ mode: 'LANDING_PAGE' });
-            this.#historyManager.navigateToLandingPage();
-        });
-        this.panelToolbar.appendToolbarItem(this.homeButton);
-        this.panelToolbar.appendSeparator();
+        if (!isNode) {
+            this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
+            this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
+                this.#changeView({ mode: 'LANDING_PAGE' });
+                this.#historyManager.navigateToLandingPage();
+            });
+            this.panelToolbar.appendToolbarItem(this.homeButton);
+            this.panelToolbar.appendSeparator();
+        }
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
         this.panelToolbar.registerCSSFiles([historyToolbarButtonStyles]);
         this.panelToolbar.appendSeparator();
@@ -935,10 +956,13 @@ export class TimelinePanel extends UI.Panel.Panel {
         // GC
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
         // Ignore list setting
-        if (Root.Runtime.experiments.isEnabled("timeline-ignore-list" /* Root.Runtime.ExperimentName.TIMELINE_IGNORE_LIST */)) {
-            this.panelToolbar.appendSeparator();
-            const showIgnoreListSetting = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
-            this.panelToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(showIgnoreListSetting));
+        this.panelToolbar.appendSeparator();
+        const showIgnoreListSetting = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
+        this.panelToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(showIgnoreListSetting));
+        if (Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */) &&
+            this.#dimThirdPartiesSetting) {
+            const dimThirdPartiesCheckbox = this.createSettingCheckbox(this.#dimThirdPartiesSetting, i18nString(UIStrings.dimThirdParties));
+            this.panelToolbar.appendToolbarItem(dimThirdPartiesCheckbox);
         }
         // Isolate selector
         if (isNode) {
@@ -964,31 +988,40 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     #setupNavigationSetting() {
         const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
-        this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(currentNavSetting === 'classic') };
+        const hideTheDialogForTests = localStorage.getItem('hide-shortcuts-dialog-for-test');
+        const userHadShortcutsDialogOpenedOnce = this.#userHadShortcutsDialogOpenedOnce.get();
+        this.#shortcutsDialog.data = {
+            shortcuts: this.#getShortcutsInfo(currentNavSetting === 'classic'),
+            open: !userHadShortcutsDialogOpenedOnce && hideTheDialogForTests !== 'true' &&
+                !Host.InspectorFrontendHost.isUnderTest(),
+        };
         this.#navigationRadioButtons.classList.add('nav-radio-buttons');
         UI.ARIAUtils.markAsRadioGroup(this.#navigationRadioButtons);
         // Change EventListener is only triggered when the radio button is selected
         this.#modernNavRadioButton.radioElement.addEventListener('change', () => {
             this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(/* isNavClassic */ false) };
-            Common.Settings.moduleSetting('timeline.select-modern-navigation').set('modern');
+            Common.Settings.moduleSetting('flamechart-selected-navigation').set('modern');
         });
         this.#classicNavRadioButton.radioElement.addEventListener('change', () => {
             this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(/* isNavClassic */ true) };
-            Common.Settings.moduleSetting('timeline.select-classic-navigation').set('classic');
+            Common.Settings.moduleSetting('flamechart-selected-navigation').set('classic');
         });
         this.#navigationRadioButtons.appendChild(this.#modernNavRadioButton);
-        this.#modernNavRadioButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('flamechart-select-modern-navigation')}`);
+        this.#modernNavRadioButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('timeline.select-modern-navigation')}`);
         this.#navigationRadioButtons.appendChild(this.#classicNavRadioButton);
-        this.#classicNavRadioButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('flamechart-select-classic-navigation')}`);
+        this.#classicNavRadioButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('timeline.select-classic-navigation')}`);
+        this.#userHadShortcutsDialogOpenedOnce.set(true);
         return this.#navigationRadioButtons;
     }
     #updateNavigationSettingSelection() {
         const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
         if (currentNavSetting === 'classic') {
             this.#classicNavRadioButton.radioElement.checked = true;
+            Host.userMetrics.navigationSettingAtFirstTimelineLoad(2 /* Host.UserMetrics.TimelineNavigationSetting.SWITCHED_TO_CLASSIC */);
         }
         else if (currentNavSetting === 'modern') {
             this.#modernNavRadioButton.radioElement.checked = true;
+            Host.userMetrics.navigationSettingAtFirstTimelineLoad(3 /* Host.UserMetrics.TimelineNavigationSetting.SWITCHED_TO_MODERN */);
         }
     }
     #getShortcutsInfo(isNavClassic) {
@@ -1267,6 +1300,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.updateMiniMap();
         this.doResize();
         this.select(null);
+    }
+    onDimThirdPartiesChanged() {
+        if (this.#viewMode.mode !== 'VIEWING_TRACE') {
+            return;
+        }
+        this.#dimThirdPartiesIfRequired(this.#viewMode.traceIndex);
     }
     #extensionDataVisibilityChanged() {
         this.flameChart.extensionDataVisibilityChanged();
@@ -1563,7 +1602,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#traceEngineModel = this.#instantiateNewModel();
         ModificationsManager.reset();
         this.#uninstallSourceMapsResolver();
-        this.flameChart.getMainDataProvider().reset(true);
+        this.flameChart.getMainDataProvider().reset();
         this.flameChart.reset();
         this.#changeView({ mode: 'LANDING_PAGE' });
     }
@@ -1716,11 +1755,16 @@ export class TimelinePanel extends UI.Panel.Panel {
                 PerfUI.LineLevelProfile.Performance.instance().appendCPUProfile(profile, primaryPageTarget);
             }
         }
+        // Initialize EntityMapper
+        this.#entityMapper = new Utils.EntityMapper.EntityMapper(parsedTrace);
         // Set up SourceMapsResolver to ensure we resolve any function names in
         // profile calls.
-        this.#sourceMapsResolver = new Utils.SourceMapsResolver.SourceMapsResolver(parsedTrace);
+        // Pass in the entity mapper.
+        this.#sourceMapsResolver = new Utils.SourceMapsResolver.SourceMapsResolver(parsedTrace, this.#entityMapper);
         this.#sourceMapsResolver.addEventListener(Utils.SourceMapsResolver.SourceMappingsUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
         void this.#sourceMapsResolver.install();
+        // Initialize EntityMapper
+        this.#entityMapper = new Utils.EntityMapper.EntityMapper(parsedTrace);
         this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 80);
         this.updateMiniMap();
         this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 90);
@@ -1765,6 +1809,16 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
         }
         this.#showSidebarIfRequired();
+        // When the timeline is loaded for the first time, log what navigation setting is selected.
+        // This will allow us to get an estimate number of people using each option.
+        if (this.#traceEngineModel.size() === 1) {
+            if (Common.Settings.moduleSetting('flamechart-selected-navigation').get() === 'classic') {
+                Host.userMetrics.navigationSettingAtFirstTimelineLoad(0 /* Host.UserMetrics.TimelineNavigationSetting.CLASSIC_AT_SESSION_FIRST_TRACE */);
+            }
+            else {
+                Host.userMetrics.navigationSettingAtFirstTimelineLoad(1 /* Host.UserMetrics.TimelineNavigationSetting.MODERN_AT_SESSION_FIRST_TRACE */);
+            }
+        }
     }
     /**
      * We automatically show the sidebar in only 2 scenarios:
@@ -1782,6 +1836,20 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.#splitWidget.showBoth();
         }
         this.#restoreSidebarVisibilityOnTraceLoad = false;
+    }
+    #dimThirdPartiesIfRequired(traceIndex) {
+        const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
+        if (!parsedTrace) {
+            return;
+        }
+        const thirdPartyEvents = this.#entityMapper?.thirdPartyEvents() ?? [];
+        if (this.#dimThirdPartiesSetting?.get() && thirdPartyEvents.length) {
+            this.flameChart.dimEvents(thirdPartyEvents);
+        }
+        else {
+            // Ensure dimming stores are cleared, and there is no dimming.
+            this.flameChart.disableAllDimming();
+        }
     }
     // Build a map mapping annotated entries to the colours that are used to display them in the FlameChart.
     // We need this map to display the entries in the sidebar with the same colours.
@@ -1867,7 +1935,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.landingPage.show(this.statusPaneContainer);
             return;
         }
-        this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new TimelineComponents.LiveMetricsView.LiveMetricsView());
+        const liveMetrics = new TimelineComponents.LiveMetricsView.LiveMetricsView();
+        liveMetrics.isNode = isNode;
+        this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, liveMetrics);
         this.landingPage.element.classList.add('timeline-landing-page', 'fill');
         this.landingPage.contentElement.classList.add('fill');
         this.landingPage.show(this.statusPaneContainer);

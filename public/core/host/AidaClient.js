@@ -37,6 +37,8 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_PERFORMANCE_AGENT"] = 8] = "CHROME_PERFORMANCE_AGENT";
     // Chrome AI Assistance File Agent.
     ClientFeature[ClientFeature["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
+    // Chrome AI Patch Agent.
+    ClientFeature[ClientFeature["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {
@@ -149,7 +151,7 @@ export class AidaClient {
         const text = [];
         let inCodeChunk = false;
         const functionCalls = [];
-        const metadata = { rpcGlobalId: 0 };
+        let metadata = { rpcGlobalId: 0 };
         while ((chunk = await stream.read())) {
             let textUpdated = false;
             // The AIDA response is a JSON array of objects, split at the object
@@ -178,15 +180,9 @@ export class AidaClient {
             }
             for (const result of results) {
                 if ('metadata' in result) {
-                    metadata.rpcGlobalId = result.metadata.rpcGlobalId;
-                    if ('attributionMetadata' in result.metadata) {
-                        if (!metadata.attributionMetadata) {
-                            metadata.attributionMetadata = [];
-                        }
-                        metadata.attributionMetadata.push(result.metadata.attributionMetadata);
-                        if (result.metadata.attributionMetadata.attributionAction === RecitationAction.BLOCK) {
-                            throw new AidaBlockError();
-                        }
+                    metadata = result.metadata;
+                    if (metadata?.attributionMetadata?.attributionAction === RecitationAction.BLOCK) {
+                        throw new AidaBlockError();
                     }
                 }
                 if ('textChunk' in result) {

@@ -47,7 +47,6 @@ export class Dialog extends HTMLElement {
         origin: MODAL,
         position: "bottom" /* DialogVerticalPosition.BOTTOM */,
         horizontalAlignment: "center" /* DialogHorizontalAlignment.CENTER */,
-        showConnector: false,
         getConnectorCustomXPosition: null,
         dialogShownCallback: null,
         windowBoundsService: WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance(),
@@ -72,13 +71,6 @@ export class Dialog extends HTMLElement {
     // dialog open, but their focus is elsewhere, and they hit ESC, we should
     // still close the dialog.
     #onKeyDownBound = this.#onKeyDown.bind(this);
-    get showConnector() {
-        return this.#props.showConnector;
-    }
-    set showConnector(showConnector) {
-        this.#props.showConnector = showConnector;
-        this.#onStateChange();
-    }
     get origin() {
         return this.#props.origin;
     }
@@ -163,7 +155,6 @@ export class Dialog extends HTMLElement {
         this.#devtoolsMutationObserver.observe(this.#devToolsBoundingElement, { childList: true, subtree: true });
         this.#devToolsBoundingElement.addEventListener('wheel', this.#handleScrollAttemptBound);
         this.style.setProperty('--dialog-padding', '0');
-        this.style.setProperty('--override-content-box-shadow', 'none');
         this.style.setProperty('--dialog-display', IS_DIALOG_SUPPORTED ? 'block' : 'none');
         this.style.setProperty('--override-dialog-content-border', `${CONNECTOR_HEIGHT}px solid transparent`);
         this.style.setProperty('--dialog-padding', `${DIALOG_VERTICAL_PADDING}px ${DIALOG_SIDE_PADDING}px`);
@@ -329,25 +320,22 @@ export class Dialog extends HTMLElement {
                     this.#bestVerticalPositionInternal === "auto" /* DialogVerticalPosition.AUTO */) {
                     return;
                 }
-                this.#hitArea.height = anchorBottom - anchorTop + (CONNECTOR_HEIGHT * (this.showConnector ? 2 : 1));
+                this.#hitArea.height = anchorBottom - anchorTop + CONNECTOR_HEIGHT;
                 this.#hitArea.width = hitAreaWidth;
-                let connectorRelativeXValue = 0;
                 // If the connector is to be shown, the dialog needs a minimum width such that it covers
                 // the connector's width.
                 this.style.setProperty('--content-min-width', `${connectorFixedXValue - anchorLeft + CONNECTOR_WIDTH + DIALOG_SIDE_PADDING * 2}px`);
                 this.style.setProperty('--dialog-left', 'auto');
                 this.style.setProperty('--dialog-right', 'auto');
                 this.style.setProperty('--dialog-margin', '0');
-                const offsetToCoverConnector = this.showConnector ? CONNECTOR_WIDTH * 3 / 4 : 0;
                 switch (this.#bestHorizontalAlignment) {
                     case "left" /* DialogHorizontalAlignment.LEFT */: {
                         // Position the dialog such that its left border is in line with that of its anchor.
                         // If this means the dialog's left border is out of DevTools bounds, move it to the right.
                         // Cap its width as needed so that the right border doesn't overflow.
-                        const dialogLeft = Math.max(anchorLeft - offsetToCoverConnector, devToolsLeft);
+                        const dialogLeft = Math.max(anchorLeft, devToolsLeft);
                         const devtoolsRightBorderToDialogLeft = devToolsRight - dialogLeft;
                         const dialogMaxWidth = devtoolsRightBorderToDialogLeft - DIALOG_PADDING_FROM_WINDOW;
-                        connectorRelativeXValue = connectorFixedXValue - dialogLeft - DIALOG_SIDE_PADDING;
                         this.style.setProperty('--dialog-left', `${dialogLeft}px`);
                         this.#hitArea.x = anchorLeft;
                         this.style.setProperty('--dialog-max-width', `${dialogMaxWidth}px`);
@@ -359,13 +347,10 @@ export class Dialog extends HTMLElement {
                         // Cap its width as needed so that the left border doesn't overflow.
                         const windowRightBorderToAnchorRight = windowWidth - anchorRight;
                         const windowRightBorderToDevToolsRight = windowWidth - devToolsRight;
-                        const windowRightBorderToDialogRight = Math.max(windowRightBorderToAnchorRight - offsetToCoverConnector, windowRightBorderToDevToolsRight);
+                        const windowRightBorderToDialogRight = Math.max(windowRightBorderToAnchorRight, windowRightBorderToDevToolsRight);
                         const dialogRight = windowWidth - windowRightBorderToDialogRight;
                         const devtoolsLeftBorderToDialogRight = dialogRight - devToolsLeft;
                         const dialogMaxWidth = devtoolsLeftBorderToDialogRight - DIALOG_PADDING_FROM_WINDOW;
-                        const dialogCappedWidth = Math.min(dialogMaxWidth, dialogWidth);
-                        const dialogLeft = dialogRight - dialogCappedWidth;
-                        connectorRelativeXValue = connectorFixedXValue - dialogLeft;
                         this.#hitArea.x = windowWidth - windowRightBorderToDialogRight - hitAreaWidth;
                         this.style.setProperty('--dialog-right', `${windowRightBorderToDialogRight}px`);
                         this.style.setProperty('--dialog-max-width', `${dialogMaxWidth}px`);
@@ -378,7 +363,6 @@ export class Dialog extends HTMLElement {
                         const dialogCappedWidth = Math.min(devToolsWidth - DIALOG_PADDING_FROM_WINDOW, dialogWidth);
                         let dialogLeft = Math.max(originCenterX - dialogCappedWidth * 0.5, devToolsLeft);
                         dialogLeft = Math.min(dialogLeft, devToolsRight - dialogCappedWidth);
-                        connectorRelativeXValue = connectorFixedXValue - dialogLeft - DIALOG_SIDE_PADDING;
                         this.style.setProperty('--dialog-left', `${dialogLeft}px`);
                         this.#hitArea.x = originCenterX - hitAreaWidth * 0.5;
                         this.style.setProperty('--dialog-max-width', `${devToolsWidth - DIALOG_PADDING_FROM_WINDOW}px`);
@@ -387,77 +371,26 @@ export class Dialog extends HTMLElement {
                     default:
                         Platform.assertNever(this.#bestHorizontalAlignment, `Unknown alignment type: ${this.#bestHorizontalAlignment}`);
                 }
-                const visibleConnectorHeight = this.showConnector ? CONNECTOR_HEIGHT : 0;
-                const clipPathConnectorStartX = connectorRelativeXValue - CONNECTOR_WIDTH / 2;
-                const clipPathConnectorEndX = connectorRelativeXValue + CONNECTOR_WIDTH / 2;
-                let [p1, p2, p3, p4, p5, p6, p7, p8, p9] = ['', '', '', '', '', '', '', '', '', ''];
-                const PSEUDO_BORDER_RADIUS = 2;
                 switch (this.#bestVerticalPositionInternal) {
                     case "top" /* DialogVerticalPosition.TOP */: {
-                        //  p1                              p2
-                        //   *-----------------------------*
-                        //   |                             |
-                        //   |                             |
-                        // p9|                             |
-                        //    \__________________p7  p5____/ p3 <-- A pseudo curve is added to the clip path to
-                        //  p8                     \/      p4        imitate a curved boder.
-                        //                         p6
-                        //   |-connectorRelativeX--|
-                        const clipPathBottom = `calc(100% - ${CONNECTOR_HEIGHT}px)`;
-                        if (this.#props.showConnector) {
-                            p1 = '0 0';
-                            p2 = '100% 0';
-                            p3 = `100% calc(${clipPathBottom} - ${PSEUDO_BORDER_RADIUS}px)`;
-                            p4 = `calc(100% - ${PSEUDO_BORDER_RADIUS}px) ${clipPathBottom}`;
-                            p5 = `${clipPathConnectorStartX}px ${clipPathBottom}`;
-                            p6 = `${connectorRelativeXValue}px 100%`;
-                            p7 = `${clipPathConnectorEndX}px ${clipPathBottom}`;
-                            p8 = `${PSEUDO_BORDER_RADIUS}px ${clipPathBottom}`;
-                            p9 = `0 calc(${clipPathBottom} - ${PSEUDO_BORDER_RADIUS}px)`;
-                        }
-                        this.style.setProperty('--content-padding-bottom', `${CONNECTOR_HEIGHT + (this.#props.showConnector ? CONNECTOR_HEIGHT : 0)}px`);
-                        this.style.setProperty('--content-padding-top', `${CONNECTOR_HEIGHT}px`);
                         this.style.setProperty('--dialog-top', '0');
                         this.style.setProperty('--dialog-margin', 'auto');
                         this.style.setProperty('--dialog-margin-bottom', `${innerHeight - anchorTop}px`);
-                        this.#hitArea.y = anchorTop - (CONNECTOR_HEIGHT * (this.showConnector ? 2 : 1));
+                        this.#hitArea.y = anchorTop - CONNECTOR_HEIGHT;
                         this.style.setProperty('--dialog-offset-y', `${DIALOG_ANIMATION_OFFSET}px`);
-                        this.style.setProperty('--dialog-max-height', `${devToolsHeight - (innerHeight - anchorTop) - DIALOG_PADDING_FROM_WINDOW -
-                            visibleConnectorHeight}px`);
+                        this.style.setProperty('--dialog-max-height', `${devToolsHeight - (innerHeight - anchorTop) - DIALOG_PADDING_FROM_WINDOW}px`);
                         break;
                     }
                     case "bottom" /* DialogVerticalPosition.BOTTOM */: {
-                        //                p4
-                        //     p2_________/\_________p6
-                        //     /        p3  p5        \
-                        // p1 |                        | p7
-                        //    |                        |
-                        // p9 *________________________* p8
-                        if (this.#props.showConnector) {
-                            p1 = `0 ${CONNECTOR_HEIGHT + PSEUDO_BORDER_RADIUS}px`;
-                            p2 = `${PSEUDO_BORDER_RADIUS}px ${CONNECTOR_HEIGHT}px`;
-                            p3 = `${clipPathConnectorStartX}px ${CONNECTOR_HEIGHT}px`;
-                            p4 = `${connectorRelativeXValue}px 0`;
-                            p5 = `${clipPathConnectorEndX}px ${CONNECTOR_HEIGHT}px`;
-                            p6 = `calc(100% - ${PSEUDO_BORDER_RADIUS}px) ${CONNECTOR_HEIGHT}px`;
-                            p7 = `100% ${CONNECTOR_HEIGHT + PSEUDO_BORDER_RADIUS}px`;
-                            p8 = '100% 100%';
-                            p9 = '0 100%';
-                        }
-                        this.style.setProperty('--content-padding-top', `${CONNECTOR_HEIGHT + (this.#props.showConnector ? CONNECTOR_HEIGHT : 0)}px`);
-                        this.style.setProperty('--content-padding-bottom', `${CONNECTOR_HEIGHT}px`);
                         this.style.setProperty('--dialog-top', `${anchorBottom}px`);
                         this.#hitArea.y = anchorTop;
                         this.style.setProperty('--dialog-offset-y', `-${DIALOG_ANIMATION_OFFSET}px`);
-                        this.style.setProperty('--dialog-max-height', `${devToolsHeight - (anchorBottom - devToolsTop) - DIALOG_PADDING_FROM_WINDOW -
-                            visibleConnectorHeight}px`);
+                        this.style.setProperty('--dialog-max-height', `${devToolsHeight - (anchorBottom - devToolsTop) - DIALOG_PADDING_FROM_WINDOW}px`);
                         break;
                     }
                     default:
                         Platform.assertNever(this.#bestVerticalPositionInternal, `Unknown position type: ${this.#bestVerticalPositionInternal}`);
                 }
-                const clipPath = [p1, p2, p3, p4, p5, p6, p7, p8, p9].join();
-                this.style.setProperty('--content-clip-path', clipPath);
                 dialog.close();
                 dialog.style.visibility = '';
             });
@@ -549,7 +482,6 @@ export class Dialog extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
-      <div class="dialog-header">
         <span class="dialog-header-text">${this.#props.dialogTitle}</span>
         ${this.#props.closeButton ? html `
           <devtools-button
@@ -562,7 +494,6 @@ export class Dialog extends HTMLElement {
             jslog=${VisualLogging.close().track({ click: true })}
           ></devtools-button>
         ` : LitHtml.nothing}
-      </div>
     `;
         // clang-format on
     }
@@ -586,7 +517,7 @@ export class Dialog extends HTMLElement {
       <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel}
               jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: 'Escape' }).parent('mapped')}>
         <div id="content">
-          ${this.#renderHeaderRow()}
+          <div class="dialog-header">${this.#renderHeaderRow()}</div>
           <div class='dialog-content'>
             <slot></slot>
           </div>

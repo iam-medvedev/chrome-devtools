@@ -347,6 +347,7 @@ export declare const enum EnumeratedHistogram {
     SourcesPanelFileDebugged = "DevTools.SourcesPanelFileDebugged",
     SourcesPanelFileOpened = "DevTools.SourcesPanelFileOpened",
     NetworkPanelResponsePreviewOpened = "DevTools.NetworkPanelResponsePreviewOpened",
+    TimelineNavigationSettingState = "DevTools.TimelineNavigationSettingState",
     StyleTextCopied = "DevTools.StyleTextCopied",
     CSSHintShown = "DevTools.CSSHintShown",
     LighthouseModeRun = "DevTools.LighthouseModeRun",

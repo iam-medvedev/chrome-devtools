@@ -9,7 +9,8 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { ChangeManager } from '../ChangeManager.js';
+import { linkifyNodeReference } from '../../elements/DOMLinkifier.js';
+import { AI_ASSISTANCE_CSS_CLASS_NAME, ChangeManager } from '../ChangeManager.js';
 import { EvaluateAction, formatError, SideEffectError } from '../EvaluateAction.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from '../ExtensionScope.js';
 import { AiAgent, ConversationContext, debugLog, } from './AiAgent.js';
@@ -177,7 +178,8 @@ export class NodeContext extends ConversationContext {
         return document.createElement('span');
     }
     getTitle() {
-        return LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#node));
+        const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
+        return LitHtml.Directives.until(linkifyNodeReference(this.#node, { hiddenClassList }));
     }
 }
 /**
@@ -478,25 +480,23 @@ export class StylingAgent extends AiAgent {
         }
         return output.trim();
     }
-    async *handleAction(action) {
+    async *handleAction(action, options) {
         debugLog(`Action to execute: ${action}`);
-        if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+        function createCancelledResult(output) {
             return {
                 type: "action" /* ResponseType.ACTION */,
                 code: action,
-                output: 'Error: JavaScript execution is currently disabled.',
+                output,
                 canceled: true,
             };
+        }
+        if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+            return createCancelledResult('Error: JavaScript execution is currently disabled.');
         }
         const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
         if (target?.model(SDK.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
-            return {
-                type: "action" /* ResponseType.ACTION */,
-                code: action,
-                output: 'Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint.',
-                canceled: true,
-            };
+            return createCancelledResult('Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint.');
         }
         const scope = this.#createExtensionScope(this.#changes);
         await scope.install();
@@ -505,21 +505,24 @@ export class StylingAgent extends AiAgent {
             debugLog(`Action result: ${JSON.stringify(result)}`);
             if (result.sideEffect) {
                 if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
-                    return {
-                        type: "action" /* ResponseType.ACTION */,
-                        code: action,
-                        output: 'Error: JavaScript execution that modifies the page is currently disabled.',
-                        canceled: true,
-                    };
+                    return createCancelledResult('Error: JavaScript execution that modifies the page is currently disabled.');
+                }
+                if (options?.signal?.aborted) {
+                    return createCancelledResult('Error: evaluation has been cancelled');
                 }
                 const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
+                void sideEffectConfirmationPromiseWithResolvers.promise.then(result => {
+                    Host.userMetrics.actionTaken(result ? Host.UserMetrics.Action.AiAssistanceSideEffectConfirmed :
+                        Host.UserMetrics.Action.AiAssistanceSideEffectRejected);
+                });
+                options?.signal?.addEventListener('abort', () => {
+                    sideEffectConfirmationPromiseWithResolvers.resolve(false);
+                }, { once: true });
                 yield {
                     type: "side-effect" /* ResponseType.SIDE_EFFECT */,
                     code: action,
                     confirm: (result) => {
                         sideEffectConfirmationPromiseWithResolvers.resolve(result);
-                        Host.userMetrics.actionTaken(result ? Host.UserMetrics.Action.AiAssistanceSideEffectConfirmed :
-                            Host.UserMetrics.Action.AiAssistanceSideEffectRejected);
                     },
                 };
                 result = await this.#generateObservation(action, {

@@ -132,6 +132,7 @@ export declare class DOMNode {
     focus(): Promise<void>;
     simpleSelector(): string;
     getAnchorBySpecifier(specifier?: string): Promise<DOMNode | null>;
+    classNames(): string[];
 }
 export declare namespace DOMNode {
     enum ShadowRootTypes {

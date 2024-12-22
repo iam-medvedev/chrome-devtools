@@ -19,6 +19,7 @@ export class SourceMappingsUpdated extends Event {
 export const resolvedCodeLocationDataNames = new Map();
 export class SourceMapsResolver extends EventTarget {
     #parsedTrace;
+    #entityMapper = null;
     #isResolving = false;
     // We need to gather up a list of all the DebuggerModels that we should
     // listen to for source map attached events. For most pages this will be
@@ -26,9 +27,10 @@ export class SourceMapsResolver extends EventTarget {
     // workers, we would also need to gather up the DebuggerModel instances for
     // those workers too.
     #debuggerModelsToListen = new Set();
-    constructor(parsedTrace) {
+    constructor(parsedTrace, entityMapper) {
         super();
         this.#parsedTrace = parsedTrace;
+        this.#entityMapper = entityMapper ?? null;
     }
     static clearResolvedNodeNames() {
         resolvedCodeLocationDataNames.clear();
@@ -148,6 +150,10 @@ export class SourceMapsResolver extends EventTarget {
                     const uiLocation = location &&
                         await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
                     updatedMappings ||= Boolean(uiLocation);
+                    if (uiLocation?.uiSourceCode.url() && this.#entityMapper) {
+                        // Update mappings for the related events of the entity.
+                        this.#entityMapper.updateSourceMapEntities(node.callFrame, uiLocation.uiSourceCode.url());
+                    }
                     SourceMapsResolver.storeResolvedCodeDataForCallFrame(node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
                 }
             }

@@ -335,9 +335,9 @@ describeWithMockConnection('LiveMetricsView', () => {
             },
             interactions: new Map(),
             layoutShifts: [
-                { score: 0.05, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
-                { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
-                { score: 0.01, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-3' },
+                { score: 0.05, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
+                { score: 0.1, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
+                { score: 0.01, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-3' },
             ],
         });
         await coordinator.done();
@@ -360,9 +360,9 @@ describeWithMockConnection('LiveMetricsView', () => {
             },
             interactions: new Map(),
             layoutShifts: [
-                { score: 0.05, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
-                { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
-                { score: 0.01, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-3' },
+                { score: 0.05, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
+                { score: 0.1, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
+                { score: 0.01, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-3' },
             ],
         });
         await coordinator.done();
@@ -377,9 +377,9 @@ describeWithMockConnection('LiveMetricsView', () => {
             },
             interactions: new Map(),
             layoutShifts: [
-                { score: 0.05, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
-                { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
-                { score: 0.01, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-3' },
+                { score: 0.05, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
+                { score: 0.1, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-2' },
+                { score: 0.01, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-3' },
             ],
         });
         await coordinator.done();
@@ -501,7 +501,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 },
             ]),
             layoutShifts: [
-                { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
+                { score: 0.1, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
             ],
         });
         await coordinator.done();
@@ -551,7 +551,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 },
             ]),
             layoutShifts: [
-                { score: 0.1, affectedNodes: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
+                { score: 0.1, affectedNodeRefs: [], uniqueLayoutShiftId: 'layout-shift-1-1' },
             ],
         });
         await coordinator.done();
@@ -580,6 +580,13 @@ describeWithMockConnection('LiveMetricsView', () => {
         recordButton.click();
         await coordinator.done();
         assert.strictEqual(mockHandleAction.firstCall.args[1], 'timeline.record-reload');
+    });
+    it('should show minimal view for Node connections', async () => {
+        const view = renderLiveMetrics();
+        view.isNode = true;
+        await coordinator.done();
+        const title = view.shadowRoot?.querySelector('.section-title');
+        assert.strictEqual(title.textContent, 'Node performance');
     });
     describe('field data', () => {
         let target;

@@ -31,7 +31,6 @@
   "files": [
     "../../../../../../../front_end/ui/components/dialogs/ButtonDialog.ts",
     "../../../../../../../front_end/ui/components/dialogs/Dialog.ts",
-    "../../../../../../../front_end/ui/components/dialogs/IconDialog.ts",
     "../../../../../../../front_end/ui/components/dialogs/ShortcutDialog.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

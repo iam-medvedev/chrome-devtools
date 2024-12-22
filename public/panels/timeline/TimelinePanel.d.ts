@@ -93,6 +93,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadFromURL(url: Platform.DevToolsPath.UrlString): Promise<void>;
     private updateMiniMap;
     private onMemoryModeChanged;
+    private onDimThirdPartiesChanged;
     private updateSettingsPaneVisibility;
     private updateShowSettingsToolbarButton;
     private setUIControlsEnabled;

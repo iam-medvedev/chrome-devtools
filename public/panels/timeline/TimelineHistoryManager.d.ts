@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import type * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { TimelineMiniMap } from './TimelineMiniMap.js';
@@ -37,7 +38,7 @@ export declare class TimelineHistoryManager {
     private totalHeight;
     private enabled;
     private lastActiveTrace;
-    constructor(minimapComponent?: TimelineMiniMap);
+    constructor(minimapComponent?: TimelineMiniMap, isNode?: boolean);
     addRecording(newInput: NewHistoryRecordingData): void;
     setEnabled(enabled: boolean): void;
     button(): ToolbarButton;
@@ -69,8 +70,8 @@ export declare class DropDown implements UI.ListControl.ListDelegate<number> {
     private readonly listControl;
     private readonly focusRestorer;
     private selectionDone;
-    constructor(availableparsedTraceIndexes: number[]);
-    static show(availableparsedTraceIndexes: number[], activeparsedTraceIndex: number, anchor: Element): Promise<number | null>;
+    constructor(availableparsedTraceIndexes: number[], landingPageTitle: Common.UIString.LocalizedString);
+    static show(availableparsedTraceIndexes: number[], activeparsedTraceIndex: number, anchor: Element, landingPageTitle?: Common.UIString.LocalizedString): Promise<number | null>;
     static cancelIfShowing(): void;
     private show;
     private onMouseMove;

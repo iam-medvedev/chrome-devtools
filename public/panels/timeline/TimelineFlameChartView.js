@@ -40,13 +40,18 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * This defines the order these markers will be rendered if they are at the
  * same timestamp. The smaller number will be shown first - e.g. so if NavigationStart, MarkFCP,
  * MarkLCPCandidate have the same timestamp, visually we
- * will render [Nav][FCP][LCP] everytime.
+ * will render [Nav][FCP][DCL][LCP] everytime.
  */
 export const SORT_ORDER_PAGE_LOAD_MARKERS = {
     ["navigationStart" /* Trace.Types.Events.Name.NAVIGATION_START */]: 0,
-    ["firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */]: 1,
-    ["largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */]: 2,
+    ["MarkLoad" /* Trace.Types.Events.Name.MARK_LOAD */]: 1,
+    ["firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */]: 2,
+    ["MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */]: 3,
+    ["largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */]: 4,
 };
+// Threshold to match up overlay markers that are off by a tiny amount so they aren't rendered
+// on top of each other.
+const TIMESTAMP_THRESHOLD_MS = Trace.Types.Timing.MicroSeconds(10);
 export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     delegate;
     /**
@@ -312,6 +317,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     containingElement() {
         return this.element;
     }
+    dimEvents(events) {
+        const relatedMainIndices = events.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
+        const relatedNetworkIndices = events.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
+        this.mainFlameChart.enableDimming(relatedMainIndices, false /** shouldAddOutlines */);
+        this.networkFlameChart.enableDimming(relatedNetworkIndices, false /** shouldAddOutlines */);
+    }
     #dimInsightRelatedEvents(relatedEvents) {
         // Dim all events except those related to the active insight.
         const relatedMainIndices = relatedEvents.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
@@ -355,8 +366,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             }
             relevantEvents.push(...provider.search(bounds).map(r => r.index));
         }
-        this.mainFlameChart.enableDimming(relatedMainIndices);
-        this.networkFlameChart.enableDimming(relatedNetworkIndices);
+        this.mainFlameChart.enableDimmingForUnrelatedEntries(relatedMainIndices);
+        this.networkFlameChart.enableDimmingForUnrelatedEntries(relatedNetworkIndices);
+    }
+    disableAllDimming() {
+        this.mainFlameChart.disableDimming();
+        this.networkFlameChart.disableDimming();
     }
     #sortMarkersForPreferredVisualOrder(markers) {
         markers.sort((m1, m2) => {
@@ -372,26 +387,35 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         // Clear out any markers.
         this.bulkRemoveOverlays(this.#markers);
         const markerEvents = parsedTrace.PageLoadMetrics.allMarkerEvents;
-        // Set markers for Navigations, LCP, FCP.
+        // Set markers for Navigations, LCP, FCP, DCL, L.
         const markers = markerEvents.filter(event => event.name === "navigationStart" /* Trace.Types.Events.Name.NAVIGATION_START */ ||
             event.name === "largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */ ||
-            event.name === "firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */);
+            event.name === "firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */ ||
+            event.name === "MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */ ||
+            event.name === "MarkLoad" /* Trace.Types.Events.Name.MARK_LOAD */);
         this.#sortMarkersForPreferredVisualOrder(markers);
-        const markerOverlays = [];
-        markers.forEach((marker, i) => {
+        const overlayByTs = new Map();
+        markers.forEach(marker => {
             const adjustedTimestamp = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(marker, parsedTrace.Meta.traceBounds, parsedTrace.Meta.navigationsByNavigationId, parsedTrace.Meta.navigationsByFrameId);
             // If any of the markers overlap in timing, lets put them on the same marker.
-            if (i > 0 && marker.ts === markerOverlays[markerOverlays.length - 1].entries[0].ts) {
-                markerOverlays[markerOverlays.length - 1].entries.push(marker);
-                return;
+            let matchingOverlay = false;
+            for (const [ts, overlay] of overlayByTs.entries()) {
+                if (Math.abs(marker.ts - ts) <= TIMESTAMP_THRESHOLD_MS) {
+                    overlay.entries.push(marker);
+                    matchingOverlay = true;
+                    break;
+                }
             }
-            const overlay = {
-                type: 'TIMINGS_MARKER',
-                entries: [marker],
-                adjustedTimestamp,
-            };
-            markerOverlays.push(overlay);
+            if (!matchingOverlay) {
+                const overlay = {
+                    type: 'TIMINGS_MARKER',
+                    entries: [marker],
+                    adjustedTimestamp,
+                };
+                overlayByTs.set(marker.ts, overlay);
+            }
         });
+        const markerOverlays = [...overlayByTs.values()];
         this.#markers = markerOverlays;
         if (this.#markers.length === 0) {
             return;
@@ -728,7 +752,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     extensionDataVisibilityChanged() {
         this.reset();
         this.setupWindowTimes();
-        this.mainDataProvider.reset(true);
+        this.mainDataProvider.reset();
         this.mainDataProvider.timelineData(true);
         this.refreshMainFlameChart();
     }

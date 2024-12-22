@@ -171,6 +171,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private forceDecorationCache?;
     private entryColorsCache?;
     private entryIndicesToNotDim?;
+    private entryIndicesToDim?;
     private colorDimmingCache;
     private totalTime?;
     private lastPopoverState;
@@ -193,7 +194,8 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     enableRuler(enable: boolean): void;
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
-    enableDimming(entryIndicesToNotDim: number[]): void;
+    enableDimming(entryIndices: number[], shouldAddOutlines: boolean): void;
+    enableDimmingForUnrelatedEntries(entryIndicesToNotDim: number[]): void;
     disableDimming(): void;
     getColorForEntry(entryIndex: number): string;
     highlightEntry(entryIndex: number): void;

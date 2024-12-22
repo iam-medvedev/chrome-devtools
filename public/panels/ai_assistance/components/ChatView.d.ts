@@ -32,7 +32,7 @@ export interface ModelChatMessage {
     suggestions?: [string, ...string[]];
     answer?: string;
     error?: ErrorType;
-    rpcId?: number;
+    rpcId?: Host.AidaClient.RpcGlobalId;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
 export declare const enum State {
@@ -42,7 +42,7 @@ export declare const enum State {
 export interface Props {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
-    onFeedbackSubmit: (rpcId: number, rate: Host.AidaClient.Rating, feedback?: string) => void;
+    onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onCancelClick: () => void;
     onContextClick: () => void | Promise<void>;
     onNewConversation: () => void;

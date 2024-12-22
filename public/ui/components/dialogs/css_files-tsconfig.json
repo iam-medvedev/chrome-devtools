@@ -6,7 +6,6 @@
     "files": [
         "buttonDialog.css.js",
         "dialog.css.js",
-        "iconDialog.css.js",
         "shortcutDialog.css.js"
     ]
 }

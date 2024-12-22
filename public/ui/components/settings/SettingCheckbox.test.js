@@ -38,7 +38,7 @@ describe('SettingCheckbox', () => {
         setting.set(false);
         assert.isFalse(checkbox.checked);
     });
-    it('can be reassigned to a different settings', () => {
+    it('can be reassigned to a different setting', () => {
         const setting1 = createFakeSetting('setting1', true);
         const setting2 = createFakeSetting('setting2', true);
         const { component, checkbox } = renderSettingCheckbox({ setting: setting1 });
@@ -72,7 +72,7 @@ describe('SettingCheckbox', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: false,
             disabledCondition: () => {
-                return { disabled: true, reason: 'reason' };
+                return { disabled: true, reasons: ['reason'] };
             },
         });
         const { checkbox } = renderSettingCheckbox({ setting });
@@ -88,7 +88,7 @@ describe('SettingCheckbox', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: false,
             disabledCondition: () => {
-                return { disabled: true, reason: 'reason' };
+                return { disabled: true, reasons: ['reason'] };
             },
         });
         const { component } = renderSettingCheckbox({ setting });

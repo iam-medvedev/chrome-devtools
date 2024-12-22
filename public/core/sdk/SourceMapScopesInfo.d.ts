@@ -1,6 +1,6 @@
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import type { SourceMap, SourceMapV3Object } from './SourceMap.js';
-import { type GeneratedRange, type OriginalPosition, type OriginalScope } from './SourceMapScopes.js';
+import { type GeneratedRange, type OriginalPosition, type OriginalScope, type Position } from './SourceMapScopes.js';
 export declare class SourceMapScopesInfo {
     #private;
     constructor(sourceMap: SourceMap, originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
@@ -57,6 +57,10 @@ export declare class SourceMapScopesInfo {
      *      values.
      */
     resolveMappedScopeChain(callFrame: CallFrame): ScopeChainEntry[] | null;
+    /**
+     * Returns the authored function name of the function containing the provided generated position.
+     */
+    findOriginalFunctionName({ line, column }: Position): string | null;
 }
 /**
  * Represents the inlining information for a given generated position.

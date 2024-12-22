@@ -17,6 +17,7 @@ describe('Release Note', () => {
             header: 'Highlights from Chrome 100 update',
             markdownLinks: [],
             link: 'https://developers.google.com/web/tools/chrome-devtools/',
+            videoLinks: [],
         });
         // We need to add the What's New view so that an error is not thrown when requesting
         // to show the release notes when needed.

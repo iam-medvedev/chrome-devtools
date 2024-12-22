@@ -64,7 +64,7 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private requestResolver;
     private issueResolver;
     constructor(viewportThrottlerTimeout: number);
-    static appendSettingsCheckboxToToolbar(toolbar: UI.Toolbar.Toolbar, settingOrSetingName: Common.Settings.Setting<boolean> | string, title: string, alternateTitle?: string): UI.Toolbar.ToolbarSettingCheckbox;
+    static appendSettingsCheckboxToToolbar(toolbar: UI.Toolbar.Toolbar, settingOrSetingName: Common.Settings.Setting<boolean> | string, title: Common.UIString.LocalizedString, alternateTitle?: Common.UIString.LocalizedString): UI.Toolbar.ToolbarSettingCheckbox;
     static instance(opts?: {
         forceNew: boolean;
         viewportThrottlerTimeout?: number;

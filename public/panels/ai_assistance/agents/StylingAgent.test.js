@@ -6,7 +6,7 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { describeWithEnvironment, getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
-const { StylingAgent } = AiAssistance;
+const { StylingAgent, ErrorType } = AiAssistance;
 describeWithEnvironment('StylingAgent', () => {
     function mockHostConfig(modelId, temperature, userTier, executionMode) {
         getGetHostConfigStub({
@@ -510,7 +510,7 @@ c`;
                     }
                     count++;
                 }
-                const execJs = sinon.mock().twice();
+                const execJs = sinon.mock().once();
                 execJs.onCall(0).throws(new AiAssistance.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
                 const agent = new StylingAgent({
                     aidaClient: mockAidaClient(generateActionAndAnswer),
@@ -523,6 +523,42 @@ c`;
                 const actionStep = responses.find(response => response.type === "action" /* AiAssistance.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
                 assert.strictEqual(execJs.getCalls().length, 1);
+            });
+            it('returns error when side effect is aborted', async () => {
+                const selected = new AiAssistance.NodeContext(element);
+                async function* generateAction() {
+                    yield {
+                        explanation: `ACTION
+            $0.style.backgroundColor = 'red'
+            STOP`,
+                        metadata: {},
+                        completed: true,
+                    };
+                }
+                const execJs = sinon.mock().once().throws(new AiAssistance.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
+                const sideEffectConfirmationPromise = Promise.withResolvers();
+                const agent = new StylingAgent({
+                    aidaClient: mockAidaClient(generateAction),
+                    createExtensionScope,
+                    confirmSideEffectForTest: sinon.stub().returns(sideEffectConfirmationPromise),
+                    execJs,
+                });
+                const responses = [];
+                const controller = new AbortController();
+                for await (const result of agent.run('test', { selected, signal: controller.signal })) {
+                    responses.push(result);
+                    if (result.type === 'side-effect') {
+                        // Initial code invocation resulting in a side-effect
+                        // happened.
+                        assert.isTrue(execJs.calledOnce);
+                        // Emulate abort when waiting for the side-effect confirmation.
+                        controller.abort();
+                    }
+                }
+                const errorStep = responses.at(-1);
+                assert.exists(errorStep);
+                assert.strictEqual(errorStep.error, "abort" /* ErrorType.ABORT */);
+                assert.strictEqual(await sideEffectConfirmationPromise.promise, false);
             });
         });
         describe('long `Observation` text handling', () => {
@@ -761,10 +797,10 @@ STOP`,
                     explanation: 'ANSWER: this is the answer',
                     metadata: {
                         rpcGlobalId: 123,
-                        attributionMetadata: [{
-                                attributionAction: Host.AidaClient.RecitationAction.ACTION_UNSPECIFIED,
-                                citations: [],
-                            }],
+                        attributionMetadata: {
+                            attributionAction: Host.AidaClient.RecitationAction.ACTION_UNSPECIFIED,
+                            citations: [],
+                        },
                     },
                     completed: true,
                 };
@@ -1048,8 +1084,6 @@ ANSWER: this is the answer`,
         beforeEach(() => {
             mockHostConfig();
             element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
-            // @ts-ignore
-            setAiAssistancePersistentHistory(true);
         });
         it('stores history via AiHistoryStorage', async () => {
             let count = 0;

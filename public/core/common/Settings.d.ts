@@ -88,12 +88,12 @@ export declare class Setting<V> {
     setSerializer(serializer: Serializer<unknown, V>): void;
     addChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): EventDescriptor;
     removeChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): void;
-    title(): string;
+    title(): Platform.UIString.LocalizedString;
     setTitleFunction(titleFunction: (() => Platform.UIString.LocalizedString) | undefined): void;
-    setTitle(title: string): void;
+    setTitle(title: Platform.UIString.LocalizedString): void;
     setRequiresUserAction(requiresUserAction: boolean): void;
     disabled(): boolean;
-    disabledReason(): string | undefined;
+    disabledReasons(): string[];
     setDisabled(disabled: boolean): void;
     get(): V;
     getIfNotDisabled(): V | undefined;

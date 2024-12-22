@@ -114,6 +114,22 @@ const UIStringsNotTranslate = {
      */
     inputPlaceholderForPerformanceAgent: 'Ask a question about the selected item and its call tree',
     /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForFreestylerAgentNoContext: 'Select an element to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForNetworkAgentNoContext: 'Select a network request to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForFileAgentNoContext: 'Select a file to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForPerformanceAgentNoContext: 'Select an item to ask a question',
+    /**
      * @description Placeholder text for the input shown when the conversation is blocked because a cross-origin context was selected.
      */
     crossOriginError: 'To talk about data from another origin, start a new chat',
@@ -378,6 +394,8 @@ export class ChatView extends HTMLElement {
             case "drjones-file" /* AgentType.FILE */:
                 return false;
             case "drjones-performance" /* AgentType.PERFORMANCE */:
+                return false;
+            case "patch" /* AgentType.PATCH */:
                 return false;
         }
     };
@@ -835,6 +853,12 @@ export class ChatView extends HTMLElement {
                     'Where is most of the time being spent in this call tree?',
                     'How can I reduce the time of this call tree?',
                 ];
+            case "patch" /* AgentType.PATCH */:
+                return [
+                    'What can you help me with?',
+                    'Why isn’t this element visible?',
+                    'How do I center this element?',
+                ];
         }
     };
     #getInputPlaceholderString() {
@@ -850,14 +874,22 @@ export class ChatView extends HTMLElement {
             return lockedString(UIStringsNotTranslate.crossOriginError);
         }
         switch (agentType) {
-            case "freestyler" /* AgentType.STYLING */:
+            case "patch" /* AgentType.PATCH */:
                 return lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgent);
+            case "freestyler" /* AgentType.STYLING */:
+                return this.#props.selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgent) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgentNoContext);
             case "drjones-file" /* AgentType.FILE */:
-                return lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgent);
+                return this.#props.selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgent) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgentNoContext);
             case "drjones-network-request" /* AgentType.NETWORK */:
-                return lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkAgent);
+                return this.#props.selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkAgent) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkAgentNoContext);
             case "drjones-performance" /* AgentType.PERFORMANCE */:
-                return lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceAgent);
+                return this.#props.selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceAgent) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceAgentNoContext);
         }
     }
     #renderReadOnlySection() {
@@ -985,6 +1017,11 @@ export class ChatView extends HTMLElement {
         const noLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         switch (this.#props.agentType) {
+            case "patch" /* AgentType.PATCH */:
+                if (noLogging) {
+                    return lockedString(UIStringsNotTranslate.inputDisclaimerForFreestylerAgentEnterpriseNoLogging);
+                }
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForFreestylerAgent);
             case "freestyler" /* AgentType.STYLING */:
                 if (noLogging) {
                     return lockedString(UIStringsNotTranslate.inputDisclaimerForFreestylerAgentEnterpriseNoLogging);

@@ -2073,11 +2073,11 @@ export class TimelineUIUtils {
                 tall = true;
                 break;
             case "MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */:
-                color = '#0867CB';
+                color = 'var(--color-text-disabled)';
                 tall = true;
                 break;
             case "MarkLoad" /* Trace.Types.Events.Name.MARK_LOAD */:
-                color = '#B31412';
+                color = 'var(--color-text-disabled)';
                 tall = true;
                 break;
             case "firstPaint" /* Trace.Types.Events.Name.MARK_FIRST_PAINT */:

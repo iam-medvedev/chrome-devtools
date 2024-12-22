@@ -129,7 +129,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
      * DOM nodes can't be sent over a runtime binding, so we have to retrieve
      * them separately.
      */
-    async #resolveDomNode(index, executionContextId) {
+    async #resolveNodeRef(index, executionContextId) {
         if (!this.#target) {
             return null;
         }
@@ -148,13 +148,22 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         if (!result) {
             return null;
         }
-        const remoteObject = runtimeModel.createRemoteObject(result);
-        return domModel.pushObjectAsNodeToFrontend(remoteObject);
-    }
-    async #refreshNode(domModel, node) {
-        const backendNodeId = node.backendNodeId();
-        const nodes = await domModel.pushNodesByBackendIdsToFrontend(new Set([backendNodeId]));
-        return nodes?.get(backendNodeId) || undefined;
+        let remoteObject;
+        try {
+            remoteObject = runtimeModel.createRemoteObject(result);
+            const node = await domModel.pushObjectAsNodeToFrontend(remoteObject);
+            if (!node) {
+                return null;
+            }
+            const link = await Common.Linkifier.Linkifier.linkify(node);
+            return { node, link };
+        }
+        catch {
+            return null;
+        }
+        finally {
+            remoteObject?.release();
+        }
     }
     #sendStatusUpdate() {
         this.dispatchEventToListeners("status" /* Events.STATUS */, {
@@ -179,21 +188,25 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
      */
     async #onDocumentUpdate(event) {
         const domModel = event.data;
-        const allLayoutAffectedNodes = this.#layoutShifts.flatMap(shift => shift.affectedNodes);
-        const toRefresh = [this.#lcpValue || {}, ...this.#interactions.values(), ...allLayoutAffectedNodes];
-        const allPromises = toRefresh.map(item => {
-            const node = item.node;
-            if (node === undefined) {
+        const toRefresh = [
+            this.#lcpValue?.nodeRef,
+            ...this.#interactions.values().map(i => i.nodeRef),
+            ...this.#layoutShifts.flatMap(shift => shift.affectedNodeRefs),
+        ].filter((nodeRef) => Boolean(nodeRef));
+        const idsToRefresh = new Set(toRefresh.map(nodeRef => nodeRef.node.backendNodeId()));
+        const nodes = await domModel.pushNodesByBackendIdsToFrontend(idsToRefresh);
+        if (!nodes) {
+            return;
+        }
+        const allPromises = toRefresh.map(async (nodeRef) => {
+            const refreshedNode = nodes.get(nodeRef.node.backendNodeId());
+            // It is possible for the refreshed node to be undefined even though it was defined previously.
+            // We should keep the affected nodes consistent from the user perspective, so we will just keep the stale node instead of removing it.
+            if (!refreshedNode) {
                 return;
             }
-            return this.#refreshNode(domModel, node).then(refreshedNode => {
-                // In theory, it is possible for `node` to be undefined even though it was defined previously.
-                // We should keep the affected nodes consistent from the user perspective, so we will just keep the stale node instead of removing it.
-                // This is unlikely to happen in practice.
-                if (refreshedNode) {
-                    item.node = refreshedNode;
-                }
-            });
+            nodeRef.node = refreshedNode;
+            nodeRef.link = await Common.Linkifier.Linkifier.linkify(refreshedNode);
         });
         await Promise.all(allPromises);
         this.#sendStatusUpdate();
@@ -208,9 +221,9 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                     warnings,
                 };
                 if (webVitalsEvent.nodeIndex !== undefined) {
-                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
-                    if (node) {
-                        lcpEvent.node = node;
+                    const nodeRef = await this.#resolveNodeRef(webVitalsEvent.nodeIndex, executionContextId);
+                    if (nodeRef) {
+                        lcpEvent.nodeRef = nodeRef;
                     }
                 }
                 if (this.#lastEmulationChangeTime && Date.now() - this.#lastEmulationChangeTime < 500) {
@@ -263,24 +276,22 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                     interaction.eventNames.push(webVitalsEvent.eventName);
                 }
                 if (webVitalsEvent.nodeIndex !== undefined) {
-                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
+                    const node = await this.#resolveNodeRef(webVitalsEvent.nodeIndex, executionContextId);
                     if (node) {
-                        interaction.node = node;
+                        interaction.nodeRef = node;
                     }
                 }
                 break;
             }
             case 'LayoutShift': {
                 const nodePromises = webVitalsEvent.affectedNodeIndices.map(nodeIndex => {
-                    return this.#resolveDomNode(nodeIndex, executionContextId);
+                    return this.#resolveNodeRef(nodeIndex, executionContextId);
                 });
-                const affectedNodes = (await Promise.all(nodePromises))
-                    .filter((node) => Boolean(node))
-                    .map(node => ({ node }));
+                const affectedNodes = (await Promise.all(nodePromises)).filter((nodeRef) => Boolean(nodeRef));
                 const layoutShift = {
                     score: webVitalsEvent.score,
                     uniqueLayoutShiftId: webVitalsEvent.uniqueLayoutShiftId,
-                    affectedNodes,
+                    affectedNodeRefs: affectedNodes,
                 };
                 this.#layoutShifts.push(layoutShift);
                 break;

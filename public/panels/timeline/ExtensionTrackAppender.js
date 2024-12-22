@@ -4,7 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
 import * as Extensions from './extensions/extensions.js';
 const UIStrings = {
     /**
@@ -78,10 +78,13 @@ export class ExtensionTrackAppender {
         return Extensions.ExtensionUI.extensionEntryColor(event);
     }
     titleForEvent(event) {
-        if (Trace.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText) {
-            return event.args.tooltipText;
-        }
         return event.name;
+    }
+    setPopoverInfo(event, info) {
+        info.title = Trace.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText ?
+            event.args.tooltipText :
+            this.titleForEvent(event);
+        info.formattedTime = getFormattedTime(event.dur);
     }
 }
 //# sourceMappingURL=ExtensionTrackAppender.js.map

@@ -1049,7 +1049,7 @@ export class ToolbarCheckbox extends ToolbarItem {
 }
 export class ToolbarSettingCheckbox extends ToolbarCheckbox {
     constructor(setting, tooltip, alternateTitle) {
-        super(alternateTitle || setting.title() || '', tooltip, undefined, setting.name);
+        super(alternateTitle || setting.title(), tooltip, undefined, setting.name);
         bindCheckbox(this.inputElement, setting);
     }
 }

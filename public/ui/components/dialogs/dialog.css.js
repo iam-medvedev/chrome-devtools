@@ -47,14 +47,10 @@ dialog:focus-visible {
   min-width: var(--content-min-width);
   background: var(--color-background-elevation-dark-only);
   border-radius: var(--sys-size-5);
-  padding-top: var(--content-padding-top);
-  padding-bottom: var(--content-padding-bottom);
-  box-shadow: var(--override-content-box-shadow);
   max-height: var(--dialog-max-height);
   max-width: var(--dialog-max-width);
   overflow: auto;
   outline: none;
-  clip-path: polygon(var(--content-clip-path));
 }
 
 .dialog-header {
@@ -62,14 +58,19 @@ dialog:focus-visible {
   justify-content: space-between;
   align-items: center;
   padding: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) var(--sys-size-8);
-}
 
-.dialog-header-text {
-  font: var(--sys-typescale-body2-medium);
+  &:empty {
+    padding: 0;
+    height: var(--sys-size-7);
+  }
+
+  .dialog-header-text {
+    font: var(--sys-typescale-body2-medium);
+  }
 }
 
 .dialog-content {
-  padding: 0 var(--sys-size-8);
+  padding: 0 0 var(--sys-size-7);
   overflow: hidden;
 }
 

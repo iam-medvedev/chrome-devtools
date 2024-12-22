@@ -110,7 +110,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
     "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
     "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
-    "timeline-ignore-list" /* Root.Runtime.ExperimentName.TIMELINE_IGNORE_LIST */,
+    "timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -442,6 +442,13 @@ export function getGetHostConfigStub(config) {
             ...config.devToolsAnimationStylesInStylesTab,
         },
         isOffTheRecord: false,
+        thirdPartyCookieControls: {
+            thirdPartyCookieRestrictionEnabled: false,
+            thirdPartyCookieMetadataEnabled: true,
+            thirdPartyCookieHeuristicsEnabled: true,
+            managedBlockThirdPartyCookies: 'Unset',
+            ...config.thirdPartyCookieControls,
+        },
     });
 }
 //# sourceMappingURL=EnvironmentHelpers.js.map

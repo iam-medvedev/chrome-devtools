@@ -140,6 +140,9 @@ export class UserMetrics {
         }
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ExperimentEnabledAtLaunch" /* EnumeratedHistogram.ExperimentEnabledAtLaunch */, experiment, DevtoolsExperiments.MAX_VALUE);
     }
+    navigationSettingAtFirstTimelineLoad(state) {
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.TimelineNavigationSettingState" /* EnumeratedHistogram.TimelineNavigationSettingState */, state, 4 /* TimelineNavigationSetting.MAX_VALUE */);
+    }
     experimentDisabledAtLaunch(experimentId) {
         const experiment = DevtoolsExperiments[experimentId];
         if (experiment === undefined) {
@@ -843,8 +846,9 @@ export var KeyboardShortcutAction;
     KeyboardShortcutAction[KeyboardShortcutAction["elements.refresh-event-listeners"] = 115] = "elements.refresh-event-listeners";
     KeyboardShortcutAction[KeyboardShortcutAction["coverage.clear"] = 116] = "coverage.clear";
     KeyboardShortcutAction[KeyboardShortcutAction["coverage.export"] = 117] = "coverage.export";
+    KeyboardShortcutAction[KeyboardShortcutAction["timeline.dim-third-parties"] = 118] = "timeline.dim-third-parties";
     /* eslint-enable @typescript-eslint/naming-convention */
-    KeyboardShortcutAction[KeyboardShortcutAction["MAX_VALUE"] = 118] = "MAX_VALUE";
+    KeyboardShortcutAction[KeyboardShortcutAction["MAX_VALUE"] = 119] = "MAX_VALUE";
 })(KeyboardShortcutAction || (KeyboardShortcutAction = {}));
 /**
  * This list should contain the currently active Devtools Experiments,
@@ -884,10 +888,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
     DevtoolsExperiments[DevtoolsExperiments["timeline-dim-unrelated-events"] = 103] = "timeline-dim-unrelated-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-alternative-navigation"] = 104] = "timeline-alternative-navigation";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-ignore-list"] = 105] = "timeline-ignore-list";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-third-party-dependencies"] = 106] = "timeline-third-party-dependencies";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 106] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 107] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

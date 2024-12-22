@@ -87,11 +87,22 @@ export const i18nFormatString = i18n.i18n.getFormatLocalizedString.bind(undefine
 export class CookieControlsView extends UI.Widget.VBox {
     #view;
     constructor(element, view = (input, output, target) => {
-        // TODO(crbug.com/365737493): Determine whether the enterprise is present based on UI bindings
-        const enterprisePresent = false;
-        const toggleSetting = Common.Settings.Settings.instance().moduleSetting('cookie-control-override-enabled');
-        const gracePeriodSetting = Common.Settings.Settings.instance().moduleSetting('grace-period-mitigation-disabled');
-        const heuristicSetting = Common.Settings.Settings.instance().moduleSetting('heuristic-mitigation-disabled');
+        const thirdPartyControlsDict = Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls;
+        // createSetting() allows us to initialize the settings with the UI binding values the first
+        // time that the browser starts, and use the existing setting value for all subsequent uses.
+        const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting('enterprise-enabled', thirdPartyControlsDict && thirdPartyControlsDict.managedBlockThirdPartyCookies &&
+            typeof thirdPartyControlsDict.managedBlockThirdPartyCookies === 'boolean' ?
+            thirdPartyControlsDict.managedBlockThirdPartyCookies :
+            false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+        const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', thirdPartyControlsDict && thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled ?
+            thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled :
+            false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+        const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', thirdPartyControlsDict && thirdPartyControlsDict.thirdPartyCookieMetadataEnabled ?
+            thirdPartyControlsDict.thirdPartyCookieMetadataEnabled :
+            true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+        const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', thirdPartyControlsDict && thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled ?
+            thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled :
+            true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
         // clang-format off
         const cardHeader = html `
       <div class="card-header">
@@ -100,7 +111,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             <div class="card-title">${i18nString(UIStrings.cardTitle)}</div>
             <div class="body">${i18nString(UIStrings.cardDisclaimer)}</div>
           </div>
-          ${enterprisePresent ? html `
+          ${Boolean(enterpriseEnabledSetting.get()) ? html `
             <devtools-icon
               .name=${'domain'}
               ${LitHtml.Directives.ref((el) => {
@@ -110,10 +121,10 @@ export class CookieControlsView extends UI.Widget.VBox {
         </div>
         <div>
           <devtools-switch
-            .checked=${Boolean(toggleSetting.get())}
-            .disabled=${enterprisePresent}
+            .checked=${Boolean(toggleEnabledSetting.get())}
+            .disabled=${Boolean(enterpriseEnabledSetting.get())}
             @switchchange=${(e) => {
-            input.inputChanged(e.target.checked, toggleSetting);
+            input.inputChanged(e.target.checked, toggleEnabledSetting);
         }}>
           </devtools-switch>
         </div>
@@ -123,17 +134,17 @@ export class CookieControlsView extends UI.Widget.VBox {
       <div class="card-row">
         <label class='checkbox-label'>
           <input type='checkbox'
-            ?disabled=${enterprisePresent || !Boolean(toggleSetting.get())}
-            ?checked=${!Boolean(gracePeriodSetting.get())}
+            .disabled=${Boolean(enterpriseEnabledSetting.get()) || !Boolean(toggleEnabledSetting.get())}
+            .checked=${Boolean(toggleEnabledSetting.get()) && !Boolean(gracePeriodDisabledSetting.get())}
             @change=${(e) => {
-            input.inputChanged(!e.target.checked, gracePeriodSetting);
+            input.inputChanged(e.target.checked, gracePeriodDisabledSetting);
         }}
           >
           <div class="text">
             <div class="body">${i18nString(UIStrings.gracePeriodTitle)}</div>
             <div class="body">
               ${i18nFormatString(UIStrings.gracePeriodExplanation, {
-            PH1: enterprisePresent ? i18nString(UIStrings.gracePeriod) : UI.Fragment.html `<x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link('grace-period-link').track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`,
+            PH1: Boolean(enterpriseEnabledSetting.get()) ? i18nString(UIStrings.gracePeriod) : UI.Fragment.html `<x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link('grace-period-link').track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`,
         })}
             </div>
           </div>
@@ -144,17 +155,17 @@ export class CookieControlsView extends UI.Widget.VBox {
       <div class="card-row">
         <label class='checkbox-label'>
           <input type='checkbox'
-            ?disabled=${enterprisePresent || !Boolean(toggleSetting.get())}
-            ?checked=${!Boolean(heuristicSetting.get())}
+            .disabled=${Boolean(enterpriseEnabledSetting.get()) || !Boolean(toggleEnabledSetting.get())}
+            .checked=${Boolean(toggleEnabledSetting.get() && !Boolean(heuristicsDisabledSetting.get()))}
             @change=${(e) => {
-            input.inputChanged(!e.target.checked, heuristicSetting);
+            input.inputChanged(e.target.checked, heuristicsDisabledSetting);
         }}
           >
           <div class="text">
             <div class="body">${i18nString(UIStrings.heuristicTitle)}</div>
             <div class="body">
               ${i18nFormatString(UIStrings.heuristicExplanation, {
-            PH1: enterprisePresent ? i18nString(UIStrings.scenarios) : UI.Fragment.html `<x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/heuristics-based-exceptions" jslog=${VisualLogging.link('heuristic-link').track({ click: true })}>${i18nString(UIStrings.scenarios)}</x-link>`,
+            PH1: Boolean(enterpriseEnabledSetting.get()) ? i18nString(UIStrings.scenarios) : UI.Fragment.html `<x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/heuristics-based-exceptions" jslog=${VisualLogging.link('heuristic-link').track({ click: true })}>${i18nString(UIStrings.scenarios)}</x-link>`,
         })}
             </div>
           </div>
@@ -184,7 +195,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             <div class="body">${i18nString(UIStrings.viewExplanation)}</div>
           </div>
           <devtools-card>
-            <div slot="content" class=${enterprisePresent ? 'card enterprise-disabled' : 'card'}>
+            <div slot="content" class=${Boolean(enterpriseEnabledSetting.get()) ? 'card enterprise-disabled' : 'card'}>
               ${cardHeader}
               <div>
                 <div class="card-row text">
@@ -196,7 +207,7 @@ export class CookieControlsView extends UI.Widget.VBox {
               </div>
             </div>
           </devtools-card>
-          ${enterprisePresent ? enterpriseDisclaimer : LitHtml.nothing}
+          ${Boolean(enterpriseEnabledSetting.get()) ? enterpriseDisclaimer : LitHtml.nothing}
         </div>
       </div>
     `, target, { host: this });

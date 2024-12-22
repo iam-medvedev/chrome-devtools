@@ -23,7 +23,6 @@ export class SelectMenu extends HTMLElement {
         position: "bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */,
         horizontalAlignment: "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */,
         showArrow: false,
-        showConnector: false,
         sideButton: false,
         showDivider: false,
         disabled: false,
@@ -49,16 +48,6 @@ export class SelectMenu extends HTMLElement {
     }
     set horizontalAlignment(horizontalAlignment) {
         this.#props.horizontalAlignment = horizontalAlignment;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    get showConnector() {
-        return this.#props.showConnector;
-    }
-    set showConnector(showConnector) {
-        if (!this.#props.showArrow) {
-            this.#props.showArrow = showConnector;
-        }
-        this.#props.showConnector = showConnector;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     get showArrow() {
@@ -126,15 +115,6 @@ export class SelectMenu extends HTMLElement {
     #sideButtonClicked() {
         this.dispatchEvent(new SelectMenuSideButtonClickEvent());
     }
-    #maybeGetArrowXPosition() {
-        if (this.showConnector) {
-            // This block is not wrapped in a `coordinator.read` because this function's
-            // only invocation is already wrapped in one (in Dialog.showDialog).
-            const arrowBounds = this.#getButton().getBoundingClientRect();
-            return (arrowBounds.left + arrowBounds.right) / 2;
-        }
-        return NaN;
-    }
     #getButtonText() {
         return this.buttonTitle instanceof Function ? this.buttonTitle() : this.buttonTitle;
     }
@@ -194,11 +174,10 @@ export class SelectMenu extends HTMLElement {
         @menuitemselected=${this.#onItemSelected}
         .position=${this.position}
         .origin=${this}
-        .showConnector=${this.showConnector}
         .showDivider=${this.showDivider}
         .showSelectedItem=${this.showSelectedItem}
         .open=${this.#open}
-        .getConnectorCustomXPosition=${this.showConnector ? this.#maybeGetArrowXPosition.bind(this) : null}
+        .getConnectorCustomXPosition=${null}
       >
       <slot>
       </slot>

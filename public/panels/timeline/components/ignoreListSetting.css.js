@@ -11,6 +11,7 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 .ignore-list-setting-content {
+  padding: 0 var(--sys-size-8);
   width: 280px;
 }
 

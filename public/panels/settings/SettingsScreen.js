@@ -145,6 +145,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         }
         settingsScreen.reportTabOnReveal = true;
         const dialog = new UI.Dialog.Dialog('settings');
+        dialog.contentElement.removeAttribute('aria-modal');
         dialog.contentElement.tabIndex = -1;
         dialog.addCloseButton();
         dialog.setOutsideClickCallback(() => { });
@@ -406,7 +407,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
         return subsection;
     }
     createExperimentCheckbox(experiment) {
-        const label = UI.UIUtils.CheckboxLabel.create(experiment.title, experiment.isEnabled(), undefined, experiment.name);
+        const label = UI.UIUtils.CheckboxLabel.createWithStringLiteral(experiment.title, experiment.isEnabled(), undefined, experiment.name);
         label.classList.add('experiment-label');
         const input = label.checkboxElement;
         input.name = experiment.name;

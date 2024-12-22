@@ -18,6 +18,7 @@ export declare class UserMetrics {
     issuesPanelResourceOpened(issueCategory: string, type: string): void;
     issueCreated(code: string): void;
     experimentEnabledAtLaunch(experimentId: string): void;
+    navigationSettingAtFirstTimelineLoad(state: TimelineNavigationSetting): void;
     experimentDisabledAtLaunch(experimentId: string): void;
     experimentChanged(experimentId: string, isEnabled: boolean): void;
     developerResourceLoaded(developerResourceLoaded: DeveloperResourceLoaded): void;
@@ -615,7 +616,8 @@ export declare enum KeyboardShortcutAction {
     'elements.refresh-event-listeners' = 115,
     'coverage.clear' = 116,
     'coverage.export' = 117,
-    MAX_VALUE = 118
+    'timeline.dim-third-parties' = 118,
+    MAX_VALUE = 119
 }
 export declare const enum IssueOpener {
     CONSOLE_INFO_BAR = 0,
@@ -662,8 +664,8 @@ export declare enum DevtoolsExperiments {
     'timeline-experimental-insights' = 102,
     'timeline-dim-unrelated-events' = 103,
     'timeline-alternative-navigation' = 104,
-    'timeline-ignore-list' = 105,
-    MAX_VALUE = 106
+    'timeline-third-party-dependencies' = 106,
+    MAX_VALUE = 107
 }
 export declare const enum CSSPropertyDocumentation {
     SHOWN = 0,
@@ -1059,4 +1061,11 @@ export declare const enum AnimationPointDragType {
     FINISH_ENDPOINT_MOVE = 3,
     OTHER = 4,
     MAX_VALUE = 5
+}
+export declare const enum TimelineNavigationSetting {
+    CLASSIC_AT_SESSION_FIRST_TRACE = 0,
+    MODERN_AT_SESSION_FIRST_TRACE = 1,
+    SWITCHED_TO_CLASSIC = 2,
+    SWITCHED_TO_MODERN = 3,
+    MAX_VALUE = 4
 }

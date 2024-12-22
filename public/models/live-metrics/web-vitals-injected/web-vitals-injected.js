@@ -57,7 +57,7 @@ function sendEventToDevTools(event) {
 const nodeList = [];
 function establishNodeIndex(node) {
     const index = nodeList.length;
-    nodeList.push(node);
+    nodeList.push(new WeakRef(node));
     return index;
 }
 /**
@@ -70,7 +70,7 @@ function establishNodeIndex(node) {
  * for the specified index.
  */
 window.getNodeForIndex = (index) => {
-    return nodeList[index];
+    return nodeList[index].deref();
 };
 function limitScripts(loafs) {
     return loafs.map(loaf => {

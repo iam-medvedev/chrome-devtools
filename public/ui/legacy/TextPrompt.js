@@ -83,7 +83,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.ghostTextElement.setAttribute('contenteditable', 'false');
         this.leftParenthesesIndices = [];
         this.changed = false;
-        ARIAUtils.markAsHidden(this.ghostTextElement);
+        ARIAUtils.setHidden(this.ghostTextElement, true);
     }
     initialize(completions, stopCharacters, usesSuggestionBuilder) {
         this.loadCompletions = completions;

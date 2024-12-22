@@ -662,14 +662,13 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 throw new Error('Could not find extension entry.');
             }
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, extensionEntry, new Components.Linkifier.Linkifier(), false);
-            const rowData = getRowDataForDetailsElement(details);
+            const rowData = getRowDataForDetailsElement(details).slice(0, 2);
             assert.deepEqual(rowData, [
                 {
                     title: 'Description',
                     value: 'This is a child task',
                 },
                 { title: 'Tip', value: 'Do something about it' },
-                { title: undefined, value: 'appendACorgi @ localhost:3000/static/js/bundle.js:274:19' },
             ]);
         });
         it('renders the details for an extension marker properly', async function () {
@@ -679,14 +678,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 throw new Error('Could not find extension mark.');
             }
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, extensionMark, new Components.Linkifier.Linkifier(), false);
-            const rowData = getRowDataForDetailsElement(details);
-            assert.deepEqual(rowData, [
-                {
-                    title: 'Description',
-                    value: 'This marks the start of a task',
-                },
-                { title: undefined, value: 'mockChangeDetection @ localhost:3000/static/js/bundle.js:295:17' },
-            ]);
+            const rowData = getRowDataForDetailsElement(details)[0];
+            assert.deepEqual(rowData, {
+                title: 'Description',
+                value: 'This marks the start of a task',
+            });
         });
         it('renders the details for a profile call properly', async function () {
             Common.Linkifier.registerLinkifier({
@@ -766,10 +762,22 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const [[extensionTrackEntry]] = Object.values(extensionTrackData.entriesByTrack);
             const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, extensionMarker, new Components.Linkifier.Linkifier(), false);
             const markerStackTraceData = getStackTraceForDetailsElement(markerDetails);
-            assert.deepEqual(markerStackTraceData, ['mockChangeDetection @ localhost:3000/static/js/bundle.js:295:17']);
+            assert.exists(markerStackTraceData);
+            assert.lengthOf(markerStackTraceData, 15);
+            assert.deepEqual(markerStackTraceData.slice(0, 3), [
+                'mockChangeDetection @ localhost:3000/static/js/bundle.js:282:31',
+                'appendACorgi @ localhost:3000/static/js/bundle.js:216:24',
+                'invokeGuardedCallbackDev @ localhost:3000/static/js/bundle.js:11204:70',
+            ]);
             const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, extensionTrackEntry, new Components.Linkifier.Linkifier(), false);
             const trackEntryStackTraceData = getStackTraceForDetailsElement(trackEntryDetails);
-            assert.deepEqual(trackEntryStackTraceData, ['appendACorgi @ localhost:3000/static/js/bundle.js:274:19']);
+            assert.exists(trackEntryStackTraceData);
+            assert.lengthOf(trackEntryStackTraceData, 14);
+            assert.deepEqual(trackEntryStackTraceData.slice(0, 3), [
+                'appendACorgi @ localhost:3000/static/js/bundle.js:216:24',
+                'invokeGuardedCallbackDev @ localhost:3000/static/js/bundle.js:11204:70',
+                'invokeGuardedCallback @ localhost:3000/static/js/bundle.js:11347:35',
+            ]);
         });
         it('renders the stack trace of user timings properly', async function () {
             Common.Linkifier.registerLinkifier({

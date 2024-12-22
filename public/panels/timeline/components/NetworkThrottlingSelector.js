@@ -25,7 +25,7 @@ const UIStrings = {
      */
     networkThrottling: 'Network throttling: {PH1}',
     /**
-     * @description Text label for a selection box showing that a specific option is recommended.
+     * @description Text label for a selection box showing that a specific option is recommended for network throttling.
      * @example {Fast 4G} PH1
      */
     recommendedThrottling: '{PH1} - recommended',
@@ -155,7 +155,6 @@ export class NetworkThrottlingSelector extends HTMLElement {
         .showArrow=${true}
         .sideButton=${false}
         .showSelectedItem=${true}
-        .showConnector=${false}
         .jslogContext=${'network-conditions'}
         .buttonTitle=${i18nString(UIStrings.network, { PH1: selectionTitle })}
         .title=${i18nString(UIStrings.networkThrottling, { PH1: selectionTitle })}

@@ -2047,14 +2047,18 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             if (ignoredHeaders.has(name.toLowerCase())) {
                 continue;
             }
-            if (header.value.trim()) {
-                command.push('-H ' + escapeString(name + ': ' + header.value));
-            }
-            else {
+            const value = header.value;
+            if (!value.trim()) {
                 // A header passed with -H with no value or only whitespace as its
                 // value tells curl to not set the header at all. To post an empty
                 // header, you have to terminate it with a semicolon.
                 command.push('-H ' + escapeString(name + ';'));
+            }
+            else if (name.toLowerCase() === 'cookie') {
+                command.push('-b ' + escapeString(value));
+            }
+            else {
+                command.push('-H ' + escapeString(name + ': ' + value));
             }
         }
         command = command.concat(data);
@@ -2156,10 +2160,10 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         return commands.join(';\r\n');
     }
     static getDCLEventColor() {
-        return '--sys-color-token-attribute-value';
+        return '--sys-color-blue';
     }
     static getLoadEventColor() {
-        return '--sys-color-token-property-special';
+        return '--sys-color-error';
     }
 }
 export function computeStackTraceText(stackTrace) {

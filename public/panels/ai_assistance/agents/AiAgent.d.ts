@@ -20,7 +20,7 @@ export declare const enum ErrorType {
 export interface AnswerResponse {
     type: ResponseType.ANSWER;
     text: string;
-    rpcId?: number;
+    rpcId?: Host.AidaClient.RpcGlobalId;
     suggestions?: [string, ...string[]];
 }
 export interface ErrorResponse {
@@ -40,12 +40,12 @@ export interface ContextResponse {
 export interface TitleResponse {
     type: ResponseType.TITLE;
     title: string;
-    rpcId?: number;
+    rpcId?: Host.AidaClient.RpcGlobalId;
 }
 export interface ThoughtResponse {
     type: ResponseType.THOUGHT;
     thought: string;
-    rpcId?: number;
+    rpcId?: Host.AidaClient.RpcGlobalId;
 }
 export interface SideEffectResponse {
     type: ResponseType.SIDE_EFFECT;
@@ -92,7 +92,8 @@ export declare const enum AgentType {
     STYLING = "freestyler",
     FILE = "drjones-file",
     NETWORK = "drjones-network-request",
-    PERFORMANCE = "drjones-performance"
+    PERFORMANCE = "drjones-performance",
+    PATCH = "patch"
 }
 export interface SerializedAgent {
     id: string;
@@ -112,12 +113,11 @@ export declare abstract class ConversationContext<T> {
      */
     refresh(): Promise<void>;
 }
-export type FunctionDeclaration<Args extends Record<string, unknown>, ReturnType = Record<string, unknown>> = {
+export type FunctionDeclaration<Args, ReturnType> = {
     description: string;
     parameters: Host.AidaClient.FunctionObjectParam;
     handler: (args: Args) => Promise<ReturnType>;
 };
-export type FunctionDeclarations = Map<string, FunctionDeclaration<Record<string, unknown>, Record<string, unknown>>>;
 export declare abstract class AiAgent<T> {
     #private;
     static validTemperature(temperature: number | undefined): number | undefined;
@@ -127,9 +127,10 @@ export declare abstract class AiAgent<T> {
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
-    protected functionDeclarations: FunctionDeclarations;
     constructor(opts: AgentOptions);
     get chatHistoryForTesting(): Array<Host.AidaClient.Content>;
+    declareFunction<Args, ReturnType>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
+    callFunction(name: string, args: unknown): Promise<Record<string, unknown>>;
     set chatNewHistoryForTesting(history: HistoryEntryStorage);
     get id(): string;
     get isEmpty(): boolean;
@@ -144,14 +145,17 @@ export declare abstract class AiAgent<T> {
     }): AsyncGenerator<{
         parsedResponse: ParsedResponse;
         completed: boolean;
-        rpcId?: number;
+        rpcId?: Host.AidaClient.RpcGlobalId;
     }, void, void>;
     buildRequest(part: Host.AidaClient.Part): Host.AidaClient.AidaRequest;
-    handleAction(action: string): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
+    handleAction(action: string, options?: {
+        signal?: AbortSignal;
+    }): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
     parseResponse(response: Host.AidaClient.AidaResponse): ParsedResponse;
     formatParsedAnswer({ answer }: ParsedAnswer): string;
     formatParsedStep(step: ParsedStep): string;
+    buildChatHistoryForAida(): Host.AidaClient.Content[];
     run(query: string, options: {
         signal?: AbortSignal;
         selected: ConversationContext<T> | null;
@@ -160,4 +164,3 @@ export declare abstract class AiAgent<T> {
 }
 export declare function isDebugMode(): boolean;
 export declare function debugLog(...log: unknown[]): void;
-export declare function isHistoryEnabled(): boolean;

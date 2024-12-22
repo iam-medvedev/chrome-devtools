@@ -74,9 +74,10 @@ export class SettingCheckbox extends HTMLElement {
         }
         const icon = this.icon();
         const title = `${this.#setting.learnMore() ? this.#setting.learnMore()?.tooltip() : ''}`;
-        const reason = this.#setting.disabledReason() ?
+        const disabledReasons = this.#setting.disabledReasons();
+        const reason = disabledReasons.length ?
             html `
-      <devtools-button class="disabled-reason" .iconName=${'info'} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} title=${ifDefined(this.#setting.disabledReason())} @click=${onclick}></devtools-button>
+      <devtools-button class="disabled-reason" .iconName=${'info'} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} title=${ifDefined(disabledReasons.join('\n'))} @click=${onclick}></devtools-button>
     ` :
             LitHtml.nothing;
         LitHtml.render(html `
@@ -84,7 +85,7 @@ export class SettingCheckbox extends HTMLElement {
         <label title=${title}>
           <input
             type="checkbox"
-            .checked=${this.#setting.disabledReason() ? false : this.#setting.get()}
+            .checked=${disabledReasons.length ? false : this.#setting.get()}
             ?disabled=${this.#setting.disabled()}
             @change=${this.#checkboxChanged}
             jslog=${VisualLogging.toggle().track({ click: true }).context(this.#setting.name)}

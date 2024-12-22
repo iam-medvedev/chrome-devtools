@@ -57,7 +57,8 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     entryTitle(entryIndex: number): string | null;
     textColor(index: number): string;
     entryFont(_index: number): string | null;
-    reset(resetCompatibilityTracksAppender?: boolean): void;
+    clearTimelineDataCache(): void;
+    reset(): void;
     maxStackDepth(): number;
     /**
      * Builds the flame chart data using the tracks appender (which use

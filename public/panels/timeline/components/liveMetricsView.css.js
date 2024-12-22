@@ -373,6 +373,31 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   cursor: pointer;
 }
 
+.node-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: var(--sys-typescale-body4-size);
+  line-height: var(--sys-typescale-body4-line-height);
+  font-weight: var(--ref-typeface-weight-regular);
+  user-select: text;
+
+  main {
+    width: 300px;
+    max-width: 100%;
+    text-align: center;
+
+    .section-title {
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.node-description {
+  margin-bottom: 12px;
+}
+
 /*# sourceURL=liveMetricsView.css */
 `);
 

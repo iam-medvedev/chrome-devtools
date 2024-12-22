@@ -3,6 +3,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
+import type * as EntityMapper from './EntityMapper.js';
 type ResolvedCodeLocationData = {
     name: string | null;
     devtoolsLocation: Workspace.UISourceCode.UILocation | null;
@@ -15,7 +16,7 @@ export declare class SourceMappingsUpdated extends Event {
 export declare const resolvedCodeLocationDataNames: Map<string, ResolvedCodeLocationData | null>;
 export declare class SourceMapsResolver extends EventTarget {
     #private;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace, entityMapper?: EntityMapper.EntityMapper);
     static clearResolvedNodeNames(): void;
     static keyForCodeLocation(callFrame: Protocol.Runtime.CallFrame): string;
     /**

@@ -202,6 +202,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     forceDecorationCache;
     entryColorsCache;
     entryIndicesToNotDim;
+    entryIndicesToDim;
     colorDimmingCache = new Map();
     totalTime;
     lastPopoverState;
@@ -216,6 +217,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #canvasBoundingClientRect = null;
     #selectedElementOutlineEnabled = true;
     #indexToDrawOverride = new Map();
+    #shouldAddOutlines = true;
     constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
         super(true);
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
@@ -349,19 +351,31 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     #shouldDimEvent(entryIndex) {
         // If a search is active, that enables a mode where we dim all events that do not match the search results.
-        // Otherwise the events to not dim are defined by the last call to `enableDimming`.
+        if (this.entryIndicesToDim && !this.#searchResultEntries) {
+            return this.entryIndicesToDim.includes(entryIndex);
+        }
+        // Otherwise the events to not dim are defined by the last call to `enableDimmingForUnrelatedEntries` or
+        // `enableDimming`.
         const entriesToNotDim = this.#searchResultEntries ?? this.entryIndicesToNotDim;
         if (!entriesToNotDim) {
             return false;
         }
         return !entriesToNotDim.includes(entryIndex);
     }
-    enableDimming(entryIndicesToNotDim) {
+    enableDimming(entryIndices, shouldAddOutlines) {
+        this.entryIndicesToDim = entryIndices;
+        this.#shouldAddOutlines = shouldAddOutlines;
+        this.entryIndicesToNotDim = [];
+        this.draw();
+    }
+    enableDimmingForUnrelatedEntries(entryIndicesToNotDim) {
         this.entryIndicesToNotDim = entryIndicesToNotDim;
+        this.entryIndicesToDim = [];
         this.draw();
     }
     disableDimming() {
         this.entryIndicesToNotDim = null;
+        this.entryIndicesToDim = null;
         this.draw();
     }
     #transformColor(entryIndex, color) {
@@ -1893,7 +1907,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // Doesn't draw a rect, just adds the rect into the current path
             this.#drawEventRect(context, timelineData, entryIndex);
         }
-        if (!shouldDim) {
+        if (!shouldDim && this.#shouldAddOutlines) {
             // In some scenarios we want to draw outlines around events for added visual contrast.
             // But we only do this if the events are not being dimmed.
             this.#maybeAddOutlines(context, color);
@@ -2829,6 +2843,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.forceDecorationCache = null;
             this.entryColorsCache = null;
             this.entryIndicesToNotDim = null;
+            this.entryIndicesToDim = null;
             this.colorDimmingCache.clear();
             this.rawTimelineDataLength = 0;
             this.#groupTreeRoot = null;
@@ -3390,6 +3405,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.rawTimelineDataLength = 0;
         this.#groupTreeRoot = null;
         this.entryIndicesToNotDim = null;
+        this.entryIndicesToDim = null;
         this.colorDimmingCache.clear();
         this.highlightedMarkerIndex = -1;
         this.highlightedEntryIndex = -1;

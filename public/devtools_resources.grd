@@ -104,6 +104,8 @@
       <include file="Images/deployed.svg" name="IMAGES_DEPLOYED_SVG" resource_path="Images/deployed.svg" type="BINDATA" compress="false"/>
       <include file="Images/device-fold.svg" name="IMAGES_DEVICE_FOLD_SVG" resource_path="Images/device-fold.svg" type="BINDATA" compress="false"/>
       <include file="Images/devices.svg" name="IMAGES_DEVICES_SVG" resource_path="Images/devices.svg" type="BINDATA" compress="false"/>
+      <include file="Images/devtools-thumbnail.svg" name="IMAGES_DEVTOOLS_THUMBNAIL_SVG" resource_path="Images/devtools-thumbnail.svg" type="BINDATA" compress="false"/>
+      <include file="Images/devtools-tips.svg" name="IMAGES_DEVTOOLS_TIPS_SVG" resource_path="Images/devtools-tips.svg" type="BINDATA" compress="false"/>
       <include file="Images/devtools.svg" name="IMAGES_DEVTOOLS_SVG" resource_path="Images/devtools.svg" type="BINDATA" compress="false"/>
       <include file="Images/dock-bottom.svg" name="IMAGES_DOCK_BOTTOM_SVG" resource_path="Images/dock-bottom.svg" type="BINDATA" compress="false"/>
       <include file="Images/dock-left.svg" name="IMAGES_DOCK_LEFT_SVG" resource_path="Images/dock-left.svg" type="BINDATA" compress="false"/>
@@ -1158,6 +1160,7 @@
       <include file="panels/ai_assistance/agents/AiAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_AIAGENT_JS" resource_path="panels/ai_assistance/agents/AiAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/FileAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_FILEAGENT_JS" resource_path="panels/ai_assistance/agents/FileAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/NetworkAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_NETWORKAGENT_JS" resource_path="panels/ai_assistance/agents/NetworkAgent.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/agents/PatchAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_PATCHAGENT_JS" resource_path="panels/ai_assistance/agents/PatchAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/PerformanceAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_PERFORMANCEAGENT_JS" resource_path="panels/ai_assistance/agents/PerformanceAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/StylingAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_STYLINGAGENT_JS" resource_path="panels/ai_assistance/agents/StylingAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/aiAssistancePanel.css.js" name="PANELS_AI_ASSISTANCE_AIASSISTANCEPANEL_CSS_JS" resource_path="panels/ai_assistance/aiAssistancePanel.css.js" type="BINDATA" compress="false"/>
@@ -2198,11 +2201,9 @@
       <include file="ui/components/data_grid/dataGridController.css.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDCONTROLLER_CSS_JS" resource_path="ui/components/data_grid/dataGridController.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/ButtonDialog.js" name="UI_COMPONENTS_DIALOGS_BUTTONDIALOG_JS" resource_path="ui/components/dialogs/ButtonDialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/Dialog.js" name="UI_COMPONENTS_DIALOGS_DIALOG_JS" resource_path="ui/components/dialogs/Dialog.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/dialogs/IconDialog.js" name="UI_COMPONENTS_DIALOGS_ICONDIALOG_JS" resource_path="ui/components/dialogs/IconDialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/ShortcutDialog.js" name="UI_COMPONENTS_DIALOGS_SHORTCUTDIALOG_JS" resource_path="ui/components/dialogs/ShortcutDialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/buttonDialog.css.js" name="UI_COMPONENTS_DIALOGS_BUTTONDIALOG_CSS_JS" resource_path="ui/components/dialogs/buttonDialog.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/dialog.css.js" name="UI_COMPONENTS_DIALOGS_DIALOG_CSS_JS" resource_path="ui/components/dialogs/dialog.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/dialogs/iconDialog.css.js" name="UI_COMPONENTS_DIALOGS_ICONDIALOG_CSS_JS" resource_path="ui/components/dialogs/iconDialog.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/shortcutDialog.css.js" name="UI_COMPONENTS_DIALOGS_SHORTCUTDIALOG_CSS_JS" resource_path="ui/components/dialogs/shortcutDialog.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/DiffView.js" name="UI_COMPONENTS_DIFF_VIEW_DIFFVIEW_JS" resource_path="ui/components/diff_view/DiffView.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/diffView.css.js" name="UI_COMPONENTS_DIFF_VIEW_DIFFVIEW_CSS_JS" resource_path="ui/components/diff_view/diffView.css.js" type="BINDATA" compress="false"/>

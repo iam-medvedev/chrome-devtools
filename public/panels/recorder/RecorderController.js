@@ -1061,7 +1061,6 @@ let RecorderController = class RecorderController extends LitElement {
               .origin=${this.#getExportMenuButton}
               .showDivider=${false}
               .showSelectedItem=${false}
-              .showConnector=${false}
               .open=${this.exportMenuExpanded}
             >
               <devtools-menu-group .name=${i18nString(UIStrings.export)}>

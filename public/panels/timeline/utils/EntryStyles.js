@@ -791,6 +791,14 @@ export function markerDetailsForEvent(event) {
         color = 'var(--color-text-primary)';
         title = "Nav" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.NAV */;
     }
+    if (Trace.Types.Events.isMarkDOMContent(event)) {
+        color = 'var(--color-text-disabled)';
+        title = "DCL" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL */;
+    }
+    if (Trace.Types.Events.isMarkLoad(event)) {
+        color = 'var(--color-text-disabled)';
+        title = "L" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.L */;
+    }
     return { color, title };
 }
 //# sourceMappingURL=EntryStyles.js.map

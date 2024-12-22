@@ -7,13 +7,18 @@ import * as Types from '../types/types.js';
 import { SyntheticEventsManager } from './SyntheticEvents.js';
 import { eventTimingsMicroSeconds } from './Timing.js';
 /**
- * Extracts the raw stack trace of known trace events. Most likely than
+ * Extracts the raw stack trace in known trace events. Most likely than
  * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
  * the stack with zero based numbering. Since some trace events are
  * one based this function can yield unexpected results when used
  * indiscriminately.
+ *
+ * Note: this only returns the stack trace contained in the payload of
+ * an event, which only contains the synchronous portion of the call
+ * stack. If you want to obtain the whole stack trace you might need to
+ * use the @see Trace.Extras.StackTraceForEvent util.
  */
-export function stackTraceForEvent(event) {
+export function stackTraceInEvent(event) {
     if (event.args?.data?.stackTrace) {
         return event.args.data.stackTrace;
     }
@@ -24,10 +29,10 @@ export function stackTraceForEvent(event) {
         return event.args.beginData?.stackTrace || null;
     }
     if (Types.Extensions.isSyntheticExtensionEntry(event)) {
-        return stackTraceForEvent(event.rawSourceEvent);
+        return stackTraceInEvent(event.rawSourceEvent);
     }
     if (Types.Events.isSyntheticUserTiming(event)) {
-        return stackTraceForEvent(event.rawSourceEvent);
+        return stackTraceInEvent(event.rawSourceEvent);
     }
     if (Types.Events.isFunctionCall(event)) {
         const data = event.args.data;
@@ -35,6 +40,19 @@ export function stackTraceForEvent(event) {
             return null;
         }
         const { columnNumber, lineNumber, url, scriptId, functionName } = data;
+        if (lineNumber === undefined || functionName === undefined || columnNumber === undefined ||
+            scriptId === undefined || url === undefined) {
+            return null;
+        }
+        return [{ columnNumber, lineNumber, url, scriptId, functionName }];
+    }
+    if (Types.Events.isProfileCall(event)) {
+        // Of type Protocol.Runtime.CallFrame, handle accordingly.
+        const callFrame = event.callFrame;
+        if (!callFrame) {
+            return null;
+        }
+        const { columnNumber, lineNumber, url, scriptId, functionName } = callFrame;
         if (lineNumber === undefined || functionName === undefined || columnNumber === undefined ||
             scriptId === undefined || url === undefined) {
             return null;
@@ -258,7 +276,7 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
         }
         const targetEvent = endEvent || beginEvent;
         const event = SyntheticEventsManager.registerSyntheticEvent({
-            rawSourceEvent: beginEvent,
+            rawSourceEvent: triplet.beginEvent,
             cat: targetEvent.cat,
             ph: targetEvent.ph,
             pid: targetEvent.pid,
@@ -325,9 +343,14 @@ export function getZeroIndexedLineAndColumnForEvent(event) {
  * that are 1 or 0 indexed.
  * This function knows which events return 1 indexed numbers and normalizes
  * them. The UI expects 0 indexed line numbers, so that is what we return.
+ *
+ * Note: this only returns the stack trace contained in the payload of
+ * an event, which only contains the synchronous portion of the call
+ * stack. If you want to obtain the whole stack trace you might need to
+ * use the @see Trace.Extras.StackTraceForEvent util.
  */
 export function getZeroIndexedStackTraceForEvent(event) {
-    const stack = stackTraceForEvent(event);
+    const stack = stackTraceInEvent(event);
     if (!stack) {
         return null;
     }
@@ -537,5 +560,16 @@ export function eventHasCategory(event, category) {
 }
 export function nodeIdForInvalidationEvent(event) {
     return event.args.data.nodeId ?? null;
+}
+/**
+ * This compares Types.Events.CallFrame with Protocol.Runtime.CallFrame and checks for equality.
+ */
+export function isMatchingCallFrame(eventFrame, nodeFrame) {
+    return eventFrame.columnNumber === nodeFrame.columnNumber && eventFrame.lineNumber === nodeFrame.lineNumber &&
+        String(eventFrame.scriptId) === nodeFrame.scriptId && eventFrame.url === nodeFrame.url &&
+        eventFrame.functionName === nodeFrame.functionName;
+}
+export function eventContainsTimestamp(event, ts) {
+    return event.ts <= ts && event.ts + (event.dur || 0) >= ts;
 }
 //# sourceMappingURL=Trace.js.map

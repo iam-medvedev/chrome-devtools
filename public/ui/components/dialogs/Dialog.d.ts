@@ -8,8 +8,6 @@ export declare const MODAL = "MODAL";
 export type DialogOrigin = DialogAnchor | null | (() => DialogAnchor) | typeof MODAL;
 export declare class Dialog extends HTMLElement {
     #private;
-    get showConnector(): boolean;
-    set showConnector(showConnector: boolean);
     get origin(): DialogOrigin;
     set origin(origin: DialogOrigin);
     get position(): DialogVerticalPosition;

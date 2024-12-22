@@ -41,7 +41,9 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;
     static describeElement(element: SDK.DOMModel.DOMNode): Promise<string>;
-    handleAction(action: string): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
+    handleAction(action: string, options?: {
+        signal?: AbortSignal;
+    }): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     handleContextDetails(selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): Promise<string>;
     formatParsedAnswer({ answer }: ParsedAnswer): string;
