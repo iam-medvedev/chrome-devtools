@@ -57,7 +57,7 @@ export class QueryContainer extends HTMLElement {
         const nodeTitle = this.#queryName || this.#container.nodeNameNicelyCased;
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
+        // eslint-disable-next-line rulesdir/no-a-tags-in-lit-html
         render(html `
       →
       <a href="#"

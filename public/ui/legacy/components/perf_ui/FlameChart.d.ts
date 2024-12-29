@@ -441,7 +441,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     updateGroupTree(groups: Group[], root: GroupTreeNode): void;
     private updateLevelPositions;
     private isGroupCollapsible;
-    groupIsLastVisibleTopLevel(group?: Group): boolean;
+    groupIsLastVisibleTopLevel(groupIndex: number): boolean;
     setSelectedEntry(entryIndex: number): void;
     private entryHasDecoration;
     getCustomDrawnPositionForEntryIndex(entryIndex: number): PositionOverride | null;

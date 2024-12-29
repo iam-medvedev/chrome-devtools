@@ -77,7 +77,7 @@ describe('FrameManager', () => {
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, frameId);
         const frameIds = dispatchedEvents.map(event => event.data.frame.id);
-        assert.deepStrictEqual(frameIds, [frameId]);
+        assert.deepEqual(frameIds, [frameId]);
         const frameFromId = frameManager.getFrame(frameId);
         assert.strictEqual(frameFromId?.id, frameId);
     });

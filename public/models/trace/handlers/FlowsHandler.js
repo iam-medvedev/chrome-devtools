@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 // A flow is a logic connection between trace events. We display this
 // connection as arrows between trace events belonging to the same flow.
@@ -19,7 +20,17 @@ import * as Types from '../types/types.js';
 // in the flows where their corresponding phase events were placed (if
 // there are any corresponding flow phase events at all).
 const flowDataByGroupToken = new Map();
-const flowPhaseBindingTokenToFlowId = new Map();
+// Given a trace event's flow binding tuple (timestamp, process id,
+// thread id and category) we determine if there is any flow data bound
+// to it by using this map's content. It's built when processing flow
+// events in a trace.
+// An alternative to having a map of four levels is having single map
+// from a string token built from concatenating the binding data to the
+// corresponding flow data. However, this token would be calculated for
+// every event in a trace, resulting in a lot of memory overhead and
+// major GC triggering. So we are trading off readability for
+// performance.
+const boundFlowData = new Map();
 const flowsById = new Map();
 const flowEvents = [];
 const nonFlowEvents = [];
@@ -30,7 +41,7 @@ export function reset() {
     flowEvents.length = 0;
     nonFlowEvents.length = 0;
     flowDataByGroupToken.clear();
-    flowPhaseBindingTokenToFlowId.clear();
+    boundFlowData.clear();
     flowsById.clear();
 }
 export function handleEvent(event) {
@@ -41,22 +52,20 @@ export function handleEvent(event) {
     nonFlowEvents.push(event);
 }
 function processNonFlowEvent(event) {
-    const flowPhaseBindingToken = flowPhaseBindingTokenForEvent(event);
-    const flowIds = flowPhaseBindingTokenToFlowId.get(flowPhaseBindingToken);
-    if (!flowIds) {
+    const flowDataForEvent = boundFlowData.get(event.ts)?.get(event.pid)?.get(event.tid)?.get(event.cat);
+    if (!flowDataForEvent) {
         return;
     }
-    for (const flowId of flowIds) {
-        const flow = flowsById.get(flowId);
-        if (!flow) {
-            continue;
-        }
-        const timeIndex = flow.times.indexOf(event.ts);
-        if (timeIndex < 0) {
-            continue;
-        }
-        flow.events[timeIndex] = event;
+    const { flows, bindingParsed } = flowDataForEvent;
+    if (bindingParsed) {
+        // We only consider the first event for a given flow binding tuple.
+        return;
     }
+    for (const flowId of flows) {
+        const flow = Platform.MapUtilities.getWithDefault(flowsById, flowId, () => new Map());
+        flow.set(event.ts, event);
+    }
+    flowDataForEvent.bindingParsed = true;
 }
 /**
  * Creates unique flows by tracking flow phase events. A new created
@@ -68,32 +77,29 @@ function processFlowEvent(flowPhaseEvent) {
     const flowGroup = flowGroupTokenForFlowPhaseEvent(flowPhaseEvent);
     switch (flowPhaseEvent.ph) {
         case ("s" /* Types.Events.Phase.FLOW_START */): {
-            const flowMetadata = { flowId: flowPhaseEvent.id, times: [flowPhaseEvent.ts] };
-            flowDataByGroupToken.set(flowGroup, flowMetadata);
-            addFlowIdToFlowPhaseBinding(flowPhaseBindingTokenForEvent(flowPhaseEvent), flowMetadata.flowId);
+            const flowMetadata = { flowId: flowPhaseEvent.id, times: new Map([[flowPhaseEvent.ts, undefined]]) };
+            flowDataByGroupToken.set(flowGroup, flowPhaseEvent.id);
+            addFlowIdToEventBinding(flowPhaseEvent, flowMetadata.flowId);
             return;
         }
         case ("t" /* Types.Events.Phase.FLOW_STEP */): {
-            const flow = flowDataByGroupToken.get(flowGroup);
-            if (!flow || flow.times.length < 0) {
+            const flowId = flowDataByGroupToken.get(flowGroup);
+            if (flowId === undefined) {
                 // Found non-start flow event with no corresponding start flow,
-                // start event. Quietly ignore problematic event.
+                // start event. Quietly ignore the problematic event.
                 return;
             }
-            addFlowIdToFlowPhaseBinding(flowPhaseBindingTokenForEvent(flowPhaseEvent), flow.flowId);
-            flow.times.push(flowPhaseEvent.ts);
+            addFlowIdToEventBinding(flowPhaseEvent, flowId);
             return;
         }
         case ("f" /* Types.Events.Phase.FLOW_END */): {
-            const flow = flowDataByGroupToken.get(flowGroup);
-            if (!flow || flow.times.length < 0) {
+            const flowId = flowDataByGroupToken.get(flowGroup);
+            if (flowId === undefined) {
                 // Found non-start flow event with no corresponding start flow,
-                // start event. Quietly ignore problematic event.
+                // start event. Quietly ignore the problematic event.
                 return;
             }
-            addFlowIdToFlowPhaseBinding(flowPhaseBindingTokenForEvent(flowPhaseEvent), flow.flowId);
-            flow.times.push(flowPhaseEvent.ts);
-            flowsById.set(flow.flowId, { times: flow.times, events: [] });
+            addFlowIdToEventBinding(flowPhaseEvent, flowId);
             // We don't need this data anymore as the flow has been finished,
             // so we can drop it.
             flowDataByGroupToken.delete(flowGroup);
@@ -102,16 +108,15 @@ function processFlowEvent(flowPhaseEvent) {
 }
 /**
  * A single trace event can belong to multiple flows. This method
- * tracks which flows (flowId) an event belongs to (given
- * its flow phase binding token).
+ * tracks which flows (flowId) an event belongs to given its flow
+ * binding tuple (made of its ts, pid, tid and cat).
  */
-function addFlowIdToFlowPhaseBinding(flowPhaseBinding, flowId) {
-    let flowIds = flowPhaseBindingTokenToFlowId.get(flowPhaseBinding);
-    if (!flowIds) {
-        flowIds = new Set();
-    }
-    flowIds.add(flowId);
-    flowPhaseBindingTokenToFlowId.set(flowPhaseBinding, flowIds);
+function addFlowIdToEventBinding(event, flowId) {
+    const flowsByPid = Platform.MapUtilities.getWithDefault(boundFlowData, event.ts, () => new Map());
+    const flowsByTid = Platform.MapUtilities.getWithDefault(flowsByPid, event.pid, () => new Map());
+    const flowsByCat = Platform.MapUtilities.getWithDefault(flowsByTid, event.tid, () => new Map());
+    const flowData = Platform.MapUtilities.getWithDefault(flowsByCat, event.cat, () => ({ flows: new Set(), bindingParsed: false }));
+    flowData.flows.add(flowId);
 }
 /**
  * Returns a token to group flow phase events (start, step and end)
@@ -127,27 +132,14 @@ function addFlowIdToFlowPhaseBinding(flowPhaseBinding, flowId) {
 function flowGroupTokenForFlowPhaseEvent(event) {
     return `${event.cat}${ID_COMPONENT_SEPARATOR}${event.name}${ID_COMPONENT_SEPARATOR}${event.id}`;
 }
-/**
- * A flow phase binding is a token that allows us to associate a flow
- * phase event to its corresponding event. This association indicates
- * what role a trace event plays in a flow.
- * We can assign a trace event with a flow phase when its category,
- * thread id, process id and timestamp matches those of a flow phase
- * event.
- */
-function flowPhaseBindingTokenForEvent(event) {
-    // This function is called many times (one per event) and creating a
-    // string every time can trigger GC. If this becomes a problem, a
-    // possible optimization is to use a multi-key map with the
-    // binding token components, a trade off between memory performance
-    // and readability.
-    return `${event.cat}${ID_COMPONENT_SEPARATOR}${event.tid}${ID_COMPONENT_SEPARATOR}${event.pid}${ID_COMPONENT_SEPARATOR}${event.ts}`;
-}
 export async function finalize() {
     // Order is important: flow events need to be handled first.
     flowEvents.forEach(processFlowEvent);
     nonFlowEvents.forEach(processNonFlowEvent);
-    flows = [...flowsById.values()].map(f => f.events).filter(flow => flow.length > 1);
+    flows = [...flowsById.values()]
+        .map(flowMapping => [...flowMapping.values()])
+        .map(flow => flow.filter(event => event !== undefined))
+        .filter(flow => flow.length > 1);
 }
 export function data() {
     return {

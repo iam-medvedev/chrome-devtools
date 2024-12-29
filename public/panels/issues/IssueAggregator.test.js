@@ -8,6 +8,15 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
 import { StubIssue } from '../../testing/StubIssue.js';
 import * as Issues from './issues.js';
+function requestIds(...issues) {
+    const requestIds = new Set();
+    for (const issue of issues) {
+        for (const { requestId } of issue.requests()) {
+            requestIds.add(requestId);
+        }
+    }
+    return requestIds;
+}
 describeWithEnvironment('AggregatedIssue', () => {
     const aggregationKey = 'key';
     it('deduplicates network requests across issues', () => {
@@ -16,8 +25,7 @@ describeWithEnvironment('AggregatedIssue', () => {
         const aggregatedIssue = new Issues.IssueAggregator.AggregatedIssue('code', aggregationKey);
         aggregatedIssue.addInstance(issue1);
         aggregatedIssue.addInstance(issue2);
-        const actualRequestIds = [...aggregatedIssue.requests()].map(r => r.requestId).sort();
-        assert.deepStrictEqual(actualRequestIds, ['id1', 'id2']);
+        assert.deepEqual(requestIds(aggregatedIssue), new Set(['id1', 'id2']));
     });
     it('deduplicates affected cookies across issues', () => {
         const issue1 = StubIssue.createFromCookieNames(['cookie1']);
@@ -28,7 +36,7 @@ describeWithEnvironment('AggregatedIssue', () => {
         aggregatedIssue.addInstance(issue2);
         aggregatedIssue.addInstance(issue3);
         const actualCookieNames = [...aggregatedIssue.cookies()].map(c => c.name).sort();
-        assert.deepStrictEqual(actualCookieNames, ['cookie1', 'cookie2']);
+        assert.deepEqual(actualCookieNames, ['cookie1', 'cookie2']);
     });
 });
 function createModel() {
@@ -46,10 +54,7 @@ describeWithMockConnection('IssueAggregator', () => {
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
-        const issues = Array.from(aggregator.aggregatedIssues());
-        assert.strictEqual(issues.length, 1);
-        const requestIds = [...issues[0].requests()].map(r => r.requestId).sort();
-        assert.deepStrictEqual(requestIds, ['id1', 'id2']);
+        assert.deepEqual(requestIds(...aggregator.aggregatedIssues()), new Set(['id1', 'id2']));
     });
     it('deduplicates issues with the same code added before its creation', () => {
         const issue1 = StubIssue.createFromRequestIds(['id1']);
@@ -61,10 +66,7 @@ describeWithMockConnection('IssueAggregator', () => {
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
-        const issues = Array.from(aggregator.aggregatedIssues());
-        assert.strictEqual(issues.length, 1);
-        const requestIds = [...issues[0].requests()].map(r => r.requestId).sort();
-        assert.deepStrictEqual(requestIds, ['id1', 'id2', 'id3']);
+        assert.deepEqual(requestIds(...aggregator.aggregatedIssues()), new Set(['id1', 'id2', 'id3']));
     });
     it('keeps issues with different codes separate', () => {
         const issue1 = new StubIssue('codeA', ['id1'], []);
@@ -79,7 +81,7 @@ describeWithMockConnection('IssueAggregator', () => {
         const issues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(issues.length, 3);
         const issueCodes = issues.map(r => r.aggregationKey().toString()).sort((a, b) => a.localeCompare(b));
-        assert.deepStrictEqual(issueCodes, ['codeA', 'codeB', 'codeC']);
+        assert.deepEqual(issueCodes, ['codeA', 'codeB', 'codeC']);
     });
     describe('aggregates issue kind', () => {
         it('for a single issue', () => {
@@ -141,7 +143,7 @@ describeWithMockConnection('IssueAggregator', () => {
         const issues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(issues.length, 1);
         const resolutions = [...issues[0].getHeavyAdIssues()].map(r => r.details().resolution).sort();
-        assert.deepStrictEqual(resolutions, [
+        assert.deepEqual(resolutions, [
             "HeavyAdBlocked" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked */,
             "HeavyAdWarning" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning */,
         ]);
@@ -171,7 +173,7 @@ describeWithMockConnection('IssueAggregator', () => {
             const issues = Array.from(aggregator.aggregatedIssues());
             assert.strictEqual(issues.length, 1);
             const locations = [...issues[0].sources()].sort((x, y) => JSON.stringify(x).localeCompare(JSON.stringify(y)));
-            assert.deepStrictEqual(locations, [
+            assert.deepEqual(locations, [
                 { url: 'bar', lineNumber: 1, columnNumber: 1, scriptId: scriptId1 },
                 { url: 'bar', lineNumber: 1, columnNumber: 1 },
                 { url: 'baz', lineNumber: 1, columnNumber: 1 },

@@ -281,7 +281,7 @@ describe('DebuggerModel', () => {
                 return;
             }
             assert.lengthOf(consoleMessages, 1);
-            assert.deepStrictEqual(consoleMessages[0].text, expectedWarning);
+            assert.deepEqual(consoleMessages[0].text, expectedWarning);
         }
         it('prioritizes external DWARF over all types', () => {
             const debugSymbols = [embeddedDwarfSymbols, externalDwarfSymbols, sourceMapSymbols];

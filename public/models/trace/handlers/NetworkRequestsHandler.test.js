@@ -173,7 +173,7 @@ describe('NetworkRequestsHandler', function () {
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             assert.strictEqual(byTime.length, 2, 'Incorrect number of requests');
             assert.strictEqual(byTime[0].args.data.redirects.length, 0, 'Incorrect number of redirects (request 0)');
-            assert.deepStrictEqual(byTime[1].args.data.redirects, [
+            assert.deepEqual(byTime[1].args.data.redirects, [
                 {
                     url: 'http://localhost:3000/foo',
                     priority: 'VeryHigh',
@@ -201,7 +201,7 @@ describe('NetworkRequestsHandler', function () {
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             assert.strictEqual(byTime.length, 2, 'Incorrect number of requests');
             assert.strictEqual(byTime[0].args.data.redirects.length, 0, 'Incorrect number of redirects (request 0)');
-            assert.deepStrictEqual(byTime[1].args.data.redirects, [
+            assert.deepEqual(byTime[1].args.data.redirects, [
                 {
                     url: 'http://localhost:3000/foo.js',
                     priority: 'Low',

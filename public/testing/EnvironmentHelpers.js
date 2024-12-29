@@ -320,7 +320,7 @@ describeWithLocale.only = function (title, fn) {
     });
 };
 describeWithLocale.skip = function (title, fn) {
-    // eslint-disable-next-line rulesdir/check_test_definitions
+    // eslint-disable-next-line rulesdir/check-test-definitions
     return describe.skip(title, function () {
         fn.call(this);
     });

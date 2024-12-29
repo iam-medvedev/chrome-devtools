@@ -39,30 +39,30 @@ describeWithEnvironment('StylingAgent', () => {
         }
         it('parses a thought', async () => {
             const payload = 'some response';
-            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`   THOUGHT: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`   THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`Something\n   THOUGHT: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`Something\n   THOUGHT: ${payload}`), {
                 title: undefined,
                 thought: payload,
             });
         });
         it('parses a answer', async () => {
             const payload = 'some response';
-            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`   ANSWER: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`Something\n   ANSWER: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`Something\n   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
@@ -71,27 +71,27 @@ describeWithEnvironment('StylingAgent', () => {
             const payload = `a
 b
 c`;
-            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`   ANSWER: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`Something\n   ANSWER: ${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`Something\n   ANSWER: ${payload}`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
+            assert.deepEqual(getParsedTextResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
+            assert.deepEqual(getParsedTextResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
                 answer: payload,
                 suggestions: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
+            assert.deepEqual(getParsedTextResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
                 action: 'action',
                 title: undefined,
                 thought: undefined,
@@ -101,22 +101,22 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}\nSTOP`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n${payload}\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n${payload}`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\n${payload}\n\nSTOP`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n\n${payload}\n\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
             });
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\n${payload}\n\nANSWER: answer`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n\n${payload}\n\nANSWER: answer`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -127,7 +127,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n${payload}STOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -136,7 +136,7 @@ c`;
         it('parses a thought and title', async () => {
             const payload = 'some response';
             const title = 'this is the title';
-            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${payload}\nTITLE: ${title}`), {
+            assert.deepEqual(getParsedTextResponse(`THOUGHT: ${payload}\nTITLE: ${title}`), {
                 thought: payload,
                 title,
             });
@@ -145,7 +145,7 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\`\`\`\n${payload}\n\`\`\`\nSTOP`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n\`\`\`\n${payload}\n\`\`\`\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -155,7 +155,7 @@ c`;
             const payload = `const data = {
   someKey: "value",
 }`;
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n\`\`\`\`\`\njs\n${payload}\n\`\`\`\`\`\nSTOP`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n\`\`\`\`\`\njs\n${payload}\n\`\`\`\`\`\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
@@ -166,7 +166,7 @@ c`;
   someKey: "value",
 }`;
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT:${thoughtPayload}\nACTION\n${actionPayload}\nSTOP`), {
+            assert.deepEqual(getParsedTextResponse(`THOUGHT:${thoughtPayload}\nACTION\n${actionPayload}\nSTOP`), {
                 action: actionPayload,
                 title: undefined,
                 thought: thoughtPayload,
@@ -175,7 +175,7 @@ c`;
         it('parses a thought and an answer', async () => {
             const answerPayload = 'answer';
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT:${thoughtPayload}\nANSWER:${answerPayload}`), {
+            assert.deepEqual(getParsedTextResponse(`THOUGHT:${thoughtPayload}\nANSWER:${answerPayload}`), {
                 answer: answerPayload,
                 suggestions: undefined,
             });
@@ -184,7 +184,7 @@ c`;
             const answerPayload = 'answer';
             const suggestions = ['suggestion'];
             const suggestionsText = JSON.stringify(suggestions);
-            assert.deepStrictEqual(getParsedTextResponse(`ANSWER:${answerPayload}\nSUGGESTIONS: ${suggestionsText}`), {
+            assert.deepEqual(getParsedTextResponse(`ANSWER:${answerPayload}\nSUGGESTIONS: ${suggestionsText}`), {
                 answer: answerPayload,
                 suggestions,
             });
@@ -196,7 +196,7 @@ c`;
   someKey: "value",
 }`;
             const title = 'title';
-            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${thoughtPayload}\nTITLE: ${title}\nACTION\n${actionPayload}\nSTOP\nANSWER:${answerPayload}`), {
+            assert.deepEqual(getParsedTextResponse(`THOUGHT: ${thoughtPayload}\nTITLE: ${title}\nACTION\n${actionPayload}\nSTOP\nANSWER:${answerPayload}`), {
                 thought: thoughtPayload,
                 action: actionPayload,
                 title,
@@ -209,7 +209,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nANSWER:${answerPayload}\nSUGGESTIONS: ${JSON.stringify(suggestions)}`), {
                 action: payload,
                 thought: undefined,
                 title: undefined,
@@ -220,7 +220,7 @@ c`;
         const data = {
           styles
         };`;
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nOBSERVATION:{styles: {}}`), {
                 action: payload,
                 thought: undefined,
                 title: undefined,
@@ -232,27 +232,27 @@ c`;
           styles
         };`;
             const thoughtPayload = 'thought';
-            assert.deepStrictEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
+            assert.deepEqual(getParsedTextResponse(`ACTION\n${payload}STOP\nTHOUGHT:${thoughtPayload}`), {
                 action: payload,
                 thought: thoughtPayload,
                 title: undefined,
             });
         });
         it('parses a response as an answer', async () => {
-            assert.deepStrictEqual(getParsedTextResponse('This is also an answer'), {
+            assert.deepEqual(getParsedTextResponse('This is also an answer'), {
                 answer: 'This is also an answer',
                 suggestions: undefined,
             });
         });
         it('parses a response with no instruction tags as an answer and correctly parses suggestions', async () => {
-            assert.deepStrictEqual(getParsedTextResponse('This is also an answer\nSUGGESTIONS: [\"suggestion\"]'), {
+            assert.deepEqual(getParsedTextResponse('This is also an answer\nSUGGESTIONS: [\"suggestion\"]'), {
                 answer: 'This is also an answer',
                 suggestions: ['suggestion'],
             });
         });
         it('parses multi line thoughts', () => {
             const thoughtText = 'first line\nsecond line';
-            assert.deepStrictEqual(getParsedTextResponse(`THOUGHT: ${thoughtText}`), {
+            assert.deepEqual(getParsedTextResponse(`THOUGHT: ${thoughtText}`), {
                 thought: thoughtText,
                 title: undefined,
             });
@@ -373,7 +373,7 @@ c`;
                     text: 'answer',
                 },
             ];
-            assert.deepStrictEqual(agent.buildRequest({
+            assert.deepEqual(agent.buildRequest({
                 text: 'test input',
             }), {
                 current_message: { role: Host.AidaClient.Role.USER, parts: [{ text: 'test input' }] },
@@ -612,7 +612,7 @@ c`;
                 execJs,
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
@@ -639,7 +639,7 @@ c`;
                 },
             ]);
             sinon.assert.notCalled(execJs);
-            assert.deepStrictEqual(agent.chatHistoryForTesting, [
+            assert.deepEqual(agent.chatHistoryForTesting, [
                 {
                     role: 1,
                     parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
@@ -686,9 +686,9 @@ STOP`,
             assert.isUndefined(requests[0].historical_contexts, 'Unexpected historical contexts in the initial request');
             assert.exists(requests[0].current_message);
             assert.lengthOf(requests[0].current_message.parts, 1);
-            assert.deepStrictEqual(requests[0].current_message.parts[0], { text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }, 'Unexpected input text in the initial request');
+            assert.deepEqual(requests[0].current_message.parts[0], { text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }, 'Unexpected input text in the initial request');
             assert.strictEqual(requests[0].current_message.role, Host.AidaClient.Role.USER);
-            assert.deepStrictEqual(requests[1].historical_contexts, [
+            assert.deepEqual(requests[1].historical_contexts, [
                 {
                     role: 1,
                     parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
@@ -702,7 +702,7 @@ STOP`,
             ], 'Unexpected historical contexts in the follow-up request');
             assert.exists(requests[1].current_message);
             assert.lengthOf(requests[1].current_message.parts, 1);
-            assert.deepStrictEqual(requests[1].current_message.parts[0], { text: 'OBSERVATION: test data' }, 'Unexpected input in the follow-up request');
+            assert.deepEqual(requests[1].current_message.parts[0], { text: 'OBSERVATION: test data' }, 'Unexpected input in the follow-up request');
         });
         it('generates an rpcId for the answer', async () => {
             async function* generateAnswer() {
@@ -719,7 +719,7 @@ STOP`,
                 execJs: sinon.spy(),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
@@ -762,7 +762,7 @@ STOP`,
                 execJs: sinon.spy(),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
@@ -810,7 +810,7 @@ STOP`,
                 execJs: sinon.spy(),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
@@ -884,7 +884,7 @@ STOP
                 execJs,
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
@@ -909,7 +909,7 @@ STOP
                 },
             ]);
             sinon.assert.notCalled(execJs);
-            assert.deepStrictEqual(agent.chatHistoryForTesting, []);
+            assert.deepEqual(agent.chatHistoryForTesting, []);
         });
         it('generates an action response if action and answer both present', async () => {
             let i = 0;
@@ -943,7 +943,7 @@ ANSWER: this is the answer`,
                 execJs,
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
@@ -1011,7 +1011,7 @@ ANSWER: this is the answer`,
                 execJs,
             });
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(agent.chatHistoryForTesting, [
+            assert.deepEqual(agent.chatHistoryForTesting, [
                 {
                     role: 1,
                     parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
@@ -1076,7 +1076,7 @@ ANSWER: this is the answer`,
             const controller = new AbortController();
             controller.abort();
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element), signal: controller.signal }));
-            assert.deepStrictEqual(agent.chatHistoryForTesting, []);
+            assert.deepEqual(agent.chatHistoryForTesting, []);
         });
     });
     describe('history', () => {
@@ -1111,7 +1111,7 @@ ANSWER: this is the answer`,
                 execJs,
             });
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepStrictEqual(historyStub.lastCall.args[0].history, [
+            assert.deepEqual(historyStub.lastCall.args[0].history, [
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',

@@ -206,7 +206,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         assert.strictEqual(durationEl1.className, 'metric-value needs-improvement dim');
         const phases1 = Array.from(interactionsEls[0].querySelectorAll('.phase-table-row:not(.phase-table-header-row)'))
             .map(el => el.innerText);
-        assert.deepStrictEqual(phases1, [
+        assert.deepEqual(phases1, [
             'Input delay\n100',
             'Processing duration\n300',
             'Presentation delay\n100',
@@ -220,7 +220,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         assert.strictEqual(durationEl2.className, 'metric-value good dim');
         const phases2 = Array.from(interactionsEls[1].querySelectorAll('.phase-table-row:not(.phase-table-header-row)'))
             .map(el => el.innerText);
-        assert.deepStrictEqual(phases2, [
+        assert.deepEqual(phases2, [
             'Input delay\n10',
             'Processing duration\n10',
             'Presentation delay\n10',

@@ -75,7 +75,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
                 requestStage: "Response" /* Protocol.Fetch.RequestStage.Response */,
             },
         ];
-        assert.deepStrictEqual(patterns, expected);
+        assert.deepEqual(patterns, expected);
     });
     it('recognizes forbidden network URLs', () => {
         assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('chrome://version'));
@@ -620,7 +620,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         }));
         workspace.dispatchEventToListeners(Workspace.Workspace.Events.ProjectRemoved, project);
         setTimeout(() => {
-            assert.deepStrictEqual(eventURLs, ['file:///path/to/overrides/.headers', 'file:///path/to/overrides/www.example.com/.headers']);
+            assert.deepEqual(eventURLs, ['file:///path/to/overrides/.headers', 'file:///path/to/overrides/www.example.com/.headers']);
             assert.isFalse(networkPersistenceManager.hasMatchingNetworkUISourceCodeForHeaderOverridesFile({
                 url: () => 'file:///path/to/overrides/www.example.com/.headers',
                 project: () => networkPersistenceManager.project(),

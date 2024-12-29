@@ -64,7 +64,7 @@ describe('ErrorStackParser', () => {
         const frames = parseErrorStack(`Error: standard error
         at foo (file:///testing.js:10:3)`);
         assert.exists(frames);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url: fileTestingUrl,
             prefix: '        at foo (',
             suffix: ')',
@@ -77,7 +77,7 @@ describe('ErrorStackParser', () => {
         const frames = parseErrorStack(`Error: standard error
         at foo (file:///testing.js)`);
         assert.exists(frames);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url: fileTestingUrl,
             prefix: '        at foo (',
             suffix: ')',
@@ -90,7 +90,7 @@ describe('ErrorStackParser', () => {
         const frames = parseErrorStack(`Error: standard error
         at file:///testing.js:42:3`);
         assert.exists(frames);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url: fileTestingUrl,
             prefix: '        at ',
             suffix: '',
@@ -103,7 +103,7 @@ describe('ErrorStackParser', () => {
         const frames = parseErrorStack(`Error: standard error
         at async file:///testing.js:42:3`);
         assert.exists(frames);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url: fileTestingUrl,
             prefix: '        at async ',
             suffix: '',
@@ -119,7 +119,7 @@ describe('ErrorStackParser', () => {
         at ${url}:1:1`);
         assert.exists(frames);
         assert.lengthOf(frames, 3);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url,
             prefix: '        at load (',
             suffix: ')',
@@ -127,7 +127,7 @@ describe('ErrorStackParser', () => {
             columnNumber: 4, // 0-based.
             enclosedInBraces: true,
         });
-        assert.deepStrictEqual(frames[2].link, {
+        assert.deepEqual(frames[2].link, {
             url,
             prefix: '        at ',
             suffix: '',
@@ -142,7 +142,7 @@ describe('ErrorStackParser', () => {
     at eval (eval at <anonymous> (${url}:42:1), <anonymous>:1:1)`);
         assert.exists(frames);
         assert.lengthOf(frames, 2);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url,
             prefix: '    at eval (eval at <anonymous> (',
             suffix: '), <anonymous>:1:1)',
@@ -163,7 +163,7 @@ describe('ErrorStackParser', () => {
     at eval (eval at testFunction (inspected-page.html:29:11), <anonymous>:1:10)`);
         assert.exists(frames);
         assert.lengthOf(frames, 3);
-        assert.deepStrictEqual(frames[2].link, {
+        assert.deepEqual(frames[2].link, {
             url: 'http://www.example.org/inspected-page.html',
             prefix: '    at eval (eval at testFunction (',
             suffix: '), <anonymous>:1:10)',
@@ -179,7 +179,7 @@ describe('ErrorStackParser', () => {
         at /(abc)/foo.js:10:20`);
         assert.exists(frames);
         assert.lengthOf(frames, 4);
-        assert.deepStrictEqual(frames[1].link, {
+        assert.deepEqual(frames[1].link, {
             url: 'http://www.example.org/(abc)/foo.js',
             prefix: '        at foo (',
             suffix: ')',
@@ -187,7 +187,7 @@ describe('ErrorStackParser', () => {
             columnNumber: 2, // 0-based.
             enclosedInBraces: true,
         });
-        assert.deepStrictEqual(frames[2].link, {
+        assert.deepEqual(frames[2].link, {
             url: 'http://www.example.org/(abc)/foo.js',
             prefix: '        at async bar (',
             suffix: ')',
@@ -195,7 +195,7 @@ describe('ErrorStackParser', () => {
             columnNumber: 1, // 0-based.
             enclosedInBraces: true,
         });
-        assert.deepStrictEqual(frames[3].link, {
+        assert.deepEqual(frames[3].link, {
             url: 'http://www.example.org/(abc)/foo.js',
             prefix: '        at ',
             suffix: '',

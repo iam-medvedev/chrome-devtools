@@ -19,7 +19,7 @@ describeWithEnvironment('RendererHandler', function () {
         const { Renderer: renderers } = await handleEventsFromTraceFile(this, 'multiple-navigations-with-iframes.json.gz');
         assert.strictEqual(renderers.processes.size, 4);
         const pids = [...renderers.processes].map(([pid]) => pid);
-        assert.deepStrictEqual(pids, [
+        assert.deepEqual(pids, [
             MAIN_FRAME_PID, // Main frame process: localhost:5000
             SUB_FRAME_PID, // Sub frame process (trace start): example.com
             SUB_FRAME_PID_2, // Sub frame process (after first navigation): example.com
@@ -37,7 +37,7 @@ describeWithEnvironment('RendererHandler', function () {
         // Assert on whether it has correctly detected a given process to be on the
         // main frame or in a subframe.
         const isOnMainFrame = [...renderers.processes].map(([, process]) => process.isOnMainFrame);
-        assert.deepStrictEqual(isOnMainFrame, [
+        assert.deepEqual(isOnMainFrame, [
             true, // Main frame process: localhost:5000
             false, // Sub frame process (trace start): example.com
             false, // Sub frame process (after first navigation): example.com

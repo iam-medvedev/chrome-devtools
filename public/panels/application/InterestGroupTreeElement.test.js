@@ -26,7 +26,7 @@ describeWithMockConnection('InterestGroupTreeElement', () => {
             .withArgs({ ownerOrigin: OWNER, name: NAME })
             .returns(Promise.resolve({ details: DETAILS }));
         const details = await view.getInterestGroupDetails(OWNER, NAME);
-        assert.deepStrictEqual(details, DETAILS);
+        assert.deepEqual(details, DETAILS);
     });
 });
 //# sourceMappingURL=InterestGroupTreeElement.test.js.map

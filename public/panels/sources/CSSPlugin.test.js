@@ -63,7 +63,7 @@ describeWithMockConnection('CSSPlugin', () => {
         const CLASS_NAMES = ['foo', 'bar', 'baz'];
         sinon.stub(SDK.CSSModel.CSSModel.prototype, 'getClassNames').withArgs(STYLESHEET_ID).resolves(CLASS_NAMES);
         const completionResult = await autocompletion({ state: { field: () => { } } });
-        assert.deepStrictEqual(completionResult, {
+        assert.deepEqual(completionResult, {
             from: FROM,
             options: [
                 { type: 'constant', label: CLASS_NAMES[0] },

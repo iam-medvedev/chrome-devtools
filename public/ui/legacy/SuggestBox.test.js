@@ -48,15 +48,15 @@ describeWithLocale('SuggestBox', () => {
     });
     it('selects the first item when no priority is specified', () => {
         suggestBox.updateSuggestions(anchorBox, [{ text: 'First' }, { text: 'Hello' }, { text: 'The best suggestion' }], true, true, 'e');
-        assert.deepStrictEqual(delegate.appliedSuggestions, [{ suggestion: 'First', isIntermediateSuggestion: true }]);
+        assert.deepEqual(delegate.appliedSuggestions, [{ suggestion: 'First', isIntermediateSuggestion: true }]);
     });
     it('selects no item when "canShowForSingleItem" is false', () => {
         suggestBox.updateSuggestions(anchorBox, [{ text: 'First' }, { text: 'Hello', priority: 2 }, { text: 'The best suggestion', priority: 5 }], false, true, 'e');
-        assert.deepStrictEqual(delegate.appliedSuggestions, []);
+        assert.deepEqual(delegate.appliedSuggestions, []);
     });
     it('selects the highest priority item', () => {
         suggestBox.updateSuggestions(anchorBox, [{ text: 'First' }, { text: 'Hello', priority: 2 }, { text: 'The best suggestion', priority: 5 }], true, true, 'e');
-        assert.deepStrictEqual(delegate.appliedSuggestions, [{ suggestion: 'The best suggestion', isIntermediateSuggestion: true }]);
+        assert.deepEqual(delegate.appliedSuggestions, [{ suggestion: 'The best suggestion', isIntermediateSuggestion: true }]);
     });
     it('allows arrow keys for selection', () => {
         suggestBox.updateSuggestions(anchorBox, [{ text: 'First' }, { text: 'Hello', priority: 2 }, { text: 'The best suggestion', priority: 5 }], true, true, 'e');
@@ -65,7 +65,7 @@ describeWithLocale('SuggestBox', () => {
         suggestBox.keyPressed(createKeyEvent('ArrowUp'));
         suggestBox.keyPressed(createKeyEvent('ArrowDown'));
         suggestBox.keyPressed(createKeyEvent('ArrowDown'));
-        assert.deepStrictEqual(delegate.appliedSuggestions, [
+        assert.deepEqual(delegate.appliedSuggestions, [
             { suggestion: 'The best suggestion', isIntermediateSuggestion: true },
             { suggestion: 'Hello', isIntermediateSuggestion: true },
             { suggestion: 'First', isIntermediateSuggestion: true },
@@ -77,7 +77,7 @@ describeWithLocale('SuggestBox', () => {
     it('allows using the "Enter" key to accept a suggestions', () => {
         suggestBox.updateSuggestions(anchorBox, [{ text: 'First' }, { text: 'Hello', priority: 2 }, { text: 'The best suggestion', priority: 5 }], true, true, 'e');
         suggestBox.keyPressed(createKeyEvent('Enter'));
-        assert.deepStrictEqual(delegate.accceptedSuggestions, ['The best suggestion']);
+        assert.deepEqual(delegate.accceptedSuggestions, ['The best suggestion']);
     });
     it('closes the controller element after accepting a suggestion', () => {
         suggestBox.updateSuggestions(anchorBox, [{ text: 'First' }, { text: 'Hello', priority: 2 }, { text: 'The best suggestion', priority: 5 }], true, true, 'e');

@@ -101,7 +101,7 @@ function defaultView(input, output, target) {
         }
         output.chatView = el;
     })}></devtools-ai-chat-view>
-  `, target, { host: input }); // eslint-disable-line rulesdir/lit_html_host_this
+  `, target, { host: input }); // eslint-disable-line rulesdir/lit-html-host-this
     // clang-format on
 }
 function createNodeContext(node) {

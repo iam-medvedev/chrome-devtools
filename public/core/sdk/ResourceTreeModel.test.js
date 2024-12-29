@@ -89,7 +89,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
         assert.isNotNull(resourceTreeModel.mainFrame);
         resourceTreeModel.reloadPage();
         assert.isTrue(reload.calledOnce);
-        assert.deepStrictEqual(reload.args[0], [{ ignoreCache: undefined, loaderId: LOADER_ID, scriptToEvaluateOnLoad: undefined }]);
+        assert.deepEqual(reload.args[0], [{ ignoreCache: undefined, loaderId: LOADER_ID, scriptToEvaluateOnLoad: undefined }]);
     });
     it('identifies not top frame', async () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });

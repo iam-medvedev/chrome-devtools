@@ -40,7 +40,7 @@ describeWithEnvironment('FilmStripView', function () {
             // expected text.
             assert.strictEqual(timeElement.innerText.replace(/\s/, ''), expectedTimeLabelsForFrames[index]);
         });
-        assert.deepStrictEqual(1, 1);
+        assert.deepEqual(1, 1);
         filmStrip.detach();
     });
     describe('FilmStripView Dialog', function () {

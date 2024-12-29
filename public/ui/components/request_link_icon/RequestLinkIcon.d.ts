@@ -8,7 +8,7 @@ export interface RequestLinkIconData {
     linkToPreflight?: boolean;
     request?: SDK.NetworkRequest.NetworkRequest | null;
     affectedRequest?: {
-        requestId: Protocol.Network.RequestId;
+        requestId?: Protocol.Network.RequestId;
         url?: string;
     };
     highlightHeader?: {

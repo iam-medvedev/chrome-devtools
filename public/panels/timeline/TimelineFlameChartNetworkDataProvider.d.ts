@@ -5,7 +5,8 @@ import { type TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     constructor();
-    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
+    reset(): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace): void;
     setEvents(parsedTrace: Trace.Handlers.Types.ParsedTrace): void;
     isEmpty(): boolean;
     maxStackDepth(): number;

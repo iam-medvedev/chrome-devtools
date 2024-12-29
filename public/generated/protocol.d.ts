@@ -686,8 +686,8 @@ export declare namespace Audits {
         /**
          * The unique request id.
          */
-        requestId: Network.RequestId;
-        url?: string;
+        requestId?: Network.RequestId;
+        url: string;
     }
     /**
      * Information about the frame affected by an inspector issue.

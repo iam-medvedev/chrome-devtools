@@ -212,7 +212,7 @@ describe('BaseNode', () => {
                 assert.strictEqual(node.id, traversalPath[0].id);
                 paths.push(traversalPath.map(node => node.id));
             });
-            assert.deepStrictEqual(paths, [
+            assert.deepEqual(paths, [
                 ['A'],
                 ['B', 'A'],
                 ['C', 'A'],

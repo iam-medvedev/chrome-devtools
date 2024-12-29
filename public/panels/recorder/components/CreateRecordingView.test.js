@@ -75,7 +75,7 @@ describeWithEnvironment('CreateRecordingView', () => {
         checkboxes[0].checked = false;
         button.dispatchEvent(new Event('click'));
         const event = await onceClicked;
-        assert.deepStrictEqual(event.selectorTypesToRecord, [
+        assert.deepEqual(event.selectorTypesToRecord, [
             'aria',
             'text',
             'xpath',

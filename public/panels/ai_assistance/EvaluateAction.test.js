@@ -165,13 +165,13 @@ describe('FreestylerEvaluateAction', () => {
             assert.isUndefined(parsedResult[0]);
         });
         it('should not trigger a side-effect for returning data', async () => {
-            assert.deepStrictEqual(await executeForTest('const data = {}', true), '{}');
+            assert.deepEqual(await executeForTest('const data = {}', true), '{}');
         });
         it('should not trigger a side-effect on errors', async () => {
-            assert.deepStrictEqual(await executeForTest('throw new Error("test")', true), 'Error: test');
+            assert.deepEqual(await executeForTest('throw new Error("test")', true), 'Error: test');
         });
         it('should not trigger a side-effect on syntax errors', async () => {
-            assert.deepStrictEqual(await executeForTest('const data = {;', true), 'Error: SyntaxError: Unexpected token \';\'');
+            assert.deepEqual(await executeForTest('const data = {;', true), 'Error: SyntaxError: Unexpected token \';\'');
         });
     });
 });

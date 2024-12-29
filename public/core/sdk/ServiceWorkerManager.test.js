@@ -27,9 +27,9 @@ describe('ServiceWorkerVersion', () => {
         assert.strictEqual(version.status, VERSION_PAYLOAD.status);
         assert.strictEqual(version.scriptLastModified, VERSION_PAYLOAD.scriptLastModified);
         assert.strictEqual(version.scriptResponseTime, VERSION_PAYLOAD.scriptResponseTime);
-        assert.deepStrictEqual(version.controlledClients, VERSION_PAYLOAD.controlledClients);
+        assert.deepEqual(version.controlledClients, VERSION_PAYLOAD.controlledClients);
         assert.strictEqual(version.targetId, VERSION_PAYLOAD.targetId);
-        assert.deepStrictEqual(version.routerRules, expectedRouterRules);
+        assert.deepEqual(version.routerRules, expectedRouterRules);
     });
     it('should update the version with the given payload', () => {
         const version = makeVersion(REGISTRATION_PAYLOAD, VERSION_PAYLOAD);
@@ -49,7 +49,7 @@ describe('ServiceWorkerVersion', () => {
         assert.strictEqual(version.status, 'installing');
         assert.strictEqual(version.scriptLastModified, 1234567891);
         assert.strictEqual(version.scriptResponseTime, 12346);
-        assert.deepStrictEqual(version.controlledClients, ['client3', 'client4']);
+        assert.deepEqual(version.controlledClients, ['client3', 'client4']);
         assert.strictEqual(version.targetId, 'target2');
     });
     it('identifies when the worker is startable', () => {

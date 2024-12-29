@@ -80,7 +80,7 @@ describe('ConnectionPool', () => {
                 assert.strictEqual(pool.acquireActiveConnectionFromRequest(requestA), connectionForA);
                 assert.strictEqual(pool.acquireActiveConnectionFromRequest(requestB), connectionForB);
             }
-            assert.deepStrictEqual(pool.connectionsInUse(), [connectionForA, connectionForB]);
+            assert.deepEqual(pool.connectionsInUse(), [connectionForA, connectionForB]);
         });
         it('should allocate at least 6 connections', () => {
             const pool = new ConnectionPool([request()], simulationOptions({ rtt, throughput }));

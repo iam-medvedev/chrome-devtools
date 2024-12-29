@@ -15,7 +15,7 @@ describe('Metrics: Lantern LCP', () => {
         const result = LargestContentfulPaint.compute(data, {
             fcpResult: FirstContentfulPaint.compute(data),
         });
-        assert.deepStrictEqual({
+        assert.deepEqual({
             timing: Math.round(result.timing),
             optimistic: Math.round(result.optimisticEstimate.timeInMs),
             pessimistic: Math.round(result.pessimisticEstimate.timeInMs),

@@ -31,7 +31,7 @@ describe('Runtime', () => {
         Root.Runtime.experiments.register('example', 'example');
         Root.Runtime.experiments.register('configurable', 'configurable');
         const experiments = Root.Runtime.experiments.allConfigurableExperiments();
-        assert.deepStrictEqual(experiments.map(experiment => experiment.name), ['example', 'configurable']);
+        assert.deepEqual(experiments.map(experiment => experiment.name), ['example', 'configurable']);
     });
 });
 //# sourceMappingURL=Runtime.test.js.map

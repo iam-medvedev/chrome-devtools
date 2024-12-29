@@ -40,7 +40,7 @@ function assertParams(result, expectParams) {
     assert.lengthOf(result.items, expectParams.length);
     for (let i = 0; i < expectParams.length; ++i) {
         assert.strictEqual(result.items[i].name.value, expectParams[i][0]);
-        assert.deepStrictEqual(result.items[i].value, expectParams[i][1], 'Param ' + i + ' value mismatch');
+        assert.deepEqual(result.items[i].value, expectParams[i][1], 'Param ' + i + ' value mismatch');
     }
 }
 function assertItemParams(result, expectParams) {
@@ -65,7 +65,7 @@ function assertListItem(item, expectValue, expectParams) {
         assert.fail('Unexpected inner list when an item expected');
         return;
     }
-    assert.deepStrictEqual(item.value, expectValue, 'List item bare value mismatch, ' + item.value.value + ' vs expected ' + expectValue.value);
+    assert.deepEqual(item.value, expectValue, 'List item bare value mismatch, ' + item.value.value + ' vs expected ' + expectValue.value);
     assertItemParams(item, expectParams);
 }
 function assertInnerListAndGetItems(item, expectParams) {

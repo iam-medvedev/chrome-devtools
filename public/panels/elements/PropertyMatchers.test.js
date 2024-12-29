@@ -122,7 +122,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const { ast, match, text } = matchSingleValue('color', 'color-mix(in srgb var(--interpolation) hue, red var(--percentage), rgb(var(--rgb)))', new Elements.PropertyMatchers.ColorMixMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.space.map(n => ast.text(n)), ['in', 'srgb', 'var(--interpolation)', 'hue']);
+            assert.deepEqual(match.space.map(n => ast.text(n)), ['in', 'srgb', 'var(--interpolation)', 'hue']);
             assert.strictEqual(match.color1.map(n => ast.text(n)).join(), 'red,var(--percentage)');
             assert.strictEqual(match.color2.map(n => ast.text(n)).join(), 'rgb(var(--rgb))');
         }
@@ -151,7 +151,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const { ast, match, text } = matchSingleValue('color', `color-mix(${space}, ${color1}, ${color2})`, new Elements.PropertyMatchers.ColorMixMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.space.map(n => ast.text(n)).join(' '), space, text);
+            assert.deepEqual(match.space.map(n => ast.text(n)).join(' '), space, text);
             assert.strictEqual(match.color1.map(n => ast.text(n)).join(' '), color1, text);
             assert.strictEqual(match.color2.map(n => ast.text(n)).join(' '), color2, text);
         }
@@ -203,37 +203,37 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const matches = SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.LinkableNameMatch);
             return matches.map(m => matchedResult.getMatch(m)?.text);
         }
-        assert.deepStrictEqual(match('animation-name', 'first, second, -moz-third'), ['first', 'second', '-moz-third']);
-        assert.deepStrictEqual(match('animation-name', 'first'), ['first']);
-        assert.deepStrictEqual(match('font-palette', 'first'), ['first']);
+        assert.deepEqual(match('animation-name', 'first, second, -moz-third'), ['first', 'second', '-moz-third']);
+        assert.deepEqual(match('animation-name', 'first'), ['first']);
+        assert.deepEqual(match('font-palette', 'first'), ['first']);
         {
-            assert.deepStrictEqual(match('position-try-fallbacks', 'flip-block'), []);
-            assert.deepStrictEqual(match('position-try-fallbacks', '--one'), ['--one']);
-            assert.deepStrictEqual(match('position-try-fallbacks', '--one, --two'), ['--one', '--two']);
+            assert.deepEqual(match('position-try-fallbacks', 'flip-block'), []);
+            assert.deepEqual(match('position-try-fallbacks', '--one'), ['--one']);
+            assert.deepEqual(match('position-try-fallbacks', '--one, --two'), ['--one', '--two']);
         }
         {
-            assert.deepStrictEqual(match('position-try', 'flip-block'), []);
-            assert.deepStrictEqual(match('position-try', '--one'), ['--one']);
-            assert.deepStrictEqual(match('position-try', '--one, --two'), ['--one', '--two']);
+            assert.deepEqual(match('position-try', 'flip-block'), []);
+            assert.deepEqual(match('position-try', '--one'), ['--one']);
+            assert.deepEqual(match('position-try', '--one, --two'), ['--one', '--two']);
         }
         {
             injectVariableSubstitutions({
                 '--duration-and-easing': '1s linear',
             });
-            assert.deepStrictEqual(match('animation', '1s linear --animation-name'), ['--animation-name']);
-            assert.deepStrictEqual(match('animation', '1s linear linear'), ['linear']);
-            assert.deepStrictEqual(match('animation', '1s linear --first-name, 1s ease-in --second-name'), ['--first-name', '--second-name']);
-            assert.deepStrictEqual(match('animation', '1s linear'), []);
+            assert.deepEqual(match('animation', '1s linear --animation-name'), ['--animation-name']);
+            assert.deepEqual(match('animation', '1s linear linear'), ['linear']);
+            assert.deepEqual(match('animation', '1s linear --first-name, 1s ease-in --second-name'), ['--first-name', '--second-name']);
+            assert.deepEqual(match('animation', '1s linear'), []);
             // Matching to variable names inside `var()` functions are fine as it is handled by variable renderer in usage.
-            assert.deepStrictEqual(match('animation', 'var(--duration-and-easing) linear'), ['--duration-and-easing', 'linear']);
-            assert.deepStrictEqual(match('animation', '1s linear var(--non-existent, --animation-name)'), ['--non-existent', '--animation-name']);
-            assert.deepStrictEqual(match('animation', '1s step-start 0s kf'), ['kf']);
-            assert.deepStrictEqual(match('animation', '1s step-end 0s kf'), ['kf']);
-            assert.deepStrictEqual(match('animation', '1s steps(1, jump-start) 0s kf'), ['kf']);
-            assert.deepStrictEqual(match('animation', '1s steps(1, jump-end) 0s kf'), ['kf']);
-            assert.deepStrictEqual(match('animation', '1s steps(1, jump-none) 0s kf'), ['kf']);
-            assert.deepStrictEqual(match('animation', '1s steps(1, start) 0s kf'), ['kf']);
-            assert.deepStrictEqual(match('animation', '1s steps(1, end) 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', 'var(--duration-and-easing) linear'), ['--duration-and-easing', 'linear']);
+            assert.deepEqual(match('animation', '1s linear var(--non-existent, --animation-name)'), ['--non-existent', '--animation-name']);
+            assert.deepEqual(match('animation', '1s step-start 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', '1s step-end 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', '1s steps(1, jump-start) 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', '1s steps(1, jump-end) 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', '1s steps(1, jump-none) 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', '1s steps(1, start) 0s kf'), ['kf']);
+            assert.deepEqual(match('animation', '1s steps(1, end) 0s kf'), ['kf']);
         }
     });
     it('parses easing functions properly', () => {
@@ -279,7 +279,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyMatchers.FontMatcher()]);
             assert.exists(matchedResult);
             const matches = SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.FontMatch);
-            assert.deepStrictEqual(matches.map(m => matchedResult.getMatch(m)?.text), ['"Gill Sans"', 'sans-serif']);
+            assert.deepEqual(matches.map(m => matchedResult.getMatch(m)?.text), ['"Gill Sans"', 'sans-serif']);
         }
     });
     it('parses grid templates correctly', () => {
@@ -299,37 +299,37 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const { ast, match, text } = matchSingleValue('grid-template-areas', '"a a a" "b b b" "c c c"', new Elements.PropertyMatchers.GridTemplateMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a a"', '"b b b"', '"c c c"']);
+            assert.deepEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a a"', '"b b b"', '"c c c"']);
         }
         {
             const { ast, match, text } = matchSingleValue('grid-template', '"a a a" var(--row) / auto 1fr auto', new Elements.PropertyMatchers.GridTemplateMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a a"', 'var(--row) / auto 1fr auto']);
+            assert.deepEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a a"', 'var(--row) / auto 1fr auto']);
         }
         {
             const { ast, match, text } = matchSingleValue('grid', '[header-top] "a a" var(--row-with-names) [main-top] "b b b" 1fr [main-bottom] / auto 1fr auto;', new Elements.PropertyMatchers.GridTemplateMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[header-top] "a a" var(--row-with-names)', '[main-top] "b b b" 1fr [main-bottom] / auto 1fr auto']);
+            assert.deepEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[header-top] "a a" var(--row-with-names)', '[main-top] "b b b" 1fr [main-bottom] / auto 1fr auto']);
         }
         {
             const { ast, match, text } = matchSingleValue('grid', '[header-top] "a a" "b b b" var(--line-name) "c c" / auto 1fr auto;', new Elements.PropertyMatchers.GridTemplateMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[header-top] "a a"', '"b b b" var(--line-name)', '"c c" / auto 1fr auto']);
+            assert.deepEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[header-top] "a a"', '"b b b" var(--line-name)', '"c c" / auto 1fr auto']);
         }
         {
             const { ast, match, text } = matchSingleValue('grid', '[line1] "a a" [line2] var(--double-row) "b b" / auto 1fr auto;', new Elements.PropertyMatchers.GridTemplateMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[line1] "a a" [line2]', 'var(--double-row)', '"b b" / auto 1fr auto']);
+            assert.deepEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[line1] "a a" [line2]', 'var(--double-row)', '"b b" / auto 1fr auto']);
         }
         {
             const { ast, match, text } = matchSingleValue('grid', '"a a" var(--unresolved) / auto 1fr auto;', new Elements.PropertyMatchers.GridTemplateMatcher());
             assert.exists(ast, text);
             assert.exists(match, text);
-            assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a" var(--unresolved) / auto 1fr auto']);
+            assert.deepEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a" var(--unresolved) / auto 1fr auto']);
         }
     });
     it('parses light-dark correctly', () => {

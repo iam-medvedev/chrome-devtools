@@ -11,7 +11,7 @@ describeWithEnvironment('ImageDelivery', function () {
         // https://gist.github.com/adamraine/397e2bd08665f9e45f6072e446715115
         const { data, insights } = await processTrace(this, 'image-delivery.json.gz');
         const imageRequests = data.NetworkRequests.byTime.filter(r => r.args.data.resourceType === 'Image');
-        assert.deepStrictEqual(imageRequests.map(r => r.args.data.url), [
+        assert.deepEqual(imageRequests.map(r => r.args.data.url), [
             'https://images.ctfassets.net/u275ja1nivmq/6T6z40ay5GFCUtwV7DONgh/0e23606ed1692d9721ab0f39a8d8a99e/yeti_cover.jpg',
             'https://raw.githubusercontent.com/GoogleChrome/lighthouse/refs/heads/main/cli/test/fixtures/dobetterweb/lighthouse-rotating.gif',
             'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d52a2ab-7be3-4931-9e82-8728d1f55620/d51jfzi-b0efc925-7704-44bb-a3b8-8d98545af693.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNTJhMmFiLTdiZTMtNDkzMS05ZTgyLTg3MjhkMWY1NTYyMFwvZDUxamZ6aS1iMGVmYzkyNS03NzA0LTQ0YmItYTNiOC04ZDk4NTQ1YWY2OTMuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.T898HUlAbGFPboxRE43H5JujnDGl0zd_T128PnGLlpg',
@@ -24,7 +24,7 @@ describeWithEnvironment('ImageDelivery', function () {
         ]);
         const insight = getInsightOrError('ImageDelivery', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.totalByteSavings, 2007125);
-        assert.deepStrictEqual(insight.optimizableImages.map(o => ({ url: o.request.args.data.url, optimizations: o.optimizations, byteSavings: o.byteSavings })), [
+        assert.deepEqual(insight.optimizableImages.map(o => ({ url: o.request.args.data.url, optimizations: o.optimizations, byteSavings: o.byteSavings })), [
             {
                 byteSavings: 1057876,
                 optimizations: [
