@@ -917,7 +917,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "freestyler" /* AiAssistance.AgentType.STYLING */,
                 }));
                 UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, null);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
             it('should render no agent state when Elements panel is open but Freestyler is not enabled', () => {
@@ -934,7 +934,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
         });
@@ -976,7 +976,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "drjones-network-request" /* AiAssistance.AgentType.NETWORK */,
                 }));
                 UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, null);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
             it('should render no agent state when Network panel is open but devToolsAiAssistanceNetworkAgent is not enabled', () => {
@@ -993,7 +993,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
         });
@@ -1035,7 +1035,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "drjones-file" /* AiAssistance.AgentType.FILE */,
                 }));
                 UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, null);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
             it('should render no agent state when Sources panel is open but devToolsAiAssistanceFileAgent is not enabled', () => {
@@ -1052,7 +1052,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
         });
@@ -1094,7 +1094,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "drjones-performance" /* AiAssistance.AgentType.PERFORMANCE */,
                 }));
                 UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, null);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
             it('should render no agent state when Performance panel is open but devToolsAiAssistancePerformanceAgent is not enabled', () => {
@@ -1111,7 +1111,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepStrictEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
                 stub.restore();
             });
         });

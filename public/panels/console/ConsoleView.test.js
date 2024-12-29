@@ -173,7 +173,7 @@ describeWithMockConnection('ConsoleView', () => {
         assert.exists(consoleModel);
         const consoleHistorySetting = Common.Settings.Settings.instance().createLocalSetting('console-history', []);
         consoleModel.dispatchEventToListeners(SDK.ConsoleModel.Events.MessageAdded, createConsoleMessage(target, 'await new Promise(() => ())', SDK.ConsoleModel.FrontendMessageType.Command));
-        assert.deepStrictEqual(consoleHistorySetting.get(), ['await new Promise(() => ())']);
+        assert.deepEqual(consoleHistorySetting.get(), ['await new Promise(() => ())']);
     });
     it('keeps updating the issue counter when re-attached after detaching', async () => {
         consoleView.markAsRoot();

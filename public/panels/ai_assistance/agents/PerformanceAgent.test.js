@@ -61,7 +61,7 @@ describeWithEnvironment('PerformanceAgent', () => {
                     text: 'answer',
                 },
             ];
-            assert.deepStrictEqual(agent.buildRequest({
+            assert.deepEqual(agent.buildRequest({
                 text: 'test input',
             }), {
                 current_message: { role: Host.AidaClient.Role.USER, parts: [{ text: 'test input' }] },
@@ -128,7 +128,7 @@ Selected: true
 dur: 3
 self: 3
 `.trim();
-            assert.deepStrictEqual(responses, [
+            assert.deepEqual(responses, [
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'test',
@@ -151,7 +151,7 @@ self: 3
                     rpcId: 123,
                 },
             ]);
-            assert.deepStrictEqual(agent.chatHistoryForTesting, [
+            assert.deepEqual(agent.chatHistoryForTesting, [
                 {
                     role: 1,
                     parts: [{ text: `${aiCallTree.serialize()}\n\n# User request\n\ntest` }],

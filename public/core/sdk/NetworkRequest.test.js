@@ -204,7 +204,7 @@ describeWithMockConnection('NetworkRequest', () => {
                 uiString: 'Setting this cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.',
             },
         ]));
-        assert.deepStrictEqual(await cookieModel.getCookiesForDomain(''), [cookie]);
+        assert.deepEqual(await cookieModel.getCookiesForDomain(''), [cookie]);
         request.addExtraResponseInfo({
             responseHeaders: [{ name: 'Set-Cookie', value: 'name=value; Path=/' }],
             blockedResponseCookies: [],
@@ -261,8 +261,8 @@ describeWithMockConnection('ServerSentEvents', () => {
             eventName: 'barName',
         });
         assert.lengthOf(networkEvents, 2);
-        assert.deepStrictEqual(networkEvents[0], { data: 'foo', eventId: 'fooId', eventName: 'fooName', time: 21 });
-        assert.deepStrictEqual(networkEvents[1], { data: 'bar', eventId: 'barId', eventName: 'barName', time: 42 });
+        assert.deepEqual(networkEvents[0], { data: 'foo', eventId: 'fooId', eventName: 'fooName', time: 21 });
+        assert.deepEqual(networkEvents[1], { data: 'bar', eventId: 'barId', eventName: 'barName', time: 42 });
     });
     it('sends EventSourceMessageAdded events for raw text/event-stream', async () => {
         setMockConnectionResponseHandler('Network.streamResourceContent', () => ({

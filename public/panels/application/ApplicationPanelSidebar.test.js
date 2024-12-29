@@ -115,7 +115,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         ]);
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, resourceTreeModel);
         assert.strictEqual(sidebar.cookieListTreeElement.childCount(), 2);
-        assert.deepStrictEqual(sidebar.cookieListTreeElement.children().map(e => e.title), ['http://www.example.com', 'http://www.example.org']);
+        assert.deepEqual(sidebar.cookieListTreeElement.children().map(e => e.title), ['http://www.example.com', 'http://www.example.org']);
     });
     // Flaking on windows + subsequence test failing
     it.skip('[crbug.com/1472651] shows shared storages and events for origins using shared storage', async () => {
@@ -141,7 +141,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         await addedPromise;
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         assert.strictEqual(sidebar.sharedStorageListTreeElement.childCount(), 3);
-        assert.deepStrictEqual(sidebar.sharedStorageListTreeElement.children().map(e => e.title), [
+        assert.deepEqual(sidebar.sharedStorageListTreeElement.children().map(e => e.title), [
             TEST_ORIGIN_A,
             TEST_ORIGIN_B,
             TEST_ORIGIN_C,
@@ -169,11 +169,11 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
             if (useTreeView) {
                 assert.strictEqual(sidebar.extensionStorageListTreeElement.childCount(), 1);
                 assert.strictEqual(sidebar.extensionStorageListTreeElement.children()[0].title, TEST_EXTENSION_NAME);
-                assert.deepStrictEqual(sidebar.extensionStorageListTreeElement.children()[0].children().map(e => e.title), ['Session', 'Local']);
+                assert.deepEqual(sidebar.extensionStorageListTreeElement.children()[0].children().map(e => e.title), ['Session', 'Local']);
             }
             else {
                 assert.strictEqual(sidebar.extensionStorageListTreeElement.childCount(), 2);
-                assert.deepStrictEqual(sidebar.extensionStorageListTreeElement.children().map(e => e.title), ['Session', 'Local']);
+                assert.deepEqual(sidebar.extensionStorageListTreeElement.children().map(e => e.title), ['Session', 'Local']);
             }
             extensionStorageModel.dispatchEventToListeners("ExtensionStorageRemoved" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_REMOVED */, fakeModelLocal);
             extensionStorageModel.dispatchEventToListeners("ExtensionStorageRemoved" /* Application.ExtensionStorageModel.Events.EXTENSION_STORAGE_REMOVED */, fakeModelSession);

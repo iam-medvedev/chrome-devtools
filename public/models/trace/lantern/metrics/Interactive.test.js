@@ -19,7 +19,7 @@ describe('Metrics: Lantern TTI', () => {
                 fcpResult: FirstContentfulPaint.compute(data),
             }),
         });
-        assert.deepStrictEqual({
+        assert.deepEqual({
             timing: Math.round(result.timing),
             optimistic: Math.round(result.optimisticEstimate.timeInMs),
             pessimistic: Math.round(result.pessimisticEstimate.timeInMs),
@@ -42,7 +42,7 @@ describe('Metrics: Lantern TTI', () => {
                 fcpResult: await FirstContentfulPaint.compute(data),
             }),
         });
-        assert.deepStrictEqual({
+        assert.deepEqual({
             timing: Math.round(result.timing),
             optimistic: Math.round(result.optimisticEstimate.timeInMs),
             pessimistic: Math.round(result.pessimisticEstimate.timeInMs),

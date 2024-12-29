@@ -81,7 +81,7 @@ describe('DebuggerLanguagePlugins', () => {
                 const location = sinon.createStubInstance(SDK.DebuggerModel.Location);
                 const result = await pluginManager.getFunctionInfo(script, location);
                 Platform.assertNotNullOrUndefined(result);
-                assert.deepStrictEqual(result, { missingSymbolFiles: [MISSING_DEBUG_FILES] });
+                assert.deepEqual(result, { missingSymbolFiles: [MISSING_DEBUG_FILES] });
             });
             it('correctly returns frames if available', async () => {
                 const plugin = new Plugin('TestPlugin');
@@ -91,7 +91,7 @@ describe('DebuggerLanguagePlugins', () => {
                 const location = sinon.createStubInstance(SDK.DebuggerModel.Location);
                 const result = await pluginManager.getFunctionInfo(script, location);
                 Platform.assertNotNullOrUndefined(result);
-                assert.deepStrictEqual(result, { frames: [{ name: FUNCTION_NAME }] });
+                assert.deepEqual(result, { frames: [{ name: FUNCTION_NAME }] });
             });
             it('correctly returns frames and missing debug info if both are available', async () => {
                 const plugin = new Plugin('TestPlugin');
@@ -102,7 +102,7 @@ describe('DebuggerLanguagePlugins', () => {
                 const location = sinon.createStubInstance(SDK.DebuggerModel.Location);
                 const result = await pluginManager.getFunctionInfo(script, location);
                 Platform.assertNotNullOrUndefined(result);
-                assert.deepStrictEqual(result, { frames: [{ name: FUNCTION_NAME }], missingSymbolFiles: [MISSING_DEBUG_FILES] });
+                assert.deepEqual(result, { frames: [{ name: FUNCTION_NAME }], missingSymbolFiles: [MISSING_DEBUG_FILES] });
             });
         });
     });

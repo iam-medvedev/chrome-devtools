@@ -41,7 +41,7 @@ describe('ChangeManager', () => {
             },
         });
         assert(cssModel.setStyleSheetText.calledOnce);
-        assert.deepStrictEqual(cssModel.setStyleSheetText.args, [
+        assert.deepEqual(cssModel.setStyleSheetText.args, [
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true],
         ]);
     });
@@ -63,7 +63,7 @@ describe('ChangeManager', () => {
             },
         });
         assert(cssModel.setStyleSheetText.calledTwice);
-        assert.deepStrictEqual(cssModel.setStyleSheetText.args, [
+        assert.deepEqual(cssModel.setStyleSheetText.args, [
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true],
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: green;\n  }\n}', true],
         ]);
@@ -86,7 +86,7 @@ describe('ChangeManager', () => {
             },
         });
         assert(cssModel.setStyleSheetText.calledTwice);
-        assert.deepStrictEqual(cssModel.setStyleSheetText.args, [
+        assert.deepEqual(cssModel.setStyleSheetText.args, [
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true],
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: green;\n  }\n}', true],
         ]);
@@ -102,7 +102,7 @@ describe('ChangeManager', () => {
             },
         });
         assert(cssModel.setStyleSheetText.calledOnce);
-        assert.deepStrictEqual(cssModel.setStyleSheetText.args, [
+        assert.deepEqual(cssModel.setStyleSheetText.args, [
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true],
         ]);
         await changeManager.clear();
@@ -114,7 +114,7 @@ describe('ChangeManager', () => {
             },
         });
         assert(cssModel.setStyleSheetText.calledTwice);
-        assert.deepStrictEqual(cssModel.setStyleSheetText.args, [
+        assert.deepEqual(cssModel.setStyleSheetText.args, [
             [styleSheetId, '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true], // before clear().
             [styleSheetId, '.ai-style-change-1 {\n  body& {\n    color: green;\n  }\n}', true],
         ]);

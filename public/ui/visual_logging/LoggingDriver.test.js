@@ -267,7 +267,7 @@ describe('LoggingDriver', () => {
         select.dispatchEvent(new Event('change'));
         await expectCalled(throttle).then(([logging]) => logging());
         assert.isTrue(recordClick.calledOnce);
-        assert.deepStrictEqual(recordClick.firstCall.firstArg, { veid: getVeId(select.selectedOptions[0]), doubleClick: false });
+        assert.deepEqual(recordClick.firstCall.firstArg, { veid: getVeId(select.selectedOptions[0]), doubleClick: false });
     });
     it('logs keydown', async () => {
         addLoggableElements();
@@ -463,7 +463,7 @@ describe('LoggingDriver', () => {
         element.dispatchEvent(new MouseEvent('mouseover'));
         await expectCalled(throttle).then(([work]) => work());
         assert.isTrue(recordHover.called);
-        assert.deepStrictEqual(recordHover.firstCall.firstArg, { veid: getVeId(element) });
+        assert.deepEqual(recordHover.firstCall.firstArg, { veid: getVeId(element) });
     });
     it('logs drag', async () => {
         const dragLogThrottler = new Common.Throttler.Throttler(1000000000);
@@ -533,14 +533,14 @@ describe('LoggingDriver', () => {
         logging();
         await expectCalled(recordResize);
         assert.isTrue(recordResize.calledOnce);
-        assert.deepStrictEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 0, height: 0 });
+        assert.deepEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 0, height: 0 });
         recordResize.resetHistory();
         element.style.display = 'block';
         assert.isFalse(recordResize.called);
         throttle.callsArg(0);
         await expectCall(recordResize);
         assert.isTrue(recordResize.calledOnce);
-        assert.deepStrictEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 300, height: 300 });
+        assert.deepEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 300, height: 300 });
     });
     it('throttles resize per element', async () => {
         addLoggableElements();
@@ -580,7 +580,7 @@ describe('LoggingDriver', () => {
         await work();
         await expectCalled(recordResize);
         assert.isTrue(recordResize.calledOnce);
-        assert.deepStrictEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 400, height: 300 });
+        assert.deepEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 400, height: 300 });
     });
     it('does not log resize intial impressions due to visibility change', async () => {
         addLoggableElements();
@@ -640,7 +640,7 @@ describe('LoggingDriver', () => {
         assert.isFalse(recordResize.called);
         await logging();
         assert.isTrue(recordResize.calledOnce);
-        assert.deepStrictEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 0, height: 0 });
+        assert.deepEqual(recordResize.firstCall.firstArg, { veid: getVeId(element), width: 0, height: 0 });
     });
     it('logs click, then resize, then impressions', async () => {
         addLoggableElements();

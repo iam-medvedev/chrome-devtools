@@ -11,7 +11,7 @@ describe('RecorderPluginManager', () => {
         const plugin = new Extensions.RecorderExtensionEndpoint.RecorderExtensionEndpoint('test', new MessageChannel().port1, ['export'], 'application/javascript');
         manager.addPlugin(plugin);
         manager.removePlugin(plugin);
-        assert.deepStrictEqual(events, [
+        assert.deepEqual(events, [
             {
                 event: 'pluginAdded',
                 plugin,

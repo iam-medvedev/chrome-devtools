@@ -8,7 +8,7 @@ import * as Cards from './cards.js';
 function assertCardContent(card, slotName, expectedContent) {
     const slot = getElementWithinComponent(card, `slot[name="${slotName}"]`, HTMLSlotElement);
     const textContents = Array.from(slot.assignedElements()).map(child => child.textContent);
-    assert.deepStrictEqual(textContents, expectedContent);
+    assert.deepEqual(textContents, expectedContent);
 }
 describe('Card', () => {
     it('contains slotted elements', async () => {

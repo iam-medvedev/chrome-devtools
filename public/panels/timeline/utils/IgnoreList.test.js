@@ -8,7 +8,7 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { describeWithMockConnection, } from '../../../testing/MockConnection.js';
 import { makeMockSamplesHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
-import { // eslint-disable-line rulesdir/es_modules_import
+import { // eslint-disable-line rulesdir/es-modules-import
 loadCodeLocationResolvingScenario, } from './SourceMapsResolver.test.js';
 import * as Utils from './utils.js';
 describeWithMockConnection('isIgnoreListedEntry', () => {

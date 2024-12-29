@@ -46,7 +46,7 @@ export class BaseInsightComponent extends HTMLElement {
         bounds: null,
         insightSetKey: null,
     };
-    // eslint-disable-next-line rulesdir/no_bound_component_methods
+    // eslint-disable-next-line rulesdir/no-bound-component-methods
     #boundRender = this.#render.bind(this);
     sharedTableState = {
         selectedRowEl: null,

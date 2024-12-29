@@ -50,7 +50,7 @@ describeWithEnvironment('RequestHeaderSection', () => {
                 row.shadowRoot.querySelector('.header-value')?.textContent?.trim() || '',
             ];
         });
-        assert.deepStrictEqual(sorted, [
+        assert.deepEqual(sorted, [
             ['aa:', 'first'],
             ['ab:', 'second'],
             ['abc:', 'third'],

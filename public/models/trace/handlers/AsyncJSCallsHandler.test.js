@@ -71,7 +71,7 @@ describe('AsyncJSCallsHandler', function () {
         });
         it('falls back to a JS invocation as task scheduler if no profile call is found before in the debuggerTaskScheduled ancestors', async function () {
             const jsTaskScheduler = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 0, 30, cat, tid, pid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
+            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 5, 0, cat, pid, tid);
             const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
             // Two JS entry points belonging to the same subtree are
             // descendants to the debuggerTaskRun event. Test the one closest
@@ -89,7 +89,7 @@ describe('AsyncJSCallsHandler', function () {
         it('returns multiple JS entry points when scheduled by the same function', async function () {
             const jsTaskScheduler = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 0, 30, cat, tid, pid);
             // Two asyncTaskScheduled events right under the function call.
-            const asyncTaskScheduled1 = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
+            const asyncTaskScheduled1 = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 5, 0, cat, pid, tid);
             const asyncTaskScheduled2 = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 10, 0, cat, pid, tid);
             const asyncTaskRun1 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
             const asyncTaskRun2 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 200, 100, cat, tid, pid);

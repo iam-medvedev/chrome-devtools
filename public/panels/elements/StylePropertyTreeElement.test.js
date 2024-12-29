@@ -197,7 +197,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.strictEqual(outerColorMix.getText(), 'color-mix(in srgb, color-mix(in oklch, red, green), blue)');
                 assert.strictEqual(innerColorMix.getText(), 'color-mix(in oklch, red, green)');
                 innerColorMix.setFirstColor('blue');
-                assert.deepStrictEqual(handler.args[0][0].data, { text: 'color-mix(in srgb, color-mix(in oklch, blue, green), blue)' });
+                assert.deepEqual(handler.args[0][0].data, { text: 'color-mix(in srgb, color-mix(in oklch, blue, green), blue)' });
                 assert.strictEqual(outerColorMix.getText(), 'color-mix(in srgb, color-mix(in oklch, blue, green), blue)');
                 // setFirstColor does not actually update the rendered color swatches or the textContent, which is why the first
                 // color is still red here.
@@ -207,7 +207,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.isOk(newColor);
                 colorSwatch.setColor(newColor);
                 assert.strictEqual(outerColorMix.getText(), 'color-mix(in srgb, color-mix(in oklch, #ff0000, green), blue)');
-                assert.deepStrictEqual(handler.args[1][0].data, { text: 'color-mix(in srgb, color-mix(in oklch, #ff0000, green), blue)' });
+                assert.deepEqual(handler.args[1][0].data, { text: 'color-mix(in srgb, color-mix(in oklch, #ff0000, green), blue)' });
             });
         });
         describe('animation-name', () => {
@@ -622,11 +622,11 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 };
                 return res;
             }
-            assert.deepStrictEqual(await matchProperty('var( --blue    )'), { hasUnresolvedVars: false, computedText: 'color: blue' });
-            assert.deepStrictEqual(await matchProperty('var(--no, var(--blue))'), { hasUnresolvedVars: false, computedText: 'color: blue' });
-            assert.deepStrictEqual(await matchProperty('pre var(--no) post'), { hasUnresolvedVars: true, computedText: 'color: pre var(--no) post' });
-            assert.deepStrictEqual(await matchProperty('var(--no, var(--no2))'), { hasUnresolvedVars: true, computedText: 'color: var(--no, var(--no2))' });
-            assert.deepStrictEqual(await matchProperty(''), { hasUnresolvedVars: false, computedText: 'color:' });
+            assert.deepEqual(await matchProperty('var( --blue    )'), { hasUnresolvedVars: false, computedText: 'color: blue' });
+            assert.deepEqual(await matchProperty('var(--no, var(--blue))'), { hasUnresolvedVars: false, computedText: 'color: blue' });
+            assert.deepEqual(await matchProperty('pre var(--no) post'), { hasUnresolvedVars: true, computedText: 'color: pre var(--no) post' });
+            assert.deepEqual(await matchProperty('var(--no, var(--no2))'), { hasUnresolvedVars: true, computedText: 'color: var(--no, var(--no2))' });
+            assert.deepEqual(await matchProperty(''), { hasUnresolvedVars: false, computedText: 'color:' });
         });
         it('layers correctly with the font renderer', () => {
             const stylePropertyTreeElement = getTreeElement('font-size', 'calc(1 + var(--no))');
@@ -842,7 +842,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.instanceOf(showPopoverStub.args[0][0], InlineEditor.CSSShadowEditor.CSSShadowEditor);
                 const editor = showPopoverStub.args[0][0];
                 const text = editorProperties(editor);
-                assert.deepStrictEqual(text, ['Outset', '10px', '10px', '0', '0']);
+                assert.deepEqual(text, ['Outset', '10px', '10px', '0', '0']);
             }
             {
                 swatches[1].iconElement().click();
@@ -850,7 +850,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.instanceOf(showPopoverStub.args[1][0], InlineEditor.CSSShadowEditor.CSSShadowEditor);
                 const editor = showPopoverStub.args[1][0];
                 const text = editorProperties(editor);
-                assert.deepStrictEqual(text, ['Inset', '8px', '9px', '10px', '11px']);
+                assert.deepEqual(text, ['Inset', '8px', '9px', '10px', '11px']);
             }
         });
         it('updates the style for shadow editor changes', () => {
@@ -1025,7 +1025,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             model.setBlurRadius(new InlineEditor.CSSShadowEditor.CSSLength(12, 'px'));
             model.renderContents(container);
             assert.strictEqual(container.textContent, '10px y 12px spread');
-            assert.deepStrictEqual(properties.map(p => p.source), [null, null, null, null]);
+            assert.deepEqual(properties.map(p => p.source), [null, null, null, null]);
         });
     });
     describe('AnchorFunctionRenderer', () => {

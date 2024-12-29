@@ -11,7 +11,8 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #affectedCookies = new Map();
     #affectedRawCookieLines = new Map();
-    #affectedRequests = new Map();
+    #affectedRequests = new Array();
+    #affectedRequestIds = new Set();
     #affectedLocations = new Map();
     #heavyAdIssues = new Set();
     #blockedByResponseDetails = new Map();
@@ -125,9 +126,14 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
         this.#issueKind = IssuesManager.Issue.unionIssueKind(this.#issueKind, issue.getKind());
         let hasRequest = false;
         for (const request of issue.requests()) {
+            const { requestId } = request;
             hasRequest = true;
-            if (!this.#affectedRequests.has(request.requestId)) {
-                this.#affectedRequests.set(request.requestId, request);
+            if (requestId === undefined) {
+                this.#affectedRequests.push(request);
+            }
+            else if (!this.#affectedRequestIds.has(requestId)) {
+                this.#affectedRequests.push(request);
+                this.#affectedRequestIds.add(requestId);
             }
         }
         for (const cookie of issue.cookies()) {

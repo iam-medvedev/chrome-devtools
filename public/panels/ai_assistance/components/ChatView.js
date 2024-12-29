@@ -877,8 +877,9 @@ export class ChatView extends HTMLElement {
             case "patch" /* AgentType.PATCH */:
                 return lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgent);
             case "freestyler" /* AgentType.STYLING */:
-                return this.#props.selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgent) :
-                    lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgentNoContext);
+                return this.#props.selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgent) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForFreestylerAgentNoContext);
             case "drjones-file" /* AgentType.FILE */:
                 return this.#props.selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgent) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForFileAgentNoContext);

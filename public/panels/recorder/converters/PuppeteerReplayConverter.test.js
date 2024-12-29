@@ -34,7 +34,7 @@ if (process && import.meta.url === url.pathToFileURL(process.argv[1]).href) {
   run()
 }
 `);
-        assert.deepStrictEqual(sourceMap, [1, 8, 8]);
+        assert.deepEqual(sourceMap, [1, 8, 8]);
     });
     it('should stringify a step', async () => {
         const converter = new Converters.PuppeteerReplayConverter.PuppeteerReplayConverter('  ');

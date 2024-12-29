@@ -66,7 +66,7 @@ describeWithMockConnection('AutofillModel', () => {
         };
         autofillModel.addressFormFilled(addressFormFilledEvent);
         assert.lengthOf(dispatchedEvents, 1);
-        assert.deepStrictEqual(dispatchedEvents[0].event, addressFormFilledEvent);
+        assert.deepEqual(dispatchedEvents[0].event, addressFormFilledEvent);
     });
 });
 //# sourceMappingURL=AutofillModel.test.js.map

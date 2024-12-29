@@ -46,7 +46,7 @@ describeWithEnvironment('ThreadAppender', function () {
             'Thread',
             'Thread',
         ];
-        assert.deepStrictEqual(threadAppenders.map(g => g.appenderName), expectedAppenderNames);
+        assert.deepEqual(threadAppenders.map(g => g.appenderName), expectedAppenderNames);
     });
     it('renders tracks for threads in correct order', async function () {
         const { flameChartData } = await renderThreadAppendersFromTrace(this, 'multiple-navigations-with-iframes.json.gz');
@@ -56,7 +56,7 @@ describeWithEnvironment('ThreadAppender', function () {
     it('renders tracks for threads in correct order when a process url is about:blank', async function () {
         const { flameChartData } = await renderThreadAppendersFromTrace(this, 'about-blank-first.json.gz');
         const groupNames = flameChartData.groups.map(g => g.name.replace(/(new-tab-page\/).*/, '$1'));
-        assert.deepStrictEqual(groupNames.slice(0, 3), [
+        assert.deepEqual(groupNames.slice(0, 3), [
             'Frame — chrome-untrusted://new-tab-page/',
             'Main — chrome://new-tab-page/',
             'Main — about:blank',
@@ -77,7 +77,7 @@ describeWithEnvironment('ThreadAppender', function () {
             "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
             "TrackAppender" /* Timeline.TimelineFlameChartDataProvider.EntryType.TRACK_APPENDER */,
         ];
-        assert.deepStrictEqual(entryTypeByLevel, execptedLevelTypes);
+        assert.deepEqual(entryTypeByLevel, execptedLevelTypes);
     });
     it('creates a flamechart groups for track headers and titles', async function () {
         const { flameChartData } = await renderThreadAppendersFromTrace(this, 'cls-single-frame.json.gz');
@@ -89,7 +89,7 @@ describeWithEnvironment('ThreadAppender', function () {
             'Thread pool',
             'Thread pool worker 1',
         ];
-        assert.deepStrictEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
+        assert.deepEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
     });
     it('builds flamechart groups for nested tracks correctly', async function () {
         const { flameChartData } = await renderThreadAppendersFromTrace(this, 'cls-single-frame.json.gz');
@@ -116,7 +116,7 @@ describeWithEnvironment('ThreadAppender', function () {
             'Thread pool worker 1',
             'Thread pool worker 2',
         ];
-        assert.deepStrictEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
+        assert.deepEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
     });
     it('adds thread IDs onto tracks when the trace is generic', async () => {
         const { flameChartData } = await renderThreadAppendersFromTrace(this, 'generic-about-tracing.json.gz');
@@ -144,7 +144,7 @@ describeWithEnvironment('ThreadAppender', function () {
             'Thread pool worker 1',
             'Thread pool worker 2',
         ];
-        assert.deepStrictEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
+        assert.deepEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
     });
     it('returns the correct title for a renderer event', async function () {
         const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
@@ -311,7 +311,7 @@ describeWithEnvironment('ThreadAppender', function () {
             // This second "worker" is the ThreadPoolServiceThread. TODO: perhaps hide ThreadPoolServiceThread completely?
             'Thread pool worker 2',
         ];
-        assert.deepStrictEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
+        assert.deepEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
     });
     describe('ignore listing', () => {
         let ignoreListManager;

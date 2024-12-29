@@ -11,7 +11,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
 // The css files aren't exported by the bundle, so we need to import it directly.
-// eslint-disable-next-line rulesdir/es_modules_import
+// eslint-disable-next-line rulesdir/es-modules-import
 import consoleViewStyles from './consoleView.css.js';
 describe('ConsoleViewMessage', () => {
     describe('concatErrorDescriptionAndIssueSummary', () => {

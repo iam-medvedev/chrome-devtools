@@ -16,35 +16,41 @@ import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
 import { selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
 import * as TimelineUtils from './utils/utils.js';
 export class TimelineFlameChartNetworkDataProvider {
-    #minimumBoundaryInternal;
-    #timeSpan;
-    #events;
-    #maxLevel;
-    #networkTrackAppender;
-    #timelineDataInternal;
-    #lastSelection;
-    #parsedTrace;
+    #minimumBoundary = 0;
+    #timeSpan = 0;
+    #events = [];
+    #maxLevel = 0;
+    #networkTrackAppender = null;
+    #timelineDataInternal = null;
+    #lastSelection = null;
+    #parsedTrace = null;
     #eventIndexByEvent = new Map();
     // -1 means no entry is selected.
     #lastInitiatorEntry = -1;
     #lastInitiatorsData = [];
     constructor() {
-        this.#minimumBoundaryInternal = 0;
-        this.#timeSpan = 0;
-        this.#events = [];
+        this.reset();
+    }
+    // Reset all data other than the UI elements.
+    // This should be called when
+    // - initialized the data provider
+    // - a new trace file is coming (when `setModel()` is called)
+    // etc.
+    reset() {
         this.#maxLevel = 0;
-        this.#networkTrackAppender = null;
+        this.#minimumBoundary = 0;
+        this.#timeSpan = 0;
+        this.#eventIndexByEvent.clear();
+        this.#events = [];
+        this.#timelineDataInternal = null;
         this.#parsedTrace = null;
+        this.#networkTrackAppender = null;
     }
     setModel(parsedTrace) {
-        this.#timelineDataInternal = null;
-        this.#events = [];
+        this.reset();
         this.#parsedTrace = parsedTrace;
-        this.#eventIndexByEvent.clear();
-        if (this.#parsedTrace) {
-            this.setEvents(this.#parsedTrace);
-            this.#setTimingBoundsData(this.#parsedTrace);
-        }
+        this.setEvents(this.#parsedTrace);
+        this.#setTimingBoundsData(this.#parsedTrace);
     }
     setEvents(parsedTrace) {
         if (parsedTrace.NetworkRequests.webSocket) {
@@ -86,7 +92,7 @@ export class TimelineFlameChartNetworkDataProvider {
         return this.#timelineDataInternal;
     }
     minimumBoundary() {
-        return this.#minimumBoundaryInternal;
+        return this.#minimumBoundary;
     }
     totalTime() {
         return this.#timeSpan;
@@ -357,8 +363,8 @@ export class TimelineFlameChartNetworkDataProvider {
         const { traceBounds } = newParsedTrace.Meta;
         const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(traceBounds.min);
         const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(traceBounds.max);
-        this.#minimumBoundaryInternal = minTime;
-        this.#timeSpan = minTime === maxTime ? 1000 : maxTime - this.#minimumBoundaryInternal;
+        this.#minimumBoundary = minTime;
+        this.#timeSpan = minTime === maxTime ? 1000 : maxTime - this.#minimumBoundary;
     }
     /**
      * When users zoom in the flamechart, we only want to show them the network

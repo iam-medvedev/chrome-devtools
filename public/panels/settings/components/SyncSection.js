@@ -66,7 +66,7 @@ export class SyncSection extends HTMLElement {
     }
 }
 /* x-link doesn't work with custom click/keydown handlers */
-/* eslint-disable rulesdir/ban_a_tags_in_lit_html */
+/* eslint-disable rulesdir/no-a-tags-in-lit-html */
 function renderAccountInfoOrWarning(syncInfo) {
     if (!syncInfo.isSyncActive) {
         const link = 'chrome://settings/syncSetup';

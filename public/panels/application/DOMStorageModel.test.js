@@ -17,7 +17,7 @@ describeWithMockConnection('DOMStorageModel', () => {
     });
     it('DOMStorage is instantiated correctly', () => {
         assert.strictEqual(domStorage.storageKey, initKey);
-        assert.deepStrictEqual(domStorage.id, { storageKey: initKey, isLocalStorage: true });
+        assert.deepEqual(domStorage.id, { storageKey: initKey, isLocalStorage: true });
     });
     it('StorageKey events trigger addition/removal of DOMStorage', () => {
         const testKey = 'storageKey';

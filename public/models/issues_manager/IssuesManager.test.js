@@ -23,9 +23,9 @@ describeWithMockConnection('IssuesManager', () => {
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url1') });
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url2') });
         const expected = ['ContentSecurityPolicyIssue::kURLViolation', 'ContentSecurityPolicyIssue::kURLViolation'];
-        assert.deepStrictEqual(dispatchedIssues.map(i => i.code()), expected);
+        assert.deepEqual(dispatchedIssues.map(i => i.code()), expected);
         const issueCodes = Array.from(issuesManager.issues()).map(r => r.code());
-        assert.deepStrictEqual(issueCodes, expected);
+        assert.deepEqual(issueCodes, expected);
     });
     function getBlockedUrl(issue) {
         const cspIssue = issue;
@@ -41,20 +41,20 @@ describeWithMockConnection('IssuesManager', () => {
         assert.exists(prerenderModel);
         prerenderModel.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: prerenderModel, inspectorIssue: mkInspectorCspIssue('url2') });
         const expected = ['url1'];
-        assert.deepStrictEqual(dispatchedIssues.map(getBlockedUrl), expected);
-        assert.deepStrictEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), expected);
+        assert.deepEqual(dispatchedIssues.map(getBlockedUrl), expected);
+        assert.deepEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), expected);
         return { issuesManager, prerenderTarget };
     }
     it('updates filtered issues when switching scope', () => {
         const { issuesManager, prerenderTarget } = assertOutOfScopeIssuesAreFiltered();
         SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
-        assert.deepStrictEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
+        assert.deepEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
     });
     it('keeps issues of prerendered page upon activation', () => {
         const { issuesManager, prerenderTarget } = assertOutOfScopeIssuesAreFiltered();
         SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
         activate(prerenderTarget);
-        assert.deepStrictEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
+        assert.deepEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
     });
     const updatesOnPrimaryPageChange = (primary) => () => {
         const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
@@ -80,11 +80,11 @@ describeWithMockConnection('IssuesManager', () => {
             issuesManager.addIssue(model, issue);
         }
         let issueCodes = Array.from(issuesManager.issues()).map(i => i.code());
-        assert.deepStrictEqual(issueCodes, ['AllowedStubIssue1', 'AllowedStubIssue3']);
-        assert.deepStrictEqual(firedIssueAddedEventCodes, ['AllowedStubIssue1', 'AllowedStubIssue3']);
+        assert.deepEqual(issueCodes, ['AllowedStubIssue1', 'AllowedStubIssue3']);
+        assert.deepEqual(firedIssueAddedEventCodes, ['AllowedStubIssue1', 'AllowedStubIssue3']);
         showThirdPartyIssuesSetting.set(true);
         issueCodes = Array.from(issuesManager.issues()).map(i => i.code());
-        assert.deepStrictEqual(issueCodes, ['AllowedStubIssue1', 'StubIssue2', 'AllowedStubIssue3', 'StubIssue4']);
+        assert.deepEqual(issueCodes, ['AllowedStubIssue1', 'StubIssue2', 'AllowedStubIssue3', 'StubIssue4']);
     });
     it('reports issue counts by kind', () => {
         const issue1 = new StubIssue('StubIssue1', ['id1'], [], "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
@@ -94,10 +94,10 @@ describeWithMockConnection('IssuesManager', () => {
         issuesManager.addIssue(model, issue1);
         issuesManager.addIssue(model, issue2);
         issuesManager.addIssue(model, issue3);
-        assert.deepStrictEqual(issuesManager.numberOfIssues(), 3);
-        assert.deepStrictEqual(issuesManager.numberOfIssues("Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */), 2);
-        assert.deepStrictEqual(issuesManager.numberOfIssues("BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */), 1);
-        assert.deepStrictEqual(issuesManager.numberOfIssues("PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */), 0);
+        assert.deepEqual(issuesManager.numberOfIssues(), 3);
+        assert.deepEqual(issuesManager.numberOfIssues("Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */), 2);
+        assert.deepEqual(issuesManager.numberOfIssues("BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */), 1);
+        assert.deepEqual(issuesManager.numberOfIssues("PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */), 0);
     });
     describe('instance', () => {
         it('throws an Error if its not the first instance created with "ensureFirst" set', () => {
@@ -134,7 +134,7 @@ describeWithMockConnection('IssuesManager', () => {
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);
         }
-        assert.deepStrictEqual(hiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2']);
+        assert.deepEqual(hiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2']);
     });
     it('hides issues present in IssuesManager when setting is updated', () => {
         const issues = [
@@ -162,12 +162,12 @@ describeWithMockConnection('IssuesManager', () => {
         hideIssueByCodeSetting.set({
             HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
-        assert.deepStrictEqual(hiddenIssues, ['HiddenStubIssue1']);
+        assert.deepEqual(hiddenIssues, ['HiddenStubIssue1']);
         hideIssueByCodeSetting.set({
             HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
             HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
-        assert.deepStrictEqual(hiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2']);
+        assert.deepEqual(hiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2']);
     });
     it('unhides issues present in IssuesManager when setting is updated', () => {
         const issues = [
@@ -204,14 +204,14 @@ describeWithMockConnection('IssuesManager', () => {
             UnhiddenStubIssue1: "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
             UnhiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
-        assert.deepStrictEqual(unhiddenIssues, ['UnhiddenStubIssue1']);
+        assert.deepEqual(unhiddenIssues, ['UnhiddenStubIssue1']);
         hideIssueByCodeSetting.set({
             HiddenStubIssue1: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
             HiddenStubIssue2: "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
             UnhiddenStubIssue1: "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
             UnhiddenStubIssue2: "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
         });
-        assert.deepStrictEqual(unhiddenIssues, ['UnhiddenStubIssue1', 'UnhiddenStubIssue2']);
+        assert.deepEqual(unhiddenIssues, ['UnhiddenStubIssue1', 'UnhiddenStubIssue2']);
     });
     it('unhides all issues correctly', () => {
         const issues = [
@@ -242,7 +242,7 @@ describeWithMockConnection('IssuesManager', () => {
             }
         });
         issuesManager.unhideAllIssues();
-        assert.deepStrictEqual(unhiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2', 'UnhiddenStubIssue1', 'UnhiddenStubIssue2']);
+        assert.deepEqual(unhiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2', 'UnhiddenStubIssue1', 'UnhiddenStubIssue2']);
     });
     it('send update event on scope change', async () => {
         const issuesManager = new IssuesManager.IssuesManager.IssuesManager();

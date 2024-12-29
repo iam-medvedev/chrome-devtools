@@ -30,7 +30,7 @@ describe('PuppeteerConverter', () => {
   await browser.close();`;
         const actual = result.substring(0, expected.length);
         assert.strictEqual(actual, expected, `Unexpected start of generated result:\n${actual}`);
-        assert.deepStrictEqual(sourceMap, [1, 8, 8]);
+        assert.deepEqual(sourceMap, [1, 8, 8]);
     });
     it('should stringify a step', async () => {
         const converter = new Converters.PuppeteerConverter.PuppeteerConverter('  ');
@@ -69,7 +69,7 @@ describe('PuppeteerConverter', () => {
   await browser.close();`;
         const actual = result.substring(0, expected.length);
         assert.strictEqual(actual, expected, `Unexpected start of generated result:\n${actual}`);
-        assert.deepStrictEqual(sourceMap, [1, 8, 8]);
+        assert.deepEqual(sourceMap, [1, 8, 8]);
     });
 });
 //# sourceMappingURL=PuppeteerConverter.test.js.map

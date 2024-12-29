@@ -87,7 +87,7 @@ const colorPallettes = [
         dark: 'rgb(34, 205, 181)',
     },
 ];
-/* rulesdir/no_underscored_properties, rulesdir/ban_style_tags_in_lit_html, rulesdir/ban_a_tags_in_lit_html, rulesdir/lit_html_host_this */
+/* rulesdir/no-underscored-properties, rulesdir/no-style-tags-in-lit-html, rulesdir/no-a-tags-in-lit-html, rulesdir/lit-html-host-this */
 export class BrickBreaker extends HTMLElement {
     timelineFlameChart;
     #canvas;

@@ -536,6 +536,7 @@ export const generatedProperties = [
             "mask-repeat",
             "mask-size",
             "mask-type",
+            "masonry-direction",
             "masonry-fill",
             "masonry-slack",
             "masonry-template-tracks",
@@ -2760,6 +2761,15 @@ export const generatedProperties = [
             "alpha"
         ],
         "name": "mask-type"
+    },
+    {
+        "keywords": [
+            "row",
+            "row-reverse",
+            "column",
+            "column-reverse"
+        ],
+        "name": "masonry-direction"
     },
     {
         "keywords": [
@@ -5536,6 +5546,14 @@ export const generatedPropertyValues = {
         "values": [
             "luminance",
             "alpha"
+        ]
+    },
+    "masonry-direction": {
+        "values": [
+            "row",
+            "row-reverse",
+            "column",
+            "column-reverse"
         ]
     },
     "masonry-fill": {

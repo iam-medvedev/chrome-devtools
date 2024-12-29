@@ -20,7 +20,7 @@ describe('Metrics: Lantern Speed Index', () => {
             fcpResult: FirstContentfulPaint.compute(data),
             observedSpeedIndex,
         });
-        assert.deepStrictEqual({
+        assert.deepEqual({
             timing: Math.round(result.timing),
             optimistic: Math.round(result.optimisticEstimate.timeInMs),
             pessimistic: Math.round(result.pessimisticEstimate.timeInMs),
@@ -43,7 +43,7 @@ describe('Metrics: Lantern Speed Index', () => {
             fcpResult: FirstContentfulPaint.compute(data),
             observedSpeedIndex,
         });
-        assert.deepStrictEqual({
+        assert.deepEqual({
             timing: Math.round(result.timing),
             optimistic: Math.round(result.optimisticEstimate.timeInMs),
             pessimistic: Math.round(result.pessimisticEstimate.timeInMs),
@@ -63,7 +63,7 @@ describe('Metrics: Lantern Speed Index', () => {
     });
     it('should scale coefficients forward', async () => {
         const result = SpeedIndex.getScaledCoefficients(300);
-        assert.deepStrictEqual(result, {
+        assert.deepEqual(result, {
             intercept: 0,
             optimistic: 2.525,
             pessimistic: 0.275,

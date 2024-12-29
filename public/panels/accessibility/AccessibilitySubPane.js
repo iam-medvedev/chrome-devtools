@@ -4,7 +4,7 @@
 import accessibilityPropertiesStyles from './accessibilityProperties.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import accessibilityNodeStyles from './accessibilityNode.css.js';
-// eslint-disable-next-line rulesdir/es_modules_import
+// eslint-disable-next-line rulesdir/es-modules-import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 export class AccessibilitySubPane extends UI.View.SimpleView {
     axNode;

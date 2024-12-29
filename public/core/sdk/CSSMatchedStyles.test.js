@@ -341,7 +341,7 @@ describe('CSSMatchedStyles', () => {
             matchedPayload,
             inheritedPayload,
         });
-        assert.deepStrictEqual(matchedStyles.nodeStyles().map(style => style.allProperties().map(prop => prop.propertyText)), [
+        assert.deepEqual(matchedStyles.nodeStyles().map(style => style.allProperties().map(prop => prop.propertyText)), [
             ['--var: red;'],
             ['color: var(--var);'],
             ['--var: blue;'],

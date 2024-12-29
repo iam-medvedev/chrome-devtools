@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/es_modules_import */
+/* eslint-disable rulesdir/es-modules-import */
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components/components.js';
@@ -61,7 +61,7 @@ describeWithEnvironment('RecorderController', () => {
             const controller = await setupController(recording);
             await dispatchRecordingViewEvent(controller, new Components.StepView.AddStep(recording.flow.steps[0], "after" /* Components.StepView.AddStepPosition.AFTER */));
             const flow = controller.getUserFlow();
-            assert.deepStrictEqual(flow, {
+            assert.deepEqual(flow, {
                 title: 'test',
                 steps: [
                     {
@@ -85,7 +85,7 @@ describeWithEnvironment('RecorderController', () => {
             assert.lengthOf(sections, 1);
             await dispatchRecordingViewEvent(controller, new Components.StepView.AddStep(sections[0], "after" /* Components.StepView.AddStepPosition.AFTER */));
             const flow = controller.getUserFlow();
-            assert.deepStrictEqual(flow, {
+            assert.deepEqual(flow, {
                 title: 'test',
                 steps: [
                     {
@@ -104,7 +104,7 @@ describeWithEnvironment('RecorderController', () => {
             const controller = await setupController(recording);
             await dispatchRecordingViewEvent(controller, new Components.StepView.AddStep(recording.flow.steps[0], "before" /* Components.StepView.AddStepPosition.BEFORE */));
             const flow = controller.getUserFlow();
-            assert.deepStrictEqual(flow, {
+            assert.deepEqual(flow, {
                 title: 'test',
                 steps: [
                     {
@@ -123,7 +123,7 @@ describeWithEnvironment('RecorderController', () => {
             const controller = await setupController(recording);
             await dispatchRecordingViewEvent(controller, new Components.StepView.RemoveStep(recording.flow.steps[0]));
             const flow = controller.getUserFlow();
-            assert.deepStrictEqual(flow, { title: 'test', steps: [] });
+            assert.deepEqual(flow, { title: 'test', steps: [] });
         });
         it('should adding a new step before a step with a breakpoint update the breakpoint indexes correctly', async () => {
             const recording = makeRecording();

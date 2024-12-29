@@ -14,10 +14,10 @@ describeWithEnvironment('PropertyRenderer', () => {
         it('parses text', () => {
             // Prevent normaliztaion to get an accurate representation of the parser result.
             sinon.stub(Element.prototype, 'normalize');
-            assert.deepStrictEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', 'var(--v)', []).childNodes)), ['var', '(', '--v', ')']);
-            assert.deepStrictEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', '/* comments are text */ 1px solid 4', [])
+            assert.deepEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', 'var(--v)', []).childNodes)), ['var', '(', '--v', ')']);
+            assert.deepEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', '/* comments are text */ 1px solid 4', [])
                 .childNodes)), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
-            assert.deepStrictEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer
+            assert.deepEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer
                 .renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)', [])
                 .childNodes)), [
                 '2px', ' ', 'var', '(', '--double', ',', ' ', 'var', '(', '--fallback', ',', ' ', 'black', ')',
@@ -32,7 +32,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const ast = new SDK.CSSPropertyParser.SyntaxTree(property, rule, tree);
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, []);
             const context = new Elements.PropertyRenderer.RenderingContext(ast, new Map(), matchedResult);
-            assert.deepStrictEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), rule, Printer.walk(ast).get());
+            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), rule, Printer.walk(ast).get());
         });
         it('correctly renders subtrees', () => {
             const property = '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)';
@@ -42,7 +42,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const ast = new SDK.CSSPropertyParser.SyntaxTree(property, rule, tree);
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, []);
             const context = new Elements.PropertyRenderer.RenderingContext(ast, new Map(), matchedResult);
-            assert.deepStrictEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), property, Printer.walk(ast).get());
+            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), property, Printer.walk(ast).get());
         });
         it('renders trailing comments', () => {
             const property = '/* color: red */ blue /* color: red */';

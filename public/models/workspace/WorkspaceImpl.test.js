@@ -38,14 +38,14 @@ describe('WorkspaceImpl', () => {
         projectStub.uiSourceCodes.returns([uiSourceCodeStub]);
         sut.addProject(projectStub);
         const result = sut.uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.Debugger);
-        assert.deepStrictEqual(result, [uiSourceCodeStub]);
+        assert.deepEqual(result, [uiSourceCodeStub]);
     });
     it('can remove a project', () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const projectStub = sinon.createStubInstance(Bindings.ContentProviderBasedProject.ContentProviderBasedProject);
         sut.addProject(projectStub);
         sut.removeProject(projectStub);
-        assert.deepStrictEqual(sut.projects(), []);
+        assert.deepEqual(sut.projects(), []);
     });
     it('can retrieve a project by ID', () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
@@ -54,7 +54,7 @@ describe('WorkspaceImpl', () => {
         projectStub.id.returns(exampleProjectID);
         sut.addProject(projectStub);
         const result = sut.project(exampleProjectID);
-        assert.deepStrictEqual(result, projectStub);
+        assert.deepEqual(result, projectStub);
     });
     it('can retrieve all projects', () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
@@ -65,7 +65,7 @@ describe('WorkspaceImpl', () => {
         sut.addProject(projectStub0);
         sut.addProject(projectStub1);
         const result = sut.projects();
-        assert.deepStrictEqual(result, [projectStub0, projectStub1]);
+        assert.deepEqual(result, [projectStub0, projectStub1]);
     });
     it('can retrieve all projects for a certain type', () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
@@ -78,7 +78,7 @@ describe('WorkspaceImpl', () => {
         sut.addProject(projectStub0);
         sut.addProject(projectStub1);
         const result = sut.projectsForType(Workspace.Workspace.projectTypes.Debugger);
-        assert.deepStrictEqual(result, [projectStub0]);
+        assert.deepEqual(result, [projectStub0]);
     });
     it('can return the UI source code from project type', async () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
@@ -87,7 +87,7 @@ describe('WorkspaceImpl', () => {
         projectStub.uiSourceCodes.returns([uiSourceCodeStub]);
         sut.addProject(projectStub);
         const result = sut.uiSourceCodes();
-        assert.deepStrictEqual(result, [uiSourceCodeStub]);
+        assert.deepEqual(result, [uiSourceCodeStub]);
     });
     it('can check if there are tracking extensions', async () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });

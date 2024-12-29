@@ -13,19 +13,15 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private compatibilityTracksAppender;
     private parsedTrace;
     private isCpuProfile;
-    private minimumBoundaryInternal;
     private timeSpan;
-    private readonly headerLevel1;
-    private readonly headerLevel2;
-    private readonly staticHeader;
-    private framesHeader;
-    private readonly screenshotsHeader;
+    private readonly framesGroupStyle;
+    private readonly screenshotsGroupStyle;
     private entryData;
     private entryTypeByLevel;
     private entryIndexToTitle;
     private lastInitiatorEntry;
     private lastInitiatorsData;
-    private lastSelection?;
+    private lastSelection;
     constructor();
     hasTrackConfigurationMode(): boolean;
     getPossibleActions(entryIndex: number, groupIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
@@ -36,7 +32,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
-    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, isCpuProfile?: boolean): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace, isCpuProfile?: boolean): void;
     /**
      * Instances and caches a CompatibilityTracksAppender using the
      * internal flame chart data and the trace parsed data coming from the
@@ -48,7 +44,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     /**
      * Builds the flame chart data using the track appenders
      */
-    buildFromTrackAppenders(options?: {
+    buildFromTrackAppendersForTest(options?: {
         filterThreadsByName?: string;
         expandedTracks?: Set<TrackAppenderName>;
     }): void;
@@ -62,8 +58,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     maxStackDepth(): number;
     /**
      * Builds the flame chart data using the tracks appender (which use
-     * the new trace engine) and the legacy code paths present in this
-     * file. The result built data is cached and returned.
+     * the new trace engine). The result built data is cached and returned.
      */
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;

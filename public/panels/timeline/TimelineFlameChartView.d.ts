@@ -84,7 +84,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
-    setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace | null, isCpuProfile?: boolean): void;
+    setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace, isCpuProfile?: boolean): void;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
     reset(): void;
     setupWindowTimes(): void;

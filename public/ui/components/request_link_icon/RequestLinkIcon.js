@@ -62,7 +62,7 @@ export class RequestLinkIcon extends HTMLElement {
         if (data.revealOverride) {
             this.#reveal = data.revealOverride;
         }
-        if (!this.#request && data.affectedRequest) {
+        if (!this.#request && data.affectedRequest && typeof data.affectedRequest.requestId !== 'undefined') {
             if (!this.#requestResolver) {
                 throw new Error('A `RequestResolver` must be provided if an `affectedRequest` is provided.');
             }
@@ -120,15 +120,15 @@ export class RequestLinkIcon extends HTMLElement {
         return i18nString(UIStrings.requestUnavailableInTheNetwork);
     }
     #getUrlForDisplaying() {
-        if (!this.#request) {
-            return this.#affectedRequest?.url;
+        if (!this.#displayURL) {
+            return undefined;
         }
-        return this.#request.url();
+        if (this.#request) {
+            return this.#request.url();
+        }
+        return this.#affectedRequest?.url;
     }
     #maybeRenderURL() {
-        if (!this.#displayURL) {
-            return LitHtml.nothing;
-        }
         const url = this.#getUrlForDisplaying();
         if (!url) {
             return LitHtml.nothing;
@@ -141,16 +141,23 @@ export class RequestLinkIcon extends HTMLElement {
     }
     async #render() {
         return coordinator.write(() => {
-            // clang-format off
-            LitHtml.render(html `
-      <button class=${LitHtml.Directives.classMap({ link: Boolean(this.#request) })}
-              title=${this.#getTooltip()}
-              jslog=${VisualLogging.link('request').track({ click: true })}
-              @click=${this.handleClick}>
-        <devtools-icon name="arrow-up-down-circle"></devtools-icon>
-        ${this.#maybeRenderURL()}
-      </button>`, this.#shadow, { host: this });
-            // clang-format on
+            // By default we render just the URL for the request link. If we also know
+            // the concrete network request, or at least its request ID, we surround
+            // the URL with a button, that opens the request in the Network panel.
+            let template = this.#maybeRenderURL();
+            if (this.#request || this.#affectedRequest?.requestId !== undefined) {
+                // clang-format off
+                template = html `
+          <button class=${LitHtml.Directives.classMap({ link: Boolean(this.#request) })}
+                  title=${this.#getTooltip()}
+                  jslog=${VisualLogging.link('request').track({ click: true })}
+                  @click=${this.handleClick}>
+            <devtools-icon name="arrow-up-down-circle"></devtools-icon>
+            ${template}
+          </button>`;
+                // clang-format on
+            }
+            LitHtml.render(template, this.#shadow, { host: this });
         });
     }
 }

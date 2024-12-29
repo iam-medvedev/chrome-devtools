@@ -70,7 +70,7 @@ export class Multimap {
  */
 export function getWithDefault(map, key, defaultValueFactory) {
     let value = map.get(key);
-    if (!value) {
+    if (value === undefined || value === null) {
         value = defaultValueFactory(key);
         map.set(key, value);
     }
