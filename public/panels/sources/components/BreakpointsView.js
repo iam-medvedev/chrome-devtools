@@ -14,7 +14,7 @@ import * as TextUtils from '../../../models/text_utils/text_utils.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -104,7 +104,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/components/BreakpointsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const MAX_SNIPPET_LENGTH = 200;
 let breakpointsViewInstance;
 let breakpointsViewControllerInstance;
@@ -453,7 +452,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, breakpointsViewStyles];
     }
     async render() {
-        await coordinator.write('BreakpointsView render', () => {
+        await RenderCoordinator.write('BreakpointsView render', () => {
             const clickHandler = async (event) => {
                 const currentTarget = event.currentTarget;
                 await this.#setSelected(currentTarget);
@@ -495,7 +494,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         });
         // If no element is tabbable, set the pause-on-exceptions to be tabbable. This can happen
         // if the previously focused element was removed.
-        await coordinator.write('BreakpointsView make pause-on-exceptions focusable', () => {
+        await RenderCoordinator.write('BreakpointsView make pause-on-exceptions focusable', () => {
             if (this.#shadow.querySelector('[tabindex="0"]') === null) {
                 const element = this.#shadow.querySelector('[data-first-pause]');
                 element?.setAttribute('tabindex', '0');
@@ -529,7 +528,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (!element) {
             return;
         }
-        void coordinator.write('BreakpointsView focus on selected element', () => {
+        void RenderCoordinator.write('BreakpointsView focus on selected element', () => {
             const prevSelected = this.#shadow.querySelector('[tabindex="0"]');
             prevSelected?.setAttribute('tabindex', '-1');
             element.setAttribute('tabindex', '0');
@@ -539,11 +538,11 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     async #handleArrowKey(key, target) {
         const setGroupExpandedState = (detailsElement, expanded) => {
             if (expanded) {
-                return coordinator.write('BreakpointsView expand', () => {
+                return RenderCoordinator.write('BreakpointsView expand', () => {
                     detailsElement.setAttribute('open', '');
                 });
             }
-            return coordinator.write('BreakpointsView expand', () => {
+            return RenderCoordinator.write('BreakpointsView expand', () => {
                 detailsElement.removeAttribute('open');
             });
         };
@@ -840,7 +839,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 // uncheck the pause on caught exception checkbox.
                 pauseOnCaughtCheckbox.click();
             }
-            void coordinator.write('BreakpointsView update pause-on-uncaught-exception', () => {
+            void RenderCoordinator.write('BreakpointsView update pause-on-uncaught-exception', () => {
                 // Disable/enable the pause on caught exception checkbox depending on whether
                 // or not we are pausing on uncaught exceptions.
                 if (checked) {

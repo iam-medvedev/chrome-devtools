@@ -41,6 +41,7 @@ styles.replaceSync(
   flex-shrink: 0;
   background-repeat: no-repeat;
   background-size: contain;
+  /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-lighthouse_logo);
 }
 

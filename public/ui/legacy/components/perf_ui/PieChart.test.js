@@ -36,7 +36,7 @@ describeWithLocale('PieChart', () => {
             chart.data = testChartData;
             assert.isNotNull(chart.shadowRoot);
             const slices = chart.shadowRoot.querySelectorAll('path');
-            assert.strictEqual(slices.length, 2);
+            assert.lengthOf(slices, 2);
         });
         it('has a legend', () => {
             const chart = new PerfUI.PieChart.PieChart();
@@ -44,7 +44,7 @@ describeWithLocale('PieChart', () => {
             chart.data = testChartData;
             assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
-            assert.strictEqual(legendRows.length, 3);
+            assert.lengthOf(legendRows, 3);
         });
         it('formats the slice in the legend', () => {
             const chart = new PerfUI.PieChart.PieChart();
@@ -77,7 +77,7 @@ describeWithLocale('PieChart', () => {
             chart.data = testChartData;
             assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
-            assert.strictEqual(legendRows.length, 3);
+            assert.lengthOf(legendRows, 3);
             // Legend has one selected item.
             const fillingLegendRow = legendRows[0];
             const crustLegendRow = legendRows[1];
@@ -105,7 +105,7 @@ describeWithLocale('PieChart', () => {
             const legendName = chart.shadowRoot.querySelector('.pie-chart-name');
             legendName.click();
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
-            assert.strictEqual(legendRows.length, 3);
+            assert.lengthOf(legendRows, 3);
             const fillingLegendRow = legendRows[0];
             const crustLegendRow = legendRows[1];
             const totalLegendRow = legendRows[2];
@@ -124,7 +124,7 @@ describeWithLocale('PieChart', () => {
             const slice = chart.shadowRoot.querySelector('[aria-label="Filling"');
             slice.dispatchEvent(new Event('click'));
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
-            assert.strictEqual(legendRows.length, 3);
+            assert.lengthOf(legendRows, 3);
             const fillingLegendRow = legendRows[0];
             const crustLegendRow = legendRows[1];
             const totalLegendRow = legendRows[2];
@@ -153,7 +153,7 @@ describeWithLocale('PieChart', () => {
             chart.data = testChartNoLegendData;
             assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
-            assert.strictEqual(legendRows.length, 0);
+            assert.lengthOf(legendRows, 0);
         });
         it('sets tabIndex=1 on total', () => {
             const chart = new PerfUI.PieChart.PieChart();

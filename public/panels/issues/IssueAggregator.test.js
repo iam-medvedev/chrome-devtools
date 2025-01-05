@@ -79,7 +79,7 @@ describeWithMockConnection('IssueAggregator', () => {
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
         const issues = Array.from(aggregator.aggregatedIssues());
-        assert.strictEqual(issues.length, 3);
+        assert.lengthOf(issues, 3);
         const issueCodes = issues.map(r => r.aggregationKey().toString()).sort((a, b) => a.localeCompare(b));
         assert.deepEqual(issueCodes, ['codeA', 'codeB', 'codeC']);
     });
@@ -89,7 +89,7 @@ describeWithMockConnection('IssueAggregator', () => {
             const mockManager = new MockIssuesManager(issues);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
-            assert.strictEqual(aggregatedIssues.length, 1);
+            assert.lengthOf(aggregatedIssues, 1);
             const aggregatedIssue = aggregatedIssues[0];
             assert.strictEqual(aggregatedIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
         });
@@ -102,7 +102,7 @@ describeWithMockConnection('IssueAggregator', () => {
             const mockManager = new MockIssuesManager(issues);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
-            assert.strictEqual(aggregatedIssues.length, 1);
+            assert.lengthOf(aggregatedIssues, 1);
             const aggregatedIssue = aggregatedIssues[0];
             assert.strictEqual(aggregatedIssue.getKind(), "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */);
         });
@@ -115,7 +115,7 @@ describeWithMockConnection('IssueAggregator', () => {
             const mockManager = new MockIssuesManager(issues);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
-            assert.strictEqual(aggregatedIssues.length, 1);
+            assert.lengthOf(aggregatedIssues, 1);
             const aggregatedIssue = aggregatedIssues[0];
             assert.strictEqual(aggregatedIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
         });
@@ -141,7 +141,7 @@ describeWithMockConnection('IssueAggregator', () => {
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
         mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
         const issues = Array.from(aggregator.aggregatedIssues());
-        assert.strictEqual(issues.length, 1);
+        assert.lengthOf(issues, 1);
         const resolutions = [...issues[0].getHeavyAdIssues()].map(r => r.details().resolution).sort();
         assert.deepEqual(resolutions, [
             "HeavyAdBlocked" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked */,
@@ -171,7 +171,7 @@ describeWithMockConnection('IssueAggregator', () => {
                 mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue });
             }
             const issues = Array.from(aggregator.aggregatedIssues());
-            assert.strictEqual(issues.length, 1);
+            assert.lengthOf(issues, 1);
             const locations = [...issues[0].sources()].sort((x, y) => JSON.stringify(x).localeCompare(JSON.stringify(y)));
             assert.deepEqual(locations, [
                 { url: 'bar', lineNumber: 1, columnNumber: 1, scriptId: scriptId1 },

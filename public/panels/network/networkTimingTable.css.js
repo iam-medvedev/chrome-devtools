@@ -53,7 +53,7 @@ styles.replaceSync(
   text-align: right;
 }
 
-table.network-timing-table > tr:not(.network-timing-table-header):not(.network-timing-footer) > td:first-child {
+table.network-timing-table > tr:not(.network-timing-table-header, .network-timing-footer) > td:first-child {
   padding-left: 12px;
 }
 

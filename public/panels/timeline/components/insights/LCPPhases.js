@@ -40,7 +40,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LCPPhases.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class LCPPhases extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-lcp-by-phases`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-lcp-by-phases`;
     internalName = 'lcp-by-phase';
     #overlay = null;
     #getPhaseData() {

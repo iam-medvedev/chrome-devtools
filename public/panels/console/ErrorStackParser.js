@@ -22,12 +22,13 @@ export function parseSourcePositionsFromErrorStack(runtimeModel, stack) {
     for (const line of lines) {
         const match = /^\s*at\s(async\s)?/.exec(line);
         if (!match) {
-            if (linkInfos.length && linkInfos[linkInfos.length - 1].link) {
+            if (linkInfos.length && linkInfos[linkInfos.length - 1].isCallFrame) {
                 return null;
             }
             linkInfos.push({ line });
             continue;
         }
+        const isCallFrame = true;
         let left = match[0].length;
         let right = line.length;
         let enclosedInBraces = false;
@@ -53,7 +54,13 @@ export function parseSourcePositionsFromErrorStack(runtimeModel, stack) {
         const linkCandidate = line.substring(left, right);
         const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(linkCandidate);
         if (splitResult.url === '<anonymous>') {
-            linkInfos.push({ line });
+            if (linkInfos.length && linkInfos[linkInfos.length - 1].isCallFrame && !linkInfos[linkInfos.length - 1].link) {
+                // Combine builtin frames.
+                linkInfos[linkInfos.length - 1].line += `\n${line}`;
+            }
+            else {
+                linkInfos.push({ line, isCallFrame });
+            }
             continue;
         }
         let url = parseOrScriptMatch(debuggerModel, splitResult.url);
@@ -65,6 +72,7 @@ export function parseSourcePositionsFromErrorStack(runtimeModel, stack) {
         }
         linkInfos.push({
             line,
+            isCallFrame,
             link: {
                 url,
                 prefix: line.substring(0, left),

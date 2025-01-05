@@ -50,14 +50,14 @@ describe('ResolverBase', () => {
                 throw new Error('This should not get called');
             });
             resolver.assertIsListening();
-            assert.strictEqual(obj, null);
+            assert.isNull(obj);
             resolver.clear();
         });
         it('should resolve a previously unknown object when it becomes available', async () => {
             const resolver = new ResolverTestImpl();
             const waitForCall = new Promise(resolve => {
                 const obj = resolver.tryGet(id, resolve);
-                assert.strictEqual(obj, null);
+                assert.isNull(obj);
             });
             resolver.assertIsListening();
             resolver.onResolve(id, testObj);

@@ -4,7 +4,6 @@
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as SplitView from './split_view.js';
-const coordinator = RenderCoordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('SplitView', () => {
     it('should resize split view', async () => {
         const view = new SplitView.SplitView.SplitView();
@@ -12,7 +11,7 @@ describe('SplitView', () => {
         view.style.width = '800px';
         view.style.height = '600px';
         const resizer = view.shadowRoot?.querySelector('#resizer');
-        assert.ok(resizer);
+        assert.isOk(resizer);
         assert.strictEqual(view.style.getPropertyValue('--current-main-area-size'), '60%');
         let rect = resizer.getBoundingClientRect();
         resizer.dispatchEvent(new MouseEvent('mousedown', {
@@ -34,10 +33,10 @@ describe('SplitView', () => {
         view.style.width = '800px';
         view.style.height = '600px';
         const resizer = view.shadowRoot?.querySelector('#resizer');
-        assert.ok(resizer);
+        assert.isOk(resizer);
         view.style.width = '600px';
         view.style.height = '800px';
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         const rect = resizer.getBoundingClientRect();
         assert.strictEqual(rect.width, 600);
         assert.strictEqual(rect.height, 3);
@@ -49,8 +48,8 @@ describe('SplitView', () => {
         view.style.width = '800px';
         view.style.height = '600px';
         const resizer = view.shadowRoot?.querySelector('#resizer');
-        assert.ok(resizer);
-        await coordinator.done({ waitForWork: true });
+        assert.isOk(resizer);
+        await RenderCoordinator.done({ waitForWork: true });
         const rect = resizer.getBoundingClientRect();
         assert.strictEqual(rect.width, 800);
         assert.strictEqual(rect.height, 3);
@@ -61,7 +60,7 @@ describe('SplitView', () => {
         view.style.width = '800px';
         view.style.height = '600px';
         const resizer = view.shadowRoot?.querySelector('#resizer');
-        assert.ok(resizer);
+        assert.isOk(resizer);
         view.style.width = '600px';
         view.style.height = '550px';
         const rect = resizer.getBoundingClientRect();

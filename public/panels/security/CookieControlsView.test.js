@@ -14,9 +14,9 @@ describeWithMockConnection('CookieControlsView', () => {
         const testSetting = createFakeSetting('test-control', true);
         const view = new Security.CookieControlsView.CookieControlsView(undefined, mockView);
         const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
-        assert.strictEqual(testSetting.get(), true);
+        assert.isTrue(testSetting.get());
         view.inputChanged(false, testSetting);
-        assert.strictEqual(testSetting.get(), false);
+        assert.isFalse(testSetting.get());
         assert.isTrue(reloadRequiredInfobarSpy.calledOnce);
     });
 });

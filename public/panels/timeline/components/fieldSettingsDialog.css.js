@@ -20,7 +20,7 @@ styles.replaceSync(
 }
 
 devtools-dialog {
-  --override-transparent: color-mix(in sRGB, var(--color-background) 80%, transparent);
+  --override-transparent: color-mix(in srgb, var(--color-background) 80%, transparent);
 }
 
 .section-title {

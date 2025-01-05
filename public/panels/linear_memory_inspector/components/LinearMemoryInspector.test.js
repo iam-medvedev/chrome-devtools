@@ -293,12 +293,12 @@ describeWithLocale('LinearMemoryInspector', () => {
     it('returns undefined on parsing invalid address', () => {
         const address = '20a';
         const parsedAddress = LinearMemoryInspectorComponents.LinearMemoryInspectorUtils.parseAddress(address);
-        assert.strictEqual(parsedAddress, undefined);
+        assert.isUndefined(parsedAddress);
     });
     it('returns undefined on parsing negative address', () => {
         const address = '-20';
         const parsedAddress = LinearMemoryInspectorComponents.LinearMemoryInspectorUtils.parseAddress(address);
-        assert.strictEqual(parsedAddress, undefined);
+        assert.isUndefined(parsedAddress);
     });
     it('can hide the value inspector', async () => {
         const { component, data } = await setUpComponent();

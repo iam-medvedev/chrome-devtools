@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // This file is auto-generated, do not edit manually.
@@ -40,10 +40,6 @@ export const UIStrings = {
      * @description Issue text shown when the web page uses a deprecated web API. The window.confirm is the deprecated web API function.
      */
     CrossOriginWindowConfirm: "Triggering window.confirm from cross origin iframes has been deprecated and will be removed in the future.",
-    /**
-     * @description Warning displayed to developers when their website uses `:--customstatename` in CSS. They can simply switch their CSS to `:state(customstatename)` and it will be the same.
-     */
-    CSSCustomStateDeprecatedSyntax: "`:--customstatename` is deprecated. Please use the `:state(customstatename)` syntax instead.",
     /**
      * @description Warning displayed to developers when they hide the Cast button on a video element using the deprecated CSS selector instead of using the disableRemotePlayback attribute on the element.
      */
@@ -240,10 +236,6 @@ export const UIStrings = {
 export const DEPRECATIONS_METADATA = {
     "AuthorizationCoveredByWildcard": {
         "milestone": 97
-    },
-    "CSSCustomStateDeprecatedSyntax": {
-        "chromeStatusFeature": 5140610730426368,
-        "milestone": 122
     },
     "CSSSelectorInternalMediaControlsOverlayCastButton": {
         "chromeStatusFeature": 5714245488476160

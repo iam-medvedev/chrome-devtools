@@ -140,7 +140,7 @@ circle {
 }
 
 @keyframes indeterminate-left-circle-spinner-animation {
-  from {
+  0% {
     transform: rotate(265deg);
   }
 
@@ -148,13 +148,13 @@ circle {
     transform: rotate(130deg);
   }
 
-  to {
+  100% {
     transform: rotate(265deg);
   }
 }
 
 @keyframes indeterminate-right-circle-spinner-animation {
-  from {
+  0% {
     transform: rotate(-265deg);
   }
 
@@ -162,7 +162,7 @@ circle {
     transform: rotate(-130deg);
   }
 
-  to {
+  100% {
     transform: rotate(-265deg);
   }
 }

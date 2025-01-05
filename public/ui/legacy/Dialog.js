@@ -102,8 +102,8 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         this.escapeKeyCallback = callback;
     }
     addCloseButton() {
-        const closeButton = this.contentElement.createChild('div', 'dialog-close-button', 'dt-close-button');
-        closeButton.addEventListener('click', () => this.hide(), false);
+        const closeButton = this.contentElement.createChild('dt-close-button', 'dialog-close-button');
+        closeButton.addEventListener('click', this.hide.bind(this), false);
     }
     setOutsideTabIndexBehavior(tabIndexBehavior) {
         this.tabIndexBehavior = tabIndexBehavior;

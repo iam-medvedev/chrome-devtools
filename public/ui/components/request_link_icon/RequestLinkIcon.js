@@ -5,7 +5,7 @@ import '../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import requestLinkIconStyles from './requestLinkIcon.css.js';
@@ -27,7 +27,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/components/request_link_icon/RequestLinkIcon.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export const extractShortPath = (path) => {
     // 1st regex matches everything after last '/'
     // if path ends with '/', 2nd regex returns everything between the last two '/'
@@ -140,7 +139,7 @@ export class RequestLinkIcon extends HTMLElement {
         return html `<span aria-label=${i18nString(UIStrings.shortenedURL)} title=${url}>${filename}</span>`;
     }
     async #render() {
-        return coordinator.write(() => {
+        return RenderCoordinator.write(() => {
             // By default we render just the URL for the request link. If we also know
             // the concrete network request, or at least its request ID, we surround
             // the URL with a button, that opens the request in the Network panel.

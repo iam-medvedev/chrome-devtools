@@ -11,10 +11,9 @@ import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/OverridesHelpers.js';
 import { createFileSystemUISourceCode } from '../../../testing/UISourceCodeHelpers.js';
 import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const defaultRequest = {
     statusCode: 200,
     statusText: 'OK',
@@ -53,7 +52,7 @@ async function renderHeadersComponent(request) {
     const component = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
     renderElementIntoDOM(component);
     component.wasShown();
-    await coordinator.done({ waitForWork: true });
+    await RenderCoordinator.done({ waitForWork: true });
     return component;
 }
 const getTextFromRow = (row) => {
@@ -159,14 +158,14 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         // Switch to viewing source view
         responseHeadersCategory.dispatchEvent(new NetworkComponents.RequestHeadersView.ToggleRawHeadersEvent());
-        await coordinator.done();
+        await RenderCoordinator.done();
         const rawHeadersDiv = responseHeadersCategory.querySelector('.raw-headers');
         assert.instanceOf(rawHeadersDiv, HTMLDivElement);
         const rawTextContent = rawHeadersDiv.textContent?.replace(/ {2,}/g, '');
         assert.strictEqual(rawTextContent, 'HTTP/1.1 200 OK\nage: 0\ncache-control: max-age=600\ncontent-encoding: gzip\ncontent-length: 661');
         // Switch to viewing parsed view
         responseHeadersCategory.dispatchEvent(new NetworkComponents.RequestHeadersView.ToggleRawHeadersEvent());
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['age:', '0'], ['cache-control:', 'max-age=600'], ['content-encoding:', 'gzip'], ['content-length:', '661']]);
     });
     it('cuts off long raw headers and shows full content on button click', async () => {
@@ -184,7 +183,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         // Switch to viewing source view
         responseHeadersCategory.dispatchEvent(new NetworkComponents.RequestHeadersView.ToggleRawHeadersEvent());
-        await coordinator.done();
+        await RenderCoordinator.done();
         const rawHeadersDiv = responseHeadersCategory.querySelector('.raw-headers');
         assert.instanceOf(rawHeadersDiv, HTMLDivElement);
         const shortenedRawTextContent = rawHeadersDiv.textContent?.replace(/ {2,}/g, '');
@@ -193,7 +192,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(showMoreButton, HTMLElement);
         assert.strictEqual(showMoreButton.textContent, 'Show more');
         showMoreButton.click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const noMoreShowMoreButton = responseHeadersCategory.querySelector('devtools-button');
         assert.isNull(noMoreShowMoreButton);
         const fullRawTextContent = rawHeadersDiv.textContent?.replace(/ {2,}/g, '');
@@ -211,7 +210,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['originalname:', 'originalValue']]);
         request.responseHeaders = [{ name: 'updatedName', value: 'updatedValue' }];
         assert.isTrue(spy.calledOnce);
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['updatedname:', 'updatedValue']]);
     });
     it('can highlight individual response headers', async () => {
@@ -228,7 +227,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['devtools:', 'rock'], ['foo:', 'bar'], ['highlightme:', 'some value']]);
         assert.deepEqual(getRowHighlightStatus(responseHeadersCategory), [false, false, false]);
         component.revealHeader("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, 'HiGhLiGhTmE');
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.deepEqual(getRowHighlightStatus(responseHeadersCategory), [false, false, true]);
     });
     it('can highlight individual request headers', async () => {
@@ -245,7 +244,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.deepEqual(getRowsTextFromCategory(requestHeadersCategory), [['devtools:', 'rock'], ['foo:', 'bar'], ['highlightme:', 'some value']]);
         assert.deepEqual(getRowHighlightStatus(requestHeadersCategory), [false, false, false]);
         component.revealHeader("Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.REQUEST */, 'HiGhLiGhTmE');
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.deepEqual(getRowHighlightStatus(requestHeadersCategory), [false, false, true]);
     });
     it('renders a link to \'.headers\'', async () => {
@@ -261,7 +260,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.isNotNull(responseHeadersCategory.shadowRoot);
         const linkElements = responseHeadersCategory.shadowRoot.querySelectorAll('x-link');
-        assert.strictEqual(linkElements.length, 2);
+        assert.lengthOf(linkElements, 2);
         assert.instanceOf(linkElements[0], HTMLElement);
         assert.strictEqual(linkElements[0].title, 'https://goo.gle/devtools-override');
         assert.instanceOf(linkElements[1], HTMLElement);
@@ -315,14 +314,14 @@ describeWithMockConnection('RequestHeadersView', () => {
             }
             else {
                 assert.strictEqual(shadowRoot.querySelector('.header-value')?.textContent?.trim(), headerValue);
-                assert.strictEqual(valueEditableComponent, null);
+                assert.isNull(valueEditableComponent);
             }
         };
         checkRow(headerRow.shadowRoot, 'foo:', 'bar', false);
         const pencilButton = headerRow.shadowRoot.querySelector('.enable-editing');
         assert.instanceOf(pencilButton, HTMLElement);
         pencilButton.click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         checkRow(headerRow.shadowRoot, 'foo:', 'bar', true);
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideEnableEditingClicked));
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.PersistenceNetworkOverridesEnabled));
@@ -345,7 +344,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         assert.instanceOf(pencilButton, HTMLElement);
         assert.isFalse(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideFileCreated));
         pencilButton.click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideFileCreated));
     });
 });
@@ -359,7 +358,7 @@ describeWithEnvironment('RequestHeadersView\'s Category', () => {
             loggingContext: 'details-general',
         };
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const details = getElementWithinComponent(component, 'details', HTMLDetailsElement);
         const summary = getElementWithinComponent(component, 'summary', HTMLElement);
         assert.isTrue(details.hasAttribute('open'));
@@ -386,7 +385,7 @@ describeWithEnvironment('RequestHeadersView\'s Category', () => {
             loggingContext: 'details-response-headers',
         };
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         component.addEventListener(NetworkComponents.RequestHeadersView.ToggleRawHeadersEvent.eventName, () => {
             eventCounter += 1;
         });

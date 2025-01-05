@@ -100,6 +100,7 @@ styles.replaceSync(
 }
 
 .heap-snapshot-view .heap-snapshot-view-resizer .verticalResizerIcon {
+  /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-toolbarResizerVertical);
   background-repeat: no-repeat;
   background-position: center;
@@ -189,10 +190,7 @@ styles.replaceSync(
 
 .heap-recording-overview-canvas {
   position: absolute;
-  top: 20px;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 20px 0 0;
 }
 
 .heap-snapshot-statistics-view {

@@ -19,7 +19,7 @@ describe('ExpandableList', () => {
         assert.isNotNull(list.shadowRoot);
         // checks that list is not expanded initially
         let rows = list.shadowRoot.querySelectorAll('.row');
-        assert.strictEqual(rows.length, 1);
+        assert.lengthOf(rows, 1);
         const iconSpan = list.shadowRoot.querySelector('span.arrow-icon');
         assert.isNotNull(iconSpan);
         assert.isFalse(iconSpan?.classList.contains('expanded'));
@@ -31,7 +31,7 @@ describe('ExpandableList', () => {
         // checks that list is expanded
         assert.isTrue(iconSpan?.classList.contains('expanded'));
         rows = list.shadowRoot.querySelectorAll('.row');
-        assert.strictEqual(rows.length, 2);
+        assert.lengthOf(rows, 2);
     });
     it('does not render when given 0 rows', async () => {
         const list = new ExpandableList.ExpandableList.ExpandableList();
@@ -42,7 +42,7 @@ describe('ExpandableList', () => {
         assert.isNotNull(list.shadowRoot);
         // checks that list is not rendered
         const rows = list.shadowRoot.querySelectorAll('.row');
-        assert.strictEqual(rows.length, 0);
+        assert.lengthOf(rows, 0);
         const iconSpan = list.shadowRoot.querySelector('span.arrow-icon');
         assert.isNull(iconSpan);
     });
@@ -57,7 +57,7 @@ describe('ExpandableList', () => {
         assert.isNotNull(list.shadowRoot);
         // checks that list contains 1 row
         const rows = list.shadowRoot.querySelectorAll('.row');
-        assert.strictEqual(rows.length, 1);
+        assert.lengthOf(rows, 1);
         // checks that list does not render button for expanding
         const iconSpan = list.shadowRoot.querySelector('span.arrow-icon');
         assert.isNull(iconSpan);

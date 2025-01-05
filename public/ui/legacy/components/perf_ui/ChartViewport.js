@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Coordinator from '../../../components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../components/render_coordinator/render_coordinator.js';
 import * as UI from '../../legacy.js';
 import chartViewPortStyles from './chartViewport.css.legacy.js';
 import { MinimalTimeWindowMs } from './FlameChart.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class ChartViewport extends UI.Widget.VBox {
     delegate;
     viewportElement;
@@ -193,10 +192,11 @@ export class ChartViewport extends UI.Widget.VBox {
             }
         }
         else if (navigation === 'modern') {
+            const isCtrlOrCmd = UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(wheelEvent);
             if (wheelEvent.shiftKey) { // Pan left/right
                 this.handlePanGesture(wheelEvent.deltaY, /* animate */ true);
             }
-            else if (wheelEvent.ctrlKey || Math.abs(wheelEvent.deltaX) > Math.abs(wheelEvent.deltaY)) { // Zoom
+            else if (isCtrlOrCmd || Math.abs(wheelEvent.deltaX) > Math.abs(wheelEvent.deltaY)) { // Zoom
                 this.handleZoomGesture(zoomDelta);
             }
             else { // Scroll
@@ -397,7 +397,7 @@ export class ChartViewport extends UI.Widget.VBox {
             return;
         }
         this.isUpdateScheduled = true;
-        void coordinator.write(() => {
+        void RenderCoordinator.write(() => {
             this.isUpdateScheduled = false;
             this.update();
         });

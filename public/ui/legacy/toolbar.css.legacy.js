@@ -199,10 +199,7 @@ devtools-issue-counter.main-toolbar {
 
 :not(.toolbar-render-as-links) .toolbar-button:not(.toolbar-has-dropdown):focus-visible::before {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 2px;
-  right: 2px;
+  inset: 2px;
   background-color: var(--sys-color-state-focus-highlight);
   border-radius: 2px;
   content: "";
@@ -279,7 +276,7 @@ it. */
   color: var(--icon-error) !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.largeicon-menu):not(.toolbar-button-secondary) {
+.toolbar-button:not(.toolbar-has-glyph, .toolbar-has-dropdown, .largeicon-menu, .toolbar-button-secondary) {
   font-weight: bold;
 }
 
@@ -391,7 +388,7 @@ select.toolbar-item:focus-visible > * {
     box-shadow: inset 0 0 0 2px var(--sys-color-state-focus-ring);
   }
 
-  &:not(:has(devtools-button:hover)):not(.disabled):hover {
+  &:not(:has(devtools-button:hover), .disabled):hover {
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
@@ -474,31 +471,10 @@ select.toolbar-item:focus-visible > * {
   margin-right: 2px;
 }
 
-input[is="history-input"] {
-  margin: 0 1px;
-  border: 1px solid var(--sys-color-neutral-outline);
-  border-radius: 4px;
-  line-height: 16px;
-  padding: 1px 1px 1px 3px;
-  color: var(--sys-color-on-surface);
-}
-
-input[is="history-input"]:focus,
-input[is="history-input"]:not(:placeholder-shown) {
-  border-color: var(--sys-color-state-focus-ring);
-}
-
-input[is="history-input"]:hover:not(:focus) {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 .toolbar-item.highlight::before {
   content: "";
   position: absolute;
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
+  inset: 2px;
   border-radius: 2px;
   background: var(--sys-color-neutral-container);
   z-index: -1;

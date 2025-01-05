@@ -27,7 +27,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Im
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const MAX_REQUESTS = 10;
 export class ImageDelivery extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-image-delivery`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-image-delivery`;
     internalName = 'image-delivery';
     createOverlays() {
         if (!this.model) {

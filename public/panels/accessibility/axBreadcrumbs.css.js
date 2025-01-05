@@ -61,7 +61,7 @@ styles.replaceSync(
   display: inline-block;
 }
 
-.ax-breadcrumbs .ax-node:not(.parent):not(.children-unloaded)::before {
+.ax-breadcrumbs .ax-node:not(.parent, .children-unloaded)::before {
   background-color: transparent;
 }
 

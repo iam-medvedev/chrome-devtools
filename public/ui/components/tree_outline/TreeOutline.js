@@ -6,11 +6,10 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import treeOutlineStyles from './treeOutline.css.js';
 import { findNextNodeForTreeOutlineKeyboardNavigation, getNodeChildren, getPathToTreeNode, isExpandableNode, trackDOMNodeToTreeNode, } from './TreeOutlineUtils.js';
 const { html, Directives: { ifDefined } } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export function defaultRenderer(node) {
     return html `${node.treeNodeData}`;
 }
@@ -254,7 +253,7 @@ export class TreeOutline extends HTMLElement {
         this.#selectedTreeNode = treeNode;
         await this.#render();
         this.dispatchEvent(new ItemSelectedEvent(treeNode));
-        void coordinator.write('DOMNode focus', () => {
+        void RenderCoordinator.write('DOMNode focus', () => {
             domNode.focus();
         });
     }
@@ -421,7 +420,7 @@ export class TreeOutline extends HTMLElement {
             return;
         }
         this.#scheduledRender = true;
-        await coordinator.write('TreeOutline render', () => {
+        await RenderCoordinator.write('TreeOutline render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(html `

@@ -23,7 +23,7 @@ describe('RequestResolver', () => {
                 throw new Error('This should not get called');
             });
             assert.isTrue(networkLog.hasEventListeners(Logs.NetworkLog.Events.RequestAdded));
-            assert.strictEqual(request, null);
+            assert.isNull(request);
             requestResolver.clear();
         });
         it('should resolve a previously unknown request when it becomes available', async () => {
@@ -32,7 +32,7 @@ describe('RequestResolver', () => {
             const requestResolver = new Logs.RequestResolver.RequestResolver(networkLog);
             const waitForCall = new Promise(resolve => {
                 const request = requestResolver.tryGet(requestId1, resolve);
-                assert.strictEqual(request, null);
+                assert.isNull(request);
             });
             assert.isTrue(networkLog.hasEventListeners(Logs.NetworkLog.Events.RequestAdded));
             const mockRequest = createNetworkRequest(requestId1);

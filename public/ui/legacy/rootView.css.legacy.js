@@ -14,10 +14,7 @@ export default {
   background-color: var(--sys-color-cdt-base-container);
   overflow: hidden;
   position: absolute !important; /* stylelint-disable-line declaration-no-important */
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
 }
 
 /*# sourceURL=rootView.css */

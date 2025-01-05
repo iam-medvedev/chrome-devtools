@@ -82,7 +82,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private innerResize;
     private resetCache;
     private fetchMatchedCascade;
-    setEditingStyle(editing: boolean, _treeElement?: StylePropertyTreeElement): void;
+    setEditingStyle(editing: boolean): void;
     setActiveProperty(treeElement: StylePropertyTreeElement | null): void;
     onCSSModelChanged(event: Common.EventTarget.EventTargetEvent<CSSModelChangedEvent>): void;
     refreshComputedStyles(): Promise<void>;

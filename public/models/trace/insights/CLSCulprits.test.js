@@ -111,7 +111,7 @@ describeWithEnvironment('CLSCulprits', function () {
                 const shift1 = Array.from(shifts)[0][0];
                 const shiftIframes = shifts.get(shift1)?.iframeIds;
                 assert.exists(shiftIframes);
-                assert.strictEqual(shiftIframes.length, 1);
+                assert.lengthOf(shiftIframes, 1);
                 const iframe = shiftIframes[0];
                 // Find the event with the matching frame id to make sure we got the right id.
                 const dlEvent = data.LayoutShifts.domLoadingEvents.find(e => {
@@ -140,7 +140,7 @@ describeWithEnvironment('CLSCulprits', function () {
                 const shiftEvent = shift2[0];
                 const shiftFonts = shift2[1].fontRequests;
                 assert.exists(shiftFonts);
-                assert.strictEqual(shiftFonts.length, 1);
+                assert.lengthOf(shiftFonts, 1);
                 const fontRequest = shiftFonts[0];
                 const fontRequestEndTime = fontRequest.ts + fontRequest.dur;
                 // Ensure the font loads within the invalidation window.
@@ -161,7 +161,7 @@ describeWithEnvironment('CLSCulprits', function () {
                 assert.exists(shifts);
                 assert.strictEqual(shifts.size, 2);
                 const unsizedImages = data.LayoutShifts.layoutImageUnsizedEvents;
-                assert.strictEqual(unsizedImages.length, 2);
+                assert.lengthOf(unsizedImages, 2);
                 const layoutShiftEvents = Array.from(shifts.entries());
                 const shift1 = layoutShiftEvents.at(0);
                 assert.isOk(shift1);
@@ -181,7 +181,7 @@ describeWithEnvironment('CLSCulprits', function () {
             const { shifts, clusters } = insight;
             assert.exists(clusters);
             assert.exists(shifts);
-            assert.strictEqual(clusters.length, 2);
+            assert.lengthOf(clusters, 2);
             for (const cluster of clusters) {
                 // Check that the cluster events exist in shifts map.
                 for (const shiftEvent of cluster.events) {
@@ -195,7 +195,7 @@ describeWithEnvironment('CLSCulprits', function () {
             const { shifts, clusters } = insight;
             assert.exists(clusters);
             assert.exists(shifts);
-            assert.strictEqual(clusters.length, 3);
+            assert.lengthOf(clusters, 3);
             for (const cluster of clusters) {
                 // Check that the cluster events exist in shifts map.
                 for (const shiftEvent of cluster.events) {

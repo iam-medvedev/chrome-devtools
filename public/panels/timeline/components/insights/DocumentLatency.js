@@ -58,7 +58,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/DocumentLatency.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class DocumentLatency extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-document-latency`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-document-latency`;
     internalName = 'document-latency';
     #check(didPass, good, bad) {
         const icon = didPass ? 'check-circle' : 'clear';

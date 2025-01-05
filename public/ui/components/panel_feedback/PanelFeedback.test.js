@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithLocale('Panel Feedback', () => {
     async function renderFeedbackComponent() {
         const component = new PanelFeedback.PanelFeedback.PanelFeedback();
@@ -15,7 +14,7 @@ describeWithLocale('Panel Feedback', () => {
             quickStartLinkText: 'quick start link text',
         };
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         return component;
     }
     it('uses the correct href for the feedback x-link', async () => {

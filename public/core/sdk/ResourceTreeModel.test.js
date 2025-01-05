@@ -125,7 +125,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
         resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, event => primaryPageChangedEvents.push(event.data));
         const frame = resourceTreeModel.frameAttached('frame_id', null);
         childTargetManager.targetInfoChanged({ targetInfo: { ...targetInfo, subtype: undefined } });
-        assert.strictEqual(primaryPageChangedEvents.length, 1);
+        assert.lengthOf(primaryPageChangedEvents, 1);
         assert.strictEqual(primaryPageChangedEvents[0].frame, frame);
         assert.strictEqual(primaryPageChangedEvents[0].type, "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.ACTIVATION */);
     });
@@ -140,13 +140,13 @@ describeWithMockConnection('ResourceTreeModel', () => {
             resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, event => primaryPageChangedEvents.push(event.data));
         });
         navigate(getMainFrame(mainFrameTarget));
-        assert.strictEqual(primaryPageChangedEvents.length, 1);
+        assert.lengthOf(primaryPageChangedEvents, 1);
         assert.strictEqual(primaryPageChangedEvents[0].frame.id, 'main');
         assert.strictEqual(primaryPageChangedEvents[0].type, "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.NAVIGATION */);
         navigate(getMainFrame(subframeTarget), { parentId: MAIN_FRAME_ID, id: 'child' });
-        assert.strictEqual(primaryPageChangedEvents.length, 1);
+        assert.lengthOf(primaryPageChangedEvents, 1);
         navigate(getMainFrame(prerenderTarget));
-        assert.strictEqual(primaryPageChangedEvents.length, 1);
+        assert.lengthOf(primaryPageChangedEvents, 1);
     });
     it('rebuilds the resource tree upon bfcache-navigation', async () => {
         const target = createTarget();

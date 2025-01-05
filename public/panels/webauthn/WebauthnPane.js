@@ -573,10 +573,10 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         UI.ARIAUtils.markAsHeading(titleElement, 2);
         await this.#clearActiveAuthenticator();
         const activeButtonContainer = headerElement.createChild('div', 'active-button-container');
-        const activeLabel = UI.UIUtils.createRadioLabel(`active-authenticator-${authenticatorId}`, i18nString(UIStrings.active));
-        activeLabel.radioElement.addEventListener('change', this.#setActiveAuthenticator.bind(this, authenticatorId));
+        const { label: activeLabel, radio: activeRadio } = UI.UIUtils.createRadioButton('active-authenticator', i18nString(UIStrings.active), 'webauthn.active-authenticator');
+        activeRadio.addEventListener('change', this.#setActiveAuthenticator.bind(this, authenticatorId));
+        activeRadio.checked = true;
         activeButtonContainer.appendChild(activeLabel);
-        activeLabel.radioElement.checked = true;
         this.#activeAuthId = authenticatorId; // Newly added authenticator is automatically set as active.
         const removeButton = headerElement.createChild('button', 'text-button');
         removeButton.textContent = i18nString(UIStrings.remove);
@@ -691,7 +691,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         this.#updateActiveLabelTitle(activeLabel, name);
     }
     #updateActiveLabelTitle(activeLabel, authenticatorName) {
-        UI.Tooltip.Tooltip.install(activeLabel.radioElement, i18nString(UIStrings.setSAsTheActiveAuthenticator, { PH1: authenticatorName }));
+        UI.Tooltip.Tooltip.install(activeLabel, i18nString(UIStrings.setSAsTheActiveAuthenticator, { PH1: authenticatorName }));
     }
     /**
      * Removes both the authenticator and its respective UI element.
@@ -761,7 +761,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     #updateActiveButtons() {
         const authenticators = this.#authenticatorsView.getElementsByClassName('authenticator-section');
         Array.from(authenticators).forEach((authenticator) => {
-            const button = authenticator.querySelector('input.dt-radio-button');
+            const button = authenticator.querySelector('input[type="radio"]');
             if (!button) {
                 return;
             }

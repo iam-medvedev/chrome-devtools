@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as UI from '../../legacy/legacy.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import dataGridStyles from './dataGrid.css.js';
-import { BodyCellFocusedEvent, ColumnHeaderClickEvent, ContextMenuHeaderResetClickEvent, RowMouseEnterEvent, RowMouseLeaveEvent, } from './DataGridEvents.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 import { addColumnVisibilityCheckboxes, addSortableColumnItems } from './DataGridContextMenuUtils.js';
+import { BodyCellFocusedEvent, ColumnHeaderClickEvent, ContextMenuHeaderResetClickEvent, RowMouseEnterEvent, RowMouseLeaveEvent, } from './DataGridEvents.js';
 import { calculateColumnWidthPercentageFromWeighting, calculateFirstFocusableCell, getCellTitleFromCellContent, getRowEntryForColumnId, handleArrowKeyNavigation, renderCellValue, } from './DataGridUtils.js';
-import * as i18n from '../../../core/i18n/i18n.js';
 const { html, Directives: { ifDefined, classMap, styleMap, repeat } } = LitHtml;
 const UIStrings = {
     /**
@@ -195,7 +194,7 @@ export class DataGrid extends HTMLElement {
         if (!wrapper) {
             return;
         }
-        void coordinator.scroll(() => {
+        void RenderCoordinator.scroll(() => {
             const scrollHeight = wrapper.scrollHeight;
             wrapper.scrollTo(0, scrollHeight);
         });
@@ -530,7 +529,7 @@ export class DataGrid extends HTMLElement {
         void this.#render();
     }
     #alignScrollHandlers() {
-        return coordinator.read(() => {
+        return RenderCoordinator.read(() => {
             const columnHeaders = this.#shadow.querySelectorAll('th:not(.hidden)');
             const handlers = this.#shadow.querySelectorAll('.cell-resize-handle');
             const table = this.#shadow.querySelector('table');
@@ -542,7 +541,7 @@ export class DataGrid extends HTMLElement {
                 const columnLeftOffset = header.offsetLeft;
                 if (handlers[index]) {
                     const handlerWidth = handlers[index].clientWidth;
-                    void coordinator.write(() => {
+                    void RenderCoordinator.write(() => {
                         /**
                          * Render the resizer at the far right of the column; we subtract
                          * its width so it sits on the inner edge of the column.
@@ -558,7 +557,7 @@ export class DataGrid extends HTMLElement {
      * Pads in each direction by PADDING_ROWS_COUNT so we render some rows that are off scren.
      */
     #calculateTopAndBottomRowIndexes() {
-        return coordinator.read(() => {
+        return RenderCoordinator.read(() => {
             const wrapper = this.#shadow.querySelector('.wrapping-container');
             // On first render we don't have a wrapper, so we can't get at its
             // scroll/height values. So we default to the inner height of the window as
@@ -632,7 +631,7 @@ export class DataGrid extends HTMLElement {
             'show-scrollbar': this.#showScrollbar === true,
             striped: this.#striped === true,
         };
-        await coordinator.write(() => {
+        await RenderCoordinator.write(() => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(html `

@@ -55,7 +55,7 @@ export class Infobar {
             this.element.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Enter|Escape' })}`);
         }
         this.element.classList.add('flex-none');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles, delegatesFocus: undefined });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles });
         this.contentElement = this.shadowRoot.createChild('div', 'infobar infobar-' + type);
         this.mainRow = this.contentElement.createChild('div', 'infobar-main-row');
         this.detailsRows = this.contentElement.createChild('div', 'infobar-details-rows hidden');
@@ -99,10 +99,8 @@ export class Infobar {
         this.toggleElement = createTextButton(i18nString(UIStrings.showMore), this.onToggleDetails.bind(this), { className: 'hidden show-more', jslogContext: 'show-more', variant: "text" /* Buttons.Button.Variant.TEXT */ });
         this.toggleElement.setAttribute('role', 'link');
         this.closeContainer.appendChild(this.toggleElement);
-        this.closeButton = this.closeContainer.createChild('div', 'close-button', 'dt-close-button');
+        this.closeButton = this.closeContainer.createChild('dt-close-button', 'close-button');
         this.closeButton.hidden = !isCloseable;
-        // @ts-ignore This is a custom element defined in UIUitls.js that has a `setTabbable` that TS doesn't
-        //            know about.
         this.closeButton.setTabbable(true);
         ARIAUtils.setDescription(this.closeButton, i18nString(UIStrings.close));
         self.onInvokeElement(this.closeButton, this.dispose.bind(this));

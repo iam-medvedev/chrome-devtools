@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Dialogs from '../dialogs/dialogs.js';
@@ -11,7 +11,6 @@ import menuStyles from './menu.css.js';
 import menuGroupStyles from './menuGroup.css.js';
 import menuItemStyles from './menuItem.css.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -83,7 +82,7 @@ export class Menu extends HTMLElement {
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [menuStyles];
-        void coordinator.write(() => {
+        void RenderCoordinator.write(() => {
             this.style.setProperty('--selected-item-check', `url(${selectedItemCheckmark})`);
             this.style.setProperty('--menu-checkmark-width', this.#props.showSelectedItem ? '26px' : '0px');
             this.style.setProperty('--menu-checkmark-height', this.#props.showSelectedItem ? '12px' : '0px');
@@ -98,7 +97,7 @@ export class Menu extends HTMLElement {
         return this.#dialog;
     }
     async #dialogDeployed() {
-        await coordinator.write(() => {
+        await RenderCoordinator.write(() => {
             this.setAttribute('has-open-dialog', 'has-open-dialog');
             // Focus the container so tha twe can capture key events.
             const container = this.#shadow.querySelector('#container');

@@ -276,6 +276,16 @@ export class Overlays extends EventTarget {
         init.flameChartsContainers.main.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'main'));
         init.flameChartsContainers.network.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'network'));
     }
+    // Toggle display of the whole OverlaysContainer.
+    // This function is used to hide all overlays when the Flamechart is in the 'reorder tracks' state.
+    // If the tracks are being reordered, they are collapsed and we do not want to display
+    // anything except the tracks reordering interface.
+    //
+    // Do not change individual overlays visibility with 'setOverlayElementVisibility' since we do not
+    // want to overwrite the overlays visibility state that was set before entering the reordering state.
+    toggleAllOverlaysDisplayed(allOverlaysDisplayed) {
+        this.#overlaysContainer.style.display = allOverlaysDisplayed ? 'block' : 'none';
+    }
     // Mousemove event listener to get mouse coordinates and update them for the entries link that is being created.
     //
     // The 'mousemove' event is attached to `flameChartsContainers` instead of `overlaysContainer`

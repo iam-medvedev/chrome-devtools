@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderRuleSetDetailsView(data, shouldPrettyPrint) {
     const component = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();
     component.shouldPrettyPrint = shouldPrettyPrint;
     component.data = data;
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     return component;
 }
 describeWithEnvironment('RuleSetDetailsView', () => {
@@ -39,7 +38,7 @@ describeWithEnvironment('RuleSetDetailsView', () => {
             backendNodeId: 1,
         };
         const component = await renderRuleSetDetailsView(data, false);
-        assert.deepEqual(component.shadowRoot?.getElementById('error-message-text')?.textContent, undefined);
+        assert.isUndefined(component.shadowRoot?.getElementById('error-message-text')?.textContent);
         const textEditor = component.shadowRoot?.querySelector('devtools-text-editor');
         assert.strictEqual(textEditor.state.doc.toString(), data.sourceText);
     });
@@ -61,7 +60,7 @@ describeWithEnvironment('RuleSetDetailsView', () => {
             requestId: 'reqeustId',
         };
         const component = await renderRuleSetDetailsView(data, false);
-        assert.deepEqual(component.shadowRoot?.getElementById('error-message-text')?.textContent, undefined);
+        assert.isUndefined(component.shadowRoot?.getElementById('error-message-text')?.textContent);
         const textEditor = component.shadowRoot?.querySelector('devtools-text-editor');
         assert.strictEqual(textEditor.state.doc.toString(), data.sourceText);
     });
@@ -114,7 +113,7 @@ describeWithEnvironment('RuleSetDetailsView', () => {
             backendNodeId: 1,
         };
         const component = await renderRuleSetDetailsView(data, true);
-        assert.deepEqual(component.shadowRoot?.getElementById('error-message-text')?.textContent, undefined);
+        assert.isUndefined(component.shadowRoot?.getElementById('error-message-text')?.textContent);
         const textEditor = component.shadowRoot?.querySelector('devtools-text-editor');
         // Formatted sourceText should be different from the data.sourceText in this case.
         assert.notEqual(textEditor.state.doc.toString(), data.sourceText);

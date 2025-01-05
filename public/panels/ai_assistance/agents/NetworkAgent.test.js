@@ -7,9 +7,8 @@ import * as Logs from '../../../models/logs/logs.js';
 import { getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../../testing/NetworkHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import { allowHeader, formatHeaders, formatInitiatorUrl, NetworkAgent, RequestContext, } from '../ai_assistance.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('NetworkAgent', () => {
     let networkPanel;
     function mockHostConfig(modelId, temperature) {
@@ -24,7 +23,7 @@ describeWithMockConnection('NetworkAgent', () => {
         networkPanel = await createNetworkPanelForMockConnection();
     });
     afterEach(async () => {
-        await coordinator.done();
+        await RenderCoordinator.done();
         networkPanel.detach();
     });
     describe('buildRequest', () => {

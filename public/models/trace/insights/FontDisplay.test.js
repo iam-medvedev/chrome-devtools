@@ -8,7 +8,7 @@ describeWithEnvironment('FontDisplay', function () {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.strictEqual(insights.size, 2);
         const insight = getInsightOrError('FontDisplay', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
-        assert.strictEqual(insight.fonts.length, 0);
+        assert.lengthOf(insight.fonts, 0);
     });
     it('finds requests for remote fonts', async () => {
         const { data, insights } = await processTrace(this, 'font-display.json.gz');

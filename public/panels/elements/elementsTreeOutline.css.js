@@ -255,7 +255,7 @@ select {
 }
 /* DOM update highlight */
 @keyframes dom-update-highlight-animation {
-  from {
+  0% {
     background-color: var(--sys-color-token-tag);
     color: var(--sys-color-cdt-base-container);
   }
@@ -264,13 +264,13 @@ select {
     background-color: var(--sys-color-token-meta);
   }
 
-  to {
+  100% {
     background-color: inherit;
   }
 }
 
 @keyframes dom-update-highlight-animation-dark {
-  from {
+  0% {
     background-color: var(--sys-color-token-tag);
     color: var(--sys-color-cdt-base-container);
   }
@@ -280,7 +280,7 @@ select {
     color: inherit;
   }
 
-  to {
+  100% {
     background-color: inherit;
   }
 }
@@ -342,7 +342,7 @@ li.selected:not(.always-parent) + ol.children {
 }
 
 li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
-  --override-indentation-level-border-color: color-mix(in sRGB, var(--ref-palette-neutral0) 10%, transparent);
+  --override-indentation-level-border-color: color-mix(in srgb, var(--ref-palette-neutral0) 10%, transparent);
 }
 
 .elements-tree-outline ol.shadow-root {
@@ -373,6 +373,7 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
 }
 
 .violating-element {
+  /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-errorWave);
   background-repeat: repeat-x;
   background-position: bottom;

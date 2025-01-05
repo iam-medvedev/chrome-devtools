@@ -35,7 +35,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class BaseInsightComponent extends HTMLElement {
     // So we can use the TypeScript BaseInsight class without getting warnings
     // about litTagName. Every child should overrwrite this.
-    static litTagName = LitHtml.literal ``;
+    static litTagName = LitHtml.StaticHtml.literal ``;
     #shadowRoot = this.attachShadow({ mode: 'open' });
     #selected = false;
     #model = null;

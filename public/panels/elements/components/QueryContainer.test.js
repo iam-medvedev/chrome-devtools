@@ -98,7 +98,7 @@ describe('QueryContainer', () => {
             height: '300px',
         });
         const nonExistentDetailsElement = component.shadowRoot.querySelector('.queried-size-details');
-        assert.strictEqual(nonExistentDetailsElement, null, 'query details without any axis should not be rendered');
+        assert.isNull(nonExistentDetailsElement, 'query details without any axis should not be rendered');
         component.updateContainerQueriedSizeDetails({
             physicalAxis: "Horizontal" /* SDK.CSSContainerQuery.PhysicalAxis.HORIZONTAL */,
             queryAxis: "inline-size" /* SDK.CSSContainerQuery.QueryAxis.INLINE */,

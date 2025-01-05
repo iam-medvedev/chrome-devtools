@@ -5,15 +5,14 @@ import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
 import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderPreloadingMismatchedHeadersGrid(data) {
     const component = new PreloadingComponents.PreloadingMismatchedHeadersGrid.PreloadingMismatchedHeadersGrid();
     component.data = data;
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     return component;
 }
 async function testPreloadingMismatchedHeadersGrid(recievedMismatchedHeaders, rowExpected) {

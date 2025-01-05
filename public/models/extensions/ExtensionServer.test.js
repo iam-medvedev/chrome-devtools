@@ -74,7 +74,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const extensionPlugin = new RecorderPlugin();
         await context.chrome.devtools?.recorder.registerRecorderExtensionPlugin(extensionPlugin, 'Test', 'text/javascript');
         const manager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        assert.strictEqual(manager.plugins().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
         const plugin = manager.plugins()[0];
         const result = await plugin.stringify({
             name: 'test',
@@ -83,7 +83,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const stepResult = await plugin.stringifyStep({
             type: 'scroll',
         });
-        assert.strictEqual(manager.plugins().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
         assert.strictEqual(manager.plugins()[0].getMediaType(), 'text/javascript');
         assert.strictEqual(manager.plugins()[0].getName(), 'Test');
         assert.deepEqual(manager.plugins()[0].getCapabilities(), ['export']);
@@ -100,13 +100,13 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const extensionPlugin = new RecorderPlugin();
         await context.chrome.devtools?.recorder.registerRecorderExtensionPlugin(extensionPlugin, 'Replay');
         const manager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        assert.strictEqual(manager.plugins().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
         const plugin = manager.plugins()[0];
         await plugin.replay({
             name: 'test',
             steps: [],
         });
-        assert.strictEqual(manager.plugins().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
         assert.deepEqual(manager.plugins()[0].getCapabilities(), ['replay']);
         assert.strictEqual(manager.plugins()[0].getName(), 'Replay');
         await context.chrome.devtools?.recorder.unregisterRecorderExtensionPlugin(extensionPlugin);
@@ -121,7 +121,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const extensionPlugin = new RecorderPlugin();
         await context.chrome.devtools?.recorder.registerRecorderExtensionPlugin(extensionPlugin, 'Replay');
         const manager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        assert.strictEqual(manager.plugins().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
         const plugin = manager.plugins()[0];
         const stub = sinon.stub(UI.InspectorView.InspectorView.instance(), 'showPanel').callsFake(() => Promise.resolve());
         await plugin.replay({
@@ -141,8 +141,8 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const extensionPlugin = new RecorderPlugin();
         await context.chrome.devtools?.recorder.registerRecorderExtensionPlugin(extensionPlugin, 'Replay');
         const manager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        assert.strictEqual(manager.plugins().length, 1);
-        assert.strictEqual(manager.views().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
+        assert.lengthOf(manager.views(), 1);
         const plugin = manager.plugins()[0];
         const onceShowRequested = manager.once("showViewRequested" /* Extensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED */);
         await plugin.replay({
@@ -165,8 +165,8 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const extensionPlugin = new RecorderPlugin();
         await context.chrome.devtools?.recorder.registerRecorderExtensionPlugin(extensionPlugin, 'Replay');
         const manager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        assert.strictEqual(manager.plugins().length, 1);
-        assert.strictEqual(manager.views().length, 1);
+        assert.lengthOf(manager.plugins(), 1);
+        assert.lengthOf(manager.views(), 1);
         const events = [];
         manager.addEventListener("showViewRequested" /* Extensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED */, event => {
             events.push(event);
@@ -295,7 +295,6 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         target.setInspectedURL(allowedUrl);
         {
             const result = await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
-            // eslint-disable-next-line rulesdir/compare-arrays-with-assert-deepequal
             assert.hasAnyKeys(result, ['entries']);
         }
     });
@@ -304,7 +303,6 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         target.setInspectedURL('http://example.com2');
         {
             const result = await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
-            // eslint-disable-next-line rulesdir/compare-arrays-with-assert-deepequal
             assert.hasAnyKeys(result, ['entries']);
         }
     });
@@ -464,7 +462,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         createRequest(networkManager, frameId, 'blocked-url-request-id', blockedUrl);
         createRequest(networkManager, frameId, 'allowed-url-request-id', allowedUrl);
         await waitForFunction(() => requests.length >= 1);
-        assert.strictEqual(requests.length, 1);
+        assert.lengthOf(requests, 1);
         assert.exists(requests.find(e => e.request.url === allowedUrl));
         assert.notExists(requests.find(e => e.request.url === blockedUrl));
     });
@@ -492,11 +490,11 @@ describe('ExtensionServer', () => {
         const extensionOrigin = 'chrome://abcdef';
         const almostOrigin = `${extensionOrigin}/`;
         const expectation = `${extensionOrigin}/foo`;
-        assert.strictEqual(undefined, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(extensionOrigin, 'http://example.com/foo'));
+        assert.isUndefined(Extensions.ExtensionServer.ExtensionServer.expandResourcePath(extensionOrigin, 'http://example.com/foo'));
         assert.strictEqual(expectation, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(extensionOrigin, expectation));
         assert.strictEqual(expectation, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(extensionOrigin, '/foo'));
         assert.strictEqual(expectation, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(extensionOrigin, 'foo'));
-        assert.strictEqual(undefined, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(almostOrigin, 'http://example.com/foo'));
+        assert.isUndefined(Extensions.ExtensionServer.ExtensionServer.expandResourcePath(almostOrigin, 'http://example.com/foo'));
         assert.strictEqual(expectation, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(almostOrigin, expectation));
         assert.strictEqual(expectation, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(almostOrigin, '/foo'));
         assert.strictEqual(expectation, Extensions.ExtensionServer.ExtensionServer.expandResourcePath(almostOrigin, 'foo'));

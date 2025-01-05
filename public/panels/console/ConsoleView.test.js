@@ -160,7 +160,7 @@ describeWithMockConnection('ConsoleView', () => {
             const messagesElement = consoleView.element.querySelector('#console-messages');
             assert.instanceOf(messagesElement, HTMLElement);
             dispatchPasteEvent(messagesElement, { clipboardData: dt, bubbles: true });
-            assert.strictEqual(Common.Console.Console.instance().messages().length, 0);
+            assert.lengthOf(Common.Console.Console.instance().messages(), 0);
             stub.restore();
         });
     });

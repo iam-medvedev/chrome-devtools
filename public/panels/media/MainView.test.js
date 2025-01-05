@@ -4,7 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Media from './media.js';
 const PLAYER_ID = 'PLAYER_ID';
 describeWithMockConnection('MediaMainView', () => {
@@ -27,7 +27,7 @@ describeWithMockConnection('MediaMainView', () => {
         model.dispatchEventToListeners(event, ...[data]);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(expectedCall.called, inScope);
-        await Coordinator.RenderCoordinator.RenderCoordinator.instance().done();
+        await RenderCoordinator.done();
         mainView.detach();
     };
     it('reacts to properties on in scope event', testUiUpdate("PlayerPropertiesChanged" /* Media.MediaModel.Events.PLAYER_PROPERTIES_CHANGED */, 'onProperty', true));

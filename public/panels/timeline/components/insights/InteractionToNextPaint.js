@@ -38,7 +38,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/InteractionToNextPaint.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class InteractionToNextPaint extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-inp`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-inp`;
     internalName = 'inp';
     createOverlays() {
         if (!this.model) {

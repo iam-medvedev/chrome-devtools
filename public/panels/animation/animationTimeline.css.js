@@ -47,12 +47,12 @@ styles.replaceSync(
 }
 
 path.animation-keyframe {
-  fill-opacity: 0.2;
+  fill-opacity: 20%;
 }
 
 .animation-node-selected path.animation-keyframe,
 svg.animation-ui g:first-child:hover path.animation-keyframe {
-  fill-opacity: 0.4;
+  fill-opacity: 40%;
 }
 
 line.animation-line {
@@ -235,10 +235,7 @@ circle.animation-keyframe-point:active {
 
 svg.animation-timeline-grid {
   position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
@@ -289,7 +286,7 @@ svg.animation-ui path:focus-visible {
 
 .animation-keyframe-step line {
   stroke-width: 2;
-  stroke-opacity: 0.3;
+  stroke-opacity: 30%;
 }
 
 text.animation-timeline-grid-label {
@@ -312,6 +309,7 @@ text.animation-timeline-grid-label {
   position: relative;
 
   & .screenshot-arrow {
+    /* stylelint-disable-next-line custom-property-pattern */
     background-image: var(--image-file-popoverArrows);
     background-position: 0 76px;
     width: 19px;
@@ -367,9 +365,8 @@ text.animation-timeline-grid-label {
 .animation-timeline-rows,
 .animation-timeline-rows-hint {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow: hidden auto;
   z-index: 1;
-  overflow-x: hidden;
 }
 
 .animation-timeline-rows-hint {
@@ -544,7 +541,7 @@ text.animation-timeline-grid-label {
   outline-offset: 2px;
 }
 
-.animation-playback-rate-button:not(.selected):not([disabled]):hover {
+.animation-playback-rate-button:not(.selected, [disabled]):hover {
   background: var(--sys-color-state-hover-on-subtle);
 }
 

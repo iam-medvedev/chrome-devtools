@@ -42,7 +42,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/TrustTokensView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = RenderCoordinator.RenderCoordinator.RenderCoordinator.instance();
 /** Fetch the Trust Token data regularly from the backend while the panel is open */
 const REFRESH_INTERVAL_MS = 1000;
 export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
@@ -62,7 +61,7 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             return;
         }
         const { tokens } = await mainTarget.storageAgent().invoke_getTrustTokens();
-        await coordinator.write('Render TrustTokensView', () => {
+        await RenderCoordinator.write('Render TrustTokensView', () => {
             // clang-format off
             LitHtml.render(html `
         <div>

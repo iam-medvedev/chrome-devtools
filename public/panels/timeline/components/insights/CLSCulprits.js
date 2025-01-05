@@ -53,7 +53,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/CLSCulprits.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CLSCulprits extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-cls-culprits`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-cls-culprits`;
     internalName = 'cls-culprits';
     createOverlays() {
         const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];

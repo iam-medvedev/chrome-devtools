@@ -78,8 +78,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         super();
         this.panel = profilesPanel;
         this.element.classList.add('profile-launcher-view');
-        this.contentElementInternal =
-            this.element.createChild('div', 'profile-launcher-view-content vbox');
+        this.contentElementInternal = this.element.createChild('div', 'profile-launcher-view-content vbox');
         const profileTypeSelectorElement = this.contentElementInternal.createChild('div', 'vbox');
         this.selectedProfileTypeSetting = Common.Settings.Settings.instance().createSetting('selected-profile-type', 'CPU');
         this.profileTypeHeaderElement = profileTypeSelectorElement.createChild('h1');
@@ -150,18 +149,17 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.updateControls();
     }
     addProfileType(profileType) {
-        const labelElement = UI.UIUtils.createRadioLabel('profile-type', profileType.name, undefined, 'profiler.profile-type');
-        this.profileTypeSelectorForm.appendChild(labelElement);
-        const optionElement = labelElement.radioElement;
-        this.typeIdToOptionElementAndProfileType.set(profileType.id, { optionElement, profileType });
-        optionElement.addEventListener('change', this.profileTypeChanged.bind(this, profileType), false);
+        const { radio, label } = UI.UIUtils.createRadioButton('profile-type', profileType.name, 'profiler.profile-type');
+        this.profileTypeSelectorForm.appendChild(label);
+        this.typeIdToOptionElementAndProfileType.set(profileType.id, { optionElement: radio, profileType });
+        radio.addEventListener('change', this.profileTypeChanged.bind(this, profileType), false);
         const descriptionElement = this.profileTypeSelectorForm.createChild('p');
         descriptionElement.textContent = profileType.description;
-        UI.ARIAUtils.setDescription(optionElement, profileType.description);
+        UI.ARIAUtils.setDescription(radio, profileType.description);
         const customContent = profileType.customContent();
         if (customContent) {
             customContent.setAttribute('role', 'group');
-            customContent.setAttribute('aria-labelledby', `${optionElement.id}`);
+            customContent.setAttribute('aria-labelledby', `${radio.id}`);
             this.profileTypeSelectorForm.createChild('p').appendChild(customContent);
             profileType.setCustomContentEnabled(false);
         }

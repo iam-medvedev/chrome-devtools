@@ -10,7 +10,6 @@ import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
 import * as Components from './components/components.js';
 import * as Overlays from './overlays.js';
-const coordinator = RenderCoordinator.RenderCoordinator.RenderCoordinator.instance();
 const FAKE_OVERLAY_ENTRY_QUERIES = {
     isEntryCollapsedByUser() {
         return false;
@@ -333,6 +332,19 @@ describeWithEnvironment('Overlays', () => {
             const overlayDOM = container.querySelector('.overlay-type-ENTRY_LABEL');
             assert.isOk(overlayDOM);
         });
+        it('toggles overlays container display', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, container } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
+            overlays.toggleAllOverlaysDisplayed(true);
+            await overlays.update();
+            assert.strictEqual(container.style.display, 'block');
+            overlays.toggleAllOverlaysDisplayed(false);
+            await overlays.update();
+            assert.strictEqual(container.style.display, 'none');
+            overlays.toggleAllOverlaysDisplayed(true);
+            await overlays.update();
+            assert.strictEqual(container.style.display, 'block');
+        });
         it('only renders one TIMESTAMP_MARKER as it is a singleton', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const { overlays, container } = setupChartWithDimensionsAndAnnotationOverlayListeners(parsedTrace);
@@ -428,7 +440,7 @@ describeWithEnvironment('Overlays', () => {
             // Press `Enter` on the label field
             labelBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
             // Ensure that the entry overlay has been removed because it was saved empty
-            assert.strictEqual(overlays.overlaysOfType('TIME_RANGE').length, 0);
+            assert.lengthOf(overlays.overlaysOfType('TIME_RANGE'), 0);
         });
         it('Inputting `Enter` into time range label field when the label is not empty does not remove the overlay', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -459,7 +471,7 @@ describeWithEnvironment('Overlays', () => {
             // Press `Enter` on the label field
             labelBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
             // Ensure that the entry overlay has not been because it was has a non-empty label
-            assert.strictEqual(overlays.overlaysOfType('TIME_RANGE').length, 1);
+            assert.lengthOf(overlays.overlaysOfType('TIME_RANGE'), 1);
         });
         it('Can create multiple Time Range Overlays for Time Range annotations', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -477,7 +489,7 @@ describeWithEnvironment('Overlays', () => {
                 bounds: parsedTrace.Meta.traceBounds,
             });
             await overlays.update();
-            assert.strictEqual(overlays.overlaysOfType('TIME_RANGE').length, 2);
+            assert.lengthOf(overlays.overlaysOfType('TIME_RANGE'), 2);
         });
         it('Removes empty label if it is empty when navigated away from (removed focused from)', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -504,12 +516,12 @@ describeWithEnvironment('Overlays', () => {
             // Double click on the label box to make it editable and focus on it
             inputField.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
             // Ensure that the entry has 1 overlay
-            assert.strictEqual(overlays.overlaysForEntry(event).length, 1);
+            assert.lengthOf(overlays.overlaysForEntry(event), 1);
             // Change the content to not editable by changing the element blur like when clicking outside of it.
             // The label is empty since no initial value was passed into it and no characters were entered.
             inputField.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
             // Ensure that the entry overlay has been removed because it was saved empty
-            assert.strictEqual(overlays.overlaysForEntry(event).length, 0);
+            assert.lengthOf(overlays.overlaysForEntry(event), 0);
         });
         it('Update label overlay when the label changes', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -615,7 +627,7 @@ describeWithEnvironment('Overlays', () => {
                 bounds: parsedTrace.Meta.traceBounds,
             });
             await overlays.update();
-            await coordinator.done();
+            await RenderCoordinator.done();
             const overlayDOM = container.querySelector('.overlay-type-TIME_RANGE');
             const component = overlayDOM?.querySelector('devtools-time-range-overlay');
             assert.isOk(component?.shadowRoot);

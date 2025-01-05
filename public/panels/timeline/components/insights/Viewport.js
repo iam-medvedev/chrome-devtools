@@ -6,7 +6,7 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { html } = LitHtml;
 export class Viewport extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-viewport`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-viewport`;
     internalName = 'viewport';
     createOverlays() {
         // TODO(b/351757418): create overlay for synthetic input delay events

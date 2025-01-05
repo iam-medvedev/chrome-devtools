@@ -6,7 +6,6 @@ import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.
 import { microsecondsTraceWindow, } from '../../../../testing/TraceHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components.js';
-const coordinator = RenderCoordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('TimespanBreakdownOverlay', () => {
     it('renders the sections with the labels and time', async () => {
         const component = new Components.TimespanBreakdownOverlay.TimespanBreakdownOverlay();
@@ -23,7 +22,7 @@ describeWithEnvironment('TimespanBreakdownOverlay', () => {
             },
         ];
         component.sections = sections;
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isOk(component.shadowRoot);
         const sectionElems = Array.from(component.shadowRoot.querySelectorAll('.timespan-breakdown-overlay-section'));
         const labels = sectionElems.flatMap(elem => {

@@ -5,16 +5,15 @@ import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import { dispatchCopyEvent, dispatchInputEvent, dispatchKeyDownEvent, dispatchPasteEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderHeaderSectionRow(header) {
     const component = new NetworkComponents.HeaderSectionRow.HeaderSectionRow();
     const scrollIntoViewSpy = sinon.spy(component, 'scrollIntoView');
     renderElementIntoDOM(component);
     assert.isTrue(scrollIntoViewSpy.notCalled);
     component.data = { header };
-    await coordinator.done();
+    await RenderCoordinator.done();
     assert.isNotNull(component.shadowRoot);
     let nameEditable = null;
     const nameEditableComponent = component.shadowRoot.querySelector('.header-name devtools-editable-span');
@@ -169,7 +168,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         nameEditable.innerText = editedHeaderName;
         dispatchInputEvent(nameEditable, { inputType: 'insertText', data: editedHeaderName, bubbles: true, composed: true });
         nameEditable.blur();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 1);
         assert.strictEqual(headerNameFromEvent, editedHeaderName);
         assert.strictEqual(headerValueFromEvent, originalHeaderValue);
@@ -179,7 +178,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         valueEditable.innerText = editedHeaderValue;
         dispatchInputEvent(valueEditable, { inputType: 'insertText', data: editedHeaderValue, bubbles: true, composed: true });
         valueEditable.blur();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 2);
         assert.strictEqual(headerNameFromEvent, editedHeaderName);
         assert.strictEqual(headerValueFromEvent, editedHeaderValue);
@@ -188,7 +187,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         nameEditable.innerText = originalHeaderName;
         dispatchInputEvent(nameEditable, { inputType: 'insertText', data: originalHeaderName, bubbles: true, composed: true });
         nameEditable.blur();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 3);
         assert.strictEqual(headerNameFromEvent, originalHeaderName);
         assert.strictEqual(headerValueFromEvent, editedHeaderValue);
@@ -197,7 +196,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         valueEditable.innerText = originalHeaderValue;
         dispatchInputEvent(valueEditable, { inputType: 'insertText', data: originalHeaderValue, bubbles: true, composed: true });
         valueEditable.blur();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 4);
         assert.strictEqual(headerNameFromEvent, originalHeaderName);
         assert.strictEqual(headerValueFromEvent, originalHeaderValue);
@@ -288,12 +287,12 @@ describeWithEnvironment('HeaderSectionRow', () => {
         valueEditable.focus();
         valueEditable.innerText = 'a';
         dispatchInputEvent(valueEditable, { inputType: 'insertText', data: 'a', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isTrue(row?.classList.contains('header-overridden'));
         assert.isFalse(row?.classList.contains('header-highlight'));
         assert.isTrue(hasReloadPrompt(component.shadowRoot));
         dispatchKeyDownEvent(valueEditable, { key: 'Escape', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isFalse(component.shadowRoot.querySelector('.row')?.classList.contains('header-overridden'));
     });
     it('adds and removes `header-overridden` class correctly when editing unset headers', async () => {
@@ -311,10 +310,10 @@ describeWithEnvironment('HeaderSectionRow', () => {
         valueEditable.focus();
         valueEditable.innerText = 'a';
         dispatchInputEvent(valueEditable, { inputType: 'insertText', data: 'a', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isTrue(row?.classList.contains('header-overridden'));
         dispatchKeyDownEvent(valueEditable, { key: 'Escape', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isFalse(component.shadowRoot.querySelector('.row')?.classList.contains('header-overridden'));
     });
     it('shows error-icon when header name contains disallowed characters', async () => {
@@ -330,17 +329,17 @@ describeWithEnvironment('HeaderSectionRow', () => {
         assert.instanceOf(nameEditable, HTMLElement);
         const row = component.shadowRoot.querySelector('.row');
         assert.instanceOf(row, HTMLDivElement);
-        assert.strictEqual(row.querySelector('devtools-icon.disallowed-characters'), null);
+        assert.isNull(row.querySelector('devtools-icon.disallowed-characters'));
         assert.isTrue(hasReloadPrompt(component.shadowRoot));
         nameEditable.focus();
         nameEditable.innerText = '*';
         dispatchInputEvent(nameEditable, { inputType: 'insertText', data: '*', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.instanceOf(row.querySelector('devtools-icon.disallowed-characters'), HTMLElement);
         assert.isTrue(hasReloadPrompt(component.shadowRoot));
         dispatchKeyDownEvent(nameEditable, { key: 'Escape', bubbles: true, composed: true });
-        await coordinator.done();
-        assert.strictEqual(row.querySelector('devtools-icon.disallowed-characters'), null);
+        await RenderCoordinator.done();
+        assert.isNull(row.querySelector('devtools-icon.disallowed-characters'));
         assert.isTrue(hasReloadPrompt(component.shadowRoot));
     });
     it('split header name and value on pasted content', async () => {
@@ -371,13 +370,13 @@ describeWithEnvironment('HeaderSectionRow', () => {
         nameEditable.focus();
         dispatchPasteEvent(nameEditable, { clipboardData: dt, bubbles: true, composed: true });
         nameEditable.blur();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 1);
         assert.strictEqual(headerNameFromEvent, 'permissions-policy');
         assert.strictEqual(headerValueFromEvent, 'someHeaderValue');
         // update value on blur
         valueEditable.blur();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 2);
         assert.strictEqual(headerNameFromEvent, 'permissions-policy');
         assert.strictEqual(headerValueFromEvent, 'unload=(https://xyz.com)');
@@ -411,11 +410,11 @@ describeWithEnvironment('HeaderSectionRow', () => {
         dispatchPasteEvent(nameEditable, { clipboardData: dt, bubbles: true, composed: true });
         const nameEl = component.shadowRoot.querySelector('.header-name devtools-editable-span');
         const valueEl = component.shadowRoot.querySelector('.header-value devtools-editable-span');
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(nameEl.value, ':Abc');
         assert.strictEqual(valueEl.value, originalHeaderValue);
         dispatchKeyDownEvent(nameEditable, { key: 'Escape', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 0);
         assert.strictEqual(nameEl.value, 'Some-Header-Name');
     });
@@ -443,21 +442,21 @@ describeWithEnvironment('HeaderSectionRow', () => {
         dispatchPasteEvent(nameEditable, { clipboardData: dt, bubbles: true, composed: true });
         const nameEl = component.shadowRoot.querySelector('.header-name devtools-editable-span');
         const valueEl = component.shadowRoot.querySelector('.header-value devtools-editable-span');
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(nameEl.value, 'Permissions-Policy');
         assert.strictEqual(valueEl.value, 'unload=(https://xyz.com)');
         dispatchKeyDownEvent(valueEditable, { key: 'Escape', bubbles: true, composed: true });
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(headerEditedEventCount, 0);
         assert.strictEqual(nameEl.value, 'Some-Header-Name');
         assert.strictEqual(valueEl.value, 'someHeaderValue');
     });
     it('recoginzes only alphanumeric characters, dashes, and underscores as valid in header names', () => {
-        assert.strictEqual(NetworkComponents.HeaderSectionRow.isValidHeaderName('AlphaNumeric123'), true);
-        assert.strictEqual(NetworkComponents.HeaderSectionRow.isValidHeaderName('Alpha Numeric'), false);
-        assert.strictEqual(NetworkComponents.HeaderSectionRow.isValidHeaderName('AlphaNumeric123!'), false);
-        assert.strictEqual(NetworkComponents.HeaderSectionRow.isValidHeaderName('With-dashes_and_underscores'), true);
-        assert.strictEqual(NetworkComponents.HeaderSectionRow.isValidHeaderName('no*'), false);
+        assert.isTrue(NetworkComponents.HeaderSectionRow.isValidHeaderName('AlphaNumeric123'));
+        assert.isFalse(NetworkComponents.HeaderSectionRow.isValidHeaderName('Alpha Numeric'));
+        assert.isFalse(NetworkComponents.HeaderSectionRow.isValidHeaderName('AlphaNumeric123!'));
+        assert.isTrue(NetworkComponents.HeaderSectionRow.isValidHeaderName('With-dashes_and_underscores'));
+        assert.isFalse(NetworkComponents.HeaderSectionRow.isValidHeaderName('no*'));
     });
     it('allows removing a header override', async () => {
         const headerName = Platform.StringUtilities.toLowerCaseString('some-header-name');

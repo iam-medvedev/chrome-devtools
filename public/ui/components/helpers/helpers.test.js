@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as LitHtml from '../../lit-html/lit-html.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as ComponentHelpers from './helpers.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const TestElement = class extends HTMLElement {
     renderCount = 0;
     renderAsyncCount = 0;
@@ -81,7 +80,7 @@ describe('ComponentHelpers', () => {
             const element = new TestElement();
             void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderBound);
             void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderBound);
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.strictEqual(element.renderCount, 1);
         });
         it('handles async callbacks', async () => {
@@ -90,7 +89,7 @@ describe('ComponentHelpers', () => {
                 void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderAsyncBound);
                 await element.renderAsyncBound();
             });
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.strictEqual(element.renderAsyncCount, 2);
         });
         it('re-renders if second render call is made during the first', async () => {
@@ -99,7 +98,7 @@ describe('ComponentHelpers', () => {
                 void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderBound);
                 element.renderBound();
             });
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.strictEqual(element.renderCount, 2);
         });
     });

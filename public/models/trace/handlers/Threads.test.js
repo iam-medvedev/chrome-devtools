@@ -39,7 +39,7 @@ describeWithEnvironment('Handler Threads helper', function () {
         assert.strictEqual(parsedTrace.Renderer.processes.size, 0);
         assert.strictEqual(parsedTrace.Samples.profilesInProcess.size, 1);
         const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace);
-        assert.strictEqual(threads.length, 1);
+        assert.lengthOf(threads, 1);
         assert.strictEqual(threads.at(0)?.type, "CPU_PROFILE" /* Trace.Handlers.Threads.ThreadType.CPU_PROFILE */);
         assert.strictEqual(threads.at(0)?.entries.length, 875);
     });

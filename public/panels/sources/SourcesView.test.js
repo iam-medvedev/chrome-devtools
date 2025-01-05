@@ -54,16 +54,16 @@ describeWithEnvironment('SourcesView', () => {
                 callback(true, newName, newURL, newContentType);
             };
         sourcesView.viewForFile(uiSourceCode);
-        assert.isTrue(sourcesView.getSourceView(uiSourceCode) instanceof Sources.UISourceCodeFrame.UISourceCodeFrame);
+        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), Sources.UISourceCodeFrame.UISourceCodeFrame);
         // Rename, but contentType stays the same
         await uiSourceCode.rename('newName.html');
-        assert.isTrue(sourcesView.getSourceView(uiSourceCode) instanceof Sources.UISourceCodeFrame.UISourceCodeFrame);
+        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), Sources.UISourceCodeFrame.UISourceCodeFrame);
         // Rename which changes contentType
         await uiSourceCode.rename('image.jpg');
-        assert.isTrue(sourcesView.getSourceView(uiSourceCode) instanceof SourceFrame.ImageView.ImageView);
+        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourceFrame.ImageView.ImageView);
         // Rename which changes contentType
         await uiSourceCode.rename('font.woff');
-        assert.isTrue(sourcesView.getSourceView(uiSourceCode) instanceof SourceFrame.FontView.FontView);
+        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourceFrame.FontView.FontView);
         workspace.removeProject(project);
         sourcesView.detach();
     });
@@ -72,7 +72,7 @@ describeWithEnvironment('SourcesView', () => {
         const uiSourceCode = new Workspace.UISourceCode.UISourceCode({}, 'file:///path/to/overrides/www.example.com/.headers', Common.ResourceType.resourceTypes.Document);
         sinon.stub(uiSourceCode, 'mimeType').returns('text/plain');
         sourcesView.viewForFile(uiSourceCode);
-        assert.isTrue(sourcesView.getSourceView(uiSourceCode) instanceof SourcesComponents.HeadersView.HeadersView);
+        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourcesComponents.HeadersView.HeadersView);
     });
     describe('viewForFile', () => {
         it('records the correct media type in the DevTools.SourcesPanelFileOpened metric', async () => {

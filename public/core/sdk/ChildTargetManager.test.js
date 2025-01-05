@@ -25,15 +25,15 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('adds subtargets', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({ sessionId: createSessionId(), targetInfo: createTargetInfo(TARGET_ID), waitingForDebugger: false });
-        assert.strictEqual(childTargetManager.childTargets().length, 1);
+        assert.lengthOf(childTargetManager.childTargets(), 1);
         assert.strictEqual(childTargetManager.childTargets()[0].id(), TARGET_ID);
     });
     it('sets subtarget type', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         for (const [protocolType, sdkType] of [
             ['iframe', SDK.Target.Type.FRAME],
             ['webview', SDK.Target.Type.FRAME],
@@ -59,7 +59,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets subtarget to frame for devtools scheme if type is other', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'other', 'devtools://foo/bar'),
@@ -78,7 +78,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets subtarget to frame for chrome://print/ if type is other', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'other', 'chrome://print/'),
@@ -90,7 +90,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets subtarget to frame for chrome://file-manager/ if type is other', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'other', 'chrome://file-manager/?%7B%22allowedPaths%22:%22anyPathOrUrl'),
@@ -102,7 +102,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets subtarget to frame for sidebar URLs if type is other', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'other', 'chrome://read-later.top-chrome/'),
@@ -121,7 +121,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets worker target name to the target title', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'worker', 'http://example.com/worker.js', TITLE),
@@ -132,7 +132,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets non-frame target name to the last path component if present', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'service_worker', 'http://example.org/service_worker.html', TITLE),
@@ -149,7 +149,7 @@ describeWithMockConnection('ChildTargetManager', () => {
     it('sets non-frame target a numbered name if it cannot use URL path', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);
-        assert.strictEqual(childTargetManager.childTargets().length, 0);
+        assert.lengthOf(childTargetManager.childTargets(), 0);
         await childTargetManager.attachedToTarget({
             sessionId: createSessionId(),
             targetInfo: createTargetInfo(undefined, 'page', 'data:text/html,<!doctype html>'),

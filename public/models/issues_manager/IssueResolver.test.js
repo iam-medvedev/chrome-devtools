@@ -24,7 +24,7 @@ describe('IssueResolver', () => {
                 throw new Error('This should not get called');
             });
             assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
-            assert.strictEqual(issue, null);
+            assert.isNull(issue);
             issueResolver.clear();
         });
         it('should resolve a previously unknown issue when it becomes available', async () => {
@@ -33,7 +33,7 @@ describe('IssueResolver', () => {
             const issueResolver = new IssuesManager.IssueResolver.IssueResolver(issuesManager);
             const waitForCall = new Promise(resolve => {
                 const issue = issueResolver.tryGet(issueId1, resolve);
-                assert.strictEqual(issue, null);
+                assert.isNull(issue);
             });
             assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             const mockIssue = StubIssue.createFromIssueId(issueId1);

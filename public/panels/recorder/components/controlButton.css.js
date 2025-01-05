@@ -40,8 +40,7 @@ styles.replaceSync(
   margin-bottom: 8px;
   position: relative;
   transition: background 200ms;
-  justify-content: center;
-  align-content: center;
+  place-content: center center;
   align-items: center;
 }
 
@@ -70,11 +69,11 @@ styles.replaceSync(
 }
 
 .icon:hover {
-  background: color-mix(in sRGB, var(--sys-color-error-bright), var(--sys-color-state-hover-on-prominent) 10%);
+  background: color-mix(in srgb, var(--sys-color-error-bright), var(--sys-color-state-hover-on-prominent) 10%);
 }
 
 .icon:active {
-  background: color-mix(in sRGB, var(--sys-color-error-bright), var(--sys-color-state-ripple-neutral-on-prominent) 16%);
+  background: color-mix(in srgb, var(--sys-color-error-bright), var(--sys-color-state-ripple-neutral-on-prominent) 16%);
 }
 
 .control[disabled] .icon:hover {

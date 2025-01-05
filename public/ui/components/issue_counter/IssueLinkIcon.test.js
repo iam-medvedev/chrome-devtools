@@ -6,15 +6,14 @@ import * as IssuesManager from '../../../models/issues_manager/issues_manager.js
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as IssueCounter from './issue_counter.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const renderIssueLinkIcon = async (data) => {
     const component = new IssueCounter.IssueLinkIcon.IssueLinkIcon();
     component.data = data;
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     return { component, shadowRoot: component.shadowRoot };
 };
 export const extractElements = (shadowRoot) => {
@@ -116,7 +115,7 @@ describeWithLocale('IssueLinkIcon', () => {
                 issueResolver: resolver,
             });
             resolver.resolve(mockIssue);
-            await coordinator.done({ waitForWork: true });
+            await RenderCoordinator.done({ waitForWork: true });
             assert.isTrue(extractElements(shadowRoot).button.classList.contains('link'));
         });
         it('handles multiple data assignments', async () => {
@@ -131,7 +130,7 @@ describeWithLocale('IssueLinkIcon', () => {
             component.data = {
                 issue: mockIssue2,
             };
-            await coordinator.done({ waitForWork: true });
+            await RenderCoordinator.done({ waitForWork: true });
             const { icon } = extractElements(shadowRoot);
             assert.strictEqual(icon.name, 'issue-exclamation-filled');
         });

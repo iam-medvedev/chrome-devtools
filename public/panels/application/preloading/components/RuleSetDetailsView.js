@@ -7,12 +7,11 @@ import * as Formatter from '../../../../models/formatter/formatter.js';
 import * as CodeMirror from '../../../../third_party/codemirror.next/codemirror.next.js';
 import * as CodeHighlighter from '../../../../ui/components/code_highlighter/code_highlighter.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TextEditor from '../../../../ui/components/text_editor/text_editor.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import ruleSetDetailsViewStyles from './RuleSetDetailsView.css.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const codeMirrorJsonType = await CodeHighlighter.CodeHighlighter.languageFromMIME('application/json');
 export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -30,7 +29,7 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
         this.#shouldPrettyPrint = shouldPrettyPrint;
     }
     async #render() {
-        await coordinator.write('RuleSetDetailsView render', async () => {
+        await RenderCoordinator.write('RuleSetDetailsView render', async () => {
             if (this.#data === null) {
                 LitHtml.render(LitHtml.nothing, this.#shadow, { host: this });
                 return;

@@ -11,8 +11,7 @@ export default {
  */
 
 .film-strip-view {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
   align-content: flex-start;
   min-height: 81px;
 }

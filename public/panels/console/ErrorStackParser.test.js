@@ -273,6 +273,23 @@ describe('ErrorStackParser', () => {
             assert.isUndefined(parsedFrames[2].link);
             assert.strictEqual(parsedFrames[3].link?.scriptId, sid('30'));
         });
+        it('combines builtin frames', () => {
+            const parsedFrames = parseErrorStack(`Error: some error
+        at foo (http://example.com/a.js:6:3)
+        at Array.forEach (<anonymous>)
+        at JSON.parse (<anonymous>)
+        at bar (http://example.com/b.js:43:14)`);
+            assert.exists(parsedFrames);
+            assert.isUndefined(parsedFrames[0].link);
+            assert.isUndefined(parsedFrames[0].isCallFrame);
+            assert.strictEqual(parsedFrames[1].link?.url, 'http://example.com/a.js');
+            assert.isTrue(parsedFrames[1].isCallFrame);
+            assert.isUndefined(parsedFrames[2].link);
+            assert.isTrue(parsedFrames[2].isCallFrame);
+            assert.strictEqual(parsedFrames[2].line, '        at Array.forEach (<anonymous>)\n        at JSON.parse (<anonymous>)');
+            assert.strictEqual(parsedFrames[3].link?.url, 'http://example.com/b.js');
+            assert.isTrue(parsedFrames[3].isCallFrame);
+        });
     });
 });
 //# sourceMappingURL=ErrorStackParser.test.js.map

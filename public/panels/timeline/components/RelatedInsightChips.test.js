@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 import { dispatchClickEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('RelatedInsightChips', () => {
     // Event doesn't matter, so let's keep this test quick and avoid parsing a trace.
     const FAKE_EVENT = {};
@@ -14,7 +13,7 @@ describeWithEnvironment('RelatedInsightChips', () => {
         renderElementIntoDOM(component);
         component.activeEvent = FAKE_EVENT;
         component.eventToRelatedInsightsMap = new Map();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isOk(component.shadowRoot);
         assert.strictEqual(component.shadowRoot.childElementCount, 0);
     });
@@ -30,7 +29,7 @@ describeWithEnvironment('RelatedInsightChips', () => {
         renderElementIntoDOM(component);
         component.activeEvent = FAKE_EVENT;
         component.eventToRelatedInsightsMap = relatedMap;
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isOk(component.shadowRoot);
         const chips = component.shadowRoot.querySelectorAll('li.insight-chip');
         assert.lengthOf(chips, 1);
@@ -52,7 +51,7 @@ describeWithEnvironment('RelatedInsightChips', () => {
         renderElementIntoDOM(component);
         component.activeEvent = FAKE_EVENT;
         component.eventToRelatedInsightsMap = relatedMap;
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isOk(component.shadowRoot);
         const regularChips = component.shadowRoot.querySelectorAll('li.insight-chip');
         assert.lengthOf(regularChips, 1);
@@ -76,7 +75,7 @@ describeWithEnvironment('RelatedInsightChips', () => {
         renderElementIntoDOM(component);
         component.activeEvent = FAKE_EVENT;
         component.eventToRelatedInsightsMap = relatedMap;
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isOk(component.shadowRoot);
         const button = component.shadowRoot.querySelector('button');
         assert.isOk(button);

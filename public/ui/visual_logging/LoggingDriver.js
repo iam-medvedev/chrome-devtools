@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import * as Coordinator from '../components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import { processForDebugging, processStartLoggingForDebugging } from './Debugging.js';
 import { getDomState, visibleOverlap } from './DomState.js';
 import { getLoggingConfig } from './LoggingConfig.js';
@@ -113,11 +113,11 @@ function flushPendingChangeEvents() {
         logPendingChange(element);
     }
 }
-export async function scheduleProcessing() {
+export function scheduleProcessing() {
     if (!processingThrottler) {
         return;
     }
-    void processingThrottler.schedule(() => Coordinator.RenderCoordinator.RenderCoordinator.instance().read('processForLogging', process));
+    void processingThrottler.schedule(() => RenderCoordinator.read('processForLogging', process));
 }
 const viewportRects = new Map();
 const viewportRectFor = (element) => {

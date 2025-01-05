@@ -613,7 +613,7 @@ ui/legacy/components/source_frame/StreamingContentHexView.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js
 ui/legacy/components/utils/Linkifier.test.js
 ui/legacy/theme_support/ThemeSupport.test.js
-ui/lit-html/static.test.js
+ui/lit-html/i18n-template.test.js
 ui/visual_logging/Debugging.test.js
 ui/visual_logging/DomState.test.js
 ui/visual_logging/LoggingConfig.test.js

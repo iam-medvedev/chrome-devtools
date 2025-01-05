@@ -215,7 +215,7 @@ describe('StringUtilities', () => {
     describe('createSearchRegex', () => {
         it('returns a case sensitive regex if the call states it is case sensitive', () => {
             const regex = Platform.StringUtilities.createSearchRegex('foo', true, false);
-            assert.strictEqual(regex.ignoreCase, false);
+            assert.isFalse(regex.ignoreCase);
             assert.strictEqual(regex.source, 'foo');
         });
         it('creates a regex from plain text if the given input is not already a regex', () => {

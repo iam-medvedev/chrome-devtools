@@ -156,17 +156,15 @@ export class SearchView extends UI.Widget.VBox {
         const searchElements = searchContainer.createChild('div', 'toolbar-item-search');
         const searchIcon = IconButton.Icon.create('search');
         searchElements.appendChild(searchIcon);
-        this.search = UI.HistoryInput.HistoryInput.create();
+        this.search = UI.UIUtils.createHistoryInput('search', 'search-toolbar-input');
         this.search.addEventListener('keydown', event => {
             this.onKeyDown(event);
         });
         this.search.setAttribute('jslog', `${VisualLogging.textField().track({ change: true, keydown: 'ArrowUp|ArrowDown|Enter' })}`);
         searchElements.appendChild(this.search);
         this.search.placeholder = i18nString(UIStrings.find);
-        this.search.setAttribute('type', 'search');
         this.search.setAttribute('results', '0');
         this.search.setAttribute('size', '100');
-        this.search.classList.add('search-toolbar-input');
         UI.ARIAUtils.setLabel(this.search, this.search.placeholder);
         const clearInputFieldButton = new Buttons.Button.Button();
         clearInputFieldButton.data = {

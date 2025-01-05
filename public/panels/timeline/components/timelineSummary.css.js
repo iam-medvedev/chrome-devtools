@@ -58,10 +58,7 @@ styles.replaceSync(
 
 .background-bar-container {
   position: absolute;
-  left: var(--sys-size-3);
-  right: 0;
-  top: 0;
-  bottom: 0;
+  inset: 0 0 0 var(--sys-size-3);
   z-index: -1;
 }
 

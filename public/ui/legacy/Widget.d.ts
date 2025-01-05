@@ -95,23 +95,50 @@ export declare class Widget {
     invalidateConstraints(): void;
     markAsExternallyManaged(): void;
     /**
-     * Called by the RenderCoordinator to perform an update.
-     * This is not meant to be called directly. Instead, use update() to schedule an asynchronous update.
+     * Override this method in derived classes to perform the actual view update.
      *
-     * @returns A promise that resolves when the update is complete.
+     * This is not meant to be called directly, but invoked (indirectly) through
+     * the `requestAnimationFrame` and executed with the animation frame. Instead,
+     * use the `update()` method to schedule an asynchronous update.
+     *
+     * @return can either return nothing or a promise; in that latter case, the
+     *         update logic will await the resolution of the returned promise
+     *         before proceeding.
      */
-    protected doUpdate(): Promise<void>;
+    protected doUpdate(): Promise<void> | void;
     /**
-     * Schedules an asynchronous update. The update will be deduplicated and executed with the animation frame.
+     * Schedules an asynchronous update for this widget.
+     *
+     * The update will be deduplicated and executed with the next animation
+     * frame.
      */
     update(): void;
     /**
-     * Returns a promise that resolves when the pending update is complete.
-     * Returns a resolved promise if there is no pending update.
-  `  *
-     * @returns A probleme that resolves when the pending update is complete.
+     * The `updateComplete` promise resolves when the widget has finished updating.
+     *
+     * Use `updateComplete` to wait for an update:
+     * ```js
+     * await widget.updateComplete;
+     * // do stuff
+     * ```
+     *
+     * This method is primarily useful for unit tests, to wait for widgets to build
+     * their DOM. For example:
+     * ```js
+     * // Set up the test widget, and wait for the initial update cycle to complete.
+     * const widget = new SomeWidget(someData);
+     * widget.update();
+     * await widget.updateComplete;
+     *
+     * // Assert state of the widget.
+     * assert.isTrue(widget.someDataLoaded);
+     * ```
+     *
+     * @returns a promise that resolves to a `boolean` when the widget has finished
+     *          updating, the value is `true` if there are no more pending updates,
+     *          and `false` if the update cycle triggered another update.
      */
-    pendingUpdate(): Promise<void>;
+    get updateComplete(): Promise<boolean>;
 }
 export declare class VBox extends Widget {
     constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);

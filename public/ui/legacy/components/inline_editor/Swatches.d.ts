@@ -1,23 +1,25 @@
+import * as IconButton from '../../../components/icon_button/icon_button.js';
 import type { CSSShadowModel } from './CSSShadowEditor.js';
-export declare class BezierSwatch extends HTMLSpanElement {
-    private readonly iconElementInternal;
-    private textElement;
+export declare class BezierSwatch extends HTMLElement {
+    #private;
     constructor();
+    connectedCallback(): void;
+    disconnectedCallback(): void;
     static create(): BezierSwatch;
     bezierText(): string;
     setBezierText(text: string): void;
     hideText(hide: boolean): void;
-    iconElement(): HTMLSpanElement;
-    private static constructorInternal;
+    iconElement(): IconButton.Icon.Icon;
 }
 export declare class CSSShadowSwatch extends HTMLElement {
     #private;
     constructor(model: CSSShadowModel);
     model(): CSSShadowModel;
-    iconElement(): HTMLSpanElement;
+    iconElement(): IconButton.Icon.Icon;
 }
 declare global {
     interface HTMLElementTagNameMap {
+        'devtools-bezier-swatch': BezierSwatch;
         'css-shadow-swatch': CSSShadowSwatch;
     }
 }

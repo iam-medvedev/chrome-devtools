@@ -154,15 +154,14 @@ self.createTextNode = function (data) {
 self.createDocumentFragment = function () {
     return document.createDocumentFragment();
 };
-Element.prototype.createChild = function (elementName, className, customElementType) {
-    const element = document.createElement(elementName, { is: customElementType });
+DocumentFragment.prototype.createChild = Element.prototype.createChild = function (elementName, className) {
+    const element = document.createElement(elementName);
     if (className) {
         element.className = className;
     }
     this.appendChild(element);
     return element;
 };
-DocumentFragment.prototype.createChild = Element.prototype.createChild;
 self.AnchorBox = class {
     constructor(x, y, width, height) {
         this.x = x || 0;

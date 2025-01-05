@@ -104,7 +104,7 @@ describe('FrameManager', () => {
         assert.strictEqual(frameFromId?.id, parentFrameId);
         assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), targetId);
         frameFromId = frameManager.getFrame(childFrameId);
-        assert.strictEqual(frameFromId, null);
+        assert.isNull(frameFromId);
     });
     it('handles removal of target', () => {
         const frameManager = new SDK.FrameManager.FrameManager();
@@ -128,9 +128,9 @@ describe('FrameManager', () => {
         assert.strictEqual(dispatchedEvents[3].type, 'FrameRemoved');
         assert.deepEqual(dispatchedEvents[3].data, { frameId: childFrameId });
         let frameFromId = frameManager.getFrame(parentFrameId);
-        assert.strictEqual(frameFromId, null);
+        assert.isNull(frameFromId);
         frameFromId = frameManager.getFrame(childFrameId);
-        assert.strictEqual(frameFromId, null);
+        assert.isNull(frameFromId);
     });
     it('handles a frame transferring to a different target', () => {
         const frameManager = new SDK.FrameManager.FrameManager();

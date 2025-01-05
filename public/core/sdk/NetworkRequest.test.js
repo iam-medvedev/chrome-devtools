@@ -19,7 +19,7 @@ describe('NetworkRequest', () => {
             responseHeaders: [{ name: 'Set-Cookie', value: 'foo=bar' }, { name: 'Set-Cookie', value: 'baz=qux' }],
             resourceIPAddressSpace: 'Public',
         });
-        assert.strictEqual(request.responseCookies.length, 2);
+        assert.lengthOf(request.responseCookies, 2);
         expectCookie(request.responseCookies[0], { name: 'foo', value: 'bar', size: 8 });
         expectCookie(request.responseCookies[1], { name: 'baz', value: 'qux', size: 7 });
     });
@@ -50,7 +50,7 @@ describe('NetworkRequest', () => {
             resourceIPAddressSpace: 'Public',
             cookiePartitionKey: { topLevelSite: 'partitionKey', hasCrossSiteAncestor: false },
         });
-        assert.strictEqual(request.responseCookies.length, 2);
+        assert.lengthOf(request.responseCookies, 2);
         expectCookie(request.responseCookies[0], { name: 'foo', value: 'bar', size: 8 });
         expectCookie(request.responseCookies[1], {
             name: 'baz',

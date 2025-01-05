@@ -675,7 +675,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             return matchedStyles && matchedStyles.node() === this.node() ? matchedStyles : null;
         }
     }
-    setEditingStyle(editing, _treeElement) {
+    setEditingStyle(editing) {
         if (this.isEditingStyle === editing) {
             return;
         }

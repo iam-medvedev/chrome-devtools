@@ -59,7 +59,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
                 ...Trace.Types.Configuration.defaults(),
             };
             config.debugMode = true;
-            assert.strictEqual(Trace.Types.Configuration.defaults().debugMode, false, 'Default config should not be mutable');
+            assert.isFalse(Trace.Types.Configuration.defaults().debugMode, 'Default config should not be mutable');
             const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid, config);
             integrator.callsFromProfileSamples();
             const jsSampleEvents = integrator.jsSampleEvents;
@@ -91,7 +91,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
                 throw new Error('Trace events were unexpectedly not found.');
             }
             const constructedCalls = samplesIntegrator.buildProfileCalls(traceEvents);
-            assert.strictEqual(constructedCalls.length, 5131);
+            assert.lengthOf(constructedCalls, 5131);
         });
         it('creates JS profile calls with a top-level V8 invocation', () => {
             // After integrating with trace events, the flame chart
@@ -103,7 +103,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const callEvent = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 0, 500);
             const traceEvents = [callEvent];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
-            assert.strictEqual(constructedCalls.length, 2);
+            assert.lengthOf(constructedCalls, 2);
             assert.strictEqual(constructedCalls[0].callFrame.functionName, 'a');
             assert.strictEqual(constructedCalls[0].ts, 100);
             assert.strictEqual(constructedCalls[0].dur, 400);
@@ -115,7 +115,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
             const traceEvents = [];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
-            assert.strictEqual(constructedCalls.length, 2);
+            assert.lengthOf(constructedCalls, 2);
             assert.strictEqual(constructedCalls[0].callFrame.functionName, 'a');
             assert.strictEqual(constructedCalls[0].ts, 100);
             assert.strictEqual(constructedCalls[0].dur, 300);
@@ -151,7 +151,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const callEvent = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 250, 250);
             const traceEvents = [callEvent];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
-            assert.strictEqual(constructedCalls.length, 2);
+            assert.lengthOf(constructedCalls, 2);
             assert.strictEqual(constructedCalls[0].callFrame.functionName, 'a');
             assert.strictEqual(constructedCalls[0].ts, 100);
             assert.strictEqual(constructedCalls[0].dur, 150);
@@ -192,7 +192,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
             const traceEvents = [evaluateScript, v8Run, parseFunction];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
-            assert.strictEqual(constructedCalls.length, 2);
+            assert.lengthOf(constructedCalls, 2);
             assert.strictEqual(constructedCalls[0].callFrame.functionName, 'a');
             assert.strictEqual(constructedCalls[0].ts, 100);
             assert.strictEqual(constructedCalls[0].dur, 200);
@@ -234,9 +234,9 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
             const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
-            assert.strictEqual(constructedCalls.length, 3);
+            assert.lengthOf(constructedCalls, 3);
             const framesForFunctionA = constructedCalls.filter(c => c.callFrame.functionName === 'a');
-            assert.strictEqual(framesForFunctionA.length, 2);
+            assert.lengthOf(framesForFunctionA, 2);
             const expectedATimestamp = 20;
             assert.strictEqual(framesForFunctionA[0].ts, 20);
             // First frame for function A should be finished when the
@@ -268,7 +268,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const constructedCalls = samplesIntegrator.buildProfileCalls(traceEvents);
             const filteredNodes = constructedCalls.filter(c => c.nodeId === rootNode.id || c.nodeId === idleNode.id || c.nodeId === programNode.id ||
                 c.nodeId === gcNode.id);
-            assert.strictEqual(filteredNodes.length, 0);
+            assert.lengthOf(filteredNodes, 0);
         });
     });
 });

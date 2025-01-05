@@ -6,7 +6,6 @@ import styles from './fileSourceIcon.css.js';
 import { create } from './Icon.js';
 const { html } = LitHtml;
 export class FileSourceIcon extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-file-source-icon`;
     #shadow = this.attachShadow({ mode: 'open' });
     #iconType;
     #contentType;

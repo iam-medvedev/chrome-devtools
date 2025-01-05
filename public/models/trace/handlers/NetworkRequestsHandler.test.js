@@ -19,7 +19,7 @@ describe('NetworkRequestsHandler', function () {
             const requestsByOrigin = Trace.Handlers.ModelHandlers.NetworkRequests.data().byOrigin;
             assert.strictEqual(requestsByOrigin.size, 3, 'Too many origins detected');
             const topLevelRequests = requestsByOrigin.get('localhost:8080') || { all: [] };
-            assert.strictEqual(topLevelRequests.all.length, 4, 'Incorrect number of requests');
+            assert.lengthOf(topLevelRequests.all, 4, 'Incorrect number of requests');
             // Page Request.
             const pageRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.MicroSeconds(25085)],
@@ -86,7 +86,7 @@ describe('NetworkRequestsHandler', function () {
             assertDataArgsStats(topLevelRequests.all, 'http://localhost:8080/module.js', moduleRequestBlockingStatusExpected);
             // Google Fonts CSS Request (cached).
             const fontCSSRequests = requestsByOrigin.get('fonts.googleapis.com') || { all: [] };
-            assert.strictEqual(fontCSSRequests.all.length, 1, 'Incorrect number of requests');
+            assert.lengthOf(fontCSSRequests.all, 1, 'Incorrect number of requests');
             const fontCSSRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.MicroSeconds(0)],
                 ['stalled', Trace.Types.Timing.MicroSeconds(3178)],
@@ -105,7 +105,7 @@ describe('NetworkRequestsHandler', function () {
             assertDataArgsStats(fontCSSRequests.all, 'https://fonts.googleapis.com/css2?family=Orelega+One&display=swap', fontCSSBlockingStatusExpected);
             // Google Fonts Data Request (cached).
             const fontDataRequests = requestsByOrigin.get('fonts.gstatic.com') || { all: [] };
-            assert.strictEqual(fontDataRequests.all.length, 1, 'Incorrect number of requests');
+            assert.lengthOf(fontDataRequests.all, 1, 'Incorrect number of requests');
             const fontDataRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.MicroSeconds(0)],
                 ['stalled', Trace.Types.Timing.MicroSeconds(1929)],
@@ -132,7 +132,7 @@ describe('NetworkRequestsHandler', function () {
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
             const webSocketEvents = Trace.Handlers.ModelHandlers.NetworkRequests.data().webSocket;
-            assert.strictEqual(webSocketEvents[0].events.length, 9, 'Incorrect number of events');
+            assert.lengthOf(webSocketEvents[0].events, 9, 'Incorrect number of events');
         });
     });
     describe('parses the change priority request', () => {
@@ -171,8 +171,8 @@ describe('NetworkRequestsHandler', function () {
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
-            assert.strictEqual(byTime.length, 2, 'Incorrect number of requests');
-            assert.strictEqual(byTime[0].args.data.redirects.length, 0, 'Incorrect number of redirects (request 0)');
+            assert.lengthOf(byTime, 2, 'Incorrect number of requests');
+            assert.lengthOf(byTime[0].args.data.redirects, 0, 'Incorrect number of redirects (request 0)');
             assert.deepEqual(byTime[1].args.data.redirects, [
                 {
                     url: 'http://localhost:3000/foo',
@@ -199,8 +199,8 @@ describe('NetworkRequestsHandler', function () {
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
-            assert.strictEqual(byTime.length, 2, 'Incorrect number of requests');
-            assert.strictEqual(byTime[0].args.data.redirects.length, 0, 'Incorrect number of redirects (request 0)');
+            assert.lengthOf(byTime, 2, 'Incorrect number of requests');
+            assert.lengthOf(byTime[0].args.data.redirects, 0, 'Incorrect number of redirects (request 0)');
             assert.deepEqual(byTime[1].args.data.redirects, [
                 {
                     url: 'http://localhost:3000/foo.js',

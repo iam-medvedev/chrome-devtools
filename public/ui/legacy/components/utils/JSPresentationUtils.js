@@ -139,7 +139,7 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
     element.classList.add('stack-preview-container');
     element.classList.toggle('width-constrained', options.widthConstrained);
     element.style.display = 'inline-block';
-    const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [jsUtilsStyles], delegatesFocus: undefined });
+    const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [jsUtilsStyles] });
     const contentElement = shadowRoot.createChild('table', 'stack-preview-container');
     contentElement.classList.toggle('width-constrained', options.widthConstrained);
     const updateCallback = renderStackTraceTable.bind(null, contentElement, element);

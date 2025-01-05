@@ -52,9 +52,9 @@ describe('StylesSidebarPane', () => {
                     activePositionFallbackIndex: -1,
                 });
                 const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
-                assert.strictEqual(sectionBlocks.length, 2);
+                assert.lengthOf(sectionBlocks, 2);
                 assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@position-try --try-one');
-                assert.strictEqual(sectionBlocks[1].sections.length, 1);
+                assert.lengthOf(sectionBlocks[1].sections, 1);
                 assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.PositionTryRuleSection);
             });
         });
@@ -85,9 +85,9 @@ describe('StylesSidebarPane', () => {
                 },
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
-            assert.strictEqual(sectionBlocks.length, 2);
+            assert.lengthOf(sectionBlocks, 2);
             assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@font-palette-values --palette');
-            assert.strictEqual(sectionBlocks[1].sections.length, 1);
+            assert.lengthOf(sectionBlocks[1].sections, 1);
             assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FontPaletteValuesRuleSection);
         });
     });

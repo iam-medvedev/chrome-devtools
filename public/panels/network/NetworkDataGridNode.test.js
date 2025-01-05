@@ -172,8 +172,8 @@ describeWithEnvironment('NetworkLogView', () => {
         networkRequestNode.renderCell(el, 'name');
         const iconElement = el.querySelector('.icon.image');
         const imagePreview = el.querySelector('.image-network-icon-preview');
-        assert.isTrue(iconElement instanceof HTMLDivElement);
-        assert.isTrue(imagePreview instanceof HTMLImageElement);
+        assert.instanceOf(iconElement, HTMLDivElement);
+        assert.instanceOf(imagePreview, HTMLImageElement);
     });
     it('mime win: show document icon for fetch-html', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/page', '', null, null, null);

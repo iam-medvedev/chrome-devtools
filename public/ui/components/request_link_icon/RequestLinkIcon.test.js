@@ -7,15 +7,14 @@ import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as UI from '../../legacy/legacy.js';
 import * as IconButton from '../icon_button/icon_button.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as RequestLinkIcon from './request_link_icon.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const renderRequestLinkIcon = async (data) => {
     const component = new RequestLinkIcon.RequestLinkIcon.RequestLinkIcon();
     component.data = data;
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     return { component, shadowRoot: component.shadowRoot };
 };
 export const extractElements = (shadowRoot) => {
@@ -156,7 +155,7 @@ describeWithEnvironment('RequestLinkIcon', () => {
             });
             assert.isFalse(extractElements(shadowRoot).button.classList.contains('link'));
             resolver.resolve(mockRequest);
-            await coordinator.done({ waitForWork: true });
+            await RenderCoordinator.done({ waitForWork: true });
             assert.isTrue(extractElements(shadowRoot).button.classList.contains('link'));
         });
         it('to set the label correctly', async () => {
@@ -168,7 +167,7 @@ describeWithEnvironment('RequestLinkIcon', () => {
             });
             assert.strictEqual(extractElements(shadowRoot).label?.textContent, 'gamma');
             resolver.resolve(mockRequest);
-            await coordinator.done({ waitForWork: true });
+            await RenderCoordinator.done({ waitForWork: true });
             assert.strictEqual(extractElements(shadowRoot).label?.textContent, 'baz');
         });
         it('handles multiple data assignments', async () => {
@@ -193,7 +192,7 @@ describeWithEnvironment('RequestLinkIcon', () => {
                 displayURL: true,
             };
             resolver.resolve(mockRequest2);
-            await coordinator.done({ waitForWork: true });
+            await RenderCoordinator.done({ waitForWork: true });
             assert.strictEqual(extractElements(shadowRoot).label?.textContent, 'baz');
             resolver.clear();
         });

@@ -198,13 +198,13 @@ export default {
 
   /* States */
 
-  --sys-color-state-hover-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral99) 10%, transparent);
-  --sys-color-state-hover-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral10) 6%, transparent);
+  --sys-color-state-hover-on-prominent: color-mix(in srgb, var(--ref-palette-neutral99) 10%, transparent);
+  --sys-color-state-hover-on-subtle: color-mix(in srgb, var(--ref-palette-neutral10) 6%, transparent);
   --sys-color-state-hover-dim-blend-protection: rgb(6 46 111 / 18%);
   --sys-color-state-hover-bright-blend-protection: rgb(31 31 31 / 6%);
-  --sys-color-state-ripple-neutral-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral99) 16%, transparent);
-  --sys-color-state-ripple-neutral-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral10) 8%, transparent);
-  --sys-color-state-ripple-primary: color-mix(in sRGB, var(--ref-palette-primary70) 32%, transparent);
+  --sys-color-state-ripple-neutral-on-prominent: color-mix(in srgb, var(--ref-palette-neutral99) 16%, transparent);
+  --sys-color-state-ripple-neutral-on-subtle: color-mix(in srgb, var(--ref-palette-neutral10) 8%, transparent);
+  --sys-color-state-ripple-primary: color-mix(in srgb, var(--ref-palette-primary70) 32%, transparent);
   --sys-color-state-focus-ring: var(--ref-palette-primary40);
   --sys-color-state-focus-select: var(--ref-palette-primary80);
   --sys-color-state-focus-highlight: rgb(31 31 31 / 6%);
@@ -217,11 +217,11 @@ export default {
 
   /* Surfaces */
 
-  --sys-color-surface5: color-mix(in sRGB, var(--ref-palette-primary40) 14%, var(--ref-palette-neutral99));
-  --sys-color-surface4: color-mix(in sRGB, var(--ref-palette-primary40) 12%, var(--ref-palette-neutral99));
-  --sys-color-surface3: color-mix(in sRGB, var(--ref-palette-primary40) 11%, var(--ref-palette-neutral99));
-  --sys-color-surface2: color-mix(in sRGB, var(--ref-palette-primary40) 8%, var(--ref-palette-neutral99));
-  --sys-color-surface1: color-mix(in sRGB, var(--ref-palette-primary40) 5%, var(--ref-palette-neutral99));
+  --sys-color-surface5: color-mix(in srgb, var(--ref-palette-primary40) 14%, var(--ref-palette-neutral99));
+  --sys-color-surface4: color-mix(in srgb, var(--ref-palette-primary40) 12%, var(--ref-palette-neutral99));
+  --sys-color-surface3: color-mix(in srgb, var(--ref-palette-primary40) 11%, var(--ref-palette-neutral99));
+  --sys-color-surface2: color-mix(in srgb, var(--ref-palette-primary40) 8%, var(--ref-palette-neutral99));
+  --sys-color-surface1: color-mix(in srgb, var(--ref-palette-primary40) 5%, var(--ref-palette-neutral99));
 
   /* Header surfaces */
   --sys-color-header-container: var(--ref-palette-primary95);
@@ -393,12 +393,12 @@ export default {
    * Colors for cards.
    */
   --app-color-card-background: var(--sys-color-base-container-elevated);
-  --app-color-card-divider: color-mix(in sRGB, var(--ref-palette-neutral0) 6%, transparent);
+  --app-color-card-divider: color-mix(in srgb, var(--ref-palette-neutral0) 6%, transparent);
 
   /**
   * Color for scrollable area shadow gradient
   */
-  --app-color-scroll-area-shadow-start: color-mix(in sRGB, var(--ref-palette-neutral0) 30%, transparent);
+  --app-color-scroll-area-shadow-start: color-mix(in srgb, var(--ref-palette-neutral0) 30%, transparent);
 
   /**
    * Colors for element panel sidebar subtitle
@@ -433,11 +433,11 @@ export default {
 
 :root.baseline-grayscale {
   --sys-color-divider: var(--ref-palette-neutral90);
-  --sys-color-surface5: color-mix(in sRGB, var(--ref-palette-neutral40) 14%, var(--ref-palette-neutral100));
-  --sys-color-surface4: color-mix(in sRGB, var(--ref-palette-neutral40) 12%, var(--ref-palette-neutral100));
-  --sys-color-surface3: color-mix(in sRGB, var(--ref-palette-neutral40) 11%, var(--ref-palette-neutral100));
-  --sys-color-surface2: color-mix(in sRGB, var(--ref-palette-neutral40) 8%, var(--ref-palette-neutral100));
-  --sys-color-surface1: color-mix(in sRGB, var(--ref-palette-neutral40) 5%, var(--ref-palette-neutral100));
+  --sys-color-surface5: color-mix(in srgb, var(--ref-palette-neutral40) 14%, var(--ref-palette-neutral100));
+  --sys-color-surface4: color-mix(in srgb, var(--ref-palette-neutral40) 12%, var(--ref-palette-neutral100));
+  --sys-color-surface3: color-mix(in srgb, var(--ref-palette-neutral40) 11%, var(--ref-palette-neutral100));
+  --sys-color-surface2: color-mix(in srgb, var(--ref-palette-neutral40) 8%, var(--ref-palette-neutral100));
+  --sys-color-surface1: color-mix(in srgb, var(--ref-palette-neutral40) 5%, var(--ref-palette-neutral100));
 }
 
 :root.baseline-default,
@@ -608,13 +608,13 @@ export default {
 
   /* States */
 
-  --sys-color-state-hover-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral10) 6%, transparent);
-  --sys-color-state-hover-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral99) 10%, transparent);
+  --sys-color-state-hover-on-prominent: color-mix(in srgb, var(--ref-palette-neutral10) 6%, transparent);
+  --sys-color-state-hover-on-subtle: color-mix(in srgb, var(--ref-palette-neutral99) 10%, transparent);
   --sys-color-state-hover-dim-blend-protection: rgb(31 31 31 / 10%);
   --sys-color-state-hover-bright-blend-protection: rgb(31 31 31 / 16%);
-  --sys-color-state-ripple-neutral-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral10) 12%, transparent);
-  --sys-color-state-ripple-neutral-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral99) 16%, transparent);
-  --sys-color-state-ripple-primary: color-mix(in sRGB, var(--ref-palette-primary60) 32%, transparent);
+  --sys-color-state-ripple-neutral-on-prominent: color-mix(in srgb, var(--ref-palette-neutral10) 12%, transparent);
+  --sys-color-state-ripple-neutral-on-subtle: color-mix(in srgb, var(--ref-palette-neutral99) 16%, transparent);
+  --sys-color-state-ripple-primary: color-mix(in srgb, var(--ref-palette-primary60) 32%, transparent);
   --sys-color-state-focus-ring: var(--ref-palette-primary80);
   --sys-color-state-focus-select: var(--ref-palette-secondary50);
   --sys-color-state-focus-highlight: rgb(253 252 251 / 10%);
@@ -627,11 +627,11 @@ export default {
 
   /* Surfaces */
 
-  --sys-color-surface5: color-mix(in sRGB, var(--ref-palette-primary80) 14%, var(--ref-palette-neutral10));
-  --sys-color-surface4: color-mix(in sRGB, var(--ref-palette-primary80) 12%, var(--ref-palette-neutral10));
-  --sys-color-surface3: color-mix(in sRGB, var(--ref-palette-primary80) 11%, var(--ref-palette-neutral10));
-  --sys-color-surface2: color-mix(in sRGB, var(--ref-palette-primary80) 8%, var(--ref-palette-neutral10));
-  --sys-color-surface1: color-mix(in sRGB, var(--ref-palette-primary80) 5%, var(--ref-palette-neutral10));
+  --sys-color-surface5: color-mix(in srgb, var(--ref-palette-primary80) 14%, var(--ref-palette-neutral10));
+  --sys-color-surface4: color-mix(in srgb, var(--ref-palette-primary80) 12%, var(--ref-palette-neutral10));
+  --sys-color-surface3: color-mix(in srgb, var(--ref-palette-primary80) 11%, var(--ref-palette-neutral10));
+  --sys-color-surface2: color-mix(in srgb, var(--ref-palette-primary80) 8%, var(--ref-palette-neutral10));
+  --sys-color-surface1: color-mix(in srgb, var(--ref-palette-primary80) 5%, var(--ref-palette-neutral10));
 
   /* Header surface */
   --sys-color-header-container: var(--ref-palette-neutral25);
@@ -782,13 +782,13 @@ export default {
   /**
    * Colors for cards.
    */
-  --app-color-card-divider: color-mix(in sRGB, var(--ref-palette-neutral100) 10%, transparent);
+  --app-color-card-divider: color-mix(in srgb, var(--ref-palette-neutral100) 10%, transparent);
   --app-color-card-background: var(--sys-color-surface2);
 
   /**
   * Color for scrollable area shadow gradient
   */
-  --app-color-scroll-area-shadow-start: color-mix(in sRGB, var(--ref-palette-neutral100) 30%, transparent);
+  --app-color-scroll-area-shadow-start: color-mix(in srgb, var(--ref-palette-neutral100) 30%, transparent);
 
   /**
    * Colors for element panel sidebar subtitle

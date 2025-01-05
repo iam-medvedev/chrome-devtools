@@ -8,7 +8,7 @@ describeWithEnvironment('Viewport', function () {
     it('detects mobile optimized viewport', async () => {
         const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
         const insight = getInsightOrError('Viewport', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
-        assert.strictEqual(insight.mobileOptimized, true);
+        assert.isTrue(insight.mobileOptimized);
     });
     it('detects mobile unoptimized viewport', async () => {
         const { data } = await processTrace(this, 'lcp-images.json.gz');
@@ -20,7 +20,7 @@ describeWithEnvironment('Viewport', function () {
             event.args.is_mobile_optimized = false;
         }
         const insight = Trace.Insights.Models.Viewport.generateInsight(data, context);
-        assert.strictEqual(insight.mobileOptimized, false);
+        assert.isFalse(insight.mobileOptimized);
     });
 });
 //# sourceMappingURL=Viewport.test.js.map

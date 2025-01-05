@@ -4,9 +4,8 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Network from './network.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('NetworkOverview', () => {
     let target;
     let networkOverview;
@@ -36,7 +35,7 @@ describeWithMockConnection('NetworkOverview', () => {
         assert.exists(resourceTreeModel);
         assert.isFalse(calculator.computePosition.called);
         resourceTreeModel.dispatchEventToListeners(event, ...[{ loadTime: 42 }]);
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(calculator.computePosition.called, inScope);
         networkOverview.detach();
     };

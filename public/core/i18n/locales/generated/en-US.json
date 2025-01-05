@@ -1184,9 +1184,6 @@
   "generated/Deprecation.ts | CrossOriginWindowConfirm": {
     "message": "Triggering window.confirm from cross origin iframes has been deprecated and will be removed in the future."
   },
-  "generated/Deprecation.ts | CSSCustomStateDeprecatedSyntax": {
-    "message": ":--customstatename is deprecated. Please use the :state(customstatename) syntax instead."
-  },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
   },

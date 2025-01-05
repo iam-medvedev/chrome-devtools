@@ -42,7 +42,7 @@ describe('ScreenshotsHandler', function () {
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.Screenshots.finalize();
             const data = Trace.Handlers.ModelHandlers.Screenshots.data().all;
-            assert.strictEqual(data.length, 2);
+            assert.lengthOf(data, 2);
         });
     });
     describe('presentation timestamps', () => {

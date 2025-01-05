@@ -6,11 +6,10 @@ import { dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseMoveEvent, getEv
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../testing/ExpectStubCall.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as ProtocolMonitor from '../protocol_monitor.js';
 import * as ProtocolComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('JSONEditor', () => {
     const renderJSONEditor = () => {
         const jsonEditor = new ProtocolComponents.JSONEditor.JSONEditor();
@@ -376,7 +375,7 @@ describeWithEnvironment('JSONEditor', () => {
             const shadowRoot = jsonEditor.renderRoot;
             const displayedParameters = shadowRoot.querySelectorAll('.parameter');
             // Two parameters (test and test2) should be displayed because in the metadata, Test.test5 accepts two parameters
-            assert.deepEqual(displayedParameters.length, 2);
+            assert.lengthOf(displayedParameters, 2);
         });
         it('does not output parameters if the input is invalid json', async () => {
             const cdpCommand = '"command": "Test.test", "parameters":';
@@ -432,7 +431,7 @@ describeWithEnvironment('JSONEditor', () => {
             split.setMainWidget(dataGrid);
             split.setSidebarWidget(editorWidget);
             split.toggleSidebar();
-            await coordinator.done();
+            await RenderCoordinator.done();
             // The first input bar corresponds to the filter bar, so we query the second one which corresponds to the CDP one.
             const toolbarInput = dataGrid.element.shadowRoot?.querySelectorAll('.toolbar')[1].shadowRoot?.querySelector('.toolbar-input-prompt');
             assert.deepEqual(toolbarInput?.innerHTML, '{"command":"Test.test","parameters":{"test":"test"}}');
@@ -450,7 +449,7 @@ describeWithEnvironment('JSONEditor', () => {
             split.setMainWidget(dataGrid);
             split.setSidebarWidget(editorWidget);
             split.toggleSidebar();
-            await coordinator.done();
+            await RenderCoordinator.done();
             // Should be index 1 because the targetId equals "value2" which corresponds to the index number 1
             assert.deepEqual(selector.selectedIndex(), 1);
         });
@@ -464,7 +463,7 @@ describeWithEnvironment('JSONEditor', () => {
             split.setMainWidget(dataGrid);
             split.setSidebarWidget(editorWidget);
             split.toggleSidebar();
-            await coordinator.done();
+            await RenderCoordinator.done();
             // The first input bar corresponds to the filter bar, so we query the second one which corresponds to the CDP one.
             const toolbarInput = dataGrid.element.shadowRoot?.querySelectorAll('.toolbar')[1].shadowRoot?.querySelector('.toolbar-input-prompt');
             assert.deepEqual(toolbarInput?.innerHTML, '');
@@ -939,8 +938,8 @@ describeWithEnvironment('JSONEditor', () => {
         await jsonEditor.updateComplete;
         const inputs = jsonEditor.renderRoot.querySelectorAll('devtools-suggestion-input');
         const addButtons = jsonEditor.renderRoot.querySelectorAll('devtools-button[title="Add a parameter"]');
-        assert.deepEqual(inputs.length, 1);
-        assert.deepEqual(addButtons.length, 0);
+        assert.lengthOf(inputs, 1);
+        assert.lengthOf(addButtons, 0);
     });
     it('checks that the selection of a target works', async () => {
         const jsonEditor = renderJSONEditor();
@@ -1027,7 +1026,7 @@ describeWithEnvironment('JSONEditor', () => {
         const parameters = shadowRoot.querySelectorAll('.parameter');
         // This expected value is equal to 6 because there are 5 different parameters inside typesByName + 1
         // for the name of the parameter (traceConfig)
-        assert.deepEqual(parameters.length, 6);
+        assert.lengthOf(parameters, 6);
     });
     it('should return the parameters in a format understandable by the ProtocolMonitor when sending a command with object parameter that has no typeRef found in map', async () => {
         const command = 'Test.test10';

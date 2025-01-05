@@ -21,8 +21,7 @@ styles.replaceSync(
   display: flex;
   flex-wrap: wrap;
   margin: 0 12px 12px;
-  column-gap: 45px;
-  row-gap: 15px;
+  gap: 15px 45px;
 }
 
 .value-types-selection {

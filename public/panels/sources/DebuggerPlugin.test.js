@@ -76,7 +76,7 @@ describeWithMockConnection('Inline variable view scope helpers', () => {
         const sourceMap = await callFrame.debuggerModel.sourceMapManager().sourceMapForClientPromise(callFrame.script);
         const scopeMappings = await Sources.DebuggerPlugin.computeScopeMappings(callFrame, l => toOffsetWithSourceMap(sourceMap, l));
         const text = new TextUtils.Text.Text(originalSource);
-        assert.strictEqual(scopeMappings.length, 1);
+        assert.lengthOf(scopeMappings, 1);
         assert.strictEqual(scopeMappings[0].scopeStart, text.offsetFromPosition(expectedOffsets[0].startLine, expectedOffsets[0].startColumn));
         assert.strictEqual(scopeMappings[0].scopeEnd, text.offsetFromPosition(expectedOffsets[0].endLine, expectedOffsets[0].endColumn));
         assert.strictEqual(scopeMappings[0].variableMap.get('par1')?.value, 42);
@@ -106,7 +106,7 @@ describeWithMockConnection('Inline variable view scope helpers', () => {
         const sourceMap = await callFrame.debuggerModel.sourceMapManager().sourceMapForClientPromise(callFrame.script);
         const scopeMappings = await Sources.DebuggerPlugin.computeScopeMappings(callFrame, l => toOffsetWithSourceMap(sourceMap, l));
         const text = new TextUtils.Text.Text(originalSource);
-        assert.strictEqual(scopeMappings.length, 2);
+        assert.lengthOf(scopeMappings, 2);
         assert.strictEqual(scopeMappings[0].scopeStart, text.offsetFromPosition(expectedOffsets[0].startLine, expectedOffsets[0].startColumn));
         assert.strictEqual(scopeMappings[0].scopeEnd, text.offsetFromPosition(expectedOffsets[0].endLine, expectedOffsets[0].endColumn));
         assert.strictEqual(scopeMappings[0].variableMap.get('i')?.value, 5);
@@ -124,7 +124,7 @@ describeWithMockConnection('Inline variable view scope helpers', () => {
         const functionScopeObject = backend.createSimpleRemoteObject([{ name: 'a', value: 1 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, null, [functionScopeObject]);
         const scopeMappings = await Sources.DebuggerPlugin.computeScopeMappings(callFrame, l => toOffset(source, l));
-        assert.strictEqual(scopeMappings.length, 1);
+        assert.lengthOf(scopeMappings, 1);
         assert.strictEqual(scopeMappings[0].scopeStart, expectedOffsets[0].startColumn);
         assert.strictEqual(scopeMappings[0].scopeEnd, expectedOffsets[0].endColumn);
         assert.strictEqual(scopeMappings[0].variableMap.get('a')?.value, 1);
@@ -138,7 +138,7 @@ describeWithMockConnection('Inline variable view scope helpers', () => {
         const blockScopeObject = backend.createSimpleRemoteObject([]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, null, [blockScopeObject, functionScopeObject]);
         const scopeMappings = await Sources.DebuggerPlugin.computeScopeMappings(callFrame, l => toOffset(source, l));
-        assert.strictEqual(scopeMappings.length, 2);
+        assert.lengthOf(scopeMappings, 2);
         assert.strictEqual(scopeMappings[0].scopeStart, expectedOffsets[0].startColumn);
         assert.strictEqual(scopeMappings[0].scopeEnd, expectedOffsets[0].endColumn);
         assert.strictEqual(scopeMappings[0].variableMap.size, 0);
@@ -155,7 +155,7 @@ describeWithMockConnection('Inline variable view scope helpers', () => {
         const blockScopeObject = backend.createSimpleRemoteObject([{ name: 'a', value: 1 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, null, [blockScopeObject, functionScopeObject]);
         const scopeMappings = await Sources.DebuggerPlugin.computeScopeMappings(callFrame, l => toOffset(source, l));
-        assert.strictEqual(scopeMappings.length, 2);
+        assert.lengthOf(scopeMappings, 2);
         assert.strictEqual(scopeMappings[0].scopeStart, expectedOffsets[0].startColumn);
         assert.strictEqual(scopeMappings[0].scopeEnd, expectedOffsets[0].endColumn);
         assert.strictEqual(scopeMappings[0].variableMap.size, 1);

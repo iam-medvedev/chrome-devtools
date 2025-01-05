@@ -70,7 +70,7 @@ describeWithEnvironment('TimelineMiniMap', function () {
         if (!minimap.breadcrumbs) {
             throw new Error('The MiniMap unexpectedly did not create any breadcrumbs');
         }
-        assert.strictEqual(TimelineComponents.Breadcrumbs.flattenBreadcrumbs(minimap.breadcrumbs.initialBreadcrumb).length, 1);
+        assert.lengthOf(TimelineComponents.Breadcrumbs.flattenBreadcrumbs(minimap.breadcrumbs.initialBreadcrumb), 1);
         assert.deepEqual(minimap.breadcrumbs.initialBreadcrumb, { window: parsedTrace.Meta.traceBounds, child: null });
     });
     it('stores breadcrumbs to be serialized', async function () {

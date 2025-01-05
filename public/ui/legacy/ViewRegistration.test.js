@@ -48,7 +48,7 @@ describeWithEnvironment('ViewRegistration', () => {
     it('adds command for showing a pre registered view', () => {
         const allCommands = QuickOpen.CommandMenu.CommandMenu.instance({ forceNew: true }).commands();
         const filteredCommands = allCommands.filter(command => command.title === commandPrompt && command.isPanelOrDrawer === "PANEL" /* QuickOpen.CommandMenu.PanelOrDrawer.PANEL */);
-        assert.strictEqual(filteredCommands.length, 1, 'Command for showing a preregistered view was not added correctly');
+        assert.lengthOf(filteredCommands, 1, 'Command for showing a preregistered view was not added correctly');
     });
     it('deletes a registered view using its id', () => {
         const removalResult = UI.ViewManager.maybeRemoveViewExtension(viewId);

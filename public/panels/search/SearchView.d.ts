@@ -19,7 +19,7 @@ export declare class SearchView extends UI.Widget.VBox {
     private visiblePane;
     private readonly searchPanelElement;
     private readonly searchResultsElement;
-    protected readonly search: UI.HistoryInput.HistoryInput;
+    protected readonly search: HTMLInputElement;
     protected readonly matchCaseButton: Buttons.Button.Button;
     protected readonly regexButton: Buttons.Button.Button;
     private searchMessageElement;

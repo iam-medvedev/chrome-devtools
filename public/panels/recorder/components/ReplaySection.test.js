@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Models from '../models/models.js';
 import * as RecorderComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('ReplaySection', () => {
     setupActionRegistry();
     let settings;
@@ -15,7 +14,7 @@ describeWithEnvironment('ReplaySection', () => {
         const component = new RecorderComponents.ReplaySection.ReplaySection();
         component.data = { settings, replayExtensions: [] };
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         return component;
     }
     afterEach(() => {
@@ -26,7 +25,7 @@ describeWithEnvironment('ReplaySection', () => {
         const selectButton = component.shadowRoot?.querySelector('devtools-select-button');
         assert.strictEqual(selectButton?.value, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
         selectButton?.dispatchEvent(new RecorderComponents.SelectButton.SelectMenuSelectedEvent("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */));
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.strictEqual(selectButton?.value, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
     });
     it('should emit startreplayevent on selectbuttonclick event', async () => {

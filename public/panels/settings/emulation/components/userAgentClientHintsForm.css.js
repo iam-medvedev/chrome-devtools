@@ -30,8 +30,7 @@ styles.replaceSync(
   display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
   align-items: center;
-  column-gap: 10px;
-  row-gap: 8px;
+  gap: 8px 10px;
   padding: 0 10px;
 }
 

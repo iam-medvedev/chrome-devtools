@@ -169,7 +169,7 @@ export class ConsolePin {
     constructor(expression, pinPane, focusOut) {
         this.pinPane = pinPane;
         this.focusOut = focusOut;
-        this.deletePinIcon = document.createElement('div', { is: 'dt-close-button' });
+        this.deletePinIcon = document.createElement('dt-close-button');
         this.deletePinIcon.classList.add('close-button');
         this.deletePinIcon.setTabbable(true);
         if (expression.length) {

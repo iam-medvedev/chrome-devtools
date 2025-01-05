@@ -3,6 +3,7 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 export interface ParsedErrorFrame {
     line: string;
+    isCallFrame?: boolean;
     link?: {
         url: Platform.DevToolsPath.UrlString;
         prefix: string;

@@ -253,7 +253,7 @@ styles.replaceSync(
   }
 }
 
-.console-message-wrapper:not(.console-error-level):not(.console-warning-level) {
+.console-message-wrapper:not(.console-error-level, .console-warning-level) {
   & .console-message::before,
   & .console-user-command::before {
     width: calc(100% - 25px);
@@ -270,7 +270,7 @@ styles.replaceSync(
   }
 }
 
-.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level):not(.console-warning-level) {
+.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level) {
   border-top-width: 0;
 }
 
@@ -278,16 +278,16 @@ styles.replaceSync(
   border-top-color: transparent;
 }
 
-.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level):not(.console-warning-level):focus {
+.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level):focus {
   border-top-width: 1px;
 }
 
-.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level):not(.console-warning-level):focus .console-message {
+.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level):focus .console-message {
   padding-top: 2px;
   min-height: 16px;
 }
 
-.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level):not(.console-warning-level):focus .command-result-icon {
+.console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level):focus .command-result-icon {
   top: 3px;
 }
 
@@ -396,6 +396,12 @@ styles.replaceSync(
   .formatted-stack-frame:has(.ignore-list-link) {
     display: var(--display-ignored-formatted-stack-frame);
     opacity: 60%;
+
+    /* Subsequent builtin stack frames are also treated as ignored */
+    & + .formatted-builtin-stack-frame {
+      display: var(--display-ignored-formatted-stack-frame);
+      opacity: 60%;
+    }
   }
 }
 

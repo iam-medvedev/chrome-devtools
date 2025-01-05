@@ -21,7 +21,7 @@ styles.replaceSync(
 
 .gamut-line {
   /* We want to show 50% white color in all themes since this is drawn over a color rectangle */
-  stroke: color-mix(in sRGB, var(--ref-palette-neutral100) 50%, transparent); /* stylelint-disable-line plugin/use_theme_colors */
+  stroke: color-mix(in srgb, var(--ref-palette-neutral100) 50%, transparent); /* stylelint-disable-line plugin/use_theme_colors */
   fill: none;
 }
 
@@ -30,7 +30,7 @@ styles.replaceSync(
   bottom: 3px;
   margin-right: 5px;
   /* We want to show 50% white color in all themes since this is drawn over a color rectangle */
-  color: color-mix(in sRGB, var(--ref-palette-neutral100) 50%, transparent); /* stylelint-disable-line plugin/use_theme_colors */
+  color: color-mix(in srgb, var(--ref-palette-neutral100) 50%, transparent); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
 /*# sourceURL=srgbOverlay.css */

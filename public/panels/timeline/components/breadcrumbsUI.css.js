@@ -16,8 +16,7 @@ styles.replaceSync(
   align-items: center;
   height: 29px;
   padding: 3px;
-  overflow-y: hidden;
-  overflow-x: scroll;
+  overflow: scroll hidden;
 }
 
 .breadcrumbs::-webkit-scrollbar {

@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line rulesdir/es-modules-import
 import * as Buttons from '../buttons/buttons.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('ButtonDialog', () => {
     async function getButtonDialog(fieldToTest) {
         const defaultMinimumButtonDialogData = {
@@ -17,7 +16,7 @@ describe('ButtonDialog', () => {
         const buttonDialog = new Dialogs.ButtonDialog.ButtonDialog();
         buttonDialog.data = Object.assign(defaultMinimumButtonDialogData, fieldToTest);
         Helpers.renderElementIntoDOM(buttonDialog);
-        await coordinator.done();
+        await RenderCoordinator.done();
         return buttonDialog;
     }
     function getButtonFromButtonDialog(buttonDialog) {
@@ -58,7 +57,7 @@ describe('ButtonDialog', () => {
         assert.isFalse(dialog.hasAttribute('open'));
         const button = getButtonFromButtonDialog(buttonDialog);
         button.click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isTrue(dialog.hasAttribute('open'));
     });
 });

@@ -178,7 +178,7 @@ class MessageLevelSelector {
     }
     createElementForItem(item) {
         const element = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [playerMessagesViewStyles], delegatesFocus: undefined });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [playerMessagesViewStyles] });
         const container = shadowRoot.createChild('div', 'media-messages-level-dropdown-element');
         const checkBox = container.createChild('div', 'media-messages-level-dropdown-checkbox');
         const text = container.createChild('span', 'media-messages-level-dropdown-text');

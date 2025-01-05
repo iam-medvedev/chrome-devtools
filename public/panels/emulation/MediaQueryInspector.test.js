@@ -24,7 +24,7 @@ describeWithMockConnection('MediaQueryInspector', () => {
         inspector = new Emulation.MediaQueryInspector.MediaQueryInspector(() => 42, (_) => { }, throttler);
         inspector.markAsRoot();
         inspector.show(document.body);
-        assert.strictEqual(inspector.contentElement.querySelectorAll('.media-inspector-marker').length, 0);
+        assert.lengthOf(inspector.contentElement.querySelectorAll('.media-inspector-marker'), 0);
         const cssModel = target.model(SDK.CSSModel.CSSModel);
         assert.exists(cssModel);
         const CSS_MEDIA = {
@@ -37,7 +37,7 @@ describeWithMockConnection('MediaQueryInspector', () => {
         cssModel.dispatchEventToListeners(SDK.CSSModel.Events.StyleSheetAdded, {});
         const [work] = await workScheduled;
         await work();
-        assert.strictEqual(inspector.contentElement.querySelectorAll('.media-inspector-marker').length, 1);
+        assert.lengthOf(inspector.contentElement.querySelectorAll('.media-inspector-marker'), 1);
     });
 });
 //# sourceMappingURL=MediaQueryInspector.test.js.map

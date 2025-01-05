@@ -109,8 +109,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         this.contentElement.classList.add('vbox');
         const settingsLabelElement = document.createElement('div');
         settingsLabelElement.classList.add('settings-window-label-element');
-        const settingsTitleElement = UI.UIUtils
-            .createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: [settingsScreenStyles], delegatesFocus: undefined })
+        const settingsTitleElement = UI.UIUtils.createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: [settingsScreenStyles] })
             .createChild('div', 'settings-window-title');
         UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
         settingsTitleElement.textContent = i18nString(UIStrings.settings);

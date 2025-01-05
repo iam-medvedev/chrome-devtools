@@ -6,7 +6,7 @@ import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class LCPDiscovery extends BaseInsightComponent<LCPDiscoveryInsightModel> {
     #private;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
+    static readonly litTagName: LitHtml.StaticHtml.StaticValue;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     getEstimatedSavingsTime(): Trace.Types.Timing.MilliSeconds | null;

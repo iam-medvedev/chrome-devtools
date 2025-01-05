@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function makeView(storageKeyOrBucketInfo, storageBucketsModel) {
     const component = new ApplicationComponents.StorageMetadataView.StorageMetadataView();
     renderElementIntoDOM(component);
@@ -20,7 +19,7 @@ async function makeView(storageKeyOrBucketInfo, storageBucketsModel) {
     else {
         component.setStorageBucket(storageKeyOrBucketInfo);
     }
-    await coordinator.done();
+    await RenderCoordinator.done();
     return component;
 }
 describeWithLocale('SharedStorageMetadataView', () => {
@@ -141,7 +140,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
             expiration: 42,
         }, storageBucketsModel);
         const buttons = component.shadowRoot.querySelectorAll('devtools-button');
-        assert.strictEqual(buttons.length, 1);
+        assert.lengthOf(buttons, 1);
         const [deleteButton] = buttons;
         assert.instanceOf(deleteButton, HTMLElement);
         assert.strictEqual(deleteButton.textContent.trim(), 'Delete bucket');

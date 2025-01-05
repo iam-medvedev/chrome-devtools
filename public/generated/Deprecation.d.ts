@@ -36,10 +36,6 @@ export declare const UIStrings: {
      */
     CrossOriginWindowConfirm: string;
     /**
-     * @description Warning displayed to developers when their website uses `:--customstatename` in CSS. They can simply switch their CSS to `:state(customstatename)` and it will be the same.
-     */
-    CSSCustomStateDeprecatedSyntax: string;
-    /**
      * @description Warning displayed to developers when they hide the Cast button on a video element using the deprecated CSS selector instead of using the disableRemotePlayback attribute on the element.
      */
     CSSSelectorInternalMediaControlsOverlayCastButton: string;

@@ -99,7 +99,7 @@ describeWithEnvironment('LinearMemoryInspectorController', () => {
         const instance = LinearMemoryInspectorController.LinearMemoryInspectorController.instance();
         const expressionName = 'myCar';
         const result = await instance.evaluateExpression(callFrame, expressionName);
-        assert.strictEqual(result, undefined);
+        assert.isUndefined(result);
         assert.isTrue(stub.calledOnceWithExactly(`Tried to evaluate the expression '${expressionName}' but got an error: ${errorText}`));
     });
     it('returns undefined when exceptionDetails is set on the result of evaluateExpression', async () => {
@@ -118,7 +118,7 @@ describeWithEnvironment('LinearMemoryInspectorController', () => {
         const instance = LinearMemoryInspectorController.LinearMemoryInspectorController.instance();
         const expressionName = 'myCar.manufacturer';
         const result = await instance.evaluateExpression(callFrame, expressionName);
-        assert.strictEqual(result, undefined);
+        assert.isUndefined(result);
         assert.isTrue(stub.calledOnceWithExactly(`Tried to evaluate the expression '${expressionName}' but got an exception: ${exceptionText}`));
     });
     it('returns RemoteObject when no exception happens in evaluateExpression', async () => {
@@ -143,7 +143,7 @@ describeWithEnvironment('LinearMemoryInspectorController', () => {
         instance.setHighlightInfo(bufferId, highlightInfo);
         assert.deepEqual(instance.getHighlightInfo(bufferId), highlightInfo);
         instance.removeHighlight(bufferId, highlightInfo);
-        assert.deepEqual(instance.getHighlightInfo(bufferId), undefined);
+        assert.isUndefined(instance.getHighlightInfo(bufferId));
     });
     it('does not change the stored highlight when the provided highlightInfo does not match', () => {
         const highlightInfo = { startAddress: 0, size: 16, name: 'myNumbers', type: 'int[]' };

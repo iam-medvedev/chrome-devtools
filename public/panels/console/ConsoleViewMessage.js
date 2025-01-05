@@ -1360,8 +1360,7 @@ export class ConsoleViewMessage {
             return;
         }
         if (!this.repeatCountElement) {
-            this.repeatCountElement =
-                document.createElement('span', { is: 'dt-small-bubble' });
+            this.repeatCountElement = document.createElement('dt-small-bubble');
             this.repeatCountElement.classList.add('console-message-repeat-count');
             switch (this.message.level) {
                 case "warning" /* Protocol.Log.LogEntryLevel.Warning */:
@@ -1518,7 +1517,7 @@ export class ConsoleViewMessage {
         const formattedResult = document.createElement(formattedResultType);
         for (let i = 0; i < linkInfos.length; ++i) {
             const newline = i < linkInfos.length - 1 ? '\n' : '';
-            const { line, link } = linkInfos[i];
+            const { line, link, isCallFrame } = linkInfos[i];
             // Syntax errors don't have a stack frame that points to the source position
             // where the error occurred. We use the source location from the
             // exceptionDetails and append it to the end of the message instead.
@@ -1533,11 +1532,17 @@ export class ConsoleViewMessage {
                 formattedResult.append(newline);
                 continue;
             }
-            if (!link) {
+            if (!isCallFrame) {
                 formattedResult.appendChild(this.linkifyStringAsFragment(`${line}${newline}`));
                 continue;
             }
             const formattedLine = document.createElement('span');
+            if (!link) {
+                formattedLine.appendChild(this.linkifyStringAsFragment(`${line}${newline}`));
+                formattedLine.classList.add('formatted-builtin-stack-frame');
+                formattedResult.appendChild(formattedLine);
+                continue;
+            }
             const suffix = `${link.suffix}${newline}`;
             formattedLine.appendChild(this.linkifyStringAsFragment(link.prefix));
             const scriptLocationLink = this.linkifier.linkifyScriptLocation(debuggerModel.target(), link.scriptId || null, link.url, link.lineNumber, {

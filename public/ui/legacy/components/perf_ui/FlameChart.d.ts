@@ -621,6 +621,12 @@ export declare const enum Events {
     ENTRY_LABEL_ANNOTATION_ADDED = "EntryLabelAnnotationAdded",
     ENTRIES_LINK_ANNOTATION_CREATED = "EntriesLinkAnnotationCreated",
     /**
+     * Emmited when the user enters or exits 'reorder tracks' view.
+     * If the event value is 'true', the 'reorder tracks' state was entered,
+     * if it's false, the reorder state was exited.
+     */
+    TRACKS_REORDER_STATE_CHANGED = "TracksReorderStateChange",
+    /**
      * Emitted when an event is selected via keyboard navigation using the arrow
      * keys.
      *
@@ -648,6 +654,7 @@ export type EventTypes = {
     [Events.ENTRIES_LINK_ANNOTATION_CREATED]: {
         entryFromIndex: number;
     };
+    [Events.TRACKS_REORDER_STATE_CHANGED]: boolean;
     [Events.CANVAS_FOCUSED]: number | void;
     [Events.ENTRY_INVOKED]: number;
     [Events.ENTRY_SELECTED]: number;

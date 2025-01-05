@@ -27,10 +27,7 @@ export default {
   align-items: stretch;
   pointer-events: none;
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  inset: 0;
 }
 
 .media-inspector-marker {
@@ -58,7 +55,7 @@ export default {
   border-left: 2px solid var(--sys-color-yellow-bright);
 
   &:hover {
-    background-color: color-mix(in sRGB, var(--sys-color-yellow-container), var(--sys-color-yellow-bright) 30%);
+    background-color: color-mix(in srgb, var(--sys-color-yellow-container), var(--sys-color-yellow-bright) 30%);
   }
 }
 
@@ -93,7 +90,7 @@ export default {
 }
 
 .media-inspector-marker-inactive .media-inspector-marker-min-max-width:not(:hover) {
-  background-color: color-mix(in sRGB, var(--sys-color-tertiary-container), var(--sys-color-cdt-base-container) 30%);
+  background-color: color-mix(in srgb, var(--sys-color-tertiary-container), var(--sys-color-cdt-base-container) 30%);
 }
 
 .media-inspector-marker-inactive .media-inspector-marker-max-width:not(:hover) {

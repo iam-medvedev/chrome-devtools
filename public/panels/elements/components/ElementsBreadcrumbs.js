@@ -5,7 +5,7 @@ import '../../../ui/components/icon_button/icon_button.js';
 import '../../../ui/components/node_text/node_text.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import elementsBreadcrumbsStyles from './elementsBreadcrumbs.css.js';
@@ -35,7 +35,6 @@ export class NodeSelectedEvent extends Event {
         this.legacyDomNode = node.legacyDomNode;
     }
 }
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class ElementsBreadcrumbs extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #resizeObserver = new ResizeObserver(() => this.#checkForOverflowOnResize());
@@ -78,10 +77,10 @@ export class ElementsBreadcrumbs extends HTMLElement {
         if (!crumbScrollContainer || !crumbWindow) {
             return;
         }
-        const crumbWindowWidth = await coordinator.read(() => {
+        const crumbWindowWidth = await RenderCoordinator.read(() => {
             return crumbWindow.clientWidth;
         });
-        const scrollContainerWidth = await coordinator.read(() => {
+        const scrollContainerWidth = await RenderCoordinator.read(() => {
             return crumbScrollContainer.clientWidth;
         });
         if (this.#overflowing) {
@@ -139,10 +138,10 @@ export class ElementsBreadcrumbs extends HTMLElement {
         if (!crumbScrollContainer || !crumbWindow) {
             return;
         }
-        const crumbWindowWidth = await coordinator.read(() => {
+        const crumbWindowWidth = await RenderCoordinator.read(() => {
             return crumbWindow.clientWidth;
         });
-        const scrollContainerWidth = await coordinator.read(() => {
+        const scrollContainerWidth = await RenderCoordinator.read(() => {
             return crumbScrollContainer.clientWidth;
         });
         if (this.#overflowing) {
@@ -307,7 +306,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
         const activeCrumbId = this.#selectedDOMNode.id;
         const activeCrumb = this.#shadow.querySelector(`.crumb[data-node-id="${activeCrumbId}"]`);
         if (activeCrumb) {
-            await coordinator.scroll(() => {
+            await RenderCoordinator.scroll(() => {
                 activeCrumb.scrollIntoView({
                     // We only want to scroll smoothly when the user is clicking the
                     // buttons manually. If we are automatically scrolling, we could be

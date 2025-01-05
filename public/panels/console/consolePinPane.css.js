@@ -76,7 +76,7 @@ styles.replaceSync(
 }
 
 .console-pin:focus-within .console-pin-preview,
-.console-pin-name:not(:focus-within):not(:hover) {
+.console-pin-name:not(:focus-within, :hover) {
   opacity: 60%;
 }
 

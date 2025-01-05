@@ -4,9 +4,8 @@
 import * as Root from '../../../core/root/root.js';
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithLocale('Preview toggle', () => {
     it('calls out correctly to enable experiment', async () => {
         const isEnabledStub = sinon.stub(Root.Runtime.experiments, 'isEnabled');
@@ -23,7 +22,7 @@ describeWithLocale('Preview toggle', () => {
             onChangeCallback: spy,
         };
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isNotNull(component.shadowRoot);
         const input = component.shadowRoot.querySelector('input');
         assert.instanceOf(input, HTMLElement);
@@ -31,7 +30,7 @@ describeWithLocale('Preview toggle', () => {
         assert.strictEqual(setEnabledStub.callCount, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', true), 'experiments.setEnabled was not called with the correct experiment');
         assert.strictEqual(spy.callCount, 1);
-        assert.strictEqual(spy.firstCall.firstArg, true);
+        assert.isTrue(spy.firstCall.firstArg);
     });
     it('calls out correctly to disable experiment', async () => {
         const isEnabledStub = sinon.stub(Root.Runtime.experiments, 'isEnabled');
@@ -48,14 +47,14 @@ describeWithLocale('Preview toggle', () => {
             onChangeCallback: spy,
         };
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const input = component.shadowRoot.querySelector('input');
         assert.instanceOf(input, HTMLElement);
         dispatchClickEvent(input);
         assert.strictEqual(setEnabledStub.callCount, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', false), 'experiments.setEnabled was not called with the correct experiment');
         assert.strictEqual(spy.callCount, 1);
-        assert.strictEqual(spy.firstCall.firstArg, false);
+        assert.isFalse(spy.firstCall.firstArg);
     });
 });
 //# sourceMappingURL=PreviewToggle.test.js.map

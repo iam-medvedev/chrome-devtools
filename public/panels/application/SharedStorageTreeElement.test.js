@@ -5,7 +5,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { SECURITY_ORIGIN } from '../../testing/ResourceTreeHelpers.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 class SharedStorageItemsListener {
@@ -28,7 +28,6 @@ class SharedStorageItemsListener {
         this.#refreshed = false;
     }
 }
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('SharedStorageTreeElement', function () {
     let target;
     let sharedStorageModel;
@@ -81,7 +80,7 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
         panel.show(document.body);
         treeElement =
             await Application.SharedStorageTreeElement.SharedStorageTreeElement.createElement(panel, sharedStorage);
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: SECURITY_ORIGIN }));
         const { view } = treeElement;
         const itemsListener = new SharedStorageItemsListener(view.sharedStorageItemsDispatcher);
