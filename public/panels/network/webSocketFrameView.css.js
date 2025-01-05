@@ -46,7 +46,7 @@ styles.replaceSync(
 }
 
 .websocket-frame-view-row-send {
-  background-color: color-mix(in sRGB, var(--sys-color-tertiary-container), transparent 50%);
+  background-color: color-mix(in srgb, var(--sys-color-tertiary-container), transparent 50%);
 }
 
 .websocket-frame-view-row-error {

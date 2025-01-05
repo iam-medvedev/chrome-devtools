@@ -49,7 +49,7 @@ styles.replaceSync(
 
 .chart-root .slice.selected {
   stroke: var(--sys-color-primary);
-  stroke-opacity: 1;
+  stroke-opacity: 100%;
   stroke-width: 0.04;
   stroke-linecap: round;
   stroke-linejoin: round;

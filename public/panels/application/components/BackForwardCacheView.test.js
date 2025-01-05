@@ -6,16 +6,15 @@ import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMH
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { getMainFrame, navigate } from '../../../testing/ResourceTreeHelpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
 import * as ApplicationComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderBackForwardCacheView() {
     const component = new ApplicationComponents.BackForwardCacheView.BackForwardCacheView();
     renderElementIntoDOM(component);
     await component.render();
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     return component;
 }
 async function unpromisify(node) {
@@ -39,12 +38,12 @@ describeWithMockConnection('BackForwardCacheView', () => {
     it('updates BFCacheView on main frame navigation', async () => {
         await renderBackForwardCacheView();
         navigate(getMainFrame(target), {}, "BackForwardCacheRestore" /* Protocol.Page.NavigationType.BackForwardCacheRestore */);
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
     });
     it('updates BFCacheView on BFCache detail update', async () => {
         await renderBackForwardCacheView();
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, getMainFrame(target));
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
     });
     it('renders status if restored from BFCache', async () => {
         resourceTreeModel.mainFrame = {

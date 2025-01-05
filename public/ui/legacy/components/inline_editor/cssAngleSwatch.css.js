@@ -27,10 +27,7 @@ styles.replaceSync(
 .mini-hand {
   position: absolute;
   margin: auto;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   height: 55%;
   width: 2px;
   background-color: var(--sys-color-tonal-container);

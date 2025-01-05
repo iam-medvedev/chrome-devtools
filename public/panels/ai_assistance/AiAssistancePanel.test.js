@@ -684,7 +684,7 @@ describeWithEnvironment('FreestylerPanel', () => {
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.deepEqual(mockView.lastCall.args[0].messages, []);
-        assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+        assert.isUndefined(mockView.lastCall.args[0].agentType);
     });
     it('should select default agent based on open panel after clearing the chat', async () => {
         const stub = getGetHostConfigStub({
@@ -771,7 +771,7 @@ describeWithEnvironment('FreestylerPanel', () => {
         contextMenu.invokeHandler(clearAll.id());
         await drainMicroTasks();
         assert.deepEqual(mockView.lastCall.args[0].messages, []);
-        assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+        assert.isUndefined(mockView.lastCall.args[0].agentType);
         await drainMicroTasks();
         contextMenu.discard();
         await drainMicroTasks();
@@ -850,7 +850,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             panel.handleAction('freestyler.elements-floating-button');
             mockView.lastCall.args[0].onTextSubmit('test2');
             await drainMicroTasks();
-            assert.strictEqual(mockView.lastCall.args[0].isReadOnly, false);
+            assert.isFalse(mockView.lastCall.args[0].isReadOnly);
             assert.deepEqual(mockView.lastCall.args[0].messages, [
                 {
                     entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
@@ -917,7 +917,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "freestyler" /* AiAssistance.AgentType.STYLING */,
                 }));
                 UI.Context.Context.instance().setFlavor(ElementsPanel.ElementsPanel.ElementsPanel, null);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
             it('should render no agent state when Elements panel is open but Freestyler is not enabled', () => {
@@ -934,7 +934,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
         });
@@ -976,7 +976,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "drjones-network-request" /* AiAssistance.AgentType.NETWORK */,
                 }));
                 UI.Context.Context.instance().setFlavor(NetworkPanel.NetworkPanel.NetworkPanel, null);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
             it('should render no agent state when Network panel is open but devToolsAiAssistanceNetworkAgent is not enabled', () => {
@@ -993,7 +993,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
         });
@@ -1035,7 +1035,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "drjones-file" /* AiAssistance.AgentType.FILE */,
                 }));
                 UI.Context.Context.instance().setFlavor(SourcesPanel.SourcesPanel.SourcesPanel, null);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
             it('should render no agent state when Sources panel is open but devToolsAiAssistanceFileAgent is not enabled', () => {
@@ -1052,7 +1052,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
         });
@@ -1094,7 +1094,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     agentType: "drjones-performance" /* AiAssistance.AgentType.PERFORMANCE */,
                 }));
                 UI.Context.Context.instance().setFlavor(TimelinePanel.TimelinePanel.TimelinePanel, null);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
             it('should render no agent state when Performance panel is open but devToolsAiAssistancePerformanceAgent is not enabled', () => {
@@ -1111,7 +1111,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 });
                 panel.markAsRoot();
                 panel.show(document.body);
-                assert.deepEqual(mockView.lastCall.args[0].agentType, undefined);
+                assert.isUndefined(mockView.lastCall.args[0].agentType);
                 stub.restore();
             });
         });

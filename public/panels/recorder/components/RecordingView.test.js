@@ -6,11 +6,10 @@ import { dispatchClickEvent, dispatchMouseOverEvent, getEventPromise, renderElem
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../testing/ExpectStubCall.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
 import * as Components from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('RecordingView', () => {
     setupActionRegistry();
     const step = { type: Models.Schema.StepType.Scroll };
@@ -43,7 +42,7 @@ describeWithEnvironment('RecordingView', () => {
             extensionConverters: [],
             replayExtensions: [],
         };
-        await coordinator.done();
+        await RenderCoordinator.done();
         return view;
     }
     async function waitForTextEditor(view) {
@@ -69,12 +68,12 @@ describeWithEnvironment('RecordingView', () => {
     }
     function clickShowCode(view) {
         const button = view.shadowRoot?.querySelector('.show-code');
-        assert.ok(button);
+        assert.isOk(button);
         dispatchClickEvent(button);
     }
     function clickHideCode(view) {
         const button = view.shadowRoot?.querySelector('[title="Hide code"]');
-        assert.ok(button);
+        assert.isOk(button);
         dispatchClickEvent(button);
     }
     async function waitForSplitViewToDissappear(view) {
@@ -84,7 +83,7 @@ describeWithEnvironment('RecordingView', () => {
     }
     async function changeCodeView(view) {
         const menu = view.shadowRoot?.querySelector('devtools-select-menu');
-        assert.ok(menu);
+        assert.isOk(menu);
         const event = new Menus.SelectMenu.SelectMenuItemSelectedEvent("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
         menu.dispatchEvent(event);
     }

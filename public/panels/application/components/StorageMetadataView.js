@@ -6,7 +6,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 const { html } = LitHtml;
@@ -101,7 +101,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/StorageMetadataView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #storageBucketsModel;
@@ -125,7 +124,7 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
         }
     }
     render() {
-        return coordinator.write('StorageMetadataView render', async () => {
+        return RenderCoordinator.write('StorageMetadataView render', async () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(html `

@@ -20,9 +20,9 @@ describeWithEnvironment('CreateRecordingView', () => {
     it('should render create recording view', async () => {
         const view = createView();
         const input = view.shadowRoot?.querySelector('#user-flow-name');
-        assert.ok(input);
+        assert.isOk(input);
         const button = view.shadowRoot?.querySelector('devtools-control-button');
-        assert.ok(button);
+        assert.isOk(button);
         const onceClicked = new Promise(resolve => {
             view.addEventListener('recordingstarted', resolve, { once: true });
         });
@@ -49,9 +49,9 @@ describeWithEnvironment('CreateRecordingView', () => {
     it('should remember the most recent selector attribute', async () => {
         let view = createView();
         let input = view.shadowRoot?.querySelector('#selector-attribute');
-        assert.ok(input);
+        assert.isOk(input);
         const button = view.shadowRoot?.querySelector('devtools-control-button');
-        assert.ok(button);
+        assert.isOk(button);
         const onceClicked = new Promise(resolve => {
             view.addEventListener('recordingstarted', resolve, { once: true });
         });
@@ -60,15 +60,15 @@ describeWithEnvironment('CreateRecordingView', () => {
         await onceClicked;
         view = createView();
         input = view.shadowRoot?.querySelector('#selector-attribute');
-        assert.ok(input);
+        assert.isOk(input);
         assert.strictEqual(input.value, 'data-custom-attribute');
     });
     it('should remember recorded selector types', async () => {
         let view = createView();
         let checkboxes = view.shadowRoot?.querySelectorAll('.selector-type input[type=checkbox]');
-        assert.strictEqual(checkboxes.length, 5);
+        assert.lengthOf(checkboxes, 5);
         const button = view.shadowRoot?.querySelector('devtools-control-button');
-        assert.ok(button);
+        assert.isOk(button);
         const onceClicked = new Promise(resolve => {
             view.addEventListener('recordingstarted', resolve, { once: true });
         });
@@ -83,7 +83,7 @@ describeWithEnvironment('CreateRecordingView', () => {
         ]);
         view = createView();
         checkboxes = view.shadowRoot?.querySelectorAll('.selector-type input[type=checkbox]');
-        assert.strictEqual(checkboxes.length, 5);
+        assert.lengthOf(checkboxes, 5);
         assert.isFalse(checkboxes[0].checked);
         assert.isTrue(checkboxes[1].checked);
         assert.isTrue(checkboxes[2].checked);

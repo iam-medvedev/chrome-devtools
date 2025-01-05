@@ -101,6 +101,7 @@ styles.replaceSync(
 }
 
 .screencast-canvas-container.touchable {
+  /* stylelint-disable-next-line custom-property-pattern */
   cursor: image-set(var(--image-file-touchCursor) 1x, var(--image-file-touchCursor_2x) 2x), default;
 }
 

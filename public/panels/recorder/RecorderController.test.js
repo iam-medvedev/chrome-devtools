@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/es-modules-import */
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components/components.js';
 import * as Models from './models/models.js';
 import { RecorderController } from './recorder.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('RecorderController', () => {
     setupActionRegistry();
     function makeRecording() {
@@ -26,7 +25,7 @@ describeWithEnvironment('RecorderController', () => {
         controller.setCurrentPageForTesting("RecordingPage" /* RecorderController.Pages.RECORDING_PAGE */);
         controller.setCurrentRecordingForTesting(recording);
         controller.connectedCallback();
-        await coordinator.done();
+        await RenderCoordinator.done();
         return controller;
     }
     describe('Navigation', () => {
@@ -36,9 +35,9 @@ describeWithEnvironment('RecorderController', () => {
             controller.setCurrentPageForTesting(previousPage);
             controller.setCurrentPageForTesting("CreateRecordingPage" /* RecorderController.Pages.CREATE_RECORDING_PAGE */);
             controller.connectedCallback();
-            await coordinator.done();
+            await RenderCoordinator.done();
             const createRecordingView = controller.shadowRoot?.querySelector('devtools-create-recording-view');
-            assert.ok(createRecordingView);
+            assert.isOk(createRecordingView);
             createRecordingView?.dispatchEvent(new Components.CreateRecordingView.RecordingCancelledEvent());
             assert.strictEqual(controller.getCurrentPageForTesting(), previousPage);
         });
@@ -46,9 +45,9 @@ describeWithEnvironment('RecorderController', () => {
     describe('StepView', () => {
         async function dispatchRecordingViewEvent(controller, event) {
             const recordingView = controller.shadowRoot?.querySelector('devtools-recording-view');
-            assert.ok(recordingView);
+            assert.isOk(recordingView);
             recordingView?.dispatchEvent(event);
-            await coordinator.done();
+            await RenderCoordinator.done();
         }
         beforeEach(() => {
             Models.RecordingStorage.RecordingStorage.instance().clearForTest();

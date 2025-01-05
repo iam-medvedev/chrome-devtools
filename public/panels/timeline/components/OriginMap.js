@@ -5,12 +5,11 @@ import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import originMapStyles from './originMap.css.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const UIStrings = {
     /**
      * @description Title for a column in a data table representing a site origin used for development
@@ -84,7 +83,7 @@ export class OriginMap extends UI.Widget.WidgetElement {
         }
     }
     #renderOriginWarning(url) {
-        return coordinator.write(async () => {
+        return RenderCoordinator.write(async () => {
             if (!CrUXManager.CrUXManager.instance().isEnabled()) {
                 return LitHtml.nothing;
             }

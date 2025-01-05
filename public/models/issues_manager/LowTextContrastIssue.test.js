@@ -37,9 +37,9 @@ describe('LowTextContrastIssue', () => {
             mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
         }
         const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
-        assert.strictEqual(aggregatedIssues.length, 1);
+        assert.lengthOf(aggregatedIssues, 1);
         const lowContrastIssues = Array.from(aggregatedIssues[0].getLowContrastIssues());
-        assert.strictEqual(lowContrastIssues.length, 3);
+        assert.lengthOf(lowContrastIssues, 3);
         const violatingNodeIds = [];
         for (const contrastIssue of lowContrastIssues) {
             violatingNodeIds.push(contrastIssue.details().violatingNodeId);

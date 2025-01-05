@@ -60,7 +60,7 @@ describeWithEnvironment('AiAgent', () => {
                 aidaClient: {},
             });
             agent.options.temperature = -1;
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.temperature, undefined);
+            assert.isUndefined(agent.buildRequest({ text: 'test input' }).options?.temperature);
         });
         it('builds a request with a model id', async () => {
             const agent = new AiAgentMock({
@@ -73,18 +73,18 @@ describeWithEnvironment('AiAgent', () => {
                 aidaClient: {},
                 serverSideLoggingEnabled: true,
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).metadata?.disable_user_content_logging, false);
+            assert.isFalse(agent.buildRequest({ text: 'test input' }).metadata?.disable_user_content_logging);
         });
         it('builds a request without logging', async () => {
             const agent = new AiAgentMock({
                 aidaClient: {},
                 serverSideLoggingEnabled: false,
             });
-            assert.strictEqual(agent
+            assert.isTrue(agent
                 .buildRequest({
                 text: 'test input',
             })
-                .metadata?.disable_user_content_logging, true);
+                .metadata?.disable_user_content_logging);
         });
         it('builds a request with input', async () => {
             const agent = new AiAgentMock({
@@ -93,7 +93,7 @@ describeWithEnvironment('AiAgent', () => {
             });
             const request = agent.buildRequest({ text: 'test input' });
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
-            assert.strictEqual(request.historical_contexts, undefined);
+            assert.isUndefined(request.historical_contexts);
         });
         it('builds a request with a sessionId', async () => {
             const agent = new AiAgentMock({
@@ -109,7 +109,7 @@ describeWithEnvironment('AiAgent', () => {
             const request = agent.buildRequest({ text: 'test input' });
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.strictEqual(request.preamble, 'preamble');
-            assert.strictEqual(request.historical_contexts, undefined);
+            assert.isUndefined(request.historical_contexts);
         });
         it('builds a request with chat history', async () => {
             const agent = new AiAgentMock({
@@ -196,7 +196,7 @@ describeWithEnvironment('AiAgent', () => {
             ];
             const request = agent.buildRequest({ text: 'test input' });
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
-            assert.deepEqual(request.historical_contexts, undefined);
+            assert.isUndefined(request.historical_contexts);
         });
         it('builds a request with aborted query in history before a real request', async () => {
             const agent = new AiAgentMock({

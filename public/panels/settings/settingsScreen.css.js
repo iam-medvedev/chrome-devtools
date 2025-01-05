@@ -17,8 +17,7 @@ styles.replaceSync(
 }
 
 .settings-content {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   margin: 8px 8px 8px 0;
   padding: 0 4px;
   flex: auto;

@@ -10,7 +10,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -132,7 +132,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/BackForwardCacheView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #screenStatus = "Result" /* ScreenStatusType.RESULT */;
@@ -155,7 +154,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         this.#shadow.adoptedStyleSheets = [backForwardCacheViewStyles];
     }
     async render() {
-        await coordinator.write('BackForwardCacheView render', () => {
+        await RenderCoordinator.write('BackForwardCacheView render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(html `

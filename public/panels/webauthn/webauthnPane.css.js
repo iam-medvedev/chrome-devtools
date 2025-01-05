@@ -76,11 +76,6 @@ styles.replaceSync(
   margin: 0;
 }
 
-.authenticator-field {
-  display: flex;
-  margin: auto;
-}
-
 .authenticator-section-header {
   display: flex;
   justify-content: space-between;
@@ -107,8 +102,6 @@ styles.replaceSync(
 }
 
 .authenticator-field-value {
-  padding: 5px 0;
-  display: inline-block;
   font-family: monospace;
 }
 
@@ -117,6 +110,7 @@ styles.replaceSync(
   top: 2px;
 }
 
+.authenticator-field,
 .authenticator-option {
   display: flex;
   padding-bottom: 10px;
@@ -131,8 +125,7 @@ styles.replaceSync(
 .authenticator-option-label {
   text-align: right;
   width: 200px;
-  display: inline-block;
-  padding: 0 10px 0 0;
+  padding-right: 10px;
 }
 
 td .text-button {

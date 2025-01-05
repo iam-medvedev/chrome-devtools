@@ -8,10 +8,9 @@ import { getCleanTextContentFromElements, getElementsWithinComponent, getElement
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as ApplicationComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const makeFrame = (target) => {
     const newFrame = {
         url: 'https://www.example.com/path/page.html',
@@ -74,7 +73,7 @@ describeWithMockConnection('FrameDetailsView', () => {
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
         void component.render();
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
         const titleElement = report.shadowRoot.querySelector('.report-title');
         assert.strictEqual(titleElement?.textContent, frame.displayName());
@@ -120,7 +119,7 @@ describeWithMockConnection('FrameDetailsView', () => {
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
         await component.render();
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
             'URL',

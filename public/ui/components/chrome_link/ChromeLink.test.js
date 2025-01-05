@@ -5,10 +5,9 @@ import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as ChromeLink from './chrome_link.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('ChromeLink', () => {
     it('renders a link when given a \'chrome://\' URL', async () => {
         const target = createTarget();
@@ -22,7 +21,7 @@ describeWithMockConnection('ChromeLink', () => {
       `, container, { host: this });
         // clang-format on
         renderElementIntoDOM(container);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const chromeLink = container.querySelector('devtools-chrome-link');
         assert.instanceOf(chromeLink, ChromeLink.ChromeLink.ChromeLink);
         assert.isNotNull(chromeLink.shadowRoot);

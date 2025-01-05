@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../ui/components/report_view/report_view.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 // Disabled due to flakiness
 describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
     it('renders with a title and top-level site', async function () {
@@ -26,7 +25,7 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
         assert.isNotNull(report.shadowRoot);
         const titleElement = report.shadowRoot.querySelector('.report-title');
@@ -58,7 +57,7 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
         assert.isNotNull(report.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
@@ -87,7 +86,7 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
         assert.isNotNull(report.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
@@ -135,9 +134,9 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         const buttons = component.shadowRoot.querySelectorAll('devtools-button');
-        assert.strictEqual(buttons.length, 2);
+        assert.lengthOf(buttons, 2);
         assert.instanceOf(buttons[0], HTMLElement);
         assert.strictEqual(buttons[0].textContent?.trim(), 'Delete database');
         const showDialog = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(true);

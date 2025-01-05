@@ -5,10 +5,9 @@ import { dispatchKeyDownEvent, raf } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { getCellElementFromNodeAndColumnId, selectNodeByKey } from '../../testing/StorageItemsViewHelpers.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Resources from './application.js';
 var View = Resources.ExtensionStorageItemsView;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 class ExtensionStorageItemsListener {
     #dispatcher;
     #edited = false;
@@ -72,7 +71,7 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
         const itemsListener = new ExtensionStorageItemsListener(view.extensionStorageItemsDispatcher);
         await itemsListener.waitForItemsRefreshed();
         assert.deepEqual(view.getEntriesForTesting(), Object.keys(EXAMPLE_DATA).map(key => ({ key, value: EXAMPLE_DATA[key] })));
-        await coordinator.done();
+        await RenderCoordinator.done();
         view.detach();
     });
     it('correctly parses set values as JSON, with string fallback', async () => {
@@ -110,7 +109,7 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
             setStorageItems.calledOnceWithExactly({ id: TEST_EXTENSION_ID, storageArea: "local" /* Protocol.Extensions.StorageArea.Local */, values: { [key]: parsedValue } });
             setStorageItems.reset();
         }
-        await coordinator.done();
+        await RenderCoordinator.done();
         view.detach();
     });
 });

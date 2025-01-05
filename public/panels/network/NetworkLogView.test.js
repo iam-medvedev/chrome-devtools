@@ -15,10 +15,9 @@ import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
 import { activate } from '../../testing/ResourceTreeHelpers.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('NetworkLogView', () => {
     let target;
     let networkLogView;
@@ -204,7 +203,7 @@ describeWithMockConnection('NetworkLogView', () => {
             const blob = new Blob([JSON.stringify(har)], { type: 'text/plain' });
             const file = new File([blob], 'log.har');
             await networkLogView.onLoadFromFile(file);
-            await coordinator.done({ waitForWork: true });
+            await RenderCoordinator.done({ waitForWork: true });
             const rootNode = networkLogView.columns().dataGrid().rootNode();
             assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [URL_1, URL_2]);
             networkLogView.setTextFilterValue('favicon');
@@ -238,7 +237,7 @@ describeWithMockConnection('NetworkLogView', () => {
                 ]);
             }
             else {
-                assert.strictEqual(textElements.length, 0);
+                assert.lengthOf(textElements, 0);
             }
         });
     };
@@ -256,11 +255,11 @@ describeWithMockConnection('NetworkLogView', () => {
         networkLogView = createNetworkLogView();
         networkLogView.markAsRoot();
         networkLogView.show(document.body);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const rootNode = networkLogView.columns().dataGrid().rootNode();
         assert.deepEqual(rootNode.children.map(n => n.request()), [request1, request2]);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(anotherTarget);
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.deepEqual(rootNode.children.map(n => n.request()), preserveLog ? [request1, request2, request3] : [request3]);
     };
     it('replaces requests when switching scope with preserve log off', handlesSwitchingScope(false));
@@ -277,11 +276,11 @@ describeWithMockConnection('NetworkLogView', () => {
         networkLogView = createNetworkLogView();
         networkLogView.markAsRoot();
         networkLogView.show(document.body);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const rootNode = networkLogView.columns().dataGrid().rootNode();
         assert.deepEqual(rootNode.children.map(n => n.request()), [request1, request2]);
         activate(target);
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.deepEqual(rootNode.children.map(n => n.request()), [request1, request2, request3]);
     });
     it('hide Chrome extension requests from checkbox', async () => {
@@ -414,9 +413,9 @@ describeWithMockConnection('NetworkLogView', () => {
         networkLogView.markAsRoot();
         networkLogView.show(document.body);
         const rootNode = networkLogView.columns().dataGrid().rootNode();
-        assert.strictEqual(rootNode.children.length, 1);
+        assert.lengthOf(rootNode.children, 1);
         networkLog.dispatchEventToListeners(Logs.NetworkLog.Events.RequestRemoved, { request });
-        assert.strictEqual(rootNode.children.length, 0);
+        assert.lengthOf(rootNode.children, 0);
     });
     it('correctly shows/hides "Copy all as HAR (with sensitive data)" menu item', async () => {
         const networkShowOptionsToGenerateHarWithSensitiveDataSetting = Common.Settings.Settings.instance().createSetting('network.show-options-to-generate-har-with-sensitive-data', false);

@@ -74,8 +74,7 @@ styles.replaceSync(
 
 .storage-view.query {
   padding: 2px 0;
-  overflow-y: overlay;
-  overflow-x: hidden;
+  overflow: hidden overlay;
 }
 
 .storage-view .filter-bar {

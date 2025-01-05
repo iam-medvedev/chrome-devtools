@@ -22,7 +22,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/ThirdParties.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ThirdParties extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-third-parties`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-third-parties`;
     internalName = 'third-parties';
     #overlaysForEntity = new Map();
     createOverlays() {

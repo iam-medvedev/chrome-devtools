@@ -75,7 +75,7 @@ function getImageData(model) {
     return data;
 }
 export class LCPDiscovery extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-lcp-discovery`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-lcp-discovery`;
     internalName = 'lcp-discovery';
     #adviceIcon(didFail, label) {
         const icon = didFail ? 'clear' : 'check-circle';

@@ -1765,6 +1765,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         });
         this.viewportElement.appendChild(div);
         this.#inTrackConfigEditMode = true;
+        this.dispatchEventToListeners("TracksReorderStateChange" /* Events.TRACKS_REORDER_STATE_CHANGED */, true);
         this.updateLevelPositions();
         this.draw();
     }
@@ -1777,6 +1778,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #exitEditMode() {
         this.#removeEditModeButton();
         this.#inTrackConfigEditMode = false;
+        this.dispatchEventToListeners("TracksReorderStateChange" /* Events.TRACKS_REORDER_STATE_CHANGED */, false);
         this.updateLevelPositions();
         this.draw();
     }
@@ -3297,7 +3299,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const barY = this.levelToOffset(entryLevel) - this.chartViewport.scrollOffset();
         const barHeight = this.levelHeight(entryLevel);
         const style = element.style;
-        // TODO(paulirish): make these changes within a coordinator.write callback.
+        // TODO(paulirish): make these changes within a RenderCoordinator.write callback.
         // Currently these (plus the scrollOffset() right above) trigger layout thrashing.
         if (isDecoration) {
             style.top = barY + 'px';

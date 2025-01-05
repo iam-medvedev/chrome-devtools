@@ -26,8 +26,7 @@ table td:first-child {
 ul {
   list-style: none;
   padding-inline-start: 0;
-  margin-block-start: 0;
-  margin-block-end: 0;
+  margin-block: 0;
 }
 
 .devtools-link.link-margin {

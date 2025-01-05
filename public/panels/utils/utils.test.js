@@ -144,8 +144,8 @@ describeWithEnvironment('panels/utils', () => {
             request.mimeType = 'image/svg+xml';
             const iconElement = PanelUtils.PanelUtils.getIconForNetworkRequest(request);
             const imagePreview = iconElement.querySelector('.image-network-icon-preview');
-            assert.isTrue(iconElement instanceof HTMLDivElement);
-            assert.isTrue(imagePreview instanceof HTMLImageElement);
+            assert.instanceOf(iconElement, HTMLDivElement);
+            assert.instanceOf(imagePreview, HTMLImageElement);
         });
         it('mime win: show document icon for fetch-html', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/page', '', null, null, null);

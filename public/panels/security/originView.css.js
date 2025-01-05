@@ -23,8 +23,7 @@ styles.replaceSync(
 }
 
 .security-origin-view {
-  overflow-x: hidden;
-  overflow-y: scroll;
+  overflow: hidden scroll;
   display: block;
   user-select: text;
 }

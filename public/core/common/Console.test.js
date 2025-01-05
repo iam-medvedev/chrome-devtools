@@ -12,7 +12,7 @@ describe('Console', () => {
             assert.lengthOf(messages, 1);
             assert.strictEqual(messages[0].text, 'Foo');
             assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.INFO */);
-            assert.strictEqual(messages[0].show, true);
+            assert.isTrue(messages[0].show);
         });
         it('stores messages', () => {
             const console = Console.instance({ forceNew: true });
@@ -21,7 +21,7 @@ describe('Console', () => {
             console.addMessage('Bar', "error" /* Common.Console.MessageLevel.ERROR */, true);
             console.addMessage('Donkey', "info" /* Common.Console.MessageLevel.INFO */, true);
             const messages = console.messages();
-            assert.strictEqual(messages.length, 4);
+            assert.lengthOf(messages, 4);
         });
         it('dispatches events to listeners', done => {
             const console = Console.instance({ forceNew: true });
@@ -40,7 +40,7 @@ describe('Console', () => {
             console.log('Lorem Ipsum');
             const messages = console.messages();
             assert.lengthOf(messages, 1);
-            assert.strictEqual(messages[0].show, false); // Infos don't popup the Console panel by default
+            assert.isFalse(messages[0].show); // Infos don't popup the Console panel by default
             assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.INFO */);
         });
     });
@@ -50,7 +50,7 @@ describe('Console', () => {
             console.warn('Lorem Ipsum');
             const messages = console.messages();
             assert.lengthOf(messages, 1);
-            assert.strictEqual(messages[0].show, false); // Warnings don't popup the Console panel by default
+            assert.isFalse(messages[0].show); // Warnings don't popup the Console panel by default
             assert.strictEqual(messages[0].level, "warning" /* Common.Console.MessageLevel.WARNING */);
         });
     });
@@ -60,7 +60,7 @@ describe('Console', () => {
             console.error('Lorem Ipsum');
             const messages = console.messages();
             assert.lengthOf(messages, 1);
-            assert.strictEqual(messages[0].show, true); // Errors popup the Console panel by default
+            assert.isTrue(messages[0].show); // Errors popup the Console panel by default
             assert.strictEqual(messages[0].level, "error" /* Common.Console.MessageLevel.ERROR */);
         });
         it('can control whether to pop up the Console panel', () => {
@@ -69,8 +69,8 @@ describe('Console', () => {
             console.error('Baz', true);
             const messages = console.messages();
             assert.lengthOf(messages, 2);
-            assert.strictEqual(messages[0].show, false);
-            assert.strictEqual(messages[1].show, true);
+            assert.isFalse(messages[0].show);
+            assert.isTrue(messages[1].show);
         });
     });
 });

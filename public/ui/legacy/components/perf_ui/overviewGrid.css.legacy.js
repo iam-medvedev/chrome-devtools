@@ -54,10 +54,7 @@ export default {
 
 .overview-grid-cursor-area {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 20px;
-  bottom: 0;
+  inset: 20px 0 0;
   z-index: 500;
   cursor: text;
 }

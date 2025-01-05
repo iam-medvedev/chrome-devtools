@@ -129,7 +129,7 @@ describe('HAR', () => {
                     };
                     request.timing = timingInfo;
                     const entry = await build(request, { sanitize: false });
-                    assert.strictEqual(entry.response._fetchedViaServiceWorker, true);
+                    assert.isTrue(entry.response._fetchedViaServiceWorker);
                     assert.strictEqual(entry.response._responseCacheStorageCacheName, cacheName);
                     assert.strictEqual(entry.response._serviceWorkerResponseSource, "cache-storage" /* Protocol.Network.ServiceWorkerResponseSource.CacheStorage */);
                     assert.strictEqual(entry.timings._workerStart, timingInfo.workerStart);

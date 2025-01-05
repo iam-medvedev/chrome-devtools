@@ -84,7 +84,7 @@ styles.replaceSync(
   background-color: unset;
 }
 
-.tree-outline li.issue:not(.expanded):not(.selected):hover .selection {
+.tree-outline li.issue:not(.expanded, .selected):hover .selection {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
@@ -97,8 +97,7 @@ styles.replaceSync(
 }
 
 p {
-  margin-block-start: 2px;
-  margin-block-end: 2px;
+  margin-block: 2px;
 }
 
 /* Override selected tree item styles for issues to avoid changing width. */

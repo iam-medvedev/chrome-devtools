@@ -248,8 +248,8 @@ describeWithEnvironment('TraceProcessor', function () {
                 throw new Error('No insights');
             }
             const insights = Array.from(processor.insights.values());
-            assert.strictEqual(insights.length, 2);
-            assert(insights[1].model.RenderBlocking instanceof Error, 'RenderBlocking did not throw an error');
+            assert.lengthOf(insights, 2);
+            assert.instanceOf(insights[1].model.RenderBlocking, Error, 'RenderBlocking did not throw an error');
             assert.strictEqual(insights[1].model.RenderBlocking.message, 'forced error');
         });
         it('skips insights that are missing one or more dependencies', async function () {
@@ -287,8 +287,8 @@ describeWithEnvironment('TraceProcessor', function () {
             if (insights[1].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            assert.strictEqual(insights[0].model.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[1].model.RenderBlocking.renderBlockingRequests.length, 2);
+            assert.lengthOf(insights[0].model.RenderBlocking.renderBlockingRequests, 0);
+            assert.lengthOf(insights[1].model.RenderBlocking.renderBlockingRequests, 2);
         });
         it('returns insights for multiple navigations', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
@@ -316,10 +316,10 @@ describeWithEnvironment('TraceProcessor', function () {
             if (insights[3].model.RenderBlocking instanceof Error) {
                 throw new Error('RenderBlocking threw an error');
             }
-            assert.strictEqual(insights[0].model.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[1].model.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[2].model.RenderBlocking.renderBlockingRequests.length, 0);
-            assert.strictEqual(insights[3].model.RenderBlocking.renderBlockingRequests.length, 1);
+            assert.lengthOf(insights[0].model.RenderBlocking.renderBlockingRequests, 0);
+            assert.lengthOf(insights[1].model.RenderBlocking.renderBlockingRequests, 0);
+            assert.lengthOf(insights[2].model.RenderBlocking.renderBlockingRequests, 0);
+            assert.lengthOf(insights[3].model.RenderBlocking.renderBlockingRequests, 1);
         });
         it('sorts insights by estimated savings and field data', async function () {
             const getInsightOrder = async (includeMetadata) => {

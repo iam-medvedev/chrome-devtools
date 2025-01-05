@@ -49,11 +49,11 @@ styles.replaceSync(
 }
 
 .diff-line-addition .inner-diff {
-  background-color: color-mix(in sRGB, var(--ref-palette-green70) 40%, transparent);
+  background-color: color-mix(in srgb, var(--ref-palette-green70) 40%, transparent);
 }
 
 .diff-line-deletion .inner-diff {
-  background-color: color-mix(in sRGB, var(--ref-palette-error60) 40%, transparent);
+  background-color: color-mix(in srgb, var(--ref-palette-error60) 40%, transparent);
 }
 
 .diff-hidden-text {

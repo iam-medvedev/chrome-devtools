@@ -34,7 +34,7 @@ describe('CharacterIdMap class', () => {
     });
     it('returns null when trying to convert  a character that does not exist in the Map', () => {
         const characterIdMap = new CharacterIdMap();
-        assert.strictEqual(characterIdMap.fromChar('!'), null, 'character was not converted correctly');
+        assert.isNull(characterIdMap.fromChar('!'), 'character was not converted correctly');
     });
 });
 //# sourceMappingURL=CharacterIdMap.test.js.map

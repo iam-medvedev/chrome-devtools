@@ -1193,6 +1193,21 @@ export declare namespace Audits {
         failureMessage: string;
         requestId?: Network.RequestId;
     }
+    const enum SelectElementAccessibilityIssueReason {
+        DisallowedSelectChild = "DisallowedSelectChild",
+        DisallowedOptGroupChild = "DisallowedOptGroupChild",
+        NonPhrasingContentOptionChild = "NonPhrasingContentOptionChild",
+        InteractiveContentOptionChild = "InteractiveContentOptionChild",
+        InteractiveContentLegendChild = "InteractiveContentLegendChild"
+    }
+    /**
+     * This isue warns about errors in the select element content model.
+     */
+    interface SelectElementAccessibilityIssueDetails {
+        nodeId: DOM.BackendNodeId;
+        selectElementAccessibilityIssueReason: SelectElementAccessibilityIssueReason;
+        hasDisallowedAttributes: boolean;
+    }
     const enum StyleSheetLoadingIssueReason {
         LateImportRule = "LateImportRule",
         RequestFailed = "RequestFailed"
@@ -1264,7 +1279,8 @@ export declare namespace Audits {
         StylesheetLoadingIssue = "StylesheetLoadingIssue",
         FederatedAuthUserInfoRequestIssue = "FederatedAuthUserInfoRequestIssue",
         PropertyRuleIssue = "PropertyRuleIssue",
-        SharedDictionaryIssue = "SharedDictionaryIssue"
+        SharedDictionaryIssue = "SharedDictionaryIssue",
+        SelectElementAccessibilityIssue = "SelectElementAccessibilityIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1293,6 +1309,7 @@ export declare namespace Audits {
         propertyRuleIssueDetails?: PropertyRuleIssueDetails;
         federatedAuthUserInfoRequestIssueDetails?: FederatedAuthUserInfoRequestIssueDetails;
         sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails;
+        selectElementAccessibilityIssueDetails?: SelectElementAccessibilityIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -14638,6 +14655,14 @@ export declare namespace Target {
          * The initial URL the page will be navigated to. An empty string indicates about:blank.
          */
         url: string;
+        /**
+         * Frame left origin in DIP (headless chrome only).
+         */
+        left?: integer;
+        /**
+         * Frame top origin in DIP (headless chrome only).
+         */
+        top?: integer;
         /**
          * Frame width in DIP (headless chrome only).
          */

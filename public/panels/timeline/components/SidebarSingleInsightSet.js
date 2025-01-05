@@ -10,7 +10,7 @@ import { shouldRenderForCategory } from './insights/Helpers.js';
 import * as Insights from './insights/insights.js';
 import styles from './sidebarSingleInsightSet.css.js';
 import { NumberWithUnit } from './Utils.js';
-const { html } = LitHtml;
+const { html } = LitHtml.StaticHtml;
 const UIStrings = {
     /**
      *@description title used for a metric value to tell the user about its score classification

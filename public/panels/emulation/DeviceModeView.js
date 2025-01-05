@@ -108,8 +108,7 @@ export class DeviceModeView extends UI.Widget.VBox {
         this.toolbar = new DeviceModeToolbar(this.model, this.showMediaInspectorSetting, this.showRulersSetting);
         this.contentElement.appendChild(this.toolbar.element());
         this.contentClip = this.contentElement.createChild('div', 'device-mode-content-clip vbox');
-        this.responsivePresetsContainer =
-            this.contentClip.createChild('div', 'device-mode-presets-container');
+        this.responsivePresetsContainer = this.contentClip.createChild('div', 'device-mode-presets-container');
         this.responsivePresetsContainer.setAttribute('jslog', `${VisualLogging.responsivePresets()}`);
         this.populatePresetsContainer();
         this.mediaInspectorContainer = this.contentClip.createChild('div', 'device-mode-media-container');
@@ -129,16 +128,13 @@ export class DeviceModeView extends UI.Widget.VBox {
             this.screenArea.createChild('div', 'device-mode-resizer device-mode-bottom-left-resizer');
         this.bottomLeftResizerElement.createChild('div', '');
         this.createResizer(this.bottomLeftResizerElement, -2, 1);
-        this.rightResizerElement =
-            this.screenArea.createChild('div', 'device-mode-resizer device-mode-right-resizer');
+        this.rightResizerElement = this.screenArea.createChild('div', 'device-mode-resizer device-mode-right-resizer');
         this.rightResizerElement.createChild('div', '');
         this.createResizer(this.rightResizerElement, 2, 0);
-        this.leftResizerElement =
-            this.screenArea.createChild('div', 'device-mode-resizer device-mode-left-resizer');
+        this.leftResizerElement = this.screenArea.createChild('div', 'device-mode-resizer device-mode-left-resizer');
         this.leftResizerElement.createChild('div', '');
         this.createResizer(this.leftResizerElement, -2, 0);
-        this.bottomResizerElement =
-            this.screenArea.createChild('div', 'device-mode-resizer device-mode-bottom-resizer');
+        this.bottomResizerElement = this.screenArea.createChild('div', 'device-mode-resizer device-mode-bottom-resizer');
         this.bottomResizerElement.createChild('div', '');
         this.createResizer(this.bottomResizerElement, 0, 1);
         this.bottomResizerElement.addEventListener('dblclick', this.model.setHeight.bind(this.model, 0), false);

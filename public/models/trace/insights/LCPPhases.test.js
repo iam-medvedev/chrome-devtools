@@ -35,8 +35,8 @@ describeWithEnvironment('LCPPhases', function () {
             const { data, insights } = await processTrace(this, 'user-timings.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPPhases', insights, firstNav);
-            assert.strictEqual(insight.lcpMs, undefined);
-            assert.strictEqual(insight.phases, undefined);
+            assert.isUndefined(insight.lcpMs);
+            assert.isUndefined(insight.phases);
             assert.strictEqual(insight.warnings?.[0], 'NO_LCP');
         });
         it('no main document url', async () => {
@@ -44,7 +44,7 @@ describeWithEnvironment('LCPPhases', function () {
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPPhases', insights, firstNav);
             assert.strictEqual(insight.lcpMs, 204.909);
-            assert.strictEqual(insight.phases, undefined);
+            assert.isUndefined(insight.phases);
             assert.strictEqual(insight.warnings?.[0], 'NO_DOCUMENT_REQUEST');
         });
     });

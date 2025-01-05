@@ -15,7 +15,7 @@ import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as CspEvaluator from '../../../third_party/csp_evaluator/csp_evaluator.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -244,7 +244,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/FrameDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #frame;
@@ -274,7 +273,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         if (!this.#permissionsPolicies && this.#frame) {
             this.#permissionsPolicies = this.#frame.getPermissionsPolicyState();
         }
-        await coordinator.write('FrameDetailsView render', () => {
+        await RenderCoordinator.write('FrameDetailsView render', () => {
             if (!this.#frame) {
                 return;
             }

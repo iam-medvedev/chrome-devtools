@@ -33,7 +33,7 @@ describeWithEnvironment('ScreenshotStorage', () => {
         instance.storeScreenshotForSection('recording-1', 1, imageData);
         const setting = Common.Settings.Settings.instance().createSetting('recorder-screenshots', []);
         const value = setting.get();
-        assert.strictEqual(value.length, 1);
+        assert.lengthOf(value, 1);
         assert.strictEqual(value[0].index, 1);
         assert.strictEqual(value[0].data, imageData);
     });

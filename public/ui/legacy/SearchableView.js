@@ -38,11 +38,10 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import { HistoryInput } from './HistoryInput.js';
 import { InspectorView } from './InspectorView.js';
 import searchableViewStyles from './searchableView.css.legacy.js';
 import { Toolbar, ToolbarButton, ToolbarText, ToolbarToggle } from './Toolbar.js';
-import { createTextButton } from './UIUtils.js';
+import { createHistoryInput, createTextButton } from './UIUtils.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
     /**
@@ -182,9 +181,7 @@ export class SearchableView extends VBox {
         const iconAndInput = searchInputElements.createChild('div', 'icon-and-input');
         const searchIcon = IconButton.Icon.create('search');
         iconAndInput.appendChild(searchIcon);
-        this.searchInputElement = HistoryInput.create();
-        this.searchInputElement.type = 'search';
-        this.searchInputElement.classList.add('search-replace', 'search');
+        this.searchInputElement = createHistoryInput('search', 'search-replace search');
         this.searchInputElement.id = 'search-input-field';
         this.searchInputElement.autocomplete = 'off';
         this.searchInputElement.placeholder = i18nString(UIStrings.findString);

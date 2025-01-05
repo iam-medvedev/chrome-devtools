@@ -142,6 +142,7 @@ styles.replaceSync(
   top: 0;
   width: 26px;
   height: 26px;
+  /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-cssoverview_icons_2x);
   background-size: 104px 26px;
 }
@@ -254,12 +255,12 @@ styles.replaceSync(
 
   &:hover .details,
   &:focus .details {
-    color: color-mix(in sRGB, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
+    color: color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
   }
 
   &:hover .bar,
   &:focus .bar {
-    background-color: color-mix(in sRGB, var(--sys-color-primary-bright), var(--sys-color-state-hover-on-prominent) 6%);
+    background-color: color-mix(in srgb, var(--sys-color-primary-bright), var(--sys-color-state-hover-on-prominent) 6%);
     color: var(--sys-color-on-primary);
   }
 }

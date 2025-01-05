@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as RecorderComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('SelectButton', () => {
     it('should emit selectbuttonclick event on button click', async () => {
         const component = new RecorderComponents.SelectButton.SelectButton();
@@ -15,7 +14,7 @@ describe('SelectButton', () => {
             { value: 'item2', label: () => 'item2-label' },
         ];
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const onceClicked = new Promise(resolve => {
             component.addEventListener('selectbuttonclick', resolve, {
                 once: true,
@@ -35,7 +34,7 @@ describe('SelectButton', () => {
             { value: 'item2', label: () => 'item2-label' },
         ];
         component.connectedCallback();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const dispatcherSpy = sinon.spy(component, 'dispatchEvent');
         const selectMenu = component.shadowRoot?.querySelector('devtools-select-menu');
         assert.exists(selectMenu);

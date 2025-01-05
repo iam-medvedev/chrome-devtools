@@ -26,8 +26,7 @@ styles.replaceSync(
 
 .no-blocked-urls,
 .blocked-urls {
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
 }
 
 .no-blocked-urls {

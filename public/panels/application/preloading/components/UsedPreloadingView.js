@@ -10,7 +10,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
@@ -110,7 +110,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/preloading/components/UsedPreloadingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 // TODO(kenoss): Rename this class and file once https://crrev.com/c/4933567 landed.
 // This also shows summary of speculations initiated by this page.
 export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
@@ -128,7 +127,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         void this.#render();
     }
     async #render() {
-        await coordinator.write('UsedPreloadingView render', () => {
+        await RenderCoordinator.write('UsedPreloadingView render', () => {
             LitHtml.render(this.#renderInternal(), this.#shadow, { host: this });
         });
     }

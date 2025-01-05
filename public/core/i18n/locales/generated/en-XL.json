@@ -1184,9 +1184,6 @@
   "generated/Deprecation.ts | CrossOriginWindowConfirm": {
     "message": "T̂ŕîǵĝér̂ín̂ǵ ŵín̂d́ôẃ.ĉón̂f́îŕm̂ f́r̂óm̂ ćr̂óŝś ôŕîǵîń îf́r̂ám̂éŝ h́âś b̂éêń d̂ép̂ŕêćât́êd́ âńd̂ ẃîĺl̂ b́ê ŕêḿôv́êd́ îń t̂h́ê f́ût́ûŕê."
   },
-  "generated/Deprecation.ts | CSSCustomStateDeprecatedSyntax": {
-    "message": ":--customstatename îś d̂ép̂ŕêćât́êd́. P̂ĺêáŝé ûśê t́ĥé :state(customstatename) ŝýn̂t́âx́ îńŝt́êád̂."
-  },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "T̂h́ê disableRemotePlayback át̂t́r̂íb̂út̂é ŝh́ôúl̂d́ b̂é ûśêd́ îń ôŕd̂ér̂ t́ô d́îśâb́l̂é t̂h́ê d́êf́âúl̂t́ Ĉáŝt́ îńt̂éĝŕât́îón̂ ín̂śt̂éâd́ ôf́ ûśîńĝ -internal-media-controls-overlay-cast-button śêĺêćt̂ór̂."
   },

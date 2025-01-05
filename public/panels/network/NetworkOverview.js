@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { NetworkLogView } from './NetworkLogView.js';
 import { NetworkTimeBoundary } from './NetworkTimeCalculator.js';
 import { RequestTimingView } from './RequestTimingView.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOverviewBase {
     selectedFilmStripTime;
     numBands;
@@ -107,7 +106,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
         if (!this.isShowing()) {
             return;
         }
-        void coordinator.write('NetworkOverview.render', this.update.bind(this));
+        void RenderCoordinator.write('NetworkOverview.render', this.update.bind(this));
     }
     update() {
         const calculator = this.calculator();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -11,7 +11,6 @@ import networkingTimingTableStyles from './networkTimingTable.css.js';
 import networkWaterfallColumnStyles from './networkWaterfallColumn.css.js';
 import { RequestTimingView } from './RequestTimingView.js';
 const BAR_SPACING = 1;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class NetworkWaterfallColumn extends UI.Widget.VBox {
     canvas;
     canvasPosition;
@@ -277,7 +276,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         return this.nodes[Math.floor((this.scrollTop + y - this.headerHeight) / this.rowHeight)];
     }
     scheduleDraw() {
-        void coordinator.write('NetworkWaterfallColumn.render', () => this.update());
+        void RenderCoordinator.write('NetworkWaterfallColumn.render', () => this.update());
     }
     update(scrollTop, eventDividers, nodes) {
         if (scrollTop !== undefined && this.scrollTop !== scrollTop) {

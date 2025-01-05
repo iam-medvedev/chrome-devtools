@@ -6,9 +6,8 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithMockConnection('LayoutPane', () => {
     let target;
     let domModel;
@@ -26,7 +25,7 @@ describeWithMockConnection('LayoutPane', () => {
         const component = new ElementsComponents.LayoutPane.LayoutPane();
         renderElementIntoDOM(component);
         component.wasShown();
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         return component;
     }
     function queryLabels(component, selector) {
@@ -90,7 +89,7 @@ describeWithMockConnection('LayoutPane', () => {
             .returns(makeNode(ID_2));
         const component = await renderComponent();
         assert.isNotNull(component.shadowRoot);
-        assert.strictEqual(queryLabels(component, '[data-element]').length, 3);
+        assert.lengthOf(queryLabels(component, '[data-element]'), 3);
     });
     it('renders flex elements', async () => {
         getNodesByStyle.withArgs([{ name: 'display', value: 'flex' }, { name: 'display', value: 'inline-flex' }]).resolves([
@@ -107,7 +106,7 @@ describeWithMockConnection('LayoutPane', () => {
             .returns(makeNode(ID_3));
         const component = await renderComponent();
         assert.isNotNull(component.shadowRoot);
-        assert.strictEqual(queryLabels(component, '[data-element]').length, 3);
+        assert.lengthOf(queryLabels(component, '[data-element]'), 3);
     });
     it('send an event when an element overlay is toggled', async () => {
         getNodesByStyle.withArgs([{ name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' }]).resolves([
@@ -151,10 +150,12 @@ describeWithMockConnection('LayoutPane', () => {
     });
     const updatesUiOnEvent = (event, inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
+        const render = sinon.spy(ElementsComponents.LayoutPane.LayoutPane.prototype, 'render');
         await renderComponent();
-        const render = sinon.spy(coordinator, 'write');
+        await RenderCoordinator.done();
+        render.resetHistory();
         overlayModel.dispatchEventToListeners(event, ...[{ nodeId: 42, enabled: true }]);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await RenderCoordinator.done();
         assert.strictEqual(render.called, inScope);
     };
     it('updates UI on in scope grid overlay update event', updatesUiOnEvent("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, true));

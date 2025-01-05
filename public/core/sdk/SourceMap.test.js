@@ -744,10 +744,10 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.ignoreList = [0 /* vendor.js */, 3 /* other.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///main.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///example.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///other.js'), true);
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///main.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///example.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///other.js'));
         });
         it('parses the known third parties from the deprecated `x_google_ignoreList` section if `ignoreList` is not present', () => {
             const mappingPayload = encodeSourceMap([
@@ -761,10 +761,10 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.x_google_ignoreList = [0 /* vendor.js */, 3 /* other.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///main.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///example.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///other.js'), true);
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///main.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///example.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///other.js'));
         });
         it('parses the known third parties from the `ignoreList` section and ignores deprecated `x_google_ignoreList`', () => {
             const mappingPayload = encodeSourceMap([
@@ -779,10 +779,10 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.x_google_ignoreList = [1 /* main.js */, 2 /* example.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///main.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///example.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///other.js'), true);
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///main.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///example.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///other.js'));
         });
         it('computes ranges for third party code in a simple case', () => {
             const mappingPayload = encodeSourceMap([
@@ -796,10 +796,10 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.ignoreList = [0 /* vendor1.js */, 1 /* vendor2.js */, 2 /* vendor3.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///foo.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor1.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor2.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor3.js'), true);
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///foo.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor1.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor2.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor3.js'));
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url)), [
                 {
                     startLine: 0,
@@ -827,12 +827,12 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.ignoreList = [1 /* vendor1.js */, 3 /* vendor2.js */, 5 /* vendor3.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///foo.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///bar.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///baz.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor1.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor2.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor3.js'), true);
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///foo.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///bar.js'));
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///baz.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor1.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor2.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor3.js'));
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url)), [
                 {
                     startLine: 11,
@@ -866,10 +866,10 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.ignoreList = [0 /* vendor1.js */, 1 /* vendor2.js */, 2 /* vendor3.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///foo.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor1.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor2.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor3.js'), true);
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///foo.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor1.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor2.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor3.js'));
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url)), [
                 {
                     startLine: 10, // By default, unmapped code (before 10:9) is not considered
@@ -900,10 +900,10 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.ignoreList = [1 /* vendor1.js */, 2 /* vendor2.js */, 3 /* vendor3.js */];
             const sourceMapJsonUrl = 'wp://test/source-map.json';
             const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///foo.js'), false);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor1.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor2.js'), true);
-            assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor3.js'), true);
+            assert.isFalse(sourceMap.hasIgnoreListHint('wp:///foo.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor1.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor2.js'));
+            assert.isTrue(sourceMap.hasIgnoreListHint('wp:///vendor3.js'));
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url)), [
                 {
                     startLine: 10, // By default, unmapped code (before 5:5) is not considered

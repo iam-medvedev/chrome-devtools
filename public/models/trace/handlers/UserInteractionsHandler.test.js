@@ -38,8 +38,8 @@ describe('UserInteractionsHandler', function () {
         const clicks = data.allEvents.filter(Trace.Types.Events.isEventTimingStart).filter(event => {
             return event.args.data.type === 'click';
         });
-        assert.strictEqual(data.allEvents.length, 58);
-        assert.strictEqual(clicks.length, 1);
+        assert.lengthOf(data.allEvents, 58);
+        assert.lengthOf(clicks, 1);
     });
     it('returns all interaction events', async () => {
         await processTrace(this, 'slow-interaction-button-click.json.gz');
@@ -47,7 +47,7 @@ describe('UserInteractionsHandler', function () {
         // There are three inct interactions:
         // pointerdown on the button (start of the click)
         // pointerup & click on the button (end of the click)
-        assert.strictEqual(data.interactionEvents.length, 3);
+        assert.lengthOf(data.interactionEvents, 3);
     });
     it('adds microsecond processingStart and processingEnd times to the synthetic event', async function () {
         await processTrace(this, 'one-second-interaction.json.gz');

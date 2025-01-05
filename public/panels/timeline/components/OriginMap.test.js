@@ -5,10 +5,9 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Components from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 function getOriginMappings(view) {
     const rows = view.querySelector('.vbox').shadowRoot.querySelectorAll('.origin-mapping-row:not(.header)');
     return Array.from(rows).map(row => {
@@ -114,7 +113,7 @@ describeWithMockConnection('OriginMap', () => {
             ],
         });
         const view = createOriginMap();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const mappings = getOriginMappings(view);
         assert.deepEqual(mappings, [
             ['http://localhost:8080', 'https://example.com', undefined],
@@ -130,7 +129,7 @@ describeWithMockConnection('OriginMap', () => {
             ],
         });
         const view = createOriginMap();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const mappings = getOriginMappings(view);
         assert.deepEqual(mappings, [
             [
@@ -150,7 +149,7 @@ describeWithMockConnection('OriginMap', () => {
             ],
         });
         const view = createOriginMap();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const mappings = getOriginMappings(view);
         assert.deepEqual(mappings, [
             ['http://localhost:8080', 'https://no-data.com', undefined],
@@ -165,7 +164,7 @@ describeWithMockConnection('OriginMap', () => {
             ],
         });
         const view = createOriginMap();
-        await coordinator.done();
+        await RenderCoordinator.done();
         {
             const mappings = getOriginMappings(view);
             assert.deepEqual(mappings, [
@@ -180,7 +179,7 @@ describeWithMockConnection('OriginMap', () => {
                 { developmentOrigin: 'http://localhost:8081', productionOrigin: 'https://example2.com' },
             ],
         });
-        await coordinator.done();
+        await RenderCoordinator.done();
         {
             const mappings = getOriginMappings(view);
             assert.deepEqual(mappings, [
@@ -192,7 +191,7 @@ describeWithMockConnection('OriginMap', () => {
     it('should pre-fill new mapping fields', async () => {
         const originMap = createOriginMap();
         originMap.startCreation();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const devInput = getDevInput(originMap);
         assert.strictEqual(devInput.value, 'http://localhost:8080');
         const prodInput = getProdInput(originMap);
@@ -201,16 +200,16 @@ describeWithMockConnection('OriginMap', () => {
     it('should accept new entries', async () => {
         const originMap = createOriginMap();
         originMap.startCreation();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const devInput = getDevInput(originMap);
         devInput.value = 'http://localhost:8080';
         devInput.dispatchEvent(new Event('input'));
         const prodInput = getProdInput(originMap);
         prodInput.value = 'https://example.com';
         prodInput.dispatchEvent(new Event('input'));
-        await coordinator.done();
+        await RenderCoordinator.done();
         getConfirmButton(originMap).click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const mappings = getOriginMappings(originMap);
         assert.deepEqual(mappings, [
             ['http://localhost:8080', 'https://example.com', undefined],
@@ -219,16 +218,16 @@ describeWithMockConnection('OriginMap', () => {
     it('should ignore cancelled entries', async () => {
         const originMap = createOriginMap();
         originMap.startCreation();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const devInput = getDevInput(originMap);
         devInput.value = 'http://localhost:8080';
         devInput.dispatchEvent(new Event('input'));
         const prodInput = getProdInput(originMap);
         prodInput.value = 'https://example.com';
         prodInput.dispatchEvent(new Event('input'));
-        await coordinator.done();
+        await RenderCoordinator.done();
         getCancelButton(originMap).click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const mappings = getOriginMappings(originMap);
         assert.deepEqual(mappings, []);
         assert.isNull(getDevInput(originMap));
@@ -237,16 +236,16 @@ describeWithMockConnection('OriginMap', () => {
     it('should coerce inputs to origin values', async () => {
         const originMap = createOriginMap();
         originMap.startCreation();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const devInput = getDevInput(originMap);
         devInput.value = 'http://localhost:8080/path/to/something';
         devInput.dispatchEvent(new Event('input'));
         const prodInput = getProdInput(originMap);
         prodInput.value = 'https://example.com?hello';
         prodInput.dispatchEvent(new Event('input'));
-        await coordinator.done();
+        await RenderCoordinator.done();
         getConfirmButton(originMap).click();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const mappings = getOriginMappings(originMap);
         assert.deepEqual(mappings, [
             ['http://localhost:8080', 'https://example.com', undefined],
@@ -255,14 +254,14 @@ describeWithMockConnection('OriginMap', () => {
     it('should show errors from invalid origins', async () => {
         const originMap = createOriginMap();
         originMap.startCreation();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const devInput = getDevInput(originMap);
         devInput.value = 'bad-origin';
         devInput.dispatchEvent(new Event('input'));
         const prodInput = getProdInput(originMap);
         prodInput.value = 'jj**Sdafsdf';
         prodInput.dispatchEvent(new Event('input'));
-        await coordinator.done();
+        await RenderCoordinator.done();
         const errors = getValidationErrors(originMap);
         assert.deepEqual(errors, '"bad-origin" is not a valid origin or URL.\n"jj**Sdafsdf" is not a valid origin or URL.');
         const confirmButton = getConfirmButton(originMap);
@@ -278,14 +277,14 @@ describeWithMockConnection('OriginMap', () => {
         });
         const originMap = createOriginMap();
         originMap.startCreation();
-        await coordinator.done();
+        await RenderCoordinator.done();
         const devInput = getDevInput(originMap);
         devInput.value = 'http://localhost:8080';
         devInput.dispatchEvent(new Event('input'));
         const prodInput = getProdInput(originMap);
         prodInput.value = 'https://example2.com';
         prodInput.dispatchEvent(new Event('input'));
-        await coordinator.done();
+        await RenderCoordinator.done();
         const errors = getValidationErrors(originMap);
         assert.deepEqual(errors, '"http://localhost:8080" is already mapped to a production origin.');
         const confirmButton = getConfirmButton(originMap);

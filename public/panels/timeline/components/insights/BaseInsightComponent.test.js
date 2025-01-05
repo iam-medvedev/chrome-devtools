@@ -4,13 +4,12 @@
 import * as Trace from '../../../../models/trace/trace.js';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as Insights from './insights.js';
 const { html } = LitHtml;
 describeWithEnvironment('BaseInsightComponent', () => {
     const { BaseInsightComponent } = Insights.BaseInsightComponent;
-    const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
     class TestInsightComponent extends BaseInsightComponent {
         internalName = 'test-insight';
         createOverlays() {
@@ -32,7 +31,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 shouldShow: true,
             };
             renderElementIntoDOM(component);
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.isNotNull(component.shadowRoot);
             const titleElement = component.shadowRoot.querySelector('.insight-title');
             assert.isNotNull(titleElement);
@@ -52,7 +51,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 shouldShow: true,
             };
             renderElementIntoDOM(component);
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.isNotNull(component.shadowRoot);
             const titleElement = component.shadowRoot.querySelector('.insight-title');
             assert.isNotNull(titleElement);

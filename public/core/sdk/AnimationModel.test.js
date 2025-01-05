@@ -108,7 +108,7 @@ describeWithMockConnection('AnimationModel', () => {
                 },
             });
             assert.strictEqual(animationImpl.name(), 'animation-name');
-            assert.strictEqual(animationImpl.paused(), false);
+            assert.isFalse(animationImpl.paused());
             assert.strictEqual(animationImpl.playState(), 'running');
             assert.strictEqual(animationImpl.playbackRate(), 1);
             assert.strictEqual(animationImpl.startTime(), 0);
@@ -137,7 +137,7 @@ describeWithMockConnection('AnimationModel', () => {
                 },
             });
             assert.strictEqual(animationImpl.name(), 'updated-name');
-            assert.strictEqual(animationImpl.paused(), true);
+            assert.isTrue(animationImpl.paused());
             assert.strictEqual(animationImpl.playState(), 'paused');
             assert.strictEqual(animationImpl.playbackRate(), 2);
             assert.strictEqual(animationImpl.startTime(), 100);
@@ -184,7 +184,7 @@ describeWithMockConnection('AnimationModel', () => {
                 },
             });
             assert.strictEqual(animationImpl.name(), 'animation-name');
-            assert.strictEqual(animationImpl.paused(), false);
+            assert.isFalse(animationImpl.paused());
             assert.strictEqual(animationImpl.playState(), 'running');
             assert.strictEqual(animationImpl.playbackRate(), 1);
             assert.strictEqual(animationImpl.startTime(), 100); // in pixels
@@ -218,7 +218,7 @@ describeWithMockConnection('AnimationModel', () => {
                 },
             });
             assert.strictEqual(animationImpl.name(), 'updated-name');
-            assert.strictEqual(animationImpl.paused(), true);
+            assert.isTrue(animationImpl.paused());
             assert.strictEqual(animationImpl.playState(), 'paused');
             assert.strictEqual(animationImpl.playbackRate(), 2);
             assert.strictEqual(animationImpl.startTime(), 0); // in pixels

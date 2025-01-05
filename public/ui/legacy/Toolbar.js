@@ -74,11 +74,11 @@ export class Toolbar {
     compactLayout = false;
     constructor(className, parentElement) {
         this.items = [];
-        this.element = (parentElement ? parentElement.createChild('div') : document.createElement('div'));
+        this.element = parentElement ? parentElement.createChild('div') : document.createElement('div');
         this.element.className = className;
         this.element.classList.add('toolbar');
         this.enabled = true;
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: toolbarStyles, delegatesFocus: undefined });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: toolbarStyles });
         this.contentElement = this.shadowRoot.createChild('div', 'toolbar-shadow');
     }
     hasCompactLayout() {

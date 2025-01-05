@@ -82,14 +82,14 @@ describeWithEnvironment('Release Note View', () => {
     it('renders markdown content', async () => {
         sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(CONTENT1));
         const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
-        await releaseNoteView.pendingUpdate();
+        await releaseNoteView.updateComplete;
         const markdown = releaseNoteView.contentElement.querySelector('devtools-markdown-view');
         assert.isNotNull(markdown);
     });
     it('renders button that links to blogpost', async () => {
         sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
         const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
-        await releaseNoteView.pendingUpdate();
+        await releaseNoteView.updateComplete;
         const button = releaseNoteView.contentElement.querySelector('devtools-button');
         assert.isNotNull(button);
         const openInNewTabStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'openInNewTab');
@@ -100,7 +100,7 @@ describeWithEnvironment('Release Note View', () => {
     it('renders video links with description text', async () => {
         sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
         const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
-        await releaseNoteView.pendingUpdate();
+        await releaseNoteView.updateComplete;
         const videos = releaseNoteView.contentElement.querySelectorAll('.video-container > x-link');
         assert.lengthOf(videos, 3);
         const releaseNotes = WhatsNew.ReleaseNoteText.getReleaseNote();
@@ -111,7 +111,7 @@ describeWithEnvironment('Release Note View', () => {
     it('renders expected thumbnails', async () => {
         sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
         const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
-        await releaseNoteView.pendingUpdate();
+        await releaseNoteView.updateComplete;
         const thumbnails = releaseNoteView.contentElement.querySelectorAll('.thumbnail');
         assert.lengthOf(thumbnails, 3);
         const thumbnailFilepaths = Array.from(thumbnails).map(n => n.src);

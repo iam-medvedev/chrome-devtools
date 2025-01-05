@@ -31,8 +31,7 @@ export class CSSOverviewSidebarPanel extends Common.ObjectWrapper.eventMixin(UI.
         // longest item, so that the selected item's background expands fully
         // even when the sidebar overflows.
         // Also see crbug/1408003
-        this.containerElement =
-            this.contentElement.createChild('div', 'overview-sidebar-panel-container');
+        this.containerElement = this.contentElement.createChild('div', 'overview-sidebar-panel-container');
         UI.ARIAUtils.setLabel(this.containerElement, i18nString(UIStrings.cssOverviewPanelSidebar));
         UI.ARIAUtils.markAsTree(this.containerElement);
         // Clear overview.

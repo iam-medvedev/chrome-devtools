@@ -308,7 +308,7 @@ describeWithMockConnection('NetworkLog', () => {
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent1);
             const requestWillBeSentEvent2 = { requestId: 'mockId2', request: { url: 'foo.com' }, loaderId: 'OTHER_LOADER_ID' };
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent2);
-            assert.strictEqual(networkLog.requests().length, 2);
+            assert.lengthOf(networkLog.requests(), 2);
         });
         it('discards requests with mismatched loaderId on navigation', () => {
             navigate(getMainFrame(target));
@@ -338,10 +338,10 @@ describeWithMockConnection('NetworkLog', () => {
             corsErrorStatus: () => ({ corsError: "UnexpectedPrivateNetworkAccess" /* Protocol.Network.CorsError.UnexpectedPrivateNetworkAccess */ }),
         };
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, { request, originalRequest: null });
-        assert.strictEqual(networkLog.requests().length, 1);
+        assert.lengthOf(networkLog.requests(), 1);
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestUpdated, request);
         assert.strictEqual(request, removedRequest);
-        assert.strictEqual(networkLog.requests().length, 0);
+        assert.lengthOf(networkLog.requests(), 0);
     });
 });
 //# sourceMappingURL=NetworkLog.test.js.map

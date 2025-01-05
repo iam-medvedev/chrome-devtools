@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Dialogs from '../dialogs/dialogs.js';
@@ -11,7 +11,6 @@ import { MenuGroup, } from './Menu.js';
 import selectMenuStyles from './selectMenu.css.js';
 import selectMenuButtonStyles from './selectMenuButton.css.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const deployMenuArrow = new URL('../../../Images/triangle-down.svg', import.meta.url).toString();
 export class SelectMenu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -155,7 +154,7 @@ export class SelectMenu extends HTMLElement {
         if (evt) {
             evt.stopImmediatePropagation();
         }
-        void coordinator.write(() => {
+        void RenderCoordinator.write(() => {
             this.removeAttribute('has-open-dialog');
         });
         this.#open = false;
@@ -194,7 +193,7 @@ export class SelectMenuButton extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [selectMenuButtonStyles];
         this.style.setProperty('--deploy-menu-arrow', `url(${deployMenuArrow})`);
-        void coordinator.write(() => {
+        void RenderCoordinator.write(() => {
             switch (this.arrowDirection) {
                 case "auto" /* Dialogs.Dialog.DialogVerticalPosition.AUTO */:
                 case "top" /* Dialogs.Dialog.DialogVerticalPosition.TOP */: {
@@ -239,7 +238,7 @@ export class SelectMenuButton extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     set open(open) {
-        void coordinator.write(() => {
+        void RenderCoordinator.write(() => {
             this.#getShowButton()?.setAttribute('aria-expanded', String(open));
         });
     }

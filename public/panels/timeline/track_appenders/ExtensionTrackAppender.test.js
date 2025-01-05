@@ -35,7 +35,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     });
     describe('appendTrackAtLevel', function () {
         it('creates flamechart groups for the Extension tracks properly', function () {
-            assert.strictEqual(flameChartData.groups.length, 3);
+            assert.lengthOf(flameChartData.groups, 3);
             assert.strictEqual(flameChartData.groups[0].name, 'A track group — Custom track');
             assert.strictEqual(flameChartData.groups[0].startLevel, 0);
             assert.strictEqual(flameChartData.groups[0].style.nestingLevel, 0);
@@ -186,7 +186,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             extensionTrackAppenders.forEach(appender => {
                 level = appender.appendTrackAtLevel(level);
             });
-            assert.strictEqual(flameChartData.groups.length, 0);
+            assert.lengthOf(flameChartData.groups, 0);
             Timeline.TimelinePanel.TimelinePanel.extensionDataVisibilitySetting().set(true);
         });
     });
@@ -211,7 +211,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             assert.strictEqual(info.title, 'A hint if needed');
             // The i18n encodes spaces using the u00A0 unicode character.
             assert.strictEqual(info.formattedTime, '1.00\u00A0s');
-            assert.strictEqual(info.additionalElements?.at(0)?.nodeName, undefined);
+            assert.isUndefined(info.additionalElements?.at(0)?.nodeName);
         });
     });
 });

@@ -194,34 +194,31 @@ export default {
 }
 
 .device-mode-bottom-right-resizer {
-  left: 0;
-  top: 0;
-  right: -20px;
-  bottom: -20px;
+  inset: 0 -20px -20px 0;
   background-color: var(--sys-color-surface1);
 }
 
 .device-mode-bottom-left-resizer {
-  left: -20px;
-  top: 0;
-  right: 0;
-  bottom: -20px;
+  inset: 0 0 -20px -20px;
   opacity: 0%;
 }
 
 .device-mode-right-resizer > div {
+  /* stylelint-disable-next-line custom-property-pattern */
   content: var(--image-file-resizeHorizontal);
   width: 6px;
   height: 26px;
 }
 
 .device-mode-left-resizer > div {
+  /* stylelint-disable-next-line custom-property-pattern */
   content: var(--image-file-resizeHorizontal);
   width: 6px;
   height: 26px;
 }
 
 .device-mode-bottom-resizer > div {
+  /* stylelint-disable-next-line custom-property-pattern */
   content: var(--image-file-resizeVertical);
   margin-bottom: -2px;
   width: 26px;
@@ -234,6 +231,7 @@ export default {
   right: 3px;
   width: 13px;
   height: 13px;
+  /* stylelint-disable-next-line custom-property-pattern */
   content: var(--image-file-resizeDiagonal);
 }
 
@@ -243,6 +241,7 @@ export default {
   left: 3px;
   width: 13px;
   height: 13px;
+  /* stylelint-disable-next-line custom-property-pattern */
   content: var(--image-file-resizeDiagonal);
   transform: rotate(90deg);
 }
@@ -307,18 +306,12 @@ export default {
 }
 
 .device-mode-ruler-top .device-mode-ruler-inner {
-  top: 0;
-  bottom: 0;
-  left: 20px;
-  right: 0;
+  inset: 0 0 0 20px;
   border-bottom: 1px solid var(--sys-color-token-subtle);
 }
 
 .device-mode-ruler-left .device-mode-ruler-inner {
-  left: 0;
-  right: 0;
-  top: 19px;
-  bottom: 0;
+  inset: 19px 0 0;
   border-right: 1px solid var(--sys-color-token-subtle);
   background-color: var(--sys-color-cdt-base-container);
 }

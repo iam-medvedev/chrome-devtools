@@ -41,7 +41,7 @@ span.ax-value-undefined {
   text-decoration: line-through;
 }
 
-.tree-outline span[is="dt-icon-label"] {
+.tree-outline dt-icon-label {
   position: relative;
   left: -11px;
 }
@@ -69,7 +69,7 @@ span.ax-value-undefined {
   left: -2px;
 }
 
-.tree-outline span[is="dt-icon-label"] + .ax-name {
+.tree-outline dt-icon-label + .ax-name {
   margin-left: -11px;
 }
 

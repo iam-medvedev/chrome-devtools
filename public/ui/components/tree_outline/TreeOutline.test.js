@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 import { dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseOutEvent, dispatchMouseOverEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../testing/DOMHelpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as TreeOutline from './tree_outline.js';
 const { html } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderTreeOutline({ tree, defaultRenderer, filter, }) {
     const component = new TreeOutline.TreeOutline.TreeOutline();
     const data = {
@@ -18,7 +17,7 @@ async function renderTreeOutline({ tree, defaultRenderer, filter, }) {
     component.data = data;
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     return {
         component,
         shadowRoot: component.shadowRoot,
@@ -428,7 +427,7 @@ describe('TreeOutline', () => {
             // Wait for the tree to be expanded
             await waitForRenderedTreeNodeCount(shadowRoot, 9);
             // Wait for the coordinator to have called focus() on the right node
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'BEL'));
         });
     });
@@ -615,7 +614,7 @@ describe('TreeOutline', () => {
                 });
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(officeNode, { key: 'Enter', bubbles: true });
                 await waitForRenderedTreeNodeCount(shadowRoot, 3);
                 assert.strictEqual(officeNode.getAttribute('aria-expanded'), 'true');
@@ -628,7 +627,7 @@ describe('TreeOutline', () => {
                 await waitForRenderedTreeNodeCount(shadowRoot, NODE_COUNT_BASIC_DATA_DEFAULT_EXPANDED);
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(officeNode, { key: 'Enter', bubbles: true });
                 await waitForRenderedTreeNodeCount(shadowRoot, 6);
                 assert.strictEqual(officeNode.getAttribute('aria-expanded'), 'false');
@@ -641,7 +640,7 @@ describe('TreeOutline', () => {
                 });
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(officeNode, { key: ' ', bubbles: true });
                 await waitForRenderedTreeNodeCount(shadowRoot, 3);
                 assert.strictEqual(officeNode.getAttribute('aria-expanded'), 'true');
@@ -654,7 +653,7 @@ describe('TreeOutline', () => {
                 await waitForRenderedTreeNodeCount(shadowRoot, 12);
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(officeNode, { key: ' ', bubbles: true });
                 await waitForRenderedTreeNodeCount(shadowRoot, 6);
                 assert.strictEqual(officeNode.getAttribute('aria-expanded'), 'false');
@@ -669,9 +668,9 @@ describe('TreeOutline', () => {
                 await waitForRenderedTreeNodeCount(shadowRoot, NODE_COUNT_BASIC_DATA_FULLY_EXPANDED);
                 const berlinNode = getVisibleTreeNodeByText(shadowRoot, 'BER');
                 dispatchClickEvent(berlinNode);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(berlinNode, { key: 'Home', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Offices'));
             });
         });
@@ -681,11 +680,11 @@ describe('TreeOutline', () => {
                     tree: basicTreeData,
                 });
                 await component.expandRecursively(Number.POSITIVE_INFINITY);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
                 dispatchKeyDownEvent(officeNode, { key: 'End', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), 
                 // Calendar is the very last node in the tree
                 getVisibleTreeNodeByText(shadowRoot, 'Calendar'));
@@ -704,7 +703,7 @@ describe('TreeOutline', () => {
                 const europeNode = getVisibleTreeNodeByText(shadowRoot, 'Europe');
                 dispatchClickEvent(europeNode);
                 dispatchKeyDownEvent(officeNode, { key: 'End', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), 
                 // Products is the last node in the tree, as its children are not expanded
                 getVisibleTreeNodeByText(shadowRoot, 'Products'));
@@ -718,7 +717,7 @@ describe('TreeOutline', () => {
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowUp', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), officeNode);
             });
             it('moves focus to the previous sibling', async () => {
@@ -730,7 +729,7 @@ describe('TreeOutline', () => {
                 const berlinNode = getVisibleTreeNodeByText(shadowRoot, 'BER');
                 dispatchClickEvent(berlinNode);
                 dispatchKeyDownEvent(berlinNode, { key: 'ArrowUp', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'MUC'));
             });
             it('moves focus to the parent if there are no previous siblings', async () => {
@@ -742,7 +741,7 @@ describe('TreeOutline', () => {
                 const ukNode = getVisibleTreeNodeByText(shadowRoot, 'UK');
                 dispatchClickEvent(ukNode);
                 dispatchKeyDownEvent(ukNode, { key: 'ArrowUp', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Europe'));
             });
             it('moves focus to the parent\'s last child if there are no previous siblings and the parent is expanded', async () => {
@@ -754,7 +753,7 @@ describe('TreeOutline', () => {
                 const germanyNode = getVisibleTreeNodeByText(shadowRoot, 'Germany');
                 dispatchClickEvent(germanyNode);
                 dispatchKeyDownEvent(germanyNode, { key: 'ArrowUp', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'LON'));
             });
             it('moves focus to the parent\'s deeply nested last child if there are no previous siblings and the parent has children that are expanded', async () => {
@@ -766,7 +765,7 @@ describe('TreeOutline', () => {
                 const germanyNode = getVisibleTreeNodeByText(shadowRoot, 'Germany');
                 dispatchClickEvent(germanyNode);
                 dispatchKeyDownEvent(germanyNode, { key: 'ArrowUp', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'BEL'));
             });
         });
@@ -780,7 +779,7 @@ describe('TreeOutline', () => {
                 const chromeNode = getVisibleTreeNodeByText(shadowRoot, 'Chrome');
                 dispatchClickEvent(chromeNode);
                 dispatchKeyDownEvent(chromeNode, { key: 'ArrowRight', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), chromeNode);
             });
             it('expands the node if on an expandable node that is closed and does not move focus', async () => {
@@ -790,7 +789,7 @@ describe('TreeOutline', () => {
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowRight', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), officeNode);
                 assert.strictEqual(officeNode.getAttribute('aria-expanded'), 'true');
             });
@@ -802,9 +801,9 @@ describe('TreeOutline', () => {
                 dispatchClickEvent(officeNode);
                 // Press once to expand, twice to navigate in to the first child
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowRight', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowRight', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Europe'));
             });
         });
@@ -814,11 +813,11 @@ describe('TreeOutline', () => {
                     tree: basicTreeData,
                 });
                 await component.expandRecursively(Number.POSITIVE_INFINITY);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const europeNode = getVisibleTreeNodeByText(shadowRoot, 'Europe');
                 dispatchClickEvent(europeNode);
                 dispatchKeyDownEvent(europeNode, { key: 'ArrowLeft', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Europe'));
                 const visibleTree = visibleNodesToTree(shadowRoot);
                 // The tree below "Europe" is hidden as the left arrow press closed that node.
@@ -854,11 +853,11 @@ describe('TreeOutline', () => {
                 });
                 await component.expandRecursively(Number.POSITIVE_INFINITY);
                 await waitForRenderedTreeNodeCount(shadowRoot, NODE_COUNT_BASIC_DATA_FULLY_EXPANDED);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const berlinNode = getVisibleTreeNodeByText(shadowRoot, 'BER');
                 dispatchClickEvent(berlinNode);
                 dispatchKeyDownEvent(berlinNode, { key: 'ArrowLeft', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Germany'));
             });
             it('does nothing when called on a root node', async () => {
@@ -868,7 +867,7 @@ describe('TreeOutline', () => {
                 const productsNode = getVisibleTreeNodeByText(shadowRoot, 'Products');
                 dispatchClickEvent(productsNode);
                 dispatchKeyDownEvent(productsNode, { key: 'ArrowLeft', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Products'));
             });
         });
@@ -880,7 +879,7 @@ describe('TreeOutline', () => {
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowDown', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Products'));
             });
             it('does not move if it is the last sibling and there are no parent siblings', async () => {
@@ -890,7 +889,7 @@ describe('TreeOutline', () => {
                 const productsNode = getVisibleTreeNodeByText(shadowRoot, 'Products');
                 dispatchClickEvent(productsNode);
                 dispatchKeyDownEvent(productsNode, { key: 'ArrowDown', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Products'));
             });
             it('moves down to the first child of the node if it is expanded', async () => {
@@ -898,11 +897,11 @@ describe('TreeOutline', () => {
                     tree: basicTreeData,
                 });
                 await component.expandRecursively();
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowDown', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Europe'));
             });
             it('moves to its parent\'s sibling if it is the last child', async () => {
@@ -914,7 +913,7 @@ describe('TreeOutline', () => {
                 const lonNode = getVisibleTreeNodeByText(shadowRoot, 'LON');
                 dispatchClickEvent(lonNode);
                 dispatchKeyDownEvent(lonNode, { key: 'ArrowDown', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Germany'));
             });
             it('is able to navigate high up the tree to the correct next parent\'s sibling', async () => {
@@ -926,7 +925,7 @@ describe('TreeOutline', () => {
                 const berNode = getVisibleTreeNodeByText(shadowRoot, 'BER');
                 dispatchClickEvent(berNode);
                 dispatchKeyDownEvent(berNode, { key: 'ArrowDown', bubbles: true });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Products'));
             });
         });
@@ -939,7 +938,7 @@ describe('TreeOutline', () => {
             });
             await component.expandRecursively(Number.POSITIVE_INFINITY);
             await waitForRenderedTreeNodeCount(shadowRoot, NODE_COUNT_BASIC_DATA_FULLY_EXPANDED);
-            await coordinator.done();
+            await RenderCoordinator.done();
             const rootNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
             assert.strictEqual(rootNode.getAttribute('aria-level'), '1');
             const europeNode = getVisibleTreeNodeByText(shadowRoot, 'Europe');
@@ -995,7 +994,7 @@ describe('TreeOutline', () => {
             const arrowIcon = rootNode.querySelector('.arrow-icon');
             assert.instanceOf(arrowIcon, HTMLSpanElement);
             dispatchClickEvent(arrowIcon);
-            await coordinator.done();
+            await RenderCoordinator.done();
             assert.strictEqual(rootNode.getAttribute('aria-expanded'), 'true');
         });
         it('does not set aria-expanded at all on leaf nodes', async () => {
@@ -1005,7 +1004,7 @@ describe('TreeOutline', () => {
             await component.expandRecursively(Number.POSITIVE_INFINITY);
             await waitForRenderedTreeNodeCount(shadowRoot, NODE_COUNT_BASIC_DATA_FULLY_EXPANDED);
             const leafNodeCSGOffice = getVisibleTreeNodeByText(shadowRoot, 'CSG');
-            assert.strictEqual(leafNodeCSGOffice.getAttribute('aria-expanded'), null);
+            assert.isNull(leafNodeCSGOffice.getAttribute('aria-expanded'));
         });
     });
     describe('emitting events', () => {
@@ -1014,7 +1013,7 @@ describe('TreeOutline', () => {
                 const { component, shadowRoot } = await renderTreeOutline({
                     tree: basicTreeData,
                 });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 const treeItemSelectedEvent = getEventPromise(component, 'itemselected');
                 dispatchClickEvent(officeNode);
@@ -1025,13 +1024,13 @@ describe('TreeOutline', () => {
                 const { component, shadowRoot } = await renderTreeOutline({
                     tree: basicTreeData,
                 });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
-                await coordinator.done();
+                await RenderCoordinator.done();
                 dispatchKeyDownEvent(officeNode, { key: 'ArrowDown', bubbles: true });
                 const treeItemSelectedEvent = getEventPromise(component, 'itemselected');
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const event = await treeItemSelectedEvent;
                 assert.deepEqual(event.data, { node: basicTreeData[1] });
             });
@@ -1041,7 +1040,7 @@ describe('TreeOutline', () => {
                 const { component, shadowRoot } = await renderTreeOutline({
                     tree: basicTreeData,
                 });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices').querySelector('.arrow-and-key-wrapper');
                 assert.instanceOf(officeNode, HTMLSpanElement);
                 const itemMouseOverEvent = getEventPromise(component, 'itemmouseover');
@@ -1055,7 +1054,7 @@ describe('TreeOutline', () => {
                 const { component, shadowRoot } = await renderTreeOutline({
                     tree: basicTreeData,
                 });
-                await coordinator.done();
+                await RenderCoordinator.done();
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices').querySelector('.arrow-and-key-wrapper');
                 assert.instanceOf(officeNode, HTMLSpanElement);
                 dispatchMouseOverEvent(officeNode);
@@ -1125,7 +1124,7 @@ describe('TreeOutline', () => {
                 defaultRenderer: (node => html `${node.treeNodeData}`),
             };
             await waitForRenderedTreeNodeCount(shadowRoot, 4);
-            await coordinator.done();
+            await RenderCoordinator.done();
             const visibleTree = visibleNodesToTree(shadowRoot);
             // The tree should still be expanded down to the node with key `gawler`.
             assert.deepEqual(visibleTree, [{
@@ -1151,7 +1150,7 @@ describe('TreeOutline', () => {
             });
             await component.expandToAndSelectTreeNode({ treeNodeData: 'literally anything', id: 'gawler' });
             await waitForRenderedTreeNodeCount(shadowRoot, 7);
-            await coordinator.done();
+            await RenderCoordinator.done();
             // The tree is expanded down to include "Gawler" but the rest of the tree is still collapsed.
             assert.strictEqual(getFocusableTreeNode(shadowRoot), getVisibleTreeNodeByText(shadowRoot, 'Gawler'));
         });
@@ -1165,7 +1164,7 @@ describe('TreeOutlineUtils', () => {
         });
         it('returns null if no path is found', async () => {
             const path = await TreeOutline.TreeOutlineUtils.getPathToTreeNode(basicTreeData, '-1');
-            assert.strictEqual(path, null);
+            assert.isNull(path);
         });
     });
 });
@@ -1178,7 +1177,7 @@ describe('TreeOutlineFiltering', () => {
                 "SHOW" /* TreeOutline.TreeOutline.FilterOption.SHOW */,
         });
         await component.expandRecursively();
-        await coordinator.done();
+        await RenderCoordinator.done();
         await waitForRenderedTreeNodeCount(shadowRoot, 7);
         const visibleTree = visibleNodesToTree(shadowRoot);
         assert.deepEqual(visibleTree, [{
@@ -1198,7 +1197,7 @@ describe('TreeOutlineFiltering', () => {
             tree: [nodeAustralia],
         });
         await component.expandNodeIds(['australia', 'sa', 'adelaide']);
-        await coordinator.done();
+        await RenderCoordinator.done();
         await waitForRenderedTreeNodeCount(shadowRoot, 7);
         const visibleTree = visibleNodesToTree(shadowRoot);
         assert.deepEqual(visibleTree, [{

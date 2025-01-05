@@ -8,43 +8,41 @@ import * as UI from '../../legacy.js';
 import bezierSwatchStyles from './bezierSwatch.css.js';
 import cssShadowSwatchStyles from './cssShadowSwatch.css.js';
 const { html } = LitHtml;
-export class BezierSwatch extends HTMLSpanElement {
-    iconElementInternal;
-    textElement;
+export class BezierSwatch extends HTMLElement {
+    #icon;
+    #text;
     constructor() {
         super();
-        const root = UI.UIUtils.createShadowRootWithCoreStyles(this, {
-            cssFile: [bezierSwatchStyles],
-            delegatesFocus: undefined,
-        });
-        this.iconElementInternal = IconButton.Icon.create('bezier-curve-filled', 'bezier-swatch-icon');
-        this.iconElementInternal.setAttribute('jslog', `${VisualLogging.showStyleEditor('bezier')}`);
-        root.appendChild(this.iconElementInternal);
-        this.textElement = this.createChild('span');
+        const root = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: [bezierSwatchStyles] });
+        this.#icon = IconButton.Icon.create('bezier-curve-filled', 'bezier-swatch-icon');
+        this.#icon.setAttribute('jslog', `${VisualLogging.showStyleEditor('bezier')}`);
+        root.appendChild(this.#icon);
+        this.#text = document.createElement('span');
         root.createChild('slot');
     }
+    connectedCallback() {
+        this.append(this.#text);
+    }
+    disconnectedCallback() {
+        this.#text.remove();
+    }
     static create() {
-        let constructor = BezierSwatch.constructorInternal;
-        if (!constructor) {
-            constructor = UI.UIUtils.registerCustomElement('span', 'bezier-swatch', BezierSwatch);
-            BezierSwatch.constructorInternal = constructor;
-        }
-        return constructor();
+        return document.createElement('devtools-bezier-swatch');
     }
     bezierText() {
-        return this.textElement.textContent || '';
+        return this.#text.textContent || '';
     }
     setBezierText(text) {
-        this.textElement.textContent = text;
+        this.#text.textContent = text;
     }
     hideText(hide) {
-        this.textElement.hidden = hide;
+        this.#text.hidden = hide;
     }
     iconElement() {
-        return this.iconElementInternal;
+        return this.#icon;
     }
-    static constructorInternal = null;
 }
+customElements.define('devtools-bezier-swatch', BezierSwatch);
 export class CSSShadowSwatch extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #icon;

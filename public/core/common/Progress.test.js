@@ -49,7 +49,7 @@ describe('Composite Progress Bar', () => {
         const indicator = new MockProgressIndicator();
         const composite = new CompositeProgress(indicator);
         const subProgress = composite.createSubProgress();
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0);
         assert.strictEqual(indicator.getTotalWork, 1);
         subProgress.setTitle('cuckooing');
@@ -77,7 +77,7 @@ describe('Composite Progress Bar', () => {
         const subProgress1 = composite.createSubProgress();
         // Creates a sub progress with the weight of 3
         const subProgress2 = composite.createSubProgress(3);
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0);
         assert.strictEqual(indicator.getTotalWork, 1);
         subProgress1.setTitle('cuckooing');
@@ -123,15 +123,15 @@ describe('Composite Progress Bar', () => {
         const subProgress01 = composite0.createSubProgress();
         const composite1 = new CompositeProgress(subProgress01);
         const subProgress11 = composite1.createSubProgress(10); // Weight should have no effect
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0);
         assert.strictEqual(indicator.getTotalWork, 1);
         subProgress11.setWorked(10);
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0);
         assert.strictEqual(indicator.getTotalWork, 1);
         subProgress11.setTotalWork(100);
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0.1);
         assert.strictEqual(indicator.getTotalWork, 1);
         subProgress11.setWorked(50, 'meowing');
@@ -150,12 +150,12 @@ describe('Composite Progress Bar', () => {
         const indicator = new MockProgressIndicator();
         const composite = new CompositeProgress(indicator);
         const subProgress = composite.createSubProgress();
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0);
         assert.strictEqual(indicator.getTotalWork, 1);
         assert.strictEqual(subProgress.getWorked(), 0);
         subProgress.incrementWorked();
-        assert.strictEqual(indicator.getTitle, undefined);
+        assert.isUndefined(indicator.getTitle);
         assert.strictEqual(indicator.getWorkCompleted, 0);
         assert.strictEqual(indicator.getTotalWork, 1);
         assert.strictEqual(subProgress.getWorked(), 1);

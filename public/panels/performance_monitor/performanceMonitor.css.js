@@ -55,8 +55,7 @@ styles.replaceSync(
   display: flex;
   flex-direction: column;
   padding: 6px 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
 }
 
 .perfmon-chart-container {

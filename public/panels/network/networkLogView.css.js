@@ -68,7 +68,7 @@ styles.replaceSync(
   border-bottom: 0;
 }
 
-.network-summary-bar span[is="dt-icon-label"] {
+.network-summary-bar dt-icon-label {
   margin-right: 6px;
 }
 
@@ -276,12 +276,9 @@ styles.replaceSync(
 }
 
 .image-network-icon-preview {
-  bottom: 0;
-  left: 0;
+  inset: 0;
   margin: auto;
   overflow: hidden;
-  right: 0;
-  top: 0;
 }
 
 .network-log-grid.data-grid .image-network-icon-preview {

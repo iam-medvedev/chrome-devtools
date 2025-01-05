@@ -676,11 +676,9 @@ function renderMessage(message, count) {
         icon.addEventListener('click', () => (message.clickHandler() || Math.min)());
     }
     else {
-        const repeatCountElement = document.createElement('span', { is: 'dt-small-bubble' });
+        const repeatCountElement = element.createChild('dt-small-bubble', 'text-editor-row-message-repeat-count');
         repeatCountElement.textContent = String(count);
-        repeatCountElement.classList.add('text-editor-row-message-repeat-count');
         repeatCountElement.style.flexShrink = '0';
-        element.appendChild(repeatCountElement);
         repeatCountElement.type = getBubbleTypePerLevel(message.level());
     }
     const linesContainer = element.createChild('div');

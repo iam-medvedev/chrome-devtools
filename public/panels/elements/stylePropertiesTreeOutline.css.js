@@ -283,6 +283,10 @@ devtools-css-length {
   display: inline-block;
 }
 
+devtools-css-length {
+  margin-left: 1px;
+}
+
 devtools-icon.open-in-animations-panel {
   position: relative;
   transform: scale(0.7);

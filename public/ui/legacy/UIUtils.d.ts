@@ -5,6 +5,14 @@ import * as IconButton from '../components/icon_button/icon_button.js';
 import { Size } from './Geometry.js';
 import { type ToolbarButton } from './Toolbar.js';
 import type { TreeOutline } from './Treeoutline.js';
+declare global {
+    interface HTMLElementTagNameMap {
+        'dt-checkbox': CheckboxLabel;
+        'dt-close-button': DevToolsCloseButton;
+        'dt-icon-label': DevToolsIconLabel;
+        'dt-small-bubble': DevToolsSmallBubble;
+    }
+}
 export declare const highlightedSearchResultClassName = "highlighted-search-result";
 export declare const highlightedCurrentSearchResultClassName = "current-search-result";
 export declare function installDragHandle(element: Element, elementDragStart: ((arg0: MouseEvent) => boolean) | null, elementDrag: (arg0: MouseEvent) => void, elementDragEnd: ((arg0: MouseEvent) => void) | null, cursor: string | null, hoverCursor?: string | null, startDelay?: number): void;
@@ -71,10 +79,10 @@ export declare function createTextButton(text: string, clickHandler?: ((arg0: Ev
     icon?: string;
 }): Buttons.Button.Button;
 export declare function createInput(className?: string, type?: string, jslogContext?: string): HTMLInputElement;
+export declare function createHistoryInput(type?: string, className?: string): HTMLInputElement;
 export declare function createSelect(name: string, options: string[] | Map<string, string[]>[] | Set<string>): HTMLSelectElement;
 export declare function createOption(title: string, value?: string, jslogContext?: string): HTMLOptionElement;
 export declare function createLabel(title: string, className?: string, associatedControl?: Element): Element;
-export declare function createRadioLabel(name: string, title: string, checked?: boolean, jslogContext?: string): DevToolsRadioButton;
 export declare function createIconLabel(options: {
     title?: string;
     iconName: string;
@@ -82,7 +90,51 @@ export declare function createIconLabel(options: {
     width?: '14px' | '20px';
     height?: '14px' | '20px';
 }): DevToolsIconLabel;
-export declare function createSlider(min: number, max: number, tabIndex: number): Element;
+/**
+ * Creates a radio button, which is comprised of a `<label>` and an `<input type="radio">` element.
+ *
+ * The returned pair contains the `label` element and and the `radio` input element. The latter is
+ * a child of the `label`, and therefore no association via `for` attribute is necessary to make
+ * the radio button accessible.
+ *
+ * The element is automatically styled correctly, as long as the core styles (in particular
+ * `inspectorCommon.css` is injected into the current document / shadow root). The lit-html
+ * equivalent of calling this method is:
+ *
+ * ```js
+ * const jslog = VisualLogging.toggle().track({change: true}).context(jslogContext);
+ * html`<label><input type="radio" name=${name} jslog=${jslog}>${title}</label>`
+ * ```
+ *
+ * @param name the name of the radio group.
+ * @param title the label text for the radio button.
+ * @param jslogContext the context string for the `jslog` attribute.
+ * @returns the pair of `HTMLLabelElement` and `HTMLInputElement`.
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio
+ */
+export declare function createRadioButton(name: string, title: string, jslogContext: string): {
+    label: HTMLLabelElement;
+    radio: HTMLInputElement;
+};
+/**
+ * Creates an `<input type="range">` element with the specified parameters (a slider)
+ * and a `step` of 1 (the default for the element).
+ *
+ * The element is automatically styled correctly, as long as the core styles (in particular
+ * `inspectorCommon.css` is injected into the current document / shadow root). The lit-html
+ * equivalent of calling this method is:
+ *
+ * ```js
+ * html`<input type="range" min=${min} max=${max} tabindex=${tabIndex}>`
+ * ```
+ *
+ * @param min the minimum allowed value.
+ * @param max the maximum allowed value.
+ * @param tabIndex the value for the `tabindex` attribute.
+ * @returns the newly created `HTMLInputElement` for the slider.
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range
+ */
+export declare function createSlider(min: number, max: number, tabIndex: number): HTMLInputElement;
 export declare function setTitle(element: HTMLElement, title: string): void;
 export declare class CheckboxLabel extends HTMLElement {
     private readonly shadowRootInternal;
@@ -94,30 +146,18 @@ export declare class CheckboxLabel extends HTMLElement {
     static createWithStringLiteral(title?: string, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
     private static lastId;
 }
-export declare class DevToolsIconLabel extends HTMLSpanElement {
+export declare class DevToolsIconLabel extends HTMLElement {
     #private;
     constructor();
     set data(data: IconButton.Icon.IconData);
 }
-export declare class DevToolsRadioButton extends HTMLSpanElement {
-    radioElement: HTMLInputElement;
-    labelElement: HTMLLabelElement;
-    constructor();
-    radioClickHandler(): void;
-}
-export declare class DevToolsSlider extends HTMLSpanElement {
-    sliderElement: HTMLInputElement;
-    constructor();
-    set value(amount: number);
-    get value(): number;
-}
-export declare class DevToolsSmallBubble extends HTMLSpanElement {
+export declare class DevToolsSmallBubble extends HTMLElement {
     private textElement;
     constructor();
     set type(type: string);
 }
-export declare class DevToolsCloseButton extends HTMLDivElement {
-    private button;
+export declare class DevToolsCloseButton extends HTMLElement {
+    #private;
     constructor();
     setAccessibleName(name: string): void;
     setTabbable(tabbable: boolean): void;
@@ -196,6 +236,15 @@ export interface ConfirmDialogOptions {
 }
 export declare function injectCoreStyles(root: Element | ShadowRoot): void;
 export declare function injectTextButtonStyles(root: Element | ShadowRoot): void;
+/**
+ * Creates a new shadow DOM tree with the core styles and an optional list of
+ * additional styles, and attaches it to the specified `element`.
+ *
+ * @param element the `Element` to attach the shadow DOM tree to.
+ * @param options optional additional style sheets and options for `Element#attachShadow()`.
+ * @returns the newly created `ShadowRoot`.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
+ */
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
     cssFile?: CSSStyleSheet[] | {
         cssContent: string;
@@ -204,4 +253,3 @@ export declare function createShadowRootWithCoreStyles(element: Element, options
 }): ShadowRoot;
 export declare function resetMeasuredScrollbarWidthForTest(): void;
 export declare function measuredScrollbarWidth(document?: Document | null): number;
-export declare function registerCustomElement(localName: string, typeExtension: string, definition: new () => HTMLElement): () => Element;

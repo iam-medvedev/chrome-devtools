@@ -32,7 +32,7 @@ describeWithLocale('GenericIssue', () => {
         };
         const issue = createProtocolIssueWithDetails(issueDetails);
         const genericIssues = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, issue);
-        assert.strictEqual(genericIssues.length, 1);
+        assert.lengthOf(genericIssues, 1);
         const genericIssue = genericIssues[0];
         assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */);
         assert.strictEqual(genericIssue.primaryKey(), `GenericIssue::FormLabelForNameError-(${'main'})-(1)-(attribute)-(no-request)`);
@@ -51,7 +51,7 @@ describeWithLocale('GenericIssue', () => {
         };
         const issue = createProtocolIssueWithDetails(issueDetails);
         const genericIssues = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, issue);
-        assert.strictEqual(genericIssues.length, 1);
+        assert.lengthOf(genericIssues, 1);
         const genericIssue = genericIssues[0];
         assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */);
         assert.strictEqual(genericIssue.primaryKey(), 'GenericIssue::ResponseWasBlockedByORB-(undefined)-(undefined)-(undefined)-(blabla)');

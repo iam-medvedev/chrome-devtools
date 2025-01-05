@@ -519,8 +519,7 @@ button.link {
 }
 
 main {
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   display: flex;
   flex-direction: column;
   align-items: center;

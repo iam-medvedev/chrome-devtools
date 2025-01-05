@@ -266,6 +266,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onNetworkAddEntryLabelAnnotation, this);
         this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onMainEntriesLinkAnnotationCreated, this);
         this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onNetworkEntriesLinkAnnotationCreated, this);
+        this.mainFlameChart.addEventListener("TracksReorderStateChange" /* PerfUI.FlameChart.Events.TRACKS_REORDER_STATE_CHANGED */, event => {
+            this.#overlays.toggleAllOverlaysDisplayed(!event.data);
+        });
         this.detailsView.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => {
             if (!Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
                 return;

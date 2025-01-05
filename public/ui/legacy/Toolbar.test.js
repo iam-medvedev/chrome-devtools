@@ -1,10 +1,9 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Coordinator from '../components/render_coordinator/render_coordinator.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 import { dispatchClickEvent, doubleRaf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import * as UI from './legacy.js';
 describeWithLocale('Toolbar', () => {
     describe('ToolbarInput', () => {
@@ -13,7 +12,7 @@ describeWithLocale('Toolbar', () => {
             renderElementIntoDOM(input.element);
             input.setValue('test value');
             const clearButton = input.element.querySelector('.toolbar-input-clear-button');
-            await coordinator.done();
+            await RenderCoordinator.done();
             const innerButton = clearButton?.shadowRoot?.querySelector('button');
             assert.instanceOf(innerButton, HTMLElement);
             assert.strictEqual(innerButton.title, 'Clear');

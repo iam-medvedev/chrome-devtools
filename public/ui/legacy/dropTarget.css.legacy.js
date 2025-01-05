@@ -12,10 +12,7 @@ export default {
 
 :host {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   display: flex;
   background-color: var(--color-background-opacity-80);
   z-index: 1000;

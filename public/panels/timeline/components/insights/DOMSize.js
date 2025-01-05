@@ -15,7 +15,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/DO
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { html } = LitHtml;
 export class DOMSize extends BaseInsightComponent {
-    static litTagName = LitHtml.literal `devtools-performance-dom-size`;
+    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-dom-size`;
     internalName = 'dom-size';
     createOverlays() {
         if (!this.model) {

@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Buttons from '../buttons/buttons.js';
@@ -19,7 +19,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/components/dialogs/Dialog.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const IS_DIALOG_SUPPORTED = 'HTMLDialogElement' in globalThis;
 // Height in pixels of the dialog's connector. The connector is represented as
 // as a diamond and the height corresponds to half the height of the diamond.
@@ -267,7 +266,7 @@ export class Dialog extends HTMLElement {
             return;
         }
         this.#isPendingShowDialog = true;
-        void coordinator.read(() => {
+        void RenderCoordinator.read(() => {
             // Fixed elements are positioned relative to the window, regardless if
             // DevTools is docked. As such, if DevTools is docked we must account for
             // its offset relative to the window when positioning fixed elements.
@@ -280,7 +279,7 @@ export class Dialog extends HTMLElement {
             const devToolsTop = devtoolsBounds.top;
             const devToolsRight = devtoolsBounds.right;
             if (this.#props.origin === MODAL) {
-                void coordinator.write(() => {
+                void RenderCoordinator.write(() => {
                     this.style.setProperty('--dialog-top', `${devToolsTop}px`);
                     this.style.setProperty('--dialog-left', `${devToolsLeft}px`);
                     this.style.setProperty('--dialog-margin', 'auto');
@@ -299,7 +298,7 @@ export class Dialog extends HTMLElement {
             const hitAreaWidth = anchorRight - anchorLeft + CONNECTOR_HEIGHT;
             const windowWidth = document.body.clientWidth;
             const connectorFixedXValue = this.#props.getConnectorCustomXPosition ? this.#props.getConnectorCustomXPosition() : originCenterX;
-            void coordinator.write(() => {
+            void RenderCoordinator.write(() => {
                 this.style.setProperty('--dialog-top', '0');
                 // Start by showing the dialog hidden to allow measuring its width.
                 const dialog = this.#getDialog();
@@ -406,7 +405,7 @@ export class Dialog extends HTMLElement {
         this.#isPendingShowDialog = true;
         this.#positionDialog();
         // Allow the CSS variables to be set before showing.
-        await coordinator.done();
+        await RenderCoordinator.done();
         this.#isPendingShowDialog = false;
         const dialog = this.#getDialog();
         // Make the dialog visible now.
@@ -463,7 +462,7 @@ export class Dialog extends HTMLElement {
             return;
         }
         this.#isPendingCloseDialog = true;
-        void coordinator.write(() => {
+        void RenderCoordinator.write(() => {
             this.#hitArea.width = 0;
             this.removeAttribute('open');
             this.#getDialog().close();

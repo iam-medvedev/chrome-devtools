@@ -353,10 +353,7 @@ export class DropDown {
         this.glassPane.setPointerEventsBehavior("BlockedByGlassPane" /* UI.GlassPane.PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
         this.glassPane.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PREFER_BOTTOM */);
         this.glassPane.element.addEventListener('blur', () => this.close(null));
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, {
-            cssFile: [timelineHistoryManagerStyles],
-            delegatesFocus: undefined,
-        });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: [timelineHistoryManagerStyles] });
         const contentElement = shadowRoot.createChild('div', 'drop-down');
         const listModel = new UI.ListModel.ListModel();
         this.listControl = new UI.ListControl.ListControl(listModel, this, UI.ListControl.ListMode.NonViewport);

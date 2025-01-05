@@ -45,7 +45,7 @@ describe('NetworkAnalyzer', () => {
     });
     function assertCloseEnough(valueA, valueB, threshold = 1) {
         const message = `${valueA} was not close enough to ${valueB}`;
-        assert.ok(Math.abs(valueA - valueB) < threshold, message);
+        assert.isOk(Math.abs(valueA - valueB) < threshold, message);
     }
     describe('#estimateIfConnectionWasReused', () => {
         it('should use built-in value when trustworthy', () => {
@@ -294,8 +294,8 @@ describe('NetworkAnalyzer', () => {
             }, extras);
         }
         it('should return null for no/missing records', () => {
-            assert.strictEqual(estimateThroughput([]), null);
-            assert.strictEqual(estimateThroughput([createThroughputRecord(0, 0, { finished: false })]), null);
+            assert.isNull(estimateThroughput([]));
+            assert.isNull(estimateThroughput([createThroughputRecord(0, 0, { finished: false })]));
         });
         it('should compute correctly for a basic waterfall', () => {
             const result = estimateThroughput([

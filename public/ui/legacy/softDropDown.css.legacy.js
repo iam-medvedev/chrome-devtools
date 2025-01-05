@@ -17,8 +17,7 @@ export default {
 .item-list {
   background-color: var(--sys-color-cdt-base-container);
   box-shadow: var(--drop-shadow);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   width: 100%;
 }
 

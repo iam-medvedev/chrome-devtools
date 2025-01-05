@@ -138,10 +138,10 @@ describe('CSSAngle', () => {
             assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('hue-rotate(1.5turn)'), { value: 1.5, unit: "turn" /* InlineEditor.CSSAngleUtils.AngleUnit.TURN */ });
             assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('oblique 25deg'), { value: 25, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
             assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('ray(20.8deg closest-side)'), { value: 20.8, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
-            assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('rotate(12345)'), null);
-            assert.deepEqual(InlineEditor.CSSAngleUtils.parseText(''), null);
+            assert.isNull(InlineEditor.CSSAngleUtils.parseText('rotate(12345)'));
+            assert.isNull(InlineEditor.CSSAngleUtils.parseText(''));
             // TODO(changhaohan): crbug.com/1138628 handle unitless 0 case
-            assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('rotate(0)'), null);
+            assert.isNull(InlineEditor.CSSAngleUtils.parseText('rotate(0)'));
         });
         it('converts angles in degree to other units correctly', () => {
             assert.deepEqual(InlineEditor.CSSAngleUtils.getAngleFromRadians(Math.PI / 4, "grad" /* InlineEditor.CSSAngleUtils.AngleUnit.GRAD */), {

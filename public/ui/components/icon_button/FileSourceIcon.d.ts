@@ -5,7 +5,6 @@ export interface FileSourceIconData {
 }
 export declare class FileSourceIcon extends HTMLElement {
     #private;
-    static readonly litTagName: import("../../lit-html/static.js").Static;
     constructor(iconType: string);
     set data(data: FileSourceIconData);
     get data(): FileSourceIconData;

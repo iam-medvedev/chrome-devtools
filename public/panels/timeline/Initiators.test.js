@@ -110,7 +110,7 @@ describeWithEnvironment('Initiators', () => {
             assert.strictEqual(initiatorsData[0].event, functionCallByRAF);
             assert.strictEqual(initiatorsData[0].initiator, rAFParent.entry);
             // Ensure the expandable entry is marked as hidden
-            assert.strictEqual(initiatorsData[0].isInitiatorHidden, true);
+            assert.isTrue(initiatorsData[0].isInitiatorHidden);
         });
         it('will return the closest expandable ancestor as an initiated event in a pair if the event itself is hidden', async function () {
             const functionCallByRAFParent = parsedTrace.Renderer.entryToNode.get(functionCallByRAF)?.parent;
@@ -120,7 +120,7 @@ describeWithEnvironment('Initiators', () => {
             assert.strictEqual(initiatorsData[0].event, functionCallByRAFParent?.entry);
             assert.strictEqual(initiatorsData[0].initiator, rAFCall);
             // Ensure the expandable entry is marked as hidden
-            assert.strictEqual(initiatorsData[0].isEntryHidden, true);
+            assert.isTrue(initiatorsData[0].isEntryHidden);
         });
     });
     describe('Network Requests', function () {

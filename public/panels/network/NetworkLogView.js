@@ -44,7 +44,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Sources from '../../panels/sources/sources.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -433,7 +433,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkLogView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     networkInvertFilterSetting;
     networkHideDataURLSetting;
@@ -1131,7 +1130,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         this.needsRefresh = true;
         if (this.isShowing()) {
-            void coordinator.write('NetworkLogView.render', this.refresh.bind(this));
+            void RenderCoordinator.write('NetworkLogView.render', this.refresh.bind(this));
         }
     }
     addFilmStripFrames(times) {

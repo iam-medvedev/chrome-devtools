@@ -16,8 +16,7 @@ styles.replaceSync(
 }
 
 .security-main-view {
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   background-color: var(--sys-color-cdt-base-container);
 }
 

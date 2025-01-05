@@ -1960,6 +1960,7 @@
       <include file="third_party/lit/lib/directive.js" name="THIRD_PARTY_LIT_LIB_DIRECTIVE_JS" resource_path="third_party/lit/lib/directive.js" type="BINDATA" compress="false"/>
       <include file="third_party/lit/lib/directives.js" name="THIRD_PARTY_LIT_LIB_DIRECTIVES_JS" resource_path="third_party/lit/lib/directives.js" type="BINDATA" compress="false"/>
       <include file="third_party/lit/lib/lit.js" name="THIRD_PARTY_LIT_LIB_LIT_JS" resource_path="third_party/lit/lib/lit.js" type="BINDATA" compress="false"/>
+      <include file="third_party/lit/lib/static-html.js" name="THIRD_PARTY_LIT_LIB_STATIC_HTML_JS" resource_path="third_party/lit/lib/static-html.js" type="BINDATA" compress="false"/>
       <include file="third_party/marked/package/lib/marked.esm.js" name="THIRD_PARTY_MARKED_PACKAGE_LIB_MARKED_ESM_JS" resource_path="third_party/marked/package/lib/marked.esm.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer-replay/package/lib/main.js" name="THIRD_PARTY_PUPPETEER_REPLAY_PACKAGE_LIB_MAIN_JS" resource_path="third_party/puppeteer-replay/package/lib/main.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/api/Browser.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_API_BROWSER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/api/Browser.js" type="BINDATA" compress="false"/>
@@ -2259,7 +2260,6 @@
       <include file="ui/components/panel_feedback/previewToggle.css.js" name="UI_COMPONENTS_PANEL_FEEDBACK_PREVIEWTOGGLE_CSS_JS" resource_path="ui/components/panel_feedback/previewToggle.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/panel_introduction_steps/PanelIntroductionSteps.js" name="UI_COMPONENTS_PANEL_INTRODUCTION_STEPS_PANELINTRODUCTIONSTEPS_JS" resource_path="ui/components/panel_introduction_steps/PanelIntroductionSteps.js" type="BINDATA" compress="false"/>
       <include file="ui/components/panel_introduction_steps/panelIntroductionSteps.css.js" name="UI_COMPONENTS_PANEL_INTRODUCTION_STEPS_PANELINTRODUCTIONSTEPS_CSS_JS" resource_path="ui/components/panel_introduction_steps/panelIntroductionSteps.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/render_coordinator/RenderCoordinator.js" name="UI_COMPONENTS_RENDER_COORDINATOR_RENDERCOORDINATOR_JS" resource_path="ui/components/render_coordinator/RenderCoordinator.js" type="BINDATA" compress="false"/>
       <include file="ui/components/report_view/ReportView.js" name="UI_COMPONENTS_REPORT_VIEW_REPORTVIEW_JS" resource_path="ui/components/report_view/ReportView.js" type="BINDATA" compress="false"/>
       <include file="ui/components/report_view/report.css.js" name="UI_COMPONENTS_REPORT_VIEW_REPORT_CSS_JS" resource_path="ui/components/report_view/report.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/report_view/reportKey.css.js" name="UI_COMPONENTS_REPORT_VIEW_REPORTKEY_CSS_JS" resource_path="ui/components/report_view/reportKey.css.js" type="BINDATA" compress="false"/>
@@ -2314,7 +2314,6 @@
       <include file="ui/legacy/Fragment.js" name="UI_LEGACY_FRAGMENT_JS" resource_path="ui/legacy/Fragment.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/Geometry.js" name="UI_LEGACY_GEOMETRY_JS" resource_path="ui/legacy/Geometry.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/GlassPane.js" name="UI_LEGACY_GLASSPANE_JS" resource_path="ui/legacy/GlassPane.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/HistoryInput.js" name="UI_LEGACY_HISTORYINPUT_JS" resource_path="ui/legacy/HistoryInput.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/Infobar.js" name="UI_LEGACY_INFOBAR_JS" resource_path="ui/legacy/Infobar.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/InplaceEditor.js" name="UI_LEGACY_INPLACEEDITOR_JS" resource_path="ui/legacy/InplaceEditor.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/InspectorView.js" name="UI_LEGACY_INSPECTORVIEW_JS" resource_path="ui/legacy/InspectorView.js" type="BINDATA" compress="false"/>
@@ -2478,12 +2477,10 @@
       <include file="ui/legacy/listWidget.css.legacy.js" name="UI_LEGACY_LISTWIDGET_CSS_LEGACY_JS" resource_path="ui/legacy/listWidget.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/popover.css.legacy.js" name="UI_LEGACY_POPOVER_CSS_LEGACY_JS" resource_path="ui/legacy/popover.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/progressIndicator.css.legacy.js" name="UI_LEGACY_PROGRESSINDICATOR_CSS_LEGACY_JS" resource_path="ui/legacy/progressIndicator.css.legacy.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/radioButton.css.legacy.js" name="UI_LEGACY_RADIOBUTTON_CSS_LEGACY_JS" resource_path="ui/legacy/radioButton.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/remoteDebuggingTerminatedScreen.css.legacy.js" name="UI_LEGACY_REMOTEDEBUGGINGTERMINATEDSCREEN_CSS_LEGACY_JS" resource_path="ui/legacy/remoteDebuggingTerminatedScreen.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/reportView.css.legacy.js" name="UI_LEGACY_REPORTVIEW_CSS_LEGACY_JS" resource_path="ui/legacy/reportView.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/rootView.css.legacy.js" name="UI_LEGACY_ROOTVIEW_CSS_LEGACY_JS" resource_path="ui/legacy/rootView.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/searchableView.css.legacy.js" name="UI_LEGACY_SEARCHABLEVIEW_CSS_LEGACY_JS" resource_path="ui/legacy/searchableView.css.legacy.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/slider.css.legacy.js" name="UI_LEGACY_SLIDER_CSS_LEGACY_JS" resource_path="ui/legacy/slider.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/smallBubble.css.legacy.js" name="UI_LEGACY_SMALLBUBBLE_CSS_LEGACY_JS" resource_path="ui/legacy/smallBubble.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/softContextMenu.css.legacy.js" name="UI_LEGACY_SOFTCONTEXTMENU_CSS_LEGACY_JS" resource_path="ui/legacy/softContextMenu.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/softDropDown.css.legacy.js" name="UI_LEGACY_SOFTDROPDOWN_CSS_LEGACY_JS" resource_path="ui/legacy/softDropDown.css.legacy.js" type="BINDATA" compress="false"/>
@@ -2500,7 +2497,7 @@
       <include file="ui/legacy/toolbar.css.legacy.js" name="UI_LEGACY_TOOLBAR_CSS_LEGACY_JS" resource_path="ui/legacy/toolbar.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/treeoutline.css.legacy.js" name="UI_LEGACY_TREEOUTLINE_CSS_LEGACY_JS" resource_path="ui/legacy/treeoutline.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.legacy.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_LEGACY_JS" resource_path="ui/legacy/viewContainers.css.legacy.js" type="BINDATA" compress="false"/>
-      <include file="ui/lit-html/static.js" name="UI_LIT_HTML_STATIC_JS" resource_path="ui/lit-html/static.js" type="BINDATA" compress="false"/>
+      <include file="ui/lit-html/i18n-template.js" name="UI_LIT_HTML_I18N_TEMPLATE_JS" resource_path="ui/lit-html/i18n-template.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/Debugging.js" name="UI_VISUAL_LOGGING_DEBUGGING_JS" resource_path="ui/visual_logging/Debugging.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/DomState.js" name="UI_VISUAL_LOGGING_DOMSTATE_JS" resource_path="ui/visual_logging/DomState.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/KnownContextValues.js" name="UI_VISUAL_LOGGING_KNOWNCONTEXTVALUES_JS" resource_path="ui/visual_logging/KnownContextValues.js" type="BINDATA" compress="false"/>

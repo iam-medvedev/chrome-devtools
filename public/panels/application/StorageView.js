@@ -207,8 +207,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         quotaOverrideCheckboxRow.appendChild(this.quotaOverrideCheckbox);
         this.quotaOverrideCheckbox.checkboxElement.addEventListener('click', this.onClickCheckbox.bind(this), false);
         this.quotaOverrideControlRow = quota.appendRow();
-        this.quotaOverrideEditor =
-            this.quotaOverrideControlRow.createChild('input', 'quota-override-notification-editor');
+        this.quotaOverrideEditor = this.quotaOverrideControlRow.createChild('input', 'quota-override-notification-editor');
         this.quotaOverrideEditor.setAttribute('jslog', `${VisualLogging.textField('quota-override').track({ change: true })}`);
         this.quotaOverrideControlRow.appendChild(UI.UIUtils.createLabel(i18nString(UIStrings.mb)));
         this.quotaOverrideControlRow.classList.add('hidden');

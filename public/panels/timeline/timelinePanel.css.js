@@ -144,6 +144,7 @@ styles.replaceSync(
 
 #memory-graphs-container .timeline-memory-header::after {
   content: "";
+  /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-toolbarResizerVertical);
   background-repeat: no-repeat;
   background-position: right center, center;
@@ -325,6 +326,7 @@ styles.replaceSync(
 
   100% {
     opacity: 0%;
+    /* stylelint-disable-next-line custom-property-pattern */
     transform: translateY(var(--to-Y)) translateX(var(--to-X)) rotate(var(--rotation));
   }
 }
@@ -554,8 +556,7 @@ styles.replaceSync(
 }
 
 .timeline-details-view-body > div {
-  overflow-y: hidden;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .timeline-details-chip-title > div {

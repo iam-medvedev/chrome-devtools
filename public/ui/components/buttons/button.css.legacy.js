@@ -222,7 +222,7 @@ button {
     }
   }
 
-  &:not(.icon):not(.toolbar).only-icon {
+  &:not(.icon, .toolbar).only-icon {
     width: 100%;
     padding: 0;
 
@@ -258,11 +258,11 @@ button {
     background-color: var(--hover-layer-color); /* stylelint-disable-line plugin/use_theme_colors */
 
     &.primary {
-      border: var(--button-border-size) solid color-mix(in sRGB, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
+      border: var(--button-border-size) solid color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
     }
 
     &.tonal {
-      background: color-mix(in sRGB, var(--sys-color-tonal-container), var(--sys-color-state-hover-on-subtle));
+      background: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-state-hover-on-subtle));
     }
 
     &.toobar {
@@ -284,11 +284,11 @@ button {
     background-color: var(--active-layer-color); /* stylelint-disable-line plugin/use_theme_colors */
 
     &.primary {
-      border: var(--button-border-size) solid color-mix(in sRGB, var(--sys-color-primary), var(--sys-color-state-ripple-primary) 32%);
+      border: var(--button-border-size) solid color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-ripple-primary) 32%);
     }
 
     &.tonal {
-      background: color-mix(in sRGB, var(--sys-color-tonal-container), var(--sys-color-state-ripple-primary) 50%);
+      background: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-state-ripple-primary) 50%);
     }
 
     &.toolbar {

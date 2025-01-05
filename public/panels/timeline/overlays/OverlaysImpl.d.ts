@@ -176,6 +176,7 @@ export declare class Overlays extends EventTarget {
         charts: TimelineCharts;
         entryQueries: OverlayEntryQueries;
     });
+    toggleAllOverlaysDisplayed(allOverlaysDisplayed: boolean): void;
     /**
      * Add a new overlay to the view.
      */

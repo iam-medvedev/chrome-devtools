@@ -5,9 +5,8 @@ import { getHeaderCells, getValuesOfAllBodyRows } from '../../../testing/DataGri
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const renderEndpointsGrid = async (data) => {
     const component = new ApplicationComponents.EndpointsGrid.EndpointsGrid();
     if (data) {
@@ -15,7 +14,7 @@ const renderEndpointsGrid = async (data) => {
     }
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     if (!data) {
         return component;
     }
@@ -29,7 +28,7 @@ describeWithLocale('EndpointsGrid', () => {
     it('displays placeholder text if no data', async () => {
         const component = new ApplicationComponents.EndpointsGrid.EndpointsGrid();
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const placeholder = component.shadowRoot.querySelector('.reporting-placeholder div');
         assert.strictEqual(placeholder?.textContent, 'No endpoints to display');
     });
@@ -55,7 +54,7 @@ describeWithLocale('EndpointsGrid', () => {
         const header = getHeaderCells(dataGrid.shadowRoot).map(({ textContent }) => textContent.trim());
         assert.deepEqual(header, ['Origin', 'Name', 'URL']);
         const rowValues = getValuesOfAllBodyRows(dataGrid.shadowRoot);
-        assert.strictEqual(rowValues.length, 3);
+        assert.lengthOf(rowValues, 3);
         assert.strictEqual(rowValues[0][0], 'https://www.my-page.com', 'Endpoint origin does not match');
         assert.strictEqual(rowValues[0][1], 'main-endpoint', 'Endpoint name does not match');
         assert.strictEqual(rowValues[0][2], 'https://www.reports-endpoint/main', 'Endpoint URL does not match');

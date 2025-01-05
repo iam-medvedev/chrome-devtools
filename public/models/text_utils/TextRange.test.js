@@ -4,7 +4,7 @@
 import * as TextUtils from './text_utils.js';
 function assertIsTextRangeAndEqualsRange(range, expectedRange, description) {
     const prefix = description.length ? `${description}, but ` : '';
-    assert.isTrue(range instanceof TextUtils.TextRange.TextRange, `${prefix}range is not a TextUtils.TextRange.TextRange`);
+    assert.instanceOf(range, TextUtils.TextRange.TextRange, `${prefix}range is not a TextUtils.TextRange.TextRange`);
     assert.strictEqual(range.startLine, expectedRange.startLine, `${prefix}range's startLine differs from expectation`);
     assert.strictEqual(range.startColumn, expectedRange.startColumn, `${prefix}range's startColumn differs from expectation`);
     assert.strictEqual(range.endLine, expectedRange.endLine, `${prefix}range's endLine differs from expectation`);
@@ -12,7 +12,7 @@ function assertIsTextRangeAndEqualsRange(range, expectedRange, description) {
 }
 function assertIsUnitTextRange(range, line, column, description) {
     const prefix = description.length ? `${description}, but ` : '';
-    assert.isTrue(range instanceof TextUtils.TextRange.TextRange, `${prefix}range is not a TextUtils.TextRange.TextRange`);
+    assert.instanceOf(range, TextUtils.TextRange.TextRange, `${prefix}range is not a TextUtils.TextRange.TextRange`);
     assert.strictEqual(range.startLine, range.endLine, `${prefix}the range is not a unit range: start/end lines differ`);
     assert.strictEqual(range.startColumn, range.endColumn, `${prefix}the range is not a unit range: start/end columns differ`);
     assert.strictEqual(range.startLine, line, `${prefix}the line was not set correctly`);

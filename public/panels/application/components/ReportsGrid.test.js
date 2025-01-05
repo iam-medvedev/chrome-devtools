@@ -6,9 +6,8 @@ import { getHeaderCells, getValuesOfAllBodyRows } from '../../../testing/DataGri
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const renderReportsGrid = async (data) => {
     const component = new ApplicationComponents.ReportsGrid.ReportsGrid();
     if (data) {
@@ -16,7 +15,7 @@ const renderReportsGrid = async (data) => {
     }
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
-    await coordinator.done();
+    await RenderCoordinator.done();
     if (!data) {
         return component;
     }

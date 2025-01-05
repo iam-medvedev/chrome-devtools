@@ -75,10 +75,6 @@ styles.replaceSync(
   line-height: 20px;
 }
 
-.network-config-ua span[is="dt-radio"].checked > * {
-  display: none;
-}
-
 .network-config-ua input {
   display: block;
   width: calc(100% - 20px);
@@ -92,10 +88,6 @@ styles.replaceSync(
 .network-config-ua .chrome-select {
   width: calc(100% - 20px);
   max-width: 250px;
-}
-
-.network-config-ua span[is="dt-radio"] {
-  display: block;
 }
 
 .network-config-ua-custom {

@@ -965,6 +965,7 @@ export class LengthRenderer {
         };
         const onDraggingFinished = () => {
             this.#treeElement.parentPane().setEditingStyle(false);
+            void this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), true);
         };
         cssLength.addEventListener('valuechanged', onValueChanged);
         cssLength.addEventListener('draggingfinished', onDraggingFinished);
@@ -1810,7 +1811,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             void this.editingCommitted(text || '', context, '');
         }
         this.originalPropertyText = this.property.propertyText || '';
-        this.parentPaneInternal.setEditingStyle(true, this);
+        this.parentPaneInternal.setEditingStyle(true);
         selectedElement.parentElement?.scrollIntoViewIfNeeded(false);
         this.prompt = new CSSPropertyPrompt(this, context.isEditingName, Array.from(this.#gridNames ?? []));
         this.prompt.setAutocompletionTimeout(0);
@@ -2173,7 +2174,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return this.applyStyleThrottler.schedule(this.innerApplyStyleText.bind(this, styleText, majorChange, property));
     }
     async innerApplyStyleText(styleText, majorChange, property) {
-        // this.property might have been nulled at the end of the last innerApplyStyleText
+        // this.property might have been nulled at the end of the last innerApplyStyleText.
         if (!this.treeOutline || !this.property) {
             return;
         }

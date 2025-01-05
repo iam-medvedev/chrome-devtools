@@ -172,10 +172,7 @@ a img {
 
 .fill {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
 }
 
 iframe.fill {
@@ -228,10 +225,7 @@ iframe.widget {
   position: absolute;
   width: 100%;
   height: 100%;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  inset: 0;
 }
 
 .hidden {
@@ -339,12 +333,87 @@ input::placeholder {
     border-color: var(--sys-color-error);
   }
 
-  &:not(.error-input):not(:invalid):focus {
+  &:not(.error-input, :invalid):focus {
     border-color: var(--sys-color-state-focus-ring);
   }
 
-  &:not(.error-input):not(:invalid):hover:not(:focus) {
+  &:not(.error-input, :invalid):hover:not(:focus) {
     background: var(--sys-color-state-hover-on-subtle);
+  }
+}
+
+/* Radio inputs */
+input[type="radio"] {
+  height: 17px;
+  width: 17px;
+  min-width: 17px;
+  border-radius: 8px;
+  vertical-align: sub;
+  margin: 0 5px 5px 0;
+  accent-color: var(--sys-color-primary-bright);
+  color: var(--sys-color-on-primary);
+
+  &:focus {
+    box-shadow: var(--legacy-focus-ring-active-shadow);
+  }
+}
+
+@media (forced-colors: active) {
+  input[type="radio"] {
+    --gradient-start: ButtonFace;
+    --gradient-end: ButtonFace;
+
+    &:checked {
+      --gradient-start: Highlight;
+      --gradient-end: Highlight;
+    }
+  }
+}
+
+/* Range inputs */
+input[type="range"] {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  height: 10px;
+  width: 88px;
+  outline: none;
+  background: none;
+}
+
+input[type="range"]::-webkit-slider-thumb,
+.-theme-preserve {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 12px;
+  height: 12px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background-color: var(--sys-color-primary);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--sys-color-surface-variant);
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--sys-color-inverse-primary);
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+  background-color: var(--sys-color-state-disabled);
+}
+
+@media (forced-colors: active) {
+  input[type="range"] {
+    forced-color-adjust: none;
   }
 }
 
@@ -482,7 +551,7 @@ input::placeholder {
   white-space: nowrap;
 }
 
-span[is="dt-icon-label"] {
+dt-icon-label {
   flex: none;
 }
 
@@ -499,10 +568,7 @@ span[is="dt-icon-label"] {
   text-align: center;
   padding: 20px;
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   font-size: 13px;
   overflow: auto;
   z-index: 500;
@@ -665,10 +731,7 @@ input.custom-search-input::-webkit-search-cancel-button:hover {
   display: flex;
   overflow: hidden;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 0;
   background-color: var(--sys-color-cdt-base-container);
 }

@@ -8,7 +8,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import permissionsPolicySectionStyles from './permissionsPolicySection.css.js';
@@ -56,7 +56,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/PermissionsPolicySection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export function renderIconLink(iconName, title, clickHandler, jsLogContext) {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
@@ -190,7 +189,7 @@ export class PermissionsPolicySection extends HTMLElement {
     `;
     }
     async #render() {
-        await coordinator.write('PermissionsPolicySection render', () => {
+        await RenderCoordinator.write('PermissionsPolicySection render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(html `

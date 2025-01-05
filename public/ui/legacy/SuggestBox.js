@@ -81,7 +81,7 @@ export class SuggestBox {
         this.glassPane = new GlassPane();
         this.glassPane.setAnchorBehavior("PreferBottom" /* AnchorBehavior.PREFER_BOTTOM */);
         this.glassPane.setOutsideClickCallback(this.hide.bind(this));
-        const shadowRoot = createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: suggestBoxStyles, delegatesFocus: undefined });
+        const shadowRoot = createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: suggestBoxStyles });
         shadowRoot.appendChild(this.element);
     }
     visible() {

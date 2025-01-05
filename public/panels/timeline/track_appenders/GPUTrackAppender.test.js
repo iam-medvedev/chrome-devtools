@@ -36,7 +36,7 @@ describeWithEnvironment('GPUTrackAppender', function () {
             assert.isTrue(allEntriesAreTrackAppender);
         });
         it('creates a flamechart group for the GPU track', () => {
-            assert.strictEqual(flameChartData.groups.length, 1);
+            assert.lengthOf(flameChartData.groups, 1);
             assert.strictEqual(flameChartData.groups[0].name, 'GPU');
         });
         it('adds start times correctly', () => {

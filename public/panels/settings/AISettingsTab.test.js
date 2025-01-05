@@ -35,13 +35,13 @@ describeWithEnvironment('AISettingsTab', () => {
         await view.render();
         assert.isNotNull(view.shadowRoot);
         const switches = Array.from(view.shadowRoot.querySelectorAll('devtools-switch'));
-        assert.strictEqual(switches.length, 2);
+        assert.lengthOf(switches, 2);
         const details = Array.from(view.shadowRoot.querySelectorAll('.whole-row'));
-        assert.strictEqual(details.length, 2);
+        assert.lengthOf(details, 2);
         const dropdownButtons = Array.from(view.shadowRoot.querySelectorAll('.dropdown devtools-button'));
-        assert.strictEqual(dropdownButtons.length, 2);
+        assert.lengthOf(dropdownButtons, 2);
         const toggleContainers = Array.from(view.shadowRoot.querySelectorAll('.toggle-container'));
-        assert.strictEqual(toggleContainers.length, 2);
+        assert.lengthOf(toggleContainers, 2);
         return { switches, details, dropdownButtons, toggleContainers, view };
     }
     it('renders', async () => {

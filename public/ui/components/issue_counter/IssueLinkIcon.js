@@ -5,7 +5,7 @@ import '../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { getIssueKindIconData } from './IssueCounter.js';
@@ -33,7 +33,6 @@ export const extractShortPath = (path) => {
     // if path ends with '/', 2nd regex returns everything between the last two '/'
     return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
 };
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class IssueLinkIcon extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     // The value `null` indicates that the issue is not available,
@@ -120,7 +119,7 @@ export class IssueLinkIcon extends HTMLElement {
         return iconName;
     }
     #render() {
-        return coordinator.write(() => {
+        return RenderCoordinator.write(() => {
             // clang-format off
             LitHtml.render(html `
       <button class=${LitHtml.Directives.classMap({ link: Boolean(this.#issue) })}

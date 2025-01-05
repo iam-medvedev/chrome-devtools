@@ -43,43 +43,43 @@ describeWithMockConnection('CookieReportView', () => {
     });
     it('should contain no rows if no issues were created', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        assert.strictEqual(view.gridData.length, 0);
+        assert.lengthOf(view.gridData, 0);
     });
     it('should have row when there was a preexisting cookie issue', async () => {
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue());
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 1);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 1);
     });
     it('should add row when issue added after view creation', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 0);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 0);
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue());
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 1);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 1);
     });
     it('should ignore non-third-party-cookie related exclusionReason', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue(undefined, "ExcludeSameSiteNoneInsecure" /* Protocol.Audits.CookieExclusionReason.ExcludeSameSiteNoneInsecure */));
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 0);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 0);
         // Make sure ExcludeThirdPartyPhaseout (default) is added.
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue());
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 1);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 1);
         assert.strictEqual(view.gridData[0].data.status, 'Blocked');
     });
     it('should ignore non-third-party-cookie related warningReason', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnSameSiteLaxCrossDowngradeLax" /* Protocol.Audits.CookieWarningReason.WarnSameSiteLaxCrossDowngradeLax */));
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 0);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 0);
         // Make sure warning 3pc warning reasons are added
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */, 'metadata'));
@@ -87,8 +87,8 @@ describeWithMockConnection('CookieReportView', () => {
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */, 'heuristic'));
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */, 'phaseout'));
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 3);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 3);
         assert.strictEqual(view.gridData[0].data.status, 'Allowed By Exception');
         assert.strictEqual(view.gridData[1].data.status, 'Allowed By Exception');
         assert.strictEqual(view.gridData[2].data.status, 'Allowed');
@@ -99,18 +99,18 @@ describeWithMockConnection('CookieReportView', () => {
         globalThis.addIssueForTest(getTestCookieIssue(true));
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue(false));
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 1);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 1);
     });
     it('should have zero entries after the primary page was changed', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
         // @ts-ignore
         globalThis.addIssueForTest(getTestCookieIssue(true));
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 1);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 1);
         navigate(getMainFrame(target));
-        await view.pendingUpdate();
-        assert.strictEqual(view.gridData.length, 0);
+        await view.updateComplete;
+        assert.lengthOf(view.gridData, 0);
     });
 });
 //# sourceMappingURL=CookieReportView.test.js.map

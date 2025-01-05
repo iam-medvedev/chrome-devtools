@@ -61,7 +61,7 @@ describeWithEnvironment('EntriesFilter', function () {
         stack.applyFilterAction({ type: "MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entry: entryTwo });
         assert.isTrue(stack.invisibleEntries().includes(entryTwo), 'entryTwo is invisble');
         // Only one entry - the one for the `basicTwo` function - should have been hidden.
-        assert.strictEqual(stack.invisibleEntries().length, 1);
+        assert.lengthOf(stack.invisibleEntries(), 1);
     });
     it('adds the parent of the merged entry into the expandableEntries array', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
@@ -413,7 +413,7 @@ describeWithEnvironment('EntriesFilter', function () {
         // UNDO_ALL_ACTIONS can be called on any visible entry
         stack.applyFilterAction({ type: "UNDO_ALL_ACTIONS" /* PerfUI.FlameChart.FilterAction.UNDO_ALL_ACTIONS */, entry: basicTwoCallEntry });
         // If the length of invisibleEntries list is 0, all of the entries added earlier were removed and are now visible.
-        assert.strictEqual(stack.invisibleEntries().length, 0);
+        assert.lengthOf(stack.invisibleEntries(), 0);
     });
     it('supports resetting children of the closest expandable parent when a hidden entry is provided', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
@@ -458,11 +458,11 @@ describeWithEnvironment('EntriesFilter', function () {
                 entry.dur === 827;
         });
         // Make sure no entries are hidden
-        assert.strictEqual(stack.invisibleEntries().length, 0);
+        assert.lengthOf(stack.invisibleEntries(), 0);
         // Collapse all children of basicTwo call:
         stack.applyFilterAction({ type: "COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */, entry: basicTwoCallEntry });
         // Make sure all 37 of basicTwo descdendants are hidden
-        assert.strictEqual(stack.invisibleEntries().length, 37);
+        assert.lengthOf(stack.invisibleEntries(), 37);
         // Get the first fibonacci call that is one of the hidden children and make sure it is hidden
         const firstFibCallEntry = findFirstEntry(mainThread.entries, entry => {
             return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
@@ -471,7 +471,7 @@ describeWithEnvironment('EntriesFilter', function () {
         // Reveal the first fibonacci call and make sure that the all of the entries are now visible because the closest
         // expandable parent to the fib call is basicTwo and, therefore, we need to reset its children.
         stack.revealEntry(firstFibCallEntry);
-        assert.strictEqual(stack.invisibleEntries().length, 0);
+        assert.lengthOf(stack.invisibleEntries(), 0);
     });
     it('supports resetting all hidden children of a selected entry', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
@@ -549,7 +549,7 @@ describeWithEnvironment('EntriesFilter', function () {
         });
         assert.isTrue(allFoo2InStackAreVisible, 'Some foo2 calls are invisible');
         // Reset all children after second foo2 call
-        assert.strictEqual(foo2Calls.length, 3);
+        assert.lengthOf(foo2Calls, 3);
         stack.applyFilterAction({ type: "RESET_CHILDREN" /* PerfUI.FlameChart.FilterAction.RESET_CHILDREN */, entry: foo2Calls[1] });
         // All foo and foo2 calls except the second foo cll should now be visible
         allFoo2InStackAreVisible = foo2Calls.every(fooCall => {
@@ -620,11 +620,11 @@ describeWithEnvironment('EntriesFilter', function () {
             return entry.name === 'RunTask' && entry.dur === 978 && entry.ts === 164397762991;
         });
         // Make sure the expandable entries are empty at first
-        assert.strictEqual(stack.expandableEntries().length, 0);
+        assert.lengthOf(stack.expandableEntries(), 0);
         // Hide the anonymous function
         stack.applyFilterAction({ type: "MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entry: anonymousEntryWithInvisibleParent });
         // Make sure Task entry is added to expandable entries
-        assert.strictEqual(stack.expandableEntries().length, 1);
+        assert.lengthOf(stack.expandableEntries(), 1);
         assert.isTrue(stack.expandableEntries().includes(taskEntry));
     });
     it('returns the trace entry tree starting from the root task, highlighting the selected event', async function () {
@@ -659,7 +659,7 @@ describeWithEnvironment('EntriesFilter', function () {
         assert.exists(fooAiNode);
         // Use the toJSON simplification for comparison.
         const simpleFooNode = JSON.parse(JSON.stringify(fooAiNode));
-        assert.strictEqual(simpleFooNode.children.length, 1);
+        assert.lengthOf(simpleFooNode.children, 1);
         // delete for smaller deepStrictEqual comparison
         simpleFooNode.children = [];
         assert.deepEqual(simpleFooNode, {

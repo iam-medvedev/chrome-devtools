@@ -126,8 +126,7 @@ main {
   line-height: 20px;
 
   p {
-    margin-block-start: 1em;
-    margin-block-end: 1em;
+    margin-block: 1em;
   }
 
   ul {
@@ -217,7 +216,7 @@ textarea {
   gap: 5px;
 }
 
-@media (max-width: 500px) {
+@media (width <= 500px) {
   .buttons {
     flex-wrap: wrap;
   }

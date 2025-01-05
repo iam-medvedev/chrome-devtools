@@ -15,7 +15,7 @@ import * as LiveMetrics from '../../../models/live-metrics/live-metrics.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -25,7 +25,6 @@ import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
 const { html, nothing } = LitHtml;
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
 const RTT_MINIMUM = 60;
 const UIStrings = {
@@ -754,7 +753,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (!success) {
             return;
         }
-        await coordinator.write(() => {
+        await RenderCoordinator.write(() => {
             interactionEl.scrollIntoView({
                 block: 'center',
             });
@@ -854,7 +853,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (!success) {
             return;
         }
-        await coordinator.write(() => {
+        await RenderCoordinator.write(() => {
             layoutShiftEls[0].scrollIntoView({
                 block: 'start',
             });

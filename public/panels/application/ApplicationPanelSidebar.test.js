@@ -5,10 +5,9 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
-import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 class SharedStorageTreeElementListener {
     #sidebar;
     #originsAdded = new Array();
@@ -212,7 +211,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
         const components = expectedCall.split('.');
-        assert.strictEqual(components.length, 2);
+        assert.lengthOf(components, 2);
         // @ts-ignore
         const object = sidebar[components[0]];
         assert.exists(object);
@@ -227,7 +226,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
         const expectedCall = await getExpectedCall(expectedCallString);
         const model = target.model(modelClass);
-        await coordinator.done({ waitForWork: true });
+        await RenderCoordinator.done({ waitForWork: true });
         assert.exists(model);
         const data = [{ ...MOCK_EVENT_ITEM, model }];
         model.dispatchEventToListeners(event, ...data);
@@ -259,7 +258,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         sinon.stub(model, getter).returns([MOCK_GETTER_ITEM]);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.strictEqual(expectedCall.called, true);
+        assert.isTrue(expectedCall.called);
     };
     it('adds DOM storage element after scope change', testUiUpdateOnScopeChange(Application.DOMStorageModel.DOMStorageModel, 'storages', 'sessionStorageListTreeElement.appendChild'));
     it('adds shared storage after scope change', testUiUpdateOnScopeChange(Application.SharedStorageModel.SharedStorageModel, 'storages', 'sharedStorageListTreeElement.appendChild'));

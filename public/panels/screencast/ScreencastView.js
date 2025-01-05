@@ -144,8 +144,7 @@ export class ScreencastView extends UI.Widget.VBox {
         this.createNavigationBar();
         this.viewportElement = this.element.createChild('div', 'screencast-viewport hidden');
         this.canvasContainerElement = this.viewportElement.createChild('div', 'screencast-canvas-container');
-        this.glassPaneElement =
-            this.canvasContainerElement.createChild('div', 'screencast-glasspane fill hidden');
+        this.glassPaneElement = this.canvasContainerElement.createChild('div', 'screencast-glasspane fill hidden');
         this.canvasElement = this.canvasContainerElement.createChild('canvas');
         UI.ARIAUtils.setLabel(this.canvasElement, i18nString(UIStrings.screencastViewOfDebugTarget));
         this.canvasElement.tabIndex = 0;
@@ -159,8 +158,7 @@ export class ScreencastView extends UI.Widget.VBox {
         this.canvasElement.addEventListener('keyup', this.handleKeyEvent.bind(this), false);
         this.canvasElement.addEventListener('keypress', this.handleKeyEvent.bind(this), false);
         this.canvasElement.addEventListener('blur', this.handleBlurEvent.bind(this), false);
-        this.titleElement =
-            this.canvasContainerElement.createChild('div', 'screencast-element-title monospace hidden');
+        this.titleElement = this.canvasContainerElement.createChild('div', 'screencast-element-title monospace hidden');
         this.tagNameElement = this.titleElement.createChild('span', 'screencast-tag-name');
         this.attributeElement = this.titleElement.createChild('span', 'screencast-attribute');
         UI.UIUtils.createTextChild(this.titleElement, ' ');

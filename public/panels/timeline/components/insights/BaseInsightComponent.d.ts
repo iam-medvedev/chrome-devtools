@@ -12,7 +12,7 @@ export interface BaseInsightData {
 export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> extends HTMLElement {
     #private;
     abstract internalName: string;
-    static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
+    static readonly litTagName: LitHtml.StaticHtml.StaticValue;
     get model(): T | null;
     protected data: BaseInsightData;
     readonly sharedTableState: TableState;

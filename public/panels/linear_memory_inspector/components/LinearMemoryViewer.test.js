@@ -268,8 +268,8 @@ describe('LinearMemoryViewer', () => {
         const { component } = await setUpComponent();
         const byteCells = getElementsWithinComponent(component, '.byte-cell.highlight-area', HTMLSpanElement);
         const textCells = getElementsWithinComponent(component, '.text-cell.highlight-area', HTMLSpanElement);
-        assert.strictEqual(byteCells.length, 0);
-        assert.strictEqual(textCells.length, 0);
+        assert.lengthOf(byteCells, 0);
+        assert.lengthOf(textCells, 0);
     });
     it('highlights correct number of bytes when highlight info set', async () => {
         const { component, dataWithHighlightInfo } = await setUpComponentWithHighlightInfo();

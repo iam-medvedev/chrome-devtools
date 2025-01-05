@@ -5,15 +5,14 @@ import * as Trace from '../../../models/trace/trace.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
 describeWithEnvironment('SidebarAnnotationsTab', () => {
     const { SidebarAnnotationsTab } = TimelineComponents.SidebarAnnotationsTab;
-    const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
     it('renders annotations tab in the sidebar', async () => {
         const component = new SidebarAnnotationsTab();
         renderElementIntoDOM(component);
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isNotNull(component.shadowRoot);
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
@@ -49,7 +48,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         component.annotations = [entryLabelAnnotation, entryLabelAnnotation2, labelledTimeRangeAnnotation];
         component.annotationEntryToColorMap = colorsMap;
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
         const deleteButton = component.shadowRoot.querySelector('.bin-icon');
@@ -57,9 +56,9 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         // Ensure annotations identifiers and labels are rendered for all 3 annotations -
         // 2 entry labels and 1 labelled time range
         const annotationEntryIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
-        assert.strictEqual(annotationEntryIdentifierElements.length, 3);
+        assert.lengthOf(annotationEntryIdentifierElements, 3);
         const annotationEntryLabelElements = component.shadowRoot.querySelectorAll('.label');
-        assert.strictEqual(annotationEntryIdentifierElements.length, 3);
+        assert.lengthOf(annotationEntryIdentifierElements, 3);
         assert.strictEqual(annotationEntryLabelElements[0].innerText, 'Entry Label 1');
         assert.strictEqual(annotationEntryIdentifierElements[0].style['backgroundColor'], 'rgb(82, 252, 3)');
         assert.strictEqual(annotationEntryLabelElements[1].innerText, 'Entry Label 2');
@@ -77,7 +76,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         };
         component.annotations = [entryLabelAnnotation];
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const deleteButton = component.shadowRoot.querySelector('.delete-button');
         assert.isNotNull(deleteButton);
         assert.strictEqual(deleteButton.getAttribute('aria-label'), 'Delete annotation: A "thread_name" event annotated with the text "Entry Label 1"');
@@ -96,7 +95,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const component = new SidebarAnnotationsTab();
         renderElementIntoDOM(component);
         component.annotations = [annotation];
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isNotNull(component.shadowRoot);
         const label = component.shadowRoot.querySelector('.annotation-identifier');
         assert.strictEqual(label?.innerText, 'private-aggregation-test.js (shared-storage-demo-content-producer.web.app)');
@@ -116,7 +115,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
             label: 'Entry Label 1',
         };
         component.annotations = [entryLabelAnnotation];
-        await coordinator.done();
+        await RenderCoordinator.done();
         assert.isNotNull(component.shadowRoot);
         const deleteButton = component.shadowRoot.querySelector('.delete-button');
         assert.isNotNull(deleteButton);
@@ -142,14 +141,14 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         };
         component.annotations = [entryLabelAnnotation, entryLabelAnnotation2];
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
         // Ensure there are 2 labels and their entry identifiers and labels and rendered
         const annotationIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
-        assert.strictEqual(annotationIdentifierElements.length, 2);
+        assert.lengthOf(annotationIdentifierElements, 2);
         let annotationLabelElements = component.shadowRoot.querySelectorAll('.label');
-        assert.strictEqual(annotationIdentifierElements.length, 2);
+        assert.lengthOf(annotationIdentifierElements, 2);
         assert.strictEqual(annotationLabelElements[0].innerText, 'Entry Label 1');
         assert.strictEqual(annotationLabelElements[1].innerText, 'Entry Label 2');
         // Update the labels and add a range annotation
@@ -165,10 +164,10 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
             label: 'Labelled Time Range',
         };
         component.annotations = [entryLabelAnnotation, entryLabelAnnotation2, labelledTimeRangeAnnotation];
-        await coordinator.done();
+        await RenderCoordinator.done();
         annotationLabelElements = component.shadowRoot.querySelectorAll('.label');
         // Ensure the labels changed to new ones and a labbel range was added
-        assert.strictEqual(annotationLabelElements.length, 3);
+        assert.lengthOf(annotationLabelElements, 3);
         assert.strictEqual(annotationLabelElements[0].innerText, 'New Entry Label 1');
         assert.strictEqual(annotationLabelElements[1].innerText, 'New Entry Label 2');
         assert.strictEqual(annotationLabelElements[2].innerText, 'Labelled Time Range');
@@ -191,12 +190,12 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         };
         component.annotations = [entryLabelAnnotation, entriesLink];
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
         // Ensure there is only one annotation displayed
         const annotationIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
-        assert.strictEqual(annotationIdentifierElements.length, 1);
+        assert.lengthOf(annotationIdentifierElements, 1);
     });
     it('displays multiple not started annotations if they are not different entries', async function () {
         const component = new SidebarAnnotationsTab();
@@ -217,12 +216,12 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         };
         component.annotations = [entryLabelAnnotation, entriesLink];
         assert.isNotNull(component.shadowRoot);
-        await coordinator.done();
+        await RenderCoordinator.done();
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
         // Ensure both annotations are displayed
         const annotationIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
-        assert.strictEqual(annotationIdentifierElements.length, 2);
+        assert.lengthOf(annotationIdentifierElements, 2);
     });
 });
 //# sourceMappingURL=SidebarAnnotationsTab.test.js.map

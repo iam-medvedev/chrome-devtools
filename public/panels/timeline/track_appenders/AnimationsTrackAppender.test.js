@@ -29,7 +29,7 @@ describeWithEnvironment('AnimationsTrackAppender', function () {
     });
     describe('appendTrackAtLevel', function () {
         it('creates a flamechart group for the Animations track', function () {
-            assert.strictEqual(flameChartData.groups.length, 1);
+            assert.lengthOf(flameChartData.groups, 1);
             assert.strictEqual(flameChartData.groups[0].name, 'Animations');
         });
         it('adds start times correctly', function () {
