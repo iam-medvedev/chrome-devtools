@@ -29,6 +29,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -1196,7 +1197,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     createStylesSidebarToolbar() {
         const container = this.contentElement.createChild('div', 'styles-sidebar-pane-toolbar-container');
         const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
-        const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
+        const toolbar = hbox.createChild('devtools-toolbar', 'styles-pane-toolbar');
         const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false);
         filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
@@ -1852,7 +1853,7 @@ let buttonProviderInstance;
 export class ButtonProvider {
     button;
     constructor() {
-        this.button = UI.Toolbar.Toolbar.createActionButtonForId('elements.new-style-rule');
+        this.button = UI.Toolbar.Toolbar.createActionButton('elements.new-style-rule');
         this.button.setLongClickable(true);
         new UI.UIUtils.LongClickController(this.button.element, this.longClicked.bind(this));
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, onNodeChanged.bind(this));

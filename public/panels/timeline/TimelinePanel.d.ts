@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -29,7 +30,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private readonly searchableViewInternal;
     private showSettingsPaneButton;
     private showSettingsPaneSetting;
-    private settingsPane;
+    private settingsPane?;
     private controller;
     private cpuProfiler;
     private clearButton;

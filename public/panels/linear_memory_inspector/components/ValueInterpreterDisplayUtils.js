@@ -77,7 +77,7 @@ export function getPointerAddress(type, buffer, endianness) {
         return type === "Pointer 32-bit" /* ValueType.POINTER32 */ ? dataView.getUint32(0, isLittleEndian) :
             dataView.getBigUint64(0, isLittleEndian);
     }
-    catch (e) {
+    catch {
         return NaN;
     }
 }
@@ -123,7 +123,7 @@ export function format(formatData) {
                 return Platform.assertNever(formatData.type, `Unknown value type: ${formatData.type}`);
         }
     }
-    catch (e) {
+    catch {
         return i18nString(UIStrings.notApplicable);
     }
 }

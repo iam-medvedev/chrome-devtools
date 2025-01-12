@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
@@ -193,8 +194,8 @@ export class IssuesPane extends UI.Widget.VBox {
     #createToolbars() {
         const toolbarContainer = this.contentElement.createChild('div', 'issues-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        new UI.Toolbar.Toolbar('issues-toolbar-left', toolbarContainer);
-        const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', toolbarContainer);
+        toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-left');
+        const rightToolbar = toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-right');
         const groupByCategorySetting = getGroupIssuesByCategorySetting();
         const groupByCategoryCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(groupByCategorySetting, i18nString(UIStrings.groupDisplayedIssuesUnder), i18nString(UIStrings.groupByCategory));
         // Hide the option to toggle category grouping for now.

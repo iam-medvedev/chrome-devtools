@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../core/common/common.js';
+import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
 import { clearMockConnectionResponseHandler, setMockConnectionResponseHandler, } from './MockConnection.js';
+const { urlString } = Platform.DevToolsPath;
 export const LOADER_ID = 'LOADER_ID';
 export const MAIN_FRAME_ID = 'main';
 export const DOMAIN = 'example.com';
 export const SECURITY_ORIGIN = `https://${DOMAIN}`;
-export const FRAME_URL = `${SECURITY_ORIGIN}/`;
+export const FRAME_URL = urlString `${`${SECURITY_ORIGIN}/`}`;
 let childFrameId = 0;
 const FRAME = {
     url: FRAME_URL,

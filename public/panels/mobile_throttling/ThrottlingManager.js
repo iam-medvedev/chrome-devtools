@@ -49,15 +49,6 @@ const UIStrings = {
      */
     cpuThrottling: 'CPU throttling',
     /**
-     *@description Text for no network throttling
-     */
-    noThrottling: 'No throttling',
-    /**
-     *@description Text in Throttling Manager of the Network panel
-     *@example {2} PH1
-     */
-    dSlowdown: '{PH1}× slowdown',
-    /**
      *@description Tooltip text in Throttling Manager of the Performance panel
      */
     excessConcurrency: 'Exceeding the default value may degrade system performance.',
@@ -78,14 +69,14 @@ const UIStrings = {
      * @example {Fast 4G} PH1
      * @example {4x slowdown} PH1
      */
-    recommendedThrottling: '{PH1} - recommended',
+    recommendedThrottling: '{PH1} – recommended',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/mobile_throttling/ThrottlingManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let throttlingManagerInstance;
 export class ThrottlingManager {
     cpuThrottlingControls;
-    cpuThrottlingRates;
+    cpuThrottlingOptions;
     customNetworkConditionsSetting;
     currentNetworkThrottlingConditionsSetting;
     lastNetworkThrottlingConditions;
@@ -98,7 +89,7 @@ export class ThrottlingManager {
         this.cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
         this.cpuThrottlingManager.addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, (event) => this.onCPUThrottlingRateChangedOnSDK(event.data));
         this.cpuThrottlingControls = new Set();
-        this.cpuThrottlingRates = ThrottlingPresets.cpuThrottlingPresets;
+        this.cpuThrottlingOptions = ThrottlingPresets.cpuThrottlingPresets;
         this.customNetworkConditionsSetting =
             Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
         this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferred-network-condition', SDK.NetworkManager.NoThrottlingConditions);
@@ -186,15 +177,15 @@ export class ThrottlingManager {
         }
         UI.InspectorView.InspectorView.instance().setPanelWarnings('timeline', warnings);
     }
-    setCPUThrottlingRate(rate) {
+    setCPUThrottlingOption(option) {
         // This will transitively call onCPUThrottlingRateChangedOnSDK.
-        this.cpuThrottlingManager.setCPUThrottlingRate(rate);
+        this.cpuThrottlingManager.setCPUThrottlingOption(option);
     }
     onCPUThrottlingRateChangedOnSDK(rate) {
         if (rate !== SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuThrottlingEnabled);
         }
-        const index = this.cpuThrottlingRates.indexOf(rate);
+        const index = this.cpuThrottlingOptions.indexOf(this.cpuThrottlingManager.cpuThrottlingOption());
         for (const control of this.cpuThrottlingControls) {
             control.setSelectedIndex(index);
         }
@@ -274,33 +265,30 @@ export class ThrottlingManager {
         };
     }
     createCPUThrottlingSelector() {
-        const control = new UI.Toolbar.ToolbarComboBox(event => this.setCPUThrottlingRate(this.cpuThrottlingRates[event.target.selectedIndex]), i18nString(UIStrings.cpuThrottling), '', 'cpu-throttling');
+        const control = new UI.Toolbar.ToolbarComboBox(event => this.setCPUThrottlingOption(this.cpuThrottlingOptions[event.target.selectedIndex]), i18nString(UIStrings.cpuThrottling), '', 'cpu-throttling');
         this.cpuThrottlingControls.add(control);
-        const currentRate = this.cpuThrottlingManager.cpuThrottlingRate();
-        const titles = [];
+        const currentOption = this.cpuThrottlingManager.cpuThrottlingOption();
         const optionEls = [];
-        const rates = this.cpuThrottlingRates;
-        for (let i = 0; i < this.cpuThrottlingRates.length; ++i) {
-            const rate = this.cpuThrottlingRates[i];
-            const title = rate === 1 ? i18nString(UIStrings.noThrottling) : i18nString(UIStrings.dSlowdown, { PH1: rate });
-            const value = rate === 1 ? 'cpu-no-throttling' : `cpu-throttled-${rate}`;
-            const option = control.createOption(title, value);
-            control.addOption(option);
-            if (currentRate === rate) {
+        const options = this.cpuThrottlingOptions;
+        for (let i = 0; i < this.cpuThrottlingOptions.length; ++i) {
+            const option = this.cpuThrottlingOptions[i];
+            const title = option.title();
+            const value = option.jslogContext;
+            const optionEl = control.createOption(title, value);
+            control.addOption(optionEl);
+            if (currentOption === option) {
                 control.setSelectedIndex(i);
             }
-            titles.push(title);
-            optionEls.push(option);
+            optionEls.push(optionEl);
         }
         return {
             control,
-            updateRecommendedRate(recommendedRate) {
+            updateRecommendedOption(recommendedOption) {
                 for (let i = 0; i < optionEls.length; i++) {
-                    let title = titles[i];
-                    if (rates[i] === recommendedRate) {
-                        title = i18nString(UIStrings.recommendedThrottling, { PH1: title });
-                    }
-                    optionEls[i].text = title;
+                    const option = options[i];
+                    optionEls[i].text = option === recommendedOption ?
+                        i18nString(UIStrings.recommendedThrottling, { PH1: option.title() }) :
+                        option.title();
                 }
             },
         };

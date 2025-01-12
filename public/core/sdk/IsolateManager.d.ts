@@ -25,9 +25,9 @@ export interface Observer {
 export declare const enum Events {
     MEMORY_CHANGED = "MemoryChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.MEMORY_CHANGED]: Isolate;
-};
+}
 export declare const MemoryTrendWindowMs = 120000;
 export declare class Isolate {
     #private;

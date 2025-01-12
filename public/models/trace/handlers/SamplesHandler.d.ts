@@ -11,7 +11,7 @@ export interface SamplesHandlerData {
     profilesInProcess: typeof profilesInProcess;
     entryToNode: typeof entryToNode;
 }
-export type ProfileData = {
+export interface ProfileData {
     profileId: Types.Events.ProfileID;
     rawProfile: CPUProfile.CPUProfileDataModel.ExtendedProfile;
     parsedProfile: CPUProfile.CPUProfileDataModel.CPUProfileDataModel;
@@ -33,7 +33,7 @@ export type ProfileData = {
      * them in pure CPU profiles.
      */
     profileTree?: Helpers.TreeHelpers.TraceEntryTree;
-};
+}
 /**
  * Returns the name of a function for a given synthetic profile call.
  * We first look to find the ProfileNode representing this call, and use its

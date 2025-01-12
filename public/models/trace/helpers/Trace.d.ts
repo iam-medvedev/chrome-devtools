@@ -1,11 +1,11 @@
 import type * as Protocol from '../../../generated/protocol.js';
 import type * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Types from '../types/types.js';
-type MatchingPairableAsyncEvents = {
+interface MatchingPairableAsyncEvents {
     begin: Types.Events.PairableAsyncBegin | null;
     end: Types.Events.PairableAsyncEnd | null;
     instant?: Types.Events.PairableAsyncInstant[];
-};
+}
 /**
  * Extracts the raw stack trace in known trace events. Most likely than
  * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
@@ -22,10 +22,10 @@ export declare function stackTraceInEvent(event: Types.Events.Event): Types.Even
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.Events.Event> = Map<Types.Events.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.Events.Event>(event: T, eventsInProcessThread: Map<Types.Events.ProcessID, EventsInThread<T>>): void;
-export type TimeSpan = {
+export interface TimeSpan {
     ts: Types.Timing.MicroSeconds;
     dur?: Types.Timing.MicroSeconds;
-};
+}
 export declare function eventTimeComparator(a: TimeSpan, b: TimeSpan): -1 | 0 | 1;
 /**
  * Sorts all the events in place, in order, by their start time. If they have

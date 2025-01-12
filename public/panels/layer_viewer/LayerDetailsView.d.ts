@@ -43,8 +43,8 @@ export declare class LayerDetailsView extends LayerDetailsView_base implements L
 export declare const enum Events {
     PAINT_PROFILER_REQUESTED = "PaintProfilerRequested"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.PAINT_PROFILER_REQUESTED]: Selection;
-};
+}
 export declare const slowScrollRectNames: Map<SDK.LayerTreeBase.Layer.ScrollRectType, () => Common.UIString.LocalizedString>;
 export {};

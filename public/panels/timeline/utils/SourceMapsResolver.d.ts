@@ -4,11 +4,11 @@ import type * as Protocol from '../../../generated/protocol.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import type * as EntityMapper from './EntityMapper.js';
-type ResolvedCodeLocationData = {
+interface ResolvedCodeLocationData {
     name: string | null;
     devtoolsLocation: Workspace.UISourceCode.UILocation | null;
     script: SDK.Script.Script | null;
-};
+}
 export declare class SourceMappingsUpdated extends Event {
     static readonly eventName = "sourcemappingsupdated";
     constructor();

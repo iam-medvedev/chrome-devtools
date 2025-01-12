@@ -247,7 +247,7 @@ export class RuntimeModel extends SDKModel {
             try {
                 return JSON.stringify(this, null, indent);
             }
-            catch (error) {
+            catch {
                 return String(this);
             }
         }

@@ -25,8 +25,8 @@ export declare const enum Events {
     RECORDING_UPDATED = "recordingupdated",
     RECORDING_STOPPED = "recordingstopped"
 }
-type EventTypes = {
+interface EventTypes {
     [Events.RECORDING_UPDATED]: UserFlow;
     [Events.RECORDING_STOPPED]: UserFlow;
-};
+}
 export {};

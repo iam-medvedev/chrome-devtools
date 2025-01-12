@@ -282,7 +282,7 @@ describeWithEnvironment('AidaClient', () => {
                     textChunk: { text: 'Chunk2\n' },
                     metadata: {
                         rpcGlobalId: 123,
-                        attributionMetadata: { attributionAction: 'CITE', citations: [{ startIndex: 0, endIndex: 1, url: 'https://example.com' }] },
+                        attributionMetadata: { attributionAction: 'CITE', citations: [{ startIndex: 0, endIndex: 1, uri: 'https://example.com' }] },
                     },
                 },
             ]);
@@ -302,7 +302,7 @@ describeWithEnvironment('AidaClient', () => {
                     rpcGlobalId: 123,
                     attributionMetadata: {
                         attributionAction: Host.AidaClient.RecitationAction.CITE,
-                        citations: [{ startIndex: 0, endIndex: 1, url: 'https://example.com' }],
+                        citations: [{ startIndex: 0, endIndex: 1, uri: 'https://example.com' }],
                     },
                 },
                 completed: false,
@@ -314,7 +314,7 @@ describeWithEnvironment('AidaClient', () => {
                     rpcGlobalId: 123,
                     attributionMetadata: {
                         attributionAction: Host.AidaClient.RecitationAction.CITE,
-                        citations: [{ startIndex: 0, endIndex: 1, url: 'https://example.com' }],
+                        citations: [{ startIndex: 0, endIndex: 1, uri: 'https://example.com' }],
                     },
                 },
                 functionCalls: undefined,

@@ -55,7 +55,7 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
 export declare const enum Events {
     TEXT_CHANGED = "TextChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TEXT_CHANGED]: void;
-};
+}
 export {};

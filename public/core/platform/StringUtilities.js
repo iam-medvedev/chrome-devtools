@@ -276,7 +276,7 @@ export const createSearchRegex = function (query, caseSensitive, isRegex, matchW
         try {
             regexObject = new RegExp(query, regexFlags);
         }
-        catch (e) {
+        catch {
             // Silent catch.
         }
     }

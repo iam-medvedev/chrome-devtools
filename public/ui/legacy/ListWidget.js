@@ -1,16 +1,18 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Toolbar.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as LitHtml from '../lit-html/lit-html.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import listWidgetStyles from './listWidget.css.legacy.js';
-import { Toolbar, ToolbarButton } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { createInput, createTextButton, ElementFocusRestorer } from './UIUtils.js';
 import { VBox } from './Widget.js';
+const { html, render } = LitHtml;
 const UIStrings = {
     /**
      *@description Text on a button to start editing text
@@ -149,15 +151,26 @@ export class ListWidget extends VBox {
         const controls = document.createElement('div');
         controls.classList.add('controls-container');
         controls.classList.add('fill');
-        controls.createChild('div', 'controls-gradient');
-        const buttons = controls.createChild('div', 'controls-buttons');
-        const toolbar = new Toolbar('', buttons);
-        const editButton = new ToolbarButton(i18nString(UIStrings.editString), 'edit', undefined, 'edit-item');
-        editButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, onEditClicked.bind(this));
-        toolbar.appendToolbarItem(editButton);
-        const removeButton = new ToolbarButton(i18nString(UIStrings.removeString), 'bin', undefined, 'remove-item');
-        removeButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, onRemoveClicked.bind(this));
-        toolbar.appendToolbarItem(removeButton);
+        // clang-format off
+        render(html `
+      <div class="controls-gradient"></div>
+      <div class="controls-buttons">
+        <devtools-toolbar>
+          <devtools-button class=toolbar-button
+                           .iconName=${'edit'}
+                           .jslogContext=${'edit-item'}
+                           .title=${i18nString(UIStrings.editString)}
+                           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                           @click=${onEditClicked}></devtools-button>
+          <devtools-button class=toolbar-button
+                           .iconName=${'bin'}
+                           .jslogContext=${'remove-item'}
+                           .title=${i18nString(UIStrings.removeString)}
+                           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                           @click=${onRemoveClicked}></devtools-button>
+        </devtools-toolbar>
+      </div>`, controls, { host: this });
+        // clang-format on
         return controls;
         function onEditClicked() {
             const index = this.elements.indexOf(element);
@@ -316,7 +329,6 @@ export class Editor {
     createSelect(name, options, validator, title) {
         const select = document.createElement('select');
         select.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context(name)}`);
-        select.classList.add('chrome-select');
         for (let index = 0; index < options.length; ++index) {
             const option = select.createChild('option');
             option.value = options[index];

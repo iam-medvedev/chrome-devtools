@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from '../../models/har/har.js';
@@ -18,6 +19,7 @@ import { activate } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NetworkLogView', () => {
     let target;
     let networkLogView;
@@ -82,7 +84,7 @@ describeWithMockConnection('NetworkLogView', () => {
         return { rootNode, filterBar, networkLogView };
     }
     it('generates a valid curl command when some headers don\'t have values', async () => {
-        const request = createNetworkRequest('http://localhost', {
+        const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [
                 { name: 'header-with-value', value: 'some value' },
                 { name: 'no-value-header', value: '' },
@@ -96,7 +98,7 @@ describeWithMockConnection('NetworkLogView', () => {
     // are only added on HTTP/2 and HTTP/3, have a preceeding colon like `:authority` but it still tests
     // the stripping function.
     it('generates a valid curl command while stripping internal headers', async () => {
-        const request = createNetworkRequest('http://localhost', {
+        const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [
                 { name: 'authority', value: 'www.example.com' },
             ],
@@ -106,21 +108,21 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.strictEqual(actual, expected);
     });
     it('generates a valid curl command when header values contain double quotes', async () => {
-        const request = createNetworkRequest('http://localhost', {
+        const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'eva="Sg4="' }],
         });
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'eva=\"Sg4=\"\'');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"eva=^\\^"Sg4=^\\^"^"');
     });
     it('generates a valid curl command when header values contain percentages', async () => {
-        const request = createNetworkRequest('http://localhost', {
+        const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'eva=%22Sg4%3D%22' }],
         });
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'eva=%22Sg4%3D%22\'');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"eva=^%^22Sg4^%^3D^%^22^"');
     });
     it('generates a valid curl command when header values contain newline and ampersand', async () => {
-        const request = createNetworkRequest('http://localhost', {
+        const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'query=evil\n\n & cmd /c calc.exe \n\n' }],
         });
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\n\\n & cmd /c calc.exe \\n\\n\'');
@@ -157,7 +159,7 @@ describeWithMockConnection('NetworkLogView', () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
             const harWriterWrite = sinon.stub(HAR.Writer.Writer, 'write').resolves();
             const URL_HOST = 'example.com';
-            target.setInspectedURL(`http://${URL_HOST}/foo`);
+            target.setInspectedURL(urlString `${`http://${URL_HOST}/foo`}`);
             const fileManager = stubFileManager();
             const FINISHED_REQUEST_1 = createNetworkRequest('http://example.com/', { finished: true });
             const FINISHED_REQUEST_2 = createNetworkRequest('http://example.com/favicon.ico', { finished: true });
@@ -180,8 +182,8 @@ describeWithMockConnection('NetworkLogView', () => {
             }
         });
         it('can import and filter from HAR', async () => {
-            const URL_1 = 'http://example.com/';
-            const URL_2 = 'http://example.com/favicon.ico';
+            const URL_1 = urlString `http://example.com/`;
+            const URL_2 = urlString `http://example.com/favicon.ico`;
             function makeHarEntry(url) {
                 return {
                     request: { method: 'GET', url, headersSize: -1, bodySize: 0 },
@@ -210,7 +212,7 @@ describeWithMockConnection('NetworkLogView', () => {
             assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [URL_2]);
         });
         it('shows summary toolbar with content', () => {
-            target.setInspectedURL('http://example.com/');
+            target.setInspectedURL(urlString `http://example.com/`);
             const request = createNetworkRequest('http://example.com/', { finished: true });
             request.endTime = 0.669414;
             request.setIssueTime(0.435136, 0.435136);
@@ -223,7 +225,7 @@ describeWithMockConnection('NetworkLogView', () => {
             networkLogView.markAsRoot();
             networkLogView.show(document.body);
             const toolbar = networkLogView.summaryToolbar();
-            const textElements = toolbar.element.shadowRoot?.querySelectorAll('.toolbar-text');
+            const textElements = toolbar.querySelectorAll('.toolbar-text');
             assert.exists(textElements);
             const textContents = [...textElements].map(item => item.textContent);
             if (inScope) {
@@ -290,9 +292,9 @@ describeWithMockConnection('NetworkLogView', () => {
         let filterBar;
         ({ rootNode, filterBar, networkLogView } = createEnvironment());
         const hideExtCheckbox = getCheckbox(filterBar, 'Hide \'chrome-extension://\' URLs');
-        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['chrome-extension://url1', 'url2']);
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [urlString `chrome-extension://url1`, urlString `url2`]);
         clickCheckbox(hideExtCheckbox);
-        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['url2']);
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [urlString `url2`]);
     });
     it('can hide Chrome extension requests from dropdown', async () => {
         Root.Runtime.experiments.enableForTest("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */);
@@ -301,7 +303,7 @@ describeWithMockConnection('NetworkLogView', () => {
         let rootNode;
         let filterBar;
         ({ rootNode, filterBar, networkLogView } = createEnvironment());
-        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['chrome-extension://url1', 'url2']);
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [urlString `chrome-extension://url1`, urlString `url2`]);
         const dropdown = await openMoreTypesDropdown(filterBar, networkLogView);
         if (!dropdown) {
             return;
@@ -312,7 +314,7 @@ describeWithMockConnection('NetworkLogView', () => {
         dispatchMouseUpEvent(hideExtensionURL);
         await raf();
         assert.isTrue(hideExtensionURL.hasAttribute('checked'));
-        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['url2']);
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [urlString `url2`]);
         dropdown.discard();
     });
     it('displays correct count for more filters', async () => {
@@ -345,7 +347,7 @@ describeWithMockConnection('NetworkLogView', () => {
         const blockedCookiesCheckbox = getCheckbox(filterBar, 'Show only requests with blocked response cookies');
         clickCheckbox(blockedCookiesCheckbox);
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [
-            'url1',
+            urlString `url1`,
         ]);
     });
     it('can filter requests with blocked response cookies from dropdown', async () => {
@@ -360,7 +362,7 @@ describeWithMockConnection('NetworkLogView', () => {
         let rootNode;
         let filterBar;
         ({ rootNode, filterBar, networkLogView } = createEnvironment());
-        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), ['url1', 'url2']);
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [urlString `url1`, urlString `url2`]);
         const dropdown = await openMoreTypesDropdown(filterBar, networkLogView);
         if (!dropdown) {
             return;
@@ -372,7 +374,7 @@ describeWithMockConnection('NetworkLogView', () => {
         await raf();
         assert.isTrue(blockedResponseCookies.hasAttribute('checked'));
         assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [
-            'url1',
+            urlString `url1`,
         ]);
         dropdown.discard();
     });
@@ -463,10 +465,10 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.strictEqual(networkColumnWidget.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
     });
     function createOverrideRequests() {
-        const urlNotOverridden = 'url-not-overridden';
-        const urlHeaderOverridden = 'url-header-overridden';
-        const urlContentOverridden = 'url-content-overridden';
-        const urlHeaderAndContentOverridden = 'url-header-und-content-overridden';
+        const urlNotOverridden = urlString `url-not-overridden`;
+        const urlHeaderOverridden = urlString `url-header-overridden`;
+        const urlContentOverridden = urlString `url-content-overridden`;
+        const urlHeaderAndContentOverridden = urlString `url-header-und-content-overridden`;
         createNetworkRequest(urlNotOverridden, { target });
         const r2 = createNetworkRequest(urlHeaderOverridden, { target });
         const r3 = createNetworkRequest(urlContentOverridden, { target });

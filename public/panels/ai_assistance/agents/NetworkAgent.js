@@ -336,11 +336,11 @@ export function formatRequestInitiatorChain(request) {
     let initiatorChain = '';
     let lineStart = '- URL: ';
     const initiators = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(request).initiators;
-    for (const initator of Array.from(initiators).reverse()) {
-        initiatorChain = initiatorChain + lineStart + formatInitiatorUrl(initator.url(), allowedOrigin) + '\n';
+    for (const initiator of Array.from(initiators).reverse()) {
+        initiatorChain = initiatorChain + lineStart + formatInitiatorUrl(initiator.url(), allowedOrigin) + '\n';
         lineStart = '\t' + lineStart;
-        if (initator === request) {
-            initiatorChain = formatRequestInitiated(initator, initiatorChain, lineStart, allowedOrigin);
+        if (initiator === request) {
+            initiatorChain = formatRequestInitiated(initiator, initiatorChain, lineStart, allowedOrigin);
             break;
         }
     }

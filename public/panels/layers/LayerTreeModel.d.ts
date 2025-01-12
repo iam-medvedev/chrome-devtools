@@ -22,10 +22,10 @@ export declare enum Events {
     LayerTreeChanged = "LayerTreeChanged",
     LayerPainted = "LayerPainted"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.LayerTreeChanged]: void;
     [Events.LayerPainted]: AgentLayer;
-};
+}
 export declare class AgentLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     private layerTreeModel;
     constructor(layerTreeModel: LayerTreeModel);

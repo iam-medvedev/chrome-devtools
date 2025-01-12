@@ -1113,8 +1113,7 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
     }
     customContent() {
         const showOptionToExposeInternalsInHeapSnapshot = Root.Runtime.experiments.isEnabled('show-option-tp-expose-internals-in-heap-snapshot');
-        const omitParagraphElement = true;
-        const exposeInternalsInHeapSnapshotCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.exposeInternals), this.exposeInternals, omitParagraphElement);
+        const exposeInternalsInHeapSnapshotCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.exposeInternals), this.exposeInternals);
         this.customContentInternal = exposeInternalsInHeapSnapshotCheckbox;
         return showOptionToExposeInternalsInHeapSnapshot ? exposeInternalsInHeapSnapshotCheckbox : null;
     }
@@ -1275,7 +1274,7 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
         void heapProfilerModel.startTrackingHeapObjects(this.recordAllocationStacksSettingInternal.get());
     }
     customContent() {
-        const checkboxSetting = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal, true);
+        const checkboxSetting = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal);
         this.customContentInternal = checkboxSetting;
         return checkboxSetting;
     }

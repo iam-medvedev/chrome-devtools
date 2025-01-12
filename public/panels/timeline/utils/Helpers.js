@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 import '../../../ui/components/markdown_view/markdown_view.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 const { html } = LitHtml;
 export function getThrottlingRecommendations() {
-    const cpuRate = 4; // TODO(crbug.com/311438112): suggest "mid-tier" mobile device when implemented.
+    let cpuOption = SDK.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption;
+    if (cpuOption.rate() === 0) {
+        cpuOption = SDK.CPUThrottlingManager.MidTierThrottlingOption;
+    }
     let networkConditions = null;
     const response = CrUXManager.CrUXManager.instance().getSelectedFieldMetricData('round_trip_time');
     if (response?.percentiles) {
@@ -17,7 +21,7 @@ export function getThrottlingRecommendations() {
         networkConditions = MobileThrottling.ThrottlingPresets.ThrottlingPresets.getRecommendedNetworkPreset(rtt);
     }
     return {
-        cpuRate,
+        cpuOption,
         networkConditions,
     };
 }

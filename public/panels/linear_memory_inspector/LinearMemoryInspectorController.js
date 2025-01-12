@@ -279,7 +279,7 @@ export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelO
                 type: LinearMemoryInspectorController.extractObjectTypeDescription(obj),
             };
         }
-        catch (err) {
+        catch {
             highlightInfo = undefined;
         }
         return highlightInfo;

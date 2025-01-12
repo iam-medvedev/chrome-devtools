@@ -78,11 +78,11 @@ export declare const enum Events {
     REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED = "RequestsForHeaderOverridesFileChanged",
     LOCAL_OVERRIDES_PROJECT_UPDATED = "LocalOverridesProjectUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.PROJECT_CHANGED]: Workspace.Workspace.Project | null;
     [Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED]: Workspace.UISourceCode.UISourceCode;
     [Events.LOCAL_OVERRIDES_PROJECT_UPDATED]: boolean;
-};
+}
 export interface HeaderOverride {
     applyTo: string;
     headers: Protocol.Fetch.HeaderEntry[];

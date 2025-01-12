@@ -1,7 +1,7 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable quotes, quote-props */
+/* eslint-disable @stylistic/quotes, @stylistic/quote-props */
 export const generatedProperties = [
     {
         "inherited": true,
@@ -2777,6 +2777,13 @@ export const generatedProperties = [
             "reverse"
         ],
         "name": "masonry-fill"
+    },
+    {
+        "longhands": [
+            "masonry-direction",
+            "masonry-fill"
+        ],
+        "name": "masonry-flow"
     },
     {
         "keywords": [

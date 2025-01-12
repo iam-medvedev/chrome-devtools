@@ -115,7 +115,7 @@ class RegisteredExtension {
             try {
                 parsedURL = new URL(inspectedURL);
             }
-            catch (exception) {
+            catch {
                 return false;
             }
             return parsedURL.protocol !== 'file:';
@@ -1181,7 +1181,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         try {
             parsedURL = new URL(url);
         }
-        catch (exception) {
+        catch {
             return false;
         }
         if (!kPermittedSchemes.includes(parsedURL.protocol)) {

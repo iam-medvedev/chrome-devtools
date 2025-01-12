@@ -112,7 +112,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
         const titleText = this.requestCookiesTitle.createChild('span', 'request-cookies-title');
         titleText.textContent = i18nString(UIStrings.requestCookies);
         UI.Tooltip.Tooltip.install(titleText, i18nString(UIStrings.cookiesThatWereSentToTheServerIn));
-        const requestCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showFilteredOutRequestCookies), this.showFilteredOutCookiesSetting, true);
+        const requestCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showFilteredOutRequestCookies), this.showFilteredOutCookiesSetting);
         requestCookiesCheckbox.checkboxElement.addEventListener('change', () => {
             this.refreshRequestCookiesView();
         });

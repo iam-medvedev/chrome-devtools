@@ -1,6 +1,7 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -32,11 +33,11 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         // Creates the toolbar.
         const toolbarContainer = this.contentElement.createChild('div', 'web-audio-toolbar-container vbox');
         this.contextSelector = new AudioContextSelector();
-        const toolbar = new UI.Toolbar.Toolbar('web-audio-toolbar', toolbarContainer);
-        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
+        const toolbar = toolbarContainer.createChild('devtools-toolbar', 'web-audio-toolbar');
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('components.collect-garbage'));
         toolbar.appendSeparator();
         toolbar.appendToolbarItem(this.contextSelector.toolbarItem());
-        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         // Create content container
         this.contentContainer = this.contentElement.createChild('div', 'web-audio-content-container vbox flex-auto');
         // Creates the detail view.

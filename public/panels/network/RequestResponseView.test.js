@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { raf } from '../../testing/DOMHelpers.js';
@@ -8,9 +9,10 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('RequestResponseView', () => {
     it('does show WASM disassembly for WASM module requests', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'http://devtools-frontend.test/module.wasm', '', null, null, null);
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test/module.wasm`, urlString ``, null, null, null);
         request.setContentDataProvider(() => Promise.resolve(new TextUtils.ContentData.ContentData('AGFzbQEAAAABBQFgAAF/AwIBAAcHAQNiYXIAAAoGAQQAQQILACQEbmFtZQAQD3Nob3ctd2FzbS0yLndhdAEGAQADYmFyAgMBAAA=', true, 'application/wasm')));
         request.mimeType = 'application/wasm';
         request.finished = true;
@@ -27,7 +29,7 @@ describeWithEnvironment('RequestResponseView', () => {
         component.detach();
     });
     it('shows the BinaryResourceView for binary content', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'http://devtools-frontend.test/image.png', '', null, null, null);
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test/image.png`, urlString ``, null, null, null);
         request.setContentDataProvider(() => Promise.resolve(new TextUtils.ContentData.ContentData('AGFzbQEAAAABBQFgAAF/AwIBAAcHAQNiYXIAAAoGAQQAQQILACQEbmFtZQAQD3Nob3ctd2FzbS0yLndhdAEGAQADYmFyAgMBAAA=', true, 'application/octet-stream')));
         request.mimeType = 'application/octet-stream';
         request.finished = true;

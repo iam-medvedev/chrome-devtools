@@ -44,7 +44,7 @@ function selectVisibleLog(view, logId) {
 }
 function getClearLogButton(view) {
     return view.shadowRoot.querySelector('devtools-live-metrics-logs').shadowRoot.querySelector('.tabbed-pane')
-        .shadowRoot.querySelector('.toolbar').shadowRoot.querySelector('devtools-button');
+        .shadowRoot.querySelector('devtools-toolbar devtools-button');
 }
 function selectDeviceOption(view, deviceOption) {
     const deviceScopeSelector = view.shadowRoot.querySelector('devtools-select-menu#device-scope-select');

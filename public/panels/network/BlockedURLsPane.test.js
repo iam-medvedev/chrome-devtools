@@ -1,11 +1,13 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Network from './network.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('BlockedURLsPane', () => {
     beforeEach(() => {
         registerNoopActions([
@@ -23,7 +25,7 @@ describeWithMockConnection('BlockedURLsPane', () => {
             const updateStub = sinon.stub(blockedURLsPane, 'update');
             const request = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest, {
                 wasBlocked: true,
-                url: 'http://example.com',
+                url: urlString `http://example.com`,
             });
             networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
             assert.strictEqual(updateStub.calledOnce, inScope);

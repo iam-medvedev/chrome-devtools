@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -11,6 +12,7 @@ import { createTarget, describeWithLocale } from '../../testing/EnvironmentHelpe
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createContentProviderUISourceCode, createFakeScriptMapping, } from '../../testing/UISourceCodeHelpers.js';
 import * as Explain from './explain.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithLocale('PromptBuilder', () => {
     describe('allowHeader', () => {
         it('disallows cookie headers', () => {
@@ -33,7 +35,7 @@ describeWithLocale('PromptBuilder', () => {
     });
     const NETWORK_REQUEST = {
         url() {
-            return 'https://example.com';
+            return urlString `https://example.com`;
         },
         requestHeaders() {
             return [{
@@ -184,7 +186,7 @@ export const y = "";
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             const SCRIPT_ID = '1';
             const LINE_NUMBER = 42;
-            const URL = 'http://example.com/script.js';
+            const URL = urlString `http://example.com/script.js`;
             const stackTrace = createStackTrace([
                 `${SCRIPT_ID}::userNestedFunction::${URL}::${LINE_NUMBER}::15`,
                 `${SCRIPT_ID}::userFunction::http://example.com/script.js::10::2`,
@@ -222,7 +224,7 @@ export const y = "";
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             const SCRIPT_ID = '1';
             const LINE_NUMBER = 42;
-            const URL = 'http://example.com/script.js';
+            const URL = urlString `http://example.com/script.js`;
             const stackTrace = createStackTrace([
                 `${SCRIPT_ID}::userNestedFunction::${URL}::${LINE_NUMBER}::15`,
                 `${SCRIPT_ID}::userFunction::http://example.com/script.js::10::2`,
@@ -274,7 +276,7 @@ export const y = "";
             };
             const NETWORK_REQUEST = {
                 url() {
-                    return 'https://example.com';
+                    return urlString `https://example.com`;
                 },
                 requestHeaders() {
                     return Array(100).fill({
@@ -338,7 +340,7 @@ export const y = "";
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             const SCRIPT_ID = '1';
             const LINE_NUMBER = 0;
-            const URL = `http://example.com/${'a'.repeat(100)}.js`;
+            const URL = urlString `${`http://example.com/${'a'.repeat(100)}.js`}`;
             const STACK_FRAME = `${SCRIPT_ID}::userNestedFunction::${URL}::${LINE_NUMBER}::15`;
             const stackTrace = createStackTrace(Array(80).fill(STACK_FRAME));
             const STACK_TRACE = 'userNestedFunction @ \n'.repeat(45).trim();

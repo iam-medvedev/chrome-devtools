@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
@@ -11,6 +12,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Persistence from './persistence.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithLocale('ContextMenuProvider', () => {
     beforeEach(() => {
         // Rather then setting up a whole Workspace/BreakpointManager/TargetManager/... chain. Let's stub out the NetworkPersistenceManager.
@@ -26,7 +28,7 @@ describeWithLocale('ContextMenuProvider', () => {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         const menuProvider = new Persistence.PersistenceActions.ContextMenuProvider();
         const contentProvider = {
-            contentURL: () => 'https://example.com/sample.webp',
+            contentURL: () => urlString `https://example.com/sample.webp`,
             contentType: () => Common.ResourceType.resourceTypes
                 .Document, // Navigating a tab to an image will result in a document type for images.
             requestContent: () => Promise.resolve({ isEncoded: true, content: 'AGFzbQEAAAA=' }),
@@ -40,8 +42,7 @@ describeWithLocale('ContextMenuProvider', () => {
         const saveStub = sinon.stub(Workspace.FileManager.FileManager.instance(), 'save');
         contextMenu.invokeHandler(saveItem.id());
         assert.deepEqual(await expectCall(saveStub), [
-            'https://example.com/sample.webp', 'AGFzbQEAAAA=', true /* forceSaveAs */,
-            true, /* isBase64 */
+            urlString `https://example.com/sample.webp`, 'AGFzbQEAAAA=', true /* forceSaveAs */, true, /* isBase64 */
         ]);
     });
     it('can "Save as" WASM modules', async () => {
@@ -50,7 +51,7 @@ describeWithLocale('ContextMenuProvider', () => {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         const menuProvider = new Persistence.PersistenceActions.ContextMenuProvider();
         const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode, {
-            contentURL: 'https://example.com/sample.wasm',
+            contentURL: urlString `https://example.com/sample.wasm`,
             contentType: Common.ResourceType.resourceTypes.Script,
         });
         const stubProject = sinon.createStubInstance(Bindings.ContentProviderBasedProject.ContentProviderBasedProject, { type: Workspace.Workspace.projectTypes.Debugger });
@@ -65,8 +66,7 @@ describeWithLocale('ContextMenuProvider', () => {
         const saveStub = sinon.stub(Workspace.FileManager.FileManager.instance(), 'save');
         contextMenu.invokeHandler(saveItem.id());
         assert.deepEqual(await expectCall(saveStub), [
-            'https://example.com/sample.wasm', 'AQIDBA==', true /* forceSaveAs */,
-            true, /* isBase64 */
+            urlString `https://example.com/sample.wasm`, 'AQIDBA==', true /* forceSaveAs */, true, /* isBase64 */
         ]);
     });
 });

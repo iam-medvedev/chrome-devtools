@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Trace from '../../../models/trace/trace.js';
@@ -11,6 +12,7 @@ import { makeMockSamplesHandlerData, makeProfileCall, } from '../../../testing/T
 import { // eslint-disable-line rulesdir/es-modules-import
 loadCodeLocationResolvingScenario, } from './SourceMapsResolver.test.js';
 import * as Utils from './utils.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('isIgnoreListedEntry', () => {
     it('uses url mappings to determine if an url is ignore listed', async () => {
         const { authoredScriptURL, genScriptURL, scriptId } = await loadCodeLocationResolvingScenario();
@@ -29,7 +31,7 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
             workerIdByThread: new Map(),
             workerURLById: new Map(),
         };
-        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(authoredScriptURL);
+        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(urlString `${authoredScriptURL}`);
         const traceWithMappings = {
             Samples: makeMockSamplesHandlerData([profileCallWithMappings]),
             Workers: workersData,
@@ -117,7 +119,7 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
             debuggerWorkspaceBinding,
         });
         ignoreRegex('youtube*');
-        const url = 'https://www.youtube.com/s/desktop/2ebf714b/jsbin/desktop_polymer.vflset/desktop_polymer.js';
+        const url = urlString `https://www.youtube.com/s/desktop/2ebf714b/jsbin/desktop_polymer.vflset/desktop_polymer.js`;
         Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
         const entry = makeProfileCall('function name', 10, 100, Trace.Types.Events.ProcessID(1), Trace.Types.Events.ThreadID(1), /* nodeId= */ 1, url);
         // There are two matched rules (in order)

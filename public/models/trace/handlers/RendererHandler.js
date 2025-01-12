@@ -167,7 +167,7 @@ export function assignOrigin(processes, rendererProcessesByFrame) {
                         new URL(processInfo.frame.url);
                         process.url = processInfo.frame.url;
                     }
-                    catch (e) {
+                    catch {
                         process.url = null;
                     }
                 }

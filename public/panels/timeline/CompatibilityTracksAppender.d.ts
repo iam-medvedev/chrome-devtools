@@ -8,13 +8,13 @@ import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
-export type PopoverInfo = {
+export interface PopoverInfo {
     title: string;
     formattedTime: string;
     url: string | null;
     warningElements: HTMLSpanElement[];
     additionalElements: HTMLElement[];
-};
+}
 export declare function entryIsVisibleInTimeline(entry: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
 /**
  * Track appenders add the data of each track into the timeline flame

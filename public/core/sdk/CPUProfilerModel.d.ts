@@ -28,10 +28,10 @@ export declare const enum Events {
     CONSOLE_PROFILE_STARTED = "ConsoleProfileStarted",
     CONSOLE_PROFILE_FINISHED = "ConsoleProfileFinished"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CONSOLE_PROFILE_STARTED]: EventData;
     [Events.CONSOLE_PROFILE_FINISHED]: ProfileFinishedData;
-};
+}
 export interface EventData {
     id: string;
     scriptLocation: Location;

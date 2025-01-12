@@ -12,10 +12,10 @@ export declare const enum Events {
     EDITOR_UPDATE = "EditorUpdate",
     EDITOR_SCROLL = "EditorScroll"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.EDITOR_UPDATE]: CodeMirror.ViewUpdate;
     [Events.EDITOR_SCROLL]: void;
-};
+}
 type FormatFn = (lineNo: number, state: CodeMirror.EditorState) => string;
 export declare const LINE_NUMBER_FORMATTER: CodeMirror.Facet<FormatFn, FormatFn>;
 declare const SourceFrameImpl_base: (new (...args: any[]) => {

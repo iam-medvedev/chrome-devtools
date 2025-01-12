@@ -109,15 +109,15 @@ export declare abstract class ConversationContext<T> {
     isOriginAllowed(agentOrigin: string | undefined): boolean;
     /**
      * This method is called at the start of `AiAgent.run`.
-     * It will be overriden in subclasses to fetch data related to the context item.
+     * It will be overridden in subclasses to fetch data related to the context item.
      */
     refresh(): Promise<void>;
 }
-export type FunctionDeclaration<Args, ReturnType> = {
+export interface FunctionDeclaration<Args, ReturnType> {
     description: string;
     parameters: Host.AidaClient.FunctionObjectParam;
     handler: (args: Args) => Promise<ReturnType>;
-};
+}
 export declare abstract class AiAgent<T> {
     #private;
     static validTemperature(temperature: number | undefined): number | undefined;

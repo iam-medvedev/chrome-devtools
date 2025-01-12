@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -64,7 +65,6 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private requestResolver;
     private issueResolver;
     constructor(viewportThrottlerTimeout: number);
-    static appendSettingsCheckboxToToolbar(toolbar: UI.Toolbar.Toolbar, settingOrSetingName: Common.Settings.Setting<boolean> | string, title: Common.UIString.LocalizedString, alternateTitle?: Common.UIString.LocalizedString): UI.Toolbar.ToolbarSettingCheckbox;
     static instance(opts?: {
         forceNew: boolean;
         viewportThrottlerTimeout?: number;

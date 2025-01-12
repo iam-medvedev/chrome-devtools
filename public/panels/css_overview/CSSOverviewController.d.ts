@@ -44,7 +44,7 @@ export declare const enum Events {
     OVERVIEW_COMPLETED = "OverviewCompleted",
     RESET = "Reset"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.REQUEST_OVERVIEW_START]: void;
     [Events.REQUEST_NODE_HIGHLIGHT]: number;
     [Events.POPULATE_NODES]: {
@@ -53,4 +53,4 @@ export type EventTypes = {
     [Events.REQUEST_OVERVIEW_CANCEL]: void;
     [Events.OVERVIEW_COMPLETED]: void;
     [Events.RESET]: void;
-};
+}

@@ -5,7 +5,9 @@ import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { FRAME_URL, getInitializedResourceTreeModel, getMainFrame, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('ConsoleMessage', () => {
     const scriptId1 = '1';
     const scriptId2 = '2';
@@ -31,9 +33,9 @@ describeWithMockConnection('ConsoleMessage', () => {
     });
     it('compares using url', () => {
         const a = newMessage({});
-        const b = newMessage({ url: 'http://a.b/c' });
-        const c = newMessage({ url: 'http://a.b/c' });
-        const d = newMessage({ url: 'http://a.b/d' });
+        const b = newMessage({ url: urlString `http://a.b/c` });
+        const c = newMessage({ url: urlString `http://a.b/c` });
+        const d = newMessage({ url: urlString `http://a.b/d` });
         assert.isFalse(a.isEqual(b));
         assert.isTrue(b.isEqual(c));
         assert.isFalse(c.isEqual(d));

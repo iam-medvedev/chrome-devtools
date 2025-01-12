@@ -1,6 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -202,9 +203,9 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.populateColumns(columns);
         this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'timeline-tree-view-details-split-widget');
         const mainView = new UI.Widget.VBox();
-        const toolbar = new UI.Toolbar.Toolbar('', mainView.element);
-        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        toolbar.makeWrappable(true);
+        const toolbar = mainView.element.createChild('devtools-toolbar');
+        toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        toolbar.wrappable = true;
         this.populateToolbar(toolbar);
         this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
             displayName: i18nString(UIStrings.performance),

@@ -48,10 +48,10 @@ export declare enum Events {
     BindingCreated = "BindingCreated",
     BindingRemoved = "BindingRemoved"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BindingCreated]: PersistenceBinding;
     [Events.BindingRemoved]: PersistenceBinding;
-};
+}
 export declare class PersistenceBinding {
     network: Workspace.UISourceCode.UISourceCode;
     fileSystem: Workspace.UISourceCode.UISourceCode;

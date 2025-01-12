@@ -31,6 +31,7 @@ export declare class NetworkManager extends SDKModel<EventTypes> {
     requestForId(id: string): NetworkRequest | null;
     requestForLoaderId(loaderId: Protocol.Network.LoaderId): NetworkRequest | null;
     private cacheDisabledSettingChanged;
+    private cookieControlFlagsSettingChanged;
     dispose(): void;
     private bypassServiceWorkerChanged;
     getSecurityIsolationStatus(frameId: Protocol.Page.FrameId | null): Promise<Protocol.Network.SecurityIsolationStatus | null>;
@@ -64,7 +65,7 @@ export interface MessageGeneratedEvent {
     requestId: string;
     warning: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.RequestStarted]: RequestStartedEvent;
     [Events.RequestUpdated]: NetworkRequest;
     [Events.RequestFinished]: NetworkRequest;
@@ -76,7 +77,7 @@ export type EventTypes = {
     [Events.ReportingApiReportAdded]: Protocol.Network.ReportingApiReport;
     [Events.ReportingApiReportUpdated]: Protocol.Network.ReportingApiReport;
     [Events.ReportingApiEndpointsChangedForOrigin]: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent;
-};
+}
 /**
  * Define some built-in DevTools throttling presets.
  * Note that for the download, upload and RTT values we multiply them by adjustment factors to make DevTools' emulation more accurate.
@@ -206,7 +207,7 @@ export declare namespace MultitargetNetworkManager {
         REQUEST_INTERCEPTED = "RequestIntercepted",
         REQUEST_FULFILLED = "RequestFulfilled"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.BLOCKED_PATTERNS_CHANGED]: void;
         [Events.CONDITIONS_CHANGED]: void;
         [Events.USER_AGENT_CHANGED]: void;
@@ -214,7 +215,7 @@ export declare namespace MultitargetNetworkManager {
         [Events.ACCEPTED_ENCODINGS_CHANGED]: void;
         [Events.REQUEST_INTERCEPTED]: string;
         [Events.REQUEST_FULFILLED]: Platform.DevToolsPath.UrlString;
-    };
+    }
 }
 export declare class InterceptedRequest {
     #private;

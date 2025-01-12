@@ -41,10 +41,10 @@ export declare enum Events {
     ExcludedFolderAdded = "ExcludedFolderAdded",
     ExcludedFolderRemoved = "ExcludedFolderRemoved"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FileSystemAdded]: PlatformFileSystem;
     [Events.FileSystemRemoved]: PlatformFileSystem;
     [Events.FileSystemFilesChanged]: FilesChangedData;
     [Events.ExcludedFolderAdded]: Platform.DevToolsPath.EncodedPathString;
     [Events.ExcludedFolderRemoved]: Platform.DevToolsPath.EncodedPathString;
-};
+}

@@ -139,7 +139,7 @@ export interface KeyDownEvent {
     veid?: number;
     context?: number;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.AppendedToURL]: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
     [Events.CanceledSaveURL]: Platform.DevToolsPath.UrlString;
     [Events.ColorThemeChanged]: void;
@@ -168,7 +168,7 @@ export type EventTypes = {
     [Events.SetInspectedTabId]: string;
     [Events.SetUseSoftMenu]: boolean;
     [Events.ShowPanel]: string;
-};
+}
 export interface InspectorFrontendHostAPI {
     addFileSystem(type?: string): void;
     loadCompleted(): void;

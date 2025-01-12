@@ -1,6 +1,7 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -9,7 +10,7 @@ import * as IconButton from '../components/icon_button/icon_button.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Events as TabbedPaneEvents, TabbedPane } from './TabbedPane.js';
-import { Toolbar, ToolbarMenuButton } from './Toolbar.js';
+import { ToolbarMenuButton } from './Toolbar.js';
 import { createTextChild } from './UIUtils.js';
 import viewContainersStyles from './viewContainers.css.legacy.js';
 import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
@@ -162,11 +163,11 @@ export class ViewManager {
         if (!toolbarItems.length) {
             return null;
         }
-        const toolbar = new Toolbar('');
+        const toolbar = document.createElement('devtools-toolbar');
         for (const item of toolbarItems) {
             toolbar.appendToolbarItem(item);
         }
-        return toolbar.element;
+        return toolbar;
     }
     locationNameForViewId(viewId) {
         const locationName = this.locationNameByViewId.get(viewId);

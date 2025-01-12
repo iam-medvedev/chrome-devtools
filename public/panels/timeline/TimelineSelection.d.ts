@@ -1,10 +1,10 @@
 import * as Trace from '../../models/trace/trace.js';
-export type EventSelection = {
+export interface EventSelection {
     event: Trace.Types.Events.Event;
-};
-export type TimeRangeSelection = {
+}
+export interface TimeRangeSelection {
     bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
-};
+}
 export type TimelineSelection = EventSelection | TimeRangeSelection;
 export declare function selectionFromEvent(event: Trace.Types.Events.Event): EventSelection;
 export declare function selectionFromRangeMicroSeconds(min: Trace.Types.Timing.MicroSeconds, max: Trace.Types.Timing.MicroSeconds): TimeRangeSelection;

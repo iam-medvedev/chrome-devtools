@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
@@ -17,6 +18,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from './timeline.js';
 import * as Utils from './utils/utils.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('TimelineUIUtils', function () {
     let target;
     // Trace events contain script ids as strings. However, the linkifier
@@ -75,7 +77,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     },
                 },
             };
-            target.setInspectedURL('https://not-google.com');
+            target.setInspectedURL(urlString `https://not-google.com`);
             const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(fakeFunctionCall, target, new Components.Linkifier.Linkifier(), false, parsedTrace);
             if (!node) {
                 throw new Error('Node was unexpectedly null');
@@ -104,7 +106,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     },
                 },
             };
-            target.setInspectedURL('https://google.com');
+            target.setInspectedURL(urlString `https://google.com`);
             const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(fakeFunctionCall, target, new Components.Linkifier.Linkifier(), false, parsedTrace);
             if (!node) {
                 throw new Error('Node was unexpectedly null');
@@ -126,9 +128,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 mappings: 'AAAA,SAASA,EAAWC,EAAMC,GACxBC,QAAQC,IAAIH,EAAMC',
             });
             setupPageResourceLoaderForSourceMap(sourceMapContent);
-            target.setInspectedURL('https://google.com');
-            const scriptUrl = 'https://google.com/script.js';
-            const sourceMapUrl = 'script.js.map';
+            target.setInspectedURL(urlString `https://google.com`);
+            const scriptUrl = urlString `https://google.com/script.js`;
+            const sourceMapUrl = urlString `script.js.map`;
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             assert.isNotNull(debuggerModel);
             if (debuggerModel === null) {
@@ -1143,7 +1145,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
     describe('isMarkerEvent', () => {
         it('is true for a timestamp event', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const timestamp = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isTimeStamp);
+            const timestamp = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isConsoleTimeStamp);
             assert.isOk(timestamp);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, timestamp));
         });

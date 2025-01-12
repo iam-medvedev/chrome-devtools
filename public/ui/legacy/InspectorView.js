@@ -190,7 +190,7 @@ export class InspectorView extends VBox {
         // to prevent to prevent a shift in the tab layout. Note that when DevTools cannot be docked,
         // the Device mode button is not added and so the allocated space is smaller.
         const allocatedSpace = Root.Runtime.conditions.canDock() ? '69px' : '41px';
-        this.tabbedPane.leftToolbar().element.style.minWidth = allocatedSpace;
+        this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
         this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPaneStyles);
         this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'main'), this);
         const selectedTab = this.tabbedPane.selectedTabId;
@@ -418,9 +418,7 @@ export class InspectorView extends VBox {
                     highlight: true,
                     delegate: () => {
                         reloadDebuggedTab();
-                        if (this.reloadRequiredInfobar) {
-                            this.reloadRequiredInfobar.dispose();
-                        }
+                        this.removeDebuggedTabReloadRequiredWarning();
                     },
                     dismiss: false,
                     buttonVariant: "primary" /* Buttons.Button.Variant.PRIMARY */,
@@ -434,6 +432,11 @@ export class InspectorView extends VBox {
             infobar.setCloseCallback(() => {
                 delete this.reloadRequiredInfobar;
             });
+        }
+    }
+    removeDebuggedTabReloadRequiredWarning() {
+        if (this.reloadRequiredInfobar) {
+            this.reloadRequiredInfobar.dispose();
         }
     }
     displayReloadRequiredWarning(message) {

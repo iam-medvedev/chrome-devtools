@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -8,6 +9,7 @@ import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
+const { urlString } = Platform.DevToolsPath;
 // Same as in IgnoreListManager.ts.
 const UIStrings = {
     removeFromIgnoreList: 'Remove from ignore list',
@@ -17,12 +19,12 @@ const UIStrings = {
     addAllThirdPartyScriptsToIgnoreList: 'Add all third-party scripts to ignore list',
     addAllAnonymousScriptsToIgnoreList: 'Add all anonymous scripts to ignore list',
 };
-const sourceMapThirdPartyFolderUrl = 'http://a.b.c/lib';
-const sourceMapThirdPartyUrl = 'http://a.b.c/lib/source1.ts';
-const sourceMapNodeModulesUrl = 'http://a.b.c/node_modules/library/source3.ts';
-const sourceMapFolderUrl = 'http://a.b.c/myapp';
-const sourceMapFile1Url = 'http://a.b.c/myapp/file1.ts';
-const sourceMapFile2Url = 'http://a.b.c/myapp/file2.ts';
+const sourceMapThirdPartyFolderUrl = urlString `http://a.b.c/lib`;
+const sourceMapThirdPartyUrl = urlString `http://a.b.c/lib/source1.ts`;
+const sourceMapNodeModulesUrl = urlString `http://a.b.c/node_modules/library/source3.ts`;
+const sourceMapFolderUrl = urlString `http://a.b.c/myapp`;
+const sourceMapFile1Url = urlString `http://a.b.c/myapp/file1.ts`;
+const sourceMapFile2Url = urlString `http://a.b.c/myapp/file2.ts`;
 const sourceMap = {
     version: 3,
     file: './foo.js',
@@ -67,13 +69,13 @@ describeWithMockConnection('IgnoreListManager', () => {
     //  </body>
     //  </html>
     //
-    const url = 'http://example.com/index.html';
-    const webpackUrl = 'webpack:///src/subfolder/foo.js';
-    const webpackFolderUrl = 'webpack:///src';
-    const webpackSubfolderUrl = 'webpack:///src/subfolder';
-    const contentScriptFolderUrl = 'chrome-extension://abc';
-    const contentScriptUrl = 'chrome-extension://abc/content.js';
-    const emptyUrl = '';
+    const url = urlString `http://example.com/index.html`;
+    const webpackUrl = urlString `webpack:///src/subfolder/foo.js`;
+    const webpackFolderUrl = urlString `webpack:///src`;
+    const webpackSubfolderUrl = urlString `webpack:///src/subfolder`;
+    const contentScriptFolderUrl = urlString `chrome-extension://abc`;
+    const contentScriptUrl = urlString `chrome-extension://abc/content.js`;
+    const emptyUrl = urlString ``;
     const SCRIPTS = [
         {
             scriptId: '1',
@@ -416,7 +418,7 @@ describeWithMockConnection('IgnoreListManager', () => {
     describe('isUserOrSourceMapIgnoreListedUISourceCode', () => {
         it('ignores UISourceCodes that are marked', () => {
             const { uiSourceCode } = createContentProviderUISourceCode({
-                url: 'debugger://foo',
+                url: urlString `debugger://foo`,
                 projectType: Workspace.Workspace.projectTypes.Debugger,
                 mimeType: 'text/javascript',
             });

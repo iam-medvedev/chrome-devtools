@@ -26,6 +26,6 @@ export interface ExemptionReason {
 export declare const enum Events {
     COOKIE_LIST_UPDATED = "CookieListUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.COOKIE_LIST_UPDATED]: void;
-};
+}

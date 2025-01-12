@@ -128,7 +128,7 @@ export interface WorkingCopyCommitedEvent {
     content: string;
     encoded?: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.UISourceCodeAdded]: UISourceCode;
     [Events.UISourceCodeRemoved]: UISourceCode;
     [Events.UISourceCodeRenamed]: UISourceCodeRenamedEvent;
@@ -137,4 +137,4 @@ export type EventTypes = {
     [Events.WorkingCopyCommittedByUser]: WorkingCopyCommitedEvent;
     [Events.ProjectAdded]: Project;
     [Events.ProjectRemoved]: Project;
-};
+}

@@ -11,15 +11,15 @@ interface RenderOptions {
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.
  **/
-export declare const renderElementIntoDOM: (element: HTMLElement, renderOptions?: RenderOptions) => HTMLElement;
+export declare function renderElementIntoDOM<E extends Element>(element: E, renderOptions?: RenderOptions): E;
 /**
  * Completely cleans out the test DOM to ensure it's empty for the next test run.
  * This is run automatically between tests - you should not be manually calling this yourself.
  **/
 export declare const resetTestDOM: () => void;
-type Constructor<T> = {
+interface Constructor<T> {
     new (...args: unknown[]): T;
-};
+}
 /**
  * Asserts that all emenents of `nodeList` are at least of type `T`.
  */

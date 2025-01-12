@@ -940,7 +940,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             await result;
             return { wrapper, image };
         }
-        catch (e) {
+        catch {
         }
         return null;
     }
@@ -1079,7 +1079,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         wcoOsCheckbox.checkboxElement.addEventListener('click', async () => {
             await this.overlayModel?.toggleWindowControlsToolbar(wcoOsCheckbox.checkboxElement.checked);
         });
-        const osSelectElement = wcoOsCheckbox.createChild('select', 'chrome-select');
+        const osSelectElement = wcoOsCheckbox.createChild('select');
         osSelectElement.appendChild(UI.UIUtils.createOption('Windows', "Windows" /* SDK.OverlayModel.EmulatedOSType.WINDOWS */, 'windows'));
         osSelectElement.appendChild(UI.UIUtils.createOption('macOS', "Mac" /* SDK.OverlayModel.EmulatedOSType.MAC */, 'macos'));
         osSelectElement.appendChild(UI.UIUtils.createOption('Linux', "Linux" /* SDK.OverlayModel.EmulatedOSType.LINUX */, 'linux'));

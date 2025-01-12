@@ -38,9 +38,9 @@ export declare class BezierEditor extends BezierEditor_base {
 export declare const enum Events {
     BEZIER_CHANGED = "BezierChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BEZIER_CHANGED]: string;
-};
+}
 export declare const Presets: {
     name: string;
     value: string;

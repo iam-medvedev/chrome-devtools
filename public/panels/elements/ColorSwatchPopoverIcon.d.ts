@@ -27,9 +27,9 @@ export declare class BezierPopoverIcon {
 export declare const enum ColorSwatchPopoverIconEvents {
     COLOR_CHANGED = "colorchanged"
 }
-export type ColorSwatchPopoverIconEventTypes = {
+export interface ColorSwatchPopoverIconEventTypes {
     [ColorSwatchPopoverIconEvents.COLOR_CHANGED]: string;
-};
+}
 export declare class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper<ColorSwatchPopoverIconEventTypes> {
     private treeElement;
     private readonly swatchPopoverHelper;

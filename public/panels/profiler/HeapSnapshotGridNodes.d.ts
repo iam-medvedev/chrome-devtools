@@ -69,9 +69,9 @@ export declare namespace HeapSnapshotGridNode {
     enum Events {
         PopulateComplete = "PopulateComplete"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.PopulateComplete]: void;
-    };
+    }
 }
 export declare abstract class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
     referenceName?: string | null;

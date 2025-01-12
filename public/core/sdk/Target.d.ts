@@ -22,6 +22,8 @@ export declare class Target extends ProtocolClient.InspectorBackend.TargetBase {
     models(): Map<new (arg1: Target) => SDKModel, SDKModel>;
     inspectedURL(): Platform.DevToolsPath.UrlString;
     setInspectedURL(inspectedURL: Platform.DevToolsPath.UrlString): void;
+    hasCrashed(): boolean;
+    setHasCrashed(isCrashed: boolean): void;
     suspend(reason?: string): Promise<void>;
     resume(): Promise<void>;
     suspended(): boolean;

@@ -585,6 +585,7 @@ ui/legacy/XLink.test.js
 ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
 ui/legacy/components/data_grid/DataGrid.test.js
+ui/legacy/components/data_grid/DataGridWithPreview.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js
 ui/legacy/components/inline_editor/BezierUI.test.js

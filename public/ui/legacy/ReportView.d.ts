@@ -1,5 +1,6 @@
+import './Toolbar.js';
 import type * as Buttons from '../components/buttons/buttons.js';
-import { Toolbar } from './Toolbar.js';
+import type { Toolbar } from './Toolbar.js';
 import { VBox } from './Widget.js';
 /**
  * @deprecated Please consider using the web component version of this widget

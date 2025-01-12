@@ -24,6 +24,6 @@ export interface AddressFormFilledEvent {
     matches: Match[];
     autofillModel: SDK.AutofillModel.AutofillModel;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ADDRESS_FORM_FILLED]: AddressFormFilledEvent;
-};
+}

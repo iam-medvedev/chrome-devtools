@@ -71,9 +71,9 @@ export declare namespace LinkDecorator {
     const enum Events {
         LINK_ICON_CHANGED = "LinkIconChanged"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.LINK_ICON_CHANGED]: Workspace.UISourceCode.UISourceCode;
-    };
+    }
 }
 export declare class LinkContextMenuProvider implements UI.ContextMenu.Provider<Node> {
     appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Node): void;
@@ -137,7 +137,7 @@ export type LinkHandler = (arg0: TextUtils.ContentProvider.ContentProvider, arg1
 export declare const enum Events {
     LIVE_LOCATION_UPDATED = "liveLocationUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.LIVE_LOCATION_UPDATED]: Bindings.LiveLocation.LiveLocation;
-};
+}
 export {};

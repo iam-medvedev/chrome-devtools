@@ -1,8 +1,8 @@
+import * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import type * as Platform from '../platform/platform.js';
-import * as Protocol from '../../generated/protocol.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     #private;
     serviceWorkerNetworkRequestsPanelStatus: {
@@ -40,11 +40,11 @@ export interface RegistrationErrorAddedEvent {
     registration: ServiceWorkerRegistration;
     error: Protocol.ServiceWorker.ServiceWorkerErrorMessage;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.REGISTRATION_UPDATED]: ServiceWorkerRegistration;
     [Events.REGISTRATION_ERROR_ADDED]: RegistrationErrorAddedEvent;
     [Events.REGISTRATION_DELETED]: ServiceWorkerRegistration;
-};
+}
 /**
  * For every version, we keep a history of ServiceWorkerVersionState. Every time
  * a version is updated we will add a new state at the head of the history chain.

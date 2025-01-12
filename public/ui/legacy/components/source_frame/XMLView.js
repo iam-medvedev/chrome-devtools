@@ -56,7 +56,7 @@ export class XMLView extends UI.Widget.Widget {
                     parsedXML = (new DOMParser()).parseFromString(text, mimeType);
             }
         }
-        catch (e) {
+        catch {
             return null;
         }
         if (!parsedXML || parsedXML.body) {

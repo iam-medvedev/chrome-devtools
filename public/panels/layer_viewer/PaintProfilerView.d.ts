@@ -58,9 +58,9 @@ export declare class PaintProfilerView extends PaintProfilerView_base {
 export declare const enum Events {
     WINDOW_CHANGED = "WindowChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.WINDOW_CHANGED]: void;
-};
+}
 export declare class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {
     private readonly treeOutline;
     private log;

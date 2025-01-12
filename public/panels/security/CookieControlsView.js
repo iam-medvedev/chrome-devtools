@@ -21,11 +21,11 @@ const UIStrings = {
     /**
      *@description Explanation in the view's header about the purpose of this controls tool
      */
-    viewExplanation: 'Test how this site will perform if a user chooses to restrict third-party cookies in Chrome',
+    viewExplanation: 'Test how this site will perform if third-party cookies are limited in Chrome',
     /**
      *@description Title in the card within the controls tool
      */
-    cardTitle: 'Temporarily restrict third-party cookies',
+    cardTitle: 'Temporarily limit third-party cookies',
     /**
      *@description Disclaimer beneath the card title to tell the user that the controls will only persist while devtools is open
      */
@@ -125,7 +125,9 @@ export class CookieControlsView extends UI.Widget.VBox {
             .disabled=${Boolean(enterpriseEnabledSetting.get())}
             @switchchange=${(e) => {
             input.inputChanged(e.target.checked, toggleEnabledSetting);
-        }}>
+        }}
+            jslog=${VisualLogging.toggle(toggleEnabledSetting.name).track({ click: true })}
+          >
           </devtools-switch>
         </div>
       </div>
@@ -139,6 +141,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             @change=${(e) => {
             input.inputChanged(e.target.checked, gracePeriodDisabledSetting);
         }}
+            jslog=${VisualLogging.toggle(gracePeriodDisabledSetting.name).track({ click: true })}
           >
           <div class="text">
             <div class="body">${i18nString(UIStrings.gracePeriodTitle)}</div>
@@ -160,6 +163,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             @change=${(e) => {
             input.inputChanged(e.target.checked, heuristicsDisabledSetting);
         }}
+            jslog=${VisualLogging.toggle(heuristicsDisabledSetting.name).track({ click: true })}
           >
           <div class="text">
             <div class="body">${i18nString(UIStrings.heuristicTitle)}</div>
@@ -215,6 +219,7 @@ export class CookieControlsView extends UI.Widget.VBox {
     }) {
         super(true, undefined, element);
         this.#view = view;
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.update();
     }
     async doUpdate() {
@@ -236,6 +241,9 @@ export class CookieControlsView extends UI.Widget.VBox {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
             }
         });
+    }
+    #onPrimaryPageChanged() {
+        UI.InspectorView.InspectorView.instance().removeDebuggedTabReloadRequiredWarning();
     }
     wasShown() {
         super.wasShown();

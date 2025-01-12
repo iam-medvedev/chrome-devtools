@@ -31,6 +31,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import './Toolbar.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -54,7 +55,6 @@ import textButtonStyles from './textButton.css.legacy.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
 import themeColorsStyles from './themeColors.css.legacy.js';
 import tokens from './tokens.css.legacy.js';
-import { Toolbar } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { Widget } from './Widget.js';
 const UIStrings = {
@@ -198,7 +198,7 @@ class DragHandler {
                 this.dragEventsTargetDocumentTop = targetDocument.defaultView.top.document;
             }
         }
-        catch (e) {
+        catch {
             this.dragEventsTargetDocumentTop = this.dragEventsTargetDocument;
         }
         targetDocument.addEventListener('pointermove', this.elementDragMove, true);
@@ -1008,7 +1008,6 @@ export function createHistoryInput(type = 'search', className) {
 }
 export function createSelect(name, options) {
     const select = document.createElement('select');
-    select.classList.add('chrome-select');
     ARIAUtils.setLabel(select, name);
     for (const option of options) {
         if (option instanceof Map) {
@@ -1440,9 +1439,8 @@ export function createInlineButton(toolbarButton) {
     const element = document.createElement('span');
     const shadowRoot = createShadowRootWithCoreStyles(element, { cssFile: inlineButtonStyles });
     element.classList.add('inline-button');
-    const toolbar = new Toolbar('');
+    const toolbar = shadowRoot.createChild('devtools-toolbar');
     toolbar.appendToolbarItem(toolbarButton);
-    shadowRoot.appendChild(toolbar.element);
     return element;
 }
 export class Renderer {

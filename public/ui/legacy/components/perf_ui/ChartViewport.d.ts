@@ -98,7 +98,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private onChartKeyUp;
     private handleZoomPanScrollKeys;
     private handleZoomGesture;
-    private handlePanGesture;
+    private handleHorizontalPanGesture;
     private requestWindowTimes;
     scheduleUpdate(): void;
     update(): void;

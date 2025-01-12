@@ -1,4 +1,4 @@
-export type Configuration = {
+export interface Configuration {
     /**
      * Include V8 RCS functions in the JS stacks
      */
@@ -27,7 +27,7 @@ export type Configuration = {
      * attempt to gather or track invalidations.
      */
     maxInvalidationEventsPerEvent: number;
-};
+}
 export declare const defaults: () => Configuration;
 /**
  * Generates a key that can be used to represent this config in a cache. This is

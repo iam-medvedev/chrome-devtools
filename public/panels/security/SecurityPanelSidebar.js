@@ -79,8 +79,8 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
         this.contentElement.appendChild(this.sidebarTree.element);
         if (Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled) {
             const privacyTreeSection = this.#addSidebarSection(i18nString(UIStrings.privacy), 'privacy');
-            privacyTreeSection.appendChild(new CookieControlsTreeElement(i18nString(UIStrings.flagControls)));
-            privacyTreeSection.appendChild(new CookieReportTreeElement(i18nString(UIStrings.cookieReport)));
+            privacyTreeSection.appendChild(new CookieControlsTreeElement(i18nString(UIStrings.flagControls), 'cookie-flag-controls'));
+            privacyTreeSection.appendChild(new CookieReportTreeElement(i18nString(UIStrings.cookieReport), 'cookie-report'));
         }
         const securitySectionTitle = i18nString(UIStrings.security);
         const securityTreeSection = this.#addSidebarSection(securitySectionTitle, 'security');

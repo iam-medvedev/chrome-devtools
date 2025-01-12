@@ -7,12 +7,12 @@ export declare const enum Events {
     CREDENTIAL_DELETED = "CredentialDeleted",
     CREDENTIAL_UPDATED = "CredentialUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CREDENTIAL_ADDED]: Protocol.WebAuthn.CredentialAddedEvent;
     [Events.CREDENTIAL_ASSERTED]: Protocol.WebAuthn.CredentialAssertedEvent;
     [Events.CREDENTIAL_DELETED]: Protocol.WebAuthn.CredentialDeletedEvent;
     [Events.CREDENTIAL_UPDATED]: Protocol.WebAuthn.CredentialUpdatedEvent;
-};
+}
 export declare class WebAuthnModel extends SDKModel<EventTypes> {
     #private;
     constructor(target: Target);

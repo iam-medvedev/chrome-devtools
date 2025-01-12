@@ -46,7 +46,7 @@ describe('WebCustomData', () => {
                 await webCustomData.fetchPromiseForTest;
                 assert.isTrue(false, 'Expected await to throw');
             }
-            catch (e) {
+            catch {
             }
             assert.isUndefined(webCustomData.findCssProperty('display'));
         });

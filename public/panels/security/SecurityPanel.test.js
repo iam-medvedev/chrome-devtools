@@ -1,15 +1,17 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Security from './security.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('SecurityAndPrivacyPanel', () => {
     describe('updateOrigin', () => {
         it('correctly updates the URL scheme highlighting', () => {
-            const origin = 'https://foo.bar';
+            const origin = urlString `https://foo.bar`;
             const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
             securityPanel.sidebar.addOrigin(origin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
             assert.notExists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));

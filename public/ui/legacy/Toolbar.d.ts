@@ -1,5 +1,4 @@
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -7,24 +6,37 @@ import * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
 import type { Suggestion } from './SuggestBox.js';
-export declare class Toolbar {
+/**
+ * Custom element for toolbars.
+ *
+ * @attr wrappable - If present the toolbar items will wrap to a new row and the
+ *                   toolbar height increases.
+ * @prop {string} wrappable - The `"wrappable"` attribute is reflected as property.
+ */
+export declare class Toolbar extends HTMLElement {
     private items;
-    element: HTMLElement;
     enabled: boolean;
-    private readonly shadowRoot;
-    private contentElement;
     private compactLayout;
-    constructor(className: string, parentElement?: Element);
+    connectedCallback(): void;
+    /**
+     * Returns whether this toolbar is wrappable.
+     *
+     * @return `true` if the `"wrappable"` attribute is present on this toolbar,
+     *         otherwise `false`.
+     */
+    get wrappable(): boolean;
+    /**
+     * Changes the value of the `"wrappable"` attribute on this toolbar.
+     *
+     * @param wrappable `true` to make the toolbar items wrap to a new row and
+     *                  have the toolbar height adjust.
+     */
+    set wrappable(wrappable: boolean);
     hasCompactLayout(): boolean;
-    registerCSSFiles(cssFiles: CSSStyleSheet[]): void;
     setCompactLayout(enable: boolean): void;
     static createLongPressActionButton(action: Action, toggledOptions: ToolbarButton[], untoggledOptions: ToolbarButton[]): ToolbarButton;
-    static createActionButton(action: Action, options?: ToolbarButtonOptions | undefined): ToolbarButton;
-    static createActionButtonForId(actionId: string, options?: ToolbarButtonOptions): ToolbarButton;
-    gripElementForResize(): Element;
-    makeWrappable(growVertically?: boolean): void;
-    makeVertical(): void;
-    renderAsLinks(): void;
+    static createActionButton(action: Action, options?: ToolbarButtonOptions): ToolbarButton;
+    static createActionButton(actionId: string, options?: ToolbarButtonOptions): ToolbarButton;
     empty(): boolean;
     setEnabled(enabled: boolean): void;
     appendToolbarItem(item: ToolbarItem): void;
@@ -35,16 +47,11 @@ export declare class Toolbar {
     appendText(text: string): void;
     removeToolbarItem(itemToRemove: ToolbarItem): void;
     removeToolbarItems(): void;
-    setColor(color: string): void;
-    setToggledColor(color: string): void;
     hideSeparatorDupes(): void;
     appendItemsAtLocation(location: string): Promise<void>;
 }
 export interface ToolbarButtonOptions {
     label?: () => Platform.UIString.LocalizedString;
-    showLabel: boolean;
-    userActionCode?: Host.UserMetrics.Action;
-    ignoreToggleable?: boolean;
 }
 export declare class ToolbarItem<T = any> extends Common.ObjectWrapper.ObjectWrapper<T> {
     element: HTMLElement;
@@ -58,15 +65,14 @@ export declare class ToolbarItem<T = any> extends Common.ObjectWrapper.ObjectWra
     applyEnabledState(enabled: boolean): void;
     visible(): boolean;
     setVisible(x: boolean): void;
-    setRightAligned(alignRight: boolean): void;
     setCompactLayout(_enable: boolean): void;
 }
 export declare const enum ToolbarItemWithCompactLayoutEvents {
     COMPACT_LAYOUT_UPDATED = "CompactLayoutUpdated"
 }
-type ToolbarItemWithCompactLayoutEventTypes = {
+interface ToolbarItemWithCompactLayoutEventTypes {
     [ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED]: boolean;
-};
+}
 export declare class ToolbarItemWithCompactLayout extends ToolbarItem<ToolbarItemWithCompactLayoutEventTypes> {
     constructor(element: Element);
     setCompactLayout(enable: boolean): void;
@@ -119,10 +125,10 @@ export declare namespace ToolbarButton {
         CLICK = "Click",
         MOUSE_DOWN = "MouseDown"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.CLICK]: Event;
         [Events.MOUSE_DOWN]: MouseEvent;
-    };
+    }
 }
 export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     private prompt;
@@ -238,7 +244,6 @@ export interface ToolbarItemRegistration {
     location: ToolbarItemLocation;
     separator?: boolean;
     label?: () => Platform.UIString.LocalizedString;
-    showLabel?: boolean;
     actionId?: string;
     condition?: Root.Runtime.Condition;
     loadItem?: (() => Promise<Provider>);
@@ -250,5 +255,10 @@ export declare const enum ToolbarItemLocation {
     MAIN_TOOLBAR_RIGHT = "main-toolbar-right",
     MAIN_TOOLBAR_LEFT = "main-toolbar-left",
     STYLES_SIDEBARPANE_TOOLBAR = "styles-sidebarpane-toolbar"
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'devtools-toolbar': Toolbar;
+    }
 }
 export {};

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import { describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import * as WhatsNew from './whats_new.js';
+const { urlString } = Platform.DevToolsPath;
 const CONTENT1 = 'Something something topic-1.\n';
 const CONTENT2 = 'Something something topic-2.\n';
 describeWithEnvironment('Release Note View', () => {
@@ -20,17 +22,17 @@ describeWithEnvironment('Release Note View', () => {
             videoLinks: [
                 {
                     description: 'Highlight from the Chrome 132 update',
-                    link: 'https://developer.chrome.com/blog/new-in-devtools-132/',
+                    link: urlString `https://developer.chrome.com/blog/new-in-devtools-132/`,
                     type: "WhatsNew" /* WhatsNew.ReleaseNoteText.VideoType.WHATS_NEW */,
                 },
                 {
                     description: 'DevTools tips',
-                    link: 'https://developer.chrome.com/blog/devtools-tips-39',
+                    link: urlString `https://developer.chrome.com/blog/devtools-tips-39`,
                     type: "DevtoolsTips" /* WhatsNew.ReleaseNoteText.VideoType.DEVTOOLS_TIPS */,
                 },
                 {
                     description: 'Other',
-                    link: 'https://developer.chrome.com/',
+                    link: urlString `https://developer.chrome.com/`,
                     type: "Other" /* WhatsNew.ReleaseNoteText.VideoType.OTHER */,
                 },
             ],
@@ -95,7 +97,7 @@ describeWithEnvironment('Release Note View', () => {
         const openInNewTabStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'openInNewTab');
         button.click();
         assert.strictEqual(openInNewTabStub.callCount, 1);
-        assert.isTrue(openInNewTabStub.firstCall.calledWith('https://google.com'), 'openInNewTab was not called with the expected URL.');
+        assert.isTrue(openInNewTabStub.firstCall.calledWith(urlString `https://google.com`), 'openInNewTab was not called with the expected URL.');
     });
     it('renders video links with description text', async () => {
         sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));

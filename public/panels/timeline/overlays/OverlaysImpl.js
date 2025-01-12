@@ -197,6 +197,14 @@ export class TimeRangeMouseOutEvent extends Event {
         super(TimeRangeMouseOutEvent.eventName, { bubbles: true });
     }
 }
+export class EntryLabelMouseClick extends Event {
+    overlay;
+    static eventName = 'entrylabelmouseclick';
+    constructor(overlay) {
+        super(EntryLabelMouseClick.eventName, { composed: true, bubbles: true });
+        this.overlay = overlay;
+    }
+}
 export class EventReferenceClick extends Event {
     event;
     static eventName = 'eventreferenceclick';
@@ -1106,11 +1114,11 @@ export class Overlays extends EventTarget {
         };
     }
     #createElementForNewOverlay(overlay) {
-        const div = document.createElement('div');
-        div.classList.add('overlay-item', `overlay-type-${overlay.type}`);
+        const overlayElement = document.createElement('div');
+        overlayElement.classList.add('overlay-item', `overlay-type-${overlay.type}`);
         const jslogContext = jsLogContext(overlay);
         if (jslogContext) {
-            div.setAttribute('jslog', `${VisualLogging.item(jslogContext)}`);
+            overlayElement.setAttribute('jslog', `${VisualLogging.item(jslogContext)}`);
         }
         switch (overlay.type) {
             case 'ENTRY_LABEL': {
@@ -1124,8 +1132,13 @@ export class Overlays extends EventTarget {
                     overlay.label = newLabel;
                     this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Update'));
                 });
-                div.appendChild(component);
-                return div;
+                overlayElement.appendChild(component);
+                overlayElement.addEventListener('click', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.dispatchEvent(new EntryLabelMouseClick(overlay));
+                });
+                return overlayElement;
             }
             case 'ENTRIES_LINK': {
                 const entries = this.#calculateFromAndToForEntriesLink(overlay);
@@ -1133,7 +1146,7 @@ export class Overlays extends EventTarget {
                     // For some reason, we don't have two entries we can draw between
                     // (can happen if the user has collapsed an icicle in the flame
                     // chart, or a track), so just draw an empty div.
-                    return div;
+                    return overlayElement;
                 }
                 const entryEndX = this.xPixelForEventEndOnChart(entries.entryFrom) ?? 0;
                 const entryStartX = this.xPixelForEventEndOnChart(entries.entryFrom) ?? 0;
@@ -1145,12 +1158,12 @@ export class Overlays extends EventTarget {
                     overlay.state = "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */;
                     this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Update'));
                 });
-                div.appendChild(component);
-                return div;
+                overlayElement.appendChild(component);
+                return overlayElement;
             }
             case 'ENTRY_OUTLINE': {
-                div.classList.add(`outline-reason-${overlay.outlineReason}`);
-                return div;
+                overlayElement.classList.add(`outline-reason-${overlay.outlineReason}`);
+                return overlayElement;
             }
             case 'TIME_RANGE': {
                 const component = new Components.TimeRangeOverlay.TimeRangeOverlay(overlay.label);
@@ -1170,26 +1183,26 @@ export class Overlays extends EventTarget {
                 component.addEventListener('mouseout', () => {
                     this.dispatchEvent(new TimeRangeMouseOutEvent());
                 });
-                div.appendChild(component);
-                return div;
+                overlayElement.appendChild(component);
+                return overlayElement;
             }
             case 'TIMESPAN_BREAKDOWN': {
                 const component = new Components.TimespanBreakdownOverlay.TimespanBreakdownOverlay();
                 component.sections = overlay.sections;
                 component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
                 component.isBelowEntry = overlay.renderLocation === 'BELOW_EVENT';
-                div.appendChild(component);
-                return div;
+                overlayElement.appendChild(component);
+                return overlayElement;
             }
             case 'TIMINGS_MARKER': {
                 const { color } = EntryStyles.markerDetailsForEvent(overlay.entries[0]);
                 const markersComponent = this.#createTimingsMarkerElement(overlay);
-                div.appendChild(markersComponent);
-                div.style.backgroundColor = color;
-                return div;
+                overlayElement.appendChild(markersComponent);
+                overlayElement.style.backgroundColor = color;
+                return overlayElement;
             }
             default: {
-                return div;
+                return overlayElement;
             }
         }
     }

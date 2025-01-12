@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
@@ -59,7 +60,7 @@ export class RequestPreviewView extends RequestResponseView {
         if (!(view instanceof UI.View.SimpleView)) {
             return view;
         }
-        const toolbar = new UI.Toolbar.Toolbar('network-item-preview-toolbar', this.element);
+        const toolbar = this.element.createChild('devtools-toolbar', 'network-item-preview-toolbar');
         void view.toolbarItems().then(items => {
             items.map(item => toolbar.appendToolbarItem(item));
         });

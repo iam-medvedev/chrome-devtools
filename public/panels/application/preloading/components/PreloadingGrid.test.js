@@ -1,12 +1,14 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getCellByIndexes } from '../../../../testing/DataGridHelpers.js';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 async function assertRenderResult(rowsInput, headerExpected, rowsExpected) {
     const component = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
     component.update(rowsInput);
@@ -24,7 +26,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://example.com/prefetched.html',
+                                url: urlString `https://example.com/prefetched.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -50,7 +52,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         },
                     ],
                 }],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/prefetched.html', 'Prefetch', 'example.com/', 'Running'],
         ]);
@@ -64,7 +66,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://cross-origin.example.com/prefetched.html',
+                                url: urlString `https://cross-origin.example.com/prefetched.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -90,7 +92,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         },
                     ],
                 }],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             ['https://cross-origin.example.com/prefetched.html', 'Prefetch', 'example.com/', 'Running'],
         ]);
@@ -104,7 +106,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://example.com/prefetched.html',
+                                url: urlString `https://example.com/prefetched.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -131,7 +133,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         },
                     ],
                 }],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/prefetched.html', 'Prefetch', 'example.com/assets/speculation-rules.json', 'Running'],
         ]);
@@ -146,7 +148,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://example.com/rule-set-missing.html',
+                                url: urlString `https://example.com/rule-set-missing.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -164,7 +166,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://example.com/multiple-rule-sets.html',
+                                url: urlString `https://example.com/multiple-rule-sets.html`,
                             },
                             pipelineId: 'pipelineId:2',
                             status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -206,7 +208,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 },
             ],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/rule-set-missing.html', 'Prefetch', '', 'Running'],
             ['/multiple-rule-sets.html', 'Prefetch', 'example.com/', 'Running'],
@@ -221,7 +223,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                                url: 'https://example.com/prerendered.html',
+                                url: urlString `https://example.com/prerendered.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -248,7 +250,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         },
                     ],
                 }],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             [
                 '/prerendered.html',
@@ -274,7 +276,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://example.com/prerendered.html',
+                                url: urlString `https://example.com/prerendered.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
@@ -288,7 +290,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                                url: 'https://example.com/prerendered.html',
+                                url: urlString `https://example.com/prerendered.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -316,7 +318,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         },
                     ],
                 }],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             [
                 '/prerendered.html',
@@ -342,7 +344,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                                url: 'https://example.com/prerendered.html',
+                                url: urlString `https://example.com/prerendered.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -356,7 +358,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                             key: {
                                 loaderId: 'loaderId:1',
                                 action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                                url: 'https://example.com/prerendered.html',
+                                url: urlString `https://example.com/prerendered.html`,
                             },
                             pipelineId: 'pipelineId:1',
                             status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -384,7 +386,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         },
                     ],
                 }],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         }, ['URL', 'Action', 'Rule set', 'Status'], [
             [
                 '/prerendered.html',

@@ -30,9 +30,9 @@ export declare enum CSSLengthUnit {
     VMAX = "vmax"
 }
 export declare const CSS_LENGTH_REGEX: RegExp;
-type CSSLengthData = {
+interface CSSLengthData {
     lengthText: string;
-};
+}
 export declare class CSSLength extends HTMLElement {
     #private;
     private readonly shadow;

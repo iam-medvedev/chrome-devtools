@@ -1201,7 +1201,7 @@ export declare namespace Audits {
         InteractiveContentLegendChild = "InteractiveContentLegendChild"
     }
     /**
-     * This isue warns about errors in the select element content model.
+     * This issue warns about errors in the select element content model.
      */
     interface SelectElementAccessibilityIssueDetails {
         nodeId: DOM.BackendNodeId;
@@ -3083,6 +3083,13 @@ export declare namespace CSS {
     }
     interface ResolveValuesResponse extends ProtocolResponseWithError {
         results: string[];
+    }
+    interface GetLonghandPropertiesRequest {
+        shorthandName: string;
+        value: string;
+    }
+    interface GetLonghandPropertiesResponse extends ProtocolResponseWithError {
+        longhandProperties: CSSProperty[];
     }
     interface GetInlineStylesForNodeRequest {
         nodeId: DOM.NodeId;
@@ -9430,6 +9437,20 @@ export declare namespace Network {
     interface LoadNetworkResourceResponse extends ProtocolResponseWithError {
         resource: LoadNetworkResourcePageResult;
     }
+    interface SetCookieControlsRequest {
+        /**
+         * Whether 3pc restriction is enabled.
+         */
+        enableThirdPartyCookieRestriction: boolean;
+        /**
+         * Whether 3pc grace period exception should be enabled; false by default.
+         */
+        disableThirdPartyCookieMetadata: boolean;
+        /**
+         * Whether 3pc heuristics exceptions should be enabled; false by default.
+         */
+        disableThirdPartyCookieHeuristics: boolean;
+    }
     /**
      * Fired when data chunk was received over the network.
      */
@@ -10001,7 +10022,8 @@ export declare namespace Network {
         BadResponse = "BadResponse",
         InternalError = "InternalError",
         UnknownError = "UnknownError",
-        FulfilledLocally = "FulfilledLocally"
+        FulfilledLocally = "FulfilledLocally",
+        SiteIssuerLimit = "SiteIssuerLimit"
     }
     /**
      * Fired exactly once for each Trust Token operation. Depending on
@@ -13430,7 +13452,6 @@ export declare namespace Storage {
      * Enum of possible storage types.
      */
     const enum StorageType {
-        Appcache = "appcache",
         Cookies = "cookies",
         File_systems = "file_systems",
         Indexeddb = "indexeddb",

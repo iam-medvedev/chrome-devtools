@@ -22,6 +22,7 @@ export declare class DataGridWithPreview {
     #private;
     constructor(id: string, parent: HTMLElement, columns: ColumnDescriptor[], callbacks: Callbacks, messages: Messages);
     get dataGridForTesting(): DataGridImpl<unknown>;
+    get previewPanelForTesting(): Widget.VBox;
     clearItems(): void;
     removeItem(key: string): void;
     addItem(item: string[]): void;

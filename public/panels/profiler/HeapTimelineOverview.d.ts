@@ -45,9 +45,9 @@ export interface IdsRangeChangedEvent {
     maxId: number;
     size: number;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.IDS_RANGE_CHANGED]: IdsRangeChangedEvent;
-};
+}
 export declare class SmoothScale {
     lastUpdate: number;
     currentScale: number;

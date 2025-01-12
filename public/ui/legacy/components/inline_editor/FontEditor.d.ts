@@ -1,3 +1,4 @@
+import '../../legacy.js';
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as UI from '../../legacy.js';
@@ -37,8 +38,8 @@ export interface FontChangedEvent {
     propertyName: string;
     value: string;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FONT_CHANGED]: FontChangedEvent;
     [Events.FONT_EDITOR_RESIZED]: void;
-};
+}
 export {};

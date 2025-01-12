@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -13,6 +14,7 @@ import * as Console from './console.js';
 // The css files aren't exported by the bundle, so we need to import it directly.
 // eslint-disable-next-line rulesdir/es-modules-import
 import consoleViewStyles from './consoleView.css.js';
+const { urlString } = Platform.DevToolsPath;
 describe('ConsoleViewMessage', () => {
     describe('concatErrorDescriptionAndIssueSummary', () => {
         const { concatErrorDescriptionAndIssueSummary } = Console.ConsoleViewMessage;
@@ -223,7 +225,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
                 return link;
             });
             linkifier.maybeLinkifyConsoleCallFrame.callsFake((target, callFrame, options) => {
-                const link = Components.Linkifier.Linkifier.linkifyURL(callFrame.url, { lineNumber: callFrame.lineNumber, ...options });
+                const link = Components.Linkifier.Linkifier.linkifyURL(urlString `${callFrame.url}`, { lineNumber: callFrame.lineNumber, ...options });
                 if (ignoreListFn(callFrame.url)) {
                     link.classList.add(IGNORE_LIST_LINK);
                 }

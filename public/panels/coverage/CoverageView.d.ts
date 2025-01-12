@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class CoverageView extends UI.Widget.VBox {
     private model;

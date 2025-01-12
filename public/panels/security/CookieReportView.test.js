@@ -89,8 +89,8 @@ describeWithMockConnection('CookieReportView', () => {
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */, 'phaseout'));
         await view.updateComplete;
         assert.lengthOf(view.gridData, 3);
-        assert.strictEqual(view.gridData[0].data.status, 'Allowed By Exception');
-        assert.strictEqual(view.gridData[1].data.status, 'Allowed By Exception');
+        assert.strictEqual(view.gridData[0].data.status, 'Allowed by exception');
+        assert.strictEqual(view.gridData[1].data.status, 'Allowed by exception');
         assert.strictEqual(view.gridData[2].data.status, 'Allowed');
     });
     it('should only have a single entry for same cookie with a read and a write operations', async () => {

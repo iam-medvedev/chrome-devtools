@@ -589,7 +589,6 @@ export interface FlameChartDataProvider {
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
-    getAIEventNodeTreeFromEntryIndex?(entryIndex: number): Trace.Helpers.TreeHelpers.AINode | null;
     entryHasAnnotations?(entryIndex: number): boolean;
     deleteAnnotationsForEntry?(entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
@@ -646,7 +645,7 @@ export declare const enum Events {
     LATEST_DRAW_DIMENSIONS = "LatestDrawDimensions",
     MOUSE_MOVE = "MouseMove"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ENTRY_LABEL_ANNOTATION_ADDED]: {
         entryIndex: number;
         withLinkCreationButton: boolean;
@@ -673,7 +672,7 @@ export type EventTypes = {
         mouseEvent: MouseEvent;
         timeInMicroSeconds: Trace.Types.Timing.MicroSeconds;
     };
-};
+}
 export interface Group {
     name: Common.UIString.LocalizedString;
     startLevel: number;

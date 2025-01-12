@@ -245,7 +245,7 @@ export async function frameworkEventListeners(object) {
                     return typeof len === 'number' && (len >>> 0 === len && (len > 0 || 1 / len > 0));
                 }
             }
-            catch (e) {
+            catch {
             }
             return false;
         }
@@ -313,7 +313,7 @@ export async function frameworkEventListeners(object) {
             try {
                 return String(obj);
             }
-            catch (e) {
+            catch {
                 return '<error>';
             }
         }

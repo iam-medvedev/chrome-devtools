@@ -137,7 +137,7 @@ export class FilterParser {
                         negative: Boolean(startsWithMinus),
                     });
                 }
-                catch (e) {
+                catch {
                     parsedFilters.push({
                         key: undefined,
                         regex: undefined,

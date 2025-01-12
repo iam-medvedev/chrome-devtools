@@ -22,6 +22,6 @@ export declare class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrap
 export declare const enum Events {
     WILL_SHOW_POPOVER = "WillShowPopover"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.WILL_SHOW_POPOVER]: void;
-};
+}

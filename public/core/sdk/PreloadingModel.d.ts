@@ -36,10 +36,10 @@ export declare const enum Events {
     MODEL_UPDATED = "ModelUpdated",
     WARNINGS_UPDATED = "WarningsUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.MODEL_UPDATED]: void;
     [Events.WARNINGS_UPDATED]: Protocol.Preload.PreloadEnabledStateUpdatedEvent;
-};
+}
 export declare const enum PreloadingStatus {
     NOT_TRIGGERED = "NotTriggered",
     PENDING = "Pending",

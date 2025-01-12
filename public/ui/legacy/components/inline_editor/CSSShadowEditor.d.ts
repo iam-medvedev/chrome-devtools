@@ -71,7 +71,7 @@ export declare class CSSShadowEditor extends CSSShadowEditor_base {
 export declare const enum Events {
     SHADOW_CHANGED = "ShadowChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SHADOW_CHANGED]: CSSShadowModel;
-};
+}
 export {};

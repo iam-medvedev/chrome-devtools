@@ -1,16 +1,18 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithLocale('Panel Feedback', () => {
     async function renderFeedbackComponent() {
         const component = new PanelFeedback.PanelFeedback.PanelFeedback();
         component.data = {
-            feedbackUrl: 'https://feedbackurl.com',
-            quickStartUrl: 'https://quickstarturl.com',
+            feedbackUrl: urlString `https://feedbackurl.com`,
+            quickStartUrl: urlString `https://quickstarturl.com`,
             quickStartLinkText: 'quick start link text',
         };
         renderElementIntoDOM(component);

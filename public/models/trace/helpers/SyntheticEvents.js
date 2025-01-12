@@ -33,7 +33,7 @@ export class SyntheticEventsManager {
         try {
             return SyntheticEventsManager.getActiveManager().registerSyntheticEvent(syntheticEvent);
         }
-        catch (e) {
+        catch {
             // If no active manager has been initialized, we assume the trace engine is
             // not running as part of the Performance panel. In this case we don't
             // register synthetic events because we don't need to support timeline

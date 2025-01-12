@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ChangesSidebar } from './ChangesSidebar.js';
 export declare class ChangesView extends UI.Widget.VBox {

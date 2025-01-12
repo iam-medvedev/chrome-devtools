@@ -241,7 +241,7 @@ export declare enum Events {
     TopLayerElementsChanged = "TopLayerElementsChanged",
     ScrollableFlagUpdated = "ScrollableFlagUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.AttrModified]: {
         node: DOMNode;
         name: string;
@@ -265,7 +265,7 @@ export type EventTypes = {
     [Events.ScrollableFlagUpdated]: {
         node: DOMNode;
     };
-};
+}
 export declare class DOMModelUndoStack {
     #private;
     constructor();

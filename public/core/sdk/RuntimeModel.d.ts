@@ -83,7 +83,7 @@ export interface QueryObjectRequestedEvent {
     objects: RemoteObject;
     executionContextId?: number;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BindingCalled]: Protocol.Runtime.BindingCalledEvent;
     [Events.ExecutionContextCreated]: ExecutionContext;
     [Events.ExecutionContextDestroyed]: ExecutionContext;
@@ -93,7 +93,7 @@ export type EventTypes = {
     [Events.ExceptionRevoked]: number;
     [Events.ConsoleAPICalled]: ConsoleAPICall;
     [Events.QueryObjectRequested]: QueryObjectRequestedEvent;
-};
+}
 export declare class ExecutionContext {
     #private;
     id: Protocol.Runtime.ExecutionContextId;

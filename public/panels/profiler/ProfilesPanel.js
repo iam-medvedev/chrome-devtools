@@ -25,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -107,22 +108,22 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         toolbarContainerLeft.classList.add('profiles-toolbar');
         toolbarContainerLeft.setAttribute('jslog', `${VisualLogging.toolbar('profiles-sidebar')}`);
         this.panelSidebarElement().insertBefore(toolbarContainerLeft, this.panelSidebarElement().firstChild);
-        const toolbar = new UI.Toolbar.Toolbar('', toolbarContainerLeft);
-        toolbar.makeWrappable(true);
+        const toolbar = toolbarContainerLeft.createChild('devtools-toolbar');
+        toolbar.wrappable = true;
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction(recordingActionId);
         this.toggleRecordButton = UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction);
         toolbar.appendToolbarItem(this.toggleRecordButton);
-        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('profiler.clear-all'));
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('profiler.clear-all'));
         toolbar.appendSeparator();
-        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('profiler.load-from-file'));
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('profiler.load-from-file'));
         this.#saveToFileAction = UI.ActionRegistry.ActionRegistry.instance().getAction('profiler.save-to-file');
         this.#saveToFileAction.setEnabled(false);
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.#saveToFileAction));
         toolbar.appendSeparator();
-        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
-        this.profileViewToolbar = new UI.Toolbar.Toolbar('', this.toolbarElement);
-        this.profileViewToolbar.makeWrappable(true);
-        this.profileViewToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('profile-view')}`);
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('components.collect-garbage'));
+        this.profileViewToolbar = this.toolbarElement.createChild('devtools-toolbar');
+        this.profileViewToolbar.wrappable = true;
+        this.profileViewToolbar.setAttribute('jslog', `${VisualLogging.toolbar('profile-view')}`);
         this.profileGroups = {};
         this.launcherView = new ProfileLauncherView(this);
         this.launcherView.addEventListener("ProfileTypeSelected" /* ProfileLauncherEvents.PROFILE_TYPE_SELECTED */, this.onProfileTypeSelected, this);

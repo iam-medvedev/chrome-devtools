@@ -93,173 +93,173 @@ export declare namespace PrivateAPI {
         useContentScriptContext?: boolean;
         scriptExecutionContext?: string;
     }
-    type RegisterLanguageExtensionPluginRequest = {
+    interface RegisterLanguageExtensionPluginRequest {
         command: Commands.RegisterLanguageExtensionPlugin;
         pluginName: string;
         port: MessagePort;
         supportedScriptTypes: PublicAPI.Chrome.DevTools.SupportedScriptTypes;
-    };
+    }
     export type RecordingExtensionPluginCapability = 'export' | 'replay';
-    type RegisterRecorderExtensionPluginRequest = {
+    interface RegisterRecorderExtensionPluginRequest {
         command: Commands.RegisterRecorderExtensionPlugin;
         pluginName: string;
         capabilities: RecordingExtensionPluginCapability[];
         port: MessagePort;
         mediaType?: string;
-    };
-    type CreateRecorderViewRequest = {
+    }
+    interface CreateRecorderViewRequest {
         command: Commands.CreateRecorderView;
         id: string;
         title: string;
         pagePath: string;
-    };
-    type ShowRecorderViewRequest = {
+    }
+    interface ShowRecorderViewRequest {
         command: Commands.ShowRecorderView;
         id: string;
-    };
-    type SubscribeRequest = {
+    }
+    interface SubscribeRequest {
         command: Commands.Subscribe;
         type: string;
-    };
-    type UnsubscribeRequest = {
+    }
+    interface UnsubscribeRequest {
         command: Commands.Unsubscribe;
         type: string;
-    };
-    type AddRequestHeadersRequest = {
+    }
+    interface AddRequestHeadersRequest {
         command: Commands.AddRequestHeaders;
         extensionId: string;
         headers: {
             [key: string]: string;
         };
-    };
-    type CreatePanelRequest = {
+    }
+    interface CreatePanelRequest {
         command: Commands.CreatePanel;
         id: string;
         title: string;
         page: string;
-    };
-    type ShowPanelRequest = {
+    }
+    interface ShowPanelRequest {
         command: Commands.ShowPanel;
         id: string;
-    };
-    type CreateToolbarButtonRequest = {
+    }
+    interface CreateToolbarButtonRequest {
         command: Commands.CreateToolbarButton;
         id: string;
         icon: string;
         panel: string;
         tooltip?: string;
         disabled?: boolean;
-    };
-    type UpdateButtonRequest = {
+    }
+    interface UpdateButtonRequest {
         command: Commands.UpdateButton;
         id: string;
         icon?: string;
         tooltip?: string;
         disabled?: boolean;
-    };
-    type CreateSidebarPaneRequest = {
+    }
+    interface CreateSidebarPaneRequest {
         command: Commands.CreateSidebarPane;
         id: string;
         panel: string;
         title: string;
-    };
-    type SetSidebarHeightRequest = {
+    }
+    interface SetSidebarHeightRequest {
         command: Commands.SetSidebarHeight;
         id: string;
         height: string;
-    };
-    type SetSidebarContentRequest = {
+    }
+    interface SetSidebarContentRequest {
         command: Commands.SetSidebarContent;
         id: string;
         expression: string;
         evaluateOnPage?: boolean;
         rootTitle?: string;
         evaluateOptions?: EvaluateOptions;
-    };
-    type SetSidebarPageRequest = {
+    }
+    interface SetSidebarPageRequest {
         command: Commands.SetSidebarPage;
         id: string;
         page: string;
-    };
-    type OpenResourceRequest = {
+    }
+    interface OpenResourceRequest {
         command: Commands.OpenResource;
         url: Platform.DevToolsPath.UrlString;
         lineNumber: number;
         columnNumber: number;
-    };
-    type SetOpenResourceHandlerRequest = {
+    }
+    interface SetOpenResourceHandlerRequest {
         command: Commands.SetOpenResourceHandler;
         handlerPresent: boolean;
-    };
-    type SetThemeChangeHandlerRequest = {
+    }
+    interface SetThemeChangeHandlerRequest {
         command: Commands.SetThemeChangeHandler;
         handlerPresent: boolean;
-    };
-    type ReloadRequest = {
+    }
+    interface ReloadRequest {
         command: Commands.Reload;
         options: null | {
             userAgent?: string;
             injectedScript?: string;
             ignoreCache?: boolean;
         };
-    };
-    type EvaluateOnInspectedPageRequest = {
+    }
+    interface EvaluateOnInspectedPageRequest {
         command: Commands.EvaluateOnInspectedPage;
         expression: string;
         evaluateOptions?: EvaluateOptions;
-    };
-    type GetRequestContentRequest = {
+    }
+    interface GetRequestContentRequest {
         command: Commands.GetRequestContent;
         id: number;
-    };
-    type GetResourceContentRequest = {
+    }
+    interface GetResourceContentRequest {
         command: Commands.GetResourceContent;
         url: string;
-    };
-    type SetResourceContentRequest = {
+    }
+    interface SetResourceContentRequest {
         command: Commands.SetResourceContent;
         url: string;
         content: string;
         commit: boolean;
-    };
-    type ForwardKeyboardEventRequest = {
+    }
+    interface ForwardKeyboardEventRequest {
         command: Commands.ForwardKeyboardEvent;
         entries: Array<KeyboardEventInit & {
             eventType: string;
         }>;
-    };
-    type GetHARRequest = {
+    }
+    interface GetHARRequest {
         command: Commands.GetHAR;
-    };
-    type GetPageResourcesRequest = {
+    }
+    interface GetPageResourcesRequest {
         command: Commands.GetPageResources;
-    };
-    type GetWasmLinearMemoryRequest = {
+    }
+    interface GetWasmLinearMemoryRequest {
         command: Commands.GetWasmLinearMemory;
         offset: number;
         length: number;
         stopId: unknown;
-    };
-    type GetWasmLocalRequest = {
+    }
+    interface GetWasmLocalRequest {
         command: Commands.GetWasmLocal;
         local: number;
         stopId: unknown;
-    };
-    type GetWasmGlobalRequest = {
+    }
+    interface GetWasmGlobalRequest {
         command: Commands.GetWasmGlobal;
         global: number;
         stopId: unknown;
-    };
-    type GetWasmOpRequest = {
+    }
+    interface GetWasmOpRequest {
         command: Commands.GetWasmOp;
         op: number;
         stopId: unknown;
-    };
-    type ShowNetworkPanelRequest = {
+    }
+    interface ShowNetworkPanelRequest {
         command: Commands.ShowNetworkPanel;
         filter: string | undefined;
-    };
-    type ReportResourceLoadRequest = {
+    }
+    interface ReportResourceLoadRequest {
         command: Commands.ReportResourceLoad;
         extensionId: string;
         resourceUrl: string;
@@ -268,113 +268,113 @@ export declare namespace PrivateAPI {
             errorMessage?: string;
             size?: number;
         };
-    };
+    }
     export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest | ShowNetworkPanelRequest | ReportResourceLoadRequest;
     export type ExtensionServerRequestMessage = PrivateAPI.ServerRequests & {
         requestId?: number;
     };
-    type AddRawModuleRequest = {
+    interface AddRawModuleRequest {
         method: LanguageExtensionPluginCommands.AddRawModule;
         parameters: {
             rawModuleId: string;
             symbolsURL: string | undefined;
             rawModule: PublicAPI.Chrome.DevTools.RawModule;
         };
-    };
-    type SourceLocationToRawLocationRequest = {
+    }
+    interface SourceLocationToRawLocationRequest {
         method: LanguageExtensionPluginCommands.SourceLocationToRawLocation;
         parameters: {
             sourceLocation: PublicAPI.Chrome.DevTools.SourceLocation;
         };
-    };
-    type RawLocationToSourceLocationRequest = {
+    }
+    interface RawLocationToSourceLocationRequest {
         method: LanguageExtensionPluginCommands.RawLocationToSourceLocation;
         parameters: {
             rawLocation: PublicAPI.Chrome.DevTools.RawLocation;
         };
-    };
-    type GetScopeInfoRequest = {
+    }
+    interface GetScopeInfoRequest {
         method: LanguageExtensionPluginCommands.GetScopeInfo;
         parameters: {
             type: string;
         };
-    };
-    type ListVariablesInScopeRequest = {
+    }
+    interface ListVariablesInScopeRequest {
         method: LanguageExtensionPluginCommands.ListVariablesInScope;
         parameters: {
             rawLocation: PublicAPI.Chrome.DevTools.RawLocation;
         };
-    };
-    type RemoveRawModuleRequest = {
+    }
+    interface RemoveRawModuleRequest {
         method: LanguageExtensionPluginCommands.RemoveRawModule;
         parameters: {
             rawModuleId: string;
         };
-    };
-    type GetFunctionInfoRequest = {
+    }
+    interface GetFunctionInfoRequest {
         method: LanguageExtensionPluginCommands.GetFunctionInfo;
         parameters: {
             rawLocation: PublicAPI.Chrome.DevTools.RawLocation;
         };
-    };
-    type GetInlinedFunctionRangesRequest = {
+    }
+    interface GetInlinedFunctionRangesRequest {
         method: LanguageExtensionPluginCommands.GetInlinedFunctionRanges;
         parameters: {
             rawLocation: PublicAPI.Chrome.DevTools.RawLocation;
         };
-    };
-    type GetInlinedCalleesRangesRequest = {
+    }
+    interface GetInlinedCalleesRangesRequest {
         method: LanguageExtensionPluginCommands.GetInlinedCalleesRanges;
         parameters: {
             rawLocation: PublicAPI.Chrome.DevTools.RawLocation;
         };
-    };
-    type GetMappedLinesRequest = {
+    }
+    interface GetMappedLinesRequest {
         method: LanguageExtensionPluginCommands.GetMappedLines;
         parameters: {
             rawModuleId: string;
             sourceFileURL: string;
         };
-    };
-    type FormatValueRequest = {
+    }
+    interface FormatValueRequest {
         method: LanguageExtensionPluginCommands.FormatValue;
         parameters: {
             expression: string;
             context: PublicAPI.Chrome.DevTools.RawLocation;
             stopId: number;
         };
-    };
-    type GetPropertiesRequest = {
+    }
+    interface GetPropertiesRequest {
         method: LanguageExtensionPluginCommands.GetProperties;
         parameters: {
             objectId: PublicAPI.Chrome.DevTools.RemoteObjectId;
         };
-    };
-    type ReleaseObjectRequest = {
+    }
+    interface ReleaseObjectRequest {
         method: LanguageExtensionPluginCommands.ReleaseObject;
         parameters: {
             objectId: PublicAPI.Chrome.DevTools.RemoteObjectId;
         };
-    };
+    }
     export type LanguageExtensionRequests = AddRawModuleRequest | SourceLocationToRawLocationRequest | RawLocationToSourceLocationRequest | GetScopeInfoRequest | ListVariablesInScopeRequest | RemoveRawModuleRequest | GetFunctionInfoRequest | GetInlinedFunctionRangesRequest | GetInlinedCalleesRangesRequest | GetMappedLinesRequest | FormatValueRequest | GetPropertiesRequest | ReleaseObjectRequest;
-    type StringifyRequest = {
+    interface StringifyRequest {
         method: RecorderExtensionPluginCommands.Stringify;
         parameters: {
             recording: Record<string, unknown>;
         };
-    };
-    type StringifyStepRequest = {
+    }
+    interface StringifyStepRequest {
         method: RecorderExtensionPluginCommands.StringifyStep;
         parameters: {
             step: Record<string, unknown>;
         };
-    };
-    type ReplayRequest = {
+    }
+    interface ReplayRequest {
         method: RecorderExtensionPluginCommands.Replay;
         parameters: {
             recording: Record<string, unknown>;
         };
-    };
+    }
     export type RecorderExtensionRequests = StringifyRequest | StringifyStepRequest | ReplayRequest;
     export {};
 }
@@ -386,13 +386,13 @@ declare global {
         webInspector?: APIImpl.InspectorExtensionAPI;
     }
 }
-export type ExtensionDescriptor = {
+export interface ExtensionDescriptor {
     startPage: string;
     name: string;
     exposeExperimentalAPIs: boolean;
     exposeWebInspectorNamespace?: boolean;
     allowFileAccess?: boolean;
-};
+}
 declare namespace APIImpl {
     interface InspectorExtensionAPI {
         languageServices: PublicAPI.Chrome.DevTools.LanguageExtensions;
@@ -479,10 +479,10 @@ declare namespace APIImpl {
     interface Button extends PublicAPI.Chrome.DevTools.Button {
         _id: string;
     }
-    type ResourceData = {
+    interface ResourceData {
         url: string;
         type: string;
-    };
+    }
     interface Resource extends PublicAPI.Chrome.DevTools.Resource {
         _type: string;
         _url: string;

@@ -1,6 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -95,8 +96,8 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         this.element.classList.add('service-worker-cache-data-view');
         this.element.classList.add('storage-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('cache-storage-data')}`);
-        const editorToolbar = new UI.Toolbar.Toolbar('data-view-toolbar', this.element);
-        editorToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        const editorToolbar = this.element.createChild('devtools-toolbar', 'data-view-toolbar');
+        editorToolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.element.appendChild(this.metadataView);
         this.splitWidget = new UI.SplitWidget.SplitWidget(false, false);
         this.splitWidget.show(this.element);

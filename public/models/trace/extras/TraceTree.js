@@ -522,8 +522,8 @@ export function generateEventID(event) {
         const location = event.callFrame.scriptId || event.callFrame.url || '';
         return `f:${name}@${location}`;
     }
-    if (Types.Events.isTimeStamp(event)) {
-        return `${event.name}:${event.args.data.message}`;
+    if (Types.Events.isConsoleTimeStamp(event)) {
+        return `${event.name}:${event.args.data.name}`;
     }
     return event.name;
 }

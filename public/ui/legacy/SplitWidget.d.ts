@@ -135,10 +135,10 @@ export declare const enum Events {
     SIDEBAR_SIZE_CHANGED = "SidebarSizeChanged",
     SHOW_MODE_CHANGED = "ShowModeChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SIDEBAR_SIZE_CHANGED]: number;
     [Events.SHOW_MODE_CHANGED]: string;
-};
+}
 export interface SettingForOrientation {
     showMode: string;
     size: number;

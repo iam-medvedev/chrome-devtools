@@ -24,11 +24,11 @@ interface RTTEstimateOptions {
     /** Useful for testing to isolate the different methods of estimation. */
     useHeadersEndEstimates?: boolean;
 }
-type RequestInfo = {
+interface RequestInfo {
     request: Lantern.NetworkRequest;
     timing: Lantern.ResourceTiming;
     connectionReused?: boolean;
-};
+}
 declare class NetworkAnalyzer {
     static get summary(): string;
     static groupByOrigin(records: Lantern.NetworkRequest[]): Map<string, Lantern.NetworkRequest[]>;

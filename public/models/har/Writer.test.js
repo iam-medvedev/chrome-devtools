@@ -8,9 +8,10 @@ import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as HAR from '../har/har.js';
 import * as TextUtils from '../text_utils/text_utils.js';
+const { urlString } = Platform.DevToolsPath;
 const simulateRequestWithStartTime = (startTime) => {
     const requestId = 'r0';
-    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, 'p0.com', Platform.DevToolsPath.EmptyUrlString, null, null, null);
+    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, urlString `p0.com`, Platform.DevToolsPath.EmptyUrlString, null, null, null);
     request.setIssueTime(startTime, startTime);
     request.setContentDataProvider(() => Promise.resolve(new TextUtils.ContentData.ContentData('', false, request.mimeType)));
     return request;

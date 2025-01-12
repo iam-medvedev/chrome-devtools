@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { dispatchClickEvent, getCleanTextContentFromElements, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -9,6 +10,7 @@ import { setupIgnoreListManagerEnvironment } from '../../../testing/TraceHelpers
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as ApplicationComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 const makeFrame = (overrides = {}) => {
     const newFrame = {
         resourceTreeModel: () => ({
@@ -21,7 +23,7 @@ const makeFrame = (overrides = {}) => {
 function mockBuildStackTraceRows(stackTrace, _target, _linkifier, _tabStops, _updateCallback) {
     const fakeProject = { id: () => 'http://www.example.com', type: () => Workspace.Workspace.projectTypes.Network };
     return stackTrace.callFrames.map(callFrame => {
-        const url = callFrame.url;
+        const url = urlString `${callFrame.url}`;
         const link = Components.Linkifier.Linkifier.linkifyURL(url);
         Components.Linkifier.Linkifier.bindUILocationForTest(link, new Workspace.UISourceCode.UILocation(new Workspace.UISourceCode.UISourceCode(fakeProject, url, Common.ResourceType.resourceTypes.Script), 1));
         return {
@@ -88,7 +90,7 @@ describeWithEnvironment('StackTrace', () => {
     it('hides hidden rows behind "show all" button', async () => {
         // Initialize ignore listing
         const { ignoreListManager } = setupIgnoreListManagerEnvironment();
-        ignoreListManager.ignoreListURL('http://www.example.com/hidden.js');
+        ignoreListManager.ignoreListURL(urlString `http://www.example.com/hidden.js`);
         const frame = makeFrame({
             getCreationStackTraceData: () => ({
                 creationStackTrace: {

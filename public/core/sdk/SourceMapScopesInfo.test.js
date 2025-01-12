@@ -4,7 +4,9 @@
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { GeneratedRangeBuilder, OriginalScopeBuilder } from '../../testing/SourceMapEncoder.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 const { SourceMapScopesInfo } = SDK.SourceMapScopesInfo;
 describe('SourceMapScopesInfo', () => {
     describe('findInlinedFunctions', () => {
@@ -321,7 +323,7 @@ describe('SourceMapScopesInfo', () => {
                     sourceIndex: mappedPausedPosition.sourceIndex,
                     sourceLineNumber: mappedPausedPosition.line,
                     sourceColumnNumber: mappedPausedPosition.column,
-                    sourceURL: '',
+                    sourceURL: urlString ``,
                     name: undefined,
                 });
             }

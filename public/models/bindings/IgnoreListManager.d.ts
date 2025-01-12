@@ -2,11 +2,11 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';
 import type { DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
-export type IgnoreListGeneralRules = {
+export interface IgnoreListGeneralRules {
     isContentScript?: boolean;
     isKnownThirdParty?: boolean;
     isCurrentlyIgnoreListed?: boolean;
-};
+}
 export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObserver<SDK.DebuggerModel.DebuggerModel> {
     #private;
     private constructor();

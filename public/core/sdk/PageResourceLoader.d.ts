@@ -88,6 +88,6 @@ export declare function getLoadThroughTargetSetting(): Common.Settings.Setting<b
 export declare const enum Events {
     UPDATE = "Update"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.UPDATE]: void;
-};
+}

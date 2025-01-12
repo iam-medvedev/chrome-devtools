@@ -1,9 +1,11 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 import { data as metaData } from './MetaHandler.js';
 import { data as networkRequestsData } from './NetworkRequestsHandler.js';
+import { data as pageLoadMetricsData } from './PageLoadMetricsHandler.js';
 /**
  * If the LCP resource was an image, and that image was fetched over the
  * network, we want to be able to find the network request in order to construct
@@ -19,52 +21,43 @@ import { data as networkRequestsData } from './NetworkRequestsHandler.js';
  * use the nodeId from the LCP candidate to find the image candidate. That image
  * candidate also contains a `imageUrl` property, which will have the full URL
  * to the image.
+ *
+ * `BackendNodeId`s are only unique within a given renderer process, so this is
+ * also keyed on `ProcessId`.
  **/
-const imageByDOMNodeId = new Map();
+const imagePaintsByNodeIdAndProcess = new Map();
 const lcpRequestByNavigation = new Map();
-const lcpPaintEventByNavigation = new Map();
-/**
- * We track the latest navigation that happened because we want to relate each
- * LargestImagePaintCandidate to the navigation it occurred after, but we have
- * to track navigations per-frame to avoid us reading a navigation from one
- * frame and treating it as the latest navigation across all frames.
- */
-const lastNavigationPerFrame = new Map();
 export function reset() {
-    imageByDOMNodeId.clear();
-    lcpRequestByNavigation.clear();
-    lcpPaintEventByNavigation.clear();
-    lastNavigationPerFrame.clear();
+    imagePaintsByNodeIdAndProcess.clear();
 }
 export function handleEvent(event) {
-    if (Types.Events.isNavigationStart(event) && event.args.frame) {
-        lastNavigationPerFrame.set(event.args.frame, event);
+    if (!Types.Events.isLargestImagePaintCandidate(event) || !event.args.data) {
         return;
     }
-    if (!Types.Events.isLargestImagePaintCandidate(event)) {
-        return;
-    }
-    if (!event.args.data) {
-        return;
-    }
-    imageByDOMNodeId.set(event.args.data.DOMNodeId, event);
-    // Now relate this LargestImagePaintCandidate event to the last navigation
-    // that occurred within the same frame.
-    const navigationForEvent = lastNavigationPerFrame.get(event.args.frame);
-    if (navigationForEvent) {
-        lcpPaintEventByNavigation.set(navigationForEvent, event);
-    }
+    const imagePaintsByNodeId = Platform.MapUtilities.getWithDefault(imagePaintsByNodeIdAndProcess, event.pid, () => new Map());
+    imagePaintsByNodeId.set(event.args.data.DOMNodeId, event);
 }
 export async function finalize() {
     const requests = networkRequestsData().byTime;
-    const traceBounds = metaData().traceBounds;
-    for (const [navigation, event] of lcpPaintEventByNavigation) {
-        const lcpUrl = event.args.data?.imageUrl;
+    const { traceBounds, navigationsByNavigationId } = metaData();
+    const metricScoresByFrameId = pageLoadMetricsData().metricScoresByFrameId;
+    for (const [navigationId, navigation] of navigationsByNavigationId) {
+        const lcpMetric = metricScoresByFrameId.get(navigation.args.frame)?.get(navigationId)?.get("LCP" /* MetricName.LCP */);
+        const lcpEvent = lcpMetric?.event;
+        if (!lcpEvent || !Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
+            continue;
+        }
+        const nodeId = lcpEvent.args.data?.nodeId;
+        if (!nodeId) {
+            continue;
+        }
+        const lcpImagePaintEvent = imagePaintsByNodeIdAndProcess.get(lcpEvent.pid)?.get(nodeId);
+        const lcpUrl = lcpImagePaintEvent?.args.data?.imageUrl;
         if (!lcpUrl) {
             continue;
         }
         const startTime = navigation?.ts ?? traceBounds.min;
-        const endTime = event.ts;
+        const endTime = lcpImagePaintEvent.ts;
         let lcpRequest;
         for (const request of requests) {
             if (request.ts < startTime) {
@@ -84,9 +77,9 @@ export async function finalize() {
     }
 }
 export function data() {
-    return { imageByDOMNodeId, lcpRequestByNavigation };
+    return { lcpRequestByNavigation };
 }
 export function deps() {
-    return ['Meta', 'NetworkRequests'];
+    return ['Meta', 'NetworkRequests', 'PageLoadMetrics'];
 }
 //# sourceMappingURL=LargestImagePaintHandler.js.map

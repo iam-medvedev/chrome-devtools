@@ -129,13 +129,13 @@ export declare const enum Events {
     SORTING_CHANGED = "SortingChanged",
     PADDING_CHANGED = "PaddingChanged"
 }
-export type EventTypes<T> = {
+export interface EventTypes<T> {
     [Events.SELECTED_NODE]: DataGridNode<T>;
     [Events.DESELECTED_NODE]: void;
     [Events.OPENED_NODE]: DataGridNode<T>;
     [Events.SORTING_CHANGED]: void;
     [Events.PADDING_CHANGED]: void;
-};
+}
 export declare enum Order {
     Ascending = "sort-ascending",
     Descending = "sort-descending"
@@ -155,9 +155,9 @@ export declare const enum ResizeMethod {
     FIRST = "first",
     LAST = "last"
 }
-export type DataGridData = {
+export interface DataGridData {
     [key: string]: any;
-};
+}
 export declare class DataGridNode<T> {
     #private;
     elementInternal: HTMLElement | null;
@@ -165,7 +165,6 @@ export declare class DataGridNode<T> {
     private selectedInternal;
     private dirty;
     private inactive;
-    key: string;
     private depthInternal;
     revealedInternal: boolean | undefined;
     protected attachedInternal: boolean;
@@ -258,6 +257,7 @@ export type DataGridWidgetOptions<T> = Parameters & {
     markAsRoot?: boolean;
     striped?: boolean;
     nodes: DataGridNode<T>[];
+    rowContextMenuCallback?: ((arg0: UI.ContextMenu.ContextMenu, arg1: DataGridNode<T>) => void);
 };
 export declare class DataGridWidgetElement<T> extends UI.Widget.WidgetElement<DataGridWidget<T>> {
     #private;

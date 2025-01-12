@@ -30,6 +30,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -691,7 +692,7 @@ export class MainMenuItem {
             const toggleDockSideShorcuts = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('main.toggle-dock');
             UI.Tooltip.Tooltip.install(titleElement, i18nString(UIStrings.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShorcuts[0].title() }));
             dockItemElement.appendChild(titleElement);
-            const dockItemToolbar = new UI.Toolbar.Toolbar('', dockItemElement);
+            const dockItemToolbar = dockItemElement.createChild('devtools-toolbar');
             dockItemElement.setAttribute('jslog', `${VisualLogging.item('dock-side').track({ keydown: 'ArrowDown|ArrowLeft|ArrowRight' })}`);
             const undock = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.undockIntoSeparateWindow), 'dock-window', undefined, 'current-dock-state-undock');
             const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom', undefined, 'current-dock-state-bottom');
@@ -800,9 +801,7 @@ let settingsButtonProviderInstance;
 export class SettingsButtonProvider {
     #settingsButton;
     constructor() {
-        const settingsActionId = 'settings.show';
-        this.#settingsButton =
-            UI.Toolbar.Toolbar.createActionButtonForId(settingsActionId, { showLabel: false, userActionCode: undefined });
+        this.#settingsButton = UI.Toolbar.Toolbar.createActionButton('settings.show');
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;

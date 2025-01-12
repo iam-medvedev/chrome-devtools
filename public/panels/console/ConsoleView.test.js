@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
@@ -12,6 +13,7 @@ import { expectCall } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Console from './console.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('ConsoleView', () => {
     let consoleView;
     beforeEach(() => {
@@ -22,7 +24,7 @@ describeWithMockConnection('ConsoleView', () => {
         consoleView.detach();
     });
     it('adds a title to every checkbox label in the settings view', async () => {
-        const consoleSettingsCheckboxes = consoleView.element.querySelector('.toolbar')?.shadowRoot?.querySelectorAll('.toolbar-item.checkbox');
+        const consoleSettingsCheckboxes = consoleView.element.querySelector('devtools-toolbar').querySelectorAll('.toolbar-item.checkbox');
         if (!consoleSettingsCheckboxes) {
             assert.fail('No checkbox found in console settings');
             return;
@@ -54,7 +56,7 @@ describeWithMockConnection('ConsoleView', () => {
         const TIMESTAMP = 42;
         const URL_HOST = 'example.com';
         sinon.stub(Date, 'now').returns(TIMESTAMP);
-        target.setInspectedURL(`http://${URL_HOST}/foo`);
+        target.setInspectedURL(urlString `${`http://${URL_HOST}/foo`}`);
         const FILENAME = `${URL_HOST}-${TIMESTAMP}.log`;
         const fileManager = stubFileManager();
         const fileManagerCloseCall = expectCall(fileManager.close);

@@ -4,7 +4,6 @@
 import { SourceMapScopeChainEntry } from './SourceMapScopeChainEntry.js';
 import { decodeGeneratedRanges, decodeOriginalScopes, } from './SourceMapScopes.js';
 export class SourceMapScopesInfo {
-    /* eslint-disable-next-line no-unused-private-class-members */
     #sourceMap;
     #originalScopes;
     #generatedRanges;

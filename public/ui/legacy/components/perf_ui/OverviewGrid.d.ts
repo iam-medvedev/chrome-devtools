@@ -110,11 +110,11 @@ export interface WindowChangedWithPositionEvent {
     rawStartValue: number;
     rawEndValue: number;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.WINDOW_CHANGED]: void;
     [Events.BREADCRUMB_ADDED]: WindowChangedWithPositionEvent;
     [Events.WINDOW_CHANGED_WITH_POSITION]: WindowChangedWithPositionEvent;
-};
+}
 export declare class WindowSelector {
     private startPosition;
     private width;

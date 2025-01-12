@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
@@ -11,6 +12,7 @@ import { makeMockRendererHandlerData as makeRendererHandlerData, makeProfileCall
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
+const { urlString } = Platform.DevToolsPath;
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
     setupIgnoreListManagerEnvironment();
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
@@ -339,7 +341,7 @@ describeWithEnvironment('ThreadAppender', function () {
             const initialTimelineData = await renderThreadAppendersFromTrace(this, 'react-hello-world.json.gz');
             const initialFlamechartData = initialTimelineData.flameChartData;
             const eventCountBeforeIgnoreList = initialFlamechartData.entryStartTimes.length;
-            const SCRIPT_TO_IGNORE = 'https://unpkg.com/react@18.2.0/umd/react.development.js';
+            const SCRIPT_TO_IGNORE = urlString `https://unpkg.com/react@18.2.0/umd/react.development.js`;
             // Clear the data provider cache and add the React script to the ignore list.
             ignoreListManager.ignoreListURL(SCRIPT_TO_IGNORE);
             const finalTimelineData = await renderThreadAppendersFromTrace(this, 'react-hello-world.json.gz');
@@ -357,7 +359,7 @@ describeWithEnvironment('ThreadAppender', function () {
             assert.strictEqual(eventCountAfterIgnoreList2, eventCountBeforeIgnoreList);
         });
         it('appends a tree that contains ignore listed entries correctly', async function () {
-            const SCRIPT_TO_IGNORE = 'https://some-framework/bundled.js';
+            const SCRIPT_TO_IGNORE = urlString `https://some-framework/bundled.js`;
             // Create the following hierarchy with profile calls. Events marked
             // with \\\\ represent ignored listed events.
             // |----------A-----------|

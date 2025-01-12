@@ -92,12 +92,12 @@ export declare const enum ShadowPropertyType {
     INSET = "inset",
     COLOR = "color"
 }
-type ShadowProperty = {
+interface ShadowProperty {
     value: string | CodeMirror.SyntaxNode;
     source: CodeMirror.SyntaxNode | null;
     expansionContext: RenderingContext | null;
     propertyType: ShadowPropertyType;
-};
+}
 export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShadowModel {
     #private;
     constructor(shadowType: ShadowType, properties: ShadowProperty[], context: RenderingContext);

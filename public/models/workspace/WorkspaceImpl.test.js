@@ -1,8 +1,10 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Workspace from '../workspace/workspace.js';
+const { urlString } = Platform.DevToolsPath;
 describe('WorkspaceImpl', () => {
     it('can remove the current instance', () => {
         const sutBefore = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
@@ -14,7 +16,7 @@ describe('WorkspaceImpl', () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const projectStub = sinon.createStubInstance(Bindings.ContentProviderBasedProject.ContentProviderBasedProject);
         const exampleProjectID = 'exampleProjectID';
-        const exampleUrl = 'https://example.com/';
+        const exampleUrl = urlString `https://example.com/`;
         projectStub.id.returns(exampleProjectID);
         const uiSourceCodeStub = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         projectStub.uiSourceCodeForURL.withArgs(exampleUrl).returns(uiSourceCodeStub);
@@ -24,7 +26,7 @@ describe('WorkspaceImpl', () => {
     });
     it('can return the UI source code from a URL', async () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-        const exampleUrl = 'https://example.com/';
+        const exampleUrl = urlString `https://example.com/`;
         const projectStub = sinon.createStubInstance(Bindings.ContentProviderBasedProject.ContentProviderBasedProject);
         sut.addProject(projectStub);
         sut.uiSourceCodeForURL(exampleUrl);
@@ -103,21 +105,21 @@ describe('WorkspaceImpl', () => {
 describe('ProjectStore', () => {
     it('allows renaming for file names with special characters when there is no parent URL', () => {
         const workspaceStub = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
-        const originalUrlExample = 'https://example.com/';
-        const nameWithSpecialChars = 'equals=question?percent%space dollar$semi;hash#amper&';
+        const originalUrlExample = urlString `https://example.com/`;
+        const nameWithSpecialChars = urlString `equals=question?percent%space dollar\$semi;hash#amper&`;
         const uiSourceCodeStub = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         uiSourceCodeStub.url.returns(originalUrlExample);
         const projectInstance = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspaceStub, 'exampleProjectID', Workspace.Workspace.projectTypes.Debugger, 'exampleDisplayName', false);
         projectInstance.addUISourceCode(uiSourceCodeStub);
         projectInstance.renameUISourceCode(uiSourceCodeStub, nameWithSpecialChars);
         assert.isNull(projectInstance.uiSourceCodeForURL(originalUrlExample));
-        assert.isNotNull(projectInstance.uiSourceCodeForURL('equals=question%3Fpercent%25space%20dollar$semi%3Bhash%23amper&'));
+        assert.isNotNull(projectInstance.uiSourceCodeForURL(urlString `equals=question%3Fpercent%25space%20dollar\$semi%3Bhash%23amper&`));
     });
     it('allows renaming for file names with special characters when there is a parent URL', () => {
         const workspaceStub = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
-        const originalUrlExample = 'https://example.com/';
-        const parentUrlExample = 'https://parent.example.com';
-        const nameWithSpecialChars = 'equals=question?percent%space dollar$semi;hash#amper&';
+        const originalUrlExample = urlString `https://example.com/`;
+        const parentUrlExample = urlString `https://parent.example.com`;
+        const nameWithSpecialChars = urlString `equals=question?percent%space dollar\$semi;hash#amper&`;
         const uiSourceCodeStub = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         uiSourceCodeStub.url.returns(originalUrlExample);
         uiSourceCodeStub.parentURL.returns(parentUrlExample);
@@ -125,7 +127,7 @@ describe('ProjectStore', () => {
         projectInstance.addUISourceCode(uiSourceCodeStub);
         projectInstance.renameUISourceCode(uiSourceCodeStub, nameWithSpecialChars);
         assert.isNull(projectInstance.uiSourceCodeForURL(originalUrlExample));
-        assert.isNotNull(projectInstance.uiSourceCodeForURL('https://parent.example.com/equals=question%3Fpercent%25space%20dollar$semi%3Bhash%23amper&'));
+        assert.isNotNull(projectInstance.uiSourceCodeForURL(urlString `https://parent.example.com/equals=question%3Fpercent%25space%20dollar\$semi%3Bhash%23amper&`));
     });
 });
 //# sourceMappingURL=WorkspaceImpl.test.js.map

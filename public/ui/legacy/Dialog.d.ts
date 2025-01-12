@@ -34,9 +34,9 @@ export declare class Dialog extends Dialog_base {
 export declare const enum Events {
     HIDDEN = "hidden"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.HIDDEN]: void;
-};
+}
 export declare const enum OutsideTabIndexBehavior {
     DISABLE_ALL_OUTSIDE_TAB_INDEX = "DisableAllTabIndex",
     PRESERVE_MAIN_VIEW_TAB_INDEX = "PreserveMainViewTabIndex",

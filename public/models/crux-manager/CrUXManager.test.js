@@ -8,6 +8,7 @@ import * as EmulationModel from '../../models/emulation/emulation.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as CrUXManager from './crux-manager.js';
+const { urlString } = Platform.DevToolsPath;
 function mockResponse(scopes = null) {
     return {
         record: {
@@ -299,7 +300,7 @@ describeWithMockConnection('CrUXManager', () => {
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/main/');
         });
         it('should use URL override if set', async () => {
-            target.setInspectedURL('https://example.com/inspected');
+            target.setInspectedURL(urlString `https://example.com/inspected`);
             cruxManager.getConfigSetting().set({ enabled: false, override: 'https://example.com/override', overrideEnabled: true });
             const result = await cruxManager.getFieldDataForCurrentPage();
             assert.deepEqual(result.warnings, ['Field data is configured for a different URL than the current page.']);
@@ -307,7 +308,7 @@ describeWithMockConnection('CrUXManager', () => {
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/override');
         });
         it('should use origin map if set', async () => {
-            target.setInspectedURL('http://localhost:8080/inspected?param');
+            target.setInspectedURL(urlString `http://localhost:8080/inspected?param`);
             cruxManager.getConfigSetting().set({
                 enabled: false,
                 originMappings: [{
@@ -321,7 +322,7 @@ describeWithMockConnection('CrUXManager', () => {
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/inspected');
         });
         it('should not use origin map if URL override is set', async () => {
-            target.setInspectedURL('http://localhost:8080/inspected?param');
+            target.setInspectedURL(urlString `http://localhost:8080/inspected?param`);
             cruxManager.getConfigSetting().set({
                 enabled: false,
                 override: 'https://google.com',
@@ -337,7 +338,7 @@ describeWithMockConnection('CrUXManager', () => {
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://google.com');
         });
         it('should use inspected URL if main document is unavailable', async () => {
-            target.setInspectedURL('https://example.com/inspected');
+            target.setInspectedURL(urlString `https://example.com/inspected`);
             const result = await cruxManager.getFieldDataForCurrentPage();
             assert.deepEqual(result.warnings, []);
             assert.strictEqual(getFieldDataMock.callCount, 1);
@@ -347,7 +348,7 @@ describeWithMockConnection('CrUXManager', () => {
             target.setInspectedURL(Platform.DevToolsPath.EmptyUrlString);
             const finishPromise = cruxManager.getFieldDataForCurrentPage();
             await triggerMicroTaskQueue();
-            target.setInspectedURL('https://example.com/awaitInspected');
+            target.setInspectedURL(urlString `https://example.com/awaitInspected`);
             const result = await finishPromise;
             assert.deepEqual(result.warnings, []);
             assert.strictEqual(getFieldDataMock.callCount, 1);

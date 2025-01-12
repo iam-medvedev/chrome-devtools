@@ -50,11 +50,11 @@ export declare const enum Events {
     DOM_BREAKPOINT_TOGGLED = "DOMBreakpointToggled",
     DOM_BREAKPOINTS_REMOVED = "DOMBreakpointsRemoved"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.DOM_BREAKPOINT_ADDED]: DOMBreakpoint;
     [Events.DOM_BREAKPOINT_TOGGLED]: DOMBreakpoint;
     [Events.DOM_BREAKPOINTS_REMOVED]: DOMBreakpoint[];
-};
+}
 export declare class DOMBreakpoint {
     domDebuggerModel: DOMDebuggerModel;
     node: DOMNode;

@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Extensions from '../../models/extensions/extensions.js';
@@ -25,7 +26,6 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
     private readonly panelToolbar;
     private readonly rightToolbar;
     private readonly filterBar;
-    private readonly settingsPane;
     private showSettingsPaneSetting;
     private readonly filmStripPlaceholderElement;
     private readonly overviewPane;
@@ -57,7 +57,6 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
     private onWindowChanged;
     private searchToggleClick;
     private setupToolbarButtons;
-    private updateSettingsPaneVisibility;
     private createThrottlingConditionsSelect;
     toggleRecord(toggled: boolean): void;
     private filmStripAvailable;

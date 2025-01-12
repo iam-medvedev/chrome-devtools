@@ -5,11 +5,13 @@ export declare class ProgressIndicator implements Common.Progress.Progress {
     private readonly contentElement;
     private labelElement;
     private progressElement;
-    private readonly stopButton;
+    private readonly stopButton?;
     private isCanceledInternal;
     private worked;
     private isDone?;
-    constructor();
+    constructor(options?: {
+        showStopButton: boolean;
+    });
     show(parent: Element): void;
     done(): void;
     cancel(): void;

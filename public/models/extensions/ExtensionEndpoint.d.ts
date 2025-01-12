@@ -1,6 +1,6 @@
-type Event = {
+interface Event {
     event: string;
-};
+}
 export declare class ExtensionEndpoint {
     private readonly port;
     private nextRequestId;

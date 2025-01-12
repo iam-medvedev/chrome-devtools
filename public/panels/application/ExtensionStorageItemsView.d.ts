@@ -7,10 +7,10 @@ export declare namespace ExtensionStorageItemsDispatcher {
         ITEM_EDITED = "ItemEdited",
         ITEMS_REFRESHED = "ItemsRefreshed"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.ITEM_EDITED]: void;
         [Events.ITEMS_REFRESHED]: void;
-    };
+    }
 }
 export declare class ExtensionStorageItemsView extends StorageItemsView {
     #private;

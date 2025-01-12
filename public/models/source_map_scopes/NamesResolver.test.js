@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -10,8 +11,9 @@ import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHel
 import * as Bindings from '../bindings/bindings.js';
 import * as SourceMapScopes from '../source_map_scopes/source_map_scopes.js';
 import * as Workspace from '../workspace/workspace.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NameResolver', () => {
-    const URL = 'file:///tmp/example.js';
+    const URL = urlString `file:///tmp/example.js`;
     let target;
     let backend;
     beforeEach(() => {

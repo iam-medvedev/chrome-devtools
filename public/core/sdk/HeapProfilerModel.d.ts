@@ -49,13 +49,13 @@ export interface HeapSnapshotProgress {
     total: number;
     finished?: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.HEAP_STATS_UPDATED]: HeapStatsUpdateSamples;
     [Events.LAST_SEEN_OBJECT_ID]: LastSeenObjectId;
     [Events.ADD_HEAP_SNAPSHOT_CHUNK]: string;
     [Events.REPORT_HEAP_SNAPSHOT_PROGRESS]: HeapSnapshotProgress;
     [Events.RESET_PROFILES]: HeapProfilerModel;
-};
+}
 export interface NativeProfilerCallFrame {
     functionName: string;
     url: Platform.DevToolsPath.UrlString;

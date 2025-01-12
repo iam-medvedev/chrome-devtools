@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
@@ -8,9 +9,10 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import * as NetworkForward from './forward/forward.js';
 import * as Network from './network.js';
+const { urlString } = Platform.DevToolsPath;
 function renderNetworkItemView(request) {
     if (!request) {
-        request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/foo.html', '', null, null, null);
+        request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
     }
     const networkItemView = new Network.NetworkItemView.NetworkItemView(request, {});
     const div = document.createElement('div');
@@ -45,7 +47,7 @@ describeWithEnvironment('NetworkItemView', () => {
     let request;
     const OVERRIDEN_ICON_NAME = 'small-status-dot';
     beforeEach(async () => {
-        request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com', '', null, null, null);
+        request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
         request.statusCode = 200;
     });
     it('shows indicator for overriden headers and responses', () => {

@@ -34,7 +34,7 @@ export declare class Filters extends Common.ObjectWrapper.ObjectWrapper<EventTyp
 declare const enum Events {
     FILTER_CHANGED = "FilterChanged"
 }
-type EventTypes = {
+interface EventTypes {
     [Events.FILTER_CHANGED]: void;
-};
+}
 export {};

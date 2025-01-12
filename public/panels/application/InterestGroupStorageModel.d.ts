@@ -23,6 +23,6 @@ export declare class InterestGroupStorageModel extends SDK.SDKModel.SDKModel<Eve
 export declare const enum Events {
     INTEREST_GROUP_ACCESS = "InterestGroupAccess"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.INTEREST_GROUP_ACCESS]: Protocol.Storage.InterestGroupAccessedEvent;
-};
+}

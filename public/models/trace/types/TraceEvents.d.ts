@@ -645,11 +645,11 @@ export interface Async extends Event {
     ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_INSTANT | Phase.ASYNC_NESTABLE_END | Phase.ASYNC_STEP_INTO | Phase.ASYNC_BEGIN | Phase.ASYNC_END | Phase.ASYNC_STEP_PAST;
 }
 export type TraceRect = [number, number, number, number];
-export type TraceImpactedNode = {
+export interface TraceImpactedNode {
     new_rect: TraceRect;
     node_id: Protocol.DOM.BackendNodeId;
     old_rect: TraceRect;
-};
+}
 type LayoutShiftData = ArgsData & {
     cumulative_score: number;
     frame_max_distance: number;
@@ -1071,15 +1071,18 @@ export interface ConsoleTimeEnd extends PairableAsyncEnd {
     cat: 'blink.console';
 }
 export type ConsoleTime = ConsoleTimeBegin | ConsoleTimeEnd;
-export interface TimeStamp extends Event {
-    cat: 'devtools.timeline';
-    name: 'TimeStamp';
-    ph: Phase.INSTANT;
-    id: string;
+export interface ConsoleTimeStamp extends Event {
+    cat: 'disabled-by-default-v8.inspector';
+    name: Name.CONSOLE_TIME_STAMP;
+    ph: Phase.COMPLETE;
     args: Args & {
         data: ArgsData & {
-            frame: string;
-            message: string;
+            name: string | number;
+            start?: string | number;
+            end?: string | number;
+            trackName?: string | number;
+            trackGroup?: string | number;
+            color?: string | number;
         };
     };
 }
@@ -1384,11 +1387,11 @@ export interface DecodeImage extends Complete {
 export declare function isDecodeImage(event: Event): event is DecodeImage;
 export interface SelectorTiming {
     'elapsed (us)': number;
-    'fast_reject_count': number;
-    'match_attempts': number;
-    'selector': string;
-    'style_sheet_id': string;
-    'match_count': number;
+    fast_reject_count: number;
+    match_attempts: number;
+    selector: string;
+    style_sheet_id: string;
+    match_count: number;
 }
 export declare enum SelectorTimingsKey {
     Elapsed = "elapsed (us)",
@@ -1549,7 +1552,7 @@ export declare function isPerformanceMeasure(event: Event): event is Performance
 export declare function isPerformanceMeasureBegin(event: Event): event is PerformanceMeasureBegin;
 export declare function isPerformanceMark(event: Event): event is PerformanceMark;
 export declare function isConsoleTime(event: Event): event is ConsoleTime;
-export declare function isTimeStamp(event: Event): event is TimeStamp;
+export declare function isConsoleTimeStamp(event: Event): event is ConsoleTimeStamp;
 export declare function isParseHTML(event: Event): event is ParseHTML;
 export interface Async extends Event {
     ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_INSTANT | Phase.ASYNC_NESTABLE_END | Phase.ASYNC_STEP_INTO | Phase.ASYNC_BEGIN | Phase.ASYNC_END | Phase.ASYNC_STEP_PAST;
@@ -2038,10 +2041,10 @@ export declare const enum Name {
     MARK_LCP_CANDIDATE = "largestContentfulPaint::Candidate",
     MARK_LCP_INVALIDATE = "largestContentfulPaint::Invalidate",
     NAVIGATION_START = "navigationStart",
-    TIME_STAMP = "TimeStamp",
     CONSOLE_TIME = "ConsoleTime",
     USER_TIMING = "UserTiming",
     INTERACTIVE_TIME = "InteractiveTime",
+    CONSOLE_TIME_STAMP = "V8Console::TimeStamp",
     BEGIN_FRAME = "BeginFrame",
     NEEDS_BEGIN_FRAME_CHANGED = "NeedsBeginFrameChanged",
     BEGIN_MAIN_THREAD_FRAME = "BeginMainThreadFrame",

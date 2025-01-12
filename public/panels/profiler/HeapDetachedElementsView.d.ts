@@ -42,11 +42,11 @@ export declare namespace DetachedElementsProfileType {
         STATS_UPDATE = "StatsUpdate",
         DETACHED_ELEMENTS_OBTAINED = "DetachedElementsObtained"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.RECORDING_STOPPED]: void;
         [Events.STATS_UPDATE]: Protocol.HeapProfiler.SamplingHeapProfile | null;
         [Events.DETACHED_ELEMENTS_OBTAINED]: Protocol.DOM.DetachedElementInfo[] | null;
-    };
+    }
 }
 export declare class DetachedElementsProfileHeader extends WritableProfileHeader {
     readonly heapProfilerModelInternal: SDK.HeapProfilerModel.HeapProfilerModel | null;

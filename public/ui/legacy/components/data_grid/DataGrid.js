@@ -1419,7 +1419,6 @@ export class DataGridNode {
     selectedInternal;
     dirty;
     inactive;
-    key;
     depthInternal;
     revealedInternal;
     attachedInternal;
@@ -2145,6 +2144,7 @@ export class DataGridWidgetElement extends UI.Widget.WidgetElement {
             if (this.#options.striped) {
                 this.widget.dataGrid.setStriped(true);
             }
+            this.widget.dataGrid.setRowContextMenuCallback(this.#options.rowContextMenuCallback ?? null);
         }
     }
     #selectedNode(event) {

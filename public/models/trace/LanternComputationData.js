@@ -76,7 +76,7 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
     try {
         url = new URL(request.args.data.url);
     }
-    catch (e) {
+    catch {
         return;
     }
     const timing = request.args.data.timing ? {

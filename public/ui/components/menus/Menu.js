@@ -138,6 +138,9 @@ export class Menu extends HTMLElement {
         if (!(item instanceof MenuItem)) {
             return;
         }
+        if (item.disabled) {
+            return;
+        }
         this.#updateSelectedValue(item);
     }
     #handleDialogKeyDown(evt) {
@@ -331,6 +334,7 @@ export class MenuItem extends HTMLElement {
         value: '',
         preventMenuCloseOnSelection: false,
         selected: false,
+        disabled: false,
     };
     get preventMenuCloseOnSelection() {
         return this.#props.preventMenuCloseOnSelection;
@@ -353,6 +357,13 @@ export class MenuItem extends HTMLElement {
         this.#props.selected = selected;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
+    get disabled() {
+        return this.#props.disabled;
+    }
+    set disabled(disabled) {
+        this.#props.disabled = disabled;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+    }
     async #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('MenuItem render was not scheduled');
@@ -362,6 +373,7 @@ export class MenuItem extends HTMLElement {
       <span class=${LitHtml.Directives.classMap({
             'menu-item': true,
             'is-selected-item': this.selected,
+            'is-disabled-item': this.disabled,
             'prevents-close': this.preventMenuCloseOnSelection,
         })}
       >

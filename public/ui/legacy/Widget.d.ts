@@ -7,9 +7,9 @@ export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     createWidget(): WidgetT;
     connectedCallback(): void;
 }
-type Constructor<T, Args extends unknown[]> = {
+interface Constructor<T, Args extends unknown[]> {
     new (...args: Args): T;
-};
+}
 export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof LitHtml.Directives.ref>;
 export declare class Widget {
     #private;

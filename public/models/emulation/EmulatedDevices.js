@@ -227,7 +227,7 @@ export class EmulatedDevice {
             result.#showInternal = show;
             return result;
         }
-        catch (e) {
+        catch {
             return null;
         }
     }
@@ -527,7 +527,7 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 // These props should quoted for the script to work properly
-/* eslint-disable quote-props */
+/* eslint-disable @stylistic/quote-props */
 const emulatedDevices = [
     // This is used by a python script to keep this list up-to-date with
     // chromedriver native code.
@@ -1703,5 +1703,5 @@ const emulatedDevices = [
     },
     // DEVICE-LIST-END
 ];
-/* eslint-enable quote-props */
+/* eslint-enable @stylistic/quote-props */
 //# sourceMappingURL=EmulatedDevices.js.map

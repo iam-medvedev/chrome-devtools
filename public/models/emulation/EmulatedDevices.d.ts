@@ -71,10 +71,10 @@ export declare const enum Events {
     CUSTOM_DEVICES_UPDATED = "CustomDevicesUpdated",
     STANDARD_DEVICES_UPDATED = "StandardDevicesUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CUSTOM_DEVICES_UPDATED]: void;
     [Events.STANDARD_DEVICES_UPDATED]: void;
-};
+}
 export interface Mode {
     title: string;
     orientation: string;

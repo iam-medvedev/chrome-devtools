@@ -1,11 +1,13 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../workspace/workspace.js';
+const { urlString } = Platform.DevToolsPath;
 const { SearchConfig } = Workspace.SearchConfig;
 describe('SearchConfig', () => {
     describe('filePathMatchesFileQuery', () => {
-        const url = (t) => t[0];
+        const url = (t) => urlString `${t[0]}`;
         it('returns true if the user query doesn\'t contain any f: or files: part', () => {
             const config = new SearchConfig('foo', true, false);
             assert.isTrue(config.filePathMatchesFileQuery(url `http://example.com/main.js`));

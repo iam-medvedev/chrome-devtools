@@ -59,6 +59,14 @@ export var RecitationAction;
     RecitationAction["NO_ACTION"] = "NO_ACTION";
     RecitationAction["EXEMPT_FOUND_IN_PROMPT"] = "EXEMPT_FOUND_IN_PROMPT";
 })(RecitationAction || (RecitationAction = {}));
+export var CitationSourceType;
+(function (CitationSourceType) {
+    CitationSourceType["CITATION_SOURCE_TYPE_UNSPECIFIED"] = "CITATION_SOURCE_TYPE_UNSPECIFIED";
+    CitationSourceType["TRAINING_DATA"] = "TRAINING_DATA";
+    CitationSourceType["WORLD_FACTS"] = "WORLD_FACTS";
+    CitationSourceType["LOCAL_FACTS"] = "LOCAL_FACTS";
+    CitationSourceType["INDIRECT"] = "INDERECT";
+})(CitationSourceType || (CitationSourceType = {}));
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 const CODE_CHUNK_SEPARATOR = '\n`````\n';
 export class AidaAbortError extends Error {

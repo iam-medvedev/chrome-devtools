@@ -1,6 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -188,8 +189,8 @@ export class SearchView extends UI.Widget.VBox {
         this.matchCaseButton.addEventListener('click', () => this.matchCaseButtonToggled());
         searchElements.appendChild(this.matchCaseButton);
         this.searchPanelElement.appendChild(searchContainer);
-        const toolbar = new UI.Toolbar.Toolbar('search-toolbar', this.searchPanelElement);
-        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        const toolbar = this.searchPanelElement.createChild('devtools-toolbar', 'search-toolbar');
+        toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         const refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refresh), 'refresh', undefined, 'search.refresh');
         const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'search.clear');
         toolbar.appendToolbarItem(refreshButton);

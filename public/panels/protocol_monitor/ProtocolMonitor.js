@@ -1,6 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -155,8 +156,8 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         this.startTime = 0;
         this.dataGridRowForId = new Map();
         this.requestTimeForId = new Map();
-        const topToolbar = new UI.Toolbar.Toolbar('protocol-monitor-toolbar', this.contentElement);
-        topToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('top')}`);
+        const topToolbar = this.contentElement.createChild('devtools-toolbar', 'protocol-monitor-toolbar');
+        topToolbar.setAttribute('jslog', `${VisualLogging.toolbar('top')}`);
         this.contentElement.classList.add('protocol-monitor');
         const recordButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.record), 'record-start', 'record-stop', 'protocol-monitor.toggle-recording');
         recordButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
@@ -326,15 +327,14 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
             const filters = this.filterParser.parse(query);
             this.dataGridIntegrator.update({ ...this.dataGridIntegrator.data(), filters });
         });
-        const bottomToolbar = new UI.Toolbar.Toolbar('protocol-monitor-bottom-toolbar', this.contentElement);
-        bottomToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
+        const bottomToolbar = this.contentElement.createChild('devtools-toolbar', 'protocol-monitor-bottom-toolbar');
+        bottomToolbar.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
         bottomToolbar.appendToolbarItem(splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showCDPCommandEditor), i18nString(UIStrings.hideCDPCommandEditor), i18nString(UIStrings.CDPCommandEditorShown), i18nString(UIStrings.CDPCommandEditorHidden), 'protocol-monitor.toggle-command-editor'));
         this.#commandInput = this.#createCommandInput();
         bottomToolbar.appendToolbarItem(this.#commandInput);
         bottomToolbar.appendToolbarItem(this.selector);
-        const shadowRoot = bottomToolbar.element?.shadowRoot;
-        const inputBar = shadowRoot?.querySelector('.toolbar-input');
-        const tabSelector = shadowRoot?.querySelector('.toolbar-select-container');
+        const inputBar = this.#commandInput.element;
+        const tabSelector = this.selector.element;
         const populateToolbarInput = () => {
             const editorWidget = splitWidget.sidebarWidget();
             if (!(editorWidget instanceof EditorWidget)) {
@@ -681,7 +681,7 @@ export function parseCommandInput(input) {
     try {
         json = JSON.parse(input);
     }
-    catch (err) {
+    catch {
     }
     const command = json ? json.command || json.method || json.cmd || '' : input;
     const parameters = json?.parameters || json?.params || json?.args || json?.arguments || {};

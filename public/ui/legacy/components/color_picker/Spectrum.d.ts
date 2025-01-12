@@ -1,3 +1,4 @@
+import '../../legacy.js';
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as UI from '../../legacy.js';
@@ -130,10 +131,10 @@ export declare const enum Events {
     COLOR_CHANGED = "ColorChanged",
     SIZE_CHANGED = "SizeChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.COLOR_CHANGED]: string;
     [Events.SIZE_CHANGED]: void;
-};
+}
 export declare class PaletteGenerator {
     private readonly callback;
     private readonly frequencyMap;

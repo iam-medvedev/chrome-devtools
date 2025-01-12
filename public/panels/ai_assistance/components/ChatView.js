@@ -440,7 +440,7 @@ export class ChatView extends HTMLElement {
             return;
         }
         if (ev.key === 'Enter' && !ev.shiftKey) {
-            // Do not go to a new line whenver Shift + Enter is pressed.
+            // Do not go to a new line whenever Shift + Enter is pressed.
             ev.preventDefault();
             // Only submit the text when there isn't a request already in flight.
             if (!this.#props.isLoading) {
@@ -491,7 +491,7 @@ export class ChatView extends HTMLElement {
                 this.#markdownRenderer.renderToken(token);
             }
         }
-        catch (err) {
+        catch {
             // The tokens were not parsed correctly or
             // one of the tokens are not supported, so we
             // continue to render this as text.

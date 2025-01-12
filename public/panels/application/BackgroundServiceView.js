@@ -1,6 +1,7 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -181,8 +182,8 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         }
         this.storageKeyManager.addEventListener("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED */, () => this.onStorageKeyChanged());
         this.recordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('background-service.toggle-recording');
-        this.toolbar = new UI.Toolbar.Toolbar('background-service-toolbar', this.contentElement);
-        this.toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        this.toolbar = this.contentElement.createChild('devtools-toolbar', 'background-service-toolbar');
+        this.toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         void this.setupToolbar();
         /**
          * This will contain the DataGrid for displaying events, and a panel at the bottom for showing
@@ -206,7 +207,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
      * Creates the toolbar UI element.
      */
     async setupToolbar() {
-        this.toolbar.makeWrappable(true);
+        this.toolbar.wrappable = true;
         this.recordButton = UI.Toolbar.Toolbar.createActionButton(this.recordAction);
         this.recordButton.toggleOnClick(false);
         this.toolbar.appendToolbarItem(this.recordButton);

@@ -34,9 +34,9 @@ export declare class Console extends ObjectWrapper<EventTypes> {
 export declare const enum Events {
     MESSAGE_ADDED = "messageAdded"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.MESSAGE_ADDED]: Message;
-};
+}
 export declare const enum MessageLevel {
     INFO = "info",
     WARNING = "warning",

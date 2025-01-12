@@ -24,6 +24,6 @@ export declare class AudioContextSelector extends Common.ObjectWrapper.ObjectWra
 export declare const enum Events {
     CONTEXT_SELECTED = "ContextSelected"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CONTEXT_SELECTED]: Protocol.WebAudio.BaseAudioContext | null;
-};
+}

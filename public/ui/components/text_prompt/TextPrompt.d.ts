@@ -27,6 +27,6 @@ declare global {
         'devtools-text-prompt': TextPrompt;
     }
     interface HTMLElementEventMap {
-        'promptinputchanged': PromptInputEvent;
+        promptinputchanged: PromptInputEvent;
     }
 }

@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type DataDisplayDelegate, ProfileHeader, type ProfileType } from './ProfileHeader.js';

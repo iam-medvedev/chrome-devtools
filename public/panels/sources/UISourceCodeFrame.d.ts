@@ -63,7 +63,7 @@ export declare class UISourceCodeFrame extends UISourceCodeFrame_base {
 export declare const enum Events {
     TOOLBAR_ITEMS_CHANGED = "ToolbarItemsChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TOOLBAR_ITEMS_CHANGED]: void;
-};
+}
 export {};

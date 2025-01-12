@@ -23,9 +23,9 @@ export declare namespace SharedStorageForOrigin {
         mainFrameId: Protocol.Page.FrameId;
         params: Protocol.Storage.SharedStorageAccessParams;
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.SHARED_STORAGE_CHANGED]: SharedStorageChangedEvent;
-    };
+    }
 }
 export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes> implements ProtocolProxyApi.StorageDispatcher {
     #private;
@@ -56,8 +56,8 @@ export declare const enum Events {
     SHARED_STORAGE_ADDED = "SharedStorageAdded",
     SHARED_STORAGE_REMOVED = "SharedStorageRemoved"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SHARED_STORAGE_ACCESS]: Protocol.Storage.SharedStorageAccessedEvent;
     [Events.SHARED_STORAGE_ADDED]: SharedStorageForOrigin;
     [Events.SHARED_STORAGE_REMOVED]: SharedStorageForOrigin;
-};
+}

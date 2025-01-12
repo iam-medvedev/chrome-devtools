@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
@@ -13,6 +14,7 @@ import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHan
 import { addChildFrame, createResource, getMainFrame, setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NavigatorView', () => {
     let target;
     let workspace;
@@ -55,7 +57,7 @@ describeWithMockConnection('NavigatorView', () => {
         return { project };
     }
     it('can discard multiple childless frames', async () => {
-        const url = 'http://example.com/index.html';
+        const url = urlString `http://example.com/index.html`;
         const childFrame = await addChildFrame(target);
         const { project } = addResourceAndUISourceCode(url, childFrame, '', 'text/html');
         const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
@@ -69,7 +71,7 @@ describeWithMockConnection('NavigatorView', () => {
     describe('domain node display name', () => {
         it('should use the project origin if the url matches the default context', async () => {
             const mainFrame = await getMainFrame(target);
-            const url = 'http://example.com/index.html';
+            const url = urlString `http://example.com/index.html`;
             addResourceAndUISourceCode(url, mainFrame, '', 'text/html');
             dispatchEvent(target, 'Runtime.executionContextCreated', {
                 context: {
@@ -107,7 +109,7 @@ describeWithMockConnection('NavigatorView', () => {
         });
         it('should use a matching context name if the url does not match the default context', async () => {
             const mainFrame = await getMainFrame(target);
-            const url = 'chrome-extension://ahfhijdlegdabablpippeagghigmibma/script.js';
+            const url = urlString `chrome-extension://ahfhijdlegdabablpippeagghigmibma/script.js`;
             addResourceAndUISourceCode(url, mainFrame, '', 'text/html');
             dispatchEvent(target, 'Runtime.executionContextCreated', {
                 context: {
@@ -145,7 +147,7 @@ describeWithMockConnection('NavigatorView', () => {
         });
         it('should prioritize the default context', async () => {
             const mainFrame = await getMainFrame(target);
-            const url = 'http://example.com/index.html';
+            const url = urlString `http://example.com/index.html`;
             addResourceAndUISourceCode(url, mainFrame, '', 'text/html');
             dispatchEvent(target, 'Runtime.executionContextCreated', {
                 context: {
@@ -185,7 +187,7 @@ describeWithMockConnection('NavigatorView', () => {
         });
         it('should ignore contexts with no name', async () => {
             const mainFrame = await getMainFrame(target);
-            const url = 'http://example.com/index.html';
+            const url = urlString `http://example.com/index.html`;
             addResourceAndUISourceCode(url, mainFrame, '', 'text/html');
             dispatchEvent(target, 'Runtime.executionContextCreated', {
                 context: {
@@ -210,7 +212,7 @@ describeWithMockConnection('NavigatorView', () => {
         });
         it('should indicate if a display name cannot be found', async () => {
             const mainFrame = await getMainFrame(target);
-            const url = '*bad url*';
+            const url = urlString `*bad url*`;
             addResourceAndUISourceCode(url, mainFrame, '', 'text/html');
             const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
             const topChildren = navigatorView.scriptsTree.rootElement().children();

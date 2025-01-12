@@ -266,7 +266,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
                 return i18nString(UIStrings.canOnlyAuditHttphttpsPages);
             }
         }
-        catch (e) {
+        catch {
             return i18nString(UIStrings.canOnlyAuditHttphttpsPages);
         }
         return null;

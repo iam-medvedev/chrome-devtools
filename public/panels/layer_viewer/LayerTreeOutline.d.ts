@@ -31,9 +31,9 @@ export declare class LayerTreeOutline extends LayerTreeOutline_base implements C
 export declare const enum Events {
     PAINT_PROFILER_REQUESTED = "PaintProfilerRequested"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.PAINT_PROFILER_REQUESTED]: Selection;
-};
+}
 export declare class LayerTreeElement extends UI.TreeOutline.TreeElement {
     treeOutlineInternal: LayerTreeOutline;
     layer: SDK.LayerTreeBase.Layer;

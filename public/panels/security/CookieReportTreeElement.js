@@ -4,8 +4,8 @@
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import { SecurityPanelSidebarTreeElement } from './SecurityPanelSidebarTreeElement.js';
 export class CookieReportTreeElement extends SecurityPanelSidebarTreeElement {
-    constructor(title) {
-        super(title);
+    constructor(title, jslogContext) {
+        super(title, false, jslogContext);
         this.setLeadingIcons([IconButton.Icon.create('cookie', 'cookie-icon')]);
     }
     onselect() {

@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -8,6 +9,7 @@ import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('ResourceMapping', () => {
     let debuggerModel;
     let resourceMapping;
@@ -33,7 +35,7 @@ describeWithMockConnection('ResourceMapping', () => {
     //  </body>
     //  </html>
     //
-    const url = 'http://example.com/index.html';
+    const url = urlString `http://example.com/index.html`;
     const SCRIPTS = [
         {
             scriptId: '1',
@@ -41,7 +43,7 @@ describeWithMockConnection('ResourceMapping', () => {
             startColumn: 8,
             endLine: 8,
             endColumn: 0,
-            sourceURL: 'webpack:///src/foo.js',
+            sourceURL: urlString `webpack:///src/foo.js`,
             hasSourceURLComment: true,
         },
         {
@@ -87,7 +89,7 @@ describeWithMockConnection('ResourceMapping', () => {
     });
     it('creates UISourceCode for added out of scope target', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
-        const otherUrl = 'http://example.com/other.html';
+        const otherUrl = urlString `http://example.com/other.html`;
         createResource(getMainFrame(target), otherUrl, 'text/html', '');
         uiSourceCode = workspace.uiSourceCodeForURL(otherUrl);
         assert.isNotNull(uiSourceCode);

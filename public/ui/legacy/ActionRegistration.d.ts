@@ -47,10 +47,10 @@ export declare const enum Events {
     ENABLED = "Enabled",
     TOGGLED = "Toggled"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ENABLED]: boolean;
     [Events.TOGGLED]: boolean;
-};
+}
 export declare const enum ActionCategory {
     NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.
     ELEMENTS = "ELEMENTS",

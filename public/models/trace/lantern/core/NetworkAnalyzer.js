@@ -31,7 +31,7 @@ class UrlUtils {
             urlb.hash = '';
             return urla.href === urlb.href;
         }
-        catch (e) {
+        catch {
             return false;
         }
     }
@@ -310,7 +310,6 @@ class NetworkAnalyzer {
         const estimatesByOrigin = new Map();
         for (const [origin, originRequests] of groupedByOrigin.entries()) {
             const originEstimates = [];
-            // eslint-disable-next-line no-inner-declarations
             function collectEstimates(estimator, multiplier = 1) {
                 for (const request of originRequests) {
                     const timing = request.timing;
@@ -470,7 +469,7 @@ class NetworkAnalyzer {
     }
     static findLastDocumentForUrl(records, resourceUrl) {
         // equalWithExcludedFragments is expensive, so check that the resourceUrl starts with the request url first
-        const matchingRequests = records.filter(request => request.resourceType === 'Document' &&
+        const matchingRequests = records.filter(request => request.resourceType === 'Document' && !request.failed &&
             // Note: `request.url` should never have a fragment, else this optimization gives wrong results.
             resourceUrl.startsWith(request.url) && UrlUtils.equalWithExcludedFragments(request.url, resourceUrl));
         return matchingRequests[matchingRequests.length - 1];

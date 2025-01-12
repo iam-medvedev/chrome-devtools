@@ -62,11 +62,11 @@ export declare enum Events {
     AnimationGroupUpdated = "AnimationGroupUpdated",
     ModelReset = "ModelReset"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.AnimationGroupStarted]: AnimationGroup;
     [Events.AnimationGroupUpdated]: AnimationGroup;
     [Events.ModelReset]: void;
-};
+}
 export declare class AnimationImpl {
     #private;
     private constructor();

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -18,8 +19,9 @@ import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('BreakpointManager', () => {
-    const URL_HTML = 'http://site/index.html';
+    const URL_HTML = urlString `http://site/index.html`;
     const INLINE_SCRIPT_START = 41;
     const BREAKPOINT_SCRIPT_LINE = 1;
     const INLINE_BREAKPOINT_RAW_LINE = BREAKPOINT_SCRIPT_LINE + INLINE_SCRIPT_START;
@@ -32,7 +34,7 @@ describeWithMockConnection('BreakpointManager', () => {
         hasSourceURL: false,
         embedderName: URL_HTML,
     };
-    const URL = 'http://site/script.js';
+    const URL = urlString `http://site/script.js`;
     const scriptDescription = {
         url: URL,
         content: 'console.log(1);\nconsole.log(2);\n',
@@ -49,8 +51,8 @@ describeWithMockConnection('BreakpointManager', () => {
     // For tests with source maps.
     const ORIGINAL_SCRIPT_SOURCES_CONTENT = 'function foo() {\n  console.log(\'Hello\');\n}\n';
     const COMPILED_SCRIPT_SOURCES_CONTENT = 'function foo(){console.log("Hello")}';
-    const SOURCE_MAP_URL = 'https://site/script.js.map';
-    const ORIGINAL_SCRIPT_SOURCE_URL = 'https://site/original-script.js';
+    const SOURCE_MAP_URL = urlString `https://site/script.js.map`;
+    const ORIGINAL_SCRIPT_SOURCE_URL = urlString `https://site/original-script.js`;
     // Created with `terser -m -o script.min.js --source-map "includeSources;url=script.min.js.map" original-script.js`
     const sourceMapContent = JSON.stringify({
         version: 3,
@@ -251,8 +253,8 @@ describeWithMockConnection('BreakpointManager', () => {
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         // Create two 'bundles' that are identical modulo variable names.
-        const url1 = 'http://site/script1.js';
-        const url2 = 'http://site/script2.js';
+        const url1 = urlString `http://site/script1.js`;
+        const url2 = urlString `http://site/script2.js`;
         const scriptInfo1 = { url: url1, content: 'function adder(n,r){const t=n+r;return t}' };
         const scriptInfo2 = { url: url2, content: 'function adder(o,p){const t=o+p;return t}' };
         // The source map is the same for both 'bundles'.
@@ -407,7 +409,7 @@ describeWithMockConnection('BreakpointManager', () => {
     });
     it('removes ui source code from breakpoint even after breakpoint live location update', async () => {
         const BREAKPOINT_TS_LINE = 10;
-        const { uiSourceCode: uiSourceCodeTs } = createContentProviderUISourceCode({ url: 'http://example.com/source.ts', mimeType: 'text/typescript' });
+        const { uiSourceCode: uiSourceCodeTs } = createContentProviderUISourceCode({ url: urlString `http://example.com/source.ts`, mimeType: 'text/typescript' });
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         // Create an inline script and get a UI source code instance for it.
@@ -551,7 +553,7 @@ describeWithMockConnection('BreakpointManager', () => {
         // Set the breakpoint storage to contain a breakpoint and re-initialize
         // the breakpoint manager from that storage. This should create a breakpoint instance
         // in the breakpoint manager.
-        const url = 'http://example.com/script.js';
+        const url = urlString `http://example.com/script.js`;
         const lineNumber = 1;
         const breakpoints = [{
                 url,
@@ -578,10 +580,10 @@ describeWithMockConnection('BreakpointManager', () => {
         // Set the breakpoint storage to contain a source-mapped breakpoint and re-initialize
         // the breakpoint manager from that storage. This should create a breakpoint instance
         // in the breakpoint manager (for the resolved location!).
-        const compiledUrl = 'http://example.com/compiled.js';
+        const compiledUrl = urlString `http://example.com/compiled.js`;
         const compiledLineNumber = 2;
         const breakpoints = [{
-                url: 'http://example.com/src/script.ts',
+                url: urlString `http://example.com/src/script.ts`,
                 resourceTypeName: 'sm-script',
                 lineNumber: 1,
                 condition: '',
@@ -1170,8 +1172,8 @@ describeWithMockConnection('BreakpointManager', () => {
             const workspace = Workspace.Workspace.WorkspaceImpl.instance();
             Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
             const fileName = Common.ParsedURL.ParsedURL.extractName(scriptDescription.url);
-            const fileSystemPath = 'file://path/to/filesystem';
-            const fileSystemFileUrl = fileSystemPath + '/' + fileName;
+            const fileSystemPath = urlString `file://path/to/filesystem`;
+            const fileSystemFileUrl = urlString `${fileSystemPath + '/' + fileName}`;
             await testBreakpointMovedOnInstrumentationBreak(fileSystemPath, fileSystemFileUrl, scriptDescription.content);
         });
         it('can move breakpoints to network files that are set in override files', async () => {
@@ -1179,8 +1181,8 @@ describeWithMockConnection('BreakpointManager', () => {
             SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
             Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
-            const fileSystemPath = 'file://path/to/overrides';
-            const fielSystemFileUrl = fileSystemPath + '/site/script.js';
+            const fileSystemPath = urlString `file://path/to/overrides`;
+            const fielSystemFileUrl = urlString `${fileSystemPath + '/site/script.js'}`;
             const type = 'overrides';
             const content = '';
             await testBreakpointMovedOnInstrumentationBreak(fileSystemPath, fielSystemFileUrl, content, type);
@@ -1234,8 +1236,8 @@ describeWithMockConnection('BreakpointManager', () => {
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
         // Create a file system project and source code.
         const fileName = Common.ParsedURL.ParsedURL.extractName(scriptDescription.url);
-        const fileSystemPath = 'file://path/to/filesystem';
-        const fileSystemFileUrl = fileSystemPath + '/' + fileName;
+        const fileSystemPath = urlString `file://path/to/filesystem`;
+        const fileSystemFileUrl = urlString `${fileSystemPath + '/' + fileName}`;
         const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({ fileSystemFileUrl, fileSystemPath }, scriptDescription.url, scriptDescription.content, target);
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
@@ -1275,8 +1277,8 @@ describeWithMockConnection('BreakpointManager', () => {
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
         // Create a file system project and source code.
         const fileName = Common.ParsedURL.ParsedURL.extractName(scriptDescription.url);
-        const fileSystemPath = 'file://path/to/filesystem';
-        const fileSystemFileUrl = fileSystemPath + '/' + fileName;
+        const fileSystemPath = urlString `file://path/to/filesystem`;
+        const fileSystemFileUrl = urlString `${fileSystemPath + '/' + fileName}`;
         createFileSystemFileForPersistenceTests({ fileSystemFileUrl, fileSystemPath }, scriptDescription.url, scriptDescription.content, target);
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
@@ -1478,7 +1480,7 @@ describeWithMockConnection('BreakpointManager', () => {
                 content: encodeSourceMap(['0:0 => shared.ts:0:0', '1:0 => route1.ts:0:0'], sourceRoot),
             };
             const [firstSharedUISourceCode, route1Script] = await Promise.all([
-                debuggerWorkspaceBinding.waitForUISourceCodeAdded(`${sourceRoot}/shared.ts`, target),
+                debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${`${sourceRoot}/shared.ts`}`, target),
                 backend.addScript(target, route1ScriptInfo, route1SourceMapInfo),
             ]);
             // Set a breakpoint in `shared.ts`.

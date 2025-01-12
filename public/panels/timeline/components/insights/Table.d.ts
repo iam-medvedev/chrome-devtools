@@ -18,19 +18,19 @@ type BaseInsightComponent = BaseInsightComponent.BaseInsightComponent<Trace.Insi
  *           "sticks" the selection, replaces overlays like hover does, and additionally updates
  *           the current trace bounds to fit the bounds of the row's overlays.
  */
-export type TableState = {
+export interface TableState {
     selectedRowEl: HTMLElement | null;
     selectionIsSticky: boolean;
-};
+}
 export interface TableData {
     insight: BaseInsightComponent;
     headers: string[];
     rows: TableDataRow[];
 }
-export type TableDataRow = {
+export interface TableDataRow {
     values: Array<string | LitHtml.LitTemplate>;
     overlays?: Overlays.Overlays.TimelineOverlay[];
-};
+}
 export declare class Table extends HTMLElement {
     #private;
     set data(data: TableData);

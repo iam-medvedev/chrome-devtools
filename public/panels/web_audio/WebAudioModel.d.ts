@@ -41,7 +41,7 @@ export declare const enum Events {
     NODE_PARAM_CONNECTED = "NodeParamConnected",
     NODE_PARAM_DISCONNECTED = "NodeParamDisconnected"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CONTEXT_CREATED]: Protocol.WebAudio.BaseAudioContext;
     [Events.CONTEXT_DESTROYED]: Protocol.WebAudio.GraphObjectId;
     [Events.CONTEXT_CHANGED]: Protocol.WebAudio.BaseAudioContext;
@@ -57,4 +57,4 @@ export type EventTypes = {
     [Events.NODES_DISCONNECTED]: Protocol.WebAudio.NodesDisconnectedEvent;
     [Events.NODE_PARAM_CONNECTED]: Protocol.WebAudio.NodeParamConnectedEvent;
     [Events.NODE_PARAM_DISCONNECTED]: Protocol.WebAudio.NodeParamDisconnectedEvent;
-};
+}

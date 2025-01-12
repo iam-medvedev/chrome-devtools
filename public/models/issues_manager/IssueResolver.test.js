@@ -62,7 +62,7 @@ describe('IssueResolver', () => {
             try {
                 await issue;
             }
-            catch (e) {
+            catch {
                 return;
             }
             assert.fail('Expected `await issue` to throw.');

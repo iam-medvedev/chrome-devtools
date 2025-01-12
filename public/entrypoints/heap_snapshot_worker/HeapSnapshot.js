@@ -2265,34 +2265,6 @@ export class HeapSnapshot {
         return this.#ignoredEdgesInRetainersView.has(edgeIndex);
     }
 }
-class HeapSnapshotMetainfo {
-    location_fields = []; // eslint-disable-line @typescript-eslint/naming-convention
-    node_fields = []; // eslint-disable-line @typescript-eslint/naming-convention
-    node_types = []; // eslint-disable-line @typescript-eslint/naming-convention
-    edge_fields = []; // eslint-disable-line @typescript-eslint/naming-convention
-    edge_types = []; // eslint-disable-line @typescript-eslint/naming-convention
-    trace_function_info_fields = []; // eslint-disable-line @typescript-eslint/naming-convention
-    trace_node_fields = []; // eslint-disable-line @typescript-eslint/naming-convention
-    sample_fields = []; // eslint-disable-line @typescript-eslint/naming-convention
-    type_strings = {}; // eslint-disable-line @typescript-eslint/naming-convention
-}
-export class HeapSnapshotHeader {
-    title;
-    meta;
-    node_count; // eslint-disable-line @typescript-eslint/naming-convention
-    edge_count; // eslint-disable-line @typescript-eslint/naming-convention
-    trace_function_count; // eslint-disable-line @typescript-eslint/naming-convention
-    root_index; // eslint-disable-line @typescript-eslint/naming-convention
-    constructor() {
-        // New format.
-        this.title = '';
-        this.meta = new HeapSnapshotMetainfo();
-        this.node_count = 0;
-        this.edge_count = 0;
-        this.trace_function_count = 0;
-        this.root_index = 0;
-    }
-}
 export class HeapSnapshotItemProvider {
     iterator;
     #indexProvider;

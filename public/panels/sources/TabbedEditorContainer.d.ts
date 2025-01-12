@@ -78,10 +78,10 @@ export interface EditorSelectedEvent {
     previousView: UI.Widget.Widget | null;
     userGesture: boolean | undefined;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.EDITOR_SELECTED]: EditorSelectedEvent;
     [Events.EDITOR_CLOSED]: Workspace.UISourceCode.UISourceCode;
-};
+}
 interface SerializedHistoryItem {
     url: string;
     resourceTypeName: string;

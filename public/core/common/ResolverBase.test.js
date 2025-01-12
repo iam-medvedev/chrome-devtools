@@ -82,7 +82,7 @@ describe('ResolverBase', () => {
             try {
                 await obj;
             }
-            catch (e) {
+            catch {
                 return;
             }
             assert.fail('Expected `await obj` to throw.');

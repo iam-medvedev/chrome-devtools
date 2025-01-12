@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './Toolbar.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import reportViewStyles from './reportView.css.legacy.js';
-import { Toolbar } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { VBox } from './Widget.js';
 /**
@@ -63,9 +63,7 @@ export class ReportView extends VBox {
         this.urlElement.setAttribute('jslog', `${VisualLogging.link('source-location').track({ click: true })}`);
     }
     createToolbar() {
-        const toolbar = new Toolbar('');
-        this.headerElement.appendChild(toolbar.element);
-        return toolbar;
+        return this.headerElement.createChild('devtools-toolbar');
     }
     appendSection(title, className, jslogContext) {
         const section = new Section(title, className, jslogContext);

@@ -25,10 +25,10 @@ export declare function rateMetric(value: number, thresholds: MetricThresholds):
 export declare function renderMetricValue(jslogContext: string, value: number | undefined, thresholds: MetricThresholds, format: (value: number) => string, options?: {
     dim?: boolean;
 }): HTMLElement;
-export type NumberWithUnitString = {
+export interface NumberWithUnitString {
     element: HTMLElement;
     text: string;
-};
+}
 /**
  * These methods format numbers with units in a way that allows the unit portion to be styled specifically.
  * They return a text string (the usual string resulting from formatting a number), and an HTMLSpanElement.

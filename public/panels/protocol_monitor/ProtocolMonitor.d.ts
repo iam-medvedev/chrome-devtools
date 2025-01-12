@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
@@ -91,10 +92,10 @@ export declare const enum Events {
     COMMAND_SENT = "CommandSent",
     COMMAND_CHANGE = "CommandChange"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.COMMAND_SENT]: Components.JSONEditor.Command;
     [Events.COMMAND_CHANGE]: Components.JSONEditor.Command;
-};
+}
 declare const EditorWidget_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;

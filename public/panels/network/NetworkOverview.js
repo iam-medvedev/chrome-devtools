@@ -206,8 +206,8 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
                     context.lineWidth = size;
                     const start = Trace.Types.Timing.MilliSeconds(timeRanges[j].start * 1000);
                     const end = Trace.Types.Timing.MilliSeconds(timeRanges[j].end * 1000);
-                    context.moveTo(calculator.computePosition(start) - 0, y);
-                    context.lineTo(calculator.computePosition(end) + 1, y);
+                    context.moveTo(Number(calculator.computePosition(start)) - 0, y);
+                    context.lineTo(Number(calculator.computePosition(end)) + 1, y);
                     context.stroke();
                 }
             }

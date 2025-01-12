@@ -1,3 +1,4 @@
+import '../../legacy.js';
 import * as Common from '../../../../core/common/common.js';
 import { type ContrastInfo } from './ContrastInfo.js';
 export declare class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
@@ -51,9 +52,9 @@ export declare class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<
 export declare const enum Events {
     BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED = "BackgroundColorPickerWillBeToggled"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED]: boolean;
-};
+}
 export declare class Swatch {
     private readonly parentElement;
     private readonly swatchElement;

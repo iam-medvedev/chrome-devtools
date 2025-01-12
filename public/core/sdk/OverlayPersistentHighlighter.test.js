@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 function resetSavedSetting(forcedState = []) {
     const setting = Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
     setting.set(forcedState);
@@ -12,8 +14,8 @@ function assertSavedSettingState(expected) {
     const setting = Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
     assert.deepEqual(setting.get(), expected);
 }
-const NON_RELATED_DOCUMENT_URL_FOR_TEST = 'https://notexample.com/';
-const DOCUMENT_URL_FOR_TEST = 'https://example.com/';
+const NON_RELATED_DOCUMENT_URL_FOR_TEST = urlString `https://notexample.com/`;
+const DOCUMENT_URL_FOR_TEST = urlString `https://example.com/`;
 const NODE_PATH_FOR_TEST = 'body > div';
 const EXISTING_NODE_ID = 1;
 const PATH_TO_NODE_ID_FOR_TEST = {

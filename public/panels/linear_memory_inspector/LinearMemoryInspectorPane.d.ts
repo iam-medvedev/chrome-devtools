@@ -22,9 +22,9 @@ export declare class LinearMemoryInspectorPane extends LinearMemoryInspectorPane
 export declare const enum Events {
     VIEW_CLOSED = "ViewClosed"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.VIEW_CLOSED]: string;
-};
+}
 export declare class LinearMemoryInspectorView extends UI.Widget.VBox {
     #private;
     firstTimeOpen: boolean;

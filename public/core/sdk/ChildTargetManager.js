@@ -76,6 +76,7 @@ export class ChildTargetManager extends SDKModel {
         this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
         const target = this.#childTargetsById.get(targetInfo.targetId);
         if (target) {
+            void target.setHasCrashed(false);
             if (target.targetInfo()?.subtype === 'prerender' && !targetInfo.subtype) {
                 const resourceTreeModel = target.model(ResourceTreeModel);
                 target.updateTargetInfo(targetInfo);
@@ -97,13 +98,10 @@ export class ChildTargetManager extends SDKModel {
         this.dispatchEventToListeners("TargetDestroyed" /* Events.TARGET_DESTROYED */, targetId);
     }
     targetCrashed({ targetId }) {
-        this.#targetInfosInternal.delete(targetId);
         const target = this.#childTargetsById.get(targetId);
         if (target) {
-            target.dispose('targetCrashed event from CDP');
+            target.setHasCrashed(true);
         }
-        this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners("TargetDestroyed" /* Events.TARGET_DESTROYED */, targetId);
     }
     fireAvailableTargetsChanged() {
         TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AVAILABLE_TARGETS_CHANGED */, [...this.#targetInfosInternal.values()]);

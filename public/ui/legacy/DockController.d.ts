@@ -40,11 +40,11 @@ export interface ChangeEvent {
     from: DockState | undefined;
     to: DockState;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BEFORE_DOCK_SIDE_CHANGED]: ChangeEvent;
     [Events.DOCK_SIDE_CHANGED]: ChangeEvent;
     [Events.AFTER_DOCK_SIDE_CHANGED]: ChangeEvent;
-};
+}
 export declare class ToggleDockActionDelegate implements ActionDelegate {
     handleAction(_context: Context, _actionId: string): boolean;
 }

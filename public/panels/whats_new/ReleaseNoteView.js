@@ -52,35 +52,37 @@ export class ReleaseNoteView extends UI.Widget.VBox {
         // clang-format off
         render(html `
       <div class="whatsnew" jslog=${VisualLogging.section().context('release-notes')}>
-        <div class="header">
-          ${releaseNote.header}
-        </div>
-        <div>
-          <devtools-button
-                .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
-                .jslogContext=${'learn-more'}
-                @click=${() => input.openNewTab(releaseNote.link)}
-            >${i18nString(UIStrings.seeFeatures)}</devtools-button>
-        </div>
-
-        <div class="feature-container">
-          <div class="video-container">
-            ${releaseNote.videoLinks.map((value) => {
-            return html `
-                <x-link
-                href=${value.link}
-                jslog=${VisualLogging.link().track({ click: true }).context('learn-more')}>
-                  <div class="video">
-                    <img class="thumbnail" src=${input.getThumbnailPath(value.type ?? "WhatsNew" /* VideoType.WHATS_NEW */)}>
-                    <div class="thumbnail-description"><span>${value.description}</span></div>
-                  </div>
-              </x-link>
-              `;
-        })}
+        <div class="whatsnew-content">
+          <div class="header">
+            ${releaseNote.header}
           </div>
-          ${markdownContent.map((markdown) => {
+          <div>
+            <devtools-button
+                  .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
+                  .jslogContext=${'learn-more'}
+                  @click=${() => input.openNewTab(releaseNote.link)}
+              >${i18nString(UIStrings.seeFeatures)}</devtools-button>
+          </div>
+
+          <div class="feature-container">
+            <div class="video-container">
+              ${releaseNote.videoLinks.map((value) => {
+            return html `
+                  <x-link
+                  href=${value.link}
+                  jslog=${VisualLogging.link().track({ click: true }).context('learn-more')}>
+                    <div class="video">
+                      <img class="thumbnail" src=${input.getThumbnailPath(value.type ?? "WhatsNew" /* VideoType.WHATS_NEW */)}>
+                      <div class="thumbnail-description"><span>${value.description}</span></div>
+                    </div>
+                </x-link>
+                `;
+        })}
+            </div>
+            ${markdownContent.map((markdown) => {
             return html `<div class="feature"><devtools-markdown-view slot="content" .data=${{ tokens: markdown }}></devtools-markdown-view></div>`;
         })}
+          </div>
         </div>
       </div>
     `, target, { host: this });
@@ -96,7 +98,7 @@ export class ReleaseNoteView extends UI.Widget.VBox {
             const response = await fetch(url.toString());
             return response.text();
         }
-        catch (error) {
+        catch {
             throw new Error(`Markdown file ${url.toString()} not found. Make sure it is correctly listed in the relevant BUILD.gn files.`);
         }
     }

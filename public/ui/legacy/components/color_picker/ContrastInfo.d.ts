@@ -25,9 +25,9 @@ export declare class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper<Eve
 export declare const enum Events {
     CONTRAST_INFO_UPDATED = "ContrastInfoUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CONTRAST_INFO_UPDATED]: void;
-};
+}
 export interface ContrastInfoType {
     backgroundColors: string[] | null;
     computedFontSize: string;

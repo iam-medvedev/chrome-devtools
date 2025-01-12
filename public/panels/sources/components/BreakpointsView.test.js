@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Breakpoints from '../../../models/breakpoints/breakpoints.js';
@@ -14,6 +15,7 @@ import { createContentProviderUISourceCode, createFakeScriptMapping, setupMocked
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as SourcesComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 const DETAILS_SELECTOR = 'details';
 const EXPANDED_GROUPS_SELECTOR = 'details[open]';
 const COLLAPSED_GROUPS_SELECTOR = 'details:not([open])';
@@ -68,7 +70,7 @@ function createStubBreakpointManagerAndSettingsWithMockdata(testData) {
 }
 function createLocationTestData(url, lineNumber, columnNumber, enabled = true, content = '', condition = Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION, isLogpoint = false, hoverText) {
     return {
-        url: url,
+        url: urlString `${url}`,
         lineNumber,
         columnNumber,
         enabled,
@@ -133,7 +135,7 @@ async function renderSingleBreakpoint(type = "REGULAR_BREAKPOINT" /* SDK.Debugge
         groups: [
             {
                 name: 'test1.js',
-                url: 'https://google.com/test1.js',
+                url: urlString `https://google.com/test1.js`,
                 editable: true,
                 expanded: true,
                 breakpointItems: [
@@ -164,7 +166,7 @@ async function renderMultipleBreakpoints() {
         groups: [
             {
                 name: 'test1.js',
-                url: 'https://google.com/test1.js',
+                url: urlString `https://google.com/test1.js`,
                 editable: true,
                 expanded: true,
                 breakpointItems: [
@@ -188,7 +190,7 @@ async function renderMultipleBreakpoints() {
             },
             {
                 name: 'test2.js',
-                url: 'https://google.com/test2.js',
+                url: urlString `https://google.com/test2.js`,
                 editable: false,
                 expanded: true,
                 breakpointItems: [
@@ -204,7 +206,7 @@ async function renderMultipleBreakpoints() {
             },
             {
                 name: 'main.js',
-                url: 'https://test.com/main.js',
+                url: urlString `https://test.com/main.js`,
                 editable: true,
                 expanded: false,
                 breakpointItems: [
@@ -619,7 +621,7 @@ describeWithMockConnection('BreakpointsSidebarController', () => {
     it.skip('[crbug.com/345456307] auto-expands if a user adds a new  breakpoint', async () => {
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance();
         const settings = Common.Settings.Settings.instance();
-        const { uiSourceCode, project } = createContentProviderUISourceCode({ url: 'test.js', mimeType: 'text/javascript' });
+        const { uiSourceCode, project } = createContentProviderUISourceCode({ url: urlString `test.js`, mimeType: 'text/javascript' });
         const controller = SourcesComponents.BreakpointsView.BreakpointsSidebarController.instance({ forceNew: true, breakpointManager, settings });
         // Add one breakpoint and collapse the tree.
         const b1 = await breakpointManager.setBreakpoint(uiSourceCode, 0, 0, ...DEFAULT_BREAKPOINT);
@@ -648,7 +650,7 @@ describeWithMockConnection('BreakpointsSidebarController', () => {
     it('does not auto-expand if a breakpoint was not triggered by user action', async () => {
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance();
         const settings = Common.Settings.Settings.instance();
-        const { uiSourceCode, project } = createContentProviderUISourceCode({ url: 'test.js', mimeType: 'text/javascript' });
+        const { uiSourceCode, project } = createContentProviderUISourceCode({ url: urlString `test.js`, mimeType: 'text/javascript' });
         const controller = SourcesComponents.BreakpointsView.BreakpointsSidebarController.instance({ forceNew: true, breakpointManager, settings });
         // Add one breakpoint and collapse the tree.
         const b1 = await breakpointManager.setBreakpoint(uiSourceCode, 0, 0, ...DEFAULT_BREAKPOINT);
@@ -680,7 +682,7 @@ describeWithMockConnection('BreakpointsSidebarController', () => {
         // Set up sdk and ui location, and a mapping between them, such that we can identify that
         // the hit breakpoint is the one we are adding.
         const scriptId = '0';
-        const { uiSourceCode, project } = createContentProviderUISourceCode({ url: 'test.js', mimeType: 'text/javascript' });
+        const { uiSourceCode, project } = createContentProviderUISourceCode({ url: urlString `test.js`, mimeType: 'text/javascript' });
         const uiLocation = new Workspace.UISourceCode.UILocation(uiSourceCode, 0, 0);
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         const sdkLocation = new SDK.DebuggerModel.Location(debuggerModel, scriptId, 0);
@@ -805,7 +807,7 @@ describeWithMockConnection('BreakpointsView', () => {
         const component = await createAndInitializeBreakpointsView();
         const groupTemplate = {
             name: 'index.js',
-            url: '',
+            url: urlString ``,
             editable: true,
             expanded: true,
             breakpointItems: [
@@ -821,9 +823,9 @@ describeWithMockConnection('BreakpointsView', () => {
         };
         // Create two groups with the same file name, but different url.
         const group1 = { ...groupTemplate };
-        group1.url = 'https://google.com/lib/index.js';
+        group1.url = urlString `https://google.com/lib/index.js`;
         const group2 = { ...groupTemplate };
-        group2.url = 'https://google.com/src/index.js';
+        group2.url = urlString `https://google.com/src/index.js`;
         const data = {
             breakpointsActive: true,
             pauseOnUncaughtExceptions: false,
@@ -1049,7 +1051,7 @@ describeWithMockConnection('BreakpointsView', () => {
             groups: [
                 {
                     name: 'test1.js',
-                    url: 'https://google.com/test1.js',
+                    url: urlString `https://google.com/test1.js`,
                     editable: false,
                     expanded: true,
                     breakpointItems: [
@@ -1283,7 +1285,7 @@ describeWithMockConnection('BreakpointsView', () => {
                 groups: [
                     {
                         name: 'test1.js',
-                        url: 'https://google.com/test1.js',
+                        url: urlString `https://google.com/test1.js`,
                         editable: false,
                         expanded: true,
                         breakpointItems: [
@@ -1307,7 +1309,7 @@ describeWithMockConnection('BreakpointsView', () => {
                     },
                     {
                         name: 'test2.js',
-                        url: 'https://google.com/test2.js',
+                        url: urlString `https://google.com/test2.js`,
                         editable: false,
                         expanded: false,
                         breakpointItems: [

@@ -1,6 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -42,8 +43,8 @@ export class StorageItemsView extends UI.Widget.VBox {
             UI.ARIAUtils.alert(i18nString(UIStrings.refreshedStatus));
         });
         this.refreshButton.element.setAttribute('jslog', `${VisualLogging.action('storage-items-view.refresh').track({ click: true })}`);
-        this.mainToolbar = new UI.Toolbar.Toolbar('top-resources-toolbar', this.element);
-        this.mainToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        this.mainToolbar = this.element.createChild('devtools-toolbar', 'top-resources-toolbar');
+        this.mainToolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.filterItem = new UI.Toolbar.ToolbarFilter(undefined, 0.4);
         this.filterItem.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.filterChanged, this);
         const toolbarSeparator = new UI.Toolbar.ToolbarSeparator();

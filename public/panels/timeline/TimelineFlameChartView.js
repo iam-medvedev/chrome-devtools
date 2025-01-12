@@ -202,6 +202,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 },
             },
         });
+        this.#overlays.addEventListener(Overlays.Overlays.EntryLabelMouseClick.eventName, event => {
+            const { overlay } = event;
+            this.dispatchEventToListeners("EntryLabelAnnotationClicked" /* Events.ENTRY_LABEL_ANNOTATION_CLICKED */, {
+                entry: overlay.entry,
+            });
+        });
         this.#overlays.addEventListener(Overlays.Overlays.AnnotationOverlayActionEvent.eventName, event => {
             const { overlay, action } = event;
             if (action === 'Remove') {
@@ -727,7 +733,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             return;
         }
         const visibleWindow = event.state.milli.timelineTraceWindow;
-        const shouldAnimate = Boolean(event.options.shouldAnimate);
+        // If the user has set a preference for reduced motion, we disable any animations.
+        const userHasReducedMotionSet = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const shouldAnimate = Boolean(event.options.shouldAnimate) && !userHasReducedMotionSet;
         this.mainFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max, shouldAnimate);
         this.networkDataProvider.setWindowTimes(visibleWindow.min, visibleWindow.max);
         this.networkFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max, shouldAnimate);

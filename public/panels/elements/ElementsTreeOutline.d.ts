@@ -137,13 +137,13 @@ export declare namespace ElementsTreeOutline {
         SelectedNodeChanged = "SelectedNodeChanged",
         ElementsTreeUpdated = "ElementsTreeUpdated"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.SelectedNodeChanged]: {
             node: SDK.DOMModel.DOMNode | null;
             focus: boolean;
         };
         [Events.ElementsTreeUpdated]: SDK.DOMModel.DOMNode[];
-    };
+    }
 }
 export declare const MappedCharToEntity: Map<string, string>;
 export declare class UpdateRecord {

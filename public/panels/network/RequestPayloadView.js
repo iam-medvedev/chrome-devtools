@@ -169,7 +169,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
                 try {
                     value = decodeURIComponent(value);
                 }
-                catch (e) {
+                catch {
                     errorDecoding = true;
                 }
             }
@@ -217,7 +217,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
                 const json = JSON.parse(formData);
                 this.refreshRequestJSONPayload(json, formData);
             }
-            catch (e) {
+            catch {
                 this.populateTreeElementWithSourceText(this.requestPayloadCategory, formData);
             }
         }

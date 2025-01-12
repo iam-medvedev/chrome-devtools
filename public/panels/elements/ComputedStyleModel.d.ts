@@ -26,10 +26,10 @@ export declare const enum Events {
     COMPUTED_STYLE_CHANGED = "ComputedStyleChanged"
 }
 export type CSSModelChangedEvent = SDK.CSSStyleSheetHeader.CSSStyleSheetHeader | SDK.CSSModel.StyleSheetChangedEvent | SDK.CSSModel.PseudoStateForcedEvent | null | void;
-export type EventTypes = {
+export interface EventTypes {
     [Events.CSS_MODEL_CHANGED]: CSSModelChangedEvent;
     [Events.COMPUTED_STYLE_CHANGED]: void;
-};
+}
 export declare class ComputedStyle {
     node: SDK.DOMModel.DOMNode;
     computedStyle: Map<string, string>;

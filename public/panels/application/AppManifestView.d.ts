@@ -69,8 +69,8 @@ export declare const enum Events {
     MANIFEST_DETECTED = "ManifestDetected",
     MANIFEST_RENDERED = "ManifestRendered"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.MANIFEST_DETECTED]: boolean;
     [Events.MANIFEST_RENDERED]: void;
-};
+}
 export {};

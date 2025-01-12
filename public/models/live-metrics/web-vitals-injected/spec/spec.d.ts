@@ -37,11 +37,11 @@ export interface INPChangeEvent extends MetricChangeEvent {
     entryGroupId: InteractionEntryGroupId;
 }
 export interface LoAFScript {
-    'Duration': number;
+    Duration: number;
     'Invoker Type': string | null;
-    'Invoker': string | null;
-    'Function': string | null;
-    'Source': string | null;
+    Invoker: string | null;
+    Function: string | null;
+    Source: string | null;
     'Char position': number | null;
 }
 export interface PerformanceScriptTimingJSON {

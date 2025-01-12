@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import type * as BreakpointManager from '../../models/breakpoints/breakpoints.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';

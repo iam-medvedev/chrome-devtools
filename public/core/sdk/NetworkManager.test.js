@@ -11,6 +11,7 @@ import { createWorkspaceProject } from '../../testing/OverridesHelpers.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 const LONG_URL_PART = 'LoremIpsumDolorSitAmetConsecteturAdipiscingElitPhasellusVitaeOrciInAugueCondimentumTinciduntUtEgetDolorQuisqueEfficiturUltricesTinciduntVivamusVelitPurusCommodoQuisErosSitAmetTemporMalesuadaNislNullamTtempusVulputateAugueEgetScelerisqueLacusVestibulumNon/index.html';
 describeWithMockConnection('MultitargetNetworkManager', () => {
     describe('Trust Token done event', () => {
@@ -307,7 +308,7 @@ describeWithMockConnection('InterceptedRequest', () => {
         const fulfilledRequest = new Promise(resolve => {
             multitargetNetworkManager.addEventListener("RequestFulfilled" /* SDK.NetworkManager.MultitargetNetworkManager.Events.REQUEST_FULFILLED */, resolve);
         });
-        const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, request.url, request.url, null, null, null);
+        const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, urlString `${request.url}`, urlString `${request.url}`, null, null, null);
         networkRequest.originalResponseHeaders = responseHeaders;
         // The response headers passed to 'interceptedRequest' do not contain any
         // 'set-cookie' headers, because they originate from CDP's 'Fetch.requestPaused'
@@ -343,7 +344,7 @@ describeWithMockConnection('InterceptedRequest', () => {
     beforeEach(async () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
         target = createTarget();
-        const networkPersistenceManager = await createWorkspaceProject('file:///path/to/overrides', [
+        const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, [
             {
                 name: '.headers',
                 path: 'www.example.com/',
@@ -484,8 +485,7 @@ describeWithMockConnection('InterceptedRequest', () => {
                 content: `[
             {
               "applyTo": "index.html-${Platform.StringUtilities
-                    .hashCode(Persistence.NetworkPersistenceManager.NetworkPersistenceManager
-                    .encodeEncodedPathToLocalPathParts('file:')[0] +
+                    .hashCode(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.encodeEncodedPathToLocalPathParts('file:')[0] +
                     '/' + LONG_URL_PART)
                     .toString(16)}.html",
               "headers": [{
@@ -526,7 +526,7 @@ describeWithMockConnection('InterceptedRequest', () => {
         };
         const fetchAgent = target.fetchAgent();
         const continueRequestSpy = sinon.spy(fetchAgent, 'invoke_continueRequest');
-        const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, request.url, request.url, null, null, null);
+        const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, urlString `${request.url}`, urlString `${request.url}`, null, null, null);
         const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest);
         interceptedRequest.responseBody = async () => {
             return new TextUtils.ContentData.ContentData('interceptedRequest content', false, 'text/html');
@@ -562,13 +562,13 @@ describeWithMockConnection('InterceptedRequest', () => {
             };
             const fetchAgent = target.fetchAgent();
             sinon.spy(fetchAgent, 'invoke_continueRequest');
-            const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, request.url, request.url, null, null, null);
+            const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, urlString `${request.url}`, urlString `${request.url}`, null, null, null);
             networkRequest.originalResponseHeaders = [{ name: 'content-type', value: 'text/html; charset-utf-16' }];
             // Create a quick'n dirty network UISourceCode for the request manually. We need to establish a binding to the
             // overridden file system UISourceCode.
             const networkProject = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), 'testing-network', Workspace.Workspace.projectTypes.Network, 'Override network project', false);
             Workspace.Workspace.WorkspaceImpl.instance().addProject(networkProject);
-            const uiSourceCode = networkProject.createUISourceCode('https://www.example.com/utf16.html', Common.ResourceType.resourceTypes.Document);
+            const uiSourceCode = networkProject.createUISourceCode(urlString `https://www.example.com/utf16.html`, Common.ResourceType.resourceTypes.Document);
             networkProject.addUISourceCode(uiSourceCode);
             const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest, 200, [{ name: 'content-type', value: 'text/html; charset-utf-16' }]);
             interceptedRequest.responseBody = async () => {

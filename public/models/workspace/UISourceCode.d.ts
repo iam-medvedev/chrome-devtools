@@ -107,14 +107,14 @@ export interface WorkingCopyCommitedEvent {
     content: string;
     encoded: boolean | undefined;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.WorkingCopyChanged]: UISourceCode;
     [Events.WorkingCopyCommitted]: WorkingCopyCommitedEvent;
     [Events.TitleChanged]: UISourceCode;
     [Events.MessageAdded]: Message;
     [Events.MessageRemoved]: Message;
     [Events.DecorationChanged]: string;
-};
+}
 export declare class UILocation {
     uiSourceCode: UISourceCode;
     lineNumber: number;

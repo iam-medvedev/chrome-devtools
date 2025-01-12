@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const { workspace, debuggerWorkspaceBinding } = setUpEnvironment();
     Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: false, debuggerWorkspaceBinding });
     if (!project) {
         project = { id: () => url, type: () => Workspace.Workspace.projectTypes.Network };
     }
-    const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, url, resourceType);
+    const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, urlString `${url}`, resourceType);
     project.uiSourceCodes = () => [uiSourceCode];
     workspace.addProject(project);
     return { workspace, project, uiSourceCode };

@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 declare const CSSOverviewSidebarPanel_base: (new (...args: any[]) => {
@@ -25,8 +26,8 @@ export interface ItemSelectedEvent {
     isMouseEvent: boolean;
     key: string | undefined;
 }
-export type EventTypes = {
+export interface EventTypes {
     [SidebarEvents.ITEM_SELECTED]: ItemSelectedEvent;
     [SidebarEvents.RESET]: void;
-};
+}
 export {};

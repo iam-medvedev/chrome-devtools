@@ -7,15 +7,16 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 const initiator = {
     target: null,
     frameId: '123',
     initiatorUrl: Platform.DevToolsPath.EmptyUrlString,
 };
 describeWithLocale('PageResourceLoader', () => {
-    const foo1Url = 'foo1';
-    const foo2Url = 'foo2';
-    const foo3Url = 'foo3';
+    const foo1Url = urlString `foo1`;
+    const foo2Url = urlString `foo2`;
+    const foo3Url = urlString `foo3`;
     const loads = [];
     const load = async (url) => {
         loads.push({ url });
@@ -32,12 +33,12 @@ describeWithLocale('PageResourceLoader', () => {
         const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 500 });
         const initiator = {
             extensionId: '123',
-            initiatorUrl: 'www.test.com/main.wasm.dwp',
+            initiatorUrl: urlString `www.test.com/main.wasm.dwp`,
             target: null,
             frameId: null,
         };
         const extensionResource = {
-            url: 'main.wasm.dwp',
+            url: urlString `main.wasm.dwp`,
             success: true,
             initiator,
             size: null,
@@ -120,15 +121,13 @@ describeWithEnvironment('PageResourceLoader', () => {
             return;
         }
         const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
-        const message = await loader
-            .loadResource('file:////127.0.0.1/share/source-map.js.map', initiator)
+        const message = await loader.loadResource(urlString `file:////127.0.0.1/share/source-map.js.map`, initiator)
             .catch(e => e.message);
         assert.include(message, 'remote file');
     });
     it('blocks remote file paths with the default setting', async () => {
         const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
-        const message = await loader.loadResource('file://host/source-map.js.map', initiator)
-            .catch(e => e.message);
+        const message = await loader.loadResource(urlString `file://host/source-map.js.map`, initiator).catch(e => e.message);
         assert.include(message, 'remote file');
     });
     it('blocks UNC file paths with a backslash on Windows with the default setting', async () => {
@@ -136,8 +135,7 @@ describeWithEnvironment('PageResourceLoader', () => {
             return;
         }
         const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
-        const message = await loader
-            .loadResource('file:///\\127.0.0.1/share/source-map.js.map', initiator)
+        const message = await loader.loadResource(urlString `file:///\\127.0.0.1/share/source-map.js.map`, initiator)
             .catch(e => e.message);
         assert.include(message, 'remote file');
     });
@@ -149,7 +147,7 @@ describeWithEnvironment('PageResourceLoader', () => {
             callback({ statusCode: 200 });
         });
         Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').set(true);
-        const response = await loader.loadResource('file://host/source-map.js.map', initiator);
+        const response = await loader.loadResource(urlString `file://host/source-map.js.map`, initiator);
         assert.strictEqual(response.content, 'content of the source map');
     });
     it('allows UNC paths on Windows with the setting enabled', async () => {
@@ -163,15 +161,15 @@ describeWithEnvironment('PageResourceLoader', () => {
             callback({ statusCode: 200 });
         });
         Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').set(true);
-        const response = await loader.loadResource('file:////127.0.0.1/share/source-map.js.map', initiator);
+        const response = await loader.loadResource(urlString `file:////127.0.0.1/share/source-map.js.map`, initiator);
         assert.strictEqual(response.content, 'content of the source map');
     });
 });
 describeWithMockConnection('PageResourceLoader', () => {
     describe('loadResource', () => {
         const stream = 'STREAM_ID';
-        const initiatorUrl = 'htp://example.com';
-        const url = `${initiatorUrl}/test.txt`;
+        const initiatorUrl = urlString `htp://example.com`;
+        const url = urlString `${`${initiatorUrl}/test.txt`}`;
         function setupLoadingSourceMapsAsNetworkResource() {
             return new Promise(resolve => {
                 let contentToRead = 'foo';
@@ -206,10 +204,10 @@ describeWithMockConnection('PageResourceLoader', () => {
     });
 });
 describeWithMockConnection('PageResourceLoader', () => {
-    const initiatorUrl = 'htp://example.com';
-    const foo1Url = 'foo1';
-    const foo2Url = 'foo2';
-    const foo3Url = 'foo3';
+    const initiatorUrl = urlString `htp://example.com`;
+    const foo1Url = urlString `foo1`;
+    const foo2Url = urlString `foo2`;
+    const foo3Url = urlString `foo3`;
     it('handles scoped resources', async () => {
         const target = createTarget({ id: 'main' });
         const prerenderTarget = createTarget({ id: 'prerender' });

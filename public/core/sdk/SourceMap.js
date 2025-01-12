@@ -111,7 +111,6 @@ export class SourceMap {
     #baseURL;
     #mappingsInternal;
     #sourceInfos;
-    /* eslint-disable-next-line no-unused-private-class-members */
     #scopesInfo = null;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps

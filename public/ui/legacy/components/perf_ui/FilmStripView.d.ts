@@ -28,11 +28,11 @@ export declare const enum Events {
     FRAME_ENTER = "FrameEnter",
     FRAME_EXIT = "FrameExit"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FRAME_SELECTED]: number;
     [Events.FRAME_ENTER]: number;
     [Events.FRAME_EXIT]: number;
-};
+}
 export declare class Dialog {
     #private;
     private fragment;

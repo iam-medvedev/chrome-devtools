@@ -62,7 +62,7 @@ describe('RequestResolver', () => {
             try {
                 await request;
             }
-            catch (e) {
+            catch {
                 return;
             }
             assert.fail('Expected `await request` to throw.');

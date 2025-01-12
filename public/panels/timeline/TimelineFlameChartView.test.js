@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -9,6 +10,7 @@ import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from './timeline.js';
+const { urlString } = Platform.DevToolsPath;
 class MockViewDelegate {
     selection = null;
     select(selection) {
@@ -621,7 +623,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                     // Let's find the first entry with URL.
                     return Trace.Types.Events.isProfileCall(entry) && Boolean(entry.callFrame.url);
                 });
-                Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(entryWithIgnoredUrl.callFrame.url);
+                Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(urlString `${entryWithIgnoredUrl.callFrame.url}`);
                 generateContextMenuForNode(entryWithIgnoredUrl);
                 assert.strictEqual(flameChartView.getMainFlameChart().getContextMenu()?.defaultSection().items.length, 6);
                 assert.strictEqual(flameChartView.getMainFlameChart()

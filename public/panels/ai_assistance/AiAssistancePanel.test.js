@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel, getMenu } from '../../testing/ContextMenuHelpers.js';
@@ -15,6 +16,7 @@ import * as SourcesPanel from '../sources/sources.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import * as AiAssistance from './ai_assistance.js';
+const { urlString } = Platform.DevToolsPath;
 function getTestAidaClient() {
     return {
         async *fetch() {
@@ -155,8 +157,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                 syncInfo: getTestSyncInfo(),
             });
-            const toolbar = panel.contentElement.querySelector('.freestyler-right-toolbar');
-            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Settings\']');
+            const button = panel.contentElement.querySelector('devtools-button[aria-label=\'Settings\']');
             assert.instanceOf(button, HTMLElement);
             button.click();
             assert.isTrue(stub.calledWith('chrome-ai'));
@@ -552,8 +553,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     steps: [],
                 },
             ]);
-            const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'New chat\']');
+            const button = panel.contentElement.querySelector('devtools-button[aria-label=\'New chat\']');
             assert.instanceOf(button, HTMLElement);
             dispatchClickEvent(button);
             assert.deepEqual(mockView.lastCall.args[0].messages, []);
@@ -586,8 +586,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     steps: [],
                 },
             ]);
-            const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'New chat\']');
+            const button = panel.contentElement.querySelector('devtools-button[aria-label=\'New chat\']');
             assert.instanceOf(button, HTMLElement);
             dispatchClickEvent(button);
             assert.deepEqual(mockView.lastCall.args[0].messages, []);
@@ -632,8 +631,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                     steps: [],
                 },
             ]);
-            const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-            const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'History\']');
+            const button = panel.contentElement.querySelector('devtools-button[aria-label=\'History\']');
             assert.instanceOf(button, HTMLElement);
             const contextMenu = getMenu(() => {
                 dispatchClickEvent(button);
@@ -679,8 +677,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 steps: [],
             },
         ]);
-        const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete local chat\']');
+        const button = panel.contentElement.querySelector('devtools-button[aria-label=\'Delete local chat\']');
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.deepEqual(mockView.lastCall.args[0].messages, []);
@@ -714,8 +711,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 steps: [],
             },
         ]);
-        const toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        const button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'Delete local chat\']');
+        const button = panel.contentElement.querySelector('devtools-button[aria-label=\'Delete local chat\']');
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.deepEqual(mockView.lastCall.args[0].messages, []);
@@ -760,8 +756,7 @@ describeWithEnvironment('FreestylerPanel', () => {
                 steps: [],
             },
         ]);
-        let toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        let button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'History\']');
+        let button = panel.contentElement.querySelector('devtools-button[aria-label=\'History\']');
         assert.instanceOf(button, HTMLElement);
         let contextMenu = getMenu(() => {
             dispatchClickEvent(button);
@@ -775,8 +770,7 @@ describeWithEnvironment('FreestylerPanel', () => {
         await drainMicroTasks();
         contextMenu.discard();
         await drainMicroTasks();
-        toolbar = panel.contentElement.querySelector('.freestyler-left-toolbar');
-        button = toolbar.shadowRoot.querySelector('devtools-button[aria-label=\'History\']');
+        button = panel.contentElement.querySelector('devtools-button[aria-label=\'History\']');
         assert.instanceOf(button, HTMLElement);
         contextMenu = getMenu(() => {
             dispatchClickEvent(button);
@@ -787,7 +781,7 @@ describeWithEnvironment('FreestylerPanel', () => {
     describe('cross-origin', () => {
         it('blocks input on cross origin requests', async () => {
             const networkRequest = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest, {
-                url: 'https://a.test',
+                url: urlString `https://a.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
             panel = new AiAssistance.AiAssistancePanel(mockView, {
@@ -808,7 +802,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             await drainMicroTasks();
             // Change context to https://b.test.
             const networkRequest2 = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest, {
-                url: 'https://b.test',
+                url: urlString `https://b.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
             panel.handleAction('drjones.network-floating-button');

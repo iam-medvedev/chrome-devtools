@@ -72,7 +72,7 @@ const UIStrings = {
     /**
      *@description Text for Context Menu entry
      */
-    showRequestsWithThisCookie: 'Show Requests With This Cookie',
+    showRequestsWithThisCookie: 'Show requests with this cookie',
     /**
      *@description Text for Context Menu entry
      */

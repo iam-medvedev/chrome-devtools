@@ -28,6 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../legacy.js';
 import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
@@ -267,7 +268,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.dragX = 0;
         this.dragY = 0;
         const toolsContainer = this.contentElement.createChild('div', 'spectrum-tools');
-        const toolbar = new UI.Toolbar.Toolbar('spectrum-eye-dropper', toolsContainer);
+        const toolbar = toolsContainer.createChild('devtools-toolbar', 'spectrum-eye-dropper');
         const toggleEyeDropperShortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('elements.toggle-eye-dropper');
         const definedShortcutKey = toggleEyeDropperShortcut[0]?.descriptors.flatMap(descriptor => descriptor.name.split(' + '))[0];
         this.colorPickerButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleColorPicker, { PH1: definedShortcutKey || '' }), 'color-picker', 'color-picker-filled', 'color-eye-dropper');
@@ -369,12 +370,14 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             this.togglePalettePanel(true);
             event.consume(true);
         });
-        this.deleteIconToolbar = new UI.Toolbar.Toolbar('delete-color-toolbar');
+        this.deleteIconToolbar = document.createElement('devtools-toolbar');
+        this.deleteIconToolbar.classList.add('delete-color-toolbar');
         this.deleteButton = new UI.Toolbar.ToolbarButton('', 'bin');
         this.deleteIconToolbar.appendToolbarItem(this.deleteButton);
         const overlay = this.contentElement.createChild('div', 'spectrum-overlay fill');
         overlay.addEventListener('click', this.togglePalettePanel.bind(this, false));
-        this.addColorToolbar = new UI.Toolbar.Toolbar('add-color-toolbar');
+        this.addColorToolbar = document.createElement('devtools-toolbar');
+        this.addColorToolbar.classList.add('add-color-toolbar');
         const addColorButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addToPalette), 'plus', undefined, 'add-color');
         addColorButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.onAddColorMousedown.bind(this));
         addColorButton.element.addEventListener('keydown', this.onAddColorKeydown.bind(this));
@@ -517,7 +520,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.palettePanel.removeChildren();
         const title = this.palettePanel.createChild('div', 'palette-title');
         title.textContent = i18nString(UIStrings.colorPalettes);
-        const toolbar = new UI.Toolbar.Toolbar('', this.palettePanel);
+        const toolbar = this.palettePanel.createChild('devtools-toolbar');
         this.closeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.returnToColorPicker), 'cross');
         this.closeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.togglePalettePanel.bind(this, false));
         this.closeButton.element.addEventListener('keydown', this.onCloseBtnKeydown.bind(this));
@@ -621,12 +624,12 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
         this.paletteContainerMutable = palette.mutable;
         if (palette.mutable) {
-            this.paletteContainer.appendChild(this.addColorToolbar.element);
-            this.paletteContainer.appendChild(this.deleteIconToolbar.element);
+            this.paletteContainer.appendChild(this.addColorToolbar);
+            this.paletteContainer.appendChild(this.deleteIconToolbar);
         }
         else {
-            this.addColorToolbar.element.remove();
-            this.deleteIconToolbar.element.remove();
+            this.addColorToolbar.remove();
+            this.deleteIconToolbar.remove();
         }
         this.togglePalettePanel(false);
         this.focusInternal();
@@ -683,7 +686,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     }
     isDraggingToBin(event) {
         const mouseEvent = event;
-        return mouseEvent.pageX > this.deleteIconToolbar.element.getBoundingClientRect().left;
+        return mouseEvent.pageX > this.deleteIconToolbar.getBoundingClientRect().left;
     }
     paletteDragStart(event) {
         const element = UI.UIUtils.deepElementFromEvent(event);
@@ -710,8 +713,8 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         const offsetX = mouseEvent.pageX - (newIndex % ITEMS_PER_PALETTE_ROW) * COLOR_CHIP_SIZE;
         const offsetY = mouseEvent.pageY - (newIndex / ITEMS_PER_PALETTE_ROW | 0) * COLOR_CHIP_SIZE;
         const isDeleting = this.isDraggingToBin(event);
-        this.deleteIconToolbar.element.classList.add('dragging');
-        this.deleteIconToolbar.element.classList.toggle('delete-color-toolbar-active', isDeleting);
+        this.deleteIconToolbar.classList.add('dragging');
+        this.deleteIconToolbar.classList.toggle('delete-color-toolbar-active', isDeleting);
         const dragElementTransform = 'translateX(' + (offsetX - this.dragHotSpotX) + 'px) translateY(' + (offsetY - this.dragHotSpotY) + 'px)';
         this.dragElement.style.transform = isDeleting ? dragElementTransform + ' scale(0.8)' : dragElementTransform;
         const children = [...this.paletteContainer.children];
@@ -759,8 +762,8 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         palette.colors = colors;
         this.customPaletteSetting.set(palette);
         this.showPalette(palette, false);
-        this.deleteIconToolbar.element.classList.remove('dragging');
-        this.deleteIconToolbar.element.classList.remove('delete-color-toolbar-active');
+        this.deleteIconToolbar.classList.remove('dragging');
+        this.deleteIconToolbar.classList.remove('delete-color-toolbar-active');
     }
     loadPalettes() {
         this.palettes.set(MaterialPalette.title, MaterialPalette);

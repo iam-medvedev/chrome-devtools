@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import * as UI from '../../ui/legacy/legacy.js';
 export class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
-    constructor(title = '', expandable = false) {
-        super(title, expandable);
+    constructor(title = '', expandable = false, jslogContext) {
+        super(title, expandable, jslogContext);
         UI.ARIAUtils.setLabel(this.listItemElement, title);
     }
 }

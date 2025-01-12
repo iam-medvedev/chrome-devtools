@@ -35,10 +35,10 @@ export declare const enum Events {
     UPDATE_STATUS = "UpdateStatus",
     PROFILE_TITLE_CHANGED = "ProfileTitleChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.UPDATE_STATUS]: StatusUpdate;
     [Events.PROFILE_TITLE_CHANGED]: ProfileHeader;
-};
+}
 export declare class ProfileType extends Common.ObjectWrapper.ObjectWrapper<ProfileEventTypes> {
     readonly idInternal: string;
     readonly nameInternal: string;
@@ -80,12 +80,12 @@ export declare const enum ProfileEvents {
     REMOVE_PROFILE_HEADER = "remove-profile-header",
     VIEW_UPDATED = "view-updated"
 }
-export type ProfileEventTypes = {
+export interface ProfileEventTypes {
     [ProfileEvents.ADD_PROFILE_HEADER]: ProfileHeader;
     [ProfileEvents.PROFILE_COMPLETE]: ProfileHeader;
     [ProfileEvents.REMOVE_PROFILE_HEADER]: ProfileHeader;
     [ProfileEvents.VIEW_UPDATED]: void;
-};
+}
 export interface DataDisplayDelegate {
     showProfile(profile: ProfileHeader | null): UI.Widget.Widget | null;
     showObject(snapshotObjectId: string, perspectiveName: string): void;

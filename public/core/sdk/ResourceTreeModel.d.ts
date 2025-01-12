@@ -83,7 +83,7 @@ export declare enum Events {
     BackForwardCacheDetailsUpdated = "BackForwardCacheDetailsUpdated",
     JavaScriptDialogOpening = "JavaScriptDialogOpening"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FrameAdded]: ResourceTreeFrame;
     [Events.FrameNavigated]: ResourceTreeFrame;
     [Events.FrameDetached]: {
@@ -114,7 +114,7 @@ export type EventTypes = {
     [Events.InterstitialHidden]: void;
     [Events.BackForwardCacheDetailsUpdated]: ResourceTreeFrame;
     [Events.JavaScriptDialogOpening]: Protocol.Page.JavascriptDialogOpeningEvent;
-};
+}
 export declare class ResourceTreeFrame {
     #private;
     crossTargetParentFrameId: string | null;

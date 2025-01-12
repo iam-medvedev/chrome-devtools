@@ -34,7 +34,7 @@ export class JavaScriptREPL {
             parse(wrappedCode);
             return wrappedCode;
         }
-        catch (e) {
+        catch {
             return code;
         }
     }

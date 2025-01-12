@@ -30,6 +30,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -195,7 +196,6 @@ export class NetworkPanel extends UI.Panel.Panel {
     panelToolbar;
     rightToolbar;
     filterBar;
-    settingsPane;
     showSettingsPaneSetting;
     filmStripPlaceholderElement;
     overviewPane;
@@ -229,20 +229,19 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.currentRequest = null;
         const panel = new UI.Widget.VBox();
         const networkToolbarContainer = panel.contentElement.createChild('div', 'network-toolbar-container');
-        this.panelToolbar = new UI.Toolbar.Toolbar('', networkToolbarContainer);
-        this.panelToolbar.makeWrappable(true);
-        this.panelToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('network-main')}`);
-        this.rightToolbar = new UI.Toolbar.Toolbar('', networkToolbarContainer);
+        this.panelToolbar = networkToolbarContainer.createChild('devtools-toolbar');
+        this.panelToolbar.wrappable = true;
+        this.panelToolbar.setAttribute('jslog', `${VisualLogging.toolbar('network-main')}`);
+        this.rightToolbar = networkToolbarContainer.createChild('devtools-toolbar');
         this.filterBar = new UI.FilterBar.FilterBar('network-panel', true);
         this.filterBar.show(panel.contentElement);
         this.filterBar.addEventListener("Changed" /* UI.FilterBar.FilterBarEvents.CHANGED */, this.handleFilterChanged.bind(this));
-        this.settingsPane = new UI.Widget.HBox();
-        this.settingsPane.element.classList.add('network-settings-pane');
-        this.settingsPane.show(panel.contentElement);
+        const settingsPane = panel.contentElement.createChild('div', 'network-settings-pane');
+        settingsPane.append(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString(UIStrings.showMoreInformationInRequestRows)), UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.groupByFrame), Common.Settings.Settings.instance().moduleSetting('network.group-by-frame'), i18nString(UIStrings.groupRequestsByTopLevelRequest)), UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showOverview), this.networkLogShowOverviewSetting, i18nString(UIStrings.showOverviewOfNetworkRequests)), UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.captureScreenshots), this.networkRecordFilmStripSetting, i18nString(UIStrings.captureScreenshotsWhenLoadingA)));
         this.showSettingsPaneSetting =
             Common.Settings.Settings.instance().createSetting('network-show-settings-toolbar', false);
-        this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));
-        this.updateSettingsPaneVisibility();
+        settingsPane.classList.toggle('hidden', !this.showSettingsPaneSetting.get());
+        this.showSettingsPaneSetting.addChangeListener(() => settingsPane.classList.toggle('hidden', !this.showSettingsPaneSetting.get()));
         this.filmStripPlaceholderElement = panel.contentElement.createChild('div', 'network-film-strip-placeholder');
         // Create top overview component.
         this.overviewPane = new PerfUI.TimelineOverviewPane.TimelineOverviewPane('network');
@@ -376,7 +375,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             }
         }
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
-        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('network.clear'));
+        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('network.clear'));
         this.panelToolbar.appendSeparator();
         this.panelToolbar.appendToolbarItem(this.filterBar.filterButton());
         updateSidebarToggle();
@@ -399,14 +398,6 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(this.progressBarContainer));
         this.rightToolbar.appendSeparator();
         this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.networkSettings), 'gear-filled', 'network-settings'));
-        const settingsToolbarLeft = new UI.Toolbar.Toolbar('', this.settingsPane.element);
-        settingsToolbarLeft.makeVertical();
-        settingsToolbarLeft.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.networkLogLargeRowsSetting, i18nString(UIStrings.showMoreInformationInRequestRows), i18nString(UIStrings.useLargeRequestRows)));
-        settingsToolbarLeft.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.networkLogShowOverviewSetting, i18nString(UIStrings.showOverviewOfNetworkRequests), i18nString(UIStrings.showOverview)));
-        const settingsToolbarRight = new UI.Toolbar.Toolbar('', this.settingsPane.element);
-        settingsToolbarRight.makeVertical();
-        settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(Common.Settings.Settings.instance().moduleSetting('network.group-by-frame'), i18nString(UIStrings.groupRequestsByTopLevelRequest), i18nString(UIStrings.groupByFrame)));
-        settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.networkRecordFilmStripSetting, i18nString(UIStrings.captureScreenshotsWhenLoadingA), i18nString(UIStrings.captureScreenshots)));
         const exportHarContextMenu = (contextMenu) => {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.exportHarSanitized), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: true }), { jslogContext: 'export-har' });
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.exportHarWithSensitiveData), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: false }), { jslogContext: 'export-har-with-sensitive-data' });
@@ -429,9 +420,6 @@ export class NetworkPanel extends UI.Panel.Panel {
         };
         networkShowOptionsToGenerateHarWithSensitiveData.addChangeListener(updateShowOptionsToGenerateHarWithSensitiveData);
         updateShowOptionsToGenerateHarWithSensitiveData();
-    }
-    updateSettingsPaneVisibility() {
-        this.settingsPane.element.classList.toggle('hidden', !this.showSettingsPaneSetting.get());
     }
     createThrottlingConditionsSelect() {
         const toolbarItem = new UI.Toolbar.ToolbarComboBox(null, i18nString(UIStrings.throttling));

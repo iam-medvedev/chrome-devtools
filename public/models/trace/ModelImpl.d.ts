@@ -84,17 +84,17 @@ export declare const enum ModelUpdateType {
     PROGRESS_UPDATE = "PROGRESS_UPDATE"
 }
 export type ModelUpdateEventData = ModelUpdateEventComplete | ModelUpdateEventProgress;
-export type ModelUpdateEventComplete = {
+export interface ModelUpdateEventComplete {
     type: ModelUpdateType.COMPLETE;
     data: 'done';
-};
-export type ModelUpdateEventProgress = {
+}
+export interface ModelUpdateEventProgress {
     type: ModelUpdateType.PROGRESS_UPDATE;
     data: TraceParseEventProgressData;
-};
-export type TraceParseEventProgressData = {
+}
+export interface TraceParseEventProgressData {
     percent: number;
-};
+}
 export declare class ModelUpdateEvent extends Event {
     data: ModelUpdateEventData;
     static readonly eventName = "modelupdate";

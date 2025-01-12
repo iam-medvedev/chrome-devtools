@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { getContextMenuForElement, } from '../../../testing/ContextMenuHelpers.js';
 import { dispatchFocusEvent, dispatchFocusOutEvent, dispatchInputEvent, dispatchKeyDownEvent, dispatchPasteEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
@@ -10,6 +11,7 @@ import { createFileSystemUISourceCode } from '../../../testing/UISourceCodeHelpe
 import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as SourcesComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 describe('HeadersView', () => {
     const commitWorkingCopySpy = sinon.spy();
     before(async () => {
@@ -86,7 +88,7 @@ describe('HeadersView', () => {
       }
     ]`;
         const { uiSourceCode, project } = createFileSystemUISourceCode({
-            url: 'file:///path/to/overrides/example.html',
+            url: urlString `file:///path/to/overrides/example.html`,
             mimeType: 'text/html',
             content: headers,
         });

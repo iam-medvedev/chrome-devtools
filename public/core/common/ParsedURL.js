@@ -65,7 +65,7 @@ export function schemeIs(url, scheme) {
     try {
         return (new URL(url)).protocol === scheme;
     }
-    catch (e) {
+    catch {
         return false;
     }
 }

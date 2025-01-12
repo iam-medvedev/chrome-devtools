@@ -11,9 +11,9 @@ export declare function securityStateCompare(a: Protocol.Security.SecurityState,
 export declare enum Events {
     VisibleSecurityStateChanged = "VisibleSecurityStateChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.VisibleSecurityStateChanged]: PageVisibleSecurityState;
-};
+}
 export declare const SummaryMessages: {
     [x: string]: () => string;
 };
