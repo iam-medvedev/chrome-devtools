@@ -39,9 +39,9 @@ export interface ModifiedStatusChangedEvent {
     uiSourceCode: Workspace.UISourceCode.UISourceCode;
     isModified: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.MODIFIED_STATUS_CHANGED]: ModifiedStatusChangedEvent;
-};
+}
 export declare class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper<UISourceCodeDiffEventTypes> {
     private uiSourceCode;
     private requestDiffPromise;
@@ -56,9 +56,9 @@ export declare class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper
 export declare const enum UISourceCodeDiffEvents {
     DIFF_CHANGED = "DiffChanged"
 }
-export type UISourceCodeDiffEventTypes = {
+export interface UISourceCodeDiffEventTypes {
     [UISourceCodeDiffEvents.DIFF_CHANGED]: void;
-};
+}
 export declare function workspaceDiff(): WorkspaceDiffImpl;
 export declare const UpdateTimeout = 200;
 export {};

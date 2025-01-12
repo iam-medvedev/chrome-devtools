@@ -126,7 +126,7 @@ export declare enum Events {
     DebuggerIsReadyToPause = "DebuggerIsReadyToPause",
     ScriptSourceWasEdited = "ScriptSourceWasEdited"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.DebuggerWasEnabled]: DebuggerModel;
     [Events.DebuggerWasDisabled]: DebuggerModel;
     [Events.DebuggerPaused]: DebuggerModel;
@@ -141,7 +141,7 @@ export type EventTypes = {
         script: Script;
         status: Protocol.Debugger.SetScriptSourceResponseStatus;
     };
-};
+}
 export declare class Location {
     debuggerModel: DebuggerModel;
     scriptId: Protocol.Runtime.ScriptId;

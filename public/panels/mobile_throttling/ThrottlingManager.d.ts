@@ -3,7 +3,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { NetworkThrottlingSelector } from './NetworkThrottlingSelector.js';
 export interface CPUThrottlingSelectorWrapper {
     control: UI.Toolbar.ToolbarComboBox;
-    updateRecommendedRate(recommendedRate: number | null): void;
+    updateRecommendedOption(recommendedOption: SDK.CPUThrottlingManager.CPUThrottlingOption | null): void;
 }
 export interface NetworkThrottlingSelectorWrapper {
     selector: NetworkThrottlingSelector;
@@ -12,7 +12,7 @@ export interface NetworkThrottlingSelectorWrapper {
 export declare class ThrottlingManager {
     #private;
     private readonly cpuThrottlingControls;
-    private readonly cpuThrottlingRates;
+    private readonly cpuThrottlingOptions;
     private readonly customNetworkConditionsSetting;
     private readonly currentNetworkThrottlingConditionsSetting;
     private lastNetworkThrottlingConditions;
@@ -25,7 +25,7 @@ export declare class ThrottlingManager {
     createOfflineToolbarCheckbox(): UI.Toolbar.ToolbarCheckbox;
     createMobileThrottlingButton(): UI.Toolbar.ToolbarMenuButton;
     private updatePanelIcon;
-    setCPUThrottlingRate(rate: number): void;
+    setCPUThrottlingOption(option: SDK.CPUThrottlingManager.CPUThrottlingOption): void;
     onCPUThrottlingRateChangedOnSDK(rate: number): void;
     createNetworkThrottlingSelector(selectElement: HTMLSelectElement): NetworkThrottlingSelectorWrapper;
     createCPUThrottlingSelector(): CPUThrottlingSelectorWrapper;

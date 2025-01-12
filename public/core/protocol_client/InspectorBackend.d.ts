@@ -1,16 +1,16 @@
 import type * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 export declare const DevToolsStubErrorCode = -32015;
-type MessageParams = {
+interface MessageParams {
     [x: string]: any;
-};
+}
 type ProtocolDomainName = ProtocolProxyApi.ProtocolDomainName;
 export interface MessageError {
     code: number;
     message: string;
     data?: string | null;
 }
-export type Message = {
+export interface Message {
     sessionId?: string;
     url?: Platform.DevToolsPath.UrlString;
     id?: number;
@@ -18,7 +18,7 @@ export type Message = {
     result?: Object | null;
     method?: QualifiedName;
     params?: MessageParams | null;
-};
+}
 interface EventMessage extends Message {
     method: QualifiedName;
     params?: MessageParams | null;

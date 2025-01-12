@@ -20,13 +20,13 @@ export declare namespace SharedStorageItemsDispatcher {
         oldText: string | null;
         newText: string;
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.FILTERED_ITEMS_CLEARED]: void;
         [Events.ITEM_DELETED]: ItemDeletedEvent;
         [Events.ITEM_EDITED]: ItemEditedEvent;
         [Events.ITEMS_CLEARED]: void;
         [Events.ITEMS_REFRESHED]: void;
-    };
+    }
 }
 export declare class SharedStorageItemsView extends StorageItemsView {
     #private;

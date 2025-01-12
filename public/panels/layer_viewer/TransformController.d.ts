@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class TransformController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
@@ -44,9 +45,9 @@ export declare class TransformController extends Common.ObjectWrapper.ObjectWrap
 export declare const enum Events {
     TRANSFORM_CHANGED = "TransformChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TRANSFORM_CHANGED]: void;
-};
+}
 export declare const enum Modes {
     PAN = "Pan",
     ROTATE = "Rotate"

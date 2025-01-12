@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getCellByIndexes, } from '../../../../testing/DataGridHelpers.js';
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
@@ -8,6 +9,7 @@ import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 const zip2 = (xs, ys) => {
     assert.strictEqual(xs.length, ys.length);
     return Array.from(xs.map((_, i) => [xs[i], ys[i]]));
@@ -40,7 +42,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
             this.timeout(10000);
         }
         const data = {
-            pageURL: 'https://example.com/prefetched.html',
+            pageURL: urlString `https://example.com/prefetched.html`,
             rows: [{
                     url: 'https://example.com/prefetched.html',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -55,7 +57,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
     });
     it('renderes edit diff', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html?q=1',
+            pageURL: urlString `https://example.com/prefetched.html?q=1`,
             rows: [{
                     url: 'https://example.com/prefetched.html?q=2',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -75,7 +77,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
     });
     it('renderes add diff', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html?q=1',
+            pageURL: urlString `https://example.com/prefetched.html?q=1`,
             rows: [{
                     url: 'https://example.com/prefetched.html',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -94,7 +96,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
     });
     it('renderes delete diff', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html',
+            pageURL: urlString `https://example.com/prefetched.html`,
             rows: [{
                     url: 'https://example.com/prefetched.html?q=1',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -113,7 +115,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
     });
     it('renderes complex diff', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html?q=1',
+            pageURL: urlString `https://example.com/prefetched.html?q=1`,
             rows: [{
                     url: 'https://example.com/prerendered.html?x=1',
                     action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,

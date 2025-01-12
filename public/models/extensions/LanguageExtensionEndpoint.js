@@ -37,7 +37,7 @@ export class LanguageExtensionEndpoint {
         try {
             return this.allowFileAccess || new URL(url).protocol !== 'file:';
         }
-        catch (e) {
+        catch {
             return false;
         }
     }
@@ -48,7 +48,7 @@ export class LanguageExtensionEndpoint {
                 return false;
             }
         }
-        catch (e) {
+        catch {
             return false;
         }
         const language = script.scriptLanguage();

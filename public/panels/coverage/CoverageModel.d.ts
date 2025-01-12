@@ -19,11 +19,11 @@ export declare enum Events {
     CoverageReset = "CoverageReset",
     SourceMapResolved = "SourceMapResolved"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CoverageUpdated]: CoverageInfo[];
     [Events.CoverageReset]: void;
     [Events.SourceMapResolved]: void;
-};
+}
 export declare class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     private cpuProfilerModel;
     private cssModel;
@@ -133,9 +133,9 @@ export declare namespace URLCoverageInfo {
     enum Events {
         SizesChanged = "SizesChanged"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.SizesChanged]: void;
-    };
+    }
 }
 export declare const mergeSegments: (segmentsA: CoverageSegment[], segmentsB: CoverageSegment[]) => CoverageSegment[];
 export declare class CoverageInfo {

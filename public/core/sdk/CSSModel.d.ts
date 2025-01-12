@@ -115,7 +115,7 @@ export interface PseudoStateForcedEvent {
 export interface ComputedStyleUpdatedEvent {
     nodeId: Protocol.DOM.NodeId;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FontsUpdated]: void;
     [Events.MediaQueryResultChanged]: void;
     [Events.ModelWasEnabled]: void;
@@ -125,7 +125,7 @@ export type EventTypes = {
     [Events.StyleSheetChanged]: StyleSheetChangedEvent;
     [Events.StyleSheetRemoved]: CSSStyleSheetHeader;
     [Events.ComputedStyleUpdated]: ComputedStyleUpdatedEvent;
-};
+}
 export declare class Edit {
     styleSheetId: string;
     oldRange: TextUtils.TextRange.TextRange;
@@ -159,9 +159,9 @@ export declare class CSSPropertyTracker extends Common.ObjectWrapper.ObjectWrapp
 export declare const enum CSSPropertyTrackerEvents {
     TRACKED_CSS_PROPERTIES_UPDATED = "TrackedCSSPropertiesUpdated"
 }
-export type CSSPropertyTrackerEventTypes = {
+export interface CSSPropertyTrackerEventTypes {
     [CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED]: (DOMNode | null)[];
-};
+}
 export interface ContrastInfo {
     backgroundColors: string[] | null;
     computedFontSize: string;

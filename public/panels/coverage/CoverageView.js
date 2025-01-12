@@ -1,6 +1,7 @@
 // Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -127,8 +128,8 @@ export class CoverageView extends UI.Widget.VBox {
         this.decorationManager = null;
         const toolbarContainer = this.contentElement.createChild('div', 'coverage-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        const toolbar = new UI.Toolbar.Toolbar('coverage-toolbar', toolbarContainer);
-        toolbar.makeWrappable(true);
+        const toolbar = toolbarContainer.createChild('devtools-toolbar', 'coverage-toolbar');
+        toolbar.wrappable = true;
         this.coverageTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onCoverageTypeComboBoxSelectionChanged.bind(this), i18nString(UIStrings.chooseCoverageGranularityPer), undefined, 'coverage-type');
         const coverageTypes = [
             {
@@ -155,7 +156,7 @@ export class CoverageView extends UI.Widget.VBox {
         const mainTargetSupportsRecordOnReload = mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
         this.inlineReloadButton = null;
         if (mainTargetSupportsRecordOnReload) {
-            this.startWithReloadButton = UI.Toolbar.Toolbar.createActionButtonForId('coverage.start-with-reload');
+            this.startWithReloadButton = UI.Toolbar.Toolbar.createActionButton('coverage.start-with-reload');
             toolbar.appendToolbarItem(this.startWithReloadButton);
             this.toggleRecordButton.setEnabled(false);
             this.toggleRecordButton.setVisible(false);
@@ -169,7 +170,7 @@ export class CoverageView extends UI.Widget.VBox {
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.exportAction));
         this.textFilterRegExp = null;
         toolbar.appendSeparator();
-        this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByUrl), 0.4, 1);
+        this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByUrl), 1, 1);
         this.filterInput.setEnabled(false);
         this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(this.filterInput);
@@ -226,7 +227,7 @@ export class CoverageView extends UI.Widget.VBox {
         let message;
         if (this.startWithReloadButton) {
             this.inlineReloadButton =
-                UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('coverage.start-with-reload'));
+                UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton('coverage.start-with-reload'));
             message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheReloadButtonSToReloadAnd, { PH1: this.inlineReloadButton });
         }
         else {
@@ -245,7 +246,7 @@ export class CoverageView extends UI.Widget.VBox {
         reasonDiv.textContent = message;
         widget.contentElement.appendChild(reasonDiv);
         this.inlineReloadButton =
-            UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('inspector-main.reload'));
+            UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton('inspector-main.reload'));
         const messageElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.reloadPrompt, { PH1: this.inlineReloadButton });
         messageElement.classList.add('message');
         widget.contentElement.appendChild(messageElement);

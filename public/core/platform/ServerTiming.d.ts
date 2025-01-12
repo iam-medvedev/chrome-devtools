@@ -2,14 +2,14 @@ export interface NameValue {
     name: string;
     value: string;
 }
-export type ServerTimingParsingWarningMessage = {
+export interface ServerTimingParsingWarningMessage {
     deprecratedSyntax: () => string;
     duplicateParameter: (parameter: string) => string;
     noValueFoundForParameter: (parameter: string) => string;
     unrecognizedParameter: (parameter: string) => string;
     extraneousTrailingCharacters: () => string;
     unableToParseValue: (parameter: string, value: string) => string;
-};
+}
 export declare class ServerTiming {
     metric: string;
     value: number;

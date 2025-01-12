@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';

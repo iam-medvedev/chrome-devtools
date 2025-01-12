@@ -100,7 +100,7 @@ export class JSONView extends UI.Widget.VBox {
             }
             returnObj.data = json;
         }
-        catch (e) {
+        catch {
             returnObj = null;
         }
         return Promise.resolve(returnObj);

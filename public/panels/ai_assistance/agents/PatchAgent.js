@@ -8,7 +8,7 @@ import { AiAgent, ConversationContext, debugLog, } from './AiAgent.js';
 const preamble = `You are responsible for changing the source code on behalf of the user.
 The user query defines what changes are to be made.
 You have a number of functions to get information about source files in the project.
-Use those functions to fullful the user query.
+Use those functions to fulfill the user query.
 
 ## Step-by-step instructions
 
@@ -114,7 +114,7 @@ export class PatchAgent extends AiAgent {
                 properties: {
                     filepath: {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                        description: 'A file path that idenfities the file to get the content for',
+                        description: 'A file path that identifies the file to get the content for',
                         nullable: false,
                     },
                 },
@@ -158,7 +158,7 @@ export class PatchAgent extends AiAgent {
                 properties: {
                     filepath: {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                        description: 'A file path that idenfities the file',
+                        description: 'A file path that identifies the file',
                         nullable: false,
                     },
                     content: {
@@ -183,7 +183,7 @@ export class PatchAgent extends AiAgent {
                     };
                 }
                 const content = params.content;
-                // TODO: we unespace some characters to restore the original
+                // TODO: we unescape some characters to restore the original
                 // content but this should be fixed upstream.
                 uiSourceCode.setContent(content.replaceAll('\\n', '\n').replaceAll('\\"', '"').replaceAll('\\\'', '\''), false);
                 return {};
@@ -221,10 +221,10 @@ export class PatchAgent extends AiAgent {
     buildChatHistoryForAida() {
         return [...this.#history];
     }
-    async *run(initalQuery, options) {
+    async *run(initialQuery, options) {
         await options.selected?.refresh();
         this.#project = options.selected ?? undefined;
-        let query = { text: initalQuery };
+        let query = { text: initialQuery };
         // Request is built here to capture history up to this point.
         let request = this.buildRequest(query);
         const response = {

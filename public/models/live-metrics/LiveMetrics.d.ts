@@ -72,7 +72,7 @@ export interface StatusEvent {
     interactions: InteractionMap;
     layoutShifts: LayoutShift[];
 }
-type EventTypes = {
+interface EventTypes {
     [Events.STATUS]: StatusEvent;
-};
+}
 export {};

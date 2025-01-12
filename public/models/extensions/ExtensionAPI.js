@@ -586,7 +586,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         try {
             return extensionInfo.allowFileAccess || getProtocol(resource.url) !== 'file:';
         }
-        catch (e) {
+        catch {
             return false;
         }
     }

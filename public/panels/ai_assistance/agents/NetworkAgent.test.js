@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Logs from '../../../models/logs/logs.js';
 import { getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
@@ -9,6 +10,7 @@ import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../../testing/NetworkHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import { allowHeader, formatHeaders, formatInitiatorUrl, NetworkAgent, RequestContext, } from '../ai_assistance.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NetworkAgent', () => {
     let networkPanel;
     function mockHostConfig(modelId, temperature) {
@@ -116,15 +118,15 @@ describeWithMockConnection('NetworkAgent', () => {
             receiveHeadersEnd: 0,
         };
         beforeEach(() => {
-            selectedNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com', '', null, null, null);
+            selectedNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
             selectedNetworkRequest.statusCode = 200;
             selectedNetworkRequest.setRequestHeaders([{ name: 'content-type', value: 'bar1' }]);
             selectedNetworkRequest.responseHeaders =
                 [{ name: 'content-type', value: 'bar2' }, { name: 'x-forwarded-for', value: 'bar3' }];
             selectedNetworkRequest.timing = timingInfo;
-            const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.initiator.com', '', null, null, null);
-            const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/1', '', null, null, null);
-            const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/2', '', null, null, null);
+            const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.initiator.com`, urlString ``, null, null, null);
+            const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/1`, urlString ``, null, null, null);
+            const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/2`, urlString ``, null, null, null);
             sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'initiatorGraphForRequest')
                 .withArgs(selectedNetworkRequest)
                 .returns({

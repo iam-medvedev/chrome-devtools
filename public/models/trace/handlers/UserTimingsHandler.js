@@ -119,7 +119,7 @@ export function handleEvent(event) {
     if (Types.Events.isConsoleTime(event)) {
         consoleTimings.push(event);
     }
-    if (Types.Events.isTimeStamp(event)) {
+    if (Types.Events.isConsoleTimeStamp(event)) {
         timestampEvents.push(event);
     }
 }

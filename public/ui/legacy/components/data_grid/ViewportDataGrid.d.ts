@@ -44,9 +44,9 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
 export declare const enum Events {
     VIEWPORT_CALCULATED = "ViewportCalculated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.VIEWPORT_CALCULATED]: void;
-};
+}
 export declare class ViewportDataGridNode<T> extends DataGridNode<ViewportDataGridNode<T>> {
     private stale;
     private flatNodes;

@@ -4,13 +4,14 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from '../har/har.js';
+const { urlString } = Platform.DevToolsPath;
 describe('HAR', () => {
     describe('Log', () => {
         describe('Entry', () => {
             describe('build', () => {
                 const requestId = 'r0';
                 const { build } = HAR.Log.Entry;
-                const url = 'p0.com';
+                const url = urlString `p0.com`;
                 it('exports request cookies and authorization headers by default', async () => {
                     const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
                     request.addExtraRequestInfo({

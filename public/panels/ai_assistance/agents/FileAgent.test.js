@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Logs from '../../../models/logs/logs.js';
@@ -12,6 +13,7 @@ import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { loadBasicSourceMapExample } from '../../../testing/SourceMapHelpers.js';
 import { createContentProviderUISourceCodes } from '../../../testing/UISourceCodeHelpers.js';
 import { FileAgent, FileContext, formatFile, formatSourceMapDetails } from '../ai_assistance.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('FileAgent', () => {
     function mockHostConfig(modelId, temperature) {
         getGetHostConfigStub({
@@ -112,7 +114,7 @@ describeWithMockConnection('FileAgent', () => {
         });
     });
     async function createUISourceCode(options) {
-        const url = options?.url ?? 'http://example.test/script.js';
+        const url = options?.url ?? urlString `http://example.test/script.js`;
         const { project } = createContentProviderUISourceCodes({
             items: [
                 {
@@ -137,13 +139,13 @@ describeWithMockConnection('FileAgent', () => {
         return uiSourceCode;
     }
     function createNetworkRequest() {
-        const networkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/script.js', '', null, null, null);
+        const networkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/script.js`, urlString ``, null, null, null);
         networkRequest.statusCode = 200;
         networkRequest.setRequestHeaders([{ name: 'content-type', value: 'bar1' }]);
         networkRequest.responseHeaders = [{ name: 'content-type', value: 'bar2' }, { name: 'x-forwarded-for', value: 'bar3' }];
-        const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.initiator.com', '', null, null, null);
-        const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/1', '', null, null, null);
-        const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/2', '', null, null, null);
+        const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.initiator.com`, urlString ``, null, null, null);
+        const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/1`, urlString ``, null, null, null);
+        const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/2`, urlString ``, null, null, null);
         sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'initiatorGraphForRequest')
             .withArgs(networkRequest)
             .returns({
@@ -318,7 +320,7 @@ lorem ipsum
             const uiSourceCode = await createUISourceCode({
                 resourceType: Common.ResourceType.resourceTypes.Image,
                 mimeType: 'application/png',
-                url: 'http://example.test/test.png',
+                url: urlString `http://example.test/test.png`,
                 requestContentData: true,
             });
             assert.strictEqual(formatFile(uiSourceCode), `File name: test.png

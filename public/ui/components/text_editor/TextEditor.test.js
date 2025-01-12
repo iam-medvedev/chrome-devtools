@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
@@ -14,6 +15,7 @@ import { MockExecutionContext } from '../../../testing/MockExecutionContext.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../legacy/legacy.js';
 import * as TextEditor from './text_editor.js';
+const { urlString } = Platform.DevToolsPath;
 function makeState(doc, extensions = []) {
     return CodeMirror.EditorState.create({
         doc,
@@ -185,7 +187,7 @@ describeWithMockConnection('TextEditor autocompletion', () => {
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
         const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, targetManager, resourceMapping });
-        const testScript = debuggerModel.parsedScriptSource('1', 'script://1', 0, 0, 0, 0, executionContext.id, '', undefined, false, undefined, false, false, 0, null, null, null, null, null, null);
+        const testScript = debuggerModel.parsedScriptSource('1', urlString `script://1`, 0, 0, 0, 0, executionContext.id, '', undefined, false, undefined, false, false, 0, null, null, null, null, null, null);
         const payload = {
             callFrameId: '0',
             functionName: 'test',

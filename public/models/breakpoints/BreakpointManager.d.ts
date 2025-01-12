@@ -53,10 +53,10 @@ export declare enum Events {
     BreakpointAdded = "breakpoint-added",
     BreakpointRemoved = "breakpoint-removed"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BreakpointAdded]: BreakpointLocation;
     [Events.BreakpointRemoved]: BreakpointLocation;
-};
+}
 export declare const enum DebuggerUpdateResult {
     OK = "OK",
     ERROR_BREAKPOINT_CLASH = "ERROR_BREAKPOINT_CLASH",

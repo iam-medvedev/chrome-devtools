@@ -47,24 +47,15 @@ export function expandWindowByPercentOrToOneMillisecond(annotationWindow, maxTra
 export function eventTimingsMicroSeconds(event) {
     return {
         startTime: event.ts,
-        endTime: Types.Timing.MicroSeconds(event.ts + (event.dur ?? Types.Timing.MicroSeconds(0))),
-        duration: Types.Timing.MicroSeconds(event.dur || 0),
+        endTime: (event.ts + (event.dur ?? 0)),
+        duration: (event.dur || 0),
     };
 }
 export function eventTimingsMilliSeconds(event) {
-    const microTimes = eventTimingsMicroSeconds(event);
     return {
-        startTime: microSecondsToMilliseconds(microTimes.startTime),
-        endTime: microSecondsToMilliseconds(microTimes.endTime),
-        duration: microSecondsToMilliseconds(microTimes.duration),
-    };
-}
-export function eventTimingsSeconds(event) {
-    const microTimes = eventTimingsMicroSeconds(event);
-    return {
-        startTime: microSecondsToSeconds(microTimes.startTime),
-        endTime: microSecondsToSeconds(microTimes.endTime),
-        duration: microSecondsToSeconds(microTimes.duration),
+        startTime: (event.ts / 1000),
+        endTime: (event.ts + (event.dur ?? 0)) / 1000,
+        duration: (event.dur || 0) / 1000,
     };
 }
 export function traceWindowMilliSeconds(bounds) {

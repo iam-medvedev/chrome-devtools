@@ -83,13 +83,13 @@ export declare class RemoveBreakpointEvent extends Event {
     index: number;
     constructor(index: number);
 }
-type Action = {
+interface Action {
     id: string;
     label: string;
     group: string;
     groupTitle: string;
     jslogContext?: string;
-};
+}
 export interface ViewInput extends StepViewData {
     step?: Models.Schema.Step;
     section?: Models.Section.Section;

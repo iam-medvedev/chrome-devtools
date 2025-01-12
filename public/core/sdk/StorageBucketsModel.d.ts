@@ -46,8 +46,8 @@ export interface BucketEvent {
     model: StorageBucketsModel;
     bucketInfo: Protocol.Storage.StorageBucketInfo;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BUCKET_ADDED]: BucketEvent;
     [Events.BUCKET_REMOVED]: BucketEvent;
     [Events.BUCKET_CHANGED]: BucketEvent;
-};
+}

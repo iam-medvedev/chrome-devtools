@@ -59,7 +59,6 @@ const realConnectionSuites = [];
 export function describeWithRealConnection(title, fn) {
     realConnectionSuites.push({ title, fn, only: false });
 }
-// eslint-disable-next-line mocha/no-exclusive-tests
 describeWithRealConnection.only = function (title, fn) {
     realConnectionSuites.push({ title, fn, only: true });
 };

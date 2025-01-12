@@ -1,5 +1,5 @@
 import { SecurityPanelSidebarTreeElement } from './SecurityPanelSidebarTreeElement.js';
 export declare class CookieReportTreeElement extends SecurityPanelSidebarTreeElement {
-    constructor(title: string);
+    constructor(title: string, jslogContext: string | number);
     onselect(): boolean;
 }

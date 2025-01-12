@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -37,7 +38,7 @@ import filterStyles from './filter.css.legacy.js';
 import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { bindCheckbox } from './SettingsUI.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
-import { Toolbar, ToolbarFilter, ToolbarSettingToggle } from './Toolbar.js';
+import { ToolbarFilter, ToolbarSettingToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, createTextChild } from './UIUtils.js';
 import { HBox } from './Widget.js';
@@ -172,9 +173,9 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     constructor() {
         super();
         this.filterElement = document.createElement('div');
-        const filterToolbar = new Toolbar('text-filter', this.filterElement);
+        const filterToolbar = this.filterElement.createChild('devtools-toolbar', 'text-filter');
         // Set the style directly on the element to overwrite parent css styling.
-        filterToolbar.element.style.borderBottom = 'none';
+        filterToolbar.style.borderBottom = 'none';
         this.#filter = new ToolbarFilter(undefined, 1, 1, UIStrings.egSmalldUrlacomb, this.completions.bind(this));
         filterToolbar.appendToolbarItem(this.#filter);
         this.#filter.addEventListener("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, () => this.valueChanged());

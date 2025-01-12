@@ -27,7 +27,7 @@ declare class ExtensionIframe {
 export declare const enum Events {
     EXTENSIONS_UPDATED = "extensionsUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.EXTENSIONS_UPDATED]: Extension[];
-};
+}
 export {};

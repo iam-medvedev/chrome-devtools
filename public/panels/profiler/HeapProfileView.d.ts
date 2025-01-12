@@ -73,10 +73,10 @@ export declare namespace SamplingHeapProfileType {
         RECORDING_STOPPED = "RecordingStopped",
         STATS_UPDATE = "StatsUpdate"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.RECORDING_STOPPED]: void;
         [Events.STATS_UPDATE]: Protocol.HeapProfiler.SamplingHeapProfile | null;
-    };
+    }
 }
 export declare class SamplingHeapProfileHeader extends WritableProfileHeader {
     readonly heapProfilerModelInternal: SDK.HeapProfilerModel.HeapProfilerModel | null;

@@ -4,7 +4,9 @@
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('PreloadingModel', () => {
     it('adds and deletes rule sets and preloading attempts', async () => {
         const target = createTarget();
@@ -79,7 +81,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource.js',
+                        url: urlString `https://example.com/subresource.js`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -182,7 +184,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource.js',
+                        url: urlString `https://example.com/subresource.js`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -199,7 +201,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/page.html',
+                        url: urlString `https://example.com/page.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -266,7 +268,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/page.html',
+                        url: urlString `https://example.com/page.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -323,7 +325,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource.js',
+                        url: urlString `https://example.com/subresource.js`,
                     },
                     pipelineId: null,
                     status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
@@ -451,7 +453,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource2.js',
+                        url: urlString `https://example.com/subresource2.js`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -555,7 +557,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource12.js',
+                        url: urlString `https://example.com/subresource12.js`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -572,7 +574,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource2.js',
+                        url: urlString `https://example.com/subresource2.js`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -591,7 +593,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource12.js',
+                        url: urlString `https://example.com/subresource12.js`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -610,7 +612,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource12.js',
+                        url: urlString `https://example.com/subresource12.js`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -627,7 +629,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource2.js',
+                        url: urlString `https://example.com/subresource2.js`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -685,7 +687,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: null,
                     status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
@@ -724,7 +726,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: null,
                     status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
@@ -742,7 +744,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -771,7 +773,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -813,7 +815,7 @@ describeWithMockConnection('PreloadingModel', () => {
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,

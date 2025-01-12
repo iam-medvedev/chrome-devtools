@@ -102,13 +102,18 @@ export class LayoutShiftDetails extends HTMLElement {
       </div>
     `;
     }
-    #renderShiftedElements(elementsShifted) {
+    #renderShiftedElements(shift, elementsShifted) {
         // clang-format off
         return html `
       ${elementsShifted?.map(el => {
             if (el.node_id !== undefined) {
                 return html `
-            <devtools-performance-node-link .data=${{ backendNodeId: el.node_id }}>
+            <devtools-performance-node-link
+              .data=${{
+                    backendNodeId: el.node_id,
+                    frame: shift.args.frame,
+                    // TODO(crbug.com/371620361): if ever rendered for non-fresh traces, this needs to set a fallback text value.
+                }}>
             </devtools-performance-node-link>`;
             }
             return LitHtml.nothing;
@@ -160,24 +165,27 @@ export class LayoutShiftDetails extends HTMLElement {
       </span>`;
         // clang-format on
     }
-    #renderUnsizedImage(node) {
+    #renderUnsizedImage(frame, backendNodeId) {
         // clang-format off
         const el = html `
       <devtools-performance-node-link
         .data=${{
-            backendNodeId: node,
+            backendNodeId,
+            frame,
+            // TODO(crbug.com/371620361): if ever rendered for non-fresh traces, this needs to set a fallback text value. This requires
+            // `rootCauses.unsizedImages` to have more than just the backend node id.
         }}>
       </devtools-performance-node-link>`;
         return html `
     <span class="culprit"><span class="culprit-type">${i18nString(UIStrings.unsizedImage)}: </span><span class="culprit-value">${el}</span></span>`;
         // clang-format on
     }
-    #renderRootCauseValues(rootCauses) {
+    #renderRootCauseValues(frame, rootCauses) {
         return html `
       ${rootCauses?.fontRequests.map(fontReq => this.#renderFontRequest(fontReq))}
       ${rootCauses?.iframeIds.map(iframe => this.#renderIframe(iframe))}
       ${rootCauses?.nonCompositedAnimations.map(failure => this.#renderAnimation(failure))}
-      ${rootCauses?.unsizedImages.map(image => this.#renderUnsizedImage(image))}
+      ${rootCauses?.unsizedImages.map(backendNodeId => this.#renderUnsizedImage(frame, backendNodeId))}
     `;
     }
     #renderStartTime(shift, parsedTrace) {
@@ -199,6 +207,7 @@ export class LayoutShiftDetails extends HTMLElement {
         const hasCulprits = Boolean(rootCauses &&
             (rootCauses.fontRequests.length || rootCauses.iframeIds.length || rootCauses.nonCompositedAnimations.length ||
                 rootCauses.unsizedImages.length));
+        // TODO(crbug.com/371620361): Needs to show something for non-fresh recordings.
         // clang-format off
         return html `
       <tr class="shift-row" data-ts=${shift.ts}>
@@ -207,12 +216,12 @@ export class LayoutShiftDetails extends HTMLElement {
         ${this.#isFreshRecording ? html `
           <td>
             <div class="elements-shifted">
-              ${this.#renderShiftedElements(elementsShifted)}
+              ${this.#renderShiftedElements(shift, elementsShifted)}
             </div>
           </td>` : LitHtml.nothing}
         ${hasCulprits && this.#isFreshRecording ? html `
           <td class="culprits">
-            ${this.#renderRootCauseValues(rootCauses)}
+            ${this.#renderRootCauseValues(shift.args.frame, rootCauses)}
           </td>` : LitHtml.nothing}
       </tr>`;
         // clang-format on

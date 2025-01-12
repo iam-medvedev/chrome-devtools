@@ -46,7 +46,7 @@ export declare const enum Events {
     ERROR = "Error",
     CONTINUE = "Continue"
 }
-type EventTypes = {
+interface EventTypes {
     [Events.ABORT]: void;
     [Events.DONE]: void;
     [Events.STEP]: {
@@ -56,5 +56,5 @@ type EventTypes = {
     [Events.STOP]: void;
     [Events.CONTINUE]: void;
     [Events.ERROR]: Error;
-};
+}
 export {};

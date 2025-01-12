@@ -183,42 +183,36 @@ export function isDebuggerAsyncTaskRun(event) {
 class ProfileIdTag {
     #profileIdTag;
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ProfileID(value) {
     return value;
 }
 class CallFrameIdTag {
     #callFrameIdTag;
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CallFrameID(value) {
     return value;
 }
 class SampleIndexTag {
     #sampleIndexTag;
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function SampleIndex(value) {
     return value;
 }
 class ProcessIdTag {
     #processIdTag;
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ProcessID(value) {
     return value;
 }
 class ThreadIdTag {
     #threadIdTag;
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ThreadID(value) {
     return value;
 }
 class WorkerIdTag {
     #workerIdTag;
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function WorkerId(value) {
     return value;
 }
@@ -417,8 +411,8 @@ export function isPerformanceMark(event) {
 export function isConsoleTime(event) {
     return event.cat === 'blink.console' && isPhaseAsync(event.ph);
 }
-export function isTimeStamp(event) {
-    return event.ph === "I" /* Phase.INSTANT */ && event.name === 'TimeStamp';
+export function isConsoleTimeStamp(event) {
+    return event.ph === "X" /* Phase.COMPLETE */ && event.name === "V8Console::TimeStamp" /* Name.CONSOLE_TIME_STAMP */;
 }
 export function isParseHTML(event) {
     return event.name === 'ParseHTML';

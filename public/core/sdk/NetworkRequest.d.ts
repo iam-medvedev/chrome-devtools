@@ -258,7 +258,7 @@ export declare enum Events {
     EVENT_SOURCE_MESSAGE_ADDED = "EventSourceMessageAdded",
     TRUST_TOKEN_RESULT_ADDED = "TrustTokenResultAdded"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FINISHED_LOADING]: NetworkRequest;
     [Events.TIMING_CHANGED]: NetworkRequest;
     [Events.REMOTE_ADDRESS_CHANGED]: NetworkRequest;
@@ -267,7 +267,7 @@ export type EventTypes = {
     [Events.WEBSOCKET_FRAME_ADDED]: WebSocketFrame;
     [Events.EVENT_SOURCE_MESSAGE_ADDED]: EventSourceMessage;
     [Events.TRUST_TOKEN_RESULT_ADDED]: void;
-};
+}
 export declare const enum InitiatorType {
     OTHER = "other",
     PARSER = "parser",

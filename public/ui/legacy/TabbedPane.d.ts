@@ -1,9 +1,10 @@
+import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { ContextMenu } from './ContextMenu.js';
 import { Constraints } from './Geometry.js';
-import { Toolbar } from './Toolbar.js';
+import type { Toolbar } from './Toolbar.js';
 import { VBox, type Widget } from './Widget.js';
 declare const TabbedPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
@@ -137,12 +138,12 @@ export declare enum Events {
     TabClosed = "TabClosed",
     TabOrderChanged = "TabOrderChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TabInvoked]: EventData;
     [Events.TabSelected]: EventData;
     [Events.TabClosed]: EventData;
     [Events.TabOrderChanged]: EventData;
-};
+}
 export declare class TabbedPaneTab {
     closeable: boolean;
     previewFeature: boolean;

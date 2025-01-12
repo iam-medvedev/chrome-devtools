@@ -13,12 +13,12 @@ describeWithEnvironment('CPUThrottlingSelector', () => {
         cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance({ forceNew: true });
         MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true });
     });
-    it('renders all CPU throttling presets', async () => {
+    it('renders all CPU throttling options', async () => {
         const view = new Components.CPUThrottlingSelector.CPUThrottlingSelector();
         renderElementIntoDOM(view);
         await RenderCoordinator.done();
         const menuItems = view.shadowRoot.querySelectorAll('devtools-menu-item');
-        assert.lengthOf(menuItems, 4);
+        assert.lengthOf(menuItems, 7);
         assert.strictEqual(menuItems[0].value, 1);
         assert.isTrue(menuItems[0].selected);
         assert.match(menuItems[0].innerText, /No throttling/);
@@ -31,6 +31,12 @@ describeWithEnvironment('CPUThrottlingSelector', () => {
         assert.strictEqual(menuItems[3].value, 20);
         assert.isFalse(menuItems[3].selected);
         assert.match(menuItems[3].innerText, /20× slowdown/);
+        assert.strictEqual(menuItems[4].value, 'low-tier-mobile');
+        assert.isFalse(menuItems[4].selected);
+        assert.match(menuItems[4].innerText, /Low-tier mobile/);
+        assert.strictEqual(menuItems[5].value, 'mid-tier-mobile');
+        assert.isFalse(menuItems[5].selected);
+        assert.match(menuItems[5].innerText, /Mid-tier mobile/);
     });
     it('updates CPU throttling manager on change', async () => {
         const view = new Components.CPUThrottlingSelector.CPUThrottlingSelector();
@@ -50,14 +56,14 @@ describeWithEnvironment('CPUThrottlingSelector', () => {
         await RenderCoordinator.done();
         const menuItems = view.shadowRoot.querySelectorAll('devtools-menu-item');
         assert.isTrue(menuItems[0].selected);
-        cpuThrottlingManager.setCPUThrottlingRate(6);
+        cpuThrottlingManager.setCPUThrottlingOption(SDK.CPUThrottlingManager.LowTierThrottlingOption);
         await RenderCoordinator.done();
         assert.isTrue(menuItems[2].selected);
     });
     it('reacts to changes in CPU throttling manager when it is unmounted and then remounted', async () => {
         const view = new Components.CPUThrottlingSelector.CPUThrottlingSelector();
         // Change the conditions before the component is put into the DOM.
-        cpuThrottlingManager.setCPUThrottlingRate(6);
+        cpuThrottlingManager.setCPUThrottlingOption(SDK.CPUThrottlingManager.LowTierThrottlingOption);
         renderElementIntoDOM(view);
         await RenderCoordinator.done();
         // Ensure that the component picks up the new changes and has selected the right thorttling setting

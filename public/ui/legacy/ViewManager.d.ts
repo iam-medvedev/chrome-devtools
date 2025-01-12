@@ -1,3 +1,4 @@
+import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import type * as Root from '../../core/root/root.js';
 import { type ToolbarItem } from './Toolbar.js';

@@ -8,16 +8,16 @@ import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): IconButton.Icon.Icon;
 export declare function getSecurityStateIconForOverview(securityState: Protocol.Security.SecurityState, className: string): IconButton.Icon.Icon;
 export declare function createHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): Element;
-export type ViewInput = {
+export interface ViewInput {
     panel: SecurityPanel;
-};
-export type ViewOutput = {
+}
+export interface ViewOutput {
     setVisibleView: (view: UI.Widget.VBox) => void;
     splitWidget: UI.SplitWidget.SplitWidget;
     mainView: SecurityMainView;
     visibleView: UI.Widget.VBox | null;
     sidebar: SecurityPanelSidebar;
-};
+}
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
     private view;

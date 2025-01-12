@@ -23,6 +23,6 @@ export interface IssueAddedEvent {
     issuesModel: IssuesModel;
     inspectorIssue: Protocol.Audits.InspectorIssue;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ISSUE_ADDED]: IssueAddedEvent;
-};
+}

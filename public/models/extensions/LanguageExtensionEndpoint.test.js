@@ -1,8 +1,10 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Extensions from './extensions.js';
+const { urlString } = Platform.DevToolsPath;
 for (const allowFileAccess of [true, false]) {
     describe(`LanguageExtensionEndpoint ${allowFileAccess ? 'with' : 'without'} file access`, () => {
         let endpoint;
@@ -18,14 +20,14 @@ for (const allowFileAccess of [true, false]) {
             const script = sinon.createStubInstance(SDK.Script.Script);
             script.debugSymbols = { type: "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */ };
             script.scriptLanguage.returns('lang');
-            script.contentURL.returns('file:///file');
+            script.contentURL.returns(urlString `file:///file`);
             assert.strictEqual(endpoint.handleScript(script), allowFileAccess);
-            script.contentURL.returns('http://example.com');
+            script.contentURL.returns(urlString `http://example.com`);
             assert.isTrue(endpoint.handleScript(script));
             script.hasSourceURL = true;
-            script.sourceURL = 'file:///file';
+            script.sourceURL = urlString `file:///file`;
             assert.strictEqual(endpoint.handleScript(script), allowFileAccess);
-            script.sourceURL = 'http://example.com';
+            script.sourceURL = urlString `http://example.com`;
             assert.isTrue(endpoint.handleScript(script));
             script.debugSymbols.externalURL = 'file:///file';
             assert.strictEqual(endpoint.handleScript(script), allowFileAccess);

@@ -9,7 +9,7 @@ declare const enum TagType {
     OPENING = "OPENING_TAG",
     CLOSING = "CLOSING_TAG"
 }
-type OpeningTagContext = {
+interface OpeningTagContext {
     tagType: TagType.OPENING;
     readonly adornerContainer: HTMLElement;
     adorners: Adorners.Adorner.Adorner[];
@@ -17,10 +17,10 @@ type OpeningTagContext = {
     readonly adornersThrottler: Common.Throttler.Throttler;
     canAddAttributes: boolean;
     slot?: Adorners.Adorner.Adorner;
-};
-type ClosingTagContext = {
+}
+interface ClosingTagContext {
     tagType: TagType.CLOSING;
-};
+}
 export type TagTypeContext = OpeningTagContext | ClosingTagContext;
 export declare function isOpeningTag(context: TagTypeContext): context is OpeningTagContext;
 export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {

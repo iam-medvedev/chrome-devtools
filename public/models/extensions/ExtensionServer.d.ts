@@ -132,9 +132,9 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
 export declare const enum Events {
     SidebarPaneAdded = "SidebarPaneAdded"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SidebarPaneAdded]: ExtensionSidebarPane;
-};
+}
 export declare class ExtensionStatus {
     OK: (...args: unknown[]) => Record;
     E_EXISTS: (...args: unknown[]) => Record;

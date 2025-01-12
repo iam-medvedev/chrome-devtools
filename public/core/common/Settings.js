@@ -377,7 +377,7 @@ export class Setting {
             try {
                 this.#value = this.#serializer.parse(this.storage.get(this.name));
             }
-            catch (e) {
+            catch {
                 this.storage.remove(this.name);
             }
         }
@@ -401,7 +401,7 @@ export class Setting {
             try {
                 this.#value = this.#serializer.parse(value);
             }
-            catch (e) {
+            catch {
                 this.storage.remove(this.name);
             }
         }
@@ -545,7 +545,7 @@ export class RegExpSetting extends Setting {
                 this.#regex = new RegExp(pattern, this.#regexFlags || '');
             }
         }
-        catch (e) {
+        catch {
         }
         return this.#regex;
     }

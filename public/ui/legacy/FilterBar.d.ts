@@ -1,3 +1,4 @@
+import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import type { Suggestions } from './SuggestBox.js';
@@ -38,9 +39,9 @@ export declare class FilterBar extends FilterBar_base {
 export declare const enum FilterBarEvents {
     CHANGED = "Changed"
 }
-export type FilterBarEventTypes = {
+export interface FilterBarEventTypes {
     [FilterBarEvents.CHANGED]: void;
-};
+}
 export interface FilterUI extends Common.EventTarget.EventTarget<FilterUIEventTypes> {
     isActive(): boolean;
     element(): Element;
@@ -48,9 +49,9 @@ export interface FilterUI extends Common.EventTarget.EventTarget<FilterUIEventTy
 export declare const enum FilterUIEvents {
     FILTER_CHANGED = "FilterChanged"
 }
-export type FilterUIEventTypes = {
+export interface FilterUIEventTypes {
     [FilterUIEvents.FILTER_CHANGED]: void;
-};
+}
 export declare class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {
     #private;
     private readonly filterElement;

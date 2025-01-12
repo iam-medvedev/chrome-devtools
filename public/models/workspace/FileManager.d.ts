@@ -19,7 +19,7 @@ export declare class FileManager extends Common.ObjectWrapper.ObjectWrapper<Even
 export declare const enum Events {
     APPENDED_TO_URL = "AppendedToURL"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.APPENDED_TO_URL]: string;
-};
+}
 export {};

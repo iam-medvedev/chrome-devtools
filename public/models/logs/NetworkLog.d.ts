@@ -59,7 +59,7 @@ export declare enum Events {
 export interface ResetEvent {
     clearIfPreserved: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.Reset]: ResetEvent;
     [Events.RequestAdded]: {
         request: SDK.NetworkRequest.NetworkRequest;
@@ -71,7 +71,7 @@ export type EventTypes = {
     [Events.RequestRemoved]: {
         request: SDK.NetworkRequest.NetworkRequest;
     };
-};
+}
 export interface InitiatorData {
     info: InitiatorInfo | null;
     chain: Set<SDK.NetworkRequest.NetworkRequest> | null;

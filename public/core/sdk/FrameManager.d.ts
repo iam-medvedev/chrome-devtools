@@ -49,7 +49,7 @@ export declare const enum Events {
     RESOURCE_ADDED = "ResourceAdded",
     OUTERMOST_FRAME_NAVIGATED = "OutermostFrameNavigated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FRAME_ADDED_TO_TARGET]: {
         frame: ResourceTreeFrame;
     };
@@ -65,4 +65,4 @@ export type EventTypes = {
     [Events.OUTERMOST_FRAME_NAVIGATED]: {
         frame: ResourceTreeFrame;
     };
-};
+}

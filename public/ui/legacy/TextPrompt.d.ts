@@ -102,6 +102,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
 export declare const enum Events {
     TEXT_CHANGED = "TextChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TEXT_CHANGED]: void;
-};
+}

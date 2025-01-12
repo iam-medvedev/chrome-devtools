@@ -9,13 +9,13 @@ export declare class ThrottlingPresets {
     static getAdvancedMobilePresets(): Conditions[];
     static getRecommendedNetworkPreset(rtt: number): SDK.NetworkManager.Conditions | null;
     static networkPresets: SDK.NetworkManager.Conditions[];
-    static cpuThrottlingPresets: SDK.CPUThrottlingManager.CPUThrottlingRates[];
+    static cpuThrottlingPresets: SDK.CPUThrottlingManager.CPUThrottlingOption[];
 }
 export interface Conditions {
     title: string;
     description: string;
     network: SDK.NetworkManager.Conditions;
-    cpuThrottlingRate: number;
+    cpuThrottlingOption: SDK.CPUThrottlingManager.CPUThrottlingOption;
     jslogContext?: string;
 }
 export interface NetworkThrottlingConditionsGroup {

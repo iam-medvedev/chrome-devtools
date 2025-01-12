@@ -20,7 +20,7 @@ export interface UserTimingsData {
      * Events triggered with the console.timeStamp() API
      * https://developer.mozilla.org/en-US/docs/Web/API/console/timeStamp
      */
-    timestampEvents: readonly Types.Events.TimeStamp[];
+    timestampEvents: readonly Types.Events.ConsoleTimeStamp[];
 }
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;

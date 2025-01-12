@@ -20,7 +20,7 @@ function findFirstEntry(allEntries, predicate) {
 describeWithEnvironment('EntriesFilter', function () {
     it('parses a stack and returns an empty list of invisible entries', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         assert.deepEqual([], stack?.invisibleEntries());
     });
     it('supports the user merging an entry into its parent', async function () {
@@ -54,7 +54,7 @@ describeWithEnvironment('EntriesFilter', function () {
             return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -92,7 +92,7 @@ describeWithEnvironment('EntriesFilter', function () {
             return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -132,7 +132,7 @@ describeWithEnvironment('EntriesFilter', function () {
             return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -183,7 +183,7 @@ describeWithEnvironment('EntriesFilter', function () {
             const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -253,7 +253,7 @@ describeWithEnvironment('EntriesFilter', function () {
             const basicTwoCallEndTime = Trace.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
             return endTime <= basicTwoCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -309,7 +309,7 @@ describeWithEnvironment('EntriesFilter', function () {
             const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -362,7 +362,7 @@ describeWithEnvironment('EntriesFilter', function () {
          *
          * Applying 'undo all actions' should bring the stack to the original state.
          **/
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -447,7 +447,7 @@ describeWithEnvironment('EntriesFilter', function () {
          *
          * This should result in all basicTwo children being removed from the invisible array and stack being in the initial state.
          **/
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -528,7 +528,7 @@ describeWithEnvironment('EntriesFilter', function () {
             const { endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -590,7 +590,7 @@ describeWithEnvironment('EntriesFilter', function () {
         const firstFooCallEntry = findFirstEntry(mainThread.entries, entry => {
             return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo' && entry.dur === 233;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -612,7 +612,7 @@ describeWithEnvironment('EntriesFilter', function () {
         const anonymousEntryWithInvisibleParent = findFirstEntry(mainThread.entries, entry => {
             return Trace.Types.Events.isProfileCall(entry) && entry.nodeId === 42;
         });
-        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
+        const stack = new Timeline.EntriesFilter.EntriesFilter(parsedTrace);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -626,50 +626,6 @@ describeWithEnvironment('EntriesFilter', function () {
         // Make sure Task entry is added to expandable entries
         assert.lengthOf(stack.expandableEntries(), 1);
         assert.isTrue(stack.expandableEntries().includes(taskEntry));
-    });
-    it('returns the trace entry tree starting from the root task, highlighting the selected event', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(parsedTrace.Renderer);
-        /** This stack looks roughly like so (with some events omitted):
-         * ===========RunTask===========
-         * ...
-         * ======== onclick ============
-         * =========== foo =============
-         *               ==== foo2 =====
-         *               ===== foo =====
-         *               ==== foo2 =====
-         *               ===== foo =====
-         *               ==== foo2 =====
-         *               ===== foo =====
-         *
-         * In this test we want to test if for a selected entry, the tree for AI processing
-         * is generated correctly such that the root RunTask is the root node and the
-         * node for the selected event has property selected set as true.
-         **/
-        const firstFooCallEntry = findFirstEntry(mainThread.entries, entry => {
-            return Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'foo' && entry.dur === 233;
-        });
-        const entriesFilter = new Timeline.EntriesFilter.EntriesFilter(parsedTrace.Renderer.entryToNode);
-        if (!entriesFilter) {
-            throw new Error('EntriesFilter does not exist');
-        }
-        const aiNodeTree = entriesFilter.getAIEventNodeTree(firstFooCallEntry);
-        assert.exists(aiNodeTree);
-        const fooAiNode = Trace.Helpers.TreeHelpers.AINode.getSelectedNodeWithinTree(aiNodeTree);
-        assert.exists(fooAiNode);
-        // Use the toJSON simplification for comparison.
-        const simpleFooNode = JSON.parse(JSON.stringify(fooAiNode));
-        assert.lengthOf(simpleFooNode.children, 1);
-        // delete for smaller deepStrictEqual comparison
-        simpleFooNode.children = [];
-        assert.deepEqual(simpleFooNode, {
-            dur: 0.2,
-            name: 'foo',
-            selected: true,
-            self: 0.2,
-            url: 'file:///usr/local/google/home/alinavarkki/stack/recursion.html',
-            children: [],
-        });
     });
 });
 //# sourceMappingURL=EntriesFilter.test.js.map

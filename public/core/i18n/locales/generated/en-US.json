@@ -230,6 +230,21 @@
   "core/sdk/CPUProfilerModel.ts | profileD": {
     "message": "Profile {PH1}"
   },
+  "core/sdk/CPUThrottlingManager.ts | calibratedLowTierMobile": {
+    "message": "Low-tier mobile"
+  },
+  "core/sdk/CPUThrottlingManager.ts | calibratedMidTierMobile": {
+    "message": "Mid-tier mobile"
+  },
+  "core/sdk/CPUThrottlingManager.ts | calibrationErrorDeviceTooWeak": {
+    "message": "Device is not powerful enough"
+  },
+  "core/sdk/CPUThrottlingManager.ts | dSlowdown": {
+    "message": "{PH1}× slowdown"
+  },
+  "core/sdk/CPUThrottlingManager.ts | noThrottling": {
+    "message": "No throttling"
+  },
   "core/sdk/CSSStyleSheetHeader.ts | couldNotFindTheOriginalStyle": {
     "message": "Could not find the original style sheet."
   },
@@ -6638,6 +6653,9 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
   },
+  "panels/explain/components/ConsoleInsight.ts | relatedContent": {
+    "message": "Related content"
+  },
   "panels/explain/components/ConsoleInsight.ts | reloadRecommendation": {
     "message": "Reload the page to capture related network request data for this message in order to create a better insight."
   },
@@ -7778,6 +7796,9 @@
   "panels/media/PlayerPropertiesView.ts | videoPlaybackRoughness": {
     "message": "Video playback roughness"
   },
+  "panels/mobile_throttling/CalibrationController.ts | runningCalibration": {
+    "message": "Running CPU calibration, please do not leave this tab or close DevTools."
+  },
   "panels/mobile_throttling/mobile_throttling-meta.ts | device": {
     "message": "device"
   },
@@ -7844,9 +7865,6 @@
   "panels/mobile_throttling/ThrottlingManager.ts | cpuThrottlingIsEnabled": {
     "message": "CPU throttling is enabled"
   },
-  "panels/mobile_throttling/ThrottlingManager.ts | dSlowdown": {
-    "message": "{PH1}× slowdown"
-  },
   "panels/mobile_throttling/ThrottlingManager.ts | excessConcurrency": {
     "message": "Exceeding the default value may degrade system performance."
   },
@@ -7859,14 +7877,11 @@
   "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrencySettingLabel": {
     "message": "Override the value reported by navigator.hardwareConcurrency"
   },
-  "panels/mobile_throttling/ThrottlingManager.ts | noThrottling": {
-    "message": "No throttling"
-  },
   "panels/mobile_throttling/ThrottlingManager.ts | offline": {
     "message": "Offline"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | recommendedThrottling": {
-    "message": "{PH1} - recommended"
+    "message": "{PH1} – recommended"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | resetConcurrency": {
     "message": "Reset to the default value"
@@ -7886,8 +7901,11 @@
   "panels/mobile_throttling/ThrottlingPresets.ts | fastGXCpuSlowdown": {
     "message": "Fast 3G & 4x CPU slowdown"
   },
-  "panels/mobile_throttling/ThrottlingPresets.ts | lowendMobile": {
-    "message": "Low-end mobile"
+  "panels/mobile_throttling/ThrottlingPresets.ts | fastGXCpuSlowdownCalibrated": {
+    "message": "Fast 3G & {PH1}x CPU slowdown"
+  },
+  "panels/mobile_throttling/ThrottlingPresets.ts | lowTierMobile": {
+    "message": "Low-tier mobile"
   },
   "panels/mobile_throttling/ThrottlingPresets.ts | midtierMobile": {
     "message": "Mid-tier mobile"
@@ -7901,8 +7919,38 @@
   "panels/mobile_throttling/ThrottlingPresets.ts | slowGXCpuSlowdown": {
     "message": "Slow 3G & 6x CPU slowdown"
   },
+  "panels/mobile_throttling/ThrottlingPresets.ts | slowGXCpuSlowdownCalibrated": {
+    "message": "Slow 3G & {PH1}x CPU slowdown"
+  },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | addCustomProfile": {
     "message": "Add profile"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrate": {
+    "message": "Calibrate"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationConfirmationPrompt": {
+    "message": "Calibration will take ~10 seconds, and temporarily navigate away from your current page. Do you wish to continue?"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationCTA": {
+    "message": "To use the CPU throttling presets, run the calibration process to determine the ideal throttling rate for your device."
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationWarningHighCPU": {
+    "message": "CPU utilization is too high"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationWarningLowBattery": {
+    "message": "Device battery is low (<20%), results may be impacted by CPU throttling"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationWarningRunningOnBattery": {
+    "message": "Device is running on battery, please plug in charger for best results"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | cancel": {
+    "message": "Cancel"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | continue": {
+    "message": "Continue"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | cpuThrottlingPresets": {
+    "message": "CPU throttling presets"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | dms": {
     "message": "{PH1} ms"
@@ -7913,6 +7961,9 @@
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | dskbits": {
     "message": "{PH1} kbit/s"
   },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | dSlowdown": {
+    "message": "{PH1}× slowdown"
+  },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | fsmbits": {
     "message": "{PH1} Mbit/s"
   },
@@ -7921,6 +7972,9 @@
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | latencyMustBeAnIntegerBetweenSms": {
     "message": "Latency must be an integer between {PH1} ms to {PH2} ms inclusive"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | needsCalibration": {
+    "message": "Needs calibration"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | networkThrottlingProfiles": {
     "message": "Network throttling profiles"
@@ -7960,6 +8014,9 @@
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | profileNameCharactersLengthMust": {
     "message": "Profile Name characters length must be between 1 to {PH1} inclusive"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | recalibrate": {
+    "message": "Recalibrate"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | sMustBeANumberBetweenSkbsToSkbs": {
     "message": "{PH1} must be a number between {PH2} kbit/s to {PH3} kbit/s inclusive"
@@ -8137,6 +8194,9 @@
   },
   "panels/network/components/RequestTrustTokensView.ts | parameters": {
     "message": "Parameters"
+  },
+  "panels/network/components/RequestTrustTokensView.ts | perSiteLimit": {
+    "message": "Per-site issuer limit reached."
   },
   "panels/network/components/RequestTrustTokensView.ts | refreshPolicy": {
     "message": "Refresh policy"
@@ -9465,7 +9525,7 @@
     "message": "Self size"
   },
   "panels/profiler/HeapProfileView.ts | selfSizeBytes": {
-    "message": "Self size (bytes)"
+    "message": "Self size"
   },
   "panels/profiler/HeapProfileView.ts | skb": {
     "message": "{PH1} kB"
@@ -9483,7 +9543,7 @@
     "message": "Total size"
   },
   "panels/profiler/HeapProfileView.ts | totalSizeBytes": {
-    "message": "Total size (bytes)"
+    "message": "Total size"
   },
   "panels/profiler/HeapProfileView.ts | url": {
     "message": "URL"
@@ -10581,7 +10641,7 @@
     "message": "Only when DevTools is open"
   },
   "panels/security/CookieControlsView.ts | cardTitle": {
-    "message": "Temporarily restrict third-party cookies"
+    "message": "Temporarily limit third-party cookies"
   },
   "panels/security/CookieControlsView.ts | enterpriseDisclaimer": {
     "message": "Your organization manages third-party cookie access for this site"
@@ -10620,7 +10680,7 @@
     "message": "View details"
   },
   "panels/security/CookieControlsView.ts | viewExplanation": {
-    "message": "Test how this site will perform if a user chooses to restrict third-party cookies in Chrome"
+    "message": "Test how this site will perform if third-party cookies are limited in Chrome"
   },
   "panels/security/CookieControlsView.ts | viewTitle": {
     "message": "Controls"
@@ -10632,7 +10692,7 @@
     "message": "Allowed"
   },
   "panels/security/CookieReportView.ts | allowedByException": {
-    "message": "Allowed By Exception"
+    "message": "Allowed by exception"
   },
   "panels/security/CookieReportView.ts | analyticsCookieTypeString": {
     "message": "Analytics"
@@ -10641,7 +10701,7 @@
     "message": "Blocked"
   },
   "panels/security/CookieReportView.ts | body": {
-    "message": "Third-party cookies that might be restricted by users, depending on their settings. If a user chooses to restrict cookies, then this site might not work for them."
+    "message": "This site might not work if third-party cookies are limited in Chrome."
   },
   "panels/security/CookieReportView.ts | cdnCookieTypeString": {
     "message": "CDN"
@@ -10665,7 +10725,7 @@
     "message": "No issues with third-party cookies found"
   },
   "panels/security/CookieReportView.ts | gitHubResource": {
-    "message": "Review {PH1} from third-party site."
+    "message": "Review {PH1} from third-party site"
   },
   "panels/security/CookieReportView.ts | gitHubResourceInsightTypeString": {
     "message": "Github"
@@ -10680,7 +10740,7 @@
     "message": "guidance"
   },
   "panels/security/CookieReportView.ts | heuristics": {
-    "message": "Action needed later. Heuristics based exception is active"
+    "message": "Action needed later. Heuristics based exception is active."
   },
   "panels/security/CookieReportView.ts | heuristicsInisightTypeString": {
     "message": "Heuristics"
@@ -10717,6 +10777,9 @@
   },
   "panels/security/CookieReportView.ts | reportedIssues": {
     "message": "reported issues"
+  },
+  "panels/security/CookieReportView.ts | showRequestsWithThisCookie": {
+    "message": "Show requests with this cookie"
   },
   "panels/security/CookieReportView.ts | socialCookieTypeString": {
     "message": "Social"
@@ -12794,20 +12857,23 @@
   "panels/timeline/components/BreadcrumbsUI.ts | removeChildBreadcrumbs": {
     "message": "Remove child breadcrumbs"
   },
+  "panels/timeline/components/CPUThrottlingSelector.ts | calibrate": {
+    "message": "Calibrate…"
+  },
   "panels/timeline/components/CPUThrottlingSelector.ts | cpu": {
     "message": "CPU: {PH1}"
   },
   "panels/timeline/components/CPUThrottlingSelector.ts | cpuThrottling": {
     "message": "CPU throttling: {PH1}"
   },
-  "panels/timeline/components/CPUThrottlingSelector.ts | dSlowdown": {
-    "message": "{PH1}× slowdown"
+  "panels/timeline/components/CPUThrottlingSelector.ts | labelCalibratedPresets": {
+    "message": "Calibrated presets"
   },
-  "panels/timeline/components/CPUThrottlingSelector.ts | noThrottling": {
-    "message": "No throttling"
+  "panels/timeline/components/CPUThrottlingSelector.ts | recalibrate": {
+    "message": "Recalibrate…"
   },
   "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottling": {
-    "message": "{PH1} - recommended"
+    "message": "{PH1} – recommended"
   },
   "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottlingReason": {
     "message": "Consider changing setting to simulate real user environments"
@@ -13557,7 +13623,7 @@
     "message": "Presets"
   },
   "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottling": {
-    "message": "{PH1} - recommended"
+    "message": "{PH1} – recommended"
   },
   "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottlingReason": {
     "message": "Consider changing setting to simulate real user environments"
@@ -14088,16 +14154,16 @@
     "message": "Time"
   },
   "panels/timeline/TimelinePanel.ts | timelineFastZoomInOut": {
-    "message": "Timeline fast zoom in/out"
+    "message": "Fast zoom in/out"
   },
   "panels/timeline/TimelinePanel.ts | timelinePanLeftRight": {
-    "message": "Timeline right/left"
+    "message": "Move left/right"
   },
   "panels/timeline/TimelinePanel.ts | timelineScrollUpDown": {
-    "message": "Timeline up/down"
+    "message": "Move up/down"
   },
   "panels/timeline/TimelinePanel.ts | timelineZoomInOut": {
-    "message": "Timeline zoom in/out"
+    "message": "Zoom in/out"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
     "message": "Copy table"
@@ -15501,7 +15567,7 @@
     "message": "Show issue associated with this cookie"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | showRequestsWithThisCookie": {
-    "message": "Show Requests With This Cookie"
+    "message": "Show requests with this cookie"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | size": {
     "message": "Size"

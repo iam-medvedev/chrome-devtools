@@ -210,8 +210,8 @@ export class TimingsTrackAppender {
                     return event.name;
             }
         }
-        if (Trace.Types.Events.isTimeStamp(event)) {
-            return `${event.name}: ${event.args.data.message}`;
+        if (Trace.Types.Events.isConsoleTimeStamp(event)) {
+            return `TimeStamp: ${event.args.data.name}`;
         }
         if (Trace.Types.Events.isPerformanceMark(event)) {
             return `[mark]: ${event.name}`;
@@ -227,7 +227,7 @@ export class TimingsTrackAppender {
         // performance.mark() events
         // console.timestamp() events
         if (Trace.Types.Events.isMarkerEvent(event) || Trace.Types.Events.isPerformanceMark(event) ||
-            Trace.Types.Events.isTimeStamp(event)) {
+            Trace.Types.Events.isConsoleTimeStamp(event)) {
             const timeOfEvent = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, this.#parsedTrace.Meta.traceBounds, this.#parsedTrace.Meta.navigationsByNavigationId, this.#parsedTrace.Meta.navigationsByFrameId);
             info.formattedTime = getFormattedTime(timeOfEvent);
         }

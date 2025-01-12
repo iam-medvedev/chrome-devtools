@@ -41,11 +41,11 @@ export interface Cell {
     renderer?: (value: CellValue) => LitHtml.TemplateResult | typeof LitHtml.nothing;
 }
 export declare function getStringifiedCellValues(cells: Cell[]): string;
-export type Row = {
+export interface Row {
     cells: Cell[];
     hidden?: boolean;
     styles?: CSSStylesObject;
-};
+}
 export declare const enum SortDirection {
     ASC = "ASC",
     DESC = "DESC"

@@ -25,9 +25,9 @@ export declare namespace SharedStorageTreeElementDispatcher {
     interface SharedStorageTreeElementAddedEvent {
         origin: string;
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.SHARED_STORAGE_TREE_ELEMENT_ADDED]: SharedStorageTreeElementAddedEvent;
-    };
+    }
 }
 export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.TargetManager.Observer {
     panel: ResourcesPanel;

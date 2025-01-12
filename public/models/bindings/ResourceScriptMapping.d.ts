@@ -52,8 +52,8 @@ export declare namespace ResourceScriptFile {
         DID_MERGE_TO_VM = "DidMergeToVM",
         DID_DIVERGE_FROM_VM = "DidDivergeFromVM"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.DID_MERGE_TO_VM]: void;
         [Events.DID_DIVERGE_FROM_VM]: void;
-    };
+    }
 }

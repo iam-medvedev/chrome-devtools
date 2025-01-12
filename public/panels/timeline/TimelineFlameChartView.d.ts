@@ -9,7 +9,6 @@ import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
-import { TimelineTreeView } from './TimelineTreeView.js';
 import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
 /**
  * This defines the order these markers will be rendered if they are at the
@@ -19,12 +18,12 @@ import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
  */
 export declare const SORT_ORDER_PAGE_LOAD_MARKERS: Readonly<Record<string, number>>;
 declare const TimelineFlameChartView_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
-    addEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
-    once<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
-    removeEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: TimelineTreeView.Events.TREE_ROW_HOVERED): boolean;
-    dispatchEventToListeners<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
+    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
+    addEventListener<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.ENTRY_LABEL_ANNOTATION_CLICKED): boolean;
+    dispatchEventToListeners<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineFlameChartView extends TimelineFlameChartView_base implements PerfUI.FlameChart.FlameChartDelegate, UI.SearchableView.Searchable {
     #private;
@@ -165,4 +164,12 @@ export declare const enum ColorBy {
  * found.
  */
 export declare function groupForLevel(groups: PerfUI.FlameChart.Group[], level: number): PerfUI.FlameChart.Group | null;
+export declare const enum Events {
+    ENTRY_LABEL_ANNOTATION_CLICKED = "EntryLabelAnnotationClicked"
+}
+export interface EventTypes {
+    [Events.ENTRY_LABEL_ANNOTATION_CLICKED]: {
+        entry: Trace.Types.Events.Event;
+    };
+}
 export {};

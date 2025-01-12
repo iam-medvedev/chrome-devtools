@@ -152,7 +152,7 @@ export class PropertyRenderer extends UI.Widget.VBox {
         try {
             propvalue = JSON.parse(propvalue);
         }
-        catch (err) {
+        catch {
             // TODO(tmathmeyer) typecheck the type of propvalue against
             // something defined or sourced from the c++ definitions.
             // Do nothing, some strings just stay strings!

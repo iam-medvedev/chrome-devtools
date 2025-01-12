@@ -43,7 +43,7 @@ export class Runtime {
         try {
             return Platform.StringUtilities.toKebabCaseKeys(JSON.parse(self.localStorage && self.localStorage['experiments'] ? self.localStorage['experiments'] : '{}'));
         }
-        catch (e) {
+        catch {
             console.error('Failed to parse localStorage[\'experiments\']');
             return {};
         }

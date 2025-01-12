@@ -1,12 +1,14 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as PreloadingComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 const zip2 = (xs, ys) => {
     assert.strictEqual(xs.length, ys.length);
     return Array.from(xs.map((_, i) => [xs[i], ys[i]]));
@@ -30,7 +32,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
         assert.include(placeholder?.textContent, 'Select an element for more details');
     });
     it('renders prerendering details', async () => {
-        const url = 'https://example.com/prerendered.html';
+        const url = urlString `https://example.com/prerendered.html`;
         const data = {
             pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
                 {
@@ -81,7 +83,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
 `,
                 },
             ],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
@@ -96,7 +98,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
     });
     // Prerender2FallbackPrefetchSpecRules disabled case.
     it('doesn\'t render (automatically fell back to prefetch) if prerender alone', async () => {
-        const url = 'https://example.com/prerendered.html';
+        const url = urlString `https://example.com/prerendered.html`;
         const data = {
             pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                     action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
@@ -130,7 +132,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
 `,
                 },
             ],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
@@ -146,7 +148,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
     // TODO(https://crbug.com/1317959): Add cancelled reason once
     // finalStatus and disallowedApiMethod added to prerenderStatusUpdated.
     it('renders prerendering details with cancelled reason', async () => {
-        const url = 'https://example.com/prerendered.html';
+        const url = urlString `https://example.com/prerendered.html`;
         const data = {
             pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
                 {
@@ -197,7 +199,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
 `,
                 },
             ],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
@@ -220,7 +222,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
                 return Promise.reject();
             },
         };
-        const url = 'https://example.com/prefetch.html';
+        const url = urlString `https://example.com/prefetch.html`;
         const data = {
             pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -253,7 +255,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
 `,
                 },
             ],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
             requestResolver: fakeRequestResolver,
         };
         const component = await renderPreloadingDetailsReportView(data);
@@ -277,7 +279,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
                 return Promise.reject();
             },
         };
-        const url = 'https://example.com/prefetch.html';
+        const url = urlString `https://example.com/prefetch.html`;
         const data = {
             pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -311,7 +313,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
                     url: 'https://example.com/speculation-rules.json',
                 },
             ],
-            pageURL: 'https://example.com/',
+            pageURL: urlString `https://example.com/`,
             requestResolver: fakeRequestResolver,
         };
         const component = await renderPreloadingDetailsReportView(data);

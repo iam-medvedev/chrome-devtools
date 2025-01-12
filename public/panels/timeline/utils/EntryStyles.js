@@ -688,7 +688,7 @@ export function maybeInitSylesMap() {
         ["firstPaint" /* Trace.Types.Events.Name.MARK_FIRST_PAINT */]: new TimelineRecordStyle(i18nString(UIStrings.firstPaint), defaultCategoryStyles.painting, true),
         ["firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */]: new TimelineRecordStyle(i18nString(UIStrings.firstContentfulPaint), defaultCategoryStyles.rendering, true),
         ["largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */]: new TimelineRecordStyle(i18nString(UIStrings.largestContentfulPaint), defaultCategoryStyles.rendering, true),
-        ["TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */]: new TimelineRecordStyle(i18nString(UIStrings.timestamp), defaultCategoryStyles.scripting),
+        ["V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */]: new TimelineRecordStyle(i18nString(UIStrings.timestamp), defaultCategoryStyles.scripting),
         ["ConsoleTime" /* Trace.Types.Events.Name.CONSOLE_TIME */]: new TimelineRecordStyle(i18nString(UIStrings.consoleTime), defaultCategoryStyles.scripting),
         ["UserTiming" /* Trace.Types.Events.Name.USER_TIMING */]: new TimelineRecordStyle(i18nString(UIStrings.userTiming), defaultCategoryStyles.scripting),
         ["ResourceWillSendRequest" /* Trace.Types.Events.Name.RESOURCE_WILL_SEND_REQUEST */]: new TimelineRecordStyle(i18nString(UIStrings.willSendRequest), defaultCategoryStyles.loading),

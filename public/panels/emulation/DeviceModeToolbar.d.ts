@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 export declare class DeviceModeToolbar {

@@ -122,7 +122,7 @@ export interface ChangedNodeId {
     nodeId: number;
     enabled: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.INSPECT_MODE_WILL_BE_TOGGLED]: OverlayModel;
     [Events.EXITED_INSPECT_MODE]: void;
     [Events.HIGHLIGHT_NODE_REQUESTED]: DOMNode;
@@ -131,7 +131,7 @@ export type EventTypes = {
     [Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED]: ChangedNodeId;
     [Events.PERSISTENT_SCROLL_SNAP_OVERLAY_STATE_CHANGED]: ChangedNodeId;
     [Events.PERSISTENT_CONTAINER_QUERY_OVERLAY_STATE_CHANGED]: ChangedNodeId;
-};
+}
 export interface Highlighter {
     highlightInOverlay(data: HighlightData, config: Protocol.Overlay.HighlightConfig): void;
     setInspectMode(mode: Protocol.Overlay.InspectMode, config: Protocol.Overlay.HighlightConfig): Promise<void>;

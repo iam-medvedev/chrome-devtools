@@ -103,7 +103,7 @@ export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<Even
 export declare const enum Events {
     FIELD_DATA_CHANGED = "field-data-changed"
 }
-type EventTypes = {
+interface EventTypes {
     [Events.FIELD_DATA_CHANGED]: PageResult | undefined;
-};
+}
 export {};

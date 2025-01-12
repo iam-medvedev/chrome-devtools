@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Trace from '../../../models/trace/trace.js';
@@ -14,6 +15,7 @@ import { loadBasicSourceMapExample } from '../../../testing/SourceMapHelpers.js'
 import { makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './utils.js';
+const { urlString } = Platform.DevToolsPath;
 const MINIFIED_FUNCTION_NAME = 'minified';
 const AUTHORED_FUNCTION_NAME = 'someFunction';
 export async function loadCodeLocationResolvingScenario() {
@@ -60,10 +62,10 @@ export async function loadCodeLocationResolvingScenario() {
     };
     // Load mock data in devtools
     const [, , script, , contentScript] = await Promise.all([
-        debuggerWorkspaceBinding.waitForUISourceCodeAdded(authoredScriptURL, target),
-        debuggerWorkspaceBinding.waitForUISourceCodeAdded(ignoreListedScriptURL, target),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${authoredScriptURL}`, target),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${ignoreListedScriptURL}`, target),
         backend.addScript(target, scriptInfo, sourceMapInfo),
-        debuggerWorkspaceBinding.waitForUISourceCodeAdded(contentScriptInfo.url, target),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${contentScriptInfo.url}`, target),
         backend.addScript(target, contentScriptInfo, null),
     ]);
     return {

@@ -43,9 +43,9 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
     private restoreEmulationAndProtocolConnection;
 }
 export declare const Presets: Preset[];
-export type Flags = {
+export interface Flags {
     [flag: string]: string | boolean;
-};
+}
 export declare const RuntimeSettings: RuntimeSetting[];
 export declare enum Events {
     PageAuditabilityChanged = "PageAuditabilityChanged",
@@ -61,11 +61,11 @@ export interface PageWarningsChangedEvent {
 export interface AuditProgressChangedEvent {
     message: string;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.PageAuditabilityChanged]: PageAuditabilityChangedEvent;
     [Events.PageWarningsChanged]: PageWarningsChangedEvent;
     [Events.AuditProgressChanged]: AuditProgressChangedEvent;
-};
+}
 export interface Preset {
     setting: Common.Settings.Setting<boolean>;
     configID: string;

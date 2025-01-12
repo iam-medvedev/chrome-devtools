@@ -6,7 +6,7 @@ const TEST_CONTAINER_ID = '__devtools-test-container-id';
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.
  **/
-export const renderElementIntoDOM = (element, renderOptions = {}) => {
+export function renderElementIntoDOM(element, renderOptions = {}) {
     const container = document.getElementById(TEST_CONTAINER_ID);
     if (!container) {
         throw new Error(`renderElementIntoDOM expects to find ${TEST_CONTAINER_ID}`);
@@ -17,7 +17,7 @@ export const renderElementIntoDOM = (element, renderOptions = {}) => {
     }
     container.appendChild(element);
     return element;
-};
+}
 function removeChildren(node) {
     while (true) {
         const { firstChild } = node;
@@ -198,9 +198,10 @@ export function stripLitHtmlCommentNodes(text) {
      * LitHtml comments take the form of:
      * <!--?lit$1234?--> or:
      * <!--?-->
-     * And this regex matches both.
+     * <!---->
+     * And this regex matches all of them.
      */
-    return text.replaceAll(/<!--\?(lit\$[0-9]+\$)?-->/g, '');
+    return text.replaceAll(/<!--(\?)?(lit\$[0-9]+\$)?-->/g, '');
 }
 /**
  * Returns an array of textContents.

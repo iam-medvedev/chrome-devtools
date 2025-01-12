@@ -48,12 +48,12 @@ export interface CommandEvaluatedEvent {
     commandMessage: ConsoleMessage;
     exceptionDetails?: Protocol.Runtime.ExceptionDetails | undefined;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ConsoleCleared]: void;
     [Events.MessageAdded]: ConsoleMessage;
     [Events.MessageUpdated]: ConsoleMessage;
     [Events.CommandEvaluated]: CommandEvaluatedEvent;
-};
+}
 export interface AffectedResources {
     requestId?: Protocol.Network.RequestId;
     issueId?: Protocol.Audits.IssueId;

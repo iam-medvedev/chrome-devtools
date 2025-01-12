@@ -26,9 +26,9 @@ export declare namespace HeapSnapshotWorkerProxy {
     const enum Events {
         WAIT = "Wait"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.WAIT]: boolean;
-    };
+    }
 }
 export declare class HeapSnapshotProxyObject {
     readonly worker: HeapSnapshotWorkerProxy;

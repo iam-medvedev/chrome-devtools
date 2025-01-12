@@ -1,4 +1,5 @@
 import '../../ui/components/report_view/report_view.js';
+import '../../ui/legacy/legacy.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';

@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components/components.js';
 export declare class StorageItemsView extends UI.Widget.VBox {

@@ -165,7 +165,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         this.contentElement.classList.add('clear-storage-container');
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('clear-storage')}`);
         this.pieColors = new Map([
-            ["appcache" /* Protocol.Storage.StorageType.Appcache */, 'rgb(110, 161, 226)'], // blue
             ["cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'rgb(229, 113, 113)'], // red
             ["cookies" /* Protocol.Storage.StorageType.Cookies */, 'rgb(239, 196, 87)'], // yellow
             ["indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'rgb(155, 127, 230)'], // purple
@@ -227,7 +226,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         this.clearButton = UI.UIUtils.createTextButton(i18nString(UIStrings.clearSiteData), this.clear.bind(this), { jslogContext: 'storage.clear-site-data' });
         this.clearButton.id = 'storage-view-clear-button';
         clearButtonSection.appendChild(this.clearButton);
-        const includeThirdPartyCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.includingThirdPartyCookies), this.includeThirdPartyCookiesSetting, true);
+        const includeThirdPartyCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.includingThirdPartyCookies), this.includeThirdPartyCookiesSetting);
         includeThirdPartyCookiesCheckbox.classList.add('include-third-party-cookies');
         clearButtonSection.appendChild(includeThirdPartyCookiesCheckbox);
         const application = this.reportView.appendSection(i18nString(UIStrings.application));
@@ -248,7 +247,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         const row = section.appendRow();
         const setting = this.settings.get(settingName);
         if (setting) {
-            row.appendChild(UI.SettingsUI.createSettingCheckbox(title, setting, true));
+            row.appendChild(UI.SettingsUI.createSettingCheckbox(title, setting));
         }
     }
     targetAdded(target) {
@@ -480,8 +479,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
                 return i18nString(UIStrings.fileSystem);
             case "websql" /* Protocol.Storage.StorageType.Websql */:
                 return i18nString(UIStrings.webSql);
-            case "appcache" /* Protocol.Storage.StorageType.Appcache */:
-                return i18nString(UIStrings.application);
             case "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */:
                 return i18nString(UIStrings.indexDB);
             case "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */:
@@ -499,7 +496,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     }
 }
 export const AllStorageTypes = [
-    "appcache" /* Protocol.Storage.StorageType.Appcache */,
     "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */,
     "cookies" /* Protocol.Storage.StorageType.Cookies */,
     "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */,

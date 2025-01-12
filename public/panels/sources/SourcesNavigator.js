@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -164,10 +165,11 @@ export class FilesNavigatorView extends NavigatorView {
   <div>${i18nString(UIStrings.explainWorkspace)}</div><br />
   ${UI.XLink.XLink.create('https://goo.gle/devtools-workspace', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
-        const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
+        const toolbar = document.createElement('devtools-toolbar');
+        toolbar.classList.add('navigator-toolbar');
         void toolbar.appendItemsAtLocation('files-navigator-toolbar').then(() => {
             if (!toolbar.empty()) {
-                this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
+                this.contentElement.insertBefore(toolbar, this.contentElement.firstChild);
             }
         });
     }
@@ -197,8 +199,9 @@ export class OverridesNavigatorView extends NavigatorView {
   <div>${i18nString(UIStrings.explainLocalOverrides)}</div><br />
   ${UI.XLink.XLink.create('https://goo.gle/devtools-overrides', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
-        this.toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
-        this.contentElement.insertBefore(this.toolbar.element, this.contentElement.firstChild);
+        this.toolbar = document.createElement('devtools-toolbar');
+        this.toolbar.classList.add('navigator-toolbar');
+        this.contentElement.insertBefore(this.toolbar, this.contentElement.firstChild);
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged" /* Persistence.NetworkPersistenceManager.Events.PROJECT_CHANGED */, this.updateProjectAndUI, this);
         this.workspace().addEventListener(Workspace.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
         this.workspace().addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
@@ -287,13 +290,14 @@ export class SnippetsNavigatorView extends NavigatorView {
   <div>${i18nString(UIStrings.explainSnippets)}</div><br />
   ${UI.XLink.XLink.create('https://goo.gle/devtools-snippets', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
-        const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
+        const toolbar = document.createElement('devtools-toolbar');
+        toolbar.classList.add('navigator-toolbar');
         const newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newSnippet), 'plus', i18nString(UIStrings.newSnippet), 'sources.new-snippet');
         newButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
             void this.create(Snippets.ScriptSnippetFileSystem.findSnippetsProject(), '');
         });
         toolbar.appendToolbarItem(newButton);
-        this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
+        this.contentElement.insertBefore(toolbar, this.contentElement.firstChild);
     }
     acceptProject(project) {
         return Snippets.ScriptSnippetFileSystem.isSnippetsProject(project);

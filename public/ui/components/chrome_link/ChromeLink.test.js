@@ -1,12 +1,14 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as ChromeLink from './chrome_link.js';
+const { urlString } = Platform.DevToolsPath;
 const { html } = LitHtml;
 describeWithMockConnection('ChromeLink', () => {
     it('renders a link when given a \'chrome://\' URL', async () => {
@@ -15,7 +17,7 @@ describeWithMockConnection('ChromeLink', () => {
         const container = document.createElement('div');
         // clang-format off
         LitHtml.render(html `
-        <devtools-chrome-link .href=${'chrome://settings'}>
+        <devtools-chrome-link .href=${urlString `chrome://settings`}>
           link text
         </devtools-chrome-link>
       `, container, { host: this });
@@ -38,7 +40,7 @@ describe('ChromeLink', () => {
     it('throws an error when given a non-\'chrome://\' URL', async () => {
         const component = new ChromeLink.ChromeLink.ChromeLink();
         assert.throws(() => {
-            component.href = 'https://www.example.com';
+            component.href = urlString `https://www.example.com`;
         }, 'ChromeLink href needs to start with \'chrome://\'');
     });
 });

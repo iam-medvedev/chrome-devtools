@@ -86,11 +86,11 @@ export declare function setDescription(element: Element, description: string): v
 export declare function setActiveDescendant(element: Element, activedescendant: Element | null): void;
 export declare function setSetSize(element: Element, size: number): void;
 export declare function setPositionInSet(element: Element, position: number): void;
-type AlertState = {
+interface AlertState {
     one: HTMLDivElement;
     two: HTMLDivElement;
     alertToggle: boolean;
-};
+}
 export declare function getOrCreateAlertElements(container?: HTMLElement): AlertState;
 /**
  * This function instantiates and switches off returning one of two offscreen alert elements.

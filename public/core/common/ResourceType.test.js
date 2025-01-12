@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import * as Platform from '../platform/platform.js';
 import * as Common from './common.js';
+const { urlString } = Platform.DevToolsPath;
 const ResourceType = Common.ResourceType.ResourceType;
 const ResourceCategory = Common.ResourceType.ResourceCategory;
 const resourceTypes = Common.ResourceType.resourceTypes;
@@ -181,15 +183,15 @@ describeWithEnvironment('ResourceType class', () => {
         assert.isNull(result, 'result is not null');
     });
     it('is able to return a mime from URL that contains a mapped extension', () => {
-        const result = ResourceType.mimeFromURL('http://www.example.com/test/path.html');
+        const result = ResourceType.mimeFromURL(urlString `http://www.example.com/test/path.html`);
         assert.strictEqual(result, 'text/html', 'mime returned was not correct');
     });
     it('is able to return a mime from URL that contains an unmapped extension', () => {
-        const result = ResourceType.mimeFromURL('http://www.example.com/test/path.testExt');
+        const result = ResourceType.mimeFromURL(urlString `http://www.example.com/test/path.testExt`);
         assert.isUndefined(result, 'mime returned was not correct');
     });
     it('is able to return a mime from URL that contains a mapped name', () => {
-        const result = ResourceType.mimeFromURL('http://www.example.com/test/Cakefile');
+        const result = ResourceType.mimeFromURL(urlString `http://www.example.com/test/Cakefile`);
         assert.strictEqual(result, 'text/x-coffeescript', 'mime returned was not correct');
     });
     it('is able to return a mime from a mapped extension', () => {
@@ -393,55 +395,55 @@ describe('ResourceType', () => {
     });
     describe('mimeFromURL', () => {
         it('returns correct MIME type for .dart files', () => {
-            const url = 'http://localhost/example.dart';
+            const url = urlString `http://localhost/example.dart`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'application/vnd.dart');
         });
         it('returns correct MIME type for Go files', () => {
-            const url = 'https://staging.server.com/main.go';
+            const url = urlString `https://staging.server.com/main.go`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x-go');
         });
         it('returns correct MIME type for .gss files', () => {
-            const url = 'https://staging.server.com/styles.gss';
+            const url = urlString `https://staging.server.com/styles.gss`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x-gss');
         });
         it('returns correct MIME type for .kt files', () => {
-            const url = 'https://staging.server.com/Main.kt';
+            const url = urlString `https://staging.server.com/Main.kt`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x-kotlin');
         });
         it('returns correct MIME type for .less files', () => {
-            const url = 'https://staging.server.com/styles.less';
+            const url = urlString `https://staging.server.com/styles.less`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x-less');
         });
         it('returns correct MIME type for .php files', () => {
-            const url = 'http://localhost/file.php';
+            const url = urlString `http://localhost/file.php`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'application/x-httpd-php');
         });
         it('returns correct MIME type for SASS files', () => {
-            assert.strictEqual(ResourceType.mimeFromURL('https://staging.server.com/styles.sass'), 'text/x-sass');
-            assert.strictEqual(ResourceType.mimeFromURL('https://staging.server.com/styles.scss'), 'text/x-scss');
+            assert.strictEqual(ResourceType.mimeFromURL(urlString `https://staging.server.com/styles.sass`), 'text/x-sass');
+            assert.strictEqual(ResourceType.mimeFromURL(urlString `https://staging.server.com/styles.scss`), 'text/x-scss');
         });
         it('returns correct MIME type for Scala files', () => {
-            const url = 'http://localhost/App.scala';
+            const url = urlString `http://localhost/App.scala`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x-scala');
         });
         it('returns correct MIME type for Angular component templates', () => {
-            const url = 'http://localhost/src/app/app.component.html';
+            const url = urlString `http://localhost/src/app/app.component.html`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x.angular');
         });
         it('returns correct MIME type for .svelte files', () => {
-            const url = 'http://localhost/App.svelte';
+            const url = urlString `http://localhost/App.svelte`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x.svelte');
         });
         it('returns correct MIME type for .vue files', () => {
-            const url = 'http://localhost/App.vue';
+            const url = urlString `http://localhost/App.vue`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'text/x.vue');
         });
         it('returns correct MIME type for .webmanifest files', () => {
-            const url = 'http://localhost/app.webmanifest';
+            const url = urlString `http://localhost/app.webmanifest`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'application/manifest+json');
         });
         it('returns correct MIME type for source maps', () => {
-            const url = 'http://localhost/bundle.min.js.map';
+            const url = urlString `http://localhost/bundle.min.js.map`;
             assert.strictEqual(ResourceType.mimeFromURL(url), 'application/json');
         });
     });

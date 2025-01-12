@@ -39,7 +39,7 @@ export class ProgressIndicator {
     isCanceledInternal;
     worked;
     isDone;
-    constructor() {
+    constructor(options = { showStopButton: true }) {
         this.element = document.createElement('div');
         this.element.classList.add('progress-indicator');
         this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: progressIndicatorStyles });
@@ -47,8 +47,10 @@ export class ProgressIndicator {
         this.labelElement = this.contentElement.createChild('div', 'title');
         this.progressElement = this.contentElement.createChild('progress');
         this.progressElement.value = 0;
-        this.stopButton = this.contentElement.createChild('button', 'progress-indicator-shadow-stop-button');
-        this.stopButton.addEventListener('click', this.cancel.bind(this));
+        if (options.showStopButton) {
+            this.stopButton = this.contentElement.createChild('button', 'progress-indicator-shadow-stop-button');
+            this.stopButton.addEventListener('click', this.cancel.bind(this));
+        }
         this.isCanceledInternal = false;
         this.worked = 0;
     }

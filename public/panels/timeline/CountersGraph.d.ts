@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';

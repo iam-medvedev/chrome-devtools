@@ -29,7 +29,7 @@ export interface Bounds {
     height: number;
     width: number;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.UPDATE]: Bounds;
-};
+}
 export {};

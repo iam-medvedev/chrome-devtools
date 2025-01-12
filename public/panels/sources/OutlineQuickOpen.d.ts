@@ -1,11 +1,11 @@
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
-export type OutlineItem = {
+export interface OutlineItem {
     title: string;
     lineNumber: number;
     columnNumber: number;
     subtitle?: string;
-};
+}
 export declare function outline(state: CodeMirror.EditorState): OutlineItem[];
 export declare class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     private items;

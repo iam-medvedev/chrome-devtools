@@ -41,9 +41,9 @@ export declare const asContentDataOrError: (contentDataOrError: StreamingContent
 export declare const enum Events {
     CHUNK_ADDED = "ChunkAdded"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CHUNK_ADDED]: {
         content: StreamingContentData;
         chunk: string;
     };
-};
+}

@@ -21,9 +21,9 @@ export declare class Context {
 declare const enum Events {
     FLAVOR_CHANGED = "FlavorChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FLAVOR_CHANGED]: any;
-};
+}
 export declare function registerListener(registration: ContextFlavorListenerRegistration): void;
 export interface ContextFlavorListenerRegistration {
     contextTypes: () => Array<Function>;

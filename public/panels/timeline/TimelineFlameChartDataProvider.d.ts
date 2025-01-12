@@ -99,10 +99,10 @@ export declare const enum Events {
     DATA_CHANGED = "DataChanged",
     FLAME_CHART_ITEM_HOVERED = "FlameChartItemHovered"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.DATA_CHANGED]: void;
     [Events.FLAME_CHART_ITEM_HOVERED]: Trace.Types.Events.Event | null;
-};
+}
 export declare const enum EntryType {
     FRAME = "Frame",
     TRACK_APPENDER = "TrackAppender",

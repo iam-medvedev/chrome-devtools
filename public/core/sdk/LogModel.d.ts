@@ -15,6 +15,6 @@ export interface EntryAddedEvent {
     logModel: LogModel;
     entry: Protocol.Log.LogEntry;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ENTRY_ADDED]: EntryAddedEvent;
-};
+}

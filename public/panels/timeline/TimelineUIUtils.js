@@ -664,8 +664,8 @@ export class TimelineUIUtils {
         if (Trace.Helpers.Trace.eventHasCategory(event, Trace.Types.Events.Categories.Console)) {
             return title;
         }
-        if (Trace.Types.Events.isTimeStamp(event)) {
-            return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.message });
+        if (Trace.Types.Events.isConsoleTimeStamp(event)) {
+            return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.name });
         }
         if (Trace.Types.Events.isAnimation(event) && event.args.data.name) {
             return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.name });
@@ -755,7 +755,7 @@ export class TimelineUIUtils {
                 }
                 break;
             }
-            case "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */:
+            case "V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */:
                 detailsText = unsafeEventData['message'];
                 break;
             case "WebSocketCreate" /* Trace.Types.Events.Name.WEB_SOCKET_CREATE */:
@@ -1791,9 +1791,9 @@ export class TimelineUIUtils {
     }
     static aggregatedStatsForTraceEvent(total, parsedTrace, event) {
         const events = parsedTrace.Renderer?.allTraceEntries || [];
-        const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
+        const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
         function eventComparator(startTime, e) {
-            const { startTime: eventStartTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
+            const { startTime: eventStartTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(e);
             return startTime - eventStartTime;
         }
         const index = Platform.ArrayUtilities.binaryIndexOf(events, startTime, eventComparator);
@@ -1805,7 +1805,7 @@ export class TimelineUIUtils {
         if (endTime) {
             for (let i = index; i < events.length; i++) {
                 const nextEvent = events[i];
-                const { startTime: nextEventStartTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(nextEvent);
+                const { startTime: nextEventStartTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(nextEvent);
                 if (nextEventStartTime >= endTime) {
                     break;
                 }
@@ -1829,7 +1829,8 @@ export class TimelineUIUtils {
                 for (const categoryName in total) {
                     aggregatedTotal += total[categoryName];
                 }
-                total['idle'] = Math.max(0, endTime - startTime - aggregatedTotal);
+                const deltaInMillis = Trace.Helpers.Timing.microSecondsToMilliseconds((endTime - startTime));
+                total['idle'] = Math.max(0, deltaInMillis - aggregatedTotal);
             }
             return false;
         }
@@ -2092,7 +2093,7 @@ export class TimelineUIUtils {
                 color = 'var(--sys-color-green)';
                 tall = true;
                 break;
-            case "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */:
+            case "V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */:
                 color = 'orange';
                 break;
         }
@@ -2263,7 +2264,7 @@ export function timeStampForEventAdjustedForClosestNavigationIfPossible(event, p
  **/
 export function isMarkerEvent(parsedTrace, event) {
     const { Name } = Trace.Types.Events;
-    if (event.name === "TimeStamp" /* Name.TIME_STAMP */ || event.name === "navigationStart" /* Name.NAVIGATION_START */) {
+    if (event.name === "V8Console::TimeStamp" /* Name.CONSOLE_TIME_STAMP */ || event.name === "navigationStart" /* Name.NAVIGATION_START */) {
         return true;
     }
     if (Trace.Types.Events.isFirstContentfulPaint(event) || Trace.Types.Events.isFirstPaint(event)) {

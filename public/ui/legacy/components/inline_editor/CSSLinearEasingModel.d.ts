@@ -1,7 +1,7 @@
-export type Point = {
+export interface Point {
     input: number;
     output: number;
-};
+}
 export declare class CSSLinearEasingModel {
     #private;
     constructor(points: Point[]);

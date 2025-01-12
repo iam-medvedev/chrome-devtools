@@ -15,37 +15,6 @@ export interface TraceEntryNode {
     parent: TraceEntryNode | null;
     children: TraceEntryNode[];
 }
-export interface AINodeSerialized {
-    name: string;
-    dur?: number;
-    self?: number;
-    children?: AINodeSerialized[];
-    url?: string;
-    selected?: boolean;
-}
-/**
- * Node in a graph simplified for AI Assistance processing. The graph mirrors the TraceEntryNode one.
- * Huge tip of the hat to Victor Porof for prototyping this with some great work: https://crrev.com/c/5711249
- */
-export declare class AINode {
-    #private;
-    event: Types.Events.Event;
-    name: string;
-    duration?: Types.Timing.MilliSeconds;
-    selfDuration?: Types.Timing.MilliSeconds;
-    id?: TraceEntryNodeId;
-    children?: AINode[];
-    url?: string;
-    selected?: boolean;
-    constructor(event: Types.Events.Event);
-    toJSON(): AINodeSerialized;
-    /**
-     * Builds a TraceEntryNodeForAI tree from a node and marks the selected node. Primary entrypoint from EntriesFilter
-     */
-    static fromEntryNode(selectedNode: TraceEntryNode, entryIsVisibleInTimeline: (event: Types.Events.Event) => boolean): AINode;
-    static getSelectedNodeWithinTree(node: AINode): AINode | null;
-    sanitize(): void;
-}
 declare class TraceEntryNodeIdTag {
     #private;
 }

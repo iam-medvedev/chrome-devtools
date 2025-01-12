@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type NavigatorUISourceCodeTreeNode, NavigatorView } from './NavigatorView.js';

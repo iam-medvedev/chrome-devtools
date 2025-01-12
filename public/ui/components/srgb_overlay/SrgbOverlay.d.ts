@@ -1,8 +1,8 @@
-type SrgbOverlayProps = {
+interface SrgbOverlayProps {
     hue: number;
     width: number;
     height: number;
-};
+}
 export declare class SrgbOverlay extends HTMLElement {
     #private;
     constructor();

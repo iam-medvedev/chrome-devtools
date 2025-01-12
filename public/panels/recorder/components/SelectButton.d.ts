@@ -5,10 +5,10 @@ export declare const enum Variant {
     PRIMARY = "primary",
     OUTLINED = "outlined"
 }
-type SelectMenuGroup = {
+interface SelectMenuGroup {
     name: string;
     items: SelectButtonItem[];
-};
+}
 export interface SelectButtonItem {
     /**
      * Specifies the clicked item

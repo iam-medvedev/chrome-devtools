@@ -189,7 +189,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
             void this.onFrameSelected(event);
         }, this);
         this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, this.onFrameDeselected, this);
-        this.mainToolbar = new UI.Toolbar.Toolbar('');
+        this.mainToolbar = document.createElement('devtools-toolbar');
         this.clearAllButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'clear');
         this.clearAllButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.clearFrames, this);
         this.mainToolbar.appendToolbarItem(this.clearAllButton);
@@ -211,7 +211,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         this.filterRegex = null;
         this.mainToolbar.appendToolbarItem(this.filterTextInput);
         const mainContainer = new UI.Widget.VBox();
-        mainContainer.element.appendChild(this.mainToolbar.element);
+        mainContainer.element.appendChild(this.mainToolbar);
         this.dataGrid.asWidget().show(mainContainer.element);
         mainContainer.setMinimumSize(0, 72);
         this.splitWidget.setMainWidget(mainContainer);
@@ -277,7 +277,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
             try {
                 this.filterRegex = new RegExp(text, 'i');
             }
-            catch (e) {
+            catch {
                 this.filterRegex = new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i');
             }
         }

@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';

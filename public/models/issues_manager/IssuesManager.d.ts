@@ -16,9 +16,9 @@ export interface IssuesManagerCreationOptions {
     showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>;
     hideIssueSetting?: Common.Settings.Setting<HideIssueMenuSetting>;
 }
-export type HideIssueMenuSetting = {
+export interface HideIssueMenuSetting {
     [x: string]: IssueStatus;
-};
+}
 export declare const enum IssueStatus {
     HIDDEN = "Hidden",
     UNHIDDEN = "Unhidden"
@@ -64,8 +64,8 @@ export interface IssueAddedEvent {
     issuesModel: SDK.IssuesModel.IssuesModel;
     issue: Issue;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ISSUES_COUNT_UPDATED]: void;
     [Events.FULL_UPDATE_REQUIRED]: void;
     [Events.ISSUE_ADDED]: IssueAddedEvent;
-};
+}

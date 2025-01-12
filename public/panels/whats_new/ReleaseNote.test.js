@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
-// eslint-disable-next-line rulesdir/es-modules-import
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
+const { urlString } = Platform.DevToolsPath;
 describe('Release Note', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let WhatsNew;
@@ -16,7 +17,7 @@ describe('Release Note', () => {
             version: 99,
             header: 'Highlights from Chrome 100 update',
             markdownLinks: [],
-            link: 'https://developers.google.com/web/tools/chrome-devtools/',
+            link: urlString `https://developers.google.com/web/tools/chrome-devtools/`,
             videoLinks: [],
         });
         // We need to add the What's New view so that an error is not thrown when requesting

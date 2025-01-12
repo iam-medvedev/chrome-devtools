@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWidget.Delegate<SDK.NetworkManager.BlockedPattern> {

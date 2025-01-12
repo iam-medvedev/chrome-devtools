@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as SourceFrame from './source_frame.js';
+const { urlString } = Platform.DevToolsPath;
 class MockStreamingContentProvider {
     #contentURL;
     #contentType;
@@ -38,7 +40,7 @@ class MockStreamingContentProvider {
 }
 describeWithEnvironment('ResourceSourceFrame', () => {
     it('updates the editor when a StreamingContentProvider changes', async () => {
-        const contentProvider = new MockStreamingContentProvider('https://example.com/sse', Common.ResourceType.resourceTypes.Fetch, new TextUtils.ContentData.ContentData('', true, 'text/event-stream'));
+        const contentProvider = new MockStreamingContentProvider(urlString `https://example.com/sse`, Common.ResourceType.resourceTypes.Fetch, new TextUtils.ContentData.ContentData('', true, 'text/event-stream'));
         const resourceSourceFrame = new SourceFrame.ResourceSourceFrame.ResourceSourceFrame(contentProvider, 'text/event-stream');
         resourceSourceFrame.markAsRoot();
         resourceSourceFrame.show(document.body);

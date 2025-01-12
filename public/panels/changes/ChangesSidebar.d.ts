@@ -27,9 +27,9 @@ export declare class ChangesSidebar extends ChangesSidebar_base {
 export declare const enum Events {
     SELECTED_UI_SOURCE_CODE_CHANGED = "SelectedUISourceCodeChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SELECTED_UI_SOURCE_CODE_CHANGED]: void;
-};
+}
 export declare class UISourceCodeTreeElement extends UI.TreeOutline.TreeElement {
     uiSourceCode: Workspace.UISourceCode.UISourceCode;
     private readonly eventListeners;

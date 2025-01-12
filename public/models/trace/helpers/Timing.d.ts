@@ -13,7 +13,6 @@ export interface EventTimingsData<ValueType extends Types.Timing.MicroSeconds | 
 }
 export declare function eventTimingsMicroSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.MicroSeconds>;
 export declare function eventTimingsMilliSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.MilliSeconds>;
-export declare function eventTimingsSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.Seconds>;
 export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;
 export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export declare function traceWindowMicroSecondsToMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;

@@ -1,9 +1,9 @@
 import * as Platform from '../../core/platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-type TabData = {
+interface TabData {
     [x: string]: string | object;
-};
+}
 export declare const enum PlayerPropertyKeys {
     RESOLUTION = "kResolution",
     TOTAL_BYTES = "kTotalBytes",

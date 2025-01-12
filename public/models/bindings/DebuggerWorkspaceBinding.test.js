@@ -1,12 +1,14 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('DebuggerWorkspaceBinding', () => {
     let target;
     let backend;
@@ -22,7 +24,7 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
     });
     it('can wait for a uiSourceCode if it is not yet available', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-        const scriptUrl = 'http://script-host/script.js';
+        const scriptUrl = urlString `http://script-host/script.js`;
         const scriptInfo = { url: scriptUrl, content: 'console.log(1);', startLine: 0, startColumn: 0, hasSourceURL: false };
         // Create a second target.
         const workerTarget = createTarget({

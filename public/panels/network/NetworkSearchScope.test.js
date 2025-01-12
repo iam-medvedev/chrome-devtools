@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as Network from './network.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithLocale('NetworkSearchScope', () => {
     let scope;
     beforeEach(() => {
-        const fakeRequest1 = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('fakeId1', 'http://example.com/main.js', 'http://example.com/index.html', null);
+        const fakeRequest1 = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('fakeId1', urlString `http://example.com/main.js`, urlString `http://example.com/index.html`, null);
         fakeRequest1.setRequestHeaders([{ name: 'fooRequestHeader', value: 'value1' }]);
         fakeRequest1.responseHeaders = [{ name: 'fooResponseHeader', value: 'foo value' }];
         fakeRequest1.setResourceType(Common.ResourceType.resourceTypes.Script);
         fakeRequest1.mimeType = 'text/javascript';
         fakeRequest1.setContentDataProvider(async () => new TextUtils.ContentData.ContentData('This is the response body of request 1.\nAnd a second line.\n', false, fakeRequest1.mimeType));
-        const fakeRequest2 = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('fakeId1', 'http://example.com/bundle.min.js', 'http://example.com/index.html', null);
+        const fakeRequest2 = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('fakeId1', urlString `http://example.com/bundle.min.js`, urlString `http://example.com/index.html`, null);
         fakeRequest2.setRequestHeaders([{ name: 'barRequestHeader', value: 'value2' }]);
         fakeRequest2.responseHeaders = [{ name: 'barResponseHeader', value: 'bar value' }];
         fakeRequest2.setResourceType(Common.ResourceType.resourceTypes.Script);

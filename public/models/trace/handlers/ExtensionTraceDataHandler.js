@@ -80,7 +80,7 @@ export function extensionDataInTiming(timing) {
         }
         return detailObj.devtools;
     }
-    catch (e) {
+    catch {
         // No need to worry about this error, just discard this event and don't
         // treat it as having any useful information for the purposes of extensions
         return null;

@@ -183,6 +183,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("NETWORK" /* Common.Settings.SettingCategory.NETWORK */, 'request-blocking-enabled', false),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'monitoring-xhr-enabled', false),
         createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'custom-network-conditions', [], "array" /* Common.Settings.SettingType.ARRAY */),
+        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'calibrated-cpu-throttling', [], "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'ui-theme', 'systemPreferred', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'language', 'en-US', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("PERSISTENCE" /* Common.Settings.SettingCategory.PERSISTENCE */, 'persistence-network-overrides-enabled', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
@@ -297,7 +298,6 @@ export async function initializeGlobalLocaleVars() {
         await i18n.i18n.fetchAndRegisterLocaleData('en-US');
     }
     catch (error) {
-        // eslint-disable-next-line no-console
         console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
     }
 }

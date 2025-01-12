@@ -1,6 +1,7 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -63,13 +64,13 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         this.element.setAttribute('jslog', `${VisualLogging.panel('network.blocked-urls').track({ resize: true })}`);
         this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
         this.manager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */, this.update, this);
-        this.toolbar = new UI.Toolbar.Toolbar('', this.contentElement);
+        this.toolbar = this.contentElement.createChild('devtools-toolbar');
         this.enabledCheckbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.enableNetworkRequestBlocking), undefined, this.toggleEnabled.bind(this), 'network.enable-request-blocking');
         this.toolbar.appendToolbarItem(this.enabledCheckbox);
         this.toolbar.appendSeparator();
-        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('network.add-network-request-blocking-pattern'));
-        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('network.remove-all-network-request-blocking-patterns'));
-        this.toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('network.add-network-request-blocking-pattern'));
+        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('network.remove-all-network-request-blocking-patterns'));
+        this.toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.element.classList.add('blocked-urls');
         this.list.setEmptyPlaceholder(this.createEmptyPlaceholder());

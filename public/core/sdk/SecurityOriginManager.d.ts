@@ -18,8 +18,8 @@ export interface MainSecurityOriginChangedEvent {
     mainSecurityOrigin: string;
     unreachableMainSecurityOrigin: string | null;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SecurityOriginAdded]: string;
     [Events.SecurityOriginRemoved]: string;
     [Events.MainSecurityOriginChanged]: MainSecurityOriginChangedEvent;
-};
+}

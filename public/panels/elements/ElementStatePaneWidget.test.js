@@ -10,24 +10,10 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
     let target;
     let view;
     const pseudoClasses = [
-        'enabled',
-        'disabled',
-        'valid',
-        'invalid',
-        'user-valid',
-        'user-invalid',
-        'required',
-        'optional',
-        'read-only',
-        'read-write',
-        'in-range',
-        'out-of-range',
-        'visited',
-        'link',
-        'checked',
-        'indeterminate',
-        'placeholder-shown',
-        'autofill',
+        'enabled', 'disabled', 'valid', 'invalid', 'user-valid',
+        'user-invalid', 'required', 'optional', 'read-only', 'read-write',
+        'in-range', 'out-of-range', 'visited', 'link', 'checked',
+        'indeterminate', 'placeholder-shown', 'autofill', 'open',
     ];
     beforeEach(() => {
         stubNoopSettings();
@@ -123,6 +109,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
             'read-only',
             'placeholder-shown',
             'autofill',
+            'open',
         ]);
     });
     it('Shows the specific pseudo-classes for button', async () => {
@@ -174,7 +161,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         ], false, ['required', '']);
     });
     it('Shows the specific pseudo-classes for select', async () => {
-        await assertExpectedPseudoClasses('select', ['disabled', 'valid', 'invalid', 'user-valid', 'user-invalid', 'required', 'read-write']);
+        await assertExpectedPseudoClasses('select', ['disabled', 'valid', 'invalid', 'user-valid', 'user-invalid', 'required', 'read-write', 'open']);
     });
     it('Shows the specific pseudo-classes for option', async () => {
         await assertExpectedPseudoClasses('option', ['disabled', 'checked', 'read-write']);
@@ -217,6 +204,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
             'autofill',
             'checked',
             'indeterminate',
+            'open',
         ], false, ['type', 'checkbox']);
         await assertExpectedPseudoClasses('input', [
             'disabled',
@@ -230,6 +218,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
             'autofill',
             'checked',
             'indeterminate',
+            'open',
         ], false, ['type', 'radio']);
     });
     it('Shows the specific pseudo-classes for datalist, label, legend and meter', async () => {

@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -56,7 +57,8 @@ export class StartView extends UI.Widget.Widget {
         super(true /* useShadowDom */);
         this.controller = controller;
         this.panel = panel;
-        this.settingsToolbarInternal = new UI.Toolbar.Toolbar('');
+        this.settingsToolbarInternal = document.createElement('devtools-toolbar');
+        this.settingsToolbarInternal.classList.add('lighthouse-settings-toolbar');
         this.render();
     }
     populateRuntimeSettingAsRadio(settingName, label, parentElement) {

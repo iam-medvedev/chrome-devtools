@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -11,6 +12,7 @@ import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
 import { getInitializedResourceTreeModel } from '../../testing/ResourceTreeHelpers.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Coverage from './coverage.js';
+const { urlString } = Platform.DevToolsPath;
 const { CoverageDecorationManager } = Coverage.CoverageDecorationManager;
 /** Test helper that returns the "identity" line ranges for any given string */
 function lineRangesForContent(content) {
@@ -51,7 +53,7 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
         // invalidated during the test.
         await getInitializedResourceTreeModel(target);
     });
-    const URL = 'http://example.com/index.js';
+    const URL = urlString `http://example.com/index.js`;
     describe('usageByLine (raw)', () => {
         it('marks lines as "unknown" coverge status if no coverage info is available', async () => {
             await backend.addScript(target, { url: URL, content: 'function foo(a,b){return a+b;}' }, null);
@@ -131,7 +133,7 @@ function mulWithOffset(param1, param2, offset) {
             script = await backend.addScript(target, { url: 'file:///tmp/bundle.js', content: scriptContent }, { url: sourceMapUrl, content: sourceMapContent });
         });
         it('marks lines as covered if coverage info says so', async () => {
-            const uiSourceCode = workspace.uiSourceCodeForURL('file:///tmp/example.js');
+            const uiSourceCode = workspace.uiSourceCodeForURL(urlString `file:///tmp/example.js`);
             assert.exists(uiSourceCode);
             await uiSourceCode.requestContentData();
             coverageModel.usageForRange.callsFake((contentProvider, startOffset, endOffset) => {

@@ -62,6 +62,7 @@ var SpecificPseudoStates;
     SpecificPseudoStates["INDETERMINATE"] = "indeterminate";
     SpecificPseudoStates["PLACEHOLDER_SHOWN"] = "placeholder-shown";
     SpecificPseudoStates["AUTOFILL"] = "autofill";
+    SpecificPseudoStates["OPEN"] = "open";
 })(SpecificPseudoStates || (SpecificPseudoStates = {}));
 export class ElementStatePaneWidget extends UI.Widget.Widget {
     inputs;
@@ -180,6 +181,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
         this.specificPseudoStateDivs.set(SpecificPseudoStates.INDETERMINATE, createElementStateCheckbox(SpecificPseudoStates.INDETERMINATE));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.PLACEHOLDER_SHOWN, createElementStateCheckbox(SpecificPseudoStates.PLACEHOLDER_SHOWN));
         this.specificPseudoStateDivs.set(SpecificPseudoStates.AUTOFILL, createElementStateCheckbox(SpecificPseudoStates.AUTOFILL));
+        this.specificPseudoStateDivs.set(SpecificPseudoStates.OPEN, createElementStateCheckbox(SpecificPseudoStates.OPEN));
         this.specificPseudoStateDivs.forEach(div => {
             elementSpecificContainer.appendChild(div);
         });
@@ -369,6 +371,12 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
         }
         else {
             hideSpecificCheckbox(SpecificPseudoStates.AUTOFILL, true);
+        }
+        if (isElementOfTypes(node, ['input', 'select', 'dialog', 'details'])) {
+            hideSpecificCheckbox(SpecificPseudoStates.OPEN, false);
+        }
+        else {
+            hideSpecificCheckbox(SpecificPseudoStates.OPEN, true);
         }
         this.specificHeader.hidden = showedACheckbox ? false : true;
         this.updateElementSpecificStatesTableForTest();

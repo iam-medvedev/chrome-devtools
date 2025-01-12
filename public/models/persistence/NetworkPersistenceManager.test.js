@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -11,12 +12,13 @@ import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
+const { urlString } = Platform.DevToolsPath;
 const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const { workspace, networkPersistenceManager } = setUpEnvironment();
     if (!project) {
         project = { id: () => url, type: () => Workspace.Workspace.projectTypes.Network };
     }
-    const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, url, resourceType);
+    const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, urlString `${url}`, resourceType);
     project.uiSourceCodes = () => [uiSourceCode];
     workspace.addProject(project);
     return { workspace, project, uiSourceCode, networkPersistenceManager };
@@ -31,7 +33,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         const url = 'http://www.example.com/list-fetch.json';
         const resourceType = Common.ResourceType.resourceTypes.Document;
         const { uiSourceCode } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const networkPersistenceManager = await createWorkspaceProject('file:///path/to/overrides', []);
+        const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, []);
         const saveSpy = sinon.spy(networkPersistenceManager, 'saveUISourceCodeForOverrides');
         const actual = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
         saveSpy.restore();
@@ -43,7 +45,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         const url = 'http://www.example.com/list-xhr.json';
         const resourceType = Common.ResourceType.resourceTypes.Document;
         const { uiSourceCode } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const networkPersistenceManager = await createWorkspaceProject('file:///path/to/overrides', []);
+        const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, []);
         const saveSpy = sinon.spy(networkPersistenceManager, 'saveUISourceCodeForOverrides');
         const actual = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
         saveSpy.restore();
@@ -55,7 +57,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
     it('does not create interception patterns for forbidden URLs', async () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
         const target = createTarget();
-        const networkPersistenceManager = await createWorkspaceProject('file:///path/to/overrides', [
+        const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, [
             { name: 'helloWorld.html', path: 'www.example.com/', content: 'Hello World!' },
             { name: 'forbidden.html', path: 'chromewebstore.google.com/', content: 'Chrome Web Store' },
             { name: 'flags', path: 'chrome:/', content: 'Chrome Flags' },
@@ -78,10 +80,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         assert.deepEqual(patterns, expected);
     });
     it('recognizes forbidden network URLs', () => {
-        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('chrome://version'));
-        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('https://chromewebstore.google.com/index.html'));
-        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('https://chrome.google.com/script.js'));
-        assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('https://www.example.com/script.js'));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `chrome://version`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://chromewebstore.google.com/index.html`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://chrome.google.com/script.js`));
+        assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://www.example.com/script.js`));
     });
 });
 describeWithMockConnection('NetworkPersistenceManager', () => {
@@ -90,12 +92,11 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
         setMockResourceTree(false);
         const target = createTarget();
-        networkPersistenceManager =
-            await createWorkspaceProject('file:///path/to/overrides', [
-                {
-                    name: '.headers',
-                    path: 'www.example.com/',
-                    content: `[
+        networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, [
+            {
+                name: '.headers',
+                path: 'www.example.com/',
+                content: `[
             {
               "applyTo": "index.html",
               "headers": [{
@@ -131,11 +132,11 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
               ]
             }
           ]`,
-                },
-                {
-                    name: '.headers',
-                    path: '',
-                    content: `[
+            },
+            {
+                name: '.headers',
+                path: '',
+                content: `[
             {
               "applyTo": "*",
               "headers": [{
@@ -144,9 +145,9 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
               }]
             }
           ]`,
-                },
-                { name: 'helloWorld.html', path: 'www.example.com/', content: 'Hello World!' },
-            ]);
+            },
+            { name: 'helloWorld.html', path: 'www.example.com/', content: 'Hello World!' },
+        ]);
         sinon.stub(target.fetchAgent(), 'invoke_enable');
         await networkPersistenceManager.updateInterceptionPatternsForTests();
     });
@@ -586,8 +587,8 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             ];
         }
         toTest.forEach(testStrings => {
-            assert.deepEqual(networkPersistenceManager.rawPathFromUrl(testStrings.url), testStrings.raw);
-            assert.deepEqual(networkPersistenceManager.encodedPathFromUrl(testStrings.url), testStrings.encoded);
+            assert.deepEqual(networkPersistenceManager.rawPathFromUrl(urlString `${testStrings.url}`), testStrings.raw);
+            assert.deepEqual(networkPersistenceManager.encodedPathFromUrl(urlString `${testStrings.url}`), testStrings.encoded);
         });
     });
     it('is aware of which \'.headers\' files are currently active', done => {
@@ -643,7 +644,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
     });
     it('updates active state when target detach and attach', async () => {
         const { networkPersistenceManager } = setUpEnvironment();
-        const { project } = createFileSystemUISourceCode({ url: 'file:///tmp', mimeType: 'text/plain' });
+        const { project } = createFileSystemUISourceCode({ url: urlString `file:///tmp`, mimeType: 'text/plain' });
         await networkPersistenceManager.setProject(project);
         const targetManager = SDK.TargetManager.TargetManager.instance();
         assert.isNull(targetManager.rootTarget());
@@ -755,7 +756,7 @@ describe('NetworkPersistenceManager', () => {
       }
     ]`;
         const { uiSourceCode } = createFileSystemUISourceCode({
-            url: 'file:///path/to/overrides/www.example.com/.headers',
+            url: urlString `file:///path/to/overrides/www.example.com/.headers`,
             content: headers,
             mimeType: 'text/plain',
             fileSystemPath: 'file:///path/to/overrides',
@@ -808,7 +809,7 @@ describe('NetworkPersistenceManager', () => {
       }
     ]`;
         const { uiSourceCode } = createFileSystemUISourceCode({
-            url: 'file:///path/to/overrides/.headers',
+            url: urlString `file:///path/to/overrides/.headers`,
             content: headers,
             mimeType: 'text/plain',
             fileSystemPath: 'file:///path/to/overrides',
@@ -828,7 +829,7 @@ describe('NetworkPersistenceManager', () => {
       }
     ]`;
         const { uiSourceCode } = createFileSystemUISourceCode({
-            url: 'file:///path/to/overrides/www.longurls.com/longurls/.headers',
+            url: urlString `file:///path/to/overrides/www.longurls.com/longurls/.headers`,
             content: headers,
             mimeType: 'text/plain',
             fileSystemPath: 'file:///path/to/overrides',
@@ -857,7 +858,7 @@ describe('NetworkPersistenceManager', () => {
       }
     ]`;
         const { uiSourceCode } = createFileSystemUISourceCode({
-            url: 'file:///path/to/overrides/www.example.com/.headers',
+            url: urlString `file:///path/to/overrides/www.example.com/.headers`,
             content: headers,
             mimeType: 'text/plain',
             fileSystemPath: 'file:///path/to/overrides',

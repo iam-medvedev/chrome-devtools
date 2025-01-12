@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
@@ -8,6 +9,7 @@ import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
+const { urlString } = Platform.DevToolsPath;
 class SharedStorageTreeElementListener {
     #sidebar;
     #originsAdded = new Array();
@@ -307,7 +309,7 @@ describeWithMockConnection('ResourcesSection', () => {
             assert.exists(model);
             assert.strictEqual(treeElement.childCount(), 0);
             const frame = getMainFrame(target);
-            const url = 'http://example.com';
+            const url = urlString `http://example.com`;
             assert.strictEqual(treeElement.firstChild()?.childCount() ?? 0, 0);
             createResource(frame, url, 'text/html', '');
             assert.strictEqual(treeElement.firstChild()?.childCount() ?? 0, inScope ? 1 : 0);
@@ -317,7 +319,7 @@ describeWithMockConnection('ResourcesSection', () => {
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             const treeElement = new UI.TreeOutline.TreeElement();
             new Application.ApplicationPanelSidebar.ResourcesSection(panel, treeElement);
-            const url = 'http://example.com';
+            const url = urlString `http://example.com`;
             createResource(getMainFrame(target), url, 'text/html', '');
             assert.strictEqual(treeElement.firstChild()?.childCount() ?? 0, 0);
             assert.strictEqual(treeElement.childCount(), 0);

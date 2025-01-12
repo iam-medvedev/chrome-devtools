@@ -1,6 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -40,6 +41,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/changes/ChangesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 function diffStats(diff) {
     const insertions = diff.reduce((ins, token) => ins + (token[0] === Diff.Diff.Operation.Insert ? token[1].length : 0), 0);
     const deletions = diff.reduce((ins, token) => ins + (token[0] === Diff.Diff.Operation.Delete ? token[1].length : 0), 0);
@@ -75,17 +77,14 @@ export class ChangesView extends UI.Widget.VBox {
         UI.ARIAUtils.markAsTabpanel(this.diffContainer);
         this.diffContainer.addEventListener('click', event => this.click(event));
         this.diffView = this.diffContainer.appendChild(new DiffView.DiffView.DiffView());
-        this.toolbar = new UI.Toolbar.Toolbar('changes-toolbar', mainWidget.element);
-        this.toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('changes.revert'));
+        this.toolbar = mainWidget.element.createChild('devtools-toolbar', 'changes-toolbar');
+        this.toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('changes.revert'));
         this.diffStats = new UI.Toolbar.ToolbarText('');
         this.toolbar.appendToolbarItem(this.diffStats);
         this.toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator());
-        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('changes.copy', {
-            showLabel: true,
-            label() {
-                return i18nString(UIStrings.copy);
-            },
+        this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('changes.copy', {
+            label: i18nLazyString(UIStrings.copy),
         }));
         this.hideDiff(i18nString(UIStrings.noChanges));
         this.selectedUISourceCodeChanged();

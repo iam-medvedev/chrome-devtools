@@ -50,9 +50,9 @@ export declare class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWr
 export declare const enum Events {
     BOUNDARIES_CHANGED = "BoundariesChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.BOUNDARIES_CHANGED]: void;
-};
+}
 export declare class NetworkTransferTimeCalculator extends NetworkTimeCalculator {
     constructor();
     formatValue(value: number, precision?: number): string;

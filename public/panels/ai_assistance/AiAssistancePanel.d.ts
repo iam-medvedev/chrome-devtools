@@ -1,9 +1,10 @@
+import '../../ui/legacy/legacy.js';
 import * as Host from '../../core/host/host.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ChatView, type Props as ChatViewProps } from './components/ChatView.js';
-type ViewOutput = {
+interface ViewOutput {
     chatView?: ChatView;
-};
+}
 type View = (input: ChatViewProps, output: ViewOutput, target: HTMLElement) => void;
 export declare class AiAssistancePanel extends UI.Panel.Panel {
     #private;

@@ -77,7 +77,7 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
         try {
             parentPath = decodeURI(parentPath);
         }
-        catch (e) {
+        catch {
         }
         return parentPath + '/' + uiSourceCode.displayName(true);
     }

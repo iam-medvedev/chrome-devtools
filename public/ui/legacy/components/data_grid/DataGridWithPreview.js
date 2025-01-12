@@ -96,6 +96,9 @@ export class DataGridWithPreview {
     get dataGridForTesting() {
         return this.#dataGrid;
     }
+    get previewPanelForTesting() {
+        return this.#previewPanel;
+    }
     clearItems() {
         this.#dataGrid.rootNode().removeChildren();
         this.#dataGrid.addCreationNode(false);
@@ -152,13 +155,13 @@ export class DataGridWithPreview {
                 continue;
             }
             selectedKey = node.data.key;
-            void this.#previewEntry(node);
             break;
         }
         rootNode.removeChildren();
         let selectedNode = null;
         const sortDirection = this.#dataGrid.isSortOrderAscending() ? 1 : -1;
-        const filteredList = items.sort(function (item1, item2) {
+        // Make a copy to avoid sorting the original array.
+        const filteredList = [...items].sort(function (item1, item2) {
             return sortDirection * (item1[0] > item2[0] ? 1 : -1);
         });
         for (const item of filteredList) {
@@ -230,7 +233,7 @@ export class DataGridWithPreview {
     async #previewEntry(entry) {
         const value = entry && entry.data && entry.data.value;
         if (entry && entry.data && entry.data.value) {
-            const preview = await this.#callbacks.createPreview(entry.key, value);
+            const preview = await this.#callbacks.createPreview(entry.data.key, value);
             // Selection could've changed while the preview was loaded
             if (entry.selected) {
                 this.showPreview(preview, value);

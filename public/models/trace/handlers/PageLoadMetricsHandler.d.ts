@@ -28,7 +28,7 @@ export declare function scoreClassificationForDOMContentLoaded(_dclTimeInMicrose
  */
 export declare function scoreClassificationForTotalBlockingTime(tbtTimeInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
 export declare function finalize(): Promise<void>;
-export type PageLoadMetricsData = {
+export interface PageLoadMetricsData {
     /**
      * This represents the metric scores for all navigations, for all frames in a trace.
      * Given a frame id, the map points to another map from navigation id to metric scores.
@@ -41,7 +41,7 @@ export type PageLoadMetricsData = {
      * main frame.
      */
     allMarkerEvents: Types.Events.PageLoadEvent[];
-};
+}
 export declare function data(): PageLoadMetricsData;
 export declare function deps(): HandlerName[];
 export declare const enum ScoreClassification {

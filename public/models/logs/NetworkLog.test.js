@@ -8,8 +8,9 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { activate, getMainFrame, LOADER_ID, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Logs from '../logs/logs.js';
+const { urlString } = Platform.DevToolsPath;
 function url(input) {
-    return input;
+    return urlString `${input}`;
 }
 describe('NetworkLog', () => {
     describe('initiatorInfoForRequest', () => {

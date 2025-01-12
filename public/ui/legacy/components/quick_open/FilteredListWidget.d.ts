@@ -72,9 +72,9 @@ export declare class FilteredListWidget extends FilteredListWidget_base implemen
 export declare const enum Events {
     HIDDEN = "hidden"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.HIDDEN]: void;
-};
+}
 export declare class Provider {
     private refreshCallback;
     jslogContext: string;

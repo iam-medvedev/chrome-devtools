@@ -65,7 +65,7 @@ export declare class WatchExpression extends Common.ObjectWrapper.ObjectWrapper<
 declare const enum Events {
     EXPRESSION_UPDATED = "ExpressionUpdated"
 }
-type EventTypes = {
+interface EventTypes {
     [Events.EXPRESSION_UPDATED]: WatchExpression;
-};
+}
 export {};

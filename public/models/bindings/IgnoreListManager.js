@@ -357,7 +357,7 @@ export class IgnoreListManager {
                     item.disabledForUrl = url;
                 }
             }
-            catch (e) {
+            catch {
             }
         }
         this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);

@@ -2,7 +2,7 @@ import * as Types from '../types/types.js';
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
-export type MetaHandlerData = {
+export interface MetaHandlerData {
     traceIsGeneric: boolean;
     traceBounds: Types.Timing.TraceWindowMicroSeconds;
     browserProcessId: Types.Events.ProcessID;
@@ -29,7 +29,7 @@ export type MetaHandlerData = {
     gpuThreadId?: Types.Events.ThreadID;
     viewportRect?: DOMRect;
     devicePixelRatio?: number;
-};
+}
 export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, {
     frame: Types.Events.TraceFrame;
     window: Types.Timing.TraceWindowMicroSeconds;

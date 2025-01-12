@@ -67,7 +67,6 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
     lazySelectorStatsView;
     #parsedTrace = null;
     #traceInsightsSets = null;
-    /* eslint-disable-next-line no-unused-private-class-members */
     #eventToRelatedInsightsMap = null;
     #filmStrip = null;
     #networkRequestDetails;

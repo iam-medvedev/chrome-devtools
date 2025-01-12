@@ -21,10 +21,10 @@ interface LayoutShifts {
 }
 export declare const MAX_CLUSTER_DURATION: Types.Timing.MicroSeconds;
 export declare const MAX_SHIFT_TIME_DELTA: Types.Timing.MicroSeconds;
-type ScoreRecord = {
+interface ScoreRecord {
     ts: number;
     score: number;
-};
+}
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;

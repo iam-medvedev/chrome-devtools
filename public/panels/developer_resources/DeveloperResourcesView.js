@@ -1,6 +1,7 @@
 // Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -71,7 +72,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         this.element.setAttribute('jslog', `${VisualLogging.panel('developer-resources').track({ resize: true })}`);
         const toolbarContainer = this.contentElement.createChild('div', 'developer-resource-view-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        const toolbar = new UI.Toolbar.Toolbar('developer-resource-view-toolbar', toolbarContainer);
+        const toolbar = toolbarContainer.createChild('devtools-toolbar', 'developer-resource-view-toolbar');
         this.textFilterRegExp = null;
         this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByText), 1);
         this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);

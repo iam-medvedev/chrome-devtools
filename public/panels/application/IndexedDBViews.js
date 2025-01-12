@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import '../../ui/components/report_view/report_view.js';
+import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -365,8 +366,8 @@ export class IDBDataView extends UI.View.SimpleView {
         return keyPathStringFragment;
     }
     createEditorToolbar() {
-        const editorToolbar = new UI.Toolbar.Toolbar('data-view-toolbar', this.element);
-        editorToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        const editorToolbar = this.element.createChild('devtools-toolbar', 'data-view-toolbar');
+        editorToolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         editorToolbar.appendToolbarItem(this.refreshButton);
         editorToolbar.appendToolbarItem(this.clearButton);
         editorToolbar.appendToolbarItem(this.deleteSelectedButton);
@@ -436,7 +437,7 @@ export class IDBDataView extends UI.View.SimpleView {
         try {
             result = JSON.parse(keyString);
         }
-        catch (e) {
+        catch {
             result = keyString;
         }
         return result;

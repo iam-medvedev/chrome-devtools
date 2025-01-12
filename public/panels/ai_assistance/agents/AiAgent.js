@@ -17,7 +17,7 @@ export class ConversationContext {
     }
     /**
      * This method is called at the start of `AiAgent.run`.
-     * It will be overriden in subclasses to fetch data related to the context item.
+     * It will be overridden in subclasses to fetch data related to the context item.
      */
     async refresh() {
         return;
@@ -146,16 +146,12 @@ export class AiAgent {
         const declarations = this.#buildFunctionDeclarationsForAida();
         const request = {
             client: Host.AidaClient.CLIENT_NAME,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             current_message: currentMessage,
             preamble: this.preamble,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             historical_contexts: history.length ? history : undefined,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             ...(declarations.length ? { function_declarations: declarations } : {}),
             options: {
                 temperature: AiAgent.validTemperature(this.options.temperature),
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 model_id: this.options.modelId,
             },
             metadata: {
@@ -163,10 +159,8 @@ export class AiAgent {
                 string_session_id: this.#sessionId,
                 user_tier: Host.AidaClient.convertToUserTierEnum(this.userTier),
             },
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             functionality_type: declarations.length ? Host.AidaClient.FunctionalityType.AGENTIC_CHAT :
                 Host.AidaClient.FunctionalityType.CHAT,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             client_feature: this.clientFeature,
         };
         return request;

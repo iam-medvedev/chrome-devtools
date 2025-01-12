@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -9,6 +10,7 @@ import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('CompilerScriptMapping', () => {
     let backend;
     let debuggerWorkspaceBinding;
@@ -21,7 +23,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
         backend = new MockProtocolBackend();
         Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
     });
-    const waitForUISourceCodeAdded = (url, target) => debuggerWorkspaceBinding.waitForUISourceCodeAdded(url, target);
+    const waitForUISourceCodeAdded = (url, target) => debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${url}`, target);
     const waitForUISourceCodeRemoved = (uiSourceCode) => new Promise(resolve => {
         const { eventType, listener } = workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, event => {
             if (event.data === uiSourceCode) {
@@ -255,8 +257,8 @@ describeWithMockConnection('CompilerScriptMapping', () => {
             backend.addScript(target, scriptInfo, sourceMapInfo),
         ]);
         script.debuggerModel.sourceMapManager().detachSourceMap(script);
-        assert.isNull(workspace.uiSourceCodeForURL(`${sourceRoot}/a.ts`), '`a.ts` should not be around anymore');
-        assert.isNull(workspace.uiSourceCodeForURL(`${sourceRoot}/b.ts`), '`b.ts` should not be around anymore');
+        assert.isNull(workspace.uiSourceCodeForURL(urlString `${`${sourceRoot}/a.ts`}`), '`a.ts` should not be around anymore');
+        assert.isNull(workspace.uiSourceCodeForURL(urlString `${`${sourceRoot}/b.ts`}`), '`b.ts` should not be around anymore');
     });
     it('correctly reports source-mapped lines', async () => {
         const target = createTarget();

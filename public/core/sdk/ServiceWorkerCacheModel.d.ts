@@ -57,11 +57,11 @@ export interface CacheStorageContentUpdatedEvent {
     storageBucket: Protocol.Storage.StorageBucket;
     cacheName: string;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.CACHE_ADDED]: CacheEvent;
     [Events.CACHE_REMOVED]: CacheEvent;
     [Events.CACHE_STORAGE_CONTENT_UPDATED]: CacheStorageContentUpdatedEvent;
-};
+}
 export declare class Cache {
     #private;
     storageKey: string;

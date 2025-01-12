@@ -31,6 +31,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -56,7 +57,6 @@ import * as TimelineComponents from './components/components.js';
 import * as TimelineInsights from './components/insights/insights.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { Tracker } from './FreshRecording.js';
-import historyToolbarButtonStyles from './historyToolbarButton.css.js';
 import { IsolateSelector } from './IsolateSelector.js';
 import { AnnotationModifiedEvent, ModificationsManager } from './ModificationsManager.js';
 import * as Overlays from './overlays/overlays.js';
@@ -301,21 +301,21 @@ const UIStrings = {
      */
     backToLiveMetrics: 'Go back to the live metrics page',
     /**
+     * @description Description of the Timeline up/down scroll action that appears in the Performance panel shortcuts dialog.
+     */
+    timelineScrollUpDown: 'Move up/down',
+    /**
+     * @description Description of the Timeline left/right panning action that appears in the Performance panel shortcuts dialog.
+     */
+    timelinePanLeftRight: 'Move left/right',
+    /**
      * @description Description of the Timeline in/out zoom action that appears in the Performance panel shortcuts dialog.
      */
-    timelineZoomInOut: 'Timeline zoom in/out',
+    timelineZoomInOut: 'Zoom in/out',
     /**
      * @description Description of the Timeline fast in/out zoom action that appears in the Performance panel shortcuts dialog.
      */
-    timelineFastZoomInOut: 'Timeline fast zoom in/out',
-    /**
-     * @description Description of the Timeline up/down scroll action that appears in the Performance panel shortcuts dialog.
-     */
-    timelineScrollUpDown: 'Timeline up/down',
-    /**
-     * @description Description of the Timeline right/left panning action that appears in the Performance panel shortcuts dialog.
-     */
-    timelinePanLeftRight: 'Timeline right/left',
+    timelineFastZoomInOut: 'Fast zoom in/out',
     /**
      * @description Title for the Dim 3rd Parties checkbox.
      */
@@ -488,9 +488,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#thirdPartyTracksSetting.setTitle(i18nString(UIStrings.showCustomtracks));
         const timelineToolbarContainer = this.element.createChild('div', 'timeline-toolbar-container');
         timelineToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        this.panelToolbar = new UI.Toolbar.Toolbar('timeline-main-toolbar', timelineToolbarContainer);
-        this.panelToolbar.makeWrappable(true);
-        this.panelRightToolbar = new UI.Toolbar.Toolbar('', timelineToolbarContainer);
+        this.panelToolbar = timelineToolbarContainer.createChild('devtools-toolbar', 'timeline-main-toolbar');
+        this.panelToolbar.wrappable = true;
+        this.panelRightToolbar = timelineToolbarContainer.createChild('devtools-toolbar');
         if (!isNode) {
             this.createSettingsPane();
             this.updateShowSettingsToolbarButton();
@@ -514,6 +514,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.getMainFlameChart().addEventListener("ChartPlayableStateChange" /* PerfUI.FlameChart.Events.CHART_PLAYABLE_STATE_CHANGED */, this.#onChartPlayableStateChangeBound, this);
         this.#onMainEntryHovered = this.#onEntryHovered.bind(this, this.flameChart.getMainDataProvider());
         this.flameChart.getMainFlameChart().addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, this.#onMainEntryHovered);
+        this.flameChart.addEventListener("EntryLabelAnnotationClicked" /* TimelineFlameChartViewEvents.ENTRY_LABEL_ANNOTATION_CLICKED */, event => {
+            const selection = selectionFromEvent(event.data.entry);
+            this.select(selection);
+        });
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this.flameChart, null);
         this.searchableViewInternal.setMinimumSize(0, 100);
         this.searchableViewInternal.setMinimalSearchQuerySize(2); // At 1 it can introduce a bit of jank.
@@ -658,7 +662,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     #onFieldDataChanged() {
         const recs = Utils.Helpers.getThrottlingRecommendations();
-        this.cpuThrottlingSelect?.updateRecommendedRate(recs.cpuRate);
+        this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
         this.networkThrottlingSelect?.updateRecommendedConditions(recs.networkConditions);
     }
     loadFromEvents(events) {
@@ -941,7 +945,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.panelToolbar.appendSeparator();
         }
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
-        this.panelToolbar.registerCSSFiles([historyToolbarButtonStyles]);
         this.panelToolbar.appendSeparator();
         // View
         this.panelToolbar.appendSeparator();
@@ -954,7 +957,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.createSettingCheckbox(this.showMemorySetting, i18nString(UIStrings.showMemoryTimeline));
         this.panelToolbar.appendToolbarItem(this.showMemoryToolbarCheckbox);
         // GC
-        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
+        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('components.collect-garbage'));
         // Ignore list setting
         this.panelToolbar.appendSeparator();
         const showIgnoreListSetting = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
@@ -975,21 +978,20 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.panelRightToolbar.appendSeparator();
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
-        if (Root.Runtime.experiments.isEnabled("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */)) {
-            this.#setupNavigationSetting();
-            this.#shortcutsDialog.prependElement(this.#navigationRadioButtons);
-            const dialogToolbarItem = new UI.Toolbar.ToolbarItem(this.#shortcutsDialog);
-            dialogToolbarItem.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('timeline.shortcuts-dialog-toggle')}`);
-            this.panelRightToolbar.appendToolbarItem(dialogToolbarItem);
-            // The setting could have been changed from the Devtools Settings. Therefore, we
-            // need to update the radio buttons selection when the dialog is open.
-            this.#shortcutsDialog.addEventListener('click', this.#updateNavigationSettingSelection.bind(this));
-        }
     }
     #setupNavigationSetting() {
         const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
         const hideTheDialogForTests = localStorage.getItem('hide-shortcuts-dialog-for-test');
         const userHadShortcutsDialogOpenedOnce = this.#userHadShortcutsDialogOpenedOnce.get();
+        this.#shortcutsDialog.prependElement(this.#navigationRadioButtons);
+        // Add the shortcuts dialog button to the toolbar.
+        const dialogToolbarItem = new UI.Toolbar.ToolbarItem(this.#shortcutsDialog);
+        dialogToolbarItem.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('timeline.shortcuts-dialog-toggle')}`);
+        this.panelRightToolbar.appendToolbarItem(dialogToolbarItem);
+        this.#updateNavigationSettingSelection();
+        // The setting could have been changed from the Devtools Settings. Therefore, we
+        // need to update the radio buttons selection when the dialog is open.
+        this.#shortcutsDialog.addEventListener('click', this.#updateNavigationSettingSelection.bind(this));
         this.#shortcutsDialog.data = {
             shortcuts: this.#getShortcutsInfo(currentNavSetting === 'classic'),
             open: !userHadShortcutsDialogOpenedOnce && hideTheDialogForTests !== 'true' &&
@@ -1025,23 +1027,26 @@ export class TimelinePanel extends UI.Panel.Panel {
     #getShortcutsInfo(isNavClassic) {
         if (isNavClassic) {
             return [
-                { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll'], ['Shift', '↑/↓']] },
-                { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll'], ['W/S'], ['+/-']] },
+                { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll up/down'], ['Shift', '↑/↓']] },
+                {
+                    title: i18nString(UIStrings.timelinePanLeftRight),
+                    bindings: [['Shift', '←/→'], ['Scroll left/right'], ['A/D']]
+                },
+                { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll up/down'], ['W/S'], ['+/-']] },
                 { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
-                { title: i18nString(UIStrings.timelinePanLeftRight), bindings: [['Shift', '←/→'], ['A/D']] },
             ];
         }
         return [
-            { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Scroll'], ['Shift', '↑/↓']] },
-            {
-                title: i18nString(UIStrings.timelineZoomInOut),
-                bindings: [[Host.Platform.isMac() ? '⌘' : 'Ctrl', 'Scroll'], ['W/S'], ['+/-']],
-            },
-            { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
+            { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Scroll up/down'], ['Shift', '↑/↓']] },
             {
                 title: i18nString(UIStrings.timelinePanLeftRight),
-                bindings: [['Shift', 'Scroll'], ['Shift', '←/→'], ['A/D']],
+                bindings: [['Shift', 'Scroll up/down'], ['Scroll left/right'], ['Shift', '←/→'], ['A/D']],
             },
+            {
+                title: i18nString(UIStrings.timelineZoomInOut),
+                bindings: [[Host.Platform.isMac() ? '⌘' : 'Ctrl', 'Scroll up/down'], ['W/S'], ['+/-']],
+            },
+            { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
         ];
     }
     createSettingsPane() {
@@ -1053,42 +1058,31 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureSelectorStatsSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
-        this.settingsPane = new UI.Widget.HBox();
-        this.settingsPane.element.classList.add('timeline-settings-pane');
-        this.settingsPane.element.setAttribute('jslog', `${VisualLogging.pane('timeline-settings-pane').track({ resize: true })}`);
-        this.settingsPane.show(this.element);
-        const captureToolbar = new UI.Toolbar.Toolbar('', this.settingsPane.element);
-        captureToolbar.element.classList.add('flex-auto');
-        captureToolbar.makeVertical();
-        captureToolbar.appendToolbarItem(this.createSettingCheckbox(this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
-        captureToolbar.appendToolbarItem(this.createSettingCheckbox(this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
-        captureToolbar.appendToolbarItem(this.createSettingCheckbox(this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
-        const throttlingPane = new UI.Widget.VBox();
-        throttlingPane.element.classList.add('flex-auto');
-        throttlingPane.show(this.settingsPane.element);
-        const cpuThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
-        cpuThrottlingToolbar.appendText(i18nString(UIStrings.cpu));
+        this.settingsPane = this.element.createChild('div', 'timeline-settings-pane');
+        this.settingsPane.setAttribute('jslog', `${VisualLogging.pane('timeline-settings-pane').track({ resize: true })}`);
+        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
+        const cpuThrottlingPane = this.settingsPane.createChild('div');
+        cpuThrottlingPane.append(i18nString(UIStrings.cpu));
         this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
-        this.cpuThrottlingSelect.control.setMinWidth(200);
-        this.cpuThrottlingSelect.control.setMaxWidth(200);
-        cpuThrottlingToolbar.appendToolbarItem(this.cpuThrottlingSelect.control);
-        const networkThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
-        networkThrottlingToolbar.appendText(i18nString(UIStrings.network));
-        networkThrottlingToolbar.appendToolbarItem(this.createNetworkConditionsSelectToolbarItem());
-        const thirdPartyToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
-        thirdPartyToolbar.makeVertical();
+        cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
+        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
+        const networkThrottlingPane = this.settingsPane.createChild('div');
+        networkThrottlingPane.append(i18nString(UIStrings.network));
+        networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
+        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
         const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString(UIStrings.showDataAddedByExtensions));
         const localLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/performance/extension', i18nString(UIStrings.learnMore));
-        localLink.style.paddingLeft = '5px';
+        // Has to be done in JS because the element is inserted into the
+        // checkbox's shadow DOM so any styling into timelinePanel.css would
+        // not apply.
+        localLink.style.marginLeft = '5px';
         thirdPartyCheckbox.element.shadowRoot?.appendChild(localLink);
-        thirdPartyToolbar.appendToolbarItem(thirdPartyCheckbox);
+        this.settingsPane.append(thirdPartyCheckbox.element);
         this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));
         this.updateSettingsPaneVisibility();
     }
     createNetworkConditionsSelectToolbarItem() {
         const toolbarItem = new UI.Toolbar.ToolbarComboBox(null, i18nString(UIStrings.networkConditions));
-        toolbarItem.setMinWidth(200);
-        toolbarItem.setMaxWidth(200);
         this.networkThrottlingSelect =
             MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(toolbarItem.selectElement());
         return toolbarItem;
@@ -1314,11 +1308,11 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         if (this.showSettingsPaneSetting.get()) {
             this.showSettingsPaneButton.setToggled(true);
-            this.settingsPane.showWidget();
+            this.settingsPane?.classList.remove('hidden');
         }
         else {
             this.showSettingsPaneButton.setToggled(false);
-            this.settingsPane.hideWidget();
+            this.settingsPane?.classList.add('hidden');
         }
     }
     updateShowSettingsToolbarButton() {
@@ -1808,9 +1802,11 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
         }
         this.#showSidebarIfRequired();
-        // When the timeline is loaded for the first time, log what navigation setting is selected.
-        // This will allow us to get an estimate number of people using each option.
-        if (this.#traceEngineModel.size() === 1) {
+        // When the timeline is loaded for the first time, setup the shortcuts dialog and log what navigation setting is selected.
+        // Logging the setting on the first timeline load will allow us to get an estimate number of people using each option.
+        if (this.#traceEngineModel.size() === 1 &&
+            Root.Runtime.experiments.isEnabled("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */)) {
+            this.#setupNavigationSetting();
             if (Common.Settings.moduleSetting('flamechart-selected-navigation').get() === 'classic') {
                 Host.userMetrics.navigationSettingAtFirstTimelineLoad(0 /* Host.UserMetrics.TimelineNavigationSetting.CLASSIC_AT_SESSION_FIRST_TRACE */);
             }
@@ -1945,7 +1941,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.landingPage.detach();
         // Hide pane settings in trace view to conserve UI space, but preserve underlying setting.
         this.showSettingsPaneButton?.setToggled(false);
-        this.settingsPane?.hideWidget();
+        this.settingsPane?.classList.add('hidden');
     }
     async loadingStarted() {
         this.#changeView({ mode: 'STATUS_PANE_OVERLAY' });

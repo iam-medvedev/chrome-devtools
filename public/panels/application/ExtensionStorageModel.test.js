@@ -1,10 +1,12 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Resources from './application.js';
+const { urlString } = Platform.DevToolsPath;
 class ExtensionStorageListener {
     #model;
     #storagesWatched;
@@ -55,7 +57,7 @@ describeWithMockConnection('ExtensionStorageModel', () => {
         return {
             id: id,
             uniqueId: '',
-            origin: origin,
+            origin: urlString `${origin}`,
             name: 'Test Extension',
         };
     };

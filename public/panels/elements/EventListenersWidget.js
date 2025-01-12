@@ -95,7 +95,7 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.eventListenersView = new EventListeners.EventListenersView.EventListenersView(this.update.bind(this));
         this.eventListenersView.show(this.element);
         this.element.setAttribute('jslog', `${VisualLogging.pane('elements.event-listeners').track({ resize: true })}`);
-        this.toolbarItemsInternal.push(UI.Toolbar.Toolbar.createActionButtonForId('elements.refresh-event-listeners'));
+        this.toolbarItemsInternal.push(UI.Toolbar.Toolbar.createActionButton('elements.refresh-event-listeners'));
         this.toolbarItemsInternal.push(new UI.Toolbar.ToolbarSettingCheckbox(this.showForAncestorsSetting, i18nString(UIStrings.showListenersOnTheAncestors), i18nString(UIStrings.ancestors)));
         const dispatchFilter = new UI.Toolbar.ToolbarComboBox(this.onDispatchFilterTypeChanged.bind(this), i18nString(UIStrings.eventListenersCategory));
         dispatchFilter.element.setAttribute('jslog', `${VisualLogging.filterDropdown().track({ change: true })}`);

@@ -31,8 +31,8 @@ export declare const enum Events {
 export interface MainStorageKeyChangedEvent {
     mainStorageKey: string;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.STORAGE_KEY_ADDED]: string;
     [Events.STORAGE_KEY_REMOVED]: string;
     [Events.MAIN_STORAGE_KEY_CHANGED]: MainStorageKeyChangedEvent;
-};
+}

@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -9,12 +10,13 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Coverage from '../coverage/coverage.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('CoveragePlugin', () => {
     let target;
     let uiSourceCode;
     let model;
     let coverageInfo;
-    const URL = 'test.js';
+    const URL = urlString `test.js`;
     beforeEach(() => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });

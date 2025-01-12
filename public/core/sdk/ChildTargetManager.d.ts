@@ -38,8 +38,8 @@ export declare const enum Events {
     TARGET_DESTROYED = "TargetDestroyed",
     TARGET_INFO_CHANGED = "TargetInfoChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TARGET_CREATED]: Protocol.Target.TargetInfo;
     [Events.TARGET_DESTROYED]: Protocol.Target.TargetID;
     [Events.TARGET_INFO_CHANGED]: Protocol.Target.TargetInfo;
-};
+}

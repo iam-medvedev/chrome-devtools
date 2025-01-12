@@ -22,6 +22,6 @@ export interface ZoomChangedEvent {
     from: number;
     to: number;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ZOOM_CHANGED]: ZoomChangedEvent;
-};
+}

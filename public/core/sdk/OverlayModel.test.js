@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('OverlayModel', () => {
-    const DOCUMENT_URL_FOR_TEST = 'https://example.com/';
+    const DOCUMENT_URL_FOR_TEST = urlString `https://example.com/`;
     let cssModel;
     let windowControls;
     let overlayModel;
@@ -66,7 +68,7 @@ describeWithMockConnection('OverlayModel', () => {
         assert.isFalse(checkStyleSheet, 'Style should not be initialized if no CSS stylesheets are present');
         // Add a style sheet and verify it gets added
         cssModel.styleSheetAdded(header);
-        const styleSheetIds = cssModel.getStyleSheetIdsForURL(`${DOCUMENT_URL_FOR_TEST}styles.css`);
+        const styleSheetIds = cssModel.getStyleSheetIdsForURL(urlString `${`${DOCUMENT_URL_FOR_TEST}styles.css`}`);
         assert.deepEqual(styleSheetIds, ['stylesheet']);
         // Verify style sheet gets initialized
         const isInitialized = await windowControls.initializeStyleSheetText(DOCUMENT_URL_FOR_TEST);
@@ -86,7 +88,7 @@ describeWithMockConnection('OverlayModel', () => {
         assert.isUndefined(styleSheet, 'Expect overlay to not be toggled if no styles are present');
         // Add style sheet and verify it gets added
         cssModel.styleSheetAdded(header);
-        const styleSheetIds = cssModel.getStyleSheetIdsForURL(`${DOCUMENT_URL_FOR_TEST}styles.css`);
+        const styleSheetIds = cssModel.getStyleSheetIdsForURL(urlString `${`${DOCUMENT_URL_FOR_TEST}styles.css`}`);
         assert.deepEqual(styleSheetIds, ['stylesheet']);
         // Initialize style sheet & verify it gets initialized
         const isInitialized = await windowControls.initializeStyleSheetText(DOCUMENT_URL_FOR_TEST);

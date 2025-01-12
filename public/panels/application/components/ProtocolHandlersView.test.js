@@ -1,9 +1,11 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ApplicationComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 async function renderProtocolHandlersComponent(manifestLink, protocolHandlers) {
     const component = new ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView();
     renderElementIntoDOM(component);
@@ -25,7 +27,7 @@ describeWithEnvironment('ProtocolHandlersView', () => {
                 'invalid-protocol': 'this is an invalid protocol entry for testing purposes',
             },
         ];
-        const manifestURL = 'https://www.example.com/index.html/manifest-protocol.json';
+        const manifestURL = urlString `https://www.example.com/index.html/manifest-protocol.json`;
         const component = await renderProtocolHandlersComponent(manifestURL, protocols);
         const statusElement = component.shadowRoot.querySelector('.protocol-handlers-row.status');
         assert.instanceOf(statusElement, HTMLElement);
@@ -40,7 +42,7 @@ describeWithEnvironment('ProtocolHandlersView', () => {
     });
     it('renders protocols not detected status message', async () => {
         const protocols = [];
-        const manifestURL = 'https://www.example.com/index.html/manifest-protocol.json';
+        const manifestURL = urlString `https://www.example.com/index.html/manifest-protocol.json`;
         const component = await renderProtocolHandlersComponent(manifestURL, protocols);
         const noStatusElement = component.shadowRoot.querySelector('.protocol-handlers-row.status');
         assert.instanceOf(noStatusElement, HTMLElement);

@@ -107,6 +107,15 @@ export class NetworkManager extends SDKModel {
         Common.Settings.Settings.instance()
             .moduleSetting('cache-disabled')
             .addChangeListener(this.cacheDisabledSettingChanged, this);
+        Common.Settings.Settings.instance()
+            .createSetting('cookie-control-override-enabled', undefined)
+            .addChangeListener(this.cookieControlFlagsSettingChanged, this);
+        Common.Settings.Settings.instance()
+            .createSetting('grace-period-mitigation-disabled', undefined)
+            .addChangeListener(this.cookieControlFlagsSettingChanged, this);
+        Common.Settings.Settings.instance()
+            .createSetting('heuristic-mitigation-disabled', undefined)
+            .addChangeListener(this.cookieControlFlagsSettingChanged, this);
     }
     static forRequest(request) {
         return requestToManagerMap.get(request) || null;
@@ -240,6 +249,16 @@ export class NetworkManager extends SDKModel {
     }
     cacheDisabledSettingChanged({ data: enabled }) {
         void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: enabled });
+    }
+    cookieControlFlagsSettingChanged() {
+        const overridesEnabled = Boolean(Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', undefined).get());
+        const gracePeriodEnabled = Boolean(Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', undefined).get());
+        const heuristicEnabled = Boolean(Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', undefined).get());
+        void this.#networkAgent.invoke_setCookieControls({
+            enableThirdPartyCookieRestriction: overridesEnabled,
+            disableThirdPartyCookieMetadata: gracePeriodEnabled,
+            disableThirdPartyCookieHeuristics: heuristicEnabled,
+        });
     }
     dispose() {
         Common.Settings.Settings.instance()

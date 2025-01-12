@@ -54,9 +54,9 @@ export declare class ControlPane extends Common.ObjectWrapper.ObjectWrapper<Even
 declare const enum Events {
     METRIC_CHANGED = "MetricChanged"
 }
-type EventTypes = {
+interface EventTypes {
     [Events.METRIC_CHANGED]: void;
-};
+}
 export declare class MetricIndicator {
     private info;
     element: HTMLElement;

@@ -11,8 +11,7 @@ function setCodeMirrorContent(editor, content) {
     });
 }
 function setBreakpointType(dialog, newType) {
-    const toolbar = dialog.contentElement.querySelector('.toolbar');
-    const selectElement = toolbar.shadowRoot.querySelector('select');
+    const selectElement = dialog.contentElement.querySelector('devtools-toolbar select');
     selectElement.value = newType;
     selectElement.dispatchEvent(new Event('change'));
 }
@@ -46,7 +45,7 @@ describeWithEnvironment('BreakpointEditDialog', () => {
             const dialog = new Sources.BreakpointEditDialog.BreakpointEditDialog(0, '', false, resolve);
             const { editorForTest: { editor } } = dialog;
             setCodeMirrorContent(editor, 'x === 5');
-            dialog.contentElement.querySelector('devtools-icon').click();
+            dialog.contentElement.querySelector('.dialog-header > devtools-icon').click();
         });
         const { committed, condition } = await resultPromise;
         assert.isTrue(committed);

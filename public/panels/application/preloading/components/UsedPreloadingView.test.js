@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
 import { getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
@@ -8,6 +9,7 @@ import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as PreloadingComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 async function renderUsedPreloadingView(data) {
     const component = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     component.data = data;
@@ -19,14 +21,14 @@ async function renderUsedPreloadingView(data) {
 describeWithEnvironment('UsedPreloadingView', () => {
     it('renderes prefetch used', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html',
+            pageURL: urlString `https://example.com/prefetched.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html',
+                        url: urlString `https://example.com/prefetched.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
@@ -40,7 +42,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -70,14 +72,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renderes prerender used', async () => {
         const data = {
-            pageURL: 'https://example.com/prerendered.html',
+            pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html',
+                        url: urlString `https://example.com/prefetched.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
@@ -91,7 +93,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
@@ -121,14 +123,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renderes prefetch failed', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html',
+            pageURL: urlString `https://example.com/prefetched.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html',
+                        url: urlString `https://example.com/prefetched.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -142,7 +144,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -174,14 +176,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renderes prerender failed', async () => {
         const data = {
-            pageURL: 'https://example.com/prerendered.html',
+            pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html',
+                        url: urlString `https://example.com/prefetched.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
@@ -195,7 +197,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -227,14 +229,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renderes prerender failed due to header mismatch', async () => {
         const data = {
-            pageURL: 'https://example.com/prerendered.html',
+            pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html',
+                        url: urlString `https://example.com/prefetched.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
@@ -248,7 +250,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -296,14 +298,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renderes prerender -> prefetch downgraded and used', async () => {
         const data = {
-            pageURL: 'https://example.com/downgraded.html',
+            pageURL: urlString `https://example.com/downgraded.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/downgraded.html',
+                        url: urlString `https://example.com/downgraded.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
@@ -317,7 +319,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/downgraded.html',
+                        url: urlString `https://example.com/downgraded.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -349,7 +351,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renders no preloading attempts used', async () => {
         const data = {
-            pageURL: 'https://example.com/no-preloads.html',
+            pageURL: urlString `https://example.com/no-preloads.html`,
             previousAttempts: [],
             currentAttempts: [],
         };
@@ -370,14 +372,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('ignores hash part of URL for prefetch', async () => {
         const data = {
-            pageURL: 'https://example.com/prefetched.html#alpha',
+            pageURL: urlString `https://example.com/prefetched.html#alpha`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html#beta',
+                        url: urlString `https://example.com/prefetched.html#beta`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
@@ -407,14 +409,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     it('doesn\'t ignore hash part of URL for prerender', async () => {
         // Prerender uses more strict URL matcher and distinguish URLs by fragments.
         const data = {
-            pageURL: 'https://example.com/prerendered.html#alpha',
+            pageURL: urlString `https://example.com/prerendered.html#alpha`,
             previousAttempts: [
                 {
                     action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html#beta',
+                        url: urlString `https://example.com/prerendered.html#beta`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
@@ -452,14 +454,14 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renders no preloading attempts used with mismatch', async () => {
         const data = {
-            pageURL: 'https://example.com/no-preloads.html',
+            pageURL: urlString `https://example.com/no-preloads.html`,
             previousAttempts: [
                 {
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetched.html',
+                        url: urlString `https://example.com/prefetched.html`,
                     },
                     pipelineId: 'pipelineId:1',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
@@ -473,7 +475,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerendered.html',
+                        url: urlString `https://example.com/prerendered.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -507,7 +509,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
     });
     it('renders preloads initialized by this page', async () => {
         const data = {
-            pageURL: 'https://example.com/no-preloads.html',
+            pageURL: urlString `https://example.com/no-preloads.html`,
             previousAttempts: [],
             currentAttempts: [
                 {
@@ -515,7 +517,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetch-not-triggered.html',
+                        url: urlString `https://example.com/prefetch-not-triggered.html`,
                     },
                     pipelineId: null,
                     status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
@@ -529,7 +531,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetch-running.html',
+                        url: urlString `https://example.com/prefetch-running.html`,
                     },
                     pipelineId: 'pipelineId:2',
                     status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
@@ -543,7 +545,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetch-ready.html',
+                        url: urlString `https://example.com/prefetch-ready.html`,
                     },
                     pipelineId: 'pipelineId:3',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
@@ -557,7 +559,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/prefetch-failure.html',
+                        url: urlString `https://example.com/prefetch-failure.html`,
                     },
                     pipelineId: 'pipelineId:4',
                     status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
@@ -571,7 +573,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerender-pending.html',
+                        url: urlString `https://example.com/prerender-pending.html`,
                     },
                     pipelineId: 'pipelineId:5',
                     status: "Pending" /* SDK.PreloadingModel.PreloadingStatus.PENDING */,
@@ -586,7 +588,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     key: {
                         loaderId: 'loaderId:1',
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                        url: 'https://example.com/prerender-ready.html',
+                        url: urlString `https://example.com/prerender-ready.html`,
                     },
                     pipelineId: 'pipelineId:6',
                     status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,

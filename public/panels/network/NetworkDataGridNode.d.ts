@@ -15,10 +15,10 @@ export interface RequestActivatedEvent {
     takeFocus?: boolean;
     tab?: NetworkForward.UIRequestLocation.UIRequestTabs;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.RequestSelected]: SDK.NetworkRequest.NetworkRequest;
     [Events.RequestActivated]: RequestActivatedEvent;
-};
+}
 export interface NetworkLogViewInterface extends Common.EventTarget.EventTarget<EventTypes> {
     onLoadFromFile(file: File): Promise<void>;
     nodeForRequest(request: SDK.NetworkRequest.NetworkRequest): NetworkRequestNode | null;

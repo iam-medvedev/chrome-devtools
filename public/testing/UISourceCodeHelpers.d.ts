@@ -1,5 +1,5 @@
 import * as Common from '../core/common/common.js';
-import type * as Platform from '../core/platform/platform.js';
+import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
 import type * as Protocol from '../generated/protocol.js';
 import * as Bindings from '../models/bindings/bindings.js';

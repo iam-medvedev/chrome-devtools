@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getCleanTextContentFromElements } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('AppManifestView', () => {
     const FIXTURES_96X96_URL = `${new URL('./fixtures/96x96.png', import.meta.url)}`;
     const FIXTURES_320X320_URL = `${new URL('./fixtures/320x320.png', import.meta.url)}`;
@@ -32,7 +34,7 @@ describeWithMockConnection('AppManifestView', () => {
     it('shows report view once manifest available', async () => {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
-        const URL = 'http://example.com';
+        const URL = urlString `http://example.com`;
         const fetchAppManifest = sinon.stub(resourceTreeModel, 'fetchAppManifest');
         fetchAppManifest.onCall(0).resolves({ url: URL, data: null, errors: [] });
         fetchAppManifest.onCall(1).resolves({ url: URL, data: '{}', errors: [] });
@@ -63,7 +65,7 @@ describeWithMockConnection('AppManifestView', () => {
     it('shows pwa wco if available', async () => {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
-        const URL = 'https://www.example.com';
+        const URL = urlString `https://www.example.com`;
         const fetchAppManifest = sinon.stub(resourceTreeModel, 'fetchAppManifest');
         fetchAppManifest.resolves({ url: URL, data: '{"display_override": ["window-controls-overlay"]}', errors: [] });
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
@@ -97,7 +99,7 @@ describeWithMockConnection('AppManifestView', () => {
     async function renderWithWarnings(manifest) {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
-        const URL = window.location.origin;
+        const URL = urlString `${window.location.origin}`;
         const fetchAppManifest = sinon.stub(resourceTreeModel, 'fetchAppManifest');
         fetchAppManifest.resolves({ url: URL, data: manifest, errors: [] });
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);

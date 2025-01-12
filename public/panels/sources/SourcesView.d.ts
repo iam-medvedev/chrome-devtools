@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -84,10 +85,10 @@ export interface EditorClosedEvent {
     uiSourceCode: Workspace.UISourceCode.UISourceCode;
     wasSelected: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.EDITOR_CLOSED]: EditorClosedEvent;
     [Events.EDITOR_SELECTED]: Workspace.UISourceCode.UISourceCode;
-};
+}
 export interface EditorAction {
     getOrCreateButton(sourcesView: SourcesView): UI.Toolbar.ToolbarButton;
 }

@@ -69,9 +69,9 @@ export declare class DetailsView extends DetailsView_base {
 export declare const enum Events {
     TAB_CLOSED = "TabClosed"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TAB_CLOSED]: number;
-};
+}
 export declare class ElementDetailsView extends UI.Widget.Widget {
     #private;
     constructor(controller: OverviewController, domModel: SDK.DOMModel.DOMModel, cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier);

@@ -1,9 +1,9 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-export type BuildOptions = {
+export interface BuildOptions {
     sanitize: boolean;
-};
+}
 export declare class Log {
     static pseudoWallTime(request: SDK.NetworkRequest.NetworkRequest, monotonicTime: number): Date;
     static build(requests: SDK.NetworkRequest.NetworkRequest[], options: BuildOptions): Promise<LogDTO>;

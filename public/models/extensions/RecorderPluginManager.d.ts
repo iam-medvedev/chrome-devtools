@@ -1,12 +1,12 @@
 import * as Common from '../../core/common/common.js';
 import type { RecorderExtensionEndpoint } from './RecorderExtensionEndpoint.js';
-export type ViewDescriptor = {
+export interface ViewDescriptor {
     id: string;
     title: string;
     pagePath: string;
     onShown: () => void;
     onHidden: () => void;
-};
+}
 export declare class RecorderPluginManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     static instance(): RecorderPluginManager;
@@ -24,9 +24,9 @@ export declare const enum Events {
     VIEW_REGISTERED = "viewRegistered",
     SHOW_VIEW_REQUESTED = "showViewRequested"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.PLUGIN_ADDED]: RecorderExtensionEndpoint;
     [Events.PLUGIN_REMOVED]: RecorderExtensionEndpoint;
     [Events.VIEW_REGISTERED]: ViewDescriptor;
     [Events.SHOW_VIEW_REQUESTED]: ViewDescriptor;
-};
+}

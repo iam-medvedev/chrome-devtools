@@ -27,9 +27,9 @@ export declare class ConsoleSidebar extends ConsoleSidebar_base {
 export declare const enum Events {
     FILTER_SELECTED = "FilterSelected"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.FILTER_SELECTED]: void;
-};
+}
 declare class ConsoleSidebarTreeElement extends UI.TreeOutline.TreeElement {
     protected filterInternal: ConsoleFilter;
     constructor(title: string | Node, filter: ConsoleFilter);

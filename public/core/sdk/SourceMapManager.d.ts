@@ -22,7 +22,7 @@ export declare enum Events {
     SourceMapAttached = "SourceMapAttached",
     SourceMapDetached = "SourceMapDetached"
 }
-export type EventTypes<T extends FrameAssociated> = {
+export interface EventTypes<T extends FrameAssociated> {
     [Events.SourceMapWillAttach]: {
         client: T;
     };
@@ -37,4 +37,4 @@ export type EventTypes<T extends FrameAssociated> = {
         client: T;
         sourceMap: SourceMap;
     };
-};
+}

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../core/common/common.js';
+import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Bindings from '../models/bindings/bindings.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as TextUtils from '../models/text_utils/text_utils.js';
 import * as Workspace from '../models/workspace/workspace.js';
+const { urlString } = Platform.DevToolsPath;
 export function createContentProviderUISourceCodes(options) {
     const workspace = Workspace.Workspace.WorkspaceImpl.instance();
     const projectType = options.projectType || Workspace.Workspace.projectTypes.Formatter;
@@ -65,7 +67,7 @@ export function createFileSystemUISourceCode(options) {
     const workspace = Workspace.Workspace.WorkspaceImpl.instance();
     const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
     const fileSystemWorkspaceBinding = new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, workspace);
-    const fileSystemPath = (options.fileSystemPath || '');
+    const fileSystemPath = urlString `${options.fileSystemPath || ''}`;
     const type = options.type || '';
     const content = options.content || '';
     const platformFileSystem = new TestPlatformFileSystem(fileSystemPath, type, options.mimeType, Boolean(options.autoMapping));
@@ -77,7 +79,7 @@ export function createFileSystemUISourceCode(options) {
 }
 export function setupMockedUISourceCode(url = 'https://example.com/') {
     const projectStub = sinon.createStubInstance(Bindings.ContentProviderBasedProject.ContentProviderBasedProject);
-    const urlStringTagExample = url;
+    const urlStringTagExample = urlString `${url}`;
     const contentTypeStub = sinon.createStubInstance(Common.ResourceType.ResourceType);
     const uiSourceCode = new Workspace.UISourceCode.UISourceCode(projectStub, urlStringTagExample, contentTypeStub);
     return { sut: uiSourceCode, projectStub, contentTypeStub };

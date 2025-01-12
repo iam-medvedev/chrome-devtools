@@ -1,9 +1,10 @@
+import './Toolbar.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { Size } from './Geometry.js';
-import { type ToolbarButton } from './Toolbar.js';
+import type { ToolbarButton } from './Toolbar.js';
 import type { TreeOutline } from './Treeoutline.js';
 declare global {
     interface HTMLElementTagNameMap {

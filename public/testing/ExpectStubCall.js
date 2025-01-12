@@ -6,10 +6,9 @@ export function expectCall(stub, options = {}) {
     return new Promise(resolve => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stub.callsFake(function (...args) {
-            if (stub.callCount < (options.callCount ?? 1)) {
-                return undefined;
+            if (stub.callCount >= (options.callCount ?? 1)) {
+                resolve(args);
             }
-            resolve(args);
             return (options.fakeFn ? options.fakeFn.apply(this, args) : undefined);
         });
     });

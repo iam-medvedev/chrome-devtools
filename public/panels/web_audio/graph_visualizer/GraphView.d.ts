@@ -61,6 +61,6 @@ export declare class GraphView extends Common.ObjectWrapper.ObjectWrapper<EventT
 export declare const enum Events {
     SHOULD_REDRAW = "ShouldRedraw"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.SHOULD_REDRAW]: GraphView;
-};
+}

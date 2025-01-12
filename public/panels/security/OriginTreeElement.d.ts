@@ -16,6 +16,6 @@ export declare class OriginTreeElement extends SecurityPanelSidebarTreeElement {
 }
 declare global {
     interface HTMLElementEventMap {
-        'showorigin': ShowOriginEvent;
+        showorigin: ShowOriginEvent;
     }
 }

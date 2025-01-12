@@ -491,8 +491,8 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         const retainedSizePercent = this.retainedSize / snapshot.totalSize * 100.0;
         this.data = {
             distance: this.toUIDistance(this.distance),
-            shallowSize: Platform.NumberUtilities.withThousandsSeparator(this.shallowSize),
-            retainedSize: Platform.NumberUtilities.withThousandsSeparator(this.retainedSize),
+            shallowSize: i18n.ByteUtilities.bytesToString(this.shallowSize),
+            retainedSize: i18n.ByteUtilities.bytesToString(this.retainedSize),
             'shallowSize-percent': this.toPercentString(shallowSizePercent),
             'retainedSize-percent': this.toPercentString(retainedSizePercent),
         };
@@ -867,11 +867,11 @@ export class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectNode {
             data['addedCount'] = '';
             data['addedSize'] = '';
             data['removedCount'] = '\u2022';
-            data['removedSize'] = Platform.NumberUtilities.withThousandsSeparator(this.shallowSize || 0);
+            data['removedSize'] = i18n.ByteUtilities.bytesToString(this.shallowSize || 0);
         }
         else {
             data['addedCount'] = '\u2022';
-            data['addedSize'] = Platform.NumberUtilities.withThousandsSeparator(this.shallowSize || 0);
+            data['addedSize'] = i18n.ByteUtilities.bytesToString(this.shallowSize || 0);
             data['removedCount'] = '';
             data['removedSize'] = '';
         }
@@ -945,8 +945,8 @@ export class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
             object: this.nameInternal,
             count: Platform.NumberUtilities.withThousandsSeparator(this.count),
             distance: this.toUIDistance(this.distance),
-            shallowSize: Platform.NumberUtilities.withThousandsSeparator(this.shallowSize),
-            retainedSize: Platform.NumberUtilities.withThousandsSeparator(this.retainedSize),
+            shallowSize: i18n.ByteUtilities.bytesToString(this.shallowSize),
+            retainedSize: i18n.ByteUtilities.bytesToString(this.retainedSize),
             'shallowSize-percent': this.toPercentString(shallowSizePercent),
             'retainedSize-percent': this.toPercentString(retainedSizePercent),
         };
@@ -1083,9 +1083,9 @@ export class HeapSnapshotDiffNode extends HeapSnapshotGridNode {
             removedCount: Platform.NumberUtilities.withThousandsSeparator(this.removedCount),
             countDelta: this.signForDelta(this.countDelta) +
                 Platform.NumberUtilities.withThousandsSeparator(Math.abs(this.countDelta)),
-            addedSize: Platform.NumberUtilities.withThousandsSeparator(this.addedSize),
-            removedSize: Platform.NumberUtilities.withThousandsSeparator(this.removedSize),
-            sizeDelta: this.signForDelta(this.sizeDelta) + Platform.NumberUtilities.withThousandsSeparator(Math.abs(this.sizeDelta)),
+            addedSize: i18n.ByteUtilities.bytesToString(this.addedSize),
+            removedSize: i18n.ByteUtilities.bytesToString(this.removedSize),
+            sizeDelta: this.signForDelta(this.sizeDelta) + i18n.ByteUtilities.bytesToString(Math.abs(this.sizeDelta)),
         };
     }
     get name() {
@@ -1168,8 +1168,8 @@ export class AllocationGridNode extends HeapSnapshotGridNode {
         this.data = {
             liveCount: Platform.NumberUtilities.withThousandsSeparator(data.liveCount),
             count: Platform.NumberUtilities.withThousandsSeparator(data.count),
-            liveSize: Platform.NumberUtilities.withThousandsSeparator(data.liveSize),
-            size: Platform.NumberUtilities.withThousandsSeparator(data.size),
+            liveSize: i18n.ByteUtilities.bytesToString(data.liveSize),
+            size: i18n.ByteUtilities.bytesToString(data.size),
             name: data.name,
         };
     }

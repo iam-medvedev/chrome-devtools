@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -239,10 +240,10 @@ export class DeviceModeToolbar {
         this.elementInternal.setAttribute('jslog', `${VisualLogging.toolbar('device-mode').track({ resize: true })}`);
         const leftContainer = this.elementInternal.createChild('div', 'device-mode-toolbar-spacer');
         leftContainer.createChild('div', 'device-mode-toolbar-spacer');
-        const leftToolbar = new UI.Toolbar.Toolbar('', leftContainer);
+        const leftToolbar = leftContainer.createChild('devtools-toolbar');
         this.fillLeftToolbar(leftToolbar);
-        const mainToolbar = new UI.Toolbar.Toolbar('', this.elementInternal);
-        mainToolbar.makeWrappable();
+        const mainToolbar = this.elementInternal.createChild('devtools-toolbar');
+        mainToolbar.wrappable = true;
         this.widthInput = new EmulationComponents.DeviceSizeInputElement.SizeInputElement(i18nString(UIStrings.width), { jslogContext: 'width' });
         this.widthInput.addEventListener('sizechanged', ({ size: width }) => {
             if (this.autoAdjustScaleSetting.get()) {
@@ -263,15 +264,15 @@ export class DeviceModeToolbar {
         });
         this.fillMainToolbar(mainToolbar);
         const rightContainer = this.elementInternal.createChild('div', 'device-mode-toolbar-spacer');
-        const rightToolbar = new UI.Toolbar.Toolbar('device-mode-toolbar-fixed-size', rightContainer);
-        rightToolbar.makeWrappable();
+        const rightToolbar = rightContainer.createChild('devtools-toolbar', 'device-mode-toolbar-fixed-size');
+        rightToolbar.wrappable = true;
         this.fillRightToolbar(rightToolbar);
-        const modeToolbar = new UI.Toolbar.Toolbar('device-mode-toolbar-fixed-size', rightContainer);
-        modeToolbar.makeWrappable();
+        const modeToolbar = rightContainer.createChild('devtools-toolbar', 'device-mode-toolbar-fixed-size');
+        modeToolbar.wrappable = true;
         this.fillModeToolbar(modeToolbar);
         rightContainer.createChild('div', 'device-mode-toolbar-spacer');
-        const optionsToolbar = new UI.Toolbar.Toolbar('device-mode-toolbar-options', rightContainer);
-        optionsToolbar.makeWrappable();
+        const optionsToolbar = rightContainer.createChild('devtools-toolbar', 'device-mode-toolbar-options');
+        optionsToolbar.wrappable = true;
         this.fillOptionsToolbar(optionsToolbar);
         this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
         this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED */, this.deviceListChanged, this);

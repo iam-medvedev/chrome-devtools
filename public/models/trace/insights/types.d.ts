@@ -60,7 +60,7 @@ export type InsightModel<R extends Record<string, unknown>> = R & {
  * this could instead represent the duration from the beginning of the trace up to the first recorded
  * navigation (or the end of the trace).
  */
-export type InsightSet = {
+export interface InsightSet {
     /** If for a navigation, this is the navigationId. Else it is Trace.Types.Events.NO_NAVIGATION. */
     id: Types.Events.NavigationId;
     /** The URL to show in the accordion list. */
@@ -69,7 +69,7 @@ export type InsightSet = {
     bounds: Types.Timing.TraceWindowMicroSeconds;
     model: InsightModels;
     navigation?: Types.Events.NavigationStart;
-};
+}
 /**
  * Contains insights for a specific insight set.
  */

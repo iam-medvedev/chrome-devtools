@@ -98,10 +98,10 @@ export declare const enum Events {
     PAINT_PROFILER_REQUESTED = "PaintProfilerRequested",
     SCALE_CHANGED = "ScaleChanged"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.PAINT_PROFILER_REQUESTED]: Selection;
     [Events.SCALE_CHANGED]: number;
-};
+}
 export declare const enum ChromeTexture {
     LEFT = 0,
     MIDDLE = 1,

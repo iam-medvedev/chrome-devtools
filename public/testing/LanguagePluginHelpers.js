@@ -1,6 +1,8 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../core/platform/platform.js';
+const { urlString } = Platform.DevToolsPath;
 export class TestPlugin {
     constructor(name) {
         this.name = name;
@@ -15,7 +17,7 @@ export class TestPlugin {
             target: null,
             frameId: null,
             extensionId,
-            initiatorUrl: extensionId,
+            initiatorUrl: urlString `${extensionId}`,
         };
     }
     async evaluate(_expression, _context, _stopId) {

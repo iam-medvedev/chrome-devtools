@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -123,10 +124,10 @@ export declare const enum Events {
 export interface StylesUpdateCompletedEvent {
     hasMatchedStyles: boolean;
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.INITIAL_UPDATE_COMPLETED]: void;
     [Events.STYLES_UPDATE_COMPLETED]: StylesUpdateCompletedEvent;
-};
+}
 export declare class SectionBlock {
     #private;
     private readonly titleElementInternal;

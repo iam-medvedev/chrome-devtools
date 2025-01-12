@@ -745,7 +745,7 @@ export class LocalJSONObject extends RemoteObject {
         try {
             result = functionDeclaration.apply(target, rawArgs);
         }
-        catch (e) {
+        catch {
             wasThrown = true;
         }
         const object = RemoteObject.fromLocalObject(result);
@@ -758,7 +758,7 @@ export class LocalJSONObject extends RemoteObject {
         try {
             result = functionDeclaration.apply(target, rawArgs);
         }
-        catch (e) {
+        catch {
             result = null;
         }
         return result;

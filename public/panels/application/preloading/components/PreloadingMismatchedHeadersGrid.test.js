@@ -1,12 +1,14 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
 import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 async function renderPreloadingMismatchedHeadersGrid(data) {
     const component = new PreloadingComponents.PreloadingMismatchedHeadersGrid.PreloadingMismatchedHeadersGrid();
     component.data = data;
@@ -21,7 +23,7 @@ async function testPreloadingMismatchedHeadersGrid(recievedMismatchedHeaders, ro
         key: {
             loaderId: 'loaderId:1',
             action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-            url: 'https://example.com/prerendered.html',
+            url: urlString `https://example.com/prerendered.html`,
         },
         pipelineId: 'pipelineId:1',
         status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,

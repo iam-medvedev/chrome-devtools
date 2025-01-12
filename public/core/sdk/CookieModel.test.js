@@ -1,14 +1,16 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { createNetworkRequest } from '../../testing/MockNetworkLog.js';
 import { addChildFrame, createResource, DOMAIN, getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as SDK from './sdk.js';
-const MAIN_FRAME_RESOURCE_DOMAIN = 'example.org';
-const CHILD_FRAME_RESOURCE_DOMAIN = 'example.net';
+const { urlString } = Platform.DevToolsPath;
+const MAIN_FRAME_RESOURCE_DOMAIN = urlString `example.org`;
+const CHILD_FRAME_RESOURCE_DOMAIN = urlString `example.net`;
 describeWithMockConnection('CookieModel', () => {
     const PROTOCOL_COOKIE = {
         domain: '.example.com',
@@ -53,7 +55,7 @@ describeWithMockConnection('CookieModel', () => {
         });
         const target = createTarget();
         const mainFrame = getMainFrame(target);
-        const resourceUrl = (domain) => `https://${domain}/resource`;
+        const resourceUrl = (domain) => urlString `${`https://${domain}/resource`}`;
         createResource(mainFrame, resourceUrl(MAIN_FRAME_RESOURCE_DOMAIN), 'text/html', '');
         const childFrame = await addChildFrame(target);
         createResource(childFrame, resourceUrl(CHILD_FRAME_RESOURCE_DOMAIN), 'text/html', '');
@@ -92,7 +94,7 @@ describeWithMockConnection('CookieModel', () => {
         const eventListener = sinon.stub();
         model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, eventListener);
         assert.isEmpty(await model.getCookiesForDomain(`https://${MAIN_FRAME_RESOURCE_DOMAIN}`));
-        const resourceUrl = (domain) => `https://${domain}/main_resource`;
+        const resourceUrl = (domain) => urlString `${`https://${domain}/main_resource`}`;
         createResource(mainFrame, resourceUrl(MAIN_FRAME_RESOURCE_DOMAIN), 'text/html', '');
         dispatchLoadingFinished();
         await expectCalled(eventListener);
@@ -114,7 +116,7 @@ describeWithMockConnection('CookieModel', () => {
         const model = target.model(SDK.CookieModel.CookieModel);
         const eventListener = sinon.stub();
         model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, eventListener);
-        createResource(mainFrame, `https://${DOMAIN}/main_resource`, 'text/html', '');
+        createResource(mainFrame, urlString `${`https://${DOMAIN}/main_resource`}`, 'text/html', '');
         dispatchLoadingFinished();
         await expectCalled(eventListener);
         eventListener.resetHistory();
@@ -129,7 +131,7 @@ describeWithMockConnection('CookieModel', () => {
         const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
-        createResource(mainFrame, `https://${DOMAIN}/main_resource`, 'text/html', '');
+        createResource(mainFrame, urlString `${`https://${DOMAIN}/main_resource`}`, 'text/html', '');
         dispatchLoadingFinished();
         let [readCookie] = await model.getCookiesForDomain(`https://${DOMAIN}`);
         assert.strictEqual(readCookie.value(), 'value');

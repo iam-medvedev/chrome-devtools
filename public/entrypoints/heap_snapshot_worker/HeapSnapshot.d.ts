@@ -349,7 +349,7 @@ export declare abstract class HeapSnapshot {
     isNodeIgnoredInRetainersView(nodeIndex: number): boolean;
     isEdgeIgnoredInRetainersView(edgeIndex: number): boolean;
 }
-declare class HeapSnapshotMetainfo {
+interface HeapSnapshotMetaInfo {
     location_fields: string[];
     node_fields: string[];
     node_types: string[][];
@@ -362,14 +362,13 @@ declare class HeapSnapshotMetainfo {
         [key: string]: string;
     };
 }
-export declare class HeapSnapshotHeader {
+export interface HeapSnapshotHeader {
     title: string;
-    meta: HeapSnapshotMetainfo;
+    meta: HeapSnapshotMetaInfo;
     node_count: number;
     edge_count: number;
     trace_function_count: number;
     root_index: number;
-    constructor();
 }
 export declare abstract class HeapSnapshotItemProvider {
     #private;

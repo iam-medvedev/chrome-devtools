@@ -1,3 +1,4 @@
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
@@ -78,9 +79,9 @@ export declare namespace TimelineTreeView {
     const enum Events {
         TREE_ROW_HOVERED = "TreeRowHovered"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
-    };
+    }
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
     protected populated: boolean;
@@ -165,8 +166,8 @@ export declare namespace TimelineStackView {
     const enum Events {
         SELECTION_CHANGED = "SelectionChanged"
     }
-    type EventTypes = {
+    interface EventTypes {
         [Events.SELECTION_CHANGED]: void;
-    };
+    }
 }
 export {};

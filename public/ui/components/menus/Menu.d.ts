@@ -65,6 +65,8 @@ export declare class MenuItem extends HTMLElement {
     set value(value: MenuItemValue);
     get selected(): boolean;
     set selected(selected: boolean);
+    get disabled(): boolean;
+    set disabled(disabled: boolean);
 }
 export declare class MenuGroup extends HTMLElement {
     #private;

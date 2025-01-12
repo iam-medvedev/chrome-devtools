@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
@@ -9,6 +10,7 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockExecutionContext } from '../../testing/MockExecutionContext.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
+const { urlString } = Platform.DevToolsPath;
 async function addMessage(helper, target, url) {
     const details = { line: 2, column: 1, url };
     const message = new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, 'test message', details);
@@ -66,7 +68,7 @@ async function addStyleSheet(helper, cssModel, url) {
     return uiSourceCode;
 }
 describeWithMockConnection('PresentationConsoleMessageHelper', () => {
-    const url = 'http://example.test/test.css';
+    const url = urlString `http://example.test/test.css`;
     let helper;
     let executionContext;
     let cssModel;

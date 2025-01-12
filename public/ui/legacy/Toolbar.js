@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
@@ -42,9 +41,8 @@ import { ContextMenu } from './ContextMenu.js';
 import { GlassPane } from './GlassPane.js';
 import { bindCheckbox } from './SettingsUI.js';
 import { TextPrompt } from './TextPrompt.js';
-import toolbarStyles from './toolbar.css.legacy.js';
 import { Tooltip } from './Tooltip.js';
-import { CheckboxLabel, createShadowRootWithCoreStyles, LongClickController } from './UIUtils.js';
+import { CheckboxLabel, LongClickController } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
@@ -65,27 +63,47 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/Toolbar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class Toolbar {
-    items;
-    element;
-    enabled;
-    shadowRoot;
-    contentElement;
+/**
+ * Custom element for toolbars.
+ *
+ * @attr wrappable - If present the toolbar items will wrap to a new row and the
+ *                   toolbar height increases.
+ * @prop {string} wrappable - The `"wrappable"` attribute is reflected as property.
+ */
+export class Toolbar extends HTMLElement {
+    items = [];
+    enabled = true;
     compactLayout = false;
-    constructor(className, parentElement) {
-        this.items = [];
-        this.element = parentElement ? parentElement.createChild('div') : document.createElement('div');
-        this.element.className = className;
-        this.element.classList.add('toolbar');
-        this.enabled = true;
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: toolbarStyles });
-        this.contentElement = this.shadowRoot.createChild('div', 'toolbar-shadow');
+    connectedCallback() {
+        if (!this.hasAttribute('role')) {
+            this.setAttribute('role', 'toolbar');
+        }
+    }
+    /**
+     * Returns whether this toolbar is wrappable.
+     *
+     * @return `true` if the `"wrappable"` attribute is present on this toolbar,
+     *         otherwise `false`.
+     */
+    get wrappable() {
+        return this.hasAttribute('wrappable');
+    }
+    /**
+     * Changes the value of the `"wrappable"` attribute on this toolbar.
+     *
+     * @param wrappable `true` to make the toolbar items wrap to a new row and
+     *                  have the toolbar height adjust.
+     */
+    set wrappable(wrappable) {
+        if (wrappable) {
+            this.setAttribute('wrappable', '');
+        }
+        else {
+            this.removeAttribute('wrappable');
+        }
     }
     hasCompactLayout() {
         return this.compactLayout;
-    }
-    registerCSSFiles(cssFiles) {
-        this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.concat(cssFiles);
     }
     setCompactLayout(enable) {
         if (this.compactLayout === enable) {
@@ -130,22 +148,22 @@ export class Toolbar {
             const optionsGlassPane = new GlassPane();
             optionsGlassPane.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
             optionsGlassPane.show(document);
-            const optionsBar = new Toolbar('fill', optionsGlassPane.contentElement);
-            optionsBar.contentElement.classList.add('floating');
+            const optionsBar = optionsGlassPane.contentElement.createChild('devtools-toolbar', 'fill');
+            optionsBar.classList.add('floating');
             const buttonHeight = 26;
             const hostButtonPosition = button.element.boxInWindow().relativeToElement(GlassPane.container(document));
             const topNotBottom = hostButtonPosition.y + buttonHeight * buttons.length < document.documentElement.offsetHeight;
             if (topNotBottom) {
                 buttons = buttons.reverse();
             }
-            optionsBar.element.style.height = (buttonHeight * buttons.length) + 'px';
+            optionsBar.style.height = (buttonHeight * buttons.length) + 'px';
             if (topNotBottom) {
-                optionsBar.element.style.top = (hostButtonPosition.y - 5) + 'px';
+                optionsBar.style.top = (hostButtonPosition.y - 5) + 'px';
             }
             else {
-                optionsBar.element.style.top = (hostButtonPosition.y - (buttonHeight * (buttons.length - 1)) - 6) + 'px';
+                optionsBar.style.top = (hostButtonPosition.y - (buttonHeight * (buttons.length - 1)) - 6) + 'px';
             }
-            optionsBar.element.style.left = (hostButtonPosition.x - 5) + 'px';
+            optionsBar.style.left = (hostButtonPosition.x - 5) + 'px';
             for (let i = 0; i < buttons.length; ++i) {
                 buttons[i].element.addEventListener('mousemove', mouseOver, false);
                 buttons[i].element.addEventListener('mouseout', mouseOut, false);
@@ -158,7 +176,7 @@ export class Toolbar {
                     return;
                 }
                 if (e.target instanceof HTMLElement) {
-                    const buttonElement = e.target.enclosingNodeOrSelfWithClass('toolbar-item');
+                    const buttonElement = e.target.enclosingNodeOrSelfWithClass('toolbar-button');
                     buttonElement.classList.add('emulate-active');
                 }
             }
@@ -167,7 +185,7 @@ export class Toolbar {
                     return;
                 }
                 if (e.target instanceof HTMLElement) {
-                    const buttonElement = e.target.enclosingNodeOrSelfWithClass('toolbar-item');
+                    const buttonElement = e.target.enclosingNodeOrSelfWithClass('toolbar-button');
                     buttonElement.classList.remove('emulate-active');
                 }
             }
@@ -187,21 +205,15 @@ export class Toolbar {
             }
         }
     }
-    static createActionButton(action, options = TOOLBAR_BUTTON_DEFAULT_OPTIONS) {
-        const button = (action.toggleable() && !options?.ignoreToggleable) ? makeToggle() : makeButton();
-        if (options.showLabel) {
-            button.setText(options.label?.() || action.title());
+    static createActionButton(actionOrActionId, options = {}) {
+        const action = typeof actionOrActionId === 'string' ? ActionRegistry.instance().getAction(actionOrActionId) : actionOrActionId;
+        const button = action.toggleable() ? makeToggle() : makeButton();
+        if (options.label) {
+            button.setText(options.label() || action.title());
         }
-        let handler = () => {
+        const handler = () => {
             void action.execute();
         };
-        if (options.userActionCode) {
-            const actionCode = options.userActionCode;
-            handler = () => {
-                Host.userMetrics.actionTaken(actionCode);
-                void action.execute();
-            };
-        }
         button.addEventListener("Click" /* ToolbarButton.Events.CLICK */, handler, action);
         action.addEventListener("Enabled" /* ActionEvents.ENABLED */, enabledChanged);
         button.setEnabled(action.enabled());
@@ -233,25 +245,6 @@ export class Toolbar {
             button.setEnabled(event.data);
         }
     }
-    static createActionButtonForId(actionId, options) {
-        const action = ActionRegistry.instance().getAction(actionId);
-        return Toolbar.createActionButton(action, options);
-    }
-    gripElementForResize() {
-        return this.contentElement;
-    }
-    makeWrappable(growVertically) {
-        this.contentElement.classList.add('wrappable');
-        if (growVertically) {
-            this.contentElement.classList.add('toolbar-grow-vertical');
-        }
-    }
-    makeVertical() {
-        this.contentElement.classList.add('vertical');
-    }
-    renderAsLinks() {
-        this.contentElement.classList.add('toolbar-render-as-links');
-    }
     empty() {
         return !this.items.length;
     }
@@ -268,7 +261,7 @@ export class Toolbar {
         if (!this.enabled) {
             item.applyEnabledState(false);
         }
-        this.contentElement.appendChild(item.element);
+        this.appendChild(item.element);
         this.hideSeparatorDupes();
     }
     hasItem(item) {
@@ -281,7 +274,7 @@ export class Toolbar {
         if (!this.enabled) {
             item.applyEnabledState(false);
         }
-        this.contentElement.prepend(item.element);
+        this.prepend(item.element);
         this.hideSeparatorDupes();
     }
     appendSeparator() {
@@ -310,18 +303,7 @@ export class Toolbar {
             item.toolbar = null;
         }
         this.items = [];
-        this.contentElement.removeChildren();
-    }
-    setColor(color) {
-        const style = document.createElement('style');
-        style.textContent = '.toolbar-glyph { background-color: ' + color + ' !important }';
-        this.shadowRoot.appendChild(style);
-    }
-    setToggledColor(color) {
-        const style = document.createElement('style');
-        style.textContent =
-            '.toolbar-button.toolbar-state-on .toolbar-glyph { background-color: ' + color + ' !important }';
-        this.shadowRoot.appendChild(style);
+        this.removeChildren();
     }
     hideSeparatorDupes() {
         if (!this.items.length) {
@@ -347,7 +329,7 @@ export class Toolbar {
         if (lastSeparator && lastSeparator !== this.items[this.items.length - 1]) {
             lastSeparator.setVisible(false);
         }
-        this.element.classList.toggle('hidden', lastSeparator !== null && lastSeparator !== undefined && lastSeparator.visible() && !nonSeparatorVisible);
+        this.classList.toggle('hidden', lastSeparator !== null && lastSeparator !== undefined && lastSeparator.visible() && !nonSeparatorVisible);
     }
     async appendItemsAtLocation(location) {
         const extensions = getRegisteredToolbarItems();
@@ -358,12 +340,12 @@ export class Toolbar {
         });
         const filtered = extensions.filter(e => e.location === location);
         const items = await Promise.all(filtered.map(extension => {
-            const { separator, actionId, showLabel, label, loadItem } = extension;
+            const { separator, actionId, label, loadItem } = extension;
             if (separator) {
                 return new ToolbarSeparator();
             }
             if (actionId) {
-                return Toolbar.createActionButtonForId(actionId, { label, showLabel: Boolean(showLabel), userActionCode: undefined });
+                return Toolbar.createActionButton(actionId, { label });
             }
             // TODO(crbug.com/1134103) constratint the case checked with this if using TS type definitions once UI is TS-authored.
             if (!loadItem) {
@@ -378,10 +360,7 @@ export class Toolbar {
         }
     }
 }
-const TOOLBAR_BUTTON_DEFAULT_OPTIONS = {
-    showLabel: false,
-    userActionCode: undefined,
-};
+customElements.define('devtools-toolbar', Toolbar);
 // We need any here because Common.ObjectWrapper.ObjectWrapper is invariant in T.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
@@ -393,7 +372,6 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
     constructor(element) {
         super();
         this.element = element;
-        this.element.classList.add('toolbar-item');
         this.visibleInternal = true;
         this.enabled = true;
         /**
@@ -438,9 +416,6 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
         if (this.toolbar && !(this instanceof ToolbarSeparator)) {
             this.toolbar.hideSeparatorDupes();
         }
-    }
-    setRightAligned(alignRight) {
-        this.element.classList.toggle('toolbar-item-right-aligned', alignRight);
     }
     setCompactLayout(_enable) {
     }
@@ -896,12 +871,9 @@ export class ToolbarSeparator extends ToolbarItem {
 export class ToolbarComboBox extends ToolbarItem {
     selectElementInternal;
     constructor(changeHandler, title, className, jslogContext) {
-        const element = document.createElement('span');
-        element.classList.add('toolbar-select-container');
+        const element = document.createElement('select');
         super(element);
-        this.selectElementInternal = this.element.createChild('select', 'toolbar-item');
-        const dropdownArrowIcon = IconButton.Icon.create('triangle-down', 'toolbar-dropdown-arrow');
-        this.element.appendChild(dropdownArrowIcon);
+        this.selectElementInternal = element;
         if (changeHandler) {
             this.selectElementInternal.addEventListener('change', changeHandler, false);
         }

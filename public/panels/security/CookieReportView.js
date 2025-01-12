@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
@@ -8,6 +9,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as NetworkForward from '../network/forward/forward.js';
 import cookieReportViewStyles from './cookieReportView.css.js';
 const { render, html, Directives: { ref } } = LitHtml;
 const UIStrings = {
@@ -18,7 +20,7 @@ const UIStrings = {
     /**
      *@description Explaination in the header about the cookies listed in the report
      */
-    body: 'Third-party cookies that might be restricted by users, depending on their settings. If a user chooses to restrict cookies, then this site might not work for them.',
+    body: 'This site might not work if third-party cookies are limited in Chrome.',
     /**
      *@description A link the user can follow to learn more about third party cookie usage
      */
@@ -54,7 +56,7 @@ const UIStrings = {
     /**
      *@description Status string in the cookie report for a third-party cookie that is allowed due to a grace period or heuristic exception. Otherwise, this would have been blocked. This is also used as filter chip text to allow the user to filter the table based on cookie status
      */
-    allowedByException: 'Allowed By Exception',
+    allowedByException: 'Allowed by exception',
     /**
      *@description Status string in the cookie report for a third-party cookie that was blocked. This is also used as filter chip text to allow the user to filter the table based on cookie status
      */
@@ -79,7 +81,7 @@ const UIStrings = {
      *@description String in Cookie Report table. This is used when a cookie's domain has an entry in the third-party cookie migration readiness list GitHub.
      *@example {guidance} PH1
      */
-    gitHubResource: 'Review {PH1} from third-party site.',
+    gitHubResource: 'Review {PH1} from third-party site',
     /**
      *@description Label for a link to an entry in the third-party cookie migration readiness list GitHub.
      */
@@ -96,7 +98,7 @@ const UIStrings = {
     /**
      *@description String in Cookie Report table. This is used when a cookie has a heuristics exception.
      */
-    heuristics: 'Action needed later. Heuristics based exception is active',
+    heuristics: 'Action needed later. Heuristics based exception is active.',
     /**
      *@description String in Cookie Report table. This is used when a cookie's domain does not have an entry in the third-party cookie migration readiness list Github nor a grace period nor heuristics exception.
      */
@@ -169,29 +171,13 @@ const UIStrings = {
      *@description String representing the Other cookie type. Used to format 'other' category from the Third Party Web dataset.
      */
     otherCookieTypeString: 'Other',
+    /**
+     *@description String that shows up in the context menu when right clicking one of the entries in the cookie report.
+     */
+    showRequestsWithThisCookie: 'Show requests with this cookie',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/CookieReportView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const filterItems = [
-    {
-        name: UIStrings.blocked,
-        label: () => i18nString(UIStrings.blocked),
-        title: UIStrings.blocked,
-        jslogContext: UIStrings.blocked,
-    },
-    {
-        name: UIStrings.allowed,
-        label: () => i18nString(UIStrings.allowed),
-        title: UIStrings.allowed,
-        jslogContext: UIStrings.allowed,
-    },
-    {
-        name: UIStrings.allowedByException,
-        label: () => i18nString(UIStrings.allowedByException),
-        title: UIStrings.allowedByException,
-        jslogContext: UIStrings.allowedByException,
-    },
-];
 export class CookieReportView extends UI.Widget.VBox {
     #issuesManager;
     namedBitSetFilterUI;
@@ -212,7 +198,33 @@ export class CookieReportView extends UI.Widget.VBox {
                 { id: 'recommendation', title: i18nString(UIStrings.recommendation), weight: 1, sortable: true },
             ],
             striped: true,
+            rowContextMenuCallback: input.populateContextMenu.bind(input),
         };
+        const filterItems = [];
+        if (input.gridData.some(n => n.data['status'] === i18nString(UIStrings.blocked))) {
+            filterItems.push({
+                name: UIStrings.blocked,
+                label: () => i18nString(UIStrings.blocked),
+                title: UIStrings.blocked,
+                jslogContext: UIStrings.blocked,
+            });
+        }
+        if (input.gridData.some(n => n.data['status'] === i18nString(UIStrings.allowed))) {
+            filterItems.push({
+                name: UIStrings.allowed,
+                label: () => i18nString(UIStrings.allowed),
+                title: UIStrings.allowed,
+                jslogContext: UIStrings.allowed,
+            });
+        }
+        if (input.gridData.some(n => n.data['status'] === i18nString(UIStrings.allowedByException))) {
+            filterItems.push({
+                name: UIStrings.allowedByException,
+                label: () => i18nString(UIStrings.allowedByException),
+                title: UIStrings.allowedByException,
+                jslogContext: UIStrings.allowedByException,
+            });
+        }
         // clang-format off
         render(html `
         <div class="report overflow-auto">
@@ -284,6 +296,7 @@ export class CookieReportView extends UI.Widget.VBox {
     }
     #onPrimaryPageChanged() {
         this.#cookieRows.clear();
+        this.namedBitSetFilterUI = undefined;
         this.update();
     }
     #onIssueEventReceived(event) {
@@ -346,6 +359,25 @@ export class CookieReportView extends UI.Widget.VBox {
             recommendation: CookieReportView.getRecommendation(row.domain, row.insight),
         }));
     }
+    populateContextMenu(contextMenu, gridNode) {
+        const cookie = gridNode;
+        if (!cookie) {
+            return;
+        }
+        contextMenu.revealSection().appendItem(i18nString(UIStrings.showRequestsWithThisCookie), () => {
+            const requestFilter = NetworkForward.UIFilter.UIRequestFilter.filters([
+                {
+                    filterType: NetworkForward.UIFilter.FilterType.CookieDomain,
+                    filterValue: cookie.data['domain'],
+                },
+                {
+                    filterType: NetworkForward.UIFilter.FilterType.CookieName,
+                    filterValue: cookie.data['name'],
+                },
+            ]);
+            void Common.Revealer.reveal(requestFilter);
+        }, { jslogContext: 'show-requests-with-this-cookie' });
+    }
     wasShown() {
         super.wasShown();
         this.registerCSSFiles([cookieReportViewStyles]);
@@ -395,7 +427,10 @@ export class CookieReportView extends UI.Widget.VBox {
                 })}`;
             }
             case "GracePeriod" /* Protocol.Audits.InsightType.GracePeriod */: {
+                const url = SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL();
                 const gracePeriodLink = UI.XLink.XLink.create('https://developers.google.com/privacy-sandbox/cookies/dashboard?url=' +
+                    // The order of the URLs matters - needs to be 1P + 3P.
+                    (url ? Common.ParsedURL.ParsedURL.fromString(url)?.host + '+' : '') +
                     (domain.charAt(0) === '.' ? domain.substring(1) : domain), i18nString(UIStrings.reportedIssues), undefined, undefined, 'compatibility-lookup-link');
                 return html `${i18n.i18n.getFormatLocalizedString(str_, UIStrings.gracePeriod, {
                     PH1: gracePeriodLink,

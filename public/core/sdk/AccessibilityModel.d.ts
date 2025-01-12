@@ -40,11 +40,11 @@ export declare class AccessibilityNode {
 export declare const enum Events {
     TREE_UPDATED = "TreeUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.TREE_UPDATED]: {
         root?: AccessibilityNode;
     };
-};
+}
 export declare class AccessibilityModel extends SDKModel<EventTypes> implements ProtocolProxyApi.AccessibilityDispatcher {
     #private;
     agent: ProtocolProxyApi.AccessibilityApi;

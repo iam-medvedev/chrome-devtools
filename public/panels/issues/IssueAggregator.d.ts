@@ -1,9 +1,9 @@
 import * as Common from '../../core/common/common.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-type AggregationKeyTag = {
+interface AggregationKeyTag {
     aggregationKeyTag: undefined;
-};
+}
 /**
  * An opaque type for the key which we use to aggregate issues. The key must be
  * chosen such that if two aggregated issues have the same aggregation key, then
@@ -71,8 +71,8 @@ export declare const enum Events {
     AGGREGATED_ISSUE_UPDATED = "AggregatedIssueUpdated",
     FULL_UPDATE_REQUIRED = "FullUpdateRequired"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.AGGREGATED_ISSUE_UPDATED]: AggregatedIssue;
     [Events.FULL_UPDATE_REQUIRED]: void;
-};
+}
 export {};

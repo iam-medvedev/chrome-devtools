@@ -19,7 +19,7 @@ export declare const NetworkRequestTypes: {
     readonly CSPViolationReport: "CSPViolationReport";
     readonly Prefetch: "Prefetch";
 };
-export type TraceEvent = {
+export interface TraceEvent {
     name: string;
     args: {
         name?: string;
@@ -37,15 +37,15 @@ export type TraceEvent = {
     /** Timestamp of the event in microseconds. */
     ts: number;
     dur: number;
-};
-export type Trace = {
+}
+export interface Trace {
     traceEvents: TraceEvent[];
-};
+}
 export type ResourcePriority = ('VeryLow' | 'Low' | 'Medium' | 'High' | 'VeryHigh');
 export type ResourceType = keyof typeof NetworkRequestTypes;
 type InitiatorType = ('parser' | 'script' | 'preload' | 'SignedExchange' | 'preflight' | 'other');
 export type ResourceTiming = Protocol.Network.ResourceTiming;
-type CallStack = {
+interface CallStack {
     callFrames: Array<{
         scriptId: string;
         url: string;
@@ -54,8 +54,8 @@ type CallStack = {
         functionName: string;
     }>;
     parent?: CallStack;
-};
-export type ParsedURL = {
+}
+export interface ParsedURL {
     /**
      * Equivalent to a `new URL(url).protocol` BUT w/o the trailing colon (:)
      */
@@ -65,9 +65,9 @@ export type ParsedURL = {
      */
     host: string;
     securityOrigin: string;
-};
+}
 export type AnyNetworkObject = any;
-export type NetworkRequest<T = AnyNetworkObject> = {
+export interface NetworkRequest<T = AnyNetworkObject> {
     requestId: string;
     connectionId: number;
     connectionReused: boolean;
@@ -129,7 +129,7 @@ export type NetworkRequest<T = AnyNetworkObject> = {
      * This is then accessible as a read-only property on NetworkNode.
      */
     rawRequest?: T;
-};
+}
 export declare namespace Simulation {
     interface URL {
         /** URL of the initially requested URL */

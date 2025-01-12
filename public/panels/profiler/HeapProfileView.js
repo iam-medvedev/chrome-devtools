@@ -23,11 +23,11 @@ const UIStrings = {
     /**
      *@description Name of column header that reports the size (in terms of bytes) used for a particular part of the heap, excluding the size of the children nodes of this part of the heap
      */
-    selfSizeBytes: 'Self size (bytes)',
+    selfSizeBytes: 'Self size',
     /**
      *@description Name of column header that reports the total size (in terms of bytes) used for a particular part of the heap
      */
-    totalSizeBytes: 'Total size (bytes)',
+    totalSizeBytes: 'Total size',
     /**
      *@description Button text to stop profiling the heap
      */
@@ -481,7 +481,7 @@ export class NodeFormatter {
         this.profileView = profileView;
     }
     formatValue(value) {
-        return Platform.NumberUtilities.withThousandsSeparator(value);
+        return i18n.ByteUtilities.bytesToString(value);
     }
     formatValueAccessibleText(value) {
         return i18nString(UIStrings.sBytes, { PH1: value });

@@ -8,6 +8,7 @@ import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
+const { urlString } = Platform.DevToolsPath;
 describe('DebuggerLanguagePlugins', () => {
     describe('ExtensionRemoteObject', () => {
         describe('isLinearMemoryInspectable', () => {
@@ -40,12 +41,12 @@ describe('DebuggerLanguagePlugins', () => {
             let pluginManager;
             const MISSING_DWO_FILE = 'test.dwo';
             const MISSING_DEBUG_FILES = {
-                resourceUrl: MISSING_DWO_FILE,
+                resourceUrl: urlString `${MISSING_DWO_FILE}`,
                 initiator: {
                     target: null,
                     frameId: null,
                     extensionId: 'chrome-extension-id',
-                    initiatorUrl: 'chrome-extension-id',
+                    initiatorUrl: urlString `chrome-extension-id`,
                 },
             };
             const FUNCTION_NAME = 'test';
@@ -70,7 +71,7 @@ describe('DebuggerLanguagePlugins', () => {
             });
             function createAndRegisterScript() {
                 const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-                const scriptUrl = 'https://script-host/script.js';
+                const scriptUrl = urlString `https://script-host/script.js`;
                 return debuggerModel.parsedScriptSource('0', scriptUrl, 0, 0, 0, 0, 0, '', null, false, undefined, false, false, 0, null, null, null, null, null, null);
             }
             it('correctly processes missing debug info if available', async () => {

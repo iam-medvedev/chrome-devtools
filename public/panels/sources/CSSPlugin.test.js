@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -9,6 +10,7 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 const { CSSPlugin } = Sources.CSSPlugin;
 describe('CSSPlugin', () => {
     describe('accepts', () => {
@@ -50,7 +52,7 @@ describeWithMockConnection('CSSPlugin', () => {
         return null;
     }
     it('suggests CSS class names from the stylesheet', async () => {
-        const URL = 'http://example.com/styles.css';
+        const URL = urlString `http://example.com/styles.css`;
         const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         uiSourceCode.url.returns(URL);
         const plugin = new CSSPlugin(uiSourceCode);

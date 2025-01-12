@@ -66,11 +66,11 @@ export declare enum HeapSnapshotSortableDataGridEvents {
     SortingComplete = "SortingComplete",
     ExpandRetainersComplete = "ExpandRetainersComplete"
 }
-export type EventTypes = {
+export interface EventTypes {
     [HeapSnapshotSortableDataGridEvents.ContentShown]: HeapSnapshotSortableDataGrid;
     [HeapSnapshotSortableDataGridEvents.SortingComplete]: void;
     [HeapSnapshotSortableDataGridEvents.ExpandRetainersComplete]: void;
-};
+}
 export declare class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDataGrid {
     topPaddingHeight: number;
     bottomPaddingHeight: number;

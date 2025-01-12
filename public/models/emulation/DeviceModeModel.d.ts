@@ -112,9 +112,9 @@ export declare class Rect {
 export declare const enum Events {
     UPDATED = "Updated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.UPDATED]: void;
-};
+}
 export declare enum Type {
     None = "None",
     Responsive = "Responsive",

@@ -4,7 +4,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as Utils from './utils/utils.js';
-type LinkifyLocationOptions = {
+interface LinkifyLocationOptions {
     scriptId: Protocol.Runtime.ScriptId | null;
     url: string;
     lineNumber: number;
@@ -12,7 +12,7 @@ type LinkifyLocationOptions = {
     linkifier: LegacyComponents.Linkifier.Linkifier;
     isFreshRecording?: boolean;
     columnNumber?: number;
-};
+}
 export declare class TimelineUIUtils {
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
     static testContentMatching(traceEvent: Trace.Types.Events.Event, regExp: RegExp, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 describe('TabbedEditorContainer', () => {
     describe('HistoryItem', () => {
         const { HistoryItem } = Sources.TabbedEditorContainer;
-        const url = 'http://localhost';
+        const url = urlString `http://localhost`;
         describe('fromObject', () => {
             it('rejects invalid resource type names', () => {
                 assert.throws(() => {
@@ -68,9 +70,9 @@ describe('TabbedEditorContainer', () => {
         describe('toObject', () => {
             it('serializes correctly', () => {
                 const history = new History([
-                    new HistoryItem('http://localhost/foo.js', Common.ResourceType.resourceTypes.Script),
-                    new HistoryItem('webpack:///src/foo.vue', Common.ResourceType.resourceTypes.SourceMapScript, undefined, 5),
-                    new HistoryItem('http://localhost/foo.js', Common.ResourceType.resourceTypes.SourceMapScript),
+                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.Script),
+                    new HistoryItem(urlString `webpack:///src/foo.vue`, Common.ResourceType.resourceTypes.SourceMapScript, undefined, 5),
+                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.SourceMapScript),
                 ]);
                 const serializedHistory = history.toObject();
                 assert.lengthOf(serializedHistory, 3);
@@ -86,16 +88,16 @@ describe('TabbedEditorContainer', () => {
         describe('update', () => {
             it('moves items referenced by keys to the beginning', () => {
                 const history = new History([
-                    new HistoryItem('webpack:///src/foo.vue', Common.ResourceType.resourceTypes.SourceMapScript),
-                    new HistoryItem('http://localhost/foo.js', Common.ResourceType.resourceTypes.Script),
-                    new HistoryItem('http://localhost/foo.js', Common.ResourceType.resourceTypes.SourceMapScript),
+                    new HistoryItem(urlString `webpack:///src/foo.vue`, Common.ResourceType.resourceTypes.SourceMapScript),
+                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.Script),
+                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.SourceMapScript),
                 ]);
                 history.update([{
-                        url: 'http://localhost/foo.js',
+                        url: urlString `http://localhost/foo.js`,
                         resourceType: Common.ResourceType.resourceTypes.Script,
                     }]);
                 assert.strictEqual(history.index({
-                    url: 'http://localhost/foo.js',
+                    url: urlString `http://localhost/foo.js`,
                     resourceType: Common.ResourceType.resourceTypes.Script,
                 }), 0);
             });

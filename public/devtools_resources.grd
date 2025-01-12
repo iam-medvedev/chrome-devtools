@@ -1515,6 +1515,7 @@
       <include file="panels/media/playerListView.css.js" name="PANELS_MEDIA_PLAYERLISTVIEW_CSS_JS" resource_path="panels/media/playerListView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/media/playerMessagesView.css.js" name="PANELS_MEDIA_PLAYERMESSAGESVIEW_CSS_JS" resource_path="panels/media/playerMessagesView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/media/playerPropertiesView.css.js" name="PANELS_MEDIA_PLAYERPROPERTIESVIEW_CSS_JS" resource_path="panels/media/playerPropertiesView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/mobile_throttling/CalibrationController.js" name="PANELS_MOBILE_THROTTLING_CALIBRATIONCONTROLLER_JS" resource_path="panels/mobile_throttling/CalibrationController.js" type="BINDATA" compress="false"/>
       <include file="panels/mobile_throttling/MobileThrottlingSelector.js" name="PANELS_MOBILE_THROTTLING_MOBILETHROTTLINGSELECTOR_JS" resource_path="panels/mobile_throttling/MobileThrottlingSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/mobile_throttling/NetworkPanelIndicator.js" name="PANELS_MOBILE_THROTTLING_NETWORKPANELINDICATOR_JS" resource_path="panels/mobile_throttling/NetworkPanelIndicator.js" type="BINDATA" compress="false"/>
       <include file="panels/mobile_throttling/NetworkThrottlingSelector.js" name="PANELS_MOBILE_THROTTLING_NETWORKTHROTTLINGSELECTOR_JS" resource_path="panels/mobile_throttling/NetworkThrottlingSelector.js" type="BINDATA" compress="false"/>
@@ -1881,7 +1882,6 @@
       <include file="panels/timeline/components/sidebarSingleInsightSet.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARSINGLEINSIGHTSET_CSS_JS" resource_path="panels/timeline/components/sidebarSingleInsightSet.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/timelineSummary.css.js" name="PANELS_TIMELINE_COMPONENTS_TIMELINESUMMARY_CSS_JS" resource_path="panels/timeline/components/timelineSummary.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/extensions/ExtensionUI.js" name="PANELS_TIMELINE_EXTENSIONS_EXTENSIONUI_JS" resource_path="panels/timeline/extensions/ExtensionUI.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/historyToolbarButton.css.js" name="PANELS_TIMELINE_HISTORYTOOLBARBUTTON_CSS_JS" resource_path="panels/timeline/historyToolbarButton.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/overlays/OverlaysImpl.js" name="PANELS_TIMELINE_OVERLAYS_OVERLAYSIMPL_JS" resource_path="panels/timeline/overlays/OverlaysImpl.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/overlays/components/EntriesLinkOverlay.js" name="PANELS_TIMELINE_OVERLAYS_COMPONENTS_ENTRIESLINKOVERLAY_JS" resource_path="panels/timeline/overlays/components/EntriesLinkOverlay.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/overlays/components/EntryLabelOverlay.js" name="PANELS_TIMELINE_OVERLAYS_COMPONENTS_ENTRYLABELOVERLAY_JS" resource_path="panels/timeline/overlays/components/EntryLabelOverlay.js" type="BINDATA" compress="false"/>
@@ -2494,7 +2494,6 @@
       <include file="ui/legacy/themeColors.css.legacy.js" name="UI_LEGACY_THEMECOLORS_CSS_LEGACY_JS" resource_path="ui/legacy/themeColors.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/theme_support/ThemeSupport.js" name="UI_LEGACY_THEME_SUPPORT_THEMESUPPORT_JS" resource_path="ui/legacy/theme_support/ThemeSupport.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/tokens.css.legacy.js" name="UI_LEGACY_TOKENS_CSS_LEGACY_JS" resource_path="ui/legacy/tokens.css.legacy.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/toolbar.css.legacy.js" name="UI_LEGACY_TOOLBAR_CSS_LEGACY_JS" resource_path="ui/legacy/toolbar.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/treeoutline.css.legacy.js" name="UI_LEGACY_TREEOUTLINE_CSS_LEGACY_JS" resource_path="ui/legacy/treeoutline.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.legacy.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_LEGACY_JS" resource_path="ui/legacy/viewContainers.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/lit-html/i18n-template.js" name="UI_LIT_HTML_I18N_TEMPLATE_JS" resource_path="ui/lit-html/i18n-template.js" type="BINDATA" compress="false"/>

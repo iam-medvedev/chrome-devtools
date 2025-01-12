@@ -1,9 +1,9 @@
 import '../../../ui/components/markdown_view/markdown_view.js';
 import type * as Common from '../../../core/common/common.js';
-import type * as SDK from '../../../core/sdk/sdk.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 export declare function getThrottlingRecommendations(): {
-    cpuRate: number | null;
+    cpuOption: SDK.CPUThrottlingManager.CPUThrottlingOption | null;
     networkConditions: SDK.NetworkManager.Conditions | null;
 };
 /**

@@ -16,10 +16,10 @@ export declare enum Events {
     RecordingStateChanged = "RecordingStateChanged",
     BackgroundServiceEventReceived = "BackgroundServiceEventReceived"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.RecordingStateChanged]: {
         isRecording: boolean;
         serviceName: Protocol.BackgroundService.ServiceName;
     };
     [Events.BackgroundServiceEventReceived]: Protocol.BackgroundService.BackgroundServiceEvent;
-};
+}

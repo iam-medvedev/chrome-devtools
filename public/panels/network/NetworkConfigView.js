@@ -171,12 +171,12 @@ export class NetworkConfigView extends UI.Widget.VBox {
     }
     createCacheSection() {
         const section = this.createSection(i18nString(UIStrings.caching), 'network-config-disable-cache');
-        section.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.disableCache), Common.Settings.Settings.instance().moduleSetting('cache-disabled'), true));
+        section.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.disableCache), Common.Settings.Settings.instance().moduleSetting('cache-disabled')));
     }
     createNetworkThrottlingSection() {
         const title = i18nString(UIStrings.networkThrottling);
         const section = this.createSection(title, 'network-config-throttling');
-        const networkThrottlingSelect = section.createChild('select', 'chrome-select');
+        const networkThrottlingSelect = section.createChild('select');
         MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(networkThrottlingSelect);
         UI.ARIAUtils.setLabel(networkThrottlingSelect, title);
     }
@@ -199,7 +199,6 @@ export class NetworkConfigView extends UI.Widget.VBox {
         const customUserAgentSelectBox = section.createChild('div', 'network-config-ua-custom');
         autoCheckbox.addEventListener('change', userAgentSelectBoxChanged);
         const customSelectAndInput = NetworkConfigView.createUserAgentSelectAndInput(title);
-        customSelectAndInput.select.classList.add('chrome-select');
         customUserAgentSelectBox.appendChild(customSelectAndInput.select);
         customUserAgentSelectBox.appendChild(customSelectAndInput.input);
         customUserAgentSelectBox.appendChild(customSelectAndInput.error);

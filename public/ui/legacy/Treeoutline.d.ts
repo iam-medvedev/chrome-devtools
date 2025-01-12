@@ -9,13 +9,13 @@ export declare enum Events {
     ElementCollapsed = "ElementCollapsed",
     ElementSelected = "ElementSelected"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.ElementAttached]: TreeElement;
     [Events.ElementsDetached]: void;
     [Events.ElementExpanded]: TreeElement;
     [Events.ElementCollapsed]: TreeElement;
     [Events.ElementSelected]: TreeElement;
-};
+}
 export declare class TreeOutline extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     readonly rootElementInternal: TreeElement;
     renderSelection: boolean;

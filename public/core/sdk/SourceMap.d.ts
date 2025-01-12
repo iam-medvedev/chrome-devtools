@@ -8,21 +8,21 @@ import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
  * @see {@link SourceMapV3}
  * @see {@link https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k Source Map Revision 3 Proposal}
  */
-export type SourceMapV3Object = {
-    'version': number;
-    'sources': string[];
-    'mappings': string;
-    'file'?: string;
-    'sourceRoot'?: string;
-    'sourcesContent'?: (string | null)[];
-    'names'?: string[];
-    'ignoreList'?: number[];
-    'originalScopes'?: string[];
-    'generatedRanges'?: string;
-    'x_google_linecount'?: number;
-    'x_google_ignoreList'?: number[];
-    'x_com_bloomberg_sourcesFunctionMappings'?: string[];
-};
+export interface SourceMapV3Object {
+    version: number;
+    sources: string[];
+    mappings: string;
+    file?: string;
+    sourceRoot?: string;
+    sourcesContent?: (string | null)[];
+    names?: string[];
+    ignoreList?: number[];
+    originalScopes?: string[];
+    generatedRanges?: string;
+    x_google_linecount?: number;
+    x_google_ignoreList?: number[];
+    x_com_bloomberg_sourcesFunctionMappings?: string[];
+}
 /**
  * Type of JSON objects that classify as valid sourcemaps per version 3 of the specification.
  *
@@ -34,20 +34,20 @@ export type SourceMapV3Object = {
  * @see {@link https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k Source Map Revision 3 Proposal}
  */
 export type SourceMapV3 = SourceMapV3Object | {
-    'version': number;
-    'file'?: string;
-    'sections': ({
-        'offset': {
+    version: number;
+    file?: string;
+    sections: ({
+        offset: {
             line: number;
             column: number;
         };
-        'map': SourceMapV3Object;
+        map: SourceMapV3Object;
     } | {
-        'offset': {
+        offset: {
             line: number;
             column: number;
         };
-        'url': string;
+        url: string;
     })[];
 };
 /**

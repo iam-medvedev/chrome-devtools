@@ -57,7 +57,7 @@ export declare enum Events {
     DatabaseNamesRefreshed = "DatabaseNamesRefreshed",
     IndexedDBContentUpdated = "IndexedDBContentUpdated"
 }
-export type EventTypes = {
+export interface EventTypes {
     [Events.DatabaseAdded]: {
         model: IndexedDBModel;
         databaseId: DatabaseId;
@@ -77,7 +77,7 @@ export type EventTypes = {
         databaseId: DatabaseId;
         objectStoreName: string;
     };
-};
+}
 export declare class Entry {
     key: SDK.RemoteObject.RemoteObject;
     primaryKey: SDK.RemoteObject.RemoteObject;

@@ -49,11 +49,11 @@ describeWithEnvironment('ThrottlingManager', () => {
             const cpuThrottlingPresets = MobileThrottling.ThrottlingPresets.ThrottlingPresets.cpuThrottlingPresets;
             const throttlingManager = MobileThrottling.ThrottlingManager.throttlingManager();
             const selector = throttlingManager.createCPUThrottlingSelector().control;
-            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING);
-            SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setCPUThrottlingRate(SDK.CPUThrottlingManager.CPUThrottlingRates.EXTRA_SLOW);
-            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.CPUThrottlingRates.EXTRA_SLOW);
-            SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setCPUThrottlingRate(SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING);
-            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING);
+            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.NoThrottlingOption);
+            SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setCPUThrottlingOption(SDK.CPUThrottlingManager.ExtraSlowThrottlingOption);
+            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.ExtraSlowThrottlingOption);
+            SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setCPUThrottlingOption(SDK.CPUThrottlingManager.NoThrottlingOption);
+            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.NoThrottlingOption);
         });
     });
 });

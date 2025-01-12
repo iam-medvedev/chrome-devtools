@@ -1,13 +1,15 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as Network from './NetworkTimeCalculator.js';
 import * as RequestTimingView from './RequestTimingView.js';
+const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest(matchedSource, actualSource) {
-    const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'http://devtools-frontend.test', '', null, null, null);
+    const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test`, urlString ``, null, null, null);
     request.mimeType = 'application/wasm';
     request.finished = true;
     const timingInfo = {

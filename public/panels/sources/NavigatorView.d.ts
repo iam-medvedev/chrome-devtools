@@ -144,12 +144,12 @@ export declare class NavigatorSourceTreeElement extends UI.TreeOutline.TreeEleme
     ondelete(): boolean;
     private handleContextMenuEvent;
 }
-export type NavigatorRecursiveTreeNodeProperties = {
+export interface NavigatorRecursiveTreeNodeProperties {
     exclusivelySourceMapped: boolean | null;
     exclusivelyIgnored: boolean | null;
     exclusivelyThirdParty: boolean | null;
     exclusivelyContentScripts: boolean | null;
-};
+}
 export declare class NavigatorTreeNode {
     id: string;
     protected navigatorView: NavigatorView;

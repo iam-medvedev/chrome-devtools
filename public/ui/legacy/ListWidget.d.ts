@@ -1,3 +1,4 @@
+import './Toolbar.js';
 import { VBox } from './Widget.js';
 export declare class ListWidget<T> extends VBox {
     private delegate;

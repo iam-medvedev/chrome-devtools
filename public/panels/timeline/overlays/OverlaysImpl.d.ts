@@ -153,6 +153,11 @@ export declare class TimeRangeMouseOutEvent extends Event {
     static readonly eventName = "timerangemouseoutevent";
     constructor();
 }
+export declare class EntryLabelMouseClick extends Event {
+    overlay: EntryLabel;
+    static readonly eventName = "entrylabelmouseclick";
+    constructor(overlay: EntryLabel);
+}
 export declare class EventReferenceClick extends Event {
     event: Trace.Types.Events.Event;
     static readonly eventName = "eventreferenceclick";

@@ -4,15 +4,15 @@ export declare const enum PhysicalDirection {
     BOTTOM_TO_TOP = "bottom-to-top",
     TOP_TO_BOTTOM = "top-to-bottom"
 }
-type DirectionsDict = {
+interface DirectionsDict {
     [key: string]: PhysicalDirection;
-};
-export type IconInfo = {
+}
+export interface IconInfo {
     iconName: string;
     rotate: number;
     scaleX: number;
     scaleY: number;
-};
+}
 type ComputedStyles = Map<string, string>;
 export declare function reverseDirection(direction: PhysicalDirection): PhysicalDirection;
 /**
