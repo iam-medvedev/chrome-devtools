@@ -84,6 +84,10 @@ const UIStrings = {
      *@description Text that refers to if the network request is render blocking
      */
     renderBlocking: 'Render blocking',
+    /**
+     * @description Text to refer to a 3rd Party entity.
+     */
+    entity: '3rd party entity',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/NetworkRequestDetails.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -94,6 +98,7 @@ export class NetworkRequestDetails extends HTMLElement {
     #requestPreviewElements = new WeakMap();
     #linkifier;
     #parsedTrace = null;
+    #entityMapper = null;
     constructor(linkifier) {
         super();
         this.#linkifier = linkifier;
@@ -101,13 +106,14 @@ export class NetworkRequestDetails extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [NetworkRequestDetailsStyles, networkRequestTooltipStyles];
     }
-    async setData(parsedTrace, networkRequest, maybeTarget) {
+    async setData(parsedTrace, networkRequest, maybeTarget, entityMapper) {
         if (this.#networkRequest === networkRequest && parsedTrace === this.#parsedTrace) {
             return;
         }
         this.#parsedTrace = parsedTrace;
         this.#networkRequest = networkRequest;
         this.#maybeTarget = maybeTarget;
+        this.#entityMapper = entityMapper;
         await this.#render();
     }
     #renderTitle() {
@@ -178,6 +184,16 @@ export class NetworkRequestDetails extends HTMLElement {
         const cached = this.#networkRequest.args.data.syntheticData.isMemoryCached ||
             this.#networkRequest.args.data.syntheticData.isDiskCached;
         return this.#renderRow(i18nString(UIStrings.fromCache), cached ? i18nString(UIStrings.yes) : i18nString(UIStrings.no));
+    }
+    #renderThirdPartyEntity() {
+        if (!this.#entityMapper || !this.#networkRequest) {
+            return null;
+        }
+        const entity = this.#entityMapper.entityForEvent(this.#networkRequest);
+        if (!entity) {
+            return null;
+        }
+        return this.#renderRow(i18nString(UIStrings.entity), entity.name);
     }
     #renderEncodedDataLength() {
         if (!this.#networkRequest) {
@@ -284,6 +300,7 @@ export class NetworkRequestDetails extends HTMLElement {
           ${this.#renderRow(i18nString(UIStrings.decodedBody), i18n.ByteUtilities.bytesToString(this.#networkRequest.args.data.decodedBodyLength))}
           ${this.#renderBlockingRow()}
           ${this.#renderFromCache()}
+          ${this.#renderThirdPartyEntity()}
         </div>
         <div class="network-request-details-col">
           <div class="timing-rows">

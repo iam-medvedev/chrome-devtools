@@ -528,7 +528,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     }) {
         super('security');
         this.view = view;
-        void this.doUpdate();
+        this.update();
         this.sidebar.setMinimumSize(100, 25);
         this.sidebar.element.classList.add('panel-sidebar');
         this.sidebar.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
@@ -575,7 +575,7 @@ export class SecurityPanel extends UI.Panel.Panel {
         UI.ARIAUtils.markAsButton(certificateButton);
         return certificateButton;
     }
-    async doUpdate() {
+    update() {
         this.view({ panel: this }, this, this.contentElement);
     }
     updateVisibleSecurityState(visibleSecurityState) {

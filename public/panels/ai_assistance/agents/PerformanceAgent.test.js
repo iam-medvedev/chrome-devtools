@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment, getGetHostConfigStub } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
@@ -21,6 +22,28 @@ describeWithEnvironment('PerformanceAgent', () => {
             registerClientEvent: () => Promise.resolve({}),
         };
     }
+    describe('getOrigin()', () => {
+        it('calculates the origin of the selected node when it has a URL associated with it', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            // An Evaluate Script event, picked because it has a URL of googletagmanager.com/...
+            const evalScriptEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
+            assert.exists(evalScriptEvent);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(evalScriptEvent, parsedTrace);
+            assert.isOk(aiCallTree);
+            const callTreeContext = new CallTreeContext(aiCallTree);
+            assert.strictEqual(callTreeContext.getOrigin(), 'https://www.googletagmanager.com');
+        });
+        it('returns a random but deterministic "origin" for nodes that have no URL associated', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            // A random layout event with no URL associated
+            const layoutEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "Layout" /* Trace.Types.Events.Name.LAYOUT */ && event.ts === 122411130078);
+            assert.exists(layoutEvent);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvent, parsedTrace);
+            assert.isOk(aiCallTree);
+            const callTreeContext = new CallTreeContext(aiCallTree);
+            assert.strictEqual(callTreeContext.getOrigin(), 'Layout_90829_259_122411130078');
+        });
+    });
     describe('buildRequest', () => {
         beforeEach(() => {
             sinon.restore();
@@ -97,7 +120,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             // A basic Layout.
             const layoutEvt = parsedTrace.Renderer.allTraceEntries.find(event => event.ts === 465457096322);
             assert.exists(layoutEvt);
-            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvt, parsedTrace.Renderer.allTraceEntries, parsedTrace);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvt, parsedTrace);
             assert.exists(aiCallTree);
             async function* generateAnswer() {
                 yield {

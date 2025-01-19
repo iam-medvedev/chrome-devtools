@@ -69,7 +69,7 @@ export class RequestPreviewView extends RequestResponseView {
     async htmlPreview() {
         const contentData = await this.request.requestContentData();
         if (TextUtils.ContentData.ContentData.isError(contentData)) {
-            return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
+            return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData), contentData.error);
         }
         const allowlist = new Set(['text/html', 'text/plain', 'application/xhtml+xml']);
         if (!allowlist.has(this.request.mimeType)) {
@@ -97,7 +97,7 @@ export class RequestPreviewView extends RequestResponseView {
         if (provided) {
             return provided;
         }
-        return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.previewNotAvailable));
+        return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.previewNotAvailable), '');
     }
 }
 //# sourceMappingURL=RequestPreviewView.js.map

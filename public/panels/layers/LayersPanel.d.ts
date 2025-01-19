@@ -22,7 +22,7 @@ export declare class LayersPanel extends UI.Panel.PanelWithSidebar implements SD
     targetAdded(target: SDK.Target.Target): void;
     targetRemoved(target: SDK.Target.Target): void;
     private onLayerTreeUpdated;
-    update(): Promise<void>;
+    update(): void;
     private onLayerPainted;
     private onPaintProfileRequested;
     private onTabClosed;

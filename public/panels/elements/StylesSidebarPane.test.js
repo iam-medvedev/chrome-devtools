@@ -1,14 +1,60 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment, describeWithLocale, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, describeWithLocale, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
+function createMatchedStyles(payload) {
+    let node = payload.node;
+    if (!node) {
+        node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.id = 1;
+    }
+    let cssModel = payload.cssModel;
+    if (!cssModel) {
+        cssModel = sinon.createStubInstance(SDK.CSSModel.CSSModel);
+    }
+    return SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+        cssModel,
+        node,
+        inlinePayload: null,
+        attributesPayload: null,
+        matchedPayload: [],
+        pseudoPayload: [],
+        inheritedPayload: [],
+        inheritedPseudoPayload: [],
+        animationsPayload: [],
+        parentLayoutNodeId: undefined,
+        positionTryRules: [],
+        propertyRules: [],
+        cssPropertyRegistrations: [],
+        fontPaletteValuesRule: undefined,
+        activePositionFallbackIndex: -1,
+        animationStylesPayload: [],
+        transitionsStylePayload: null,
+        inheritedAnimatedPayload: [],
+        ...payload,
+    });
+}
 describe('StylesSidebarPane', () => {
+    let node;
+    beforeEach(() => {
+        node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.id = 1;
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+    });
     describeWithMockConnection('StylesSidebarPane', () => {
+        beforeEach(() => {
+            const target = createTarget();
+            const cssModel = target.model(SDK.CSSModel.CSSModel);
+            sinon.stub(Elements.ComputedStyleModel.ComputedStyleModel.prototype, 'cssModel').returns(cssModel);
+        });
         it('unescapes CSS strings', () => {
             assert.strictEqual(Elements.StylesSidebarPane.unescapeCssString(String.raw `"I\F1 t\EB rn\E2 ti\F4 n\E0 liz\E6 ti\F8 n\2603 \1F308  can be \t\r\ic\k\y"`), '"I\xF1t\xEBrn\xE2ti\xF4n\xE0liz\xE6ti\xF8n\u2603\u{1F308} can be tricky"');
             assert.strictEqual(Elements.StylesSidebarPane.unescapeCssString(String.raw `"_\DBFF_\\DBFF_\\\DBFF_\\\\DBFF_\\\\\DBFF_"`), '"_\uFFFD_\\DBFF_\\\\DBFF_\\\\\\DBFF_\\\\\\\\DBFF_"');
@@ -26,17 +72,9 @@ describe('StylesSidebarPane', () => {
         describe('rebuildSectionsForMatchedStyleRulesForTest', () => {
             it('should add @position-try section', async () => {
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
-                const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+                const matchedStyles = await createMatchedStyles({
                     cssModel: stylesSidebarPane.cssModel(),
                     node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
-                    inlinePayload: null,
-                    attributesPayload: null,
-                    matchedPayload: [],
-                    pseudoPayload: [],
-                    inheritedPayload: [],
-                    inheritedPseudoPayload: [],
-                    animationsPayload: [],
-                    parentLayoutNodeId: undefined,
                     positionTryRules: [{
                             name: { text: '--try-one' },
                             origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
@@ -46,10 +84,6 @@ describe('StylesSidebarPane', () => {
                             },
                             active: false,
                         }],
-                    propertyRules: [],
-                    cssPropertyRegistrations: [],
-                    fontPaletteValuesRule: undefined,
-                    activePositionFallbackIndex: -1,
                 });
                 const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
                 assert.lengthOf(sectionBlocks, 2);
@@ -60,21 +94,9 @@ describe('StylesSidebarPane', () => {
         });
         it('should add @font-palette-values section to the end', async () => {
             const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
-            const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+            const matchedStyles = await createMatchedStyles({
                 cssModel: stylesSidebarPane.cssModel(),
                 node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
-                inlinePayload: null,
-                attributesPayload: null,
-                matchedPayload: [],
-                pseudoPayload: [],
-                inheritedPayload: [],
-                inheritedPseudoPayload: [],
-                animationsPayload: [],
-                parentLayoutNodeId: undefined,
-                positionTryRules: [],
-                activePositionFallbackIndex: -1,
-                propertyRules: [],
-                cssPropertyRegistrations: [],
                 fontPaletteValuesRule: {
                     fontPaletteName: { text: '--palette' },
                     origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
@@ -89,6 +111,335 @@ describe('StylesSidebarPane', () => {
             assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@font-palette-values --palette');
             assert.lengthOf(sectionBlocks[1].sections, 1);
             assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FontPaletteValuesRuleSection);
+        });
+        describe('Animation styles', () => {
+            function mockGetAnimatedComputedStyles(response) {
+                setMockConnectionResponseHandler('CSS.getAnimatedStylesForNode', () => response);
+            }
+            let hostConfigStub;
+            beforeEach(() => {
+                sinon.stub(Common.Linkifier.Linkifier, 'linkify').returns(Promise.resolve(document.createTextNode('link')));
+                hostConfigStub = getGetHostConfigStub({
+                    devToolsAnimationStylesInStylesTab: {
+                        enabled: true,
+                    },
+                });
+            });
+            afterEach(() => {
+                hostConfigStub.restore();
+            });
+            it('should render transition & animation styles in the styles tab', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                const matchedStyles = await createMatchedStyles({
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
+                    animationStylesPayload: [
+                        {
+                            name: '--animation-name',
+                            style: {
+                                cssProperties: [{
+                                        name: 'background-color',
+                                        value: 'blue',
+                                    }],
+                                shorthandEntries: [],
+                            },
+                        },
+                        {
+                            style: {
+                                cssProperties: [{
+                                        name: 'color',
+                                        value: 'blue',
+                                    }],
+                                shorthandEntries: [],
+                            },
+                        },
+                    ],
+                    transitionsStylePayload: {
+                        cssProperties: [{
+                                name: 'color',
+                                value: 'red',
+                            }],
+                        shorthandEntries: [],
+                    },
+                    inheritedAnimatedPayload: [],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                assert.lengthOf(sectionBlocks[0].sections, 3);
+                assert.strictEqual(sectionBlocks[0].sections[0].headerText(), 'transitions style');
+                assert.strictEqual(sectionBlocks[0].sections[1].headerText(), '--animation-name animation');
+                assert.strictEqual(sectionBlocks[0].sections[2].headerText(), 'animation style');
+            });
+            describe('should auto update animated style sections when onComputedStyleChanged called', () => {
+                describe('transition styles', () => {
+                    it('should trigger re-render when there was no transition style before', async () => {
+                        mockGetAnimatedComputedStyles({
+                            transitionsStyle: {
+                                cssProperties: [{
+                                        name: 'color',
+                                        value: 'red',
+                                    }],
+                                shorthandEntries: [],
+                            },
+                        });
+                        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                        node.id = 1;
+                        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                        const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                        const matchedStyles = await createMatchedStyles({
+                            cssModel: stylesSidebarPane.cssModel(),
+                            node,
+                            transitionsStylePayload: null,
+                        });
+                        stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                        const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                        assert.lengthOf(sectionBlocks[0].sections, 0);
+                        const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                        stylesSidebarPane.onComputedStyleChanged();
+                        await handledComputedStyleChanged;
+                        sinon.assert.called(resetUpdateSpy);
+                    });
+                    it('should update value only when there was a transition style before', async () => {
+                        mockGetAnimatedComputedStyles({
+                            transitionsStyle: {
+                                cssProperties: [{
+                                        name: 'color',
+                                        value: 'red',
+                                    }],
+                                shorthandEntries: [],
+                            },
+                        });
+                        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                        node.id = 1;
+                        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                        const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                        const matchedStyles = await createMatchedStyles({
+                            cssModel: stylesSidebarPane.cssModel(),
+                            node,
+                            transitionsStylePayload: {
+                                cssProperties: [{
+                                        name: 'color',
+                                        value: 'blue',
+                                    }],
+                                shorthandEntries: [],
+                            },
+                        });
+                        stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                        const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                        assert.lengthOf(sectionBlocks[0].sections, 1);
+                        assert.include(sectionBlocks[0].sections[0].propertiesTreeOutline.contentElement.textContent, 'color: blue;');
+                        const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                        stylesSidebarPane.onComputedStyleChanged();
+                        await handledComputedStyleChanged;
+                        assert.include(sectionBlocks[0].sections[0].propertiesTreeOutline.contentElement.textContent, 'color: red;');
+                        sinon.assert.notCalled(resetUpdateSpy);
+                    });
+                });
+                describe('animation styles', () => {
+                    it('should trigger re-render when there was no animation style before', async () => {
+                        mockGetAnimatedComputedStyles({
+                            animationStyles: [{
+                                    name: '--animation',
+                                    style: {
+                                        cssProperties: [{
+                                                name: 'color',
+                                                value: 'red',
+                                            }],
+                                        shorthandEntries: [],
+                                    },
+                                }],
+                        });
+                        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                        node.id = 1;
+                        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                        const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                        const matchedStyles = await createMatchedStyles({
+                            cssModel: stylesSidebarPane.cssModel(),
+                            node,
+                            animationStylesPayload: [],
+                        });
+                        stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                        const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                        assert.lengthOf(sectionBlocks[0].sections, 0);
+                        const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                        stylesSidebarPane.onComputedStyleChanged();
+                        await handledComputedStyleChanged;
+                        sinon.assert.called(resetUpdateSpy);
+                    });
+                    it('should trigger re-render when there is no animation style after', async () => {
+                        mockGetAnimatedComputedStyles({
+                            animationStyles: [],
+                        });
+                        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                        node.id = 1;
+                        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                        const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                        const matchedStyles = await createMatchedStyles({
+                            cssModel: stylesSidebarPane.cssModel(),
+                            node,
+                            animationStylesPayload: [{
+                                    style: {
+                                        cssProperties: [{
+                                                name: 'color',
+                                                value: 'blue',
+                                            }],
+                                        shorthandEntries: [],
+                                    },
+                                }],
+                        });
+                        stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                        const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                        assert.lengthOf(sectionBlocks[0].sections, 1);
+                        const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                        stylesSidebarPane.onComputedStyleChanged();
+                        await handledComputedStyleChanged;
+                        sinon.assert.called(resetUpdateSpy);
+                    });
+                    it('should update value only when there was the animation style before', async () => {
+                        mockGetAnimatedComputedStyles({
+                            animationStyles: [{
+                                    style: {
+                                        cssProperties: [{
+                                                name: 'color',
+                                                value: 'red',
+                                            }],
+                                        shorthandEntries: [],
+                                    },
+                                }],
+                        });
+                        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                        node.id = 1;
+                        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                        const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                        const matchedStyles = await createMatchedStyles({
+                            cssModel: stylesSidebarPane.cssModel(),
+                            node,
+                            animationStylesPayload: [{
+                                    style: {
+                                        cssProperties: [{
+                                                name: 'color',
+                                                value: 'blue',
+                                            }],
+                                        shorthandEntries: [],
+                                    },
+                                }],
+                        });
+                        stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                        const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                        assert.lengthOf(sectionBlocks[0].sections, 1);
+                        assert.include(sectionBlocks[0].sections[0].propertiesTreeOutline.contentElement.textContent, 'color: blue;');
+                        const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                        stylesSidebarPane.onComputedStyleChanged();
+                        await handledComputedStyleChanged;
+                        assert.include(sectionBlocks[0].sections[0].propertiesTreeOutline.contentElement.textContent, 'color: red;');
+                        sinon.assert.notCalled(resetUpdateSpy);
+                    });
+                });
+                describe('inherited animated styles', () => {
+                    describe('transition styles', () => {
+                        it('should trigger re-render when there was no inherited transition style but there is a new one now', async () => {
+                            mockGetAnimatedComputedStyles({
+                                inherited: [{
+                                        transitionsStyle: {
+                                            cssProperties: [{
+                                                    name: 'color',
+                                                    value: 'red',
+                                                }],
+                                            shorthandEntries: [],
+                                        },
+                                    }],
+                            });
+                            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                            node.id = 1;
+                            node.parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                            const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                            const matchedStyles = await createMatchedStyles({
+                                cssModel: stylesSidebarPane.cssModel(),
+                                node,
+                            });
+                            stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                            const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                            assert.lengthOf(sectionBlocks[0].sections, 0);
+                            const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                            stylesSidebarPane.onComputedStyleChanged();
+                            await handledComputedStyleChanged;
+                            sinon.assert.called(resetUpdateSpy);
+                        });
+                        it('should not trigger re-render when there was no inherited transition style and the new one does not contain inherited property', async () => {
+                            mockGetAnimatedComputedStyles({
+                                inherited: [{
+                                        transitionsStyle: {
+                                            cssProperties: [{
+                                                    name: 'background-color',
+                                                    value: 'red',
+                                                }],
+                                            shorthandEntries: [],
+                                        },
+                                    }],
+                            });
+                            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                            node.id = 1;
+                            node.parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                            const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                            const matchedStyles = await createMatchedStyles({
+                                cssModel: stylesSidebarPane.cssModel(),
+                                node,
+                            });
+                            stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                            const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                            assert.lengthOf(sectionBlocks[0].sections, 0);
+                            const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                            stylesSidebarPane.onComputedStyleChanged();
+                            await handledComputedStyleChanged;
+                            sinon.assert.notCalled(resetUpdateSpy);
+                        });
+                        it('should update value only when there is no new inherited transition style and the value is updated', async () => {
+                            mockGetAnimatedComputedStyles({
+                                inherited: [{
+                                        transitionsStyle: {
+                                            cssProperties: [{
+                                                    name: 'color',
+                                                    value: 'red',
+                                                }],
+                                            shorthandEntries: [],
+                                        },
+                                    }],
+                            });
+                            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                            node.id = 1;
+                            node.parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                            const resetUpdateSpy = sinon.spy(stylesSidebarPane, 'scheduleResetUpdateIfNotEditingCalledForTest');
+                            const matchedStyles = await createMatchedStyles({
+                                cssModel: stylesSidebarPane.cssModel(),
+                                node,
+                                inheritedPayload: [{
+                                        matchedCSSRules: [],
+                                    }],
+                                inheritedAnimatedPayload: [{
+                                        transitionsStyle: {
+                                            cssProperties: [{
+                                                    name: 'color',
+                                                    value: 'blue',
+                                                }],
+                                            shorthandEntries: [],
+                                        },
+                                    }],
+                            });
+                            stylesSidebarPane.setMatchedStylesForTest(matchedStyles);
+                            const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
+                            assert.lengthOf(sectionBlocks[1].sections, 1);
+                            assert.include(sectionBlocks[1].sections[0].propertiesTreeOutline.contentElement.textContent, 'color: blue;');
+                            const handledComputedStyleChanged = expectCall(sinon.stub(stylesSidebarPane, 'handledComputedStyleChangedForTest'));
+                            stylesSidebarPane.onComputedStyleChanged();
+                            await handledComputedStyleChanged;
+                            assert.include(sectionBlocks[1].sections[0].propertiesTreeOutline.contentElement.textContent, 'color: red;');
+                            sinon.assert.notCalled(resetUpdateSpy);
+                        });
+                    });
+                });
+            });
         });
     });
     describe('IdleCallbackManager', () => {

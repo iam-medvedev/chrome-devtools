@@ -143,7 +143,6 @@ export class LayersPanel extends UI.Panel.PanelWithSidebar {
                 }
             }
         }
-        return Promise.resolve();
     }
     onLayerPainted({ data: layer }) {
         if (!this.model) {

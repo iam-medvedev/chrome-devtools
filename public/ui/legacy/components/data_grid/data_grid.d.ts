@@ -2,6 +2,7 @@ import './DataGrid.js';
 import './ViewportDataGrid.js';
 import './SortableDataGrid.js';
 import './ShowMoreDataGridNode.js';
+import './DataGridElement.js';
 import * as DataGrid from './DataGrid.js';
 import * as DataGridWithPreview from './DataGridWithPreview.js';
 import * as ShowMoreDataGridNode from './ShowMoreDataGridNode.js';

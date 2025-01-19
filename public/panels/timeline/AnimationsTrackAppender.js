@@ -50,9 +50,5 @@ export class AnimationsTrackAppender {
     colorForEvent() {
         return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
     }
-    titleForEvent(event) {
-        const { displayName } = event.args.data.beginEvent.args.data;
-        return displayName || event.name;
-    }
 }
 //# sourceMappingURL=AnimationsTrackAppender.js.map

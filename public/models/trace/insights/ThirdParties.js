@@ -24,7 +24,7 @@ export function deps() {
 }
 function getRelatedEvents(summaries, firstPartyEntity) {
     const events = [];
-    for (const [entity, requests] of summaries.requestsByEntity.entries()) {
+    for (const [entity, requests] of summaries.eventsByEntity.entries()) {
         if (entity !== firstPartyEntity) {
             events.push(...requests);
         }
@@ -57,8 +57,8 @@ export function generateInsight(parsedTrace, context) {
     return finalize({
         relatedEvents: getRelatedEvents(summaries, firstPartyEntity),
         entityByRequest,
-        requestsByEntity: summaries.requestsByEntity,
-        summaryByRequest: summaries.byRequest,
+        requestsByEntity: summaries.eventsByEntity,
+        summaryByEvent: summaries.byEvent,
         summaryByEntity: summaries.byEntity,
         firstPartyEntity,
     });

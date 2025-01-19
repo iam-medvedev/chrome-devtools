@@ -130,7 +130,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'automatically-ignore-list-known-third-party-scripts', true),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-anonymous-scripts', false),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'enable-ignore-listing', true),
-        createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-stack-frames-pattern', '/node_modules/|/bower_components/', "regex" /* Common.Settings.SettingType.REGEX */),
+        createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-stack-frames-pattern', '/node_modules/|^node:', "regex" /* Common.Settings.SettingType.REGEX */),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'navigator-group-by-folder', true),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-detailed-inspect-tooltip', true),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-html-comments', true),

@@ -37,15 +37,12 @@ styles.replaceSync(
 .timeline-toolbar-container {
   display: flex;
   flex: none;
-}
-
-.timeline-toolbar-container > devtools-toolbar {
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);
-}
 
-.timeline-main-toolbar {
-  flex: 1 1 auto;
+  & > :first-child {
+    flex: 1 1 auto;
+  }
 }
 
 .timeline-settings-pane {

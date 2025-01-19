@@ -587,22 +587,22 @@ export class Widget {
      *
      * This is not meant to be called directly, but invoked (indirectly) through
      * the `requestAnimationFrame` and executed with the animation frame. Instead,
-     * use the `update()` method to schedule an asynchronous update.
+     * use the `requestUpdate()` method to schedule an asynchronous update.
      *
      * @return can either return nothing or a promise; in that latter case, the
      *         update logic will await the resolution of the returned promise
      *         before proceeding.
      */
-    doUpdate() {
+    performUpdate() {
     }
-    async #updateCallback() {
+    async #performUpdateCallback() {
         // Mark this update cycle as complete by assigning
         // the marker sentinel.
         this.#updateComplete = UPDATE_COMPLETE;
         this.#updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
         this.#updateRequestID = 0;
         // Run the actual update logic.
-        await this.doUpdate();
+        await this.performUpdate();
         // Resolve the `updateComplete` with `true` if no
         // new update was triggered during this cycle.
         return this.#updateComplete === UPDATE_COMPLETE;
@@ -613,11 +613,11 @@ export class Widget {
      * The update will be deduplicated and executed with the next animation
      * frame.
      */
-    update() {
+    requestUpdate() {
         if (this.#updateComplete === UPDATE_COMPLETE) {
             this.#updateComplete = new Promise((resolve, reject) => {
                 this.#updateCompleteResolve = resolve;
-                this.#updateRequestID = requestAnimationFrame(() => this.#updateCallback().then(resolve, reject));
+                this.#updateRequestID = requestAnimationFrame(() => this.#performUpdateCallback().then(resolve, reject));
             });
         }
     }
@@ -635,7 +635,7 @@ export class Widget {
      * ```js
      * // Set up the test widget, and wait for the initial update cycle to complete.
      * const widget = new SomeWidget(someData);
-     * widget.update();
+     * widget.requestUpdate();
      * await widget.updateComplete;
      *
      * // Assert state of the widget.

@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../../../front_end/ui/legacy/components/data_grid/DataGrid.ts",
+    "../../../../../../../../front_end/ui/legacy/components/data_grid/DataGridElement.ts",
     "../../../../../../../../front_end/ui/legacy/components/data_grid/DataGridWithPreview.ts",
     "../../../../../../../../front_end/ui/legacy/components/data_grid/ShowMoreDataGridNode.ts",
     "../../../../../../../../front_end/ui/legacy/components/data_grid/SortableDataGrid.ts",

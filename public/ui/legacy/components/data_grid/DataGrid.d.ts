@@ -53,6 +53,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     setFocusable(focusable: boolean): void;
     setHasSelection(hasSelected: boolean): void;
     announceSelectedGridNode(): void;
+    protected getNumberOfRows(): number;
     updateGridAccessibleNameOnFocus(): void;
     private innerAddColumn;
     addColumn(column: ColumnDescriptor, position?: number): void;

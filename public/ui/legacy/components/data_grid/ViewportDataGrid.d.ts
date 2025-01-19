@@ -1,5 +1,6 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import type * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import { type DataGridData, DataGridImpl, DataGridNode, type Parameters } from './DataGrid.js';
 declare const ViewportDataGrid_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
@@ -25,8 +26,10 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
     private lastScrollTop;
     private firstVisibleIsStriped;
     private isStriped;
+    private filters;
     constructor(dataGridParameters: Parameters);
     setStriped(striped: boolean): void;
+    setFilters(filters: readonly TextUtils.TextUtils.ParsedFilter[]): void;
     private updateStripesClass;
     setScrollContainer(scrollContainer: HTMLElement): void;
     onResize(): void;
@@ -36,7 +39,11 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
     scheduleUpdate(isFromUser?: boolean): void;
     updateInstantly(): void;
     renderInline(): void;
+    private getStringifiedCellValues;
+    private testNodeWithFilter;
+    testNodeWithFilters(node: ViewportDataGridNode<T>): boolean;
     private calculateVisibleNodes;
+    getNumberOfRows(): number;
     private contentHeight;
     private update;
     revealViewportNode(node: ViewportDataGridNode<T>): void;
@@ -63,6 +70,10 @@ export declare class ViewportDataGridNode<T> extends DataGridNode<ViewportDataGr
     private unlink;
     collapse(): void;
     expand(): void;
+    traverseNextNode(skipHidden: boolean, stayWithin?: DataGridNode<T> | null, dontPopulate?: boolean, info?: {
+        depthChange: number;
+    }): DataGridNode<T> | null;
+    traversePreviousNode(skipHidden: boolean, dontPopulate?: boolean): DataGridNode<T> | null;
     attached(): boolean;
     refresh(): void;
     reveal(): void;

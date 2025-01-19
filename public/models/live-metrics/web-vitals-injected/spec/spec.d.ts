@@ -9,30 +9,30 @@ export type InteractionEntryGroupId = number & {
 };
 export type UniqueLayoutShiftId = `layout-shift-${number}-${number}`;
 export declare function getUniqueLayoutShiftId(entry: LayoutShift): UniqueLayoutShiftId;
-export interface LCPPhases {
+export interface LcpPhases {
     timeToFirstByte: number;
     resourceLoadDelay: number;
     resourceLoadTime: number;
     elementRenderDelay: number;
 }
-export interface INPPhases {
+export interface InpPhases {
     inputDelay: number;
     processingDuration: number;
     presentationDelay: number;
 }
-export interface LCPChangeEvent extends MetricChangeEvent {
+export interface LcpChangeEvent extends MetricChangeEvent {
     name: 'LCP';
-    phases: LCPPhases;
+    phases: LcpPhases;
     nodeIndex?: number;
 }
-export interface CLSChangeEvent extends MetricChangeEvent {
+export interface ClsChangeEvent extends MetricChangeEvent {
     name: 'CLS';
     clusterShiftIds: UniqueLayoutShiftId[];
 }
-export interface INPChangeEvent extends MetricChangeEvent {
+export interface InpChangeEvent extends MetricChangeEvent {
     name: 'INP';
     interactionType: INPAttribution['interactionType'];
-    phases: INPPhases;
+    phases: InpPhases;
     startTime: number;
     entryGroupId: InteractionEntryGroupId;
 }
@@ -70,7 +70,7 @@ export interface InteractionEntryEvent {
     startTime: number;
     nextPaintTime: number;
     duration: number;
-    phases: INPPhases;
+    phases: InpPhases;
     nodeIndex?: number;
     longAnimationFrameEntries: PerformanceLongAnimationFrameTimingJSON[];
 }
@@ -83,4 +83,4 @@ export interface LayoutShiftEvent {
 export interface ResetEvent {
     name: 'reset';
 }
-export type WebVitalsEvent = LCPChangeEvent | CLSChangeEvent | INPChangeEvent | InteractionEntryEvent | LayoutShiftEvent | ResetEvent;
+export type WebVitalsEvent = LcpChangeEvent | ClsChangeEvent | InpChangeEvent | InteractionEntryEvent | LayoutShiftEvent | ResetEvent;

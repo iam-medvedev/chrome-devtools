@@ -147,9 +147,6 @@ export class Button extends HTMLElement {
         this.#props.disabled = disabled;
         this.#render();
     }
-    focus() {
-        this.#shadow.querySelector('button')?.focus();
-    }
     connectedCallback() {
         this.#render();
     }

@@ -3,6 +3,7 @@ import { type InsightModel, type InsightSetContext, type RequiredData } from './
 export type DOMSizeInsightModel = InsightModel<{
     largeLayoutUpdates: Types.Events.Layout[];
     largeStyleRecalcs: Types.Events.UpdateLayoutTree[];
+    maxDOMStats?: Types.Events.DOMStats;
 }>;
-export declare function deps(): ['Renderer', 'AuctionWorklets'];
+export declare function deps(): ['Renderer', 'AuctionWorklets', 'DOMStats'];
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): DOMSizeInsightModel;

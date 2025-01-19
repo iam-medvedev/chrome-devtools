@@ -150,7 +150,6 @@ export declare class TargetBase {
     backgroundServiceAgent(): ProtocolProxyApi.BackgroundServiceApi;
     cacheStorageAgent(): ProtocolProxyApi.CacheStorageApi;
     cssAgent(): ProtocolProxyApi.CSSApi;
-    databaseAgent(): ProtocolProxyApi.DatabaseApi;
     debuggerAgent(): ProtocolProxyApi.DebuggerApi;
     deviceOrientationAgent(): ProtocolProxyApi.DeviceOrientationApi;
     domAgent(): ProtocolProxyApi.DOMApi;
@@ -200,7 +199,6 @@ export declare class TargetBase {
     registerAnimationDispatcher(dispatcher: ProtocolProxyApi.AnimationDispatcher): void;
     registerAuditsDispatcher(dispatcher: ProtocolProxyApi.AuditsDispatcher): void;
     registerCSSDispatcher(dispatcher: ProtocolProxyApi.CSSDispatcher): void;
-    registerDatabaseDispatcher(dispatcher: ProtocolProxyApi.DatabaseDispatcher): void;
     registerBackgroundServiceDispatcher(dispatcher: ProtocolProxyApi.BackgroundServiceDispatcher): void;
     registerDebuggerDispatcher(dispatcher: ProtocolProxyApi.DebuggerDispatcher): void;
     unregisterDebuggerDispatcher(dispatcher: ProtocolProxyApi.DebuggerDispatcher): void;

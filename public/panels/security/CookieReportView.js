@@ -282,22 +282,22 @@ export class CookieReportView extends UI.Widget.VBox {
                 this.#onIssueAdded(issue);
             }
         }
-        this.update();
+        this.requestUpdate();
     }
-    async doUpdate() {
+    performUpdate() {
         this.gridData = this.#buildNodes();
         this.#view(this, this, this.contentElement);
     }
     onFilterChanged() {
-        this.update();
+        this.requestUpdate();
     }
     onSortingChanged() {
-        this.update();
+        this.requestUpdate();
     }
     #onPrimaryPageChanged() {
         this.#cookieRows.clear();
         this.namedBitSetFilterUI = undefined;
-        this.update();
+        this.requestUpdate();
     }
     #onIssueEventReceived(event) {
         if (event.data.issue instanceof IssuesManager.CookieIssue.CookieIssue) {
@@ -305,7 +305,7 @@ export class CookieReportView extends UI.Widget.VBox {
                 return;
             }
             this.#onIssueAdded(event.data.issue);
-            this.update();
+            this.requestUpdate();
         }
     }
     #onIssueAdded(issue) {

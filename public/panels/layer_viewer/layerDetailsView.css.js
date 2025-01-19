@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+.layer-details-container:has(.empty-view-scroller) {
+  display: flex;
+}
+
 table td {
   padding-left: 8px;
 }

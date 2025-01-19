@@ -167,7 +167,9 @@ export class LighthousePanel extends UI.Panel.Panel {
     renderToolbar() {
         const lighthouseToolbarContainer = this.element.createChild('div', 'lighthouse-toolbar-container');
         lighthouseToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        lighthouseToolbarContainer.role = 'toolbar';
         const toolbar = lighthouseToolbarContainer.createChild('devtools-toolbar');
+        toolbar.role = 'presentation';
         this.newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.performAnAudit), 'plus');
         toolbar.appendToolbarItem(this.newButton);
         this.newButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.renderStartView.bind(this));
@@ -183,6 +185,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         this.settingsPane.element.appendChild(this.startView.settingsToolbar());
         this.showSettingsPaneSetting = Common.Settings.Settings.instance().createSetting('lighthouse-show-settings-toolbar', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         this.rightToolbar = lighthouseToolbarContainer.createChild('devtools-toolbar');
+        this.rightToolbar.role = 'presentation';
         this.rightToolbar.appendSeparator();
         this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.lighthouseSettings), 'gear-filled'));
         this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));

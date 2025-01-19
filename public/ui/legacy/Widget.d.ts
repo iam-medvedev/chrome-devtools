@@ -99,20 +99,20 @@ export declare class Widget {
      *
      * This is not meant to be called directly, but invoked (indirectly) through
      * the `requestAnimationFrame` and executed with the animation frame. Instead,
-     * use the `update()` method to schedule an asynchronous update.
+     * use the `requestUpdate()` method to schedule an asynchronous update.
      *
      * @return can either return nothing or a promise; in that latter case, the
      *         update logic will await the resolution of the returned promise
      *         before proceeding.
      */
-    protected doUpdate(): Promise<void> | void;
+    performUpdate(): Promise<void> | void;
     /**
      * Schedules an asynchronous update for this widget.
      *
      * The update will be deduplicated and executed with the next animation
      * frame.
      */
-    update(): void;
+    requestUpdate(): void;
     /**
      * The `updateComplete` promise resolves when the widget has finished updating.
      *
@@ -127,7 +127,7 @@ export declare class Widget {
      * ```js
      * // Set up the test widget, and wait for the initial update cycle to complete.
      * const widget = new SomeWidget(someData);
-     * widget.update();
+     * widget.requestUpdate();
      * await widget.updateComplete;
      *
      * // Assert state of the widget.

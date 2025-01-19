@@ -1,3 +1,4 @@
+import type * as Trace from '../../../models/trace/trace.js';
 export interface CategoryData {
     value: number;
     color: string;
@@ -8,10 +9,10 @@ export interface SummaryTableData {
     rangeStart: number;
     rangeEnd: number;
     categories: CategoryData[];
+    selectedEvents: Trace.Types.Events.Event[];
 }
 export declare class TimelineSummary extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: SummaryTableData);
 }
 declare global {

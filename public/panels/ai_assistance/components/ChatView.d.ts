@@ -58,7 +58,6 @@ export interface Props {
     agentType?: AgentType;
     isReadOnly: boolean;
     blockedByCrossOrigin: boolean;
-    requiresNewConversation?: boolean;
     stripLinks: boolean;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {

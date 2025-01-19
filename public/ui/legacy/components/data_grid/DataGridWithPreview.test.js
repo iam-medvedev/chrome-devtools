@@ -24,7 +24,7 @@ describeWithEnvironment('DataGridWithPreview', () => {
             fakeFn: async (key, value) => {
                 assert.strictEqual(key, expectedKey);
                 assert.strictEqual(value, expectedValue);
-                return new UI.EmptyWidget.EmptyWidget(`${key}:${value}`);
+                return new UI.EmptyWidget.EmptyWidget(`${key}:${value}`, '');
             },
         });
     };
@@ -73,7 +73,7 @@ describeWithEnvironment('DataGridWithPreview', () => {
         node.deselect();
         await raf();
         // Check preview was updated.
-        assert.strictEqual(dataGridWithPreview.previewPanelForTesting.element.innerText, 'Select a value to preview');
+        assert.strictEqual(dataGridWithPreview.previewPanelForTesting.element.innerText, 'No value selected\nSelect a value to preview');
     });
     it('preview changed when value changes', async () => {
         const [key, value] = MOCK_ITEMS[0];

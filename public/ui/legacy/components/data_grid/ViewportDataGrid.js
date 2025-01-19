@@ -21,6 +21,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
     lastScrollTop;
     firstVisibleIsStriped;
     isStriped;
+    filters = [];
     constructor(dataGridParameters) {
         super(dataGridParameters);
         this.onScrollBound = this.onScroll.bind(this);
@@ -41,6 +42,13 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
             startsWithOdd = Boolean(allChildren.indexOf(this.visibleNodes[0]));
         }
         this.updateStripesClass(startsWithOdd);
+    }
+    setFilters(filters) {
+        if (this.filters === filters) {
+            return;
+        }
+        this.filters = filters;
+        this.scheduleUpdate();
     }
     updateStripesClass(startsWithOdd) {
         this.element.classList.toggle('striped-data-grid', !startsWithOdd && this.isStriped);
@@ -84,8 +92,45 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         super.renderInline();
         this.update();
     }
+    getStringifiedCellValues(data, columns) {
+        return JSON
+            .stringify(Object.entries(data).filter(([key]) => columns.has(key)).map(([, value]) => {
+            if (value instanceof Node) {
+                return value.textContent;
+            }
+            return String(value);
+        }))
+            .toLowerCase();
+    }
+    testNodeWithFilter(node, filter) {
+        let rowMatchesFilter = false;
+        const { key, text, negative, regex } = filter;
+        const dataToTest = this.getStringifiedCellValues(node.data, key ? new Set(key.split(',')) : new Set(this.visibleColumnsArray.map(column => column.id)));
+        if (regex) {
+            rowMatchesFilter = regex.test(dataToTest);
+        }
+        else if (text) {
+            rowMatchesFilter = dataToTest.includes(text.toLowerCase());
+        }
+        // If `negative` is set to `true`, that means we have to flip the final
+        // result, because the filter is matching anything that doesn't match. e.g.
+        // {text: 'foo', negative: false} matches rows that contain the text `foo`
+        // but {text: 'foo', negative: true} matches rows that do NOT contain the
+        // text `foo` so if a filter is marked as negative, we first match against
+        // that filter, and then we flip it here.
+        return negative ? !rowMatchesFilter : rowMatchesFilter;
+    }
+    testNodeWithFilters(node) {
+        for (const filter of this.filters) {
+            const nodeMatchesFilter = this.testNodeWithFilter(node, filter);
+            if (!nodeMatchesFilter) {
+                return false;
+            }
+        }
+        return true;
+    }
     calculateVisibleNodes(clientHeight, scrollTop) {
-        const nodes = this.rootNode().flatChildren();
+        const nodes = this.rootNode().flatChildren().filter(this.testNodeWithFilters.bind(this));
         if (this.inline) {
             return { topPadding: 0, bottomPadding: 0, contentHeight: 0, visibleNodes: nodes, offset: 0 };
         }
@@ -116,6 +161,12 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
             visibleNodes: nodes.slice(start, end),
             offset: start,
         };
+    }
+    getNumberOfRows() {
+        return this.rootNode()
+            .flatChildren()
+            .filter(this.testNodeWithFilters.bind(this))
+            .length;
     }
     contentHeight() {
         const nodes = this.rootNode().flatChildren();
@@ -354,6 +405,22 @@ export class ViewportDataGridNode extends DataGridNode {
         this.clearFlatNodes();
         super.expand();
         this.dataGrid.scheduleUpdateStructure();
+    }
+    traverseNextNode(skipHidden, stayWithin, dontPopulate, info) {
+        const result = super.traverseNextNode(skipHidden, stayWithin, dontPopulate, info);
+        if (result && skipHidden &&
+            !this.dataGrid.testNodeWithFilters(result)) {
+            return result.traverseNextNode(skipHidden, stayWithin, dontPopulate, info);
+        }
+        return result;
+    }
+    traversePreviousNode(skipHidden, dontPopulate) {
+        const result = super.traversePreviousNode(skipHidden, dontPopulate);
+        if (result && skipHidden &&
+            !this.dataGrid.testNodeWithFilters(result)) {
+            return result.traversePreviousNode(skipHidden, dontPopulate);
+        }
+        return result;
     }
     attached() {
         const existingElement = this.existingElement();

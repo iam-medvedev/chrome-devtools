@@ -147,6 +147,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
     #aiAssistanceEnabledSetting;
     #changeManager = new ChangeManager();
+    #mutex = new Common.Mutex.Mutex();
     #newChatButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newChat), 'plus', undefined, 'freestyler.new-chat');
     #historyEntriesButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.history), 'history', undefined, 'freestyler.history');
     #deleteHistoryEntryButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteChat), 'bin', undefined, 'freestyler.delete');
@@ -199,8 +200,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #createToolbar() {
         const toolbarContainer = this.contentElement.createChild('div', 'toolbar-container');
         toolbarContainer.setAttribute('jslog', VisualLogging.toolbar().toString());
+        toolbarContainer.role = 'toolbar';
         const leftToolbar = toolbarContainer.createChild('devtools-toolbar', 'freestyler-left-toolbar');
+        leftToolbar.role = 'presentation';
         const rightToolbar = toolbarContainer.createChild('devtools-toolbar', 'freestyler-right-toolbar');
+        rightToolbar.role = 'presentation';
         this.#newChatButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#handleNewChatRequest.bind(this));
         leftToolbar.appendToolbarItem(this.#newChatButton);
         leftToolbar.appendSeparator();
@@ -644,7 +648,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#viewProps.selectedContext = currentContext;
         if (!currentContext) {
             this.#viewProps.blockedByCrossOrigin = false;
-            this.#viewProps.requiresNewConversation = false;
             return;
         }
         this.#viewProps.blockedByCrossOrigin = !currentContext.isOriginAllowed(this.#currentAgent.origin);
@@ -654,8 +657,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#viewProps.blockedByCrossOrigin && this.#previousSameOriginContext) {
             this.#viewProps.onCancelCrossOriginChat = this.#handleCrossOriginChatCancellation.bind(this);
         }
-        this.#viewProps.requiresNewConversation = this.#currentAgent.type === "drjones-performance" /* AgentType.PERFORMANCE */ &&
-            Boolean(this.#currentAgent.context) && this.#currentAgent.context !== currentContext;
         this.#viewProps.stripLinks = this.#viewProps.agentType === "drjones-performance" /* AgentType.PERFORMANCE */;
     }
     #getConversationContext() {
@@ -686,6 +687,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (!this.#currentAgent) {
             return;
         }
+        // Cancel any previous in-flight conversation.
+        this.#cancel();
         this.#runAbortController = new AbortController();
         const signal = this.#runAbortController.signal;
         const context = this.#getConversationContext();
@@ -704,121 +707,127 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
     }
     async #doConversation(generator) {
-        let systemMessage = {
-            entity: "model" /* ChatMessageEntity.MODEL */,
-            steps: [],
-        };
-        let step = { isLoading: true };
-        this.#viewProps.isLoading = true;
-        for await (const data of generator) {
-            step.sideEffect = undefined;
-            switch (data.type) {
-                case "user-query" /* ResponseType.USER_QUERY */: {
-                    this.#viewProps.messages.push({
-                        entity: "user" /* ChatMessageEntity.USER */,
-                        text: data.query,
-                    });
-                    systemMessage = {
-                        entity: "model" /* ChatMessageEntity.MODEL */,
-                        steps: [],
-                    };
-                    this.#viewProps.messages.push(systemMessage);
-                    break;
-                }
-                case "querying" /* ResponseType.QUERYING */: {
-                    step = { isLoading: true };
-                    if (!systemMessage.steps.length) {
-                        systemMessage.steps.push(step);
+        const release = await this.#mutex.acquire();
+        try {
+            let systemMessage = {
+                entity: "model" /* ChatMessageEntity.MODEL */,
+                steps: [],
+            };
+            let step = { isLoading: true };
+            this.#viewProps.isLoading = true;
+            for await (const data of generator) {
+                step.sideEffect = undefined;
+                switch (data.type) {
+                    case "user-query" /* ResponseType.USER_QUERY */: {
+                        this.#viewProps.messages.push({
+                            entity: "user" /* ChatMessageEntity.USER */,
+                            text: data.query,
+                        });
+                        systemMessage = {
+                            entity: "model" /* ChatMessageEntity.MODEL */,
+                            steps: [],
+                        };
+                        this.#viewProps.messages.push(systemMessage);
+                        break;
                     }
-                    break;
-                }
-                case "context" /* ResponseType.CONTEXT */: {
-                    step.title = data.title;
-                    step.contextDetails = data.details;
-                    step.isLoading = false;
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case "title" /* ResponseType.TITLE */: {
-                    step.title = data.title;
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case "thought" /* ResponseType.THOUGHT */: {
-                    step.isLoading = false;
-                    step.thought = data.thought;
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case "side-effect" /* ResponseType.SIDE_EFFECT */: {
-                    step.isLoading = false;
-                    step.code = data.code;
-                    step.sideEffect = {
-                        onAnswer: data.confirm,
-                    };
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case "action" /* ResponseType.ACTION */: {
-                    step.isLoading = false;
-                    step.code = data.code;
-                    step.output = data.output;
-                    step.canceled = data.canceled;
-                    if (systemMessage.steps.at(-1) !== step) {
-                        systemMessage.steps.push(step);
-                    }
-                    break;
-                }
-                case "answer" /* ResponseType.ANSWER */: {
-                    systemMessage.suggestions = data.suggestions;
-                    systemMessage.answer = data.text;
-                    systemMessage.rpcId = data.rpcId;
-                    // When there is an answer without any thinking steps, we don't want to show the thinking step.
-                    if (systemMessage.steps.length === 1 && systemMessage.steps[0].isLoading) {
-                        systemMessage.steps.pop();
-                    }
-                    step.isLoading = false;
-                    break;
-                }
-                case "error" /* ResponseType.ERROR */: {
-                    systemMessage.error = data.error;
-                    systemMessage.rpcId = undefined;
-                    const lastStep = systemMessage.steps.at(-1);
-                    if (lastStep) {
-                        // Mark the last step as cancelled to make the UI feel better.
-                        if (data.error === "abort" /* ErrorType.ABORT */) {
-                            lastStep.canceled = true;
-                            // If error happens while the step is still loading remove it.
+                    case "querying" /* ResponseType.QUERYING */: {
+                        step = { isLoading: true };
+                        if (!systemMessage.steps.length) {
+                            systemMessage.steps.push(step);
                         }
-                        else if (lastStep.isLoading) {
+                        break;
+                    }
+                    case "context" /* ResponseType.CONTEXT */: {
+                        step.title = data.title;
+                        step.contextDetails = data.details;
+                        step.isLoading = false;
+                        if (systemMessage.steps.at(-1) !== step) {
+                            systemMessage.steps.push(step);
+                        }
+                        break;
+                    }
+                    case "title" /* ResponseType.TITLE */: {
+                        step.title = data.title;
+                        if (systemMessage.steps.at(-1) !== step) {
+                            systemMessage.steps.push(step);
+                        }
+                        break;
+                    }
+                    case "thought" /* ResponseType.THOUGHT */: {
+                        step.isLoading = false;
+                        step.thought = data.thought;
+                        if (systemMessage.steps.at(-1) !== step) {
+                            systemMessage.steps.push(step);
+                        }
+                        break;
+                    }
+                    case "side-effect" /* ResponseType.SIDE_EFFECT */: {
+                        step.isLoading = false;
+                        step.code = data.code;
+                        step.sideEffect = {
+                            onAnswer: data.confirm,
+                        };
+                        if (systemMessage.steps.at(-1) !== step) {
+                            systemMessage.steps.push(step);
+                        }
+                        break;
+                    }
+                    case "action" /* ResponseType.ACTION */: {
+                        step.isLoading = false;
+                        step.code = data.code;
+                        step.output = data.output;
+                        step.canceled = data.canceled;
+                        if (systemMessage.steps.at(-1) !== step) {
+                            systemMessage.steps.push(step);
+                        }
+                        break;
+                    }
+                    case "answer" /* ResponseType.ANSWER */: {
+                        systemMessage.suggestions = data.suggestions;
+                        systemMessage.answer = data.text;
+                        systemMessage.rpcId = data.rpcId;
+                        // When there is an answer without any thinking steps, we don't want to show the thinking step.
+                        if (systemMessage.steps.length === 1 && systemMessage.steps[0].isLoading) {
                             systemMessage.steps.pop();
                         }
+                        step.isLoading = false;
+                        break;
                     }
-                    if (data.error === "block" /* ErrorType.BLOCK */) {
-                        systemMessage.answer = undefined;
+                    case "error" /* ResponseType.ERROR */: {
+                        systemMessage.error = data.error;
+                        systemMessage.rpcId = undefined;
+                        const lastStep = systemMessage.steps.at(-1);
+                        if (lastStep) {
+                            // Mark the last step as cancelled to make the UI feel better.
+                            if (data.error === "abort" /* ErrorType.ABORT */) {
+                                lastStep.canceled = true;
+                                // If error happens while the step is still loading remove it.
+                            }
+                            else if (lastStep.isLoading) {
+                                systemMessage.steps.pop();
+                            }
+                        }
+                        if (data.error === "block" /* ErrorType.BLOCK */) {
+                            systemMessage.answer = undefined;
+                        }
                     }
                 }
+                void this.doUpdate();
+                // This handles scrolling to the bottom for live conversations when:
+                // * User submits the query & the context step is shown.
+                // * There is a side effect dialog  shown.
+                if (!this.#viewProps.isReadOnly &&
+                    (data.type === "context" /* ResponseType.CONTEXT */ || data.type === "side-effect" /* ResponseType.SIDE_EFFECT */)) {
+                    this.#viewOutput.chatView?.scrollToBottom();
+                }
             }
+            this.#viewProps.isLoading = false;
+            this.#viewOutput.chatView?.finishTextAnimations();
             void this.doUpdate();
-            // This handles scrolling to the bottom for live conversations when:
-            // * User submits the query & the context step is shown.
-            // * There is a side effect dialog  shown.
-            if (!this.#viewProps.isReadOnly &&
-                (data.type === "context" /* ResponseType.CONTEXT */ || data.type === "side-effect" /* ResponseType.SIDE_EFFECT */)) {
-                this.#viewOutput.chatView?.scrollToBottom();
-            }
         }
-        this.#viewProps.isLoading = false;
-        this.#viewOutput.chatView?.finishTextAnimations();
-        void this.doUpdate();
+        finally {
+            release();
+        }
     }
 }
 export class ActionDelegate {

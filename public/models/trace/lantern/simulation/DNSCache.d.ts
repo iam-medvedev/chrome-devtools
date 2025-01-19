@@ -9,8 +9,8 @@ declare class DNSCache {
         rtt: number;
     });
     getTimeUntilResolution(request: Lantern.NetworkRequest, options?: {
-        requestedAt: number;
-        shouldUpdateCache: boolean;
+        requestedAt?: number;
+        shouldUpdateCache?: boolean;
     }): number;
     updateCacheResolvedAtIfNeeded(request: Lantern.NetworkRequest, resolvedAt: number): void;
     /**

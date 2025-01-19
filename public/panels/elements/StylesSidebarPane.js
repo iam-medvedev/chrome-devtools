@@ -166,6 +166,7 @@ const HIGHLIGHTABLE_PROPERTIES = [
     { mode: 'flexibility', properties: ['flex', 'flex-basis', 'flex-grow', 'flex-shrink'] },
 ];
 export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsSidebarPane) {
+    matchedStyles;
     currentToolbarPane;
     animatedToolbarPane;
     pendingWidget;
@@ -191,6 +192,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     idleCallbackManager;
     needsForceUpdate;
     resizeThrottler;
+    resetUpdateThrottler;
+    computedStyleUpdateThrottler;
     scrollerElement;
     boundOnScroll;
     imagePreviewPopover;
@@ -228,6 +231,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
         this.linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
         this.decorator = new StylePropertyHighlighter(this);
+        this.matchedStyles = null;
         this.lastRevealedProperty = null;
         this.userOperation = false;
         this.isEditingStyle = false;
@@ -242,6 +246,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
         this.contentElement.addEventListener('copy', this.clipboardCopy.bind(this));
         this.resizeThrottler = new Common.Throttler.Throttler(100);
+        this.resetUpdateThrottler = new Common.Throttler.Throttler(500);
+        this.computedStyleUpdateThrottler = new Common.Throttler.Throttler(500);
         this.boundOnScroll = this.onScroll.bind(this);
         this.imagePreviewPopover = new ImagePreviewPopover(this.contentElement, event => {
             const link = event.composedPath()[0];
@@ -615,13 +621,14 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (signal.aborted) {
             return;
         }
+        this.matchedStyles = matchedStyles;
         const nodeId = this.node()?.id;
-        const parentNodeId = matchedStyles?.getParentLayoutNodeId();
+        const parentNodeId = this.matchedStyles?.getParentLayoutNodeId();
         const [computedStyles, parentsComputedStyles] = await Promise.all([this.fetchComputedStylesFor(nodeId), this.fetchComputedStylesFor(parentNodeId)]);
         if (signal.aborted) {
             return;
         }
-        await this.innerRebuildUpdate(signal, matchedStyles, computedStyles, parentsComputedStyles);
+        await this.innerRebuildUpdate(signal, this.matchedStyles, computedStyles, parentsComputedStyles);
         if (signal.aborted) {
             return;
         }
@@ -716,17 +723,123 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             for (const section of this.allSections()) {
                 section.styleSheetEdited(edit);
             }
-            void this.refreshComputedStyles();
+            void this.#refreshComputedStyles();
             return;
         }
+        this.#resetUpdateIfNotEditing();
+    }
+    onComputedStyleChanged() {
+        if (!Common.Settings.Settings.instance().getHostConfig().devToolsAnimationStylesInStylesTab?.enabled) {
+            return;
+        }
+        void this.computedStyleUpdateThrottler.schedule(async () => {
+            await this.#updateAnimatedStyles();
+            this.handledComputedStyleChangedForTest();
+        });
+    }
+    handledComputedStyleChangedForTest() {
+    }
+    #resetUpdateIfNotEditing() {
         if (this.userOperation || this.isEditingStyle) {
-            void this.refreshComputedStyles();
+            void this.#refreshComputedStyles();
             return;
         }
         this.resetCache();
         this.update();
     }
-    async refreshComputedStyles() {
+    #scheduleResetUpdateIfNotEditing() {
+        this.scheduleResetUpdateIfNotEditingCalledForTest();
+        void this.resetUpdateThrottler.schedule(async () => {
+            this.#resetUpdateIfNotEditing();
+        });
+    }
+    scheduleResetUpdateIfNotEditingCalledForTest() {
+    }
+    async #updateAnimatedStyles() {
+        if (!this.matchedStyles) {
+            return;
+        }
+        const nodeId = this.node()?.id;
+        if (!nodeId) {
+            return;
+        }
+        const animatedStyles = await this.cssModel()?.getAnimatedStylesForNode(nodeId);
+        if (!animatedStyles) {
+            return;
+        }
+        const updateStyleSection = (currentStyle, newStyle) => {
+            // The newly fetched matched styles contain a new style.
+            if (newStyle) {
+                // If the number of CSS properties in the new style
+                // differs from the current style, it indicates a potential change
+                // in property overrides. In this case, re-fetch the entire style
+                // cascade to ensure accurate updates.
+                if (currentStyle?.allProperties().length !== newStyle.cssProperties.length) {
+                    this.#scheduleResetUpdateIfNotEditing();
+                    return;
+                }
+                // If the number of properties remains the same, update the
+                // existing style properties with the new values from the
+                // fetched style.
+                currentStyle.allProperties().forEach((property, index) => {
+                    const newProperty = newStyle.cssProperties[index];
+                    if (!newProperty) {
+                        return;
+                    }
+                    property.setLocalValue(newProperty.value);
+                });
+            }
+            else if (currentStyle) {
+                // If no new style is fetched while a current style exists,
+                // it implies the style has been removed (e.g., animation or
+                // transition ended). Trigger a reset and update the UI to
+                // reflect this change.
+                this.#scheduleResetUpdateIfNotEditing();
+                return;
+            }
+        };
+        updateStyleSection(this.matchedStyles.transitionsStyle() ?? null, animatedStyles.transitionsStyle ?? null);
+        const animationStyles = this.matchedStyles.animationStyles() ?? [];
+        const animationStylesPayload = animatedStyles.animationStyles ?? [];
+        // There either is a new animation or a previous animation is ended.
+        if (animationStyles.length !== animationStylesPayload.length) {
+            this.#scheduleResetUpdateIfNotEditing();
+            return;
+        }
+        for (let i = 0; i < animationStyles.length; i++) {
+            const currentAnimationStyle = animationStyles[i];
+            const nextAnimationStyle = animationStylesPayload[i].style;
+            updateStyleSection(currentAnimationStyle ?? null, nextAnimationStyle);
+        }
+        const inheritedStyles = this.matchedStyles.inheritedStyles() ?? [];
+        const currentInheritedTransitionsStyles = inheritedStyles.filter(style => style.type === SDK.CSSStyleDeclaration.Type.Transition);
+        const newInheritedTransitionsStyles = animatedStyles.inherited?.map(inherited => inherited.transitionsStyle)
+            .filter(style => style?.cssProperties.some(cssProperty => SDK.CSSMetadata.cssMetadata().isPropertyInherited(cssProperty.name))) ??
+            [];
+        if (currentInheritedTransitionsStyles.length !== newInheritedTransitionsStyles.length) {
+            this.#scheduleResetUpdateIfNotEditing();
+            return;
+        }
+        for (let i = 0; i < currentInheritedTransitionsStyles.length; i++) {
+            const currentInheritedTransitionsStyle = currentInheritedTransitionsStyles[i];
+            const newInheritedTransitionsStyle = newInheritedTransitionsStyles[i];
+            updateStyleSection(currentInheritedTransitionsStyle, newInheritedTransitionsStyle ?? null);
+        }
+        const currentInheritedAnimationsStyles = inheritedStyles.filter(style => style.type === SDK.CSSStyleDeclaration.Type.Animation);
+        const newInheritedAnimationsStyles = animatedStyles.inherited?.flatMap(inherited => inherited.animationStyles)
+            .filter(animationStyle => animationStyle?.style.cssProperties.some(cssProperty => SDK.CSSMetadata.cssMetadata().isPropertyInherited(cssProperty.name))) ??
+            [];
+        if (currentInheritedAnimationsStyles.length !== newInheritedAnimationsStyles.length) {
+            this.#scheduleResetUpdateIfNotEditing();
+            return;
+        }
+        for (let i = 0; i < currentInheritedAnimationsStyles.length; i++) {
+            const currentInheritedAnimationsStyle = currentInheritedAnimationsStyles[i];
+            const newInheritedAnimationsStyle = newInheritedAnimationsStyles[i]?.style;
+            updateStyleSection(currentInheritedAnimationsStyle, newInheritedAnimationsStyle ?? null);
+        }
+    }
+    async #refreshComputedStyles() {
         this.#updateComputedStylesAbortController?.abort();
         this.#updateAbortController = new AbortController();
         const signal = this.#updateAbortController.signal;
@@ -849,6 +962,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     nodeStylesUpdatedForTest(_node, _rebuild) {
         // For sniffing in tests.
     }
+    setMatchedStylesForTest(matchedStyles) {
+        this.matchedStyles = matchedStyles;
+    }
     rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, computedStyles, parentsComputedStyles) {
         return this.rebuildSectionsForMatchedStyleRules(matchedStyles, computedStyles, parentsComputedStyles);
     }
@@ -894,7 +1010,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             }
             addLayerSeparator(style);
             const lastBlock = blocks[blocks.length - 1];
-            if (lastBlock) {
+            const isTransitionOrAnimationStyle = style.type === SDK.CSSStyleDeclaration.Type.Transition ||
+                style.type === SDK.CSSStyleDeclaration.Type.Animation;
+            if (lastBlock && (!isTransitionOrAnimationStyle || style.allProperties().length > 0)) {
                 this.idleCallbackManager.schedule(() => {
                     const section = new StylePropertiesSection(this, matchedStyles, style, sectionIdx, computedStyles, parentsComputedStyles);
                     sectionIdx++;
@@ -1196,8 +1314,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     }
     createStylesSidebarToolbar() {
         const container = this.contentElement.createChild('div', 'styles-sidebar-pane-toolbar-container');
+        container.role = 'toolbar';
         const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
         const toolbar = hbox.createChild('devtools-toolbar', 'styles-pane-toolbar');
+        toolbar.role = 'presentation';
         const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false);
         filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);

@@ -14,12 +14,14 @@ import * as TimelineComponents from './components/components.js';
 import { EventsTimelineTreeView } from './EventsTimelineTreeView.js';
 import { Tracker } from './FreshRecording.js';
 import { targetForEvent } from './TargetForEvent.js';
+import { ThirdPartyTreeViewWidget } from './ThirdPartyTreeView.js';
 import { TimelineLayersView } from './TimelineLayersView.js';
 import { TimelinePaintProfilerView } from './TimelinePaintProfilerView.js';
 import { selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, } from './TimelineSelection.js';
 import { TimelineSelectorStatsView } from './TimelineSelectorStatsView.js';
 import { BottomUpTimelineTreeView, CallTreeTimelineTreeView, TimelineTreeView } from './TimelineTreeView.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Text for the summary view
@@ -56,7 +58,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
     detailsLinkifier;
     tabbedPane;
     defaultDetailsWidget;
-    defaultDetailsContentElement;
+    defaultDetailsContentWidget;
     rangeDetailViews;
     #selectedEvents;
     lazyPaintProfilerView;
@@ -73,6 +75,8 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
     #layoutShiftDetails;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     #relatedInsightChips = new TimelineComponents.RelatedInsightChips.RelatedInsightChips();
+    #thirdPartyTree = new ThirdPartyTreeViewWidget();
+    #entityMapper = null;
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-details');
@@ -83,8 +87,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.defaultDetailsWidget = new UI.Widget.VBox();
         this.defaultDetailsWidget.element.classList.add('timeline-details-view');
         this.defaultDetailsWidget.element.setAttribute('jslog', `${VisualLogging.pane('details').track({ resize: true })}`);
-        this.defaultDetailsContentElement =
-            this.defaultDetailsWidget.element.createChild('div', 'timeline-details-view-body vbox');
+        this.defaultDetailsContentWidget = this.#createContentWidget();
         this.appendTab(Tab.Details, i18nString(UIStrings.summary), this.defaultDetailsWidget);
         this.setPreferredTab(Tab.Details);
         this.rangeDetailViews = new Map();
@@ -101,12 +104,21 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.rangeDetailViews.values().forEach(view => {
             view.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data));
         });
+        this.#thirdPartyTree.addEventListener("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node => {
+            this.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node.data);
+        });
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
         this.#layoutShiftDetails = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
         this.lazySelectorStatsView = null;
+    }
+    #createContentWidget() {
+        const defaultDetailsContentWidget = new UI.Widget.VBox();
+        defaultDetailsContentWidget.element.classList.add('timeline-details-view-body');
+        defaultDetailsContentWidget.show(this.defaultDetailsWidget.element);
+        return defaultDetailsContentWidget;
     }
     selectorStatsView() {
         if (this.lazySelectorStatsView) {
@@ -116,7 +128,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         return this.lazySelectorStatsView;
     }
     getDetailsContentElementForTest() {
-        return this.defaultDetailsContentElement;
+        return this.defaultDetailsContentWidget.element;
     }
     revealEventInTreeView(event) {
         if (this.tabbedPane.visibleView instanceof TimelineTreeView) {
@@ -148,6 +160,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         }
         if (data.parsedTrace) {
             this.#filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
+            this.#entityMapper = new Utils.EntityMapper.EntityMapper(data.parsedTrace);
         }
         this.#selectedEvents = data.selectedEvents;
         this.#traceInsightsSets = data.traceInsightsSets;
@@ -159,6 +172,8 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         for (const view of this.rangeDetailViews.values()) {
             view.setModelWithEvents(data.selectedEvents, data.parsedTrace);
         }
+        // Set the 3p tree model.
+        this.#thirdPartyTree.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
         this.lazyPaintProfilerView = null;
         this.lazyLayersView = null;
         await this.setSelection(null);
@@ -170,21 +185,27 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
                 this.tabbedPane.closeTab(allTabs[i]);
             }
         }
-        this.defaultDetailsContentElement.removeChildren();
-        this.defaultDetailsContentElement.appendChild(node);
+        this.defaultDetailsContentWidget.detach();
+        this.defaultDetailsContentWidget = this.#createContentWidget();
+        this.defaultDetailsContentWidget.contentElement.appendChild(node);
         if (this.#relatedInsightChips) {
-            this.defaultDetailsContentElement.appendChild(this.#relatedInsightChips);
+            this.defaultDetailsContentWidget.contentElement.appendChild(this.#relatedInsightChips);
         }
     }
     updateContents() {
+        const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
+        if (!traceBoundsState) {
+            return;
+        }
+        const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
+        // Update the view that we currently have selected.
         const view = this.rangeDetailViews.get(this.tabbedPane.selectedTabId || '');
         if (view) {
-            const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
-            if (!traceBoundsState) {
-                return;
-            }
-            const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
             view.updateContents(this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max));
+        }
+        else {
+            // If no view, we must be in the summary tab, update the 3p tree.
+            this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max));
         }
     }
     appendTab(id, tabTitle, view, isCloseable) {
@@ -265,7 +286,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
             return;
         }
         const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
-        await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget);
+        await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget, this.#entityMapper);
         this.#relatedInsightChips.activeEvent = networkRequest;
         if (this.#eventToRelatedInsightsMap) {
             this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
@@ -289,7 +310,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
             return;
         }
         // Otherwise, build the generic trace event details UI.
-        const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true);
+        const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true, this.#entityMapper);
         this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
     }
     async setSelection(selection) {
@@ -396,14 +417,14 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.appendTab(Tab.PaintProfiler, i18nString(UIStrings.paintProfiler), paintProfilerView);
     }
     updateSelectedRangeStats(startTime, endTime) {
-        if (!this.#selectedEvents || !this.#parsedTrace) {
+        if (!this.#selectedEvents || !this.#parsedTrace || !this.#entityMapper) {
             return;
         }
         const minBoundsMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(this.#parsedTrace.Meta.traceBounds).min;
         const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
         const startOffset = startTime - minBoundsMilli;
         const endOffset = endTime - minBoundsMilli;
-        const summaryDetails = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset);
+        const summaryDetails = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
         this.setContent(summaryDetails);
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();

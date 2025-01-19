@@ -22,7 +22,6 @@ styles.replaceSync(
 }
 
 .developer-resource-view-toolbar {
-  display: inline-block;
   width: 100%;
 }
 

@@ -91,6 +91,11 @@ export class IgnoreListSetting extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [ignoreListSettingStyles];
         this.#scheduleRender();
+        // Prevent the event making its way to the TimelinePanel element which will
+        // cause the "Load Profile" context menu to appear.
+        this.addEventListener('contextmenu', e => {
+            e.stopPropagation();
+        });
     }
     #scheduleRender() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
@@ -99,6 +104,7 @@ export class IgnoreListSetting extends HTMLElement {
         return Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
     }
     #startEditing() {
+        // Do not need to trim here because this is a temporary one, we will trim the input when finish editing,
         this.#editingRegexSetting = { pattern: this.#newRegexInput.value, disabled: false, disabledForUrl: undefined };
         // We need to push the temp regex here to update the flame chart.
         // We are using the "skip-stack-frames-pattern" setting to determine which is rendered on flame chart. And the push
@@ -122,6 +128,8 @@ export class IgnoreListSetting extends HTMLElement {
     #resetInput() {
         this.#newRegexCheckbox.checkboxElement.checked = false;
         this.#newRegexInput.value = '';
+        this.#newRegexIsValid = true;
+        this.#newRegexValidationMessage = undefined;
     }
     #addNewRegexToIgnoreList() {
         const newRegex = this.#newRegexInput.value.trim();
@@ -166,7 +174,7 @@ export class IgnoreListSetting extends HTMLElement {
         }
         return this.#regexPatterns;
     }
-    #handleInputChange() {
+    #validateInput() {
         const newRegex = this.#newRegexInput.value.trim();
         const newRegexIsNotEmpty = Boolean(newRegex);
         // Enable the rule if the text input field is not empty.
@@ -176,9 +184,13 @@ export class IgnoreListSetting extends HTMLElement {
         UI.ARIAUtils.setInvalid(this.#newRegexInput, !valid);
         this.#newRegexIsValid = valid;
         this.#newRegexValidationMessage = message;
+    }
+    #handleInputChange() {
+        this.#validateInput();
         if (this.#editingRegexSetting) {
-            this.#editingRegexSetting.pattern = this.#newRegexInput.value.trim();
-            this.#editingRegexSetting.disabled = !newRegexIsNotEmpty;
+            const newRegex = this.#newRegexInput.value.trim();
+            this.#editingRegexSetting.pattern = newRegex;
+            this.#editingRegexSetting.disabled = !Boolean(newRegex);
             this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
         }
     }
@@ -206,6 +218,7 @@ export class IgnoreListSetting extends HTMLElement {
     }
     #onRegexEnableToggled(regex, checkbox) {
         regex.disabled = !checkbox.checkboxElement.checked;
+        this.#validateInput();
         // Technically we don't need to call the set function, because the regex is a reference, so it changed the setting
         // value directly.
         // But we need to call the set function to trigger the setting change event. which is needed by view update of flame
@@ -216,6 +229,9 @@ export class IgnoreListSetting extends HTMLElement {
     }
     #removeRegexByIndex(index) {
         this.#regexPatterns.splice(index, 1);
+        this.#validateInput();
+        // Call the set function to trigger the setting change event. we listen to this event and will update this component
+        // and the flame chart.
         this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
     }
     #renderItem(regex, index) {

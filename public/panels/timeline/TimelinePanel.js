@@ -488,9 +488,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#thirdPartyTracksSetting.setTitle(i18nString(UIStrings.showCustomtracks));
         const timelineToolbarContainer = this.element.createChild('div', 'timeline-toolbar-container');
         timelineToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        timelineToolbarContainer.role = 'toolbar';
         this.panelToolbar = timelineToolbarContainer.createChild('devtools-toolbar', 'timeline-main-toolbar');
+        this.panelToolbar.role = 'presentation';
         this.panelToolbar.wrappable = true;
         this.panelRightToolbar = timelineToolbarContainer.createChild('devtools-toolbar');
+        this.panelRightToolbar.role = 'presentation';
         if (!isNode) {
             this.createSettingsPane();
             this.updateShowSettingsToolbarButton();
@@ -1084,7 +1087,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     createNetworkConditionsSelectToolbarItem() {
         const toolbarItem = new UI.Toolbar.ToolbarComboBox(null, i18nString(UIStrings.networkConditions));
         this.networkThrottlingSelect =
-            MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(toolbarItem.selectElement());
+            MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(toolbarItem.element);
         return toolbarItem;
     }
     prepareToLoadTimeline() {
@@ -1832,11 +1835,14 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         this.#restoreSidebarVisibilityOnTraceLoad = false;
     }
+    // Activates or disables dimming when checkbox is clicked.
     #dimThirdPartiesIfRequired(traceIndex) {
         const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
         if (!parsedTrace) {
             return;
         }
+        const checkboxState = this.#dimThirdPartiesSetting?.get() ?? false;
+        this.flameChart.setActiveThirdPartyDimmingSetting(checkboxState);
         const thirdPartyEvents = this.#entityMapper?.thirdPartyEvents() ?? [];
         if (this.#dimThirdPartiesSetting?.get() && thirdPartyEvents.length) {
             this.flameChart.dimEvents(thirdPartyEvents);

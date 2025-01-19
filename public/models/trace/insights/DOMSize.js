@@ -14,13 +14,13 @@ const UIStrings = {
     /**
      * @description Description of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated. "layout reflows" are when the browser will recompute the layout of content on the page.
      */
-    description: 'A large DOM will increase memory usage, cause longer style calculations, and produce costly layout reflows which impact page responsiveness. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/).',
+    description: 'A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/).',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/DOMSize.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DOM_UPDATE_LIMIT = 800;
 export function deps() {
-    return ['Renderer', 'AuctionWorklets'];
+    return ['Renderer', 'AuctionWorklets', 'DOMStats'];
 }
 function finalize(partialModel) {
     const relatedEvents = [...partialModel.largeLayoutUpdates, ...partialModel.largeStyleRecalcs];
@@ -86,9 +86,17 @@ export function generateInsight(parsedTrace, context) {
             }
         }
     }
+    const domStatsEvents = parsedTrace.DOMStats.domStatsByFrameId.get(context.frameId)?.filter(isWithinContext) ?? [];
+    let maxDOMStats;
+    for (const domStats of domStatsEvents) {
+        if (!maxDOMStats || domStats.args.data.totalElements > maxDOMStats.args.data.totalElements) {
+            maxDOMStats = domStats;
+        }
+    }
     return finalize({
         largeLayoutUpdates,
         largeStyleRecalcs,
+        maxDOMStats,
     });
 }
 //# sourceMappingURL=DOMSize.js.map

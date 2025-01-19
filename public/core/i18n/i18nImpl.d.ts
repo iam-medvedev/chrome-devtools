@@ -45,7 +45,7 @@ export declare function registerUIStrings(path: string, stringStructure: {
 /**
  * Returns a span element that may contains other DOM element as placeholders
  */
-export declare function getFormatLocalizedString(registeredStrings: I18n.LocalizedStringSet.RegisteredFileStrings, stringId: string, placeholders: Record<string, Object>): Element;
+export declare function getFormatLocalizedString(registeredStrings: I18n.LocalizedStringSet.RegisteredFileStrings, stringId: string, placeholders: Record<string, Object>): HTMLSpanElement;
 export declare function serializeUIString(string: string, values?: Record<string, Object>): string;
 export declare function deserializeUIString(serializedMessage: string): i18nTypes.SerializedMessage;
 /**

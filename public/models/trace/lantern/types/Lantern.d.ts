@@ -45,7 +45,7 @@ export type ResourcePriority = ('VeryLow' | 'Low' | 'Medium' | 'High' | 'VeryHig
 export type ResourceType = keyof typeof NetworkRequestTypes;
 type InitiatorType = ('parser' | 'script' | 'preload' | 'SignedExchange' | 'preflight' | 'other');
 export type ResourceTiming = Protocol.Network.ResourceTiming;
-interface CallStack {
+export interface CallStack {
     callFrames: Array<{
         scriptId: string;
         url: string;

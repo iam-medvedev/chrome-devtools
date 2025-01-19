@@ -536,6 +536,9 @@ export const generatedPropertyValues: {
     "mask-type": {
         values: string[];
     };
+    "masonry-auto-tracks": {
+        values: string[];
+    };
     "masonry-direction": {
         values: string[];
     };

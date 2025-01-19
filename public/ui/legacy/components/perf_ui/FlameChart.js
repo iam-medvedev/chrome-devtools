@@ -351,7 +351,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     #shouldDimEvent(entryIndex) {
         // If a search is active, that enables a mode where we dim all events that do not match the search results.
-        if (this.entryIndicesToDim && !this.#searchResultEntries) {
+        if (this.entryIndicesToDim?.length && !this.#searchResultEntries) {
             return this.entryIndicesToDim.includes(entryIndex);
         }
         // Otherwise the events to not dim are defined by the last call to `enableDimmingForUnrelatedEntries` or
@@ -368,9 +368,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.entryIndicesToNotDim = [];
         this.draw();
     }
-    enableDimmingForUnrelatedEntries(entryIndicesToNotDim) {
+    enableDimmingForUnrelatedEntries(entryIndicesToNotDim, shouldAddOutlines = true) {
         this.entryIndicesToNotDim = entryIndicesToNotDim;
         this.entryIndicesToDim = [];
+        this.#shouldAddOutlines = shouldAddOutlines;
         this.draw();
     }
     disableDimming() {

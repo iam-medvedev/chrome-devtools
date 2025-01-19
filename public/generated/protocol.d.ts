@@ -1153,7 +1153,8 @@ export declare namespace Audits {
         ReplacedByActiveMode = "ReplacedByActiveMode",
         InvalidFieldsSpecified = "InvalidFieldsSpecified",
         RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque",
-        TypeNotMatching = "TypeNotMatching"
+        TypeNotMatching = "TypeNotMatching",
+        UiDismissedNoEmbargo = "UiDismissedNoEmbargo"
     }
     interface FederatedAuthUserInfoRequestIssueDetails {
         federatedAuthUserInfoRequestIssueReason: FederatedAuthUserInfoRequestIssueReason;
@@ -5582,64 +5583,6 @@ export declare namespace DOMStorage {
     }
     interface DomStorageItemsClearedEvent {
         storageId: StorageId;
-    }
-}
-export declare namespace Database {
-    /**
-     * Unique identifier of Database object.
-     */
-    type DatabaseId = OpaqueIdentifier<string, 'Protocol.Database.DatabaseId'>;
-    /**
-     * Database object.
-     */
-    interface Database {
-        /**
-         * Database ID.
-         */
-        id: DatabaseId;
-        /**
-         * Database domain.
-         */
-        domain: string;
-        /**
-         * Database name.
-         */
-        name: string;
-        /**
-         * Database version.
-         */
-        version: string;
-    }
-    /**
-     * Database error.
-     */
-    interface Error {
-        /**
-         * Error message.
-         */
-        message: string;
-        /**
-         * Error code.
-         */
-        code: integer;
-    }
-    interface ExecuteSQLRequest {
-        databaseId: DatabaseId;
-        query: string;
-    }
-    interface ExecuteSQLResponse extends ProtocolResponseWithError {
-        columnNames?: string[];
-        values?: any[];
-        sqlError?: Error;
-    }
-    interface GetDatabaseTableNamesRequest {
-        databaseId: DatabaseId;
-    }
-    interface GetDatabaseTableNamesResponse extends ProtocolResponseWithError {
-        tableNames: string[];
-    }
-    interface AddDatabaseEvent {
-        database: Database;
     }
 }
 export declare namespace DeviceOrientation {
@@ -10930,6 +10873,7 @@ export declare namespace Page {
         ChUa = "ch-ua",
         ChUaArch = "ch-ua-arch",
         ChUaBitness = "ch-ua-bitness",
+        ChUaHighEntropyValues = "ch-ua-high-entropy-values",
         ChUaPlatform = "ch-ua-platform",
         ChUaModel = "ch-ua-model",
         ChUaMobile = "ch-ua-mobile",
@@ -14600,6 +14544,15 @@ export declare namespace Target {
         host: string;
         port: integer;
     }
+    /**
+     * The state of the target window.
+     */
+    const enum WindowState {
+        Normal = "normal",
+        Minimized = "minimized",
+        Maximized = "maximized",
+        Fullscreen = "fullscreen"
+    }
     interface ActivateTargetRequest {
         targetId: TargetID;
     }
@@ -14677,37 +14630,42 @@ export declare namespace Target {
          */
         url: string;
         /**
-         * Frame left origin in DIP (headless chrome only).
+         * Frame left origin in DIP (requires newWindow to be true or headless shell).
          */
         left?: integer;
         /**
-         * Frame top origin in DIP (headless chrome only).
+         * Frame top origin in DIP (requires newWindow to be true or headless shell).
          */
         top?: integer;
         /**
-         * Frame width in DIP (headless chrome only).
+         * Frame width in DIP (requires newWindow to be true or headless shell).
          */
         width?: integer;
         /**
-         * Frame height in DIP (headless chrome only).
+         * Frame height in DIP (requires newWindow to be true or headless shell).
          */
         height?: integer;
+        /**
+         * Frame window state (requires newWindow to be true or headless shell).
+         * Default is normal.
+         */
+        windowState?: WindowState;
         /**
          * The browser context to create the page in.
          */
         browserContextId?: Browser.BrowserContextID;
         /**
-         * Whether BeginFrames for this target will be controlled via DevTools (headless chrome only,
+         * Whether BeginFrames for this target will be controlled via DevTools (headless shell only,
          * not supported on MacOS yet, false by default).
          */
         enableBeginFrameControl?: boolean;
         /**
-         * Whether to create a new Window or Tab (chrome-only, false by default).
+         * Whether to create a new Window or Tab (false by default, not supported by headless shell).
          */
         newWindow?: boolean;
         /**
-         * Whether to create the target in background or foreground (chrome-only,
-         * false by default).
+         * Whether to create the target in background or foreground (false by default, not supported
+         * by headless shell).
          */
         background?: boolean;
         /**

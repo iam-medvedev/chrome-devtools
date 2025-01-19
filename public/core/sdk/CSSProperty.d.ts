@@ -3,7 +3,13 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import type { Edit } from './CSSModel.js';
 import type { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
-export declare class CSSProperty {
+export declare const enum Events {
+    LOCAL_VALUE_UPDATED = "localValueUpdated"
+}
+export interface EventTypes {
+    [Events.LOCAL_VALUE_UPDATED]: void;
+}
+export declare class CSSProperty extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     ownerStyle: CSSStyleDeclaration;
     index: number;
@@ -29,6 +35,7 @@ export declare class CSSProperty {
     static formatStyle(styleText: string, indentation: string, endIndentation: string): Promise<string>;
     private detectIndentation;
     setValue(newValue: string, majorChange: boolean, overwrite: boolean, userCallback?: ((arg0: boolean) => void)): void;
+    setLocalValue(value: string): void;
     setDisabled(disabled: boolean): Promise<boolean>;
     /**
      * This stores the warning string when a CSS Property is improperly parsed.

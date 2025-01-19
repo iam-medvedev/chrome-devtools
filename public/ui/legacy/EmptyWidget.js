@@ -41,25 +41,28 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/EmptyWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EmptyWidget extends VBox {
-    textElement;
-    constructor(text) {
+    #headerElement;
+    #textElement;
+    constructor(header, text) {
         super();
         this.registerRequiredCSS(emptyWidgetStyles);
         this.element.classList.add('empty-view-scroller');
-        this.contentElement = this.element.createChild('div', 'empty-view');
+        this.contentElement = this.element.createChild('div', 'empty-state');
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('empty-view')}`);
-        this.textElement = this.contentElement.createChild('div', 'empty-bold-text');
-        this.textElement.textContent = text;
-    }
-    appendParagraph() {
-        return this.contentElement.createChild('p');
+        this.#headerElement = this.contentElement.createChild('div', 'header');
+        this.#headerElement.textContent = header;
+        this.#textElement = this.contentElement.createChild('div', 'description');
+        this.#textElement.textContent = text;
     }
     appendLink(link) {
         const learnMoreLink = XLink.create(link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
-        return this.contentElement.appendChild(learnMoreLink);
+        return this.#textElement.appendChild(learnMoreLink);
     }
     set text(text) {
-        this.textElement.textContent = text;
+        this.#textElement.textContent = text;
+    }
+    set header(header) {
+        this.#headerElement.textContent = header;
     }
 }
 //# sourceMappingURL=EmptyWidget.js.map

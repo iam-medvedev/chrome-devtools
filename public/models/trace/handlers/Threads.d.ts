@@ -29,5 +29,6 @@ export declare function threadsInRenderer(rendererData: Renderer.RendererHandler
  * regardless of if the trace is a CPU Profile or a Tracing profile. Thus you
  * can use this helper to iterate over threads in confidence that it will work
  * for both trace types.
+ * The resulting data is cached per-trace, so you can safely call this multiple times.
  */
 export declare function threadsInTrace(parsedTrace: ParsedTrace): readonly ThreadData[];

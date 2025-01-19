@@ -41,8 +41,9 @@ import { ContextMenu } from './ContextMenu.js';
 import { GlassPane } from './GlassPane.js';
 import { bindCheckbox } from './SettingsUI.js';
 import { TextPrompt } from './TextPrompt.js';
+import toolbarStyles from './toolbar.css.legacy.js';
 import { Tooltip } from './Tooltip.js';
-import { CheckboxLabel, LongClickController } from './UIUtils.js';
+import { CheckboxLabel, createShadowRootWithCoreStyles, LongClickController } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
@@ -66,18 +67,44 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * Custom element for toolbars.
  *
+ * @attr floating - If present the toolbar is rendered in columns, with a border
+ *                  around it, and a non-transparent background. This is used to
+ *                  build vertical toolbars that open with long-click. Defaults
+ *                  to `false`.
  * @attr wrappable - If present the toolbar items will wrap to a new row and the
  *                   toolbar height increases.
- * @prop {string} wrappable - The `"wrappable"` attribute is reflected as property.
+ * @prop {boolean} floating - The `"floating"` attribute is reflected as property.
+ * @prop {boolean} wrappable - The `"wrappable"` attribute is reflected as property.
  */
 export class Toolbar extends HTMLElement {
     items = [];
     enabled = true;
     compactLayout = false;
+    constructor() {
+        super();
+        createShadowRootWithCoreStyles(this, { cssFile: toolbarStyles }).createChild('slot');
+    }
     connectedCallback() {
         if (!this.hasAttribute('role')) {
             this.setAttribute('role', 'toolbar');
         }
+    }
+    /**
+     * Returns whether this toolbar is floating.
+     *
+     * @return `true` if the `"floating"` attribute is present on this toolbar,
+     *         otherwise `false`.
+     */
+    get floating() {
+        return this.hasAttribute('floating');
+    }
+    /**
+     * Changes the value of the `"floating"` attribute on this toolbar.
+     *
+     * @param floating `true` to make the toolbar floating.
+     */
+    set floating(floating) {
+        this.toggleAttribute('floating', floating);
     }
     /**
      * Returns whether this toolbar is wrappable.
@@ -95,12 +122,7 @@ export class Toolbar extends HTMLElement {
      *                  have the toolbar height adjust.
      */
     set wrappable(wrappable) {
-        if (wrappable) {
-            this.setAttribute('wrappable', '');
-        }
-        else {
-            this.removeAttribute('wrappable');
-        }
+        this.toggleAttribute('wrappable', wrappable);
     }
     hasCompactLayout() {
         return this.compactLayout;
@@ -148,8 +170,8 @@ export class Toolbar extends HTMLElement {
             const optionsGlassPane = new GlassPane();
             optionsGlassPane.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
             optionsGlassPane.show(document);
-            const optionsBar = optionsGlassPane.contentElement.createChild('devtools-toolbar', 'fill');
-            optionsBar.classList.add('floating');
+            const optionsBar = optionsGlassPane.contentElement.createChild('devtools-toolbar');
+            optionsBar.floating = true;
             const buttonHeight = 26;
             const hostButtonPosition = button.element.boxInWindow().relativeToElement(GlassPane.container(document));
             const topNotBottom = hostButtonPosition.y + buttonHeight * buttons.length < document.documentElement.offsetHeight;
@@ -421,23 +443,19 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 export class ToolbarItemWithCompactLayout extends ToolbarItem {
-    constructor(element) {
-        super(element);
-    }
     setCompactLayout(enable) {
         this.dispatchEventToListeners("CompactLayoutUpdated" /* ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED */, enable);
     }
 }
 export class ToolbarText extends ToolbarItem {
-    constructor(text) {
+    constructor(text = '') {
         const element = document.createElement('div');
         element.classList.add('toolbar-text');
         super(element);
-        this.element.classList.add('toolbar-text');
-        this.setText(text || '');
+        this.setText(text);
     }
     text() {
-        return this.element.textContent || '';
+        return this.element.textContent ?? '';
     }
     setText(text) {
         this.element.textContent = text;
@@ -869,37 +887,31 @@ export class ToolbarSeparator extends ToolbarItem {
     }
 }
 export class ToolbarComboBox extends ToolbarItem {
-    selectElementInternal;
     constructor(changeHandler, title, className, jslogContext) {
-        const element = document.createElement('select');
-        super(element);
-        this.selectElementInternal = element;
+        super(document.createElement('select'));
         if (changeHandler) {
-            this.selectElementInternal.addEventListener('change', changeHandler, false);
+            this.element.addEventListener('change', changeHandler, false);
         }
-        ARIAUtils.setLabel(this.selectElementInternal, title);
+        ARIAUtils.setLabel(this.element, title);
         super.setTitle(title);
         if (className) {
-            this.selectElementInternal.classList.add(className);
+            this.element.classList.add(className);
         }
         if (jslogContext) {
-            this.selectElementInternal.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context(jslogContext)}`);
+            this.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context(jslogContext)}`);
         }
     }
-    selectElement() {
-        return this.selectElementInternal;
-    }
     size() {
-        return this.selectElementInternal.childElementCount;
+        return this.element.childElementCount;
     }
     options() {
-        return Array.prototype.slice.call(this.selectElementInternal.children, 0);
+        return Array.prototype.slice.call(this.element.children, 0);
     }
     addOption(option) {
-        this.selectElementInternal.appendChild(option);
+        this.element.appendChild(option);
     }
     createOption(label, value) {
-        const option = this.selectElementInternal.createChild('option');
+        const option = this.element.createChild('option');
         option.text = label;
         if (typeof value !== 'undefined') {
             option.value = value;
@@ -910,34 +922,34 @@ export class ToolbarComboBox extends ToolbarItem {
     }
     applyEnabledState(enabled) {
         super.applyEnabledState(enabled);
-        this.selectElementInternal.disabled = !enabled;
+        this.element.disabled = !enabled;
     }
     removeOption(option) {
-        this.selectElementInternal.removeChild(option);
+        this.element.removeChild(option);
     }
     removeOptions() {
-        this.selectElementInternal.removeChildren();
+        this.element.removeChildren();
     }
     selectedOption() {
-        if (this.selectElementInternal.selectedIndex >= 0) {
-            return this.selectElementInternal[this.selectElementInternal.selectedIndex];
+        if (this.element.selectedIndex >= 0) {
+            return this.element[this.element.selectedIndex];
         }
         return null;
     }
     select(option) {
-        this.selectElementInternal.selectedIndex = Array.prototype.indexOf.call(this.selectElementInternal, option);
+        this.element.selectedIndex = Array.prototype.indexOf.call(this.element, option);
     }
     setSelectedIndex(index) {
-        this.selectElementInternal.selectedIndex = index;
+        this.element.selectedIndex = index;
     }
     selectedIndex() {
-        return this.selectElementInternal.selectedIndex;
+        return this.element.selectedIndex;
     }
     setMaxWidth(width) {
-        this.selectElementInternal.style.maxWidth = width + 'px';
+        this.element.style.maxWidth = width + 'px';
     }
     setMinWidth(width) {
-        this.selectElementInternal.style.minWidth = width + 'px';
+        this.element.style.minWidth = width + 'px';
     }
 }
 export class ToolbarSettingComboBox extends ToolbarComboBox {
@@ -948,17 +960,17 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
         super(null, accessibleName, undefined, setting.name);
         this.optionsInternal = options;
         this.setting = setting;
-        this.selectElementInternal.addEventListener('change', this.valueChanged.bind(this), false);
+        this.element.addEventListener('change', this.valueChanged.bind(this), false);
         this.setOptions(options);
         setting.addChangeListener(this.settingChanged, this);
     }
     setOptions(options) {
         this.optionsInternal = options;
-        this.selectElementInternal.removeChildren();
+        this.element.removeChildren();
         for (let i = 0; i < options.length; ++i) {
             const dataOption = options[i];
             const option = this.createOption(dataOption.label, dataOption.value);
-            this.selectElementInternal.appendChild(option);
+            this.element.appendChild(option);
             if (this.setting.get() === dataOption.value) {
                 this.setSelectedIndex(i);
             }
@@ -988,11 +1000,9 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
 }
 export class ToolbarCheckbox extends ToolbarItem {
     inputElement;
-    constructor(text, tooltip, listener, jslogContext, small) {
+    constructor(text, tooltip, listener, jslogContext) {
         super(CheckboxLabel.create(text));
-        this.element.classList.add('checkbox');
         this.inputElement = this.element.checkboxElement;
-        this.inputElement.classList.toggle('small', small);
         if (tooltip) {
             // install on the checkbox
             Tooltip.install(this.inputElement, tooltip);

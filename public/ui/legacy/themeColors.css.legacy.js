@@ -348,6 +348,16 @@ export default {
   --app-color-active-breadcrumb: var(--ref-palette-blue40);
 
   /**
+   * Colors for the pie chart in the Memory panel.
+   */
+  --app-color-code: var(--ref-palette-cyan70);
+  --app-color-strings: var(--ref-palette-purple70);
+  --app-color-js-arrays: var(--ref-palette-green70);
+  --app-color-typed-arrays: var(--ref-palette-indigo60);
+  --app-color-other-js-objects: var(--ref-palette-blue70);
+  --app-color-other-non-js-objects: var(--ref-palette-yellow70);
+
+  /**
   * Gradients
   */
   --sys-color-gradient-primary: var(--ref-palette-primary90);
@@ -754,6 +764,16 @@ export default {
    * Color for the active breadcrumb in the Performance Panel timeline.
    */
   --app-color-active-breadcrumb: var(--ref-palette-blue40);
+
+  /**
+   * Colors for the pie chart in the Memory panel.
+   */
+  --app-color-code: var(--ref-palette-cyan70);
+  --app-color-strings: var(--ref-palette-purple60);
+  --app-color-js-arrays: var(--ref-palette-green70);
+  --app-color-typed-arrays: var(--ref-palette-indigo60);
+  --app-color-other-js-objects: var(--ref-palette-blue60);
+  --app-color-other-non-js-objects: var(--ref-palette-yellow70);
 
   /**
   * Gradients

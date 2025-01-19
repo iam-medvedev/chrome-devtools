@@ -454,9 +454,6 @@ export class TargetBase {
     cssAgent() {
         return this.getAgent('CSS');
     }
-    databaseAgent() {
-        return this.getAgent('Database');
-    }
     debuggerAgent() {
         return this.getAgent('Debugger');
     }
@@ -596,9 +593,6 @@ export class TargetBase {
     }
     registerCSSDispatcher(dispatcher) {
         this.registerDispatcher('CSS', dispatcher);
-    }
-    registerDatabaseDispatcher(dispatcher) {
-        this.registerDispatcher('Database', dispatcher);
     }
     registerBackgroundServiceDispatcher(dispatcher) {
         this.registerDispatcher('BackgroundService', dispatcher);

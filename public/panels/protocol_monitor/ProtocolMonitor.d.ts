@@ -3,9 +3,9 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Components from './components/components.js';
+import { type Command, JSONEditor, type Parameter } from './JSONEditor.js';
 export declare const buildProtocolMetadata: (domains: Iterable<ProtocolDomain>) => Map<string, {
-    parameters: Components.JSONEditor.Parameter[];
+    parameters: Parameter[];
     description: string;
     replyArgs: string[];
 }>;
@@ -28,7 +28,7 @@ export interface ProtocolDomain {
     readonly domain: string;
     readonly metadata: {
         [commandName: string]: {
-            parameters: Components.JSONEditor.Parameter[];
+            parameters: Parameter[];
             description: string;
             replyArgs: string[];
         };
@@ -93,8 +93,8 @@ export declare const enum Events {
     COMMAND_CHANGE = "CommandChange"
 }
 export interface EventTypes {
-    [Events.COMMAND_SENT]: Components.JSONEditor.Command;
-    [Events.COMMAND_CHANGE]: Components.JSONEditor.Command;
+    [Events.COMMAND_SENT]: Command;
+    [Events.COMMAND_CHANGE]: Command;
 }
 declare const EditorWidget_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
@@ -105,7 +105,7 @@ declare const EditorWidget_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class EditorWidget extends EditorWidget_base {
-    readonly jsonEditor: Components.JSONEditor.JSONEditor;
+    readonly jsonEditor: JSONEditor;
     constructor();
 }
 export declare function parseCommandInput(input: string): {

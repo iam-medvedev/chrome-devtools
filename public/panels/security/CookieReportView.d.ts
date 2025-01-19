@@ -30,7 +30,7 @@ export declare class CookieReportView extends UI.Widget.VBox {
     dataGrid?: DataGrid.DataGrid.DataGridImpl<CookieReportNodeData>;
     gridData: DataGrid.DataGrid.DataGridNode<CookieReportNodeData>[];
     constructor(element?: HTMLElement, view?: View);
-    doUpdate(): Promise<void>;
+    performUpdate(): void;
     onFilterChanged(): void;
     onSortingChanged(): void;
     populateContextMenu(contextMenu: UI.ContextMenu.ContextMenu, gridNode: DataGrid.DataGrid.DataGridNode<CookieReportNodeData>): void;

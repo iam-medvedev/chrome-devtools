@@ -28,7 +28,13 @@ describeWithEnvironment('TimelineDetailsView', function () {
             throw new Error('Could not find expected network request.');
         }
         const selection = Timeline.TimelineSelection.selectionFromEvent(cssRequest);
-        await detailsView.setModel({ parsedTrace, selectedEvents: null, traceInsightsSets: insights, eventToRelatedInsightsMap: null });
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: null,
+            traceInsightsSets: insights,
+            eventToRelatedInsightsMap: null,
+            entityMapper: null
+        });
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         // NetworkRequestDetails and RelatedInsightsChips nodes.
@@ -37,7 +43,13 @@ describeWithEnvironment('TimelineDetailsView', function () {
     it('displays the details for a frame correctly', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsView(mockViewDelegate);
-        await detailsView.setModel({ parsedTrace, selectedEvents: null, traceInsightsSets: null, eventToRelatedInsightsMap: null });
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: null,
+            traceInsightsSets: null,
+            eventToRelatedInsightsMap: null,
+            entityMapper: null
+        });
         const frame = parsedTrace.Frames.frames.at(0);
         assert.isOk(frame);
         const selection = Timeline.TimelineSelection.selectionFromEvent(frame);
@@ -54,7 +66,13 @@ describeWithEnvironment('TimelineDetailsView', function () {
     it('renders the layout shift component for a single layout shift', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsView(mockViewDelegate);
-        await detailsView.setModel({ parsedTrace, selectedEvents: null, traceInsightsSets: null, eventToRelatedInsightsMap: null });
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: null,
+            traceInsightsSets: null,
+            eventToRelatedInsightsMap: null,
+            entityMapper: null
+        });
         const layoutShift = parsedTrace.LayoutShifts.clusters.at(0)?.events.at(0);
         assert.isOk(layoutShift);
         const selection = Timeline.TimelineSelection.selectionFromEvent(layoutShift);
@@ -68,7 +86,13 @@ describeWithEnvironment('TimelineDetailsView', function () {
     it('renders the layout shift component for a selected cluster', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsView(mockViewDelegate);
-        await detailsView.setModel({ parsedTrace, selectedEvents: null, traceInsightsSets: null, eventToRelatedInsightsMap: null });
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: null,
+            traceInsightsSets: null,
+            eventToRelatedInsightsMap: null,
+            entityMapper: null
+        });
         const layoutShiftCluster = parsedTrace.LayoutShifts.clusters.at(0);
         assert.isOk(layoutShiftCluster);
         const selection = Timeline.TimelineSelection.selectionFromEvent(layoutShiftCluster);
@@ -89,6 +113,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
             selectedEvents: parsedTrace.Renderer.allTraceEntries,
             traceInsightsSets: null,
             eventToRelatedInsightsMap: null,
+            entityMapper: null
         });
         const bounds = Trace.Helpers.Timing.traceWindowMilliSeconds(parsedTrace.Meta.traceBounds);
         const selection = Timeline.TimelineSelection.selectionFromRangeMilliSeconds(bounds.min, bounds.max);

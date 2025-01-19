@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../../ui/components/markdown_view/markdown_view.js';
+import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
@@ -39,6 +41,7 @@ export class BaseInsightComponent extends HTMLElement {
     #shadowRoot = this.attachShadow({ mode: 'open' });
     #selected = false;
     #model = null;
+    #parsedTrace = null;
     get model() {
         return this.#model;
     }
@@ -85,6 +88,9 @@ export class BaseInsightComponent extends HTMLElement {
     set bounds(bounds) {
         this.data.bounds = bounds;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set parsedTrace(parsedTrace) {
+        this.#parsedTrace = parsedTrace;
     }
     #dispatchInsightToggle() {
         if (this.#selected) {
@@ -192,6 +198,19 @@ export class BaseInsightComponent extends HTMLElement {
             });
         }
         return null;
+    }
+    renderNode(backendNodeId, fallbackText) {
+        const fallback = fallbackText ?? LitHtml.nothing;
+        if (!this.#parsedTrace) {
+            return html `${fallback}`;
+        }
+        const domNodePromise = Trace.Extras.FetchNodes.domNodeForBackendNodeID(this.#parsedTrace, backendNodeId).then((node) => {
+            if (!node) {
+                return fallback;
+            }
+            return Common.Linkifier.Linkifier.linkify(node);
+        });
+        return html `${LitHtml.Directives.until(domNodePromise, fallback)}`;
     }
     #renderWithContent(content) {
         if (!this.#model) {

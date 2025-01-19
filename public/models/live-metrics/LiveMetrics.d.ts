@@ -8,9 +8,9 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     static instance(opts?: {
         forceNew?: boolean;
     }): LiveMetrics;
-    get lcpValue(): LCPValue | undefined;
-    get clsValue(): CLSValue | undefined;
-    get inpValue(): INPValue | undefined;
+    get lcpValue(): LcpValue | undefined;
+    get clsValue(): ClsValue | undefined;
+    get inpValue(): InpValue | undefined;
     get interactions(): InteractionMap;
     get layoutShifts(): LayoutShift[];
     /**
@@ -38,15 +38,15 @@ export interface NodeRef {
     node: SDK.DOMModel.DOMNode;
     link: Node;
 }
-export interface LCPValue extends MetricValue {
-    phases: Spec.LCPPhases;
+export interface LcpValue extends MetricValue {
+    phases: Spec.LcpPhases;
     nodeRef?: NodeRef;
 }
-export interface INPValue extends MetricValue {
-    phases: Spec.INPPhases;
+export interface InpValue extends MetricValue {
+    phases: Spec.InpPhases;
     interactionId: InteractionId;
 }
-export interface CLSValue extends MetricValue {
+export interface ClsValue extends MetricValue {
     clusterShiftIds: Spec.UniqueLayoutShiftId[];
 }
 export interface LayoutShift {
@@ -61,14 +61,14 @@ export interface Interaction {
     duration: number;
     startTime: number;
     nextPaintTime: number;
-    phases: Spec.INPPhases;
+    phases: Spec.InpPhases;
     longAnimationFrameTimings: Spec.PerformanceLongAnimationFrameTimingJSON[];
     nodeRef?: NodeRef;
 }
 export interface StatusEvent {
-    lcp?: LCPValue;
-    cls?: CLSValue;
-    inp?: INPValue;
+    lcp?: LcpValue;
+    cls?: ClsValue;
+    inp?: InpValue;
     interactions: InteractionMap;
     layoutShifts: LayoutShift[];
 }

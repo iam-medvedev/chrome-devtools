@@ -1,6 +1,7 @@
 import '../../../../ui/components/markdown_view/markdown_view.js';
+import type * as Protocol from '../../../../generated/protocol.js';
 import type { InsightModel } from '../../../../models/trace/insights/types.js';
-import type * as Trace from '../../../../models/trace/trace.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import type { TableState } from './Table.js';
@@ -24,6 +25,7 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> e
     set insightSetKey(insightSetKey: string | null);
     get bounds(): Trace.Types.Timing.TraceWindowMicroSeconds | null;
     set bounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds | null);
+    set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace);
     /**
      * Replaces the initial insight overlays with the ones provided.
      *
@@ -39,4 +41,5 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> e
     protected abstract renderContent(): LitHtml.LitTemplate;
     getEstimatedSavingsTime(): Trace.Types.Timing.MilliSeconds | null;
     getEstimatedSavingsBytes(): number | null;
+    protected renderNode(backendNodeId: Protocol.DOM.BackendNodeId, fallbackText?: string): LitHtml.LitTemplate;
 }

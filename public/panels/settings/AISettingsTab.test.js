@@ -55,7 +55,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(sharedDisclaimerHeader?.textContent, 'Boost your productivity with AI');
         const disclaimers = view.shadowRoot.querySelectorAll('.shared-disclaimer .disclaimer-list div');
         assert.strictEqual(disclaimers[3].textContent, 'These features send relevant data to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information.');
-        assert.strictEqual(disclaimers[7].textContent, 'Depending on your region, Google may refrain from data collection.');
+        assert.strictEqual(disclaimers[5].textContent, 'Depending on your region, Google may refrain from data collection');
         const settingCards = view.shadowRoot.querySelectorAll('.setting-card h2');
         const settingNames = Array.from(settingCards).map(element => element.textContent);
         assert.deepEqual(settingNames, ['Console Insights', 'AI assistance']);
@@ -80,8 +80,8 @@ describeWithEnvironment('AISettingsTab', () => {
         await view.render();
         assert.isNotNull(view.shadowRoot);
         const disclaimers = view.shadowRoot.querySelectorAll('.shared-disclaimer .disclaimer-list div');
-        assert.strictEqual(disclaimers[3].textContent, 'Usage data will be retained for up to 18 months and stored in such a way that Google can’t tell who provided it.');
-        assert.strictEqual(disclaimers[5].textContent, 'Your content will not be used by human reviewers to improve AI. Your organization may change these settings at any time. Depending on your Google account management and/or region, Google may refrain from data collection.');
+        assert.strictEqual(disclaimers[3].textContent, 'Your content will not be used by human reviewers to improve AI. Your organization may change these settings at any time.');
+        assert.strictEqual(disclaimers[5].textContent, 'Depending on your Google account management and/or region, Google may refrain from data collection');
         stub.restore();
     });
     it('renders with explain this resource enabled', async () => {

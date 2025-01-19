@@ -323,7 +323,7 @@ Common.Settings.registerSettingExtension({
     storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'skip-stack-frames-pattern',
     settingType: "regex" /* Common.Settings.SettingType.REGEX */,
-    defaultValue: '/node_modules/|/bower_components/',
+    defaultValue: '/node_modules/|^node:',
 });
 Common.Settings.registerSettingExtension({
     storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,

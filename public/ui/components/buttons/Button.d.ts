@@ -90,7 +90,6 @@ export declare class Button extends HTMLElement {
     get jslogContext(): string | undefined;
     set jslogContext(jslogContext: string | undefined);
     set longClickable(longClickable: boolean);
-    focus(): void;
     connectedCallback(): void;
     get value(): string;
     set value(value: string);

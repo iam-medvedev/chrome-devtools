@@ -20,7 +20,7 @@ describeWithEnvironment('ThirdParties', function () {
             ['https://fonts.gstatic.com/s/orelegaone/v1/3qTpojOggD2XtAdFb-QXZFt93kY.woff2', 'Google Fonts'],
         ]);
         const requestsByEntityResult = [...insight.requestsByEntity.entries()].map(([entity, requests]) => {
-            return [entity.name, requests.map(r => r.args.data.url)];
+            return [entity.name, requests.map(r => r?.args?.data?.url)];
         });
         assert.deepEqual(requestsByEntityResult, [
             [
@@ -62,7 +62,7 @@ describeWithEnvironment('ThirdParties', function () {
             'Firebase',
         ]);
         const requestsByEntityResult = [...insight.requestsByEntity.entries()].map(([entity, requests]) => {
-            return [entity.name, requests.map(r => r.args.data.url)];
+            return [entity.name, requests.map(r => r?.args?.data?.url)];
         });
         assert.deepEqual(requestsByEntityResult, [
             [

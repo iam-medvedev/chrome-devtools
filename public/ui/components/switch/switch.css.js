@@ -98,6 +98,24 @@ input:disabled:checked {
   }
 }
 
+@media (forced-colors: active) {
+  .slider::before,
+  input:checked + .slider::before {
+    background-color: ButtonText;
+  }
+
+  input:disabled:not(:checked) + .slider,
+  input:disabled:checked + .slider {
+    background-color: transparent;
+    border-color: GrayText;
+  }
+
+  input:disabled:not(:checked) + .slider::before,
+  input:disabled:checked + .slider::before {
+    background-color: GrayText;
+  }
+}
+
 /*# sourceURL=switch.css */
 `);
 

@@ -79,8 +79,9 @@ describeWithEnvironment('SourceMap', () => {
             }
         });
     });
-    function assertMapping(actual, expectedSourceURL, expectedSourceLineNumber, expectedSourceColumnNumber) {
+    function assertMapping(actual, expectedSourceIndex, expectedSourceURL, expectedSourceLineNumber, expectedSourceColumnNumber) {
         assert.exists(actual);
+        assert.strictEqual(actual.sourceIndex, expectedSourceIndex, 'unexpected source index');
         assert.strictEqual(actual.sourceURL, expectedSourceURL, 'unexpected source URL');
         assert.strictEqual(actual.sourceLineNumber, expectedSourceLineNumber, 'unexpected source line number');
         assert.strictEqual(actual.sourceColumnNumber, expectedSourceColumnNumber, 'unexpected source column number');
@@ -134,13 +135,13 @@ describeWithEnvironment('SourceMap', () => {
             // clang-format on
         ]);
         const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-        assertMapping(sourceMap.findEntry(0, 9), 'example.js', 0, 9);
-        assertMapping(sourceMap.findEntry(0, 13), 'example.js', 0, 13);
-        assertMapping(sourceMap.findEntry(0, 15), 'example.js', 0, 25);
-        assertMapping(sourceMap.findEntry(0, 18), 'example.js', 2, 4);
-        assertMapping(sourceMap.findEntry(0, 25), 'example.js', 2, 11);
-        assertMapping(sourceMap.findEntry(0, 27), 'example.js', 2, 24);
-        assertMapping(sourceMap.findEntry(1, 0), undefined, undefined, undefined);
+        assertMapping(sourceMap.findEntry(0, 9), 0, 'example.js', 0, 9);
+        assertMapping(sourceMap.findEntry(0, 13), 0, 'example.js', 0, 13);
+        assertMapping(sourceMap.findEntry(0, 15), 0, 'example.js', 0, 25);
+        assertMapping(sourceMap.findEntry(0, 18), 0, 'example.js', 2, 4);
+        assertMapping(sourceMap.findEntry(0, 25), 0, 'example.js', 2, 11);
+        assertMapping(sourceMap.findEntry(0, 27), 0, 'example.js', 2, 24);
+        assertMapping(sourceMap.findEntry(1, 0), undefined, undefined, undefined, undefined);
         assertReverseMapping(sourceMap.sourceLineMapping(sourceUrlExample, 0, 0), 0, 0);
         assertReverseMapping(sourceMap.sourceLineMapping(sourceUrlExample, 1, 0), 0, 17);
         assertReverseMapping(sourceMap.sourceLineMapping(sourceUrlExample, 2, 0), 0, 18);
@@ -225,8 +226,8 @@ describeWithEnvironment('SourceMap', () => {
             version: 3,
         };
         const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-        assertMapping(sourceMap.findEntry(0, 0), 'example.js', 0, 0);
-        assertMapping(sourceMap.findEntry(0, 2), 'example.js', 0, 2);
+        assertMapping(sourceMap.findEntry(0, 0), 0, 'example.js', 0, 0);
+        assertMapping(sourceMap.findEntry(0, 2), 0, 'example.js', 0, 2);
         const emptyEntry = sourceMap.findEntry(0, 1);
         assert.exists(emptyEntry);
         assert.isUndefined(emptyEntry.sourceURL, 'unexpected url present for empty segment');
@@ -240,7 +241,7 @@ describeWithEnvironment('SourceMap', () => {
             version: 3,
         };
         const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-        assertMapping(sourceMap.findEntry(0, 0), 'example.js', 0, 0);
+        assertMapping(sourceMap.findEntry(0, 0), 0, 'example.js', 0, 0);
         assertReverseMapping(sourceMap.sourceLineMapping(sourceUrlExample, 1, 0), 3, 1);
     });
     it('can parse source maps with mappings in reverse direction', () => {
@@ -257,10 +258,10 @@ describeWithEnvironment('SourceMap', () => {
             sources: ['example.js'],
             version: 3,
         });
-        assertMapping(sourceMap.findEntry(0, 0), 'example.js', 0, 3);
-        assertMapping(sourceMap.findEntry(0, 1), 'example.js', 0, 2);
-        assertMapping(sourceMap.findEntry(0, 2), 'example.js', 0, 1);
-        assertMapping(sourceMap.findEntry(0, 3), 'example.js', 0, 0);
+        assertMapping(sourceMap.findEntry(0, 0), 0, 'example.js', 0, 3);
+        assertMapping(sourceMap.findEntry(0, 1), 0, 'example.js', 0, 2);
+        assertMapping(sourceMap.findEntry(0, 2), 0, 'example.js', 0, 1);
+        assertMapping(sourceMap.findEntry(0, 3), 0, 'example.js', 0, 0);
     });
     it('can parse the multiple sections format', () => {
         const mappingPayload = {
@@ -286,10 +287,10 @@ describeWithEnvironment('SourceMap', () => {
         };
         const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
         assert.lengthOf(sourceMap.sourceURLs(), 3, 'unexpected number of original source URLs');
-        assertMapping(sourceMap.findEntry(0, 0), 'source1.js', 0, 0);
-        assertMapping(sourceMap.findEntry(0, 1), 'source1.js', 2, 1);
-        assertMapping(sourceMap.findEntry(2, 10), 'source3.js', 0, 0);
-        assertMapping(sourceMap.findEntry(2, 11), 'source3.js', 2, 1);
+        assertMapping(sourceMap.findEntry(0, 0), 0, 'source1.js', 0, 0);
+        assertMapping(sourceMap.findEntry(0, 1), 0, 'source1.js', 2, 1);
+        assertMapping(sourceMap.findEntry(2, 10), 0, 'source3.js', 0, 0);
+        assertMapping(sourceMap.findEntry(2, 11), 0, 'source3.js', 2, 1);
     });
     it('can parse source maps with ClosureScript names', () => {
         /*
@@ -349,8 +350,9 @@ describeWithEnvironment('SourceMap', () => {
         ], 'wp:///' /* sourceRoot */);
         const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
         const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
-        assertMapping(sourceMap.findEntry(1, 0), 'wp:///example.js', 3, 0);
-        assertMapping(sourceMap.findEntry(4, 0), 'wp:///other.js', 5, 0);
+        assertMapping(sourceMap.findEntry(0, 0), 0, 'wp:///example.js', 1, 0);
+        assertMapping(sourceMap.findEntry(1, 0), 1, 'wp:///example.js', 3, 0);
+        assertMapping(sourceMap.findEntry(4, 0), 2, 'wp:///other.js', 5, 0);
     });
     describe('compatibleForURL', () => {
         const compiledURL = urlString `http://example.com/foo.js`;

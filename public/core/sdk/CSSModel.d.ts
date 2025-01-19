@@ -44,6 +44,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     getRootLayer(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.CSSLayerData>;
     isEnabled(): boolean;
     private enable;
+    getAnimatedStylesForNode(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.GetAnimatedStylesForNodeResponse | null>;
     getMatchedStyles(nodeId: Protocol.DOM.NodeId): Promise<CSSMatchedStyles | null>;
     getClassNames(styleSheetId: Protocol.CSS.StyleSheetId): Promise<string[]>;
     getComputedStyle(nodeId: Protocol.DOM.NodeId): Promise<Map<string, string> | null>;

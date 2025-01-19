@@ -134,10 +134,6 @@ const UIStringsNotTranslate = {
      */
     crossOriginError: 'To talk about data from another origin, start a new chat',
     /**
-     * @description Placeholder text for the input shown when the conversation is blocked because a cross-origin context was selected.
-     */
-    newConversationError: 'To talk about this data, start a new chat',
-    /**
      *@description Title for the send icon button.
      */
     sendButtonTitle: 'Send',
@@ -369,35 +365,18 @@ export class ChatView extends HTMLElement {
         textArea.value = text;
     }
     #isTextInputDisabled = () => {
-        if (this.#props.blockedByCrossOrigin || this.#props.requiresNewConversation) {
+        if (this.#props.blockedByCrossOrigin) {
             return true;
         }
         const isAidaAvailable = this.#props.aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
         const isConsentView = this.#props.state === "consent-view" /* State.CONSENT_VIEW */;
-        const showsSideEffects = this.#props.messages.some(message => {
-            return message.entity === "model" /* ChatMessageEntity.MODEL */ && message.steps.some(step => {
-                return Boolean(step.sideEffect);
-            });
-        });
         if (!isAidaAvailable || isConsentView || !this.#props.agentType) {
             return true;
         }
         if (!this.#props.selectedContext) {
             return true;
         }
-        // Agent-specific input disabled rules.
-        switch (this.#props.agentType) {
-            case "freestyler" /* AgentType.STYLING */:
-                return showsSideEffects;
-            case "drjones-network-request" /* AgentType.NETWORK */:
-                return false;
-            case "drjones-file" /* AgentType.FILE */:
-                return false;
-            case "drjones-performance" /* AgentType.PERFORMANCE */:
-                return false;
-            case "patch" /* AgentType.PATCH */:
-                return false;
-        }
+        return false;
     };
     #handleMessageContainerRef(el) {
         this.#messagesContainerElement = el;
@@ -439,14 +418,14 @@ export class ChatView extends HTMLElement {
         if (!ev.target || !(ev.target instanceof HTMLTextAreaElement)) {
             return;
         }
+        // Go to a new line only when Shift + Enter is pressed.
         if (ev.key === 'Enter' && !ev.shiftKey) {
-            // Do not go to a new line whenever Shift + Enter is pressed.
             ev.preventDefault();
-            // Only submit the text when there isn't a request already in flight.
-            if (!this.#props.isLoading) {
-                this.#props.onTextSubmit(ev.target.value);
-                ev.target.value = '';
+            if (!ev.target || !ev.target.value) {
+                return;
             }
+            this.#props.onTextSubmit(ev.target.value);
+            ev.target.value = '';
         }
     };
     #handleCancel = (ev) => {
@@ -867,9 +846,6 @@ export class ChatView extends HTMLElement {
         if (state === "consent-view" /* State.CONSENT_VIEW */ || !agentType) {
             return i18nString(UIStrings.followTheSteps);
         }
-        if (this.#props.requiresNewConversation) {
-            return lockedString(UIStringsNotTranslate.newConversationError);
-        }
         if (this.#props.blockedByCrossOrigin) {
             return lockedString(UIStringsNotTranslate.crossOriginError);
         }
@@ -933,7 +909,7 @@ export class ChatView extends HTMLElement {
       ></devtools-button>`;
             // clang-format on
         }
-        if (this.#props.blockedByCrossOrigin || this.#props.requiresNewConversation) {
+        if (this.#props.blockedByCrossOrigin) {
             // clang-format off
             return html `
         ${this.#props.blockedByCrossOrigin && Boolean(this.#props.onCancelCrossOriginChat) ? html `<devtools-button
@@ -980,7 +956,6 @@ export class ChatView extends HTMLElement {
         }
         const cls = LitHtml.Directives.classMap({
             'chat-input': true,
-            'one-big-button': Boolean(this.#props.requiresNewConversation),
             'two-big-buttons': this.#props.blockedByCrossOrigin,
         });
         // clang-format off

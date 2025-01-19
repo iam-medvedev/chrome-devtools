@@ -195,7 +195,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
     enableDimming(entryIndices: number[], shouldAddOutlines: boolean): void;
-    enableDimmingForUnrelatedEntries(entryIndicesToNotDim: number[]): void;
+    enableDimmingForUnrelatedEntries(entryIndicesToNotDim: number[], shouldAddOutlines?: boolean): void;
     disableDimming(): void;
     getColorForEntry(entryIndex: number): string;
     highlightEntry(entryIndex: number): void;
