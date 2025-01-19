@@ -1,3 +1,3 @@
-import './ProtocolMonitor.js';
+import * as JSONEditor from './JSONEditor.js';
 import * as ProtocolMonitor from './ProtocolMonitor.js';
-export { ProtocolMonitor, };
+export { JSONEditor, ProtocolMonitor, };

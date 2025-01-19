@@ -153,8 +153,10 @@ style.setProperty('--image-file-frame', 'url(\"' + new URL('./src/frame.svg', im
 style.setProperty('--image-file-gear-filled', 'url(\"' + new URL('./src/gear-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gear', 'url(\"' + new URL('./src/gear.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gears', 'url(\"' + new URL('./src/gears.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-global', 'url(\"' + new URL('./src/global.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-google', 'url(\"' + new URL('./src/google.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-goto-filled', 'url(\"' + new URL('./src/goto-filled.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-grid-on', 'url(\"' + new URL('./src/grid-on.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-group', 'url(\"' + new URL('./src/group.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL('./src/heap-snapshot.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshots', 'url(\"' + new URL('./src/heap-snapshots.svg', import.meta.url).toString() + '\")');
@@ -183,8 +185,10 @@ style.setProperty('--image-file-justify-items-end', 'url(\"' + new URL('./src/ju
 style.setProperty('--image-file-justify-items-start', 'url(\"' + new URL('./src/justify-items-start.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-stretch', 'url(\"' + new URL('./src/justify-items-stretch.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-arrow-right', 'url(\"' + new URL('./src/keyboard-arrow-right.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-keyboard-full', 'url(\"' + new URL('./src/keyboard-full.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-pen', 'url(\"' + new URL('./src/keyboard-pen.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard', 'url(\"' + new URL('./src/keyboard.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-label', 'url(\"' + new URL('./src/label.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-large-arrow-right-filled', 'url(\"' + new URL('./src/large-arrow-right-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers-filled', 'url(\"' + new URL('./src/layers-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers', 'url(\"' + new URL('./src/layers.svg', import.meta.url).toString() + '\")');
@@ -203,7 +207,10 @@ style.setProperty('--image-file-minus', 'url(\"' + new URL('./src/minus.svg', im
 style.setProperty('--image-file-mop', 'url(\"' + new URL('./src/mop.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-mouse', 'url(\"' + new URL('./src/mouse.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-network-settings', 'url(\"' + new URL('./src/network-settings.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-node-stack-icon', 'url(\"' + new URL('./src/node-stack-icon.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-open-externally', 'url(\"' + new URL('./src/open-externally.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-override', 'url(\"' + new URL('./src/override.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-palette', 'url(\"' + new URL('./src/palette.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause-circle', 'url(\"' + new URL('./src/pause-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL('./src/pause.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pen-spark', 'url(\"' + new URL('./src/pen-spark.svg', import.meta.url).toString() + '\")');
@@ -213,6 +220,7 @@ style.setProperty('--image-file-performance-panel-entry-label', 'url(\"' + new U
 style.setProperty('--image-file-performance-panel-time-range', 'url(\"' + new URL('./src/performance-panel-time-range.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance', 'url(\"' + new URL('./src/performance.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-person', 'url(\"' + new URL('./src/person.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-photo-camera', 'url(\"' + new URL('./src/photo-camera.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-play', 'url(\"' + new URL('./src/play.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-plus', 'url(\"' + new URL('./src/plus.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-policy', 'url(\"' + new URL('./src/policy.svg', import.meta.url).toString() + '\")');
@@ -254,10 +262,12 @@ style.setProperty('--image-file-stop', 'url(\"' + new URL('./src/stop.svg', impo
 style.setProperty('--image-file-symbol', 'url(\"' + new URL('./src/symbol.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-sync', 'url(\"' + new URL('./src/sync.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-table', 'url(\"' + new URL('./src/table.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-terminal', 'url(\"' + new URL('./src/terminal.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-down-filled', 'url(\"' + new URL('./src/thumb-down-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-down', 'url(\"' + new URL('./src/thumb-down.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-up-filled', 'url(\"' + new URL('./src/thumb-up-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-up', 'url(\"' + new URL('./src/thumb-up.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-tonality', 'url(\"' + new URL('./src/tonality.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-top-panel-close', 'url(\"' + new URL('./src/top-panel-close.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-top-panel-open', 'url(\"' + new URL('./src/top-panel-open.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-touch-app', 'url(\"' + new URL('./src/touch-app.svg', import.meta.url).toString() + '\")');

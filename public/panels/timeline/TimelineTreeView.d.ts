@@ -7,13 +7,14 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { type TimelineSelection } from './TimelineSelection.js';
+import * as Utils from './utils/utils.js';
 declare const TimelineTreeView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
-    addEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
-    once<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
-    removeEventListener<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: TimelineTreeView.Events.TREE_ROW_HOVERED): boolean;
-    dispatchEventToListeners<T extends TimelineTreeView.Events.TREE_ROW_HOVERED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
+    addEventListener<T extends keyof TimelineTreeView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
+    once<T extends keyof TimelineTreeView.EventTypes>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
+    removeEventListener<T extends keyof TimelineTreeView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: keyof TimelineTreeView.EventTypes): boolean;
+    dispatchEventToListeners<T extends keyof TimelineTreeView.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineTreeView extends TimelineTreeView_base implements UI.SearchableView.Searchable {
     #private;
@@ -39,7 +40,8 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     eventToTreeNode: WeakMap<Trace.Types.Events.Event, Trace.Extras.TraceTree.Node>;
     constructor();
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
-    setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null): void;
+    setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null, entityMappings?: Utils.EntityMapper.EntityMapper | null): void;
+    entityMapper(): Utils.EntityMapper.EntityMapper | null;
     parsedTrace(): Trace.Handlers.Types.ParsedTrace | null;
     init(): void;
     lastSelectedNode(): Trace.Extras.TraceTree.Node | null | undefined;
@@ -58,7 +60,8 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     buildTree(): Trace.Extras.TraceTree.Node;
     buildTopDownTree(doNotAggregate: boolean, groupIdCallback: ((arg0: Trace.Types.Events.Event) => string) | null): Trace.Extras.TraceTree.Node;
     populateColumns(columns: DataGrid.DataGrid.ColumnDescriptor[]): void;
-    private sortingChanged;
+    sortingChanged(): void;
+    getSortingFunction(columnId: string): ((a: DataGrid.SortableDataGrid.SortableDataGridNode<GridNode>, b: DataGrid.SortableDataGrid.SortableDataGridNode<GridNode>) => number) | null;
     private onShowModeChanged;
     private updateDetailsForSelection;
     showDetailsForNode(_node: Trace.Extras.TraceTree.Node): boolean;
@@ -77,10 +80,12 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
 }
 export declare namespace TimelineTreeView {
     const enum Events {
-        TREE_ROW_HOVERED = "TreeRowHovered"
+        TREE_ROW_HOVERED = "TreeRowHovered",
+        THIRD_PARTY_ROW_HOVERED = "ThirdPartyRowHovered"
     }
     interface EventTypes {
         [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
+        [Events.THIRD_PARTY_ROW_HOVERED]: Trace.Types.Events.Event[] | null;
     }
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {

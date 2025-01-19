@@ -5,11 +5,6 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import * as UI from './legacy.js';
 const { Widget } = UI.Widget;
-class UpdateWidget extends Widget {
-    doUpdate() {
-        return super.doUpdate();
-    }
-}
 describe('Widget', () => {
     it('monkey-patches `Element#appendChild()` to sanity-check that widgets are properly attached', () => {
         const div = document.createElement('div');
@@ -45,20 +40,20 @@ describe('Widget', () => {
     });
     describe('detach', () => {
         it('cancels pending updates', async () => {
-            const widget = new UpdateWidget();
-            const doUpdate = sinon.spy(widget, 'doUpdate');
+            const widget = new Widget();
+            const performUpdate = sinon.spy(widget, 'performUpdate');
             widget.markAsRoot();
             widget.show(renderElementIntoDOM(document.createElement('main')));
-            widget.update();
+            widget.requestUpdate();
             widget.detach();
             assert.isTrue(await widget.updateComplete);
-            assert.strictEqual(doUpdate.callCount, 0, 'Expected no calls to `doUpdate`');
+            assert.strictEqual(performUpdate.callCount, 0, 'Expected no calls to `performUpdate`');
         });
     });
-    describe('doUpdate', () => {
+    describe('performUpdate', () => {
         it('can safely use the `RenderCoordinator` primitives', async () => {
-            const widget = new (class extends UpdateWidget {
-                async doUpdate() {
+            const widget = new (class extends Widget {
+                async performUpdate() {
                     const clientHeight = await RenderCoordinator.read(() => this.contentElement.clientHeight);
                     const clientWidth = await RenderCoordinator.read(() => this.contentElement.clientWidth);
                     await RenderCoordinator.write(() => {
@@ -69,18 +64,18 @@ describe('Widget', () => {
             })();
             widget.markAsRoot();
             widget.show(renderElementIntoDOM(document.createElement('main')));
-            widget.update();
+            widget.requestUpdate();
             assert.isTrue(await widget.updateComplete);
         });
     });
-    describe('update', () => {
+    describe('requestUpdate', () => {
         it('deduplicates subsequent update requests', async () => {
-            const widget = new UpdateWidget();
-            const doUpdate = sinon.stub(widget, 'doUpdate');
-            widget.update();
-            widget.update();
+            const widget = new Widget();
+            const performUpdate = sinon.stub(widget, 'performUpdate');
+            widget.requestUpdate();
+            widget.requestUpdate();
             await widget.updateComplete;
-            assert.strictEqual(doUpdate.callCount, 1, 'Expected exactly one call to `doUpdate`');
+            assert.strictEqual(performUpdate.callCount, 1, 'Expected exactly one call to `performUpdate`');
         });
     });
     describe('updateComplete', () => {
@@ -90,30 +85,30 @@ describe('Widget', () => {
         });
         it('resolves to `true` when update cycles ends without scheduling another update', async () => {
             const widget = new Widget();
-            widget.update();
+            widget.requestUpdate();
             assert.isTrue(await widget.updateComplete);
         });
-        it('resolves to `false` when another update is schedule during an update cycle', async () => {
-            const widget = new UpdateWidget();
-            sinon.stub(widget, 'doUpdate').onFirstCall().callsFake(widget.update.bind(widget));
-            widget.update();
+        it('resolves to `false` when another update is requested during an update cycle', async () => {
+            const widget = new Widget();
+            sinon.stub(widget, 'performUpdate').onFirstCall().callsFake(widget.requestUpdate.bind(widget));
+            widget.requestUpdate();
             assert.isFalse(await widget.updateComplete);
             await widget.updateComplete;
         });
         it('yields the same promise for the same update cycle', async () => {
             const widget = new Widget();
-            widget.update();
+            widget.requestUpdate();
             const updateComplete = widget.updateComplete;
-            widget.update();
+            widget.requestUpdate();
             assert.strictEqual(updateComplete, widget.updateComplete);
             await widget.updateComplete;
         });
         it('yields a new promise for each update cycle', async () => {
             const widget = new Widget();
-            widget.update();
+            widget.requestUpdate();
             const updateComplete = widget.updateComplete;
             await updateComplete;
-            widget.update();
+            widget.requestUpdate();
             assert.notStrictEqual(updateComplete, widget.updateComplete);
             await widget.updateComplete;
         });

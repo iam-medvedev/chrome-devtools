@@ -115,7 +115,7 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
             this.categoryView = new StorageCategoryView();
         }
         this.categoryView.element.setAttribute('jslog', `${VisualLogging.pane().context(Platform.StringUtilities.toKebabCase(categoryName))}`);
-        this.categoryView.setText(categoryName);
+        this.categoryView.setHeader(categoryName);
         this.categoryView.setLink(categoryLink);
         this.showView(this.categoryView);
     }

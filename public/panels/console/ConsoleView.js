@@ -164,6 +164,10 @@ const UIStrings = {
      */
     saveAs: 'Save as...',
     /**
+     *@description Text to copy Console log to clipboard
+     */
+    copyConsole: 'Copy console',
+    /**
      *@description A context menu item in the Console View of the Console panel
      */
     copyVisibleStyledSelection: 'Copy visible styled selection',
@@ -313,6 +317,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.isSidebarOpen = false;
         this.filter = new ConsoleViewFilter(this.onFilterChanged.bind(this));
         this.consoleToolbarContainer = this.element.createChild('div', 'console-toolbar-container');
+        this.consoleToolbarContainer.role = 'toolbar';
         this.splitWidget = new UI.SplitWidget.SplitWidget(true /* isVertical */, false /* secondIsSidebar */, 'console.sidebar.width', 100);
         this.splitWidget.setMainWidget(this.searchableViewInternal);
         this.splitWidget.setSidebarWidget(this.sidebar);
@@ -366,6 +371,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.showCorsErrorsSetting.addChangeListener(() => this.updateMessageList());
         const toolbar = this.consoleToolbarContainer.createChild('devtools-toolbar', 'console-main-toolbar');
         toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        toolbar.role = 'presentation';
         toolbar.wrappable = true;
         toolbar.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showConsoleSidebar), i18nString(UIStrings.hideConsoleSidebar), i18nString(UIStrings.consoleSidebarShown), i18nString(UIStrings.consoleSidebarHidden), 'console-sidebar'));
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('console.clear'));
@@ -942,6 +948,7 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         contextMenu.defaultSection().appendAction('console.clear');
         contextMenu.defaultSection().appendAction('console.clear.history');
+        contextMenu.saveSection().appendItem(i18nString(UIStrings.copyConsole), this.copyConsole.bind(this), { jslogContext: 'copy-console' });
         contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAs), this.saveConsole.bind(this), { jslogContext: 'save-as' });
         if (this.element.hasSelection()) {
             contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyVisibleStyledSelection), this.viewport.copyWithStyles.bind(this.viewport), { jslogContext: 'copy-visible-styled-selection' });
@@ -981,6 +988,14 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         void stream.close();
         progressIndicator.done();
+    }
+    async copyConsole() {
+        const messageContents = [];
+        for (let i = 0; i < this.itemCount(); i++) {
+            const message = this.itemElement(i);
+            messageContents.push(message.toExportString());
+        }
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(messageContents.join('\n') + '\n');
     }
     tryToCollapseMessages(viewMessage, lastMessage) {
         const timestampsShown = this.timestampsSetting.get();

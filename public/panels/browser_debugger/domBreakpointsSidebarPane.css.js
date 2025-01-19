@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+.dom-breakpoints-container {
+  overflow: auto;
+}
+
 .breakpoint-list {
   padding-bottom: 3px;
 }

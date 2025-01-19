@@ -90,7 +90,7 @@ export class ReleaseNoteView extends UI.Widget.VBox {
     }) {
         super(true, undefined, element);
         this.#view = view;
-        this.update();
+        this.requestUpdate();
     }
     static async getFileContent() {
         const url = new URL('./resources/WNDT.md', import.meta.url);
@@ -102,7 +102,7 @@ export class ReleaseNoteView extends UI.Widget.VBox {
             throw new Error(`Markdown file ${url.toString()} not found. Make sure it is correctly listed in the relevant BUILD.gn files.`);
         }
     }
-    async doUpdate() {
+    async performUpdate() {
         const markdownContent = await getMarkdownContent();
         this.#view({
             getReleaseNote,

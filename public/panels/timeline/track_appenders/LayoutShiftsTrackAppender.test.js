@@ -53,11 +53,14 @@ describeWithEnvironment('LayoutShiftsTrackAppender', function () {
             assert.strictEqual(flameChartData.entryStartTimes[markerIndex], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
         }
     });
-    it('returns the correct title for a layout shift', async function () {
-        const { layoutShiftsTrackAppender, parsedTrace } = await renderTrackAppender(this, 'cls-single-frame.json.gz');
-        const shifts = parsedTrace.LayoutShifts.clusters.flatMap(c => c.events);
-        const title = layoutShiftsTrackAppender.titleForEvent(shifts[0]);
-        assert.strictEqual(title, 'Layout shift');
+    it('does not define any title for a layout shift or a cluster', async () => {
+        const { layoutShiftsTrackAppender, parsedTrace } = await renderTrackAppender(this, 'cls-no-nav.json.gz');
+        const cluster = parsedTrace.LayoutShifts.clusters.at(0);
+        assert.isOk(cluster);
+        const shift = cluster.events.at(0);
+        assert.isOk(shift);
+        assert.strictEqual(layoutShiftsTrackAppender.titleForEvent(cluster), '');
+        assert.strictEqual(layoutShiftsTrackAppender.titleForEvent(shift), '');
     });
     it('shows "Layout shift" tooltip on hover', async function () {
         const { layoutShiftsTrackAppender, parsedTrace } = await renderTrackAppender(this, 'cls-no-nav.json.gz');

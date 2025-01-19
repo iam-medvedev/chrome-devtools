@@ -20,12 +20,9 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event: Trace.Types.Events.Event): string;
-    /**
-     * Gets the title an event added by this appender should be rendered with.
-     */
-    titleForEvent(event: Trace.Types.Events.Event): string;
     setPopoverInfo(event: Trace.Types.Events.Event, info: PopoverInfo): void;
     getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
     preloadScreenshots(events: Trace.Types.Events.SyntheticLayoutShift[]): Promise<(void | undefined)[]>;
+    titleForEvent(_event: Trace.Types.Events.Event): string;
     static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.Handlers.Types.ParsedTrace, maxSize: UI.Geometry.Size): HTMLElement | undefined;
 }

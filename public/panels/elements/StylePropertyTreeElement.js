@@ -1135,6 +1135,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.prompt = null;
         this.lastComputedValue = null;
         this.#propertyTextFromSource = property.propertyText || '';
+        this.property.addEventListener("localValueUpdated" /* SDK.CSSProperty.Events.LOCAL_VALUE_UPDATED */, () => {
+            this.updateTitle();
+        });
     }
     async gridNames() {
         if (!SDK.CSSMetadata.cssMetadata().isGridNameAwareProperty(this.name)) {

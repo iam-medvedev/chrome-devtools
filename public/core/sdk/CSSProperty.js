@@ -7,7 +7,7 @@ import * as HostModule from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import { cssMetadata, GridAreaRowRegex } from './CSSMetadata.js';
 import { stripComments } from './CSSPropertyParser.js';
-export class CSSProperty {
+export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
     ownerStyle;
     index;
     name;
@@ -24,6 +24,7 @@ export class CSSProperty {
     #invalidString;
     #longhandProperties = [];
     constructor(ownerStyle, index, name, value, important, disabled, parsedOk, implicit, text, range, longhandProperties) {
+        super();
         this.ownerStyle = ownerStyle;
         this.index = index;
         this.name = name;
@@ -243,6 +244,11 @@ export class CSSProperty {
     setValue(newValue, majorChange, overwrite, userCallback) {
         const text = this.name + ': ' + newValue + (this.important ? ' !important' : '') + ';';
         void this.setText(text, majorChange, overwrite).then(userCallback);
+    }
+    // Updates the value stored locally and emits an event to signal its update.
+    setLocalValue(value) {
+        this.value = value;
+        this.dispatchEventToListeners("localValueUpdated" /* Events.LOCAL_VALUE_UPDATED */);
     }
     async setDisabled(disabled) {
         if (!this.ownerStyle) {

@@ -124,15 +124,19 @@ export declare class StaticData {
     maxJSObjectId: number;
     constructor(nodeCount: number, rootNodeIndex: number, totalSize: number, maxJSObjectId: number);
 }
-export declare class Statistics {
+export interface Statistics {
     total: number;
-    v8heap: number;
-    native: number;
-    code: number;
-    jsArrays: number;
-    strings: number;
-    system: number;
-    constructor();
+    native: {
+        total: number;
+        typedArrays: number;
+    };
+    v8heap: {
+        total: number;
+        code: number;
+        jsArrays: number;
+        strings: number;
+        system: number;
+    };
 }
 export declare class NodeFilter {
     minNodeId: number | undefined;

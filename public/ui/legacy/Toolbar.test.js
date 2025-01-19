@@ -1,8 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import './legacy.js';
-import { dispatchClickEvent, doubleRaf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import * as UI from './legacy.js';
@@ -13,9 +12,9 @@ describeWithLocale('Toolbar', () => {
             const toolbar = document.createElement('devtools-toolbar');
             assert.instanceOf(toolbar, Toolbar);
         });
-        it('does not attach a shadow root', () => {
+        it('attaches a shadow root', () => {
             const toolbar = document.createElement('devtools-toolbar');
-            assert.isNull(toolbar.shadowRoot, 'Expected Toolbar to use Light DOM');
+            assert.isNotNull(toolbar.shadowRoot, 'Expected Toolbar to use Light DOM');
         });
         describe('connectedCallback', () => {
             it('adjusts the ARIA role to `toolbar` if unspecified', () => {
@@ -30,12 +29,35 @@ describeWithLocale('Toolbar', () => {
                 assert.strictEqual(toolbar.role, 'presentation');
             });
         });
+        describe('floating', () => {
+            it('defaults to off', () => {
+                const toolbar = document.createElement('devtools-toolbar');
+                assert.isFalse(toolbar.floating);
+            });
+            it('can be toggled on', () => {
+                const toolbar = document.createElement('devtools-toolbar');
+                toolbar.floating = true;
+                assert.isTrue(toolbar.floating);
+            });
+            it('reflects changes onto the `floating` attribute', () => {
+                const toolbar = document.createElement('devtools-toolbar');
+                toolbar.floating = true;
+                assert.isTrue(toolbar.hasAttribute('floating'));
+            });
+        });
+        describe('hidden', () => {
+            it('hides the toolbar when present', () => {
+                const toolbar = renderElementIntoDOM(document.createElement('devtools-toolbar'));
+                toolbar.hidden = true;
+                assert.strictEqual(window.getComputedStyle(toolbar).display, 'none');
+            });
+        });
         describe('wrappable', () => {
             it('defaults to off', () => {
                 const toolbar = document.createElement('devtools-toolbar');
                 assert.isFalse(toolbar.wrappable);
             });
-            it('change be toggled on', () => {
+            it('can be toggled on', () => {
                 const toolbar = document.createElement('devtools-toolbar');
                 toolbar.wrappable = true;
                 assert.isTrue(toolbar.wrappable);

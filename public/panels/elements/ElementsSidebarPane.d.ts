@@ -14,4 +14,5 @@ export declare class ElementsSidebarPane extends UI.Widget.VBox {
     update(): void;
     wasShown(): void;
     onCSSModelChanged(_event: Common.EventTarget.EventTargetEvent<CSSModelChangedEvent | null>): void;
+    onComputedStyleChanged(): void;
 }

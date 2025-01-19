@@ -72,7 +72,9 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         this.element.setAttribute('jslog', `${VisualLogging.panel('developer-resources').track({ resize: true })}`);
         const toolbarContainer = this.contentElement.createChild('div', 'developer-resource-view-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        toolbarContainer.role = 'toolbar';
         const toolbar = toolbarContainer.createChild('devtools-toolbar', 'developer-resource-view-toolbar');
+        toolbar.role = 'presentation';
         this.textFilterRegExp = null;
         this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByText), 1);
         this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
@@ -81,7 +83,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         const loadThroughTargetCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(loadThroughTarget, i18nString(UIStrings.loadHttpsDeveloperResources), i18nString(UIStrings.enableLoadingThroughTarget));
         toolbar.appendToolbarItem(loadThroughTargetCheckbox);
         this.coverageResultsElement = this.contentElement.createChild('div', 'developer-resource-view-results');
-        this.listView = new DeveloperResourcesListView(this.isVisible.bind(this));
+        this.listView = new DeveloperResourcesListView();
         this.listView.show(this.coverageResultsElement);
         this.statusToolbarElement = this.contentElement.createChild('div', 'developer-resource-view-toolbar-summary');
         this.statusMessageElement = this.statusToolbarElement.createChild('div', 'developer-resource-view-message');
@@ -92,7 +94,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
     async doUpdate() {
         const selectedItem = this.listView.selectedItem();
         this.listView.reset();
-        this.listView.update(this.loader.getScopedResourcesLoaded().values());
+        this.listView.items = this.loader.getScopedResourcesLoaded().values();
         if (selectedItem) {
             this.listView.select(selectedItem);
         }
@@ -116,17 +118,20 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
             this.statusMessageElement.textContent = i18nString(UIStrings.resources, { n: resources });
         }
     }
-    isVisible(item) {
-        return !this.textFilterRegExp || this.textFilterRegExp.test(item.url) ||
-            this.textFilterRegExp.test(item.errorMessage || '');
-    }
     onFilterChanged() {
         if (!this.listView) {
             return;
         }
         const text = this.filterInput.value();
         this.textFilterRegExp = text ? Platform.StringUtilities.createPlainTextSearchRegex(text, 'i') : null;
-        this.listView.updateFilterAndHighlight(this.textFilterRegExp);
+        if (this.textFilterRegExp) {
+            this.listView.updateFilterAndHighlight([
+                { key: 'url,error-message', regex: this.textFilterRegExp, negative: false },
+            ]);
+        }
+        else {
+            this.listView.updateFilterAndHighlight([]);
+        }
         this.updateStats();
         const numberOfResourceMatch = this.listView.getNumberOfVisibleItems();
         let resourceMatch = '';

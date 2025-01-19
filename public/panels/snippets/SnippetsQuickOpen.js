@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import { evaluateScriptSnippet, findSnippetsProject } from './ScriptSnippetFileSystem.js';
 const UIStrings = {
@@ -61,8 +62,9 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
         return this.snippets[itemIndex].name();
     }
     renderItem(itemIndex, query, titleElement, _subtitleElement) {
+        const icon = IconButton.Icon.create('snippet', 'snippet');
+        titleElement.parentElement?.parentElement?.insertBefore(icon, titleElement.parentElement);
         titleElement.textContent = this.snippets[itemIndex].name();
-        titleElement.classList.add('monospace');
         QuickOpen.FilteredListWidget.FilteredListWidget.highlightRanges(titleElement, query, true);
     }
 }

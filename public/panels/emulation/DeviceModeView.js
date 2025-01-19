@@ -582,7 +582,6 @@ export class Ruler extends UI.Widget.VBox {
             }
         }
         this.count = count;
-        return Promise.resolve();
     }
     onMarkerClick(size) {
         this.applyCallback.call(null, size);

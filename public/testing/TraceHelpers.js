@@ -498,6 +498,9 @@ export function getBaseTraceParseModelData(overrides = {}) {
             animationFrames: [],
             presentationForFrame: new Map(),
         },
+        DOMStats: {
+            domStatsByFrameId: new Map(),
+        },
         LayoutShifts: {
             clusters: [],
             clustersByNavigationId: new Map(),

@@ -1731,7 +1731,7 @@
     "message": "Document request latency"
   },
   "models/trace/insights/DOMSize.ts | description": {
-    "message": "A large DOM will increase memory usage, cause longer style calculations, and produce costly layout reflows which impact page responsiveness. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/)."
+    "message": "A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/)."
   },
   "models/trace/insights/DOMSize.ts | title": {
     "message": "Optimize DOM size"
@@ -3707,6 +3707,9 @@
   "panels/application/CookieItemsView.ts | cookies": {
     "message": "Cookies"
   },
+  "panels/application/CookieItemsView.ts | noCookieSelected": {
+    "message": "No cookie selected"
+  },
   "panels/application/CookieItemsView.ts | numberOfCookiesShownInTableS": {
     "message": "Number of cookies shown in table: {PH1}"
   },
@@ -4454,6 +4457,9 @@
   "panels/application/ServiceWorkerCacheViews.ts | name": {
     "message": "Name"
   },
+  "panels/application/ServiceWorkerCacheViews.ts | noCacheEntrySelected": {
+    "message": "No cache entry selected"
+  },
   "panels/application/ServiceWorkerCacheViews.ts | preview": {
     "message": "Preview"
   },
@@ -4940,11 +4946,17 @@
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | checked": {
     "message": "checked"
   },
+  "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | domBreakpointsDescription": {
+    "message": "DOM breakpoints pause on the code that changes a DOM node or its children."
+  },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | domBreakpointsList": {
     "message": "DOM Breakpoints list"
   },
+  "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | learnMore": {
+    "message": "Learn more"
+  },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | noBreakpoints": {
-    "message": "No breakpoints"
+    "message": "You'll find DOM breakpoints here"
   },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | nodeRemoved": {
     "message": "Node removed"
@@ -5221,6 +5233,9 @@
   },
   "panels/console/ConsoleView.ts | consoleSidebarShown": {
     "message": "Console sidebar shown"
+  },
+  "panels/console/ConsoleView.ts | copyConsole": {
+    "message": "Copy console"
   },
   "panels/console/ConsoleView.ts | copyVisibleStyledSelection": {
     "message": "Copy visible styled selection"
@@ -7147,6 +7162,9 @@
   },
   "panels/layer_viewer/LayerDetailsView.ts | nearestLayerShiftingStickyBox": {
     "message": "Nearest Layer Shifting Sticky Box"
+  },
+  "panels/layer_viewer/LayerDetailsView.ts | noLayerSelected": {
+    "message": "No layer selected"
   },
   "panels/layer_viewer/LayerDetailsView.ts | nonFastScrollable": {
     "message": "Non fast scrollable"
@@ -9089,6 +9107,9 @@
   "panels/network/RequestInitiatorView.ts | thisRequestHasNoInitiatorData": {
     "message": "This request has no initiator data."
   },
+  "panels/network/RequestPayloadView.ts | copyPayload": {
+    "message": "Copy"
+  },
   "panels/network/RequestPayloadView.ts | copyValue": {
     "message": "Copy value"
   },
@@ -9322,6 +9343,9 @@
   },
   "panels/network/ResourceWebSocketFrameView.ts | na": {
     "message": "N/A"
+  },
+  "panels/network/ResourceWebSocketFrameView.ts | noMessageSelected": {
+    "message": "No message selected"
   },
   "panels/network/ResourceWebSocketFrameView.ts | pingMessage": {
     "message": "Ping Message"
@@ -9767,6 +9791,12 @@
   "panels/profiler/HeapSnapshotView.ts | objectsRetainedByDetachedDomNodes": {
     "message": "Objects retained by detached DOM nodes"
   },
+  "panels/profiler/HeapSnapshotView.ts | otherJSObjects": {
+    "message": "Other JS objects"
+  },
+  "panels/profiler/HeapSnapshotView.ts | otherNonJSObjects": {
+    "message": "Other non-JS objects (such as HTML and CSS)"
+  },
   "panels/profiler/HeapSnapshotView.ts | percentagePlaceholder": {
     "message": "{PH1}%"
   },
@@ -10085,25 +10115,25 @@
   "panels/profiler/ProfileView.ts | treeTopDown": {
     "message": "Tree (Top Down)"
   },
-  "panels/protocol_monitor/components/JSONEditor.ts | addCustomProperty": {
+  "panels/protocol_monitor/JSONEditor.ts | addCustomProperty": {
     "message": "Add custom property"
   },
-  "panels/protocol_monitor/components/JSONEditor.ts | addParameter": {
+  "panels/protocol_monitor/JSONEditor.ts | addParameter": {
     "message": "Add a parameter"
   },
-  "panels/protocol_monitor/components/JSONEditor.ts | deleteParameter": {
-    "message": "Delete parameter"
-  },
-  "panels/protocol_monitor/components/JSONEditor.ts | resetDefaultValue": {
-    "message": "Reset to default value"
-  },
-  "panels/protocol_monitor/components/Toolbar.ts | copyCommand": {
+  "panels/protocol_monitor/JSONEditor.ts | copyCommand": {
     "message": "Copy command"
   },
-  "panels/protocol_monitor/components/Toolbar.ts | sendCommandCmdEnter": {
+  "panels/protocol_monitor/JSONEditor.ts | deleteParameter": {
+    "message": "Delete parameter"
+  },
+  "panels/protocol_monitor/JSONEditor.ts | resetDefaultValue": {
+    "message": "Reset to default value"
+  },
+  "panels/protocol_monitor/JSONEditor.ts | sendCommandCmdEnter": {
     "message": "Send command - ⌘+Enter"
   },
-  "panels/protocol_monitor/components/Toolbar.ts | sendCommandCtrlEnter": {
+  "panels/protocol_monitor/JSONEditor.ts | sendCommandCtrlEnter": {
     "message": "Send command - Ctrl+Enter"
   },
   "panels/protocol_monitor/protocol_monitor-meta.ts | protocolMonitor": {
@@ -10643,6 +10673,9 @@
   "panels/security/CookieControlsView.ts | cardTitle": {
     "message": "Temporarily limit third-party cookies"
   },
+  "panels/security/CookieControlsView.ts | enableFlag": {
+    "message": "To use this, set {PH1} to Default"
+  },
   "panels/security/CookieControlsView.ts | enterpriseDisclaimer": {
     "message": "Your organization manages third-party cookie access for this site"
   },
@@ -10675,6 +10708,12 @@
   },
   "panels/security/CookieControlsView.ts | siteReloadMessage": {
     "message": "To apply your updated controls, reload the page"
+  },
+  "panels/security/CookieControlsView.ts | tpcdHeuristicsGrants": {
+    "message": "#tpcd-heuristics-grants"
+  },
+  "panels/security/CookieControlsView.ts | tpcdMetadataGrants": {
+    "message": "#tpcd-metadata-grants"
   },
   "panels/security/CookieControlsView.ts | viewDetails": {
     "message": "View details"
@@ -11397,10 +11436,10 @@
     "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | dataCollection": {
-    "message": "Depending on your region, Google may refrain from data collection."
+    "message": "Depending on your region, Google may refrain from data collection"
   },
   "panels/settings/AISettingsTab.ts | dataCollectionNoLogging": {
-    "message": "Your content will not be used by human reviewers to improve AI. Your organization may change these settings at any time. Depending on your Google account management and/or region, Google may refrain from data collection."
+    "message": "Depending on your Google account management and/or region, Google may refrain from data collection"
   },
   "panels/settings/AISettingsTab.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
@@ -11409,7 +11448,7 @@
     "message": "Enable Console insights"
   },
   "panels/settings/AISettingsTab.ts | experimentalFeatures": {
-    "message": "These features are experimental. They use generative AI and may provide inaccurate or offensive information that doesn’t represent Google’s views."
+    "message": "These features use generative AI and may provide inaccurate or offensive information that doesn’t represent Google’s views"
   },
   "panels/settings/AISettingsTab.ts | explainConsole": {
     "message": "Get explanations for console warnings and errors"
@@ -11462,11 +11501,11 @@
   "panels/settings/AISettingsTab.ts | receiveSuggestions": {
     "message": "Receive suggestions and code samples to address these issues"
   },
-  "panels/settings/AISettingsTab.ts | retainData": {
-    "message": "Usage data will be retained for up to 18 months and stored in such a way that Google can’t tell who provided it."
-  },
   "panels/settings/AISettingsTab.ts | sendsDataToGoogle": {
     "message": "These features send relevant data to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information."
+  },
+  "panels/settings/AISettingsTab.ts | sendsDataToGoogleNoLogging": {
+    "message": "Your content will not be used by human reviewers to improve AI. Your organization may change these settings at any time."
   },
   "panels/settings/AISettingsTab.ts | showLess": {
     "message": "Show less"
@@ -12198,28 +12237,28 @@
     "message": "{PH1} (ignore listed)"
   },
   "panels/sources/GoToLineQuickOpen.ts | currentLineSTypeALineNumber": {
-    "message": "Current line: {PH1}. Type a line number between 1 and {PH2} to navigate to."
+    "message": "Type a line number between 1 and {PH1} to navigate to"
   },
   "panels/sources/GoToLineQuickOpen.ts | currentPositionXsTypeAnOffset": {
-    "message": "Current position: 0x{PH1}. Type an offset between 0x{PH2} and 0x{PH3} to navigate to."
+    "message": "Type an offset between 0x{PH1} and 0x{PH2} to navigate to"
   },
   "panels/sources/GoToLineQuickOpen.ts | goToLineS": {
-    "message": "Go to line {PH1}."
+    "message": "Go to line {PH1}"
   },
   "panels/sources/GoToLineQuickOpen.ts | goToLineSAndColumnS": {
-    "message": "Go to line {PH1} and column {PH2}."
+    "message": "Go to line {PH1} and column {PH2}"
   },
   "panels/sources/GoToLineQuickOpen.ts | goToOffsetXs": {
-    "message": "Go to offset 0x{PH1}."
+    "message": "Go to offset 0x{PH1}"
   },
   "panels/sources/GoToLineQuickOpen.ts | noFileSelected": {
-    "message": "No file selected."
+    "message": "No file selected"
   },
   "panels/sources/GoToLineQuickOpen.ts | noResultsFound": {
     "message": "No results found"
   },
   "panels/sources/GoToLineQuickOpen.ts | typeANumberToGoToThatLine": {
-    "message": "Type a number to go to that line."
+    "message": "Type a number to go to that line"
   },
   "panels/sources/InplaceFormatterEditorAction.ts | format": {
     "message": "Format"
@@ -12660,22 +12699,31 @@
     "message": "Create new snippet"
   },
   "panels/sources/SourcesNavigator.ts | explainContentScripts": {
-    "message": "View content scripts served by extensions"
+    "message": "View content scripts served by extensions."
   },
   "panels/sources/SourcesNavigator.ts | explainLocalOverrides": {
-    "message": "Override network requests and web content locally to mock remote resources"
+    "message": "Override network requests and web content locally to mock remote resources."
   },
   "panels/sources/SourcesNavigator.ts | explainSnippets": {
-    "message": "Save the JavaScript code you run often to run it again anytime"
+    "message": "Save the JavaScript code you run often in a snippet to run it again anytime."
   },
   "panels/sources/SourcesNavigator.ts | explainWorkspace": {
-    "message": "Set up workspace to sync edits directly to the sources you develop"
-  },
-  "panels/sources/SourcesNavigator.ts | learnMore": {
-    "message": "Learn more"
+    "message": "Set up workspaces to sync edits directly to the sources you develop."
   },
   "panels/sources/SourcesNavigator.ts | newSnippet": {
     "message": "New snippet"
+  },
+  "panels/sources/SourcesNavigator.ts | noContentScripts": {
+    "message": "No content scripts detected"
+  },
+  "panels/sources/SourcesNavigator.ts | noLocalOverrides": {
+    "message": "No local overrides set up"
+  },
+  "panels/sources/SourcesNavigator.ts | noSnippets": {
+    "message": "No snippets saved"
+  },
+  "panels/sources/SourcesNavigator.ts | noWorkspace": {
+    "message": "No workspaces set up"
   },
   "panels/sources/SourcesNavigator.ts | remove": {
     "message": "Remove"
@@ -13061,8 +13109,23 @@
   "panels/timeline/components/insights/DocumentLatency.ts | uncompressedDownload": {
     "message": "Uncompressed download"
   },
-  "panels/timeline/components/insights/DOMSize.ts | noLargeRenderTasks": {
-    "message": "No rendering tasks impacted by DOM size"
+  "panels/timeline/components/insights/DOMSize.ts | element": {
+    "message": "Element"
+  },
+  "panels/timeline/components/insights/DOMSize.ts | maxChildren": {
+    "message": "Most children"
+  },
+  "panels/timeline/components/insights/DOMSize.ts | maxDOMDepth": {
+    "message": "DOM depth"
+  },
+  "panels/timeline/components/insights/DOMSize.ts | statistic": {
+    "message": "Statistic"
+  },
+  "panels/timeline/components/insights/DOMSize.ts | totalElements": {
+    "message": "Total elements"
+  },
+  "panels/timeline/components/insights/DOMSize.ts | value": {
+    "message": "Value"
   },
   "panels/timeline/components/insights/FontDisplay.ts | fontColumn": {
     "message": "Font"
@@ -13541,6 +13604,9 @@
   "panels/timeline/components/NetworkRequestDetails.ts | encodedData": {
     "message": "Encoded data"
   },
+  "panels/timeline/components/NetworkRequestDetails.ts | entity": {
+    "message": "3rd party entity"
+  },
   "panels/timeline/components/NetworkRequestDetails.ts | fromCache": {
     "message": "From cache"
   },
@@ -13789,6 +13855,18 @@
   },
   "panels/timeline/ServerTimingsTrackAppender.ts | serverTimingTrack": {
     "message": "This track contains timings taken from Server-Timing network response headers. Their respective start times are only estimated and may not be accurate."
+  },
+  "panels/timeline/ThirdPartyTreeView.ts | firstOrThirdPartyName": {
+    "message": "1st / 3rd Party"
+  },
+  "panels/timeline/ThirdPartyTreeView.ts | selfTime": {
+    "message": "Self time"
+  },
+  "panels/timeline/ThirdPartyTreeView.ts | transferSize": {
+    "message": "Transfer size"
+  },
+  "panels/timeline/ThirdPartyTreeView.ts | unattributed": {
+    "message": "[unattributed]"
   },
   "panels/timeline/ThreadAppender.ts | bidderWorklet": {
     "message": "Bidder Worklet"
@@ -14423,6 +14501,9 @@
   "panels/timeline/TimelineUIUtils.ts | emptyPlaceholder": {
     "message": "{PH1}"
   },
+  "panels/timeline/TimelineUIUtils.ts | entity": {
+    "message": "3rd party entity"
+  },
   "panels/timeline/TimelineUIUtils.ts | entryIsHidden": {
     "message": "(entry is hidden)"
   },
@@ -14713,6 +14794,9 @@
   },
   "panels/timeline/utils/EntryName.ts | frame": {
     "message": "Frame"
+  },
+  "panels/timeline/utils/EntryName.ts | layoutShift": {
+    "message": "Layout shift"
   },
   "panels/timeline/utils/EntryName.ts | wsConnectionClosed": {
     "message": "WebSocket closed"
@@ -15631,6 +15715,9 @@
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sSUseTheUpAndDownArrowKeysTo": {
     "message": "{PH1} {PH2}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell."
+  },
+  "ui/legacy/components/data_grid/DataGridWithPreview.ts | noPreviewSelected": {
+    "message": "No value selected"
   },
   "ui/legacy/components/data_grid/DataGridWithPreview.ts | numberEntries": {
     "message": "Number of entries shown in table: {PH1}"

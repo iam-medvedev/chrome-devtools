@@ -4,8 +4,8 @@ import { type InsightModel, type InsightSetContext, type RequiredData } from './
 export declare function deps(): ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
 export type ThirdPartiesInsightModel = InsightModel<{
     entityByRequest: Map<Types.Events.SyntheticNetworkRequest, Extras.ThirdParties.Entity>;
-    requestsByEntity: Map<Extras.ThirdParties.Entity, Types.Events.SyntheticNetworkRequest[]>;
-    summaryByRequest: Map<Types.Events.SyntheticNetworkRequest, Extras.ThirdParties.Summary>;
+    requestsByEntity: Map<Extras.ThirdParties.Entity, Types.Events.Event[]>;
+    summaryByEvent: Map<Types.Events.Event, Extras.ThirdParties.Summary>;
     summaryByEntity: Map<Extras.ThirdParties.Entity, Extras.ThirdParties.Summary>;
     /** The entity for this navigation's URL. Any other entity is from a third party. */
     firstPartyEntity?: Extras.ThirdParties.Entity;

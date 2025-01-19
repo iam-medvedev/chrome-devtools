@@ -1,14 +1,13 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// @ts-nocheck TODO(crbug.com/348449529)
 import * as Lantern from '../lantern.js';
 const { NetworkRequestTypes } = Lantern.Types;
 const { PageDependencyGraph } = Lantern.Graph;
 function createRequest(requestId, url, rendererStartTime = 0, initiator = null, resourceType = NetworkRequestTypes.Document, fromWorker = false) {
     const networkEndTime = rendererStartTime + 50;
     return {
-        requestId,
+        requestId: String(requestId),
         url,
         rendererStartTime,
         networkEndTime,
@@ -17,9 +16,10 @@ function createRequest(requestId, url, rendererStartTime = 0, initiator = null, 
         fromWorker,
     };
 }
+const getDependencyIds = (node) => node.getDependencies().map(node => node.id);
 const TOPLEVEL_TASK_NAME = 'TaskQueueManager::ProcessTaskFromWorkQueue';
 describe('PageDependencyGraph', () => {
-    let traceEvents;
+    let traceEvents = [];
     let url;
     function addTaskEvents(startTs, duration, evts) {
         const mainEvent = {
@@ -35,7 +35,7 @@ describe('PageDependencyGraph', () => {
             i++;
             traceEvents.push({
                 name: evt.name,
-                ts: (evt.ts * 1000) || (startTs * 1000 + i),
+                ts: typeof evt.ts === 'number' ? (evt.ts * 1000) : NaN || (startTs * 1000 + i),
                 args: { data: evt.data },
             });
         }
@@ -54,7 +54,7 @@ describe('PageDependencyGraph', () => {
             for (let i = 0; i < networkRequests.length; i++) {
                 const node = networkNodeOutput.nodes[i];
                 assert.isOk(node, `did not create node at index ${i}`);
-                assert.strictEqual(node.id, i + 1);
+                assert.strictEqual(node.id, String(i + 1));
                 assert.strictEqual(node.type, 'network');
                 assert.strictEqual(node.request, networkRequests[i]);
             }
@@ -73,7 +73,7 @@ describe('PageDependencyGraph', () => {
             const networkNodeOutput = PageDependencyGraph.getNetworkNodeOutput(networkRequests);
             const indexedById = networkNodeOutput.idToNodeMap;
             for (const request of networkRequests) {
-                assert.strictEqual(indexedById.get(request.requestId).request, request);
+                assert.strictEqual(indexedById.get(request.requestId)?.request, request);
             }
         });
         it('should index nodes by URL', () => {
@@ -182,7 +182,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 4);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[1].getDependencies(), [nodes[0]]);
             assert.deepEqual(nodes[2].getDependencies(), [nodes[0]]);
@@ -196,7 +196,7 @@ describe('PageDependencyGraph', () => {
             const networkRequests = [request1, request2, request3, request4];
             addTaskEvents(200, 200, [
                 { name: 'EvaluateScript', data: { url: 'https://example.com/page' } },
-                { name: 'ResourceSendRequest', data: { requestId: 4 } },
+                { name: 'ResourceSendRequest', data: { requestId: '4' } },
             ]);
             addTaskEvents(700, 50, [
                 { name: 'InvalidateLayout', data: { stackTrace: [{ url: 'https://example.com/page2' }] } },
@@ -205,16 +205,15 @@ describe('PageDependencyGraph', () => {
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            const getIds = nodes => nodes.map(node => node.id);
-            const getDependencyIds = node => getIds(node.getDependencies());
+            const getIds = (nodes) => nodes.map(node => node.id);
             assert.lengthOf(nodes, 6);
-            assert.deepEqual(getIds(nodes), [1, 2, 3, 4, '1.200000', '1.700000']);
+            assert.deepEqual(getIds(nodes), ['1', '2', '3', '4', '1.200000', '1.700000']);
             assert.deepEqual(getDependencyIds(nodes[0]), []);
-            assert.deepEqual(getDependencyIds(nodes[1]), [1]);
-            assert.deepEqual(getDependencyIds(nodes[2]), [1]);
-            assert.deepEqual(getDependencyIds(nodes[3]), [1, '1.200000']);
-            assert.deepEqual(getDependencyIds(nodes[4]), [2]);
-            assert.deepEqual(getDependencyIds(nodes[5]), [3, 4]);
+            assert.deepEqual(getDependencyIds(nodes[1]), ['1']);
+            assert.deepEqual(getDependencyIds(nodes[2]), ['1']);
+            assert.deepEqual(getDependencyIds(nodes[3]), ['1', '1.200000']);
+            assert.deepEqual(getDependencyIds(nodes[4]), ['2']);
+            assert.deepEqual(getDependencyIds(nodes[5]), ['3', '4']);
         });
         it('should compute a network graph with duplicate URLs', () => {
             const request1 = createRequest(1, 'https://example.com/', 0);
@@ -227,7 +226,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 4);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[1].getDependencies(), [nodes[0]]);
             assert.deepEqual(nodes[2].getDependencies(), [nodes[0]]);
@@ -244,7 +243,7 @@ describe('PageDependencyGraph', () => {
                 // CPU 1.2 should depend on Network 1
                 { name: 'EvaluateScript', data: { url: 'https://example.com/' } },
                 // Network 2 should depend on CPU 1.2, but 1.2 should not depend on Network 1
-                { name: 'ResourceSendRequest', data: { requestId: 2 } },
+                { name: 'ResourceSendRequest', data: { requestId: '2' } },
                 { name: 'XHRReadyStateChange', data: { readyState: 4, url: 'https://example.com/page' } },
                 // CPU 1.2 should not depend on Network 3 because it starts after CPU 1.2
                 { name: 'EvaluateScript', data: { url: 'https://example.com/page2' } },
@@ -253,20 +252,19 @@ describe('PageDependencyGraph', () => {
                 // CPU 1.6 should depend on Network 4 even though it ends at 410ms
                 { name: 'InvalidateLayout', data: { stackTrace: [{ url: 'https://example.com/page3' }] } },
                 // Network 5 should not depend on CPU 1.6 because it started before CPU 1.6
-                { name: 'ResourceSendRequest', data: { requestId: 5 } },
+                { name: 'ResourceSendRequest', data: { requestId: '5' } },
             ]);
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            const getDependencyIds = node => node.getDependencies().map(node => node.id);
             assert.lengthOf(nodes, 7);
             assert.deepEqual(getDependencyIds(nodes[0]), []);
-            assert.deepEqual(getDependencyIds(nodes[1]), [1, '1.200000']);
-            assert.deepEqual(getDependencyIds(nodes[2]), [1]);
-            assert.deepEqual(getDependencyIds(nodes[3]), [1]);
-            assert.deepEqual(getDependencyIds(nodes[4]), [1]);
-            assert.deepEqual(getDependencyIds(nodes[5]), [1]);
-            assert.deepEqual(getDependencyIds(nodes[6]), [4]);
+            assert.deepEqual(getDependencyIds(nodes[1]), ['1', '1.200000']);
+            assert.deepEqual(getDependencyIds(nodes[2]), ['1']);
+            assert.deepEqual(getDependencyIds(nodes[3]), ['1']);
+            assert.deepEqual(getDependencyIds(nodes[4]), ['1']);
+            assert.deepEqual(getDependencyIds(nodes[5]), ['1']);
+            assert.deepEqual(getDependencyIds(nodes[6]), ['4']);
         });
         it('should not install timer dependency on itself', () => {
             const request1 = createRequest(1, 'https://example.com/', 0);
@@ -281,10 +279,9 @@ describe('PageDependencyGraph', () => {
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            const getDependencyIds = node => node.getDependencies().map(node => node.id);
             assert.lengthOf(nodes, 2);
             assert.deepEqual(getDependencyIds(nodes[0]), []);
-            assert.deepEqual(getDependencyIds(nodes[1]), [1]);
+            assert.deepEqual(getDependencyIds(nodes[1]), ['1']);
         });
         it('should prune short tasks', () => {
             const request0 = createRequest(0, 'https://example.com/page0', 0);
@@ -297,27 +294,26 @@ describe('PageDependencyGraph', () => {
             // Long task, should be kept in the output.
             addTaskEvents(120, 50, [
                 { name: 'EvaluateScript', data: { url: 'https://example.com/' } },
-                { name: 'ResourceSendRequest', data: { requestId: 2 } },
+                { name: 'ResourceSendRequest', data: { requestId: '2' } },
                 { name: 'XHRReadyStateChange', data: { readyState: 4, url: 'https://example.com/page' } },
             ]);
             // Short task, should be pruned, but the 3->4 relationship should be retained
             addTaskEvents(350, 5, [
                 { name: 'EvaluateScript', data: { url: 'https://example.com/page2' } },
-                { name: 'ResourceSendRequest', data: { requestId: 4 } },
+                { name: 'ResourceSendRequest', data: { requestId: '4' } },
                 { name: 'XHRReadyStateChange', data: { readyState: 4, url: 'https://example.com/page3' } },
             ]);
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            const getDependencyIds = node => node.getDependencies().map(node => node.id);
             assert.lengthOf(nodes, 6);
             assert.deepEqual(getDependencyIds(nodes[0]), []);
-            assert.deepEqual(getDependencyIds(nodes[1]), [0]);
-            assert.deepEqual(getDependencyIds(nodes[2]), [0, '1.120000']);
-            assert.deepEqual(getDependencyIds(nodes[3]), [0]);
-            assert.deepEqual(getDependencyIds(nodes[4]), [0, 3]);
+            assert.deepEqual(getDependencyIds(nodes[1]), ['0']);
+            assert.deepEqual(getDependencyIds(nodes[2]), ['0', '1.120000']);
+            assert.deepEqual(getDependencyIds(nodes[3]), ['0']);
+            assert.deepEqual(getDependencyIds(nodes[4]), ['0', '3']);
             assert.strictEqual('1.120000', nodes[5].id);
-            assert.deepEqual(getDependencyIds(nodes[5]), [1]);
+            assert.deepEqual(getDependencyIds(nodes[5]), ['1']);
         });
         it('should not prune highly-connected short tasks', () => {
             const request0 = createRequest(0, 'https://example.com/page0', 0);
@@ -338,29 +334,28 @@ describe('PageDependencyGraph', () => {
             // Short task, evaluates script (2) and sends two XHRs.
             addTaskEvents(220, 5, [
                 { name: 'EvaluateScript', data: { url: 'https://example.com/page', frame: 'frame1' } },
-                { name: 'ResourceSendRequest', data: { requestId: 3 } },
+                { name: 'ResourceSendRequest', data: { requestId: '3' } },
                 { name: 'XHRReadyStateChange', data: { readyState: 4, url: 'https://example.com/page2' } },
-                { name: 'ResourceSendRequest', data: { requestId: 4 } },
+                { name: 'ResourceSendRequest', data: { requestId: '4' } },
                 { name: 'XHRReadyStateChange', data: { readyState: 4, url: 'https://example.com/page3' } },
             ]);
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            const getDependencyIds = node => node.getDependencies().map(node => node.id);
             assert.lengthOf(nodes, 6);
             assert.deepEqual(getDependencyIds(nodes[0]), []);
-            assert.deepEqual(getDependencyIds(nodes[1]), [0]);
-            assert.deepEqual(getDependencyIds(nodes[2]), [0]);
-            assert.deepEqual(getDependencyIds(nodes[3]), [0, '1.220000']);
-            assert.deepEqual(getDependencyIds(nodes[4]), [0, '1.220000']);
+            assert.deepEqual(getDependencyIds(nodes[1]), ['0']);
+            assert.deepEqual(getDependencyIds(nodes[2]), ['0']);
+            assert.deepEqual(getDependencyIds(nodes[3]), ['0', '1.220000']);
+            assert.deepEqual(getDependencyIds(nodes[4]), ['0', '1.220000']);
             assert.strictEqual('1.220000', nodes[5].id);
-            assert.deepEqual(getDependencyIds(nodes[5]), [1, 2]);
+            assert.deepEqual(getDependencyIds(nodes[5]), ['1', '2']);
         });
         it('should not prune short, first tasks of critical events', () => {
             const request0 = createRequest(0, 'https://example.com/page0', 0);
             const networkRequests = [request0];
             url = { requestedUrl: 'https://example.com/page0', mainDocumentUrl: 'https://example.com/page0' };
-            const makeShortEvent = firstEventName => {
+            const makeShortEvent = (firstEventName) => {
                 const startTs = traceEvents.length * 100;
                 addTaskEvents(startTs, 5, [
                     { name: firstEventName, data: { url: 'https://example.com/page0' } },
@@ -413,7 +408,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 3);
-            assert.strictEqual(nodes[0].id, 1);
+            assert.strictEqual(nodes[0].id, '1');
             assert.isFalse(nodes[0].isMainDocument());
             assert.isTrue(nodes[1].isMainDocument());
             assert.isFalse(nodes[2].isMainDocument());
@@ -440,7 +435,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 4);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[1].getDependencies(), [nodes[0]]);
             assert.deepEqual(nodes[2].getDependencies(), [nodes[0]]);
@@ -464,7 +459,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 4);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[1].getDependencies(), [nodes[0]]);
             assert.deepEqual(nodes[2].getDependencies(), [nodes[0]]);
@@ -489,7 +484,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 4);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3, 4].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[1].getDependencies(), [nodes[0]]);
             assert.deepEqual(nodes[2].getDependencies(), [nodes[0]]);
@@ -508,9 +503,9 @@ describe('PageDependencyGraph', () => {
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            nodes.sort((a, b) => a.id - b.id);
+            nodes.sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
             assert.lengthOf(nodes, 3);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             // We don't know which of the initiators to trust in a cycle, so for now we
             // trust the earliest one (mostly because it's simplest).
@@ -534,9 +529,9 @@ describe('PageDependencyGraph', () => {
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const nodes = [];
             graph.traverse(node => nodes.push(node));
-            nodes.sort((a, b) => a.id - b.id);
+            nodes.sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
             assert.lengthOf(nodes, 3);
-            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3]);
+            assert.deepEqual(nodes.map(node => node.id), [1, 2, 3].map(String));
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[1].getDependencies(), [nodes[2]]);
             assert.deepEqual(nodes[2].getDependencies(), [nodes[0]]);
@@ -554,7 +549,7 @@ describe('PageDependencyGraph', () => {
             const nodes = [];
             graph.traverse(node => nodes.push(node));
             assert.lengthOf(nodes, 1);
-            assert.deepEqual(nodes.map(node => node.id), [2]);
+            assert.deepEqual(nodes.map(node => node.id), ['2']);
             assert.deepEqual(nodes[0].getDependencies(), []);
             assert.deepEqual(nodes[0].getDependents(), []);
         });

@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/protocol_monitor/JSONEditor.test.ts",
     "../../../../../../front_end/panels/protocol_monitor/ProtocolMonitor.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -50,9 +51,6 @@
     },
     {
       "path": "../../testing/testing-tsconfig.json"
-    },
-    {
-      "path": "components/bundle-tsconfig.json"
     }
   ]
 }

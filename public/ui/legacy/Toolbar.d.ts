@@ -9,15 +9,34 @@ import type { Suggestion } from './SuggestBox.js';
 /**
  * Custom element for toolbars.
  *
+ * @attr floating - If present the toolbar is rendered in columns, with a border
+ *                  around it, and a non-transparent background. This is used to
+ *                  build vertical toolbars that open with long-click. Defaults
+ *                  to `false`.
  * @attr wrappable - If present the toolbar items will wrap to a new row and the
  *                   toolbar height increases.
- * @prop {string} wrappable - The `"wrappable"` attribute is reflected as property.
+ * @prop {boolean} floating - The `"floating"` attribute is reflected as property.
+ * @prop {boolean} wrappable - The `"wrappable"` attribute is reflected as property.
  */
 export declare class Toolbar extends HTMLElement {
     private items;
     enabled: boolean;
     private compactLayout;
+    constructor();
     connectedCallback(): void;
+    /**
+     * Returns whether this toolbar is floating.
+     *
+     * @return `true` if the `"floating"` attribute is present on this toolbar,
+     *         otherwise `false`.
+     */
+    get floating(): boolean;
+    /**
+     * Changes the value of the `"floating"` attribute on this toolbar.
+     *
+     * @param floating `true` to make the toolbar floating.
+     */
+    set floating(floating: boolean);
     /**
      * Returns whether this toolbar is wrappable.
      *
@@ -53,13 +72,13 @@ export declare class Toolbar extends HTMLElement {
 export interface ToolbarButtonOptions {
     label?: () => Platform.UIString.LocalizedString;
 }
-export declare class ToolbarItem<T = any> extends Common.ObjectWrapper.ObjectWrapper<T> {
-    element: HTMLElement;
+export declare class ToolbarItem<T = any, E extends HTMLElement = HTMLElement> extends Common.ObjectWrapper.ObjectWrapper<T> {
+    element: E;
     private visibleInternal;
     enabled: boolean;
     toolbar: Toolbar | null;
     protected title?: string;
-    constructor(element: Element);
+    constructor(element: E);
     setTitle(title: string, actionId?: string | undefined): void;
     setEnabled(value: boolean): void;
     applyEnabledState(enabled: boolean): void;
@@ -74,15 +93,14 @@ interface ToolbarItemWithCompactLayoutEventTypes {
     [ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED]: boolean;
 }
 export declare class ToolbarItemWithCompactLayout extends ToolbarItem<ToolbarItemWithCompactLayoutEventTypes> {
-    constructor(element: Element);
     setCompactLayout(enable: boolean): void;
 }
-export declare class ToolbarText extends ToolbarItem<void> {
+export declare class ToolbarText extends ToolbarItem<void, HTMLElement> {
     constructor(text?: string);
     text(): string;
     setText(text: string): void;
 }
-export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes> {
+export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes, Buttons.Button.Button> {
     private button;
     private text?;
     private adorner?;
@@ -195,10 +213,8 @@ export interface Provider {
 export interface ItemsProvider {
     toolbarItems(): ToolbarItem[];
 }
-export declare class ToolbarComboBox extends ToolbarItem<void> {
-    protected selectElementInternal: HTMLSelectElement;
+export declare class ToolbarComboBox extends ToolbarItem<void, HTMLSelectElement> {
     constructor(changeHandler: ((arg0: Event) => void) | null, title: string, className?: string, jslogContext?: string);
-    selectElement(): HTMLSelectElement;
     size(): number;
     options(): HTMLOptionElement[];
     addOption(option: Element): void;
@@ -229,7 +245,7 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
 }
 export declare class ToolbarCheckbox extends ToolbarItem<void> {
     inputElement: HTMLInputElement;
-    constructor(text: Common.UIString.LocalizedString, tooltip?: Common.UIString.LocalizedString, listener?: ((arg0: MouseEvent) => void), jslogContext?: string, small?: boolean);
+    constructor(text: Common.UIString.LocalizedString, tooltip?: Common.UIString.LocalizedString, listener?: ((arg0: MouseEvent) => void), jslogContext?: string);
     checked(): boolean;
     setChecked(value: boolean): void;
     applyEnabledState(enabled: boolean): void;

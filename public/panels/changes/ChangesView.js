@@ -63,10 +63,10 @@ export class ChangesView extends UI.Widget.VBox {
         super(true);
         this.element.setAttribute('jslog', `${VisualLogging.panel('changes').track({ resize: true })}`);
         const splitWidget = new UI.SplitWidget.SplitWidget(true /* vertical */, false /* sidebar on left */);
-        const mainWidget = new UI.Widget.Widget();
+        const mainWidget = new UI.Widget.VBox();
         splitWidget.setMainWidget(mainWidget);
         splitWidget.show(this.contentElement);
-        this.emptyWidget = new UI.EmptyWidget.EmptyWidget('');
+        this.emptyWidget = new UI.EmptyWidget.EmptyWidget('', '');
         this.emptyWidget.show(mainWidget.element);
         this.workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
         this.changesSidebar = new ChangesSidebar(this.workspaceDiff);
@@ -192,7 +192,7 @@ export class ChangesView extends UI.Widget.VBox {
         this.diffStats.setText('');
         this.toolbar.setEnabled(false);
         this.diffContainer.style.display = 'none';
-        this.emptyWidget.text = message;
+        this.emptyWidget.header = message;
         this.emptyWidget.showWidget();
     }
     renderDiffRows(diff) {

@@ -31,7 +31,7 @@ export function legacyWrapper(base, component, jsLogContext) {
         willHide() {
             this.#component.willHide();
         }
-        async doUpdate() {
+        async performUpdate() {
             await this.#component.render();
         }
         getComponent() {

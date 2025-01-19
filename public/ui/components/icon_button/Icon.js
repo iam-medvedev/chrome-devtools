@@ -13,11 +13,6 @@ import iconStyles from './icon.css.legacy.js';
  * const icon = IconButton.Icon.create('bin');
  * const iconWithClassName = IconButton.Icon.create('bin', 'delete-icon');
  *
- * // Instantiate programmatically via the constructor:
- * const icon = new IconButton.Icon.Icon();
- * icon.name = 'bin';
- * container.appendChild(icon);
- *
  * // Use within a template:
  * LitHtml.html`
  *   <devtools-icon name="bin">

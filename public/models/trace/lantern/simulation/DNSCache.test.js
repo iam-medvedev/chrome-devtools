@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// @ts-nocheck - TODO(crbug.com/348449529) requests need to be whole Lantern.NetworkRequest objects
 import * as Lantern from '../lantern.js';
 const { DNSCache } = Lantern.Simulation;
 const MULTIPLIER = DNSCache.rttMultiplier;

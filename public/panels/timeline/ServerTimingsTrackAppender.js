@@ -66,8 +66,5 @@ export class ServerTimingsTrackAppender {
     colorForEvent() {
         return ThemeSupport.ThemeSupport.instance().getComputedValue('--ref-palette-primary70');
     }
-    titleForEvent(event) {
-        return event.name;
-    }
 }
 //# sourceMappingURL=ServerTimingsTrackAppender.js.map

@@ -26,6 +26,7 @@ import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetwo
 import timelineFlameChartViewStyles from './timelineFlameChartView.css.js';
 import { rangeForSelection, selectionFromEvent, selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart View of the Performance panel
@@ -119,6 +120,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #onMainEntryInvoked;
     #onNetworkEntryInvoked;
     #currentSelection = null;
+    #entityMapper = null;
+    #activeThirdPartyDimmingSetting = false;
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -284,8 +287,20 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 this.#dimInsightRelatedEvents(events);
             }
             else {
-                this.mainFlameChart.disableDimming();
-                this.networkFlameChart.disableDimming();
+                this.disableAllDimming();
+            }
+        });
+        this.detailsView.addEventListener("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node => {
+            if (!Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */)) {
+                return;
+            }
+            const entityEvents = node.data;
+            if (entityEvents && entityEvents.length) {
+                // Dim events not related to third party entity.
+                this.#dimUnrelatedEvents(entityEvents, false);
+            }
+            else {
+                this.disableAllDimming();
             }
         });
         /**
@@ -332,6 +347,33 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.mainFlameChart.enableDimming(relatedMainIndices, false /** shouldAddOutlines */);
         this.networkFlameChart.enableDimming(relatedNetworkIndices, false /** shouldAddOutlines */);
     }
+    /**
+     * dimUnrelatedEvents calls for dimming of all events except the relatedEvents provided.
+     *
+     * @param relatedEvents
+     * @param shouldAddOutlines whether to add outlines to add an outline ot events that are undimmed.
+     * Currently this is being used by dimming from 3rd parties and insight related events dimming.
+     * We don't use outlines for 3rd party dimming, since outlines can add a lot of noise.
+     */
+    #dimUnrelatedEvents(relatedEvents, shouldAddOutlines) {
+        const relatedMainIndices = relatedEvents.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
+        const relatedNetworkIndices = relatedEvents.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
+        this.mainFlameChart.enableDimmingForUnrelatedEntries(relatedMainIndices, shouldAddOutlines);
+        this.networkFlameChart.enableDimmingForUnrelatedEntries(relatedNetworkIndices, shouldAddOutlines);
+    }
+    setActiveThirdPartyDimmingSetting(active) {
+        this.#activeThirdPartyDimmingSetting = active;
+    }
+    // This wraps disabling dimming to include a check for 3p checkbox.
+    disableAllDimming() {
+        this.mainFlameChart.disableDimming();
+        this.networkFlameChart.disableDimming();
+        // If 3p checkbox is enabled, we should dim again.
+        if (this.#activeThirdPartyDimmingSetting) {
+            const thirdPartyEvents = this.#entityMapper?.thirdPartyEvents() ?? [];
+            this.dimEvents(thirdPartyEvents);
+        }
+    }
     #dimInsightRelatedEvents(relatedEvents) {
         // Dim all events except those related to the active insight.
         const relatedMainIndices = relatedEvents.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
@@ -375,12 +417,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             }
             relevantEvents.push(...provider.search(bounds).map(r => r.index));
         }
-        this.mainFlameChart.enableDimmingForUnrelatedEntries(relatedMainIndices);
-        this.networkFlameChart.enableDimmingForUnrelatedEntries(relatedNetworkIndices);
-    }
-    disableAllDimming() {
-        this.mainFlameChart.disableDimming();
-        this.networkFlameChart.disableDimming();
+        this.mainFlameChart.enableDimmingForUnrelatedEntries(relatedMainIndices, true);
+        this.networkFlameChart.enableDimmingForUnrelatedEntries(relatedNetworkIndices, true);
     }
     #sortMarkersForPreferredVisualOrder(markers) {
         markers.sort((m1, m2) => {
@@ -506,8 +544,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#activeInsight = insight;
         this.bulkRemoveOverlays(this.#currentInsightOverlays);
         if (!this.#activeInsight) {
-            this.mainFlameChart.disableDimming();
-            this.networkFlameChart.disableDimming();
+            this.disableAllDimming();
         }
     }
     /**
@@ -831,6 +868,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.refreshMainFlameChart();
         this.#updateFlameCharts();
         this.setMarkers(newParsedTrace);
+        this.#entityMapper = new Utils.EntityMapper.EntityMapper(this.#parsedTrace);
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {
@@ -880,6 +918,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             selectedEvents: this.#selectedEvents,
             traceInsightsSets: this.#traceInsightSets,
             eventToRelatedInsightsMap: this.#eventToRelatedInsightsMap,
+            entityMapper: this.#entityMapper,
         });
     }
     #updateFlameCharts() {
@@ -1036,6 +1075,19 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (this.#linkSelectionAnnotation &&
             this.#linkSelectionAnnotation.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
             this.#clearLinkSelectionAnnotation(true);
+        }
+        // If the user has selected an event which the Performance AI Assistance
+        // supports (currently, only main thread events), then set the context's
+        // "flavor" to be the AI Call Tree of the active event.
+        // This is listened to by the AI Assistance panel to update its state.
+        // Note that we do not change the Context back to `null` if the user picks
+        // an invalid event - we don't want to reset it back as it may be they are
+        // clicking around in order to understand something.
+        if (selectionIsEvent(selection) && this.#parsedTrace) {
+            const aiCallTree = Utils.AICallTree.AICallTree.from(selection.event, this.#parsedTrace);
+            if (aiCallTree) {
+                UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
+            }
         }
     }
     // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace

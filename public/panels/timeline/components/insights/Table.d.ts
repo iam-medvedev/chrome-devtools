@@ -28,7 +28,7 @@ export interface TableData {
     rows: TableDataRow[];
 }
 export interface TableDataRow {
-    values: Array<string | LitHtml.LitTemplate>;
+    values: Array<number | string | LitHtml.LitTemplate>;
     overlays?: Overlays.Overlays.TimelineOverlay[];
 }
 export declare class Table extends HTMLElement {

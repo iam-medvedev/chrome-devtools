@@ -246,6 +246,9 @@ export function isHandlePostMessage(event) {
 export function isUpdateCounters(event) {
     return event.name === 'UpdateCounters';
 }
+export function isDOMStats(event) {
+    return event.name === 'DOMStats';
+}
 export function isThreadName(event) {
     return event.name === "thread_name" /* Name.THREAD_NAME */;
 }

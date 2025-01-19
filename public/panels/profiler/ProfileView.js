@@ -437,7 +437,7 @@ export class ProfileView extends UI.View.SimpleView {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuProfileNodeExcluded);
     }
     resetClicked() {
-        this.viewSelectComboBox.selectElement().focus();
+        this.viewSelectComboBox.element.focus();
         this.resetButton.setEnabled(false);
         if (this.profileDataGridTree) {
             this.profileDataGridTree.restore();

@@ -36,7 +36,7 @@ export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetM
     }): SecurityPanel;
     static createCertificateViewerButtonForOrigin(text: string, origin: string): Element;
     static createCertificateViewerButtonForCert(text: string, names: string[]): Element;
-    doUpdate(): Promise<void>;
+    update(): void;
     private updateVisibleSecurityState;
     private onVisibleSecurityStateChanged;
     selectAndSwitchToMainView(): void;

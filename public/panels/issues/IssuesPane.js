@@ -194,8 +194,11 @@ export class IssuesPane extends UI.Widget.VBox {
     #createToolbars() {
         const toolbarContainer = this.contentElement.createChild('div', 'issues-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-left');
+        toolbarContainer.role = 'toolbar';
+        const leftToolbar = toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-left');
+        leftToolbar.role = 'presentation';
         const rightToolbar = toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-right');
+        rightToolbar.role = 'presentation';
         const groupByCategorySetting = getGroupIssuesByCategorySetting();
         const groupByCategoryCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(groupByCategorySetting, i18nString(UIStrings.groupDisplayedIssuesUnder), i18nString(UIStrings.groupByCategory));
         // Hide the option to toggle category grouping for now.

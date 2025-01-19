@@ -146,7 +146,7 @@ styles.replaceSync(
   display: flex;
   flex-direction: column;
   flex: 1 0 300px;
-  overflow: auto;
+  overflow: hidden;
   max-height: max-content;
 
   --app-color-toolbar-background: transparent;

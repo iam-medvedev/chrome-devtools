@@ -187,7 +187,8 @@ export class ChartViewport extends UI.Widget.VBox {
                 this.vScrollElement.scrollTop += panDelta;
             }
             else if (Math.abs(wheelEvent.deltaX) > Math.abs(wheelEvent.deltaY)) { // Pan left/right on trackpad horizontal scroll
-                this.handleHorizontalPanGesture(panDelta, /* animate */ true);
+                // Horizontal scroll on the trackpad feels smoother when only deltaX is taken into account
+                this.handleHorizontalPanGesture(wheelEvent.deltaX, /* animate */ true);
             }
             else { // Zoom
                 this.handleZoomGesture(zoomDelta);
@@ -199,7 +200,8 @@ export class ChartViewport extends UI.Widget.VBox {
                 this.handleHorizontalPanGesture(panDelta, /* animate */ true);
             }
             else if (Math.abs(wheelEvent.deltaX) > Math.abs(wheelEvent.deltaY)) { // Pan left/right on trackpad horizontal scroll
-                this.handleHorizontalPanGesture(panDelta, /* animate */ true);
+                // Horizontal scroll on the trackpad feels smoother when only deltaX is taken into account
+                this.handleHorizontalPanGesture(wheelEvent.deltaX, /* animate */ true);
             }
             else if (isCtrlOrCmd) { // Zoom
                 this.handleZoomGesture(zoomDelta);

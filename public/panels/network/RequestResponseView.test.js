@@ -16,7 +16,7 @@ describeWithEnvironment('RequestResponseView', () => {
         request.setContentDataProvider(() => Promise.resolve(new TextUtils.ContentData.ContentData('AGFzbQEAAAABBQFgAAF/AwIBAAcHAQNiYXIAAAoGAQQAQQILACQEbmFtZQAQD3Nob3ctd2FzbS0yLndhdAEGAQADYmFyAgMBAAA=', true, 'application/wasm')));
         request.mimeType = 'application/wasm';
         request.finished = true;
-        const mockedSourceView = new UI.EmptyWidget.EmptyWidget('<disassembled WASM>');
+        const mockedSourceView = new UI.EmptyWidget.EmptyWidget('<disassembled WASM>', '');
         const viewStub = sinon.stub(SourceFrame.ResourceSourceFrame.ResourceSourceFrame, 'createSearchableView')
             .returns(mockedSourceView);
         const component = new Network.RequestResponseView.RequestResponseView(request);

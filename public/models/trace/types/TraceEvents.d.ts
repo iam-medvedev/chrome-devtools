@@ -554,6 +554,25 @@ export interface Instant extends Event {
     ph: Phase.INSTANT;
     s: Scope;
 }
+export interface DOMStats extends Instant {
+    name: 'DOMStats';
+    args: Args & {
+        data: ArgsData & {
+            frame: string;
+            totalElements: number;
+            maxChildren?: {
+                nodeId: Protocol.DOM.BackendNodeId;
+                nodeName: string;
+                numChildren: number;
+            };
+            maxDepth?: {
+                nodeId: Protocol.DOM.BackendNodeId;
+                nodeName: string;
+                depth: number;
+            };
+        };
+    };
+}
 export interface UpdateCounters extends Instant {
     name: 'UpdateCounters';
     args: Args & {
@@ -1503,6 +1522,7 @@ export declare function isFireIdleCallback(event: Event): event is FireIdleCallb
 export declare function isSchedulePostMessage(event: Event): event is SchedulePostMessage;
 export declare function isHandlePostMessage(event: Event): event is HandlePostMessage;
 export declare function isUpdateCounters(event: Event): event is UpdateCounters;
+export declare function isDOMStats(event: Event): event is DOMStats;
 export declare function isThreadName(event: Event): event is ThreadName;
 export declare function isProcessName(event: Event): event is ProcessName;
 export declare function isTracingStartedInBrowser(event: Event): event is TracingStartedInBrowser;

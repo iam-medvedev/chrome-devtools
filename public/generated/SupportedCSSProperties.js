@@ -536,6 +536,7 @@ export const generatedProperties = [
             "mask-repeat",
             "mask-size",
             "mask-type",
+            "masonry-auto-tracks",
             "masonry-direction",
             "masonry-fill",
             "masonry-slack",
@@ -614,6 +615,7 @@ export const generatedProperties = [
             "range",
             "reading-flow",
             "resize",
+            "result",
             "right",
             "rotate",
             "row-gap",
@@ -2764,6 +2766,14 @@ export const generatedProperties = [
     },
     {
         "keywords": [
+            "auto",
+            "min-content",
+            "max-content"
+        ],
+        "name": "masonry-auto-tracks"
+    },
+    {
+        "keywords": [
             "row",
             "row-reverse",
             "column",
@@ -3360,6 +3370,9 @@ export const generatedProperties = [
             "inline"
         ],
         "name": "resize"
+    },
+    {
+        "name": "result"
     },
     {
         "keywords": [
@@ -5553,6 +5566,13 @@ export const generatedPropertyValues = {
         "values": [
             "luminance",
             "alpha"
+        ]
+    },
+    "masonry-auto-tracks": {
+        "values": [
+            "auto",
+            "min-content",
+            "max-content"
         ]
     },
     "masonry-direction": {

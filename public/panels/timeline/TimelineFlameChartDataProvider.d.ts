@@ -25,7 +25,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     constructor();
     hasTrackConfigurationMode(): boolean;
     getPossibleActions(entryIndex: number, groupIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
-    customizedContextMenu(event: MouseEvent, entryIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
+    customizedContextMenu(mouseEvent: MouseEvent, entryIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     entryHasAnnotations(entryIndex: number): boolean;
     deleteAnnotationsForEntry(entryIndex: number): void;
     modifyTree(action: PerfUI.FlameChart.FilterAction, entryIndex: number): void;

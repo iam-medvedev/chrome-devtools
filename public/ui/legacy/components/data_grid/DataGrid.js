@@ -321,6 +321,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             UI.ARIAUtils.alert(accessibleText);
         }
     }
+    getNumberOfRows() {
+        return this.rootNodeInternal ? this.enumerateChildren(this.rootNodeInternal, [], 1).length : 0;
+    }
     updateGridAccessibleNameOnFocus() {
         // When a grid gets focus
         // 1) If an item is selected - Read the content of the row
@@ -339,8 +342,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             if (!this.rootNodeInternal) {
                 return;
             }
-            const children = this.enumerateChildren(this.rootNodeInternal, [], 1);
-            const items = i18nString(UIStrings.rowsS, { PH1: children.length });
+            const numberOfRows = this.getNumberOfRows();
+            const items = i18nString(UIStrings.rowsS, { PH1: numberOfRows });
             accessibleText = i18nString(UIStrings.sSUseTheUpAndDownArrowKeysTo, { PH1: this.displayName, PH2: items });
         }
         UI.ARIAUtils.alert(accessibleText);

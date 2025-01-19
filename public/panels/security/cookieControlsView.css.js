@@ -107,6 +107,14 @@ input[type="checkbox"] {
   flex-shrink: 0;
 }
 
+.main-text {
+  color: var(--sys-color-on-surface);
+}
+
+.subtext {
+  color: var(--sys-color-on-surface-subtle);
+}
+
 /*# sourceURL=cookieControlsView.css */
 `);
 

@@ -40,6 +40,9 @@ function createMatchedStyles(payload, node) {
         cssPropertyRegistrations: [],
         fontPaletteValuesRule: undefined,
         activePositionFallbackIndex: -1,
+        animationStylesPayload: [],
+        transitionsStylePayload: null,
+        inheritedAnimatedPayload: [],
         ...payload,
     });
 }

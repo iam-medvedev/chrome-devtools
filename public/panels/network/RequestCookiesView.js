@@ -106,7 +106,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
         this.element.setAttribute('jslog', `${VisualLogging.pane('cookies').track({ resize: true })}`);
         this.request = request;
         this.showFilteredOutCookiesSetting = Common.Settings.Settings.instance().createSetting('show-filtered-out-request-cookies', /* defaultValue */ false);
-        this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoCookies));
+        this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoCookies), '');
         this.emptyWidget.show(this.element);
         this.requestCookiesTitle = this.element.createChild('div');
         const titleText = this.requestCookiesTitle.createChild('span', 'request-cookies-title');

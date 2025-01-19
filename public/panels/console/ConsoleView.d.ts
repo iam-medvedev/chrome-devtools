@@ -113,6 +113,7 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private consoleCleared;
     private handleContextMenuEvent;
     private saveConsole;
+    private copyConsole;
     private tryToCollapseMessages;
     private buildHiddenCache;
     private cancelBuildHiddenCache;

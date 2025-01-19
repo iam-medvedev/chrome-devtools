@@ -16,11 +16,15 @@ export class CSSStyleDeclaration {
     #activePropertyMap;
     #leadingPropertiesInternal;
     type;
-    constructor(cssModel, parentRule, payload, type) {
+    // For CSSStyles coming from animations,
+    // This holds the name of the animation.
+    #animationName;
+    constructor(cssModel, parentRule, payload, type, animationName) {
         this.#cssModelInternal = cssModel;
         this.parentRule = parentRule;
         this.#reinitialize(payload);
         this.type = type;
+        this.#animationName = animationName;
     }
     rebase(edit) {
         if (this.styleSheetId !== edit.styleSheetId || !this.range) {
@@ -35,6 +39,9 @@ export class CSSStyleDeclaration {
                 this.#allPropertiesInternal[i].rebase(edit);
             }
         }
+    }
+    animationName() {
+        return this.#animationName;
     }
     #reinitialize(payload) {
         this.styleSheetId = payload.styleSheetId;
@@ -262,6 +269,8 @@ export var Type;
     Type["Inline"] = "Inline";
     Type["Attributes"] = "Attributes";
     Type["Pseudo"] = "Pseudo";
+    Type["Transition"] = "Transition";
+    Type["Animation"] = "Animation";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Type || (Type = {}));
 //# sourceMappingURL=CSSStyleDeclaration.js.map

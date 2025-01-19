@@ -225,17 +225,6 @@ export class StaticData {
         this.maxJSObjectId = maxJSObjectId;
     }
 }
-export class Statistics {
-    total;
-    v8heap;
-    native;
-    code;
-    jsArrays;
-    strings;
-    system;
-    constructor() {
-    }
-}
 export class NodeFilter {
     minNodeId;
     maxNodeId;

@@ -541,8 +541,6 @@ export class HeapSnapshotProblemReport {
 const BITMASK_FOR_DOM_LINK_STATE = 3;
 // The class index is stored in the upper 30 bits of the detachedness field.
 const SHIFT_FOR_CLASS_INDEX = 2;
-// The maximum number of results produced by inferInterfaceDefinitions.
-const MAX_INTERFACE_COUNT = 1000;
 // After this many properties, inferInterfaceDefinitions can stop adding more
 // properties to an interface definition if the name is getting too long.
 const MIN_INTERFACE_PROPERTY_COUNT = 1;
@@ -554,6 +552,10 @@ const MAX_INTERFACE_NAME_LENGTH = 120;
 // least this many objects. There's no point in defining interfaces which match
 // only a single object.
 const MIN_OBJECT_COUNT_PER_INTERFACE = 2;
+// Each interface definition produced by inferInterfaceDefinitions should
+// match at least 1 out of 1000 Objects in the heap. Otherwise, we end up with a
+// long tail of unpopular interfaces that don't help analysis.
+const MIN_OBJECT_PROPORTION_PER_INTERFACE = 1000;
 export class HeapSnapshot {
     nodes;
     containmentEdges;
@@ -1668,11 +1670,13 @@ export class HeapSnapshot {
         const { edgePropertyType } = this;
         // A map from interface names to their definitions.
         const candidates = new Map();
+        let totalObjectCount = 0;
         for (let it = this.allNodes(); it.hasNext(); it.next()) {
             const node = it.item();
             if (!this.isPlainJSObject(node)) {
                 continue;
             }
+            ++totalObjectCount;
             let interfaceName = '{';
             const properties = [];
             for (let edgeIt = node.edges(); edgeIt.hasNext(); edgeIt.next()) {
@@ -1692,7 +1696,7 @@ export class HeapSnapshot {
                 interfaceName += formattedEdgeName;
                 properties.push(edgeName);
             }
-            // The empty interface is not a very meaningful, and can be sort of misleading
+            // The empty interface is not very meaningful, and can be sort of misleading
             // since someone might incorrectly interpret it as objects with no properties.
             if (properties.length === 0) {
                 continue;
@@ -1714,10 +1718,10 @@ export class HeapSnapshot {
         const sortedCandidates = Array.from(candidates.values());
         sortedCandidates.sort((a, b) => b.count - a.count);
         const result = [];
-        const maxResultSize = Math.min(sortedCandidates.length, MAX_INTERFACE_COUNT);
-        for (let i = 0; i < maxResultSize; ++i) {
+        const minCount = Math.max(MIN_OBJECT_COUNT_PER_INTERFACE, totalObjectCount / MIN_OBJECT_PROPORTION_PER_INTERFACE);
+        for (let i = 0; i < sortedCandidates.length; ++i) {
             const candidate = sortedCandidates[i];
-            if (candidate.count < MIN_OBJECT_COUNT_PER_INTERFACE) {
+            if (candidate.count < minCount) {
                 break;
             }
             result.push(candidate);
@@ -2837,8 +2841,10 @@ export class JSHeapSnapshot extends HeapSnapshot {
         const nodeCodeType = this.nodeCodeType;
         const nodeConsStringType = this.nodeConsStringType;
         const nodeSlicedStringType = this.nodeSlicedStringType;
-        const distances = this.nodeDistances;
+        const nodeHiddenType = this.nodeHiddenType;
+        const nodeStringType = this.nodeStringType;
         let sizeNative = 0;
+        let sizeTypedArrays = 0;
         let sizeCode = 0;
         let sizeStrings = 0;
         let sizeJSArrays = 0;
@@ -2846,34 +2852,42 @@ export class JSHeapSnapshot extends HeapSnapshot {
         const node = this.rootNode();
         for (let nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
             const nodeSize = nodes.getValue(nodeIndex + nodeSizeOffset);
-            const ordinal = nodeIndex / nodeFieldCount;
-            if (distances[ordinal] >= HeapSnapshotModel.HeapSnapshotModel.baseSystemDistance) {
+            const nodeType = nodes.getValue(nodeIndex + nodeTypeOffset);
+            if (nodeType === nodeHiddenType) {
                 sizeSystem += nodeSize;
                 continue;
             }
-            const nodeType = nodes.getValue(nodeIndex + nodeTypeOffset);
             node.nodeIndex = nodeIndex;
             if (nodeType === nodeNativeType) {
                 sizeNative += nodeSize;
+                if (node.rawName() === 'system / JSArrayBufferData') {
+                    sizeTypedArrays += nodeSize;
+                }
             }
             else if (nodeType === nodeCodeType) {
                 sizeCode += nodeSize;
             }
-            else if (nodeType === nodeConsStringType || nodeType === nodeSlicedStringType || node.type() === 'string') {
+            else if (nodeType === nodeConsStringType || nodeType === nodeSlicedStringType || nodeType === nodeStringType) {
                 sizeStrings += nodeSize;
             }
             else if (node.rawName() === 'Array') {
                 sizeJSArrays += this.calculateArraySize(node);
             }
         }
-        this.#statistics = new HeapSnapshotModel.HeapSnapshotModel.Statistics();
-        this.#statistics.total = this.totalSize;
-        this.#statistics.v8heap = this.totalSize - sizeNative;
-        this.#statistics.native = sizeNative;
-        this.#statistics.code = sizeCode;
-        this.#statistics.jsArrays = sizeJSArrays;
-        this.#statistics.strings = sizeStrings;
-        this.#statistics.system = sizeSystem;
+        this.#statistics = {
+            total: this.totalSize,
+            native: {
+                total: sizeNative,
+                typedArrays: sizeTypedArrays,
+            },
+            v8heap: {
+                total: this.totalSize - sizeNative,
+                code: sizeCode,
+                jsArrays: sizeJSArrays,
+                strings: sizeStrings,
+                system: sizeSystem,
+            }
+        };
     }
     calculateArraySize(node) {
         let size = node.selfSize();

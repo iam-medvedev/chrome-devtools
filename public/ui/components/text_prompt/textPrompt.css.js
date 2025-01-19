@@ -18,11 +18,13 @@ styles.replaceSync(
 }
 
 input {
-  font-size: 14px;
+  font-size: var(--sys-typescale-body3-size);
 }
 
 .prefix {
   flex: none;
+  font-weight: var(--ref-typeface-weight-medium);
+  font-size: var(--sys-typescale-body3-size);
   color: var(--sys-color-primary);
 }
 
@@ -39,11 +41,14 @@ input {
   left: 0;
   padding: 0;
   z-index: 2;
+  color: var(--sys-color-on-surface);
   background-color: transparent;
+  line-height: var(--sys-typescale-body3-line-height);
 }
 
 .text-prompt-input .suggestion {
   color: var(--sys-color-on-surface-subtle);
+  line-height: var(--sys-typescale-body3-line-height);
   position: absolute;
   left: 0;
   z-index: 1;

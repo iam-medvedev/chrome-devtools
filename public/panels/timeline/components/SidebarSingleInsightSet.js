@@ -34,7 +34,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * users. */
 const EXPERIMENTAL_INSIGHTS = new Set([
     'FontDisplay',
-    'DOMSize',
 ]);
 /**
  * Every insight (INCLUDING experimental ones).
@@ -63,6 +62,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         insightSetKey: null,
         activeCategory: Trace.Insights.Types.InsightCategory.ALL,
         activeInsight: null,
+        parsedTrace: null,
     };
     set data(data) {
         this.#data = data;
@@ -145,6 +145,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
           .model=${model}
           .bounds=${insightSet.bounds}
           .insightSetKey=${insightSetKey}
+          .parsedTrace=${this.#data.parsedTrace}>
         </${componentClass.litTagName}>
       </div>`;
             // clang-format on

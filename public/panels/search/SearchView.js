@@ -351,7 +351,7 @@ export class SearchView extends UI.Widget.VBox {
         this.searchResultsCount = 0;
         this.nonEmptySearchResultsCount = 0;
         if (!this.searchingView) {
-            this.searchingView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.searching));
+            this.searchingView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.searching), '');
         }
         this.showPane(this.searchingView);
         this.searchMessageElement.textContent = i18nString(UIStrings.searching);
@@ -386,7 +386,7 @@ export class SearchView extends UI.Widget.VBox {
     }
     nothingFound() {
         if (!this.notFoundView) {
-            this.notFoundView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMatchesFound));
+            this.notFoundView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMatchesFound), '');
         }
         this.showPane(this.notFoundView);
         this.searchResultsMessageElement.textContent = i18nString(UIStrings.noMatchesFound);

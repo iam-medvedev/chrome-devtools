@@ -461,7 +461,6 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 select {
   appearance: none;
   user-select: none;
-  width: var(--sys-size-22);
   height: var(--sys-size-11);
   border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   border-radius: var(--sys-shape-corner-extra-small);
@@ -558,6 +557,37 @@ select option {
   padding: 6px;
   color: var(--sys-color-token-subtle);
   white-space: nowrap;
+}
+
+/* General empty state styles */
+.empty-state {
+  margin: var(--sys-size-5);
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  min-height: fit-content;
+  min-width: fit-content;
+
+  > * {
+    max-width: var(--sys-size-29);
+  }
+
+  .header {
+    font: var(--sys-typescale-headline5);
+    margin-bottom: var(--sys-size-3);
+  }
+
+  .description {
+    font: var(--sys-typescale-body4-regular);
+    color: var(--sys-color-on-surface-subtle);
+
+    > x-link {  /* stylelint-disable-line selector-type-no-unknown */
+      margin-left: var(--sys-size-3);
+    }
+  }
 }
 
 dt-icon-label {
@@ -770,24 +800,6 @@ iframe.panel.extension {
 
 /* Toolbar styles */
 devtools-toolbar {
-  padding: 0 2px;
-  position: relative;
-  white-space: nowrap;
-  height: var(--toolbar-height);
-  overflow: hidden;
-  display: flex;
-  flex: none;
-  align-items: center;
-  z-index: 0;
-
-  --toolbar-height: 26px;
-
-  &[wrappable] {
-    flex-wrap: wrap;
-    overflow: visible;
-    height: initial;
-  }
-
   & > * {
     position: relative;
     display: flex;
@@ -1015,7 +1027,7 @@ devtools-toolbar {
 
   /* Checkbox */
 
-  & > .checkbox {
+  & > dt-checkbox {
     padding: 0 5px 0 0;
   }
 
@@ -1106,22 +1118,12 @@ devtools-toolbar {
     background-color: var(--sys-color-surface-variant);
   }
 
-  &.floating {
-    flex-direction: column;
-    height: auto;
-    background-color: var(--sys-color-cdt-base-container);
-    border: 1px solid var(--sys-color-divider);
-    margin-top: -1px;
-    width: 28px;
-    left: -2px;
-  }
-
-  &:not(.floating) > :last-child:not(:first-child, select) {
+  &:not([floating]) > :last-child:not(:first-child, select) {
     flex-shrink: 1;
     justify-content: left;
   }
 
-  &:not(.floating) > .toolbar-button:last-child:not(:first-child, select) {
+  &:not([floating]) > .toolbar-button:last-child:not(:first-child, select) {
     justify-content: left;
     margin-right: 2px;
   }

@@ -8,6 +8,7 @@ import type { DOMNode } from './DOMModel.js';
 export interface CSSMatchedStylesPayload {
     cssModel: CSSModel;
     node: DOMNode;
+    activePositionFallbackIndex: number;
     inlinePayload: Protocol.CSS.CSSStyle | null;
     attributesPayload: Protocol.CSS.CSSStyle | null;
     matchedPayload: Protocol.CSS.RuleMatch[];
@@ -20,7 +21,9 @@ export interface CSSMatchedStylesPayload {
     propertyRules: Protocol.CSS.CSSPropertyRule[];
     cssPropertyRegistrations: Protocol.CSS.CSSPropertyRegistration[];
     fontPaletteValuesRule: Protocol.CSS.CSSFontPaletteValuesRule | undefined;
-    activePositionFallbackIndex: number;
+    animationStylesPayload: Protocol.CSS.CSSAnimationStyle[];
+    transitionsStylePayload: Protocol.CSS.CSSStyle | null;
+    inheritedAnimatedPayload: Protocol.CSS.InheritedAnimatedStyleEntry[];
 }
 export declare class CSSRegisteredProperty {
     #private;
@@ -59,6 +62,9 @@ export declare class CSSMatchedStyles {
     addNewRule(rule: CSSStyleRule, node: DOMNode): Promise<void>;
     private setSelectorMatches;
     nodeStyles(): CSSStyleDeclaration[];
+    inheritedStyles(): CSSStyleDeclaration[];
+    animationStyles(): CSSStyleDeclaration[];
+    transitionsStyle(): CSSStyleDeclaration | null;
     registeredProperties(): CSSRegisteredProperty[];
     getRegisteredProperty(name: string): CSSRegisteredProperty | undefined;
     fontPaletteValuesRule(): CSSFontPaletteValuesRule | undefined;

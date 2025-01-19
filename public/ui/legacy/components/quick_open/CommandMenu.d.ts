@@ -55,7 +55,6 @@ export declare class CommandMenuProvider extends Provider {
     selectItem(itemIndex: number | null, _promptValue: string): void;
     notFoundText(): string;
 }
-export declare const MaterialPaletteColors: string[];
 export declare class Command {
     #private;
     readonly category: Common.UIString.LocalizedString;

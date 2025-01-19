@@ -22,6 +22,7 @@ declare const StylesSidebarPane_base: (new (...args: any[]) => {
 }) & typeof ElementsSidebarPane;
 export declare class StylesSidebarPane extends StylesSidebarPane_base {
     #private;
+    private matchedStyles;
     private currentToolbarPane;
     private animatedToolbarPane;
     private pendingWidget;
@@ -47,6 +48,8 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private idleCallbackManager;
     private needsForceUpdate;
     private readonly resizeThrottler;
+    private readonly resetUpdateThrottler;
+    private readonly computedStyleUpdateThrottler;
     private scrollerElement?;
     private readonly boundOnScroll;
     private readonly imagePreviewPopover;
@@ -86,11 +89,14 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     setEditingStyle(editing: boolean): void;
     setActiveProperty(treeElement: StylePropertyTreeElement | null): void;
     onCSSModelChanged(event: Common.EventTarget.EventTargetEvent<CSSModelChangedEvent>): void;
-    refreshComputedStyles(): Promise<void>;
+    onComputedStyleChanged(): void;
+    handledComputedStyleChangedForTest(): void;
+    scheduleResetUpdateIfNotEditingCalledForTest(): void;
     focusedSectionIndex(): number;
     continueEditingElement(sectionIndex: number, propertyIndex: number): void;
     private innerRebuildUpdate;
     private nodeStylesUpdatedForTest;
+    setMatchedStylesForTest(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles): void;
     rebuildSectionsForMatchedStyleRulesForTest(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null): Promise<SectionBlock[]>;
     private rebuildSectionsForMatchedStyleRules;
     createNewRuleInViaInspectorStyleSheet(): Promise<void>;

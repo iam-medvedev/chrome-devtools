@@ -16,7 +16,7 @@ import * as SourceFrame from '../../ui/legacy/components/source_frame/source_fra
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as Components from './components/components.js';
+import { JSONEditor } from './JSONEditor.js';
 import protocolMonitorStyles from './protocolMonitor.css.js';
 const { html } = LitHtml;
 const UIStrings = {
@@ -638,8 +638,8 @@ export class InfoWidget extends UI.Widget.VBox {
     }
     render(data) {
         if (!data || !data.request || !data.response || !data.target) {
-            this.tabbedPane.changeTabView('request', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected)));
-            this.tabbedPane.changeTabView('response', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected)));
+            this.tabbedPane.changeTabView('request', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), ''));
+            this.tabbedPane.changeTabView('response', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), ''));
             return;
         }
         const requestEnabled = data && data.type && data.type === 'sent';
@@ -663,14 +663,9 @@ export class EditorWidget extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     constructor() {
         super();
         this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor').track({ resize: true })}`);
-        this.jsonEditor = new Components.JSONEditor.JSONEditor();
-        this.jsonEditor.metadataByCommand = metadataByCommand;
-        this.jsonEditor.typesByName = typesByName;
-        this.jsonEditor.enumsByName = enumsByName;
-        this.element.append(this.jsonEditor);
-        this.jsonEditor.addEventListener(Components.JSONEditor.SubmitEditorEvent.eventName, (event) => {
-            this.dispatchEventToListeners("CommandSent" /* Events.COMMAND_SENT */, event.data);
-        });
+        this.jsonEditor = new JSONEditor(metadataByCommand, typesByName, enumsByName);
+        this.jsonEditor.show(this.element);
+        this.jsonEditor.addEventListener("submiteditor" /* JSONEditorEvents.SUBMIT_EDITOR */, ({ data }) => this.dispatchEventToListeners("CommandSent" /* Events.COMMAND_SENT */, data));
     }
 }
 export function parseCommandInput(input) {

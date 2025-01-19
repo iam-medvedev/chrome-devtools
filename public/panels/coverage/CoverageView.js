@@ -128,7 +128,9 @@ export class CoverageView extends UI.Widget.VBox {
         this.decorationManager = null;
         const toolbarContainer = this.contentElement.createChild('div', 'coverage-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
+        toolbarContainer.role = 'toolbar';
         const toolbar = toolbarContainer.createChild('devtools-toolbar', 'coverage-toolbar');
+        toolbar.role = 'presentation';
         toolbar.wrappable = true;
         this.coverageTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onCoverageTypeComboBoxSelectionChanged.bind(this), i18nString(UIStrings.chooseCoverageGranularityPer), undefined, 'coverage-type');
         const coverageTypes = [

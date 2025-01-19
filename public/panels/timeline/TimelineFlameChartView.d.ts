@@ -59,6 +59,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     constructor(delegate: TimelineModeViewDelegate);
     containingElement(): HTMLElement;
     dimEvents(events: Trace.Types.Events.Event[]): void;
+    setActiveThirdPartyDimmingSetting(active: boolean): void;
     disableAllDimming(): void;
     setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;

@@ -178,6 +178,7 @@ models/trace/handlers/AnimationFramesHandler.test.js
 models/trace/handlers/AnimationHandler.test.js
 models/trace/handlers/AsyncJSCallsHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
+models/trace/handlers/DOMStatsHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js
 models/trace/handlers/FlowsHandler.test.js
 models/trace/handlers/FramesHandler.test.js
@@ -395,8 +396,8 @@ panels/network/components/RequestHeadersView.test.js
 panels/network/components/RequestTrustTokensView.test.js
 panels/network/components/ResponseHeaderSection.test.js
 panels/performance_monitor/PerformanceMonitor.test.js
+panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
-panels/protocol_monitor/components/JSONEditor.test.js
 panels/recorder/RecorderController.test.js
 panels/recorder/components/CreateRecordingView.test.js
 panels/recorder/components/RecordingListView.test.js
@@ -455,6 +456,7 @@ panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/ModificationsManager.test.js
 panels/timeline/SaveFileFormatter.test.js
+panels/timeline/ThirdPartyTreeView.test.js
 panels/timeline/TimelineController.test.js
 panels/timeline/TimelineDetailsView.test.js
 panels/timeline/TimelineFilters.test.js
@@ -585,6 +587,7 @@ ui/legacy/XLink.test.js
 ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
 ui/legacy/components/data_grid/DataGrid.test.js
+ui/legacy/components/data_grid/DataGridElement.test.js
 ui/legacy/components/data_grid/DataGridWithPreview.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js

@@ -18,6 +18,7 @@ describeWithMockConnection('TimelineSummary', () => {
             rangeEnd: 110,
             total: 110,
             categories,
+            selectedEvents: [],
         };
         categories.push({ title: 'Total', value: 110, color: 'yellow' });
         assert.isNotNull(summary.shadowRoot);
@@ -42,6 +43,7 @@ describeWithMockConnection('TimelineSummary', () => {
             rangeEnd: 110,
             total: 110,
             categories,
+            selectedEvents: [],
         };
         categories.push({ title: 'Total', value: 110, color: 'grey' });
         assert.isNotNull(summary.shadowRoot);

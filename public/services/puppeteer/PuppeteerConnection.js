@@ -56,7 +56,7 @@ export class PuppeteerConnectionHelper {
         // url is an empty string in this case parallel to:
         // https://github.com/puppeteer/puppeteer/blob/f63a123ecef86693e6457b07437a96f108f3e3c5/src/common/BrowserConnector.ts#L72
         const puppeteerConnection = new PuppeteerConnection('', transport);
-        const browserPromise = puppeteer.Browser._create('chrome', puppeteerConnection, [] /* contextIds */, false /* ignoreHTTPSErrors */, undefined /* defaultViewport */, undefined /* DownloadBehavior */, undefined /* process */, undefined /* closeCallback */, undefined /* targetFilterCallback */, target => isPageTargetCallback(target._getTargetInfo()), false /* waitForInitiallyDiscoveredTargets */);
+        const browserPromise = puppeteer.Browser._create(puppeteerConnection, [] /* contextIds */, false /* ignoreHTTPSErrors */, undefined /* defaultViewport */, undefined /* DownloadBehavior */, undefined /* process */, undefined /* closeCallback */, undefined /* targetFilterCallback */, target => isPageTargetCallback(target._getTargetInfo()), false /* waitForInitiallyDiscoveredTargets */);
         const [, browser] = await Promise.all([
             puppeteerConnection._createSession({ targetId: rootTargetId }, /* emulateAutoAttach= */ true),
             browserPromise,

@@ -243,32 +243,47 @@ export class CSSModel extends SDKModel {
         }
         this.dispatchEventToListeners(Events.ModelWasEnabled);
     }
-    async getMatchedStyles(nodeId) {
-        const response = await this.agent.invoke_getMatchedStylesForNode({ nodeId });
+    async getAnimatedStylesForNode(nodeId) {
+        const response = await this.agent.invoke_getAnimatedStylesForNode({ nodeId });
         if (response.getError()) {
             return null;
         }
+        return response;
+    }
+    async getMatchedStyles(nodeId) {
         const node = this.#domModel.nodeForId(nodeId);
         if (!node) {
             return null;
         }
-        return await CSSMatchedStyles.create({
+        const shouldGetAnimatedStyles = Common.Settings.Settings.instance().getHostConfig().devToolsAnimationStylesInStylesTab?.enabled;
+        const [matchedStylesResponse, animatedStylesResponse] = await Promise.all([
+            this.agent.invoke_getMatchedStylesForNode({ nodeId }),
+            shouldGetAnimatedStyles ? this.agent.invoke_getAnimatedStylesForNode({ nodeId }) : undefined,
+        ]);
+        if (matchedStylesResponse.getError() || animatedStylesResponse?.getError()) {
+            return null;
+        }
+        const payload = {
             cssModel: this,
             node: node,
-            inlinePayload: response.inlineStyle || null,
-            attributesPayload: response.attributesStyle || null,
-            matchedPayload: response.matchedCSSRules || [],
-            pseudoPayload: response.pseudoElements || [],
-            inheritedPayload: response.inherited || [],
-            inheritedPseudoPayload: response.inheritedPseudoElements || [],
-            animationsPayload: response.cssKeyframesRules || [],
-            parentLayoutNodeId: response.parentLayoutNodeId,
-            positionTryRules: response.cssPositionTryRules || [],
-            propertyRules: response.cssPropertyRules ?? [],
-            cssPropertyRegistrations: response.cssPropertyRegistrations ?? [],
-            fontPaletteValuesRule: response.cssFontPaletteValuesRule,
-            activePositionFallbackIndex: response.activePositionFallbackIndex ?? -1,
-        });
+            inlinePayload: matchedStylesResponse.inlineStyle || null,
+            attributesPayload: matchedStylesResponse.attributesStyle || null,
+            matchedPayload: matchedStylesResponse.matchedCSSRules || [],
+            pseudoPayload: matchedStylesResponse.pseudoElements || [],
+            inheritedPayload: matchedStylesResponse.inherited || [],
+            inheritedPseudoPayload: matchedStylesResponse.inheritedPseudoElements || [],
+            animationsPayload: matchedStylesResponse.cssKeyframesRules || [],
+            parentLayoutNodeId: matchedStylesResponse.parentLayoutNodeId,
+            positionTryRules: matchedStylesResponse.cssPositionTryRules || [],
+            propertyRules: matchedStylesResponse.cssPropertyRules ?? [],
+            cssPropertyRegistrations: matchedStylesResponse.cssPropertyRegistrations ?? [],
+            fontPaletteValuesRule: matchedStylesResponse.cssFontPaletteValuesRule,
+            activePositionFallbackIndex: matchedStylesResponse.activePositionFallbackIndex ?? -1,
+            animationStylesPayload: animatedStylesResponse?.animationStyles || [],
+            inheritedAnimatedPayload: animatedStylesResponse?.inherited || [],
+            transitionsStylePayload: animatedStylesResponse?.transitionsStyle || null,
+        };
+        return await CSSMatchedStyles.create(payload);
     }
     async getClassNames(styleSheetId) {
         const { classNames } = await this.agent.invoke_collectClassNames({ styleSheetId });

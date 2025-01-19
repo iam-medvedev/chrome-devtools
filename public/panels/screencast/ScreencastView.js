@@ -584,24 +584,15 @@ export class ScreencastView extends UI.Widget.VBox {
     createNavigationBar() {
         this.navigationBar = this.element.createChild('div', 'screencast-navigation');
         this.navigationBack = this.navigationBar.createChild('button', 'navigation');
-        {
-            const icon = this.navigationBack.appendChild(new IconButton.Icon.Icon());
-            icon.data = { color: 'var(--icon-default)', iconName: 'arrow-back' };
-        }
+        this.navigationBack.appendChild(IconButton.Icon.create('arrow-back'));
         this.navigationBack.disabled = true;
         UI.ARIAUtils.setLabel(this.navigationBack, i18nString(UIStrings.back));
         this.navigationForward = this.navigationBar.createChild('button', 'navigation');
-        {
-            const icon = this.navigationForward.appendChild(new IconButton.Icon.Icon());
-            icon.data = { color: 'var(--icon-default)', iconName: 'arrow-forward' };
-        }
+        this.navigationForward.appendChild(IconButton.Icon.create('arrow-forward'));
         this.navigationForward.disabled = true;
         UI.ARIAUtils.setLabel(this.navigationForward, i18nString(UIStrings.forward));
         this.navigationReload = this.navigationBar.createChild('button', 'navigation');
-        {
-            const icon = this.navigationReload.appendChild(new IconButton.Icon.Icon());
-            icon.data = { color: 'var(--icon-default)', iconName: 'refresh' };
-        }
+        this.navigationReload.appendChild(IconButton.Icon.create('refresh'));
         UI.ARIAUtils.setLabel(this.navigationReload, i18nString(UIStrings.reload));
         this.navigationUrl = this.navigationBar.appendChild(UI.UIUtils.createInput());
         this.navigationUrl.type = 'text';
@@ -614,10 +605,7 @@ export class ScreencastView extends UI.Widget.VBox {
         }
         UI.ARIAUtils.setLabel(this.mouseInputToggle, i18nString(UIStrings.mouseInput));
         this.touchInputToggle = this.navigationBar.createChild('button');
-        {
-            this.touchInputToggleIcon = this.touchInputToggle.appendChild(new IconButton.Icon.Icon());
-            this.touchInputToggleIcon.data = { color: 'var(--icon-default)', iconName: 'touch-app' };
-        }
+        this.touchInputToggleIcon = this.touchInputToggle.appendChild(IconButton.Icon.create('touch-app'));
         UI.ARIAUtils.setLabel(this.touchInputToggle, i18nString(UIStrings.touchInput));
         this.navigationProgressBar = new ProgressTracker(this.resourceTreeModel, this.networkManager, this.navigationBar.createChild('div', 'progress'));
         if (this.resourceTreeModel) {

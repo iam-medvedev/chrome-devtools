@@ -3,10 +3,10 @@ export declare class Throttler {
     #private;
     constructor(timeout: number);
     private processCompletedForTests;
-    get process(): (() => (Promise<unknown>)) | null;
+    get process(): (() => (void | Promise<unknown>)) | null;
     get processCompleted(): Promise<unknown> | null;
     private onTimeout;
-    schedule(process: () => (Promise<unknown>), scheduling?: Scheduling): Promise<void>;
+    schedule(process: () => (void | Promise<unknown>), scheduling?: Scheduling): Promise<void>;
     private innerSchedule;
     private clearTimeout;
     private setTimeout;

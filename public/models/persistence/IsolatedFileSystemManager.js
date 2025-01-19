@@ -66,7 +66,6 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         // Initialize exclude pattern settings
         const defaultCommonExcludedFolders = [
             '/node_modules/',
-            '/bower_components/',
             '/\\.devtools',
             '/\\.git/',
             '/\\.sass-cache/',

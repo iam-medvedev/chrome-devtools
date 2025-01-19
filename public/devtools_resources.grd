@@ -153,8 +153,10 @@
       <include file="Images/gear-filled.svg" name="IMAGES_GEAR_FILLED_SVG" resource_path="Images/gear-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/gear.svg" name="IMAGES_GEAR_SVG" resource_path="Images/gear.svg" type="BINDATA" compress="false"/>
       <include file="Images/gears.svg" name="IMAGES_GEARS_SVG" resource_path="Images/gears.svg" type="BINDATA" compress="false"/>
+      <include file="Images/global.svg" name="IMAGES_GLOBAL_SVG" resource_path="Images/global.svg" type="BINDATA" compress="false"/>
       <include file="Images/google.svg" name="IMAGES_GOOGLE_SVG" resource_path="Images/google.svg" type="BINDATA" compress="false"/>
       <include file="Images/goto-filled.svg" name="IMAGES_GOTO_FILLED_SVG" resource_path="Images/goto-filled.svg" type="BINDATA" compress="false"/>
+      <include file="Images/grid-on.svg" name="IMAGES_GRID_ON_SVG" resource_path="Images/grid-on.svg" type="BINDATA" compress="false"/>
       <include file="Images/group.svg" name="IMAGES_GROUP_SVG" resource_path="Images/group.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshot.svg" name="IMAGES_HEAP_SNAPSHOT_SVG" resource_path="Images/heap-snapshot.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshots.svg" name="IMAGES_HEAP_SNAPSHOTS_SVG" resource_path="Images/heap-snapshots.svg" type="BINDATA" compress="false"/>
@@ -183,8 +185,10 @@
       <include file="Images/justify-items-start.svg" name="IMAGES_JUSTIFY_ITEMS_START_SVG" resource_path="Images/justify-items-start.svg" type="BINDATA" compress="false"/>
       <include file="Images/justify-items-stretch.svg" name="IMAGES_JUSTIFY_ITEMS_STRETCH_SVG" resource_path="Images/justify-items-stretch.svg" type="BINDATA" compress="false"/>
       <include file="Images/keyboard-arrow-right.svg" name="IMAGES_KEYBOARD_ARROW_RIGHT_SVG" resource_path="Images/keyboard-arrow-right.svg" type="BINDATA" compress="false"/>
+      <include file="Images/keyboard-full.svg" name="IMAGES_KEYBOARD_FULL_SVG" resource_path="Images/keyboard-full.svg" type="BINDATA" compress="false"/>
       <include file="Images/keyboard-pen.svg" name="IMAGES_KEYBOARD_PEN_SVG" resource_path="Images/keyboard-pen.svg" type="BINDATA" compress="false"/>
       <include file="Images/keyboard.svg" name="IMAGES_KEYBOARD_SVG" resource_path="Images/keyboard.svg" type="BINDATA" compress="false"/>
+      <include file="Images/label.svg" name="IMAGES_LABEL_SVG" resource_path="Images/label.svg" type="BINDATA" compress="false"/>
       <include file="Images/large-arrow-right-filled.svg" name="IMAGES_LARGE_ARROW_RIGHT_FILLED_SVG" resource_path="Images/large-arrow-right-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/layers-filled.svg" name="IMAGES_LAYERS_FILLED_SVG" resource_path="Images/layers-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/layers.svg" name="IMAGES_LAYERS_SVG" resource_path="Images/layers.svg" type="BINDATA" compress="false"/>
@@ -205,8 +209,11 @@
       <include file="Images/navigationControls.png" name="IMAGES_NAVIGATIONCONTROLS_PNG" resource_path="Images/navigationControls.png" type="BINDATA" compress="false"/>
       <include file="Images/navigationControls_2x.png" name="IMAGES_NAVIGATIONCONTROLS_2X_PNG" resource_path="Images/navigationControls_2x.png" type="BINDATA" compress="false"/>
       <include file="Images/network-settings.svg" name="IMAGES_NETWORK_SETTINGS_SVG" resource_path="Images/network-settings.svg" type="BINDATA" compress="false"/>
+      <include file="Images/node-stack-icon.svg" name="IMAGES_NODE_STACK_ICON_SVG" resource_path="Images/node-stack-icon.svg" type="BINDATA" compress="false"/>
       <include file="Images/nodeIcon.avif" name="IMAGES_NODEICON_AVIF" resource_path="Images/nodeIcon.avif" type="BINDATA" compress="false"/>
       <include file="Images/open-externally.svg" name="IMAGES_OPEN_EXTERNALLY_SVG" resource_path="Images/open-externally.svg" type="BINDATA" compress="false"/>
+      <include file="Images/override.svg" name="IMAGES_OVERRIDE_SVG" resource_path="Images/override.svg" type="BINDATA" compress="false"/>
+      <include file="Images/palette.svg" name="IMAGES_PALETTE_SVG" resource_path="Images/palette.svg" type="BINDATA" compress="false"/>
       <include file="Images/pause-circle.svg" name="IMAGES_PAUSE_CIRCLE_SVG" resource_path="Images/pause-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/pause.svg" name="IMAGES_PAUSE_SVG" resource_path="Images/pause.svg" type="BINDATA" compress="false"/>
       <include file="Images/pen-spark.svg" name="IMAGES_PEN_SPARK_SVG" resource_path="Images/pen-spark.svg" type="BINDATA" compress="false"/>
@@ -216,6 +223,7 @@
       <include file="Images/performance-panel-time-range.svg" name="IMAGES_PERFORMANCE_PANEL_TIME_RANGE_SVG" resource_path="Images/performance-panel-time-range.svg" type="BINDATA" compress="false"/>
       <include file="Images/performance.svg" name="IMAGES_PERFORMANCE_SVG" resource_path="Images/performance.svg" type="BINDATA" compress="false"/>
       <include file="Images/person.svg" name="IMAGES_PERSON_SVG" resource_path="Images/person.svg" type="BINDATA" compress="false"/>
+      <include file="Images/photo-camera.svg" name="IMAGES_PHOTO_CAMERA_SVG" resource_path="Images/photo-camera.svg" type="BINDATA" compress="false"/>
       <include file="Images/play.svg" name="IMAGES_PLAY_SVG" resource_path="Images/play.svg" type="BINDATA" compress="false"/>
       <include file="Images/plus.svg" name="IMAGES_PLUS_SVG" resource_path="Images/plus.svg" type="BINDATA" compress="false"/>
       <include file="Images/policy.svg" name="IMAGES_POLICY_SVG" resource_path="Images/policy.svg" type="BINDATA" compress="false"/>
@@ -258,10 +266,12 @@
       <include file="Images/symbol.svg" name="IMAGES_SYMBOL_SVG" resource_path="Images/symbol.svg" type="BINDATA" compress="false"/>
       <include file="Images/sync.svg" name="IMAGES_SYNC_SVG" resource_path="Images/sync.svg" type="BINDATA" compress="false"/>
       <include file="Images/table.svg" name="IMAGES_TABLE_SVG" resource_path="Images/table.svg" type="BINDATA" compress="false"/>
+      <include file="Images/terminal.svg" name="IMAGES_TERMINAL_SVG" resource_path="Images/terminal.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-down-filled.svg" name="IMAGES_THUMB_DOWN_FILLED_SVG" resource_path="Images/thumb-down-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-down.svg" name="IMAGES_THUMB_DOWN_SVG" resource_path="Images/thumb-down.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-up-filled.svg" name="IMAGES_THUMB_UP_FILLED_SVG" resource_path="Images/thumb-up-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-up.svg" name="IMAGES_THUMB_UP_SVG" resource_path="Images/thumb-up.svg" type="BINDATA" compress="false"/>
+      <include file="Images/tonality.svg" name="IMAGES_TONALITY_SVG" resource_path="Images/tonality.svg" type="BINDATA" compress="false"/>
       <include file="Images/toolbarResizerVertical.png" name="IMAGES_TOOLBARRESIZERVERTICAL_PNG" resource_path="Images/toolbarResizerVertical.png" type="BINDATA" compress="false"/>
       <include file="Images/top-panel-close.svg" name="IMAGES_TOP_PANEL_CLOSE_SVG" resource_path="Images/top-panel-close.svg" type="BINDATA" compress="false"/>
       <include file="Images/top-panel-open.svg" name="IMAGES_TOP_PANEL_OPEN_SVG" resource_path="Images/top-panel-open.svg" type="BINDATA" compress="false"/>
@@ -611,7 +621,6 @@
       <include file="panels/performance_monitor/performance_monitor.js" name="PANELS_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_JS" resource_path="panels/performance_monitor/performance_monitor.js" type="BINDATA" compress="false"/>
       <include file="panels/profiler/profiler-meta.js" name="PANELS_PROFILER_PROFILER_META_JS" resource_path="panels/profiler/profiler-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/profiler/profiler.js" name="PANELS_PROFILER_PROFILER_JS" resource_path="panels/profiler/profiler.js" type="BINDATA" compress="false"/>
-      <include file="panels/protocol_monitor/components/components.js" name="PANELS_PROTOCOL_MONITOR_COMPONENTS_COMPONENTS_JS" resource_path="panels/protocol_monitor/components/components.js" type="BINDATA" compress="false"/>
       <include file="panels/protocol_monitor/protocol_monitor-meta.js" name="PANELS_PROTOCOL_MONITOR_PROTOCOL_MONITOR_META_JS" resource_path="panels/protocol_monitor/protocol_monitor-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/protocol_monitor/protocol_monitor.js" name="PANELS_PROTOCOL_MONITOR_PROTOCOL_MONITOR_JS" resource_path="panels/protocol_monitor/protocol_monitor.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/components.js" name="PANELS_RECORDER_COMPONENTS_COMPONENTS_JS" resource_path="panels/recorder/components/components.js" type="BINDATA" compress="false"/>
@@ -1056,6 +1065,7 @@
       <include file="models/trace/handlers/AnimationHandler.js" name="MODELS_TRACE_HANDLERS_ANIMATIONHANDLER_JS" resource_path="models/trace/handlers/AnimationHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AsyncJSCallsHandler.js" name="MODELS_TRACE_HANDLERS_ASYNCJSCALLSHANDLER_JS" resource_path="models/trace/handlers/AsyncJSCallsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AuctionWorkletsHandler.js" name="MODELS_TRACE_HANDLERS_AUCTIONWORKLETSHANDLER_JS" resource_path="models/trace/handlers/AuctionWorkletsHandler.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/handlers/DOMStatsHandler.js" name="MODELS_TRACE_HANDLERS_DOMSTATSHANDLER_JS" resource_path="models/trace/handlers/DOMStatsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/ExtensionTraceDataHandler.js" name="MODELS_TRACE_HANDLERS_EXTENSIONTRACEDATAHANDLER_JS" resource_path="models/trace/handlers/ExtensionTraceDataHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/FlowsHandler.js" name="MODELS_TRACE_HANDLERS_FLOWSHANDLER_JS" resource_path="models/trace/handlers/FlowsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/FramesHandler.js" name="MODELS_TRACE_HANDLERS_FRAMESHANDLER_JS" resource_path="models/trace/handlers/FramesHandler.js" type="BINDATA" compress="false"/>
@@ -1613,11 +1623,9 @@
       <include file="panels/profiler/profileLauncherView.css.js" name="PANELS_PROFILER_PROFILELAUNCHERVIEW_CSS_JS" resource_path="panels/profiler/profileLauncherView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/profiler/profilesPanel.css.js" name="PANELS_PROFILER_PROFILESPANEL_CSS_JS" resource_path="panels/profiler/profilesPanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/profiler/profilesSidebarTree.css.js" name="PANELS_PROFILER_PROFILESSIDEBARTREE_CSS_JS" resource_path="panels/profiler/profilesSidebarTree.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/protocol_monitor/JSONEditor.css.js" name="PANELS_PROTOCOL_MONITOR_JSONEDITOR_CSS_JS" resource_path="panels/protocol_monitor/JSONEditor.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/protocol_monitor/JSONEditor.js" name="PANELS_PROTOCOL_MONITOR_JSONEDITOR_JS" resource_path="panels/protocol_monitor/JSONEditor.js" type="BINDATA" compress="false"/>
       <include file="panels/protocol_monitor/ProtocolMonitor.js" name="PANELS_PROTOCOL_MONITOR_PROTOCOLMONITOR_JS" resource_path="panels/protocol_monitor/ProtocolMonitor.js" type="BINDATA" compress="false"/>
-      <include file="panels/protocol_monitor/components/JSONEditor.css.js" name="PANELS_PROTOCOL_MONITOR_COMPONENTS_JSONEDITOR_CSS_JS" resource_path="panels/protocol_monitor/components/JSONEditor.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/protocol_monitor/components/JSONEditor.js" name="PANELS_PROTOCOL_MONITOR_COMPONENTS_JSONEDITOR_JS" resource_path="panels/protocol_monitor/components/JSONEditor.js" type="BINDATA" compress="false"/>
-      <include file="panels/protocol_monitor/components/Toolbar.js" name="PANELS_PROTOCOL_MONITOR_COMPONENTS_TOOLBAR_JS" resource_path="panels/protocol_monitor/components/Toolbar.js" type="BINDATA" compress="false"/>
-      <include file="panels/protocol_monitor/components/toolbar.css.js" name="PANELS_PROTOCOL_MONITOR_COMPONENTS_TOOLBAR_CSS_JS" resource_path="panels/protocol_monitor/components/toolbar.css.js" type="BINDATA" compress="false"/>
       <include file="panels/protocol_monitor/protocolMonitor.css.js" name="PANELS_PROTOCOL_MONITOR_PROTOCOLMONITOR_CSS_JS" resource_path="panels/protocol_monitor/protocolMonitor.css.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/RecorderController.js" name="PANELS_RECORDER_RECORDERCONTROLLER_JS" resource_path="panels/recorder/RecorderController.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/RecorderEvents.js" name="PANELS_RECORDER_RECORDEREVENTS_JS" resource_path="panels/recorder/RecorderEvents.js" type="BINDATA" compress="false"/>
@@ -1799,6 +1807,7 @@
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ServerTimingsTrackAppender.js" name="PANELS_TIMELINE_SERVERTIMINGSTRACKAPPENDER_JS" resource_path="panels/timeline/ServerTimingsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TargetForEvent.js" name="PANELS_TIMELINE_TARGETFOREVENT_JS" resource_path="panels/timeline/TargetForEvent.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/ThirdPartyTreeView.js" name="PANELS_TIMELINE_THIRDPARTYTREEVIEW_JS" resource_path="panels/timeline/ThirdPartyTreeView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ThreadAppender.js" name="PANELS_TIMELINE_THREADAPPENDER_JS" resource_path="panels/timeline/ThreadAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineController.js" name="PANELS_TIMELINE_TIMELINECONTROLLER_JS" resource_path="panels/timeline/TimelineController.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineDetailsView.js" name="PANELS_TIMELINE_TIMELINEDETAILSVIEW_JS" resource_path="panels/timeline/TimelineDetailsView.js" type="BINDATA" compress="false"/>
@@ -2021,7 +2030,6 @@
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/BrowserContext.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_BROWSERCONTEXT_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/BrowserContext.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/CDPSession.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_CDPSESSION_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/CDPSession.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpPreloadScript.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_CDPPRELOADSCRIPT_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpPreloadScript.js" type="BINDATA" compress="false"/>
-      <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/ChromeTargetManager.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_CHROMETARGETMANAGER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/ChromeTargetManager.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Connection.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_CONNECTION_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Connection.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Coverage.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_COVERAGE_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Coverage.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/DeviceRequestPrompt.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_DEVICEREQUESTPROMPT_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/DeviceRequestPrompt.js" type="BINDATA" compress="false"/>
@@ -2030,7 +2038,6 @@
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/EmulationManager.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_EMULATIONMANAGER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/EmulationManager.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/ExecutionContext.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_EXECUTIONCONTEXT_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/ExecutionContext.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/ExtensionTransport.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_EXTENSIONTRANSPORT_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/ExtensionTransport.js" type="BINDATA" compress="false"/>
-      <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/FirefoxTargetManager.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_FIREFOXTARGETMANAGER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/FirefoxTargetManager.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Frame.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_FRAME_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Frame.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManager.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_FRAMEMANAGER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManager.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManagerEvents.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_FRAMEMANAGEREVENTS_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManagerEvents.js" type="BINDATA" compress="false"/>
@@ -2047,6 +2054,7 @@
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Page.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_PAGE_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Page.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/PredefinedNetworkConditions.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_PREDEFINEDNETWORKCONDITIONS_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/PredefinedNetworkConditions.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Target.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_TARGET_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Target.js" type="BINDATA" compress="false"/>
+      <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/TargetManageEvents.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_TARGETMANAGEEVENTS_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/TargetManageEvents.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/TargetManager.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_TARGETMANAGER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/TargetManager.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Tracing.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_TRACING_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/Tracing.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebWorker.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_PUPPETEER_CDP_WEBWORKER_JS" resource_path="third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebWorker.js" type="BINDATA" compress="false"/>
@@ -2363,6 +2371,7 @@
       <include file="ui/legacy/components/cookie_table/CookiesTable.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIESTABLE_JS" resource_path="ui/legacy/components/cookie_table/CookiesTable.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/cookie_table/cookiesTable.css.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIESTABLE_CSS_JS" resource_path="ui/legacy/components/cookie_table/cookiesTable.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/DataGrid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATAGRID_JS" resource_path="ui/legacy/components/data_grid/DataGrid.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/components/data_grid/DataGridElement.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATAGRIDELEMENT_JS" resource_path="ui/legacy/components/data_grid/DataGridElement.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/DataGridWithPreview.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATAGRIDWITHPREVIEW_JS" resource_path="ui/legacy/components/data_grid/DataGridWithPreview.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/ShowMoreDataGridNode.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_SHOWMOREDATAGRIDNODE_JS" resource_path="ui/legacy/components/data_grid/ShowMoreDataGridNode.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/SortableDataGrid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_SORTABLEDATAGRID_JS" resource_path="ui/legacy/components/data_grid/SortableDataGrid.js" type="BINDATA" compress="false"/>
@@ -2494,6 +2503,7 @@
       <include file="ui/legacy/themeColors.css.legacy.js" name="UI_LEGACY_THEMECOLORS_CSS_LEGACY_JS" resource_path="ui/legacy/themeColors.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/theme_support/ThemeSupport.js" name="UI_LEGACY_THEME_SUPPORT_THEMESUPPORT_JS" resource_path="ui/legacy/theme_support/ThemeSupport.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/tokens.css.legacy.js" name="UI_LEGACY_TOKENS_CSS_LEGACY_JS" resource_path="ui/legacy/tokens.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/toolbar.css.legacy.js" name="UI_LEGACY_TOOLBAR_CSS_LEGACY_JS" resource_path="ui/legacy/toolbar.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/treeoutline.css.legacy.js" name="UI_LEGACY_TREEOUTLINE_CSS_LEGACY_JS" resource_path="ui/legacy/treeoutline.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.legacy.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_LEGACY_JS" resource_path="ui/legacy/viewContainers.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/lit-html/i18n-template.js" name="UI_LIT_HTML_I18N_TEMPLATE_JS" resource_path="ui/lit-html/i18n-template.js" type="BINDATA" compress="false"/>

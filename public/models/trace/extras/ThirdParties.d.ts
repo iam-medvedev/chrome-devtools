@@ -8,8 +8,8 @@ export interface Summary {
 }
 export interface SummaryMaps {
     byEntity: Map<Entity, Summary>;
-    byRequest: Map<Types.Events.SyntheticNetworkRequest, Summary>;
-    requestsByEntity: Map<Entity, Types.Events.SyntheticNetworkRequest[]>;
+    byEvent: Map<Types.Events.Event, Summary>;
+    eventsByEntity: Map<Entity, Types.Events.Event[]>;
 }
 export declare function getEntitiesByRequest(requests: Types.Events.SyntheticNetworkRequest[]): {
     entityByRequest: Map<Types.Events.SyntheticNetworkRequest, Entity>;
@@ -19,4 +19,8 @@ export declare function getSummariesAndEntitiesForTraceBounds(parsedTrace: Handl
     summaries: SummaryMaps;
     entityByRequest: Map<Types.Events.SyntheticNetworkRequest, Entity>;
     madeUpEntityCache: Map<string, Entity>;
+};
+export declare function getSummariesAndEntitiesWithMapping(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicroSeconds, entityMapping: Handlers.Helpers.EntityMappings): {
+    summaries: SummaryMaps;
+    entityByEvent: Map<Types.Events.Event, Handlers.Helpers.Entity>;
 };

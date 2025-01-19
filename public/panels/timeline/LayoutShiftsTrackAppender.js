@@ -106,15 +106,6 @@ export class LayoutShiftsTrackAppender {
         }
         return renderingColor;
     }
-    /**
-     * Gets the title an event added by this appender should be rendered with.
-     */
-    titleForEvent(event) {
-        if (Trace.Types.Events.isLayoutShift(event)) {
-            return i18nString(UIStrings.layoutShift);
-        }
-        return '';
-    }
     setPopoverInfo(event, info) {
         const score = Trace.Types.Events.isLayoutShift(event) ? event.args.data?.weighted_score_delta ?? 0 :
             Trace.Types.Events.isSyntheticLayoutShiftCluster(event) ? event.clusterCumulativeScore :
@@ -187,6 +178,17 @@ export class LayoutShiftsTrackAppender {
         }
         const screenshots = Array.from(screenshotsToLoad);
         return Utils.ImageCache.preload(screenshots);
+    }
+    titleForEvent(_event) {
+        /**
+         * This method defines the titles drawn on the track for the events in this
+         * appender. In the case of the Layout Shifts, we do not draw any titles. We
+         * draw layout shifts which are represented as diamonds, and clusters, which
+         * are represented as the purple lines through the diamonds. We do not want
+         * to put any text on top of these, hence overriding this method to return
+         * the empty string.
+         */
+        return '';
     }
     static createShiftViz(event, parsedTrace, maxSize) {
         const screenshots = event.parsedData.screenshots;

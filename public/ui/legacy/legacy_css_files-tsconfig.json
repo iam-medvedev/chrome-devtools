@@ -37,6 +37,7 @@
         "textPrompt.css.legacy.js",
         "themeColors.css.legacy.js",
         "tokens.css.legacy.js",
+        "toolbar.css.legacy.js",
         "treeoutline.css.legacy.js",
         "viewContainers.css.legacy.js"
     ]

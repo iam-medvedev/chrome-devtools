@@ -166,6 +166,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     regexButton;
     matchWholeWord;
     #parsedTrace = null;
+    #entityMapper = null;
     #lastHighlightedEvent = null;
     eventToTreeNode = new WeakMap();
     constructor() {
@@ -184,9 +185,14 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     setSearchableView(searchableView) {
         this.searchableView = searchableView;
     }
-    setModelWithEvents(selectedEvents, parsedTrace = null) {
+    setModelWithEvents(selectedEvents, parsedTrace = null, entityMappings = null) {
         this.#parsedTrace = parsedTrace;
         this.#selectedEvents = selectedEvents;
+        this.#entityMapper = entityMappings;
+        this.refreshTree();
+    }
+    entityMapper() {
+        return this.#entityMapper;
     }
     parsedTrace() {
         return this.#parsedTrace;
@@ -217,6 +223,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
         this.dataGrid.element.addEventListener('mousemove', this.onMouseMove.bind(this), true);
         this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, null));
+        this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, null));
         this.dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OPENED_NODE */, this.onGridNodeOpened, this);
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
@@ -374,17 +381,19 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         if (!columnId) {
             return;
         }
-        let sortFunction;
+        const sortFunction = this.getSortingFunction(columnId);
+        if (sortFunction) {
+            this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
+        }
+    }
+    // Gets the sorting function for the tree view nodes.
+    getSortingFunction(columnId) {
         const compareNameSortFn = (a, b) => {
             const nodeA = a;
             const nodeB = b;
             const eventA = nodeA.profileNode.event;
             const eventB = nodeB.profileNode.event;
-            // Should not happen, but guard against the nodes not having events.
             if (!eventA || !eventB) {
-                return 0;
-            }
-            if (!this.#parsedTrace) {
                 return 0;
             }
             const nameA = this.#eventNameForSorting(eventA);
@@ -393,22 +402,18 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         };
         switch (columnId) {
             case 'start-time':
-                sortFunction = compareStartTime;
-                break;
+                return compareStartTime;
             case 'self':
-                sortFunction = compareSelfTime;
-                break;
+                return compareSelfTime;
             case 'total':
-                sortFunction = compareTotalTime;
-                break;
+                return compareTotalTime;
             case 'activity':
-                sortFunction = compareNameSortFn;
-                break;
+            case 'site':
+                return compareNameSortFn;
             default:
                 console.assert(false, 'Unknown sort field: ' + columnId);
-                return;
+                return null;
         }
-        this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
         function compareSelfTime(a, b) {
             const nodeA = a;
             const nodeB = b;
@@ -561,7 +566,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         this.linkElement = null;
     }
     createCell(columnId) {
-        if (columnId === 'activity') {
+        if (columnId === 'activity' || columnId === 'site') {
             return this.createNameCell(columnId);
         }
         return this.createValueCell(columnId) || super.createCell(columnId);
@@ -581,10 +586,25 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             if (info.icon) {
                 iconContainer.insertBefore(info.icon, icon);
             }
+            // Include badges with the name, if relevant.
+            if (columnId === 'site' && this.treeView) {
+                const thirdPartyTree = this.treeView;
+                let badgeText = '';
+                if (thirdPartyTree.nodeIsFirstParty(this.profileNode)) {
+                    badgeText = '1st party';
+                }
+                else if (thirdPartyTree.nodeIsExtension(this.profileNode)) {
+                    badgeText = 'Extension';
+                }
+                if (badgeText) {
+                    const badge = container.createChild('div', 'entity-badge');
+                    badge.createChild('div', 'entity-badge-name').textContent = badgeText;
+                }
+            }
         }
         else if (event) {
-            const parsedTrace = this.treeView.parsedTrace();
             name.textContent = TimelineUIUtils.eventTitle(event);
+            const parsedTrace = this.treeView.parsedTrace();
             const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
             const linkifier = this.treeView.linkifier;
             const isFreshRecording = Boolean(parsedTrace && Tracker.instance().recordingIsFresh(parsedTrace));
@@ -601,13 +621,15 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         return cell;
     }
     createValueCell(columnId) {
-        if (columnId !== 'self' && columnId !== 'total' && columnId !== 'start-time') {
+        if (columnId !== 'self' && columnId !== 'total' && columnId !== 'start-time' && columnId !== 'transfer-size') {
             return null;
         }
         let showPercents = false;
         let value;
         let maxTime;
         let event;
+        let isSize = false;
+        const thirdPartyView = this.treeView;
         switch (columnId) {
             case 'start-time':
                 {
@@ -631,14 +653,26 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 maxTime = this.maxTotalTime;
                 showPercents = true;
                 break;
+            case 'transfer-size':
+                value = thirdPartyView.extractThirdPartySummary(this.profileNode).transferSize;
+                isSize = true;
+                break;
             default:
                 return null;
         }
         const cell = this.createTD(columnId);
         cell.className = 'numeric-column';
-        cell.setAttribute('title', i18n.TimeUtilities.preciseMillisToString(value, 4));
-        const textDiv = cell.createChild('div');
-        textDiv.createChild('span').textContent = i18n.TimeUtilities.preciseMillisToString(value, 1);
+        let textDiv;
+        if (!isSize) {
+            cell.setAttribute('title', i18n.TimeUtilities.preciseMillisToString(value, 4));
+            textDiv = cell.createChild('div');
+            textDiv.createChild('span').textContent = i18n.TimeUtilities.preciseMillisToString(value, 1);
+        }
+        else {
+            cell.setAttribute('title', i18n.ByteUtilities.bytesToString(value));
+            textDiv = cell.createChild('div');
+            textDiv.createChild('span').textContent = i18n.ByteUtilities.bytesToString(value);
+        }
         if (showPercents && this.treeView.exposePercentages()) {
             textDiv.createChild('span', 'percent-column').textContent =
                 i18nString(UIStrings.percentPlaceholder, { PH1: (value / this.grandTotalTime * 100).toFixed(1) });
