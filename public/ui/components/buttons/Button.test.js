@@ -4,7 +4,7 @@
 import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as Buttons from './buttons.js';
 describe('Button', () => {
-    const iconUrl = new URL('../../../Images/file-image.svg', import.meta.url).toString();
+    const iconName = 'file-image';
     function renderButton(data = {
         variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
     }, text = 'Button') {
@@ -78,13 +78,13 @@ describe('Button', () => {
     it('toolbar button can be clicked', () => {
         testClick({
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
-            iconUrl,
+            iconName,
         });
     });
     it('disabled toolbar button cannot be clicked', () => {
         testClick({
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
-            iconUrl,
+            iconName,
             disabled: true,
         }, 0);
     });
@@ -107,7 +107,7 @@ describe('Button', () => {
     it('gets the text-with-icon class set for the inner button if text and icon is provided', () => {
         const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-            iconUrl,
+            iconName,
         }, 'text');
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isTrue(innerButton.classList.contains('text-with-icon'));
@@ -116,7 +116,7 @@ describe('Button', () => {
     it('gets the only-icon class set for the inner button if only icon is provided', () => {
         const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-            iconUrl,
+            iconName,
         }, '');
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isTrue(!innerButton.classList.contains('text-with-icon'));
@@ -133,7 +133,7 @@ describe('Button', () => {
     it('does not get the `small` class set for the inner button if size === MEDIUM', () => {
         const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-            iconUrl,
+            iconName,
         }, '');
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isFalse(innerButton.classList.contains('small'));

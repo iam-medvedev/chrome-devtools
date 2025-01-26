@@ -5,6 +5,7 @@ import * as Platform from '../platform/platform.js';
 const queryParamsObject = new URLSearchParams(location.search);
 let runtimePlatform = '';
 let runtimeInstance;
+let isNode;
 export function getRemoteBase(location = self.location.toString()) {
     const url = new URL(location);
     const remoteBase = url.searchParams.get('remoteBase');
@@ -19,6 +20,10 @@ export function getRemoteBase(location = self.location.toString()) {
 }
 export function getPathName() {
     return window.location.pathname;
+}
+export function isNodeEntry(pathname) {
+    const nodeEntryPoints = ['node_app', 'js_app'];
+    return nodeEntryPoints.some(component => pathname.includes(component));
 }
 export class Runtime {
     constructor() {
@@ -39,14 +44,11 @@ export class Runtime {
     static setQueryParamForTesting(name, value) {
         queryParamsObject.set(name, value);
     }
-    static experimentsSetting() {
-        try {
-            return Platform.StringUtilities.toKebabCaseKeys(JSON.parse(self.localStorage && self.localStorage['experiments'] ? self.localStorage['experiments'] : '{}'));
+    static isNode() {
+        if (isNode === undefined) {
+            isNode = isNodeEntry(getPathName());
         }
-        catch {
-            console.error('Failed to parse localStorage[\'experiments\']');
-            return {};
-        }
+        return isNode;
     }
     static setPlatform(platform) {
         runtimePlatform = platform;
@@ -74,18 +76,12 @@ export class Runtime {
     }
 }
 export class ExperimentsSupport {
-    #experiments;
-    #experimentNames;
-    #enabledTransiently;
-    #enabledByDefault;
-    #serverEnabled;
-    constructor() {
-        this.#experiments = [];
-        this.#experimentNames = new Set();
-        this.#enabledTransiently = new Set();
-        this.#enabledByDefault = new Set();
-        this.#serverEnabled = new Set();
-    }
+    #experiments = [];
+    #experimentNames = new Set();
+    #enabledTransiently = new Set();
+    #enabledByDefault = new Set();
+    #serverEnabled = new Set();
+    #storage = new ExperimentStorage();
     allConfigurableExperiments() {
         const result = [];
         for (const experiment of this.#experiments) {
@@ -94,12 +90,6 @@ export class ExperimentsSupport {
             }
         }
         return result;
-    }
-    setExperimentsSetting(value) {
-        if (!self.localStorage) {
-            return;
-        }
-        self.localStorage['experiments'] = JSON.stringify(value);
     }
     register(experimentName, experimentTitle, unstable, docLink, feedbackLink) {
         if (this.#experimentNames.has(experimentName)) {
@@ -112,7 +102,7 @@ export class ExperimentsSupport {
         this.checkExperiment(experimentName);
         // Check for explicitly disabled #experiments first - the code could call setEnable(false) on the experiment enabled
         // by default and we should respect that.
-        if (Runtime.experimentsSetting()[experimentName] === false) {
+        if (this.#storage.get(experimentName) === false) {
             return false;
         }
         if (this.#enabledTransiently.has(experimentName) || this.#enabledByDefault.has(experimentName)) {
@@ -121,13 +111,11 @@ export class ExperimentsSupport {
         if (this.#serverEnabled.has(experimentName)) {
             return true;
         }
-        return Boolean(Runtime.experimentsSetting()[experimentName]);
+        return Boolean(this.#storage.get(experimentName));
     }
     setEnabled(experimentName, enabled) {
         this.checkExperiment(experimentName);
-        const experimentsSetting = Runtime.experimentsSetting();
-        experimentsSetting[experimentName] = enabled;
-        this.setExperimentsSetting(experimentsSetting);
+        this.#storage.set(experimentName, enabled);
     }
     enableExperimentsTransiently(experimentNames) {
         for (const experimentName of experimentNames) {
@@ -163,22 +151,51 @@ export class ExperimentsSupport {
         this.#serverEnabled.clear();
     }
     cleanUpStaleExperiments() {
-        const experimentsSetting = Runtime.experimentsSetting();
-        const cleanedUpExperimentSetting = {};
-        for (const { name: experimentName } of this.#experiments) {
-            if (experimentsSetting.hasOwnProperty(experimentName)) {
-                const isEnabled = experimentsSetting[experimentName];
-                if (isEnabled || this.#enabledByDefault.has(experimentName)) {
-                    cleanedUpExperimentSetting[experimentName] = isEnabled;
-                }
-            }
-        }
-        this.setExperimentsSetting(cleanedUpExperimentSetting);
+        this.#storage.cleanUpStaleExperiments(this.#experimentNames);
     }
     checkExperiment(experimentName) {
         if (!this.#experimentNames.has(experimentName)) {
             throw new Error(`Unknown experiment '${experimentName}'`);
         }
+    }
+}
+/** Manages the 'experiments' dictionary in self.localStorage */
+class ExperimentStorage {
+    #experiments = {};
+    constructor() {
+        try {
+            const storedExperiments = self.localStorage?.getItem('experiments');
+            if (storedExperiments) {
+                this.#experiments = JSON.parse(storedExperiments);
+            }
+        }
+        catch {
+            console.error('Failed to parse localStorage[\'experiments\']');
+        }
+    }
+    /**
+     * Experiments are stored with a tri-state:
+     *   - true: Explicitly enabled.
+     *   - false: Explicitly disabled.
+     *   - undefined: Disabled.
+     */
+    get(experimentName) {
+        return this.#experiments[experimentName];
+    }
+    set(experimentName, enabled) {
+        this.#experiments[experimentName] = enabled;
+        this.#syncToLocalStorage();
+    }
+    cleanUpStaleExperiments(validExperiments) {
+        for (const [key] of Object.entries(this.#experiments)) {
+            if (!validExperiments.has(key)) {
+                delete this.#experiments[key];
+            }
+        }
+        this.#syncToLocalStorage();
+    }
+    #syncToLocalStorage() {
+        self.localStorage?.setItem('experiments', JSON.stringify(this.#experiments));
     }
 }
 export class Experiment {

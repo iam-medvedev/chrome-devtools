@@ -19,6 +19,7 @@ import type { Suggestion } from './SuggestBox.js';
  * @prop {boolean} wrappable - The `"wrappable"` attribute is reflected as property.
  */
 export declare class Toolbar extends HTMLElement {
+    #private;
     private items;
     enabled: boolean;
     private compactLayout;
@@ -123,7 +124,6 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes,
     setDarkText(): void;
     turnIntoSelect(shrinkable?: boolean | undefined): void;
     clicked(event: Event): void;
-    protected mouseDown(event: MouseEvent): void;
 }
 export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventTypes> {
     private textElement?;
@@ -136,16 +136,13 @@ export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventType
     setDarkText(): void;
     turnShrinkable(): void;
     clicked(event: Event): void;
-    protected mouseDown(event: MouseEvent): void;
 }
 export declare namespace ToolbarButton {
     const enum Events {
-        CLICK = "Click",
-        MOUSE_DOWN = "MouseDown"
+        CLICK = "Click"
     }
     interface EventTypes {
         [Events.CLICK]: Event;
-        [Events.MOUSE_DOWN]: MouseEvent;
     }
 }
 export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {

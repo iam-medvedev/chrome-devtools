@@ -289,8 +289,8 @@ describeWithEnvironment('SourceMap', () => {
         assert.lengthOf(sourceMap.sourceURLs(), 3, 'unexpected number of original source URLs');
         assertMapping(sourceMap.findEntry(0, 0), 0, 'source1.js', 0, 0);
         assertMapping(sourceMap.findEntry(0, 1), 0, 'source1.js', 2, 1);
-        assertMapping(sourceMap.findEntry(2, 10), 0, 'source3.js', 0, 0);
-        assertMapping(sourceMap.findEntry(2, 11), 0, 'source3.js', 2, 1);
+        assertMapping(sourceMap.findEntry(2, 10), 2, 'source3.js', 0, 0);
+        assertMapping(sourceMap.findEntry(2, 11), 2, 'source3.js', 2, 1);
     });
     it('can parse source maps with ClosureScript names', () => {
         /*
@@ -1117,6 +1117,65 @@ describeWithEnvironment('SourceMap', () => {
             assert.strictEqual(fooEntry.sourceLineNumber, 15);
             assert.strictEqual(fooEntry.sourceColumnNumber, 0);
         });
+    });
+    it('combines "scopes" proposal scopes appropriately for index maps', () => {
+        Root.Runtime.experiments.enableForTest("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */);
+        const names1 = [];
+        const originalScopes1 = [new OriginalScopeBuilder(names1)
+                .start(0, 0, { kind: 'global' })
+                .start(10, 0, { name: 'foo', kind: 'function', isStackFrame: true })
+                .end(20, 0)
+                .end(30, 0)
+                .build()];
+        const generatedRanges1 = new GeneratedRangeBuilder(names1)
+            .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
+            .start(0, 7, { definition: { sourceIdx: 0, scopeIdx: 1 }, isStackFrame: true })
+            .end(0, 14)
+            .end(0, 21)
+            .build();
+        const names2 = [];
+        const originalScopes2 = [new OriginalScopeBuilder(names2)
+                .start(0, 0, { kind: 'global' })
+                .start(10, 0, { name: 'bar', kind: 'function', isStackFrame: true })
+                .end(20, 0)
+                .end(30, 0)
+                .build()];
+        const generatedRanges2 = new GeneratedRangeBuilder(names2)
+            .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
+            .start(0, 7, { definition: { sourceIdx: 0, scopeIdx: 1 }, isStackFrame: true })
+            .end(0, 14)
+            .end(0, 21)
+            .build();
+        const indexMap = {
+            version: 3,
+            sections: [
+                {
+                    offset: { line: 0, column: 0 },
+                    map: {
+                        version: 3,
+                        sources: ['foo.ts'],
+                        names: names1,
+                        originalScopes: originalScopes1,
+                        generatedRanges: generatedRanges1,
+                        mappings: '',
+                    },
+                },
+                {
+                    offset: { line: 1, column: 100 },
+                    map: {
+                        version: 3,
+                        sources: ['bar.ts'],
+                        names: names2,
+                        originalScopes: originalScopes2,
+                        generatedRanges: generatedRanges2,
+                        mappings: '',
+                    },
+                }
+            ],
+        };
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, indexMap);
+        assert.strictEqual(sourceMap.findOriginalFunctionName({ line: 0, column: 10 }), 'foo');
+        assert.strictEqual(sourceMap.findOriginalFunctionName({ line: 1, column: 110 }), 'bar');
     });
 });
 //# sourceMappingURL=SourceMap.test.js.map

@@ -209,32 +209,32 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
                     // Idle event won't show in CPU activity, so just skip them.
                     return;
                 }
-                const startTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
+                const startTimeMilli = Trace.Helpers.Timing.microToMilli(entry.ts);
                 const index = categoryIndexStack.length ? categoryIndexStack[categoryIndexStack.length - 1] : idleIndex;
                 quantizer.appendInterval(startTimeMilli, index);
                 const categoryIndex = categoryOrder.indexOf(category);
                 categoryIndexStack.push(categoryIndex || otherIndex);
             };
             function onEntryEnd(entry) {
-                const endTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(entry.ts) +
-                    Trace.Helpers.Timing.microSecondsToMilliseconds(Trace.Types.Timing.MicroSeconds(entry.dur || 0));
+                const endTimeMilli = Trace.Helpers.Timing.microToMilli(entry.ts) +
+                    Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(entry.dur || 0));
                 const lastCategoryIndex = categoryIndexStack.pop();
                 if (endTimeMilli !== undefined && lastCategoryIndex) {
                     quantizer.appendInterval(endTimeMilli, lastCategoryIndex);
                 }
             }
-            const startMicro = Trace.Helpers.Timing.millisecondsToMicroseconds(this.#start);
-            const endMicro = Trace.Helpers.Timing.millisecondsToMicroseconds(this.#end);
+            const startMicro = Trace.Helpers.Timing.milliToMicro(this.#start);
+            const endMicro = Trace.Helpers.Timing.milliToMicro(this.#end);
             const bounds = {
                 min: startMicro,
                 max: endMicro,
-                range: Trace.Types.Timing.MicroSeconds(endMicro - startMicro),
+                range: Trace.Types.Timing.Micro(endMicro - startMicro),
             };
             // Filter out tiny events - they don't make a visual impact to the
             // canvas as they are so small, but they do impact the time it takes
             // to walk the tree and render the events.
             // However, if the entire range we are showing is 200ms or less, then show all events.
-            const minDuration = Trace.Types.Timing.MicroSeconds(bounds.range > 200_000 ? 16_000 : 0);
+            const minDuration = Trace.Types.Timing.Micro(bounds.range > 200_000 ? 16_000 : 0);
             Trace.Helpers.TreeHelpers.walkEntireTree(threadData.entryToNode, threadData.tree, onEntryStart, onEntryEnd, bounds, minDuration);
             quantizer.appendInterval(this.#start + timeRange + quantTime, idleIndex); // Kick drawing the last bucket.
             for (let i = categoryOrder.length - 1; i > 0; --i) {
@@ -330,9 +330,9 @@ export class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
         this.resetCanvas();
         const height = this.height();
         const visibleTimeWindow = !(start && end) ? this.#parsedTrace.Meta.traceBounds : {
-            min: Trace.Helpers.Timing.millisecondsToMicroseconds(start),
-            max: Trace.Helpers.Timing.millisecondsToMicroseconds(end),
-            range: Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(end - start)),
+            min: Trace.Helpers.Timing.milliToMicro(start),
+            max: Trace.Helpers.Timing.milliToMicro(end),
+            range: Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(end - start)),
         };
         const timeSpan = visibleTimeWindow.range;
         const scale = this.width() / timeSpan;
@@ -421,16 +421,15 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
         }
         const padding = TimelineFilmStripOverview.Padding;
         const width = this.width();
-        const zeroTime = customStartTime ?? Trace.Helpers.Timing.microSecondsToMilliseconds(this.#filmStrip.zeroTime);
-        const spanTime = customEndTime ? customEndTime - zeroTime :
-            Trace.Helpers.Timing.microSecondsToMilliseconds(this.#filmStrip.spanTime);
+        const zeroTime = customStartTime ?? Trace.Helpers.Timing.microToMilli(this.#filmStrip.zeroTime);
+        const spanTime = customEndTime ? customEndTime - zeroTime : Trace.Helpers.Timing.microToMilli(this.#filmStrip.spanTime);
         const scale = spanTime / width;
         const context = this.context();
         const drawGeneration = this.drawGeneration;
         context.beginPath();
         for (let x = padding; x < width; x += imageWidth + 2 * padding) {
-            const time = Trace.Types.Timing.MilliSeconds(zeroTime + (x + imageWidth / 2) * scale);
-            const timeMicroSeconds = Trace.Helpers.Timing.millisecondsToMicroseconds(time);
+            const time = Trace.Types.Timing.Milli(zeroTime + (x + imageWidth / 2) * scale);
+            const timeMicroSeconds = Trace.Helpers.Timing.milliToMicro(time);
             const frame = Trace.Extras.FilmStrip.frameClosestToTimestamp(this.#filmStrip, timeMicroSeconds);
             if (!frame) {
                 continue;
@@ -457,7 +456,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
             return null;
         }
         const timeMilliSeconds = calculator.positionToTime(x);
-        const timeMicroSeconds = Trace.Helpers.Timing.millisecondsToMicroseconds(timeMilliSeconds);
+        const timeMicroSeconds = Trace.Helpers.Timing.milliToMicro(timeMilliSeconds);
         const frame = Trace.Extras.FilmStrip.frameClosestToTimestamp(this.#filmStrip, timeMicroSeconds);
         if (frame === this.lastFrame) {
             return this.lastElement;

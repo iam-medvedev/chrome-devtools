@@ -4,7 +4,7 @@ import * as Types from '../types/types.js';
 export type Entity = typeof ThirdPartyWeb.ThirdPartyWeb.entities[number];
 export interface Summary {
     transferSize: number;
-    mainThreadTime: Types.Timing.MicroSeconds;
+    mainThreadTime: Types.Timing.Micro;
 }
 export interface SummaryMaps {
     byEntity: Map<Entity, Summary>;
@@ -15,12 +15,12 @@ export declare function getEntitiesByRequest(requests: Types.Events.SyntheticNet
     entityByRequest: Map<Types.Events.SyntheticNetworkRequest, Entity>;
     madeUpEntityCache: Map<string, Entity>;
 };
-export declare function getSummariesAndEntitiesForTraceBounds(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicroSeconds, networkRequests: Types.Events.SyntheticNetworkRequest[]): {
+export declare function getSummariesAndEntitiesForTraceBounds(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicro, networkRequests: Types.Events.SyntheticNetworkRequest[]): {
     summaries: SummaryMaps;
     entityByRequest: Map<Types.Events.SyntheticNetworkRequest, Entity>;
     madeUpEntityCache: Map<string, Entity>;
 };
-export declare function getSummariesAndEntitiesWithMapping(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicroSeconds, entityMapping: Handlers.Helpers.EntityMappings): {
+export declare function getSummariesAndEntitiesWithMapping(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicro, entityMapping: Handlers.Helpers.EntityMappings): {
     summaries: SummaryMaps;
     entityByEvent: Map<Types.Events.Event, Handlers.Helpers.Entity>;
 };

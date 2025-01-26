@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { // eslint-disable-line rulesdir/es-modules-import
-createTraceExtensionDataFromTestInput, } from '../../../models/trace/handlers/ExtensionTraceDataHandler.test.js';
+createTraceExtensionDataFromPerformanceAPITestInput, } from '../../../models/trace/handlers/ExtensionTraceDataHandler.test.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getBaseTraceParseModelData } from '../../../testing/TraceHelpers.js';
@@ -50,7 +50,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             for (let i = 0; i < allExtensionTrackEntries.length; ++i) {
                 const event = allExtensionTrackEntries[i];
-                assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
+                assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microToMilli(event.ts));
             }
         });
         it('adds total times correctly', function () {
@@ -62,7 +62,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
                     continue;
                 }
                 const expectedTotalTimeForEvent = event.dur ?
-                    Trace.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
+                    Trace.Helpers.Timing.microToMilli(event.dur) :
                     Timeline.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
                 assert.strictEqual(flameChartData.entryTotalTimes[i], expectedTotalTimeForEvent);
             }
@@ -92,7 +92,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
                     dur: 100,
                 },
             ];
-            const traceExtensionData = await createTraceExtensionDataFromTestInput(extensionData);
+            const traceExtensionData = await createTraceExtensionDataFromPerformanceAPITestInput(extensionData);
             const testParsedTrace = getBaseTraceParseModelData({ ExtensionTraceData: traceExtensionData });
             entryData = [];
             flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();

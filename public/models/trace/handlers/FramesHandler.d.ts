@@ -30,14 +30,14 @@ declare class TimelineFrame implements Types.Events.LegacyTimelineFrame {
     cat: string;
     name: string;
     ph: Types.Events.Phase;
-    ts: Types.Timing.MicroSeconds;
+    ts: Types.Timing.Micro;
     pid: Types.Events.ProcessID;
     tid: Types.Events.ThreadID;
     index: number;
-    startTime: Types.Timing.MicroSeconds;
-    startTimeOffset: Types.Timing.MicroSeconds;
-    endTime: Types.Timing.MicroSeconds;
-    duration: Types.Timing.MicroSeconds;
+    startTime: Types.Timing.Micro;
+    startTimeOffset: Types.Timing.Micro;
+    endTime: Types.Timing.Micro;
+    duration: Types.Timing.Micro;
     idle: boolean;
     dropped: boolean;
     isPartial: boolean;
@@ -45,15 +45,15 @@ declare class TimelineFrame implements Types.Events.LegacyTimelineFrame {
     paints: LayerPaintEvent[];
     mainFrameId: number | undefined;
     readonly seqId: number;
-    constructor(seqId: number, startTime: Types.Timing.MicroSeconds, startTimeOffset: Types.Timing.MicroSeconds);
+    constructor(seqId: number, startTime: Types.Timing.Micro, startTimeOffset: Types.Timing.Micro);
     setIndex(i: number): void;
-    setEndTime(endTime: Types.Timing.MicroSeconds): void;
+    setEndTime(endTime: Types.Timing.Micro): void;
     setLayerTree(layerTree: Types.Events.LegacyFrameLayerTreeData | null): void;
     /**
      * Fake the `dur` field to meet the expected value given that we pretend
      * these TimelineFrame classes are trace events across the codebase.
      */
-    get dur(): Types.Timing.MicroSeconds;
+    get dur(): Types.Timing.Micro;
 }
 export declare class LayerPaintEvent implements Types.Events.LegacyLayerPaintEvent {
     #private;
@@ -70,18 +70,18 @@ export declare class PendingFrame {
 }
 declare class BeginFrameInfo {
     seqId: number;
-    startTime: Types.Timing.MicroSeconds;
+    startTime: Types.Timing.Micro;
     isDropped: boolean;
     isPartial: boolean;
-    constructor(seqId: number, startTime: Types.Timing.MicroSeconds, isDropped: boolean, isPartial: boolean);
+    constructor(seqId: number, startTime: Types.Timing.Micro, isDropped: boolean, isPartial: boolean);
 }
 export declare class TimelineFrameBeginFrameQueue {
     private queueFrames;
     private mapFrames;
-    addFrameIfNotExists(seqId: number, startTime: Types.Timing.MicroSeconds, isDropped: boolean, isPartial: boolean): void;
+    addFrameIfNotExists(seqId: number, startTime: Types.Timing.Micro, isDropped: boolean, isPartial: boolean): void;
     setDropped(seqId: number, isDropped: boolean): void;
     setPartial(seqId: number, isPartial: boolean): void;
     processPendingBeginFramesOnDrawFrame(seqId: number): BeginFrameInfo[];
 }
-export declare function framesWithinWindow(frames: readonly Types.Events.LegacyTimelineFrame[], startTime: Types.Timing.MicroSeconds, endTime: Types.Timing.MicroSeconds): Types.Events.LegacyTimelineFrame[];
+export declare function framesWithinWindow(frames: readonly Types.Events.LegacyTimelineFrame[], startTime: Types.Timing.Micro, endTime: Types.Timing.Micro): Types.Events.LegacyTimelineFrame[];
 export {};

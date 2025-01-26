@@ -69,6 +69,7 @@
     "../../../../../front_end/testing/SourceMapHelpers.ts",
     "../../../../../front_end/testing/StorageItemsViewHelpers.ts",
     "../../../../../front_end/testing/StubIssue.ts",
+    "../../../../../front_end/testing/StyleHelpers.ts",
     "../../../../../front_end/testing/TraceHelpers.ts",
     "../../../../../front_end/testing/TraceLoader.ts",
     "../../../../../front_end/testing/TrackAsyncOperations.ts",

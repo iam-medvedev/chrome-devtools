@@ -7,9 +7,9 @@ export interface SetActiveBreadcrumbOptions {
 export declare class Breadcrumbs {
     initialBreadcrumb: Trace.Types.File.Breadcrumb;
     activeBreadcrumb: Trace.Types.File.Breadcrumb;
-    constructor(initialTraceWindow: Trace.Types.Timing.TraceWindowMicroSeconds);
-    add(newBreadcrumbTraceWindow: Trace.Types.Timing.TraceWindowMicroSeconds): Trace.Types.File.Breadcrumb;
-    isTraceWindowWithinTraceWindow(child: Trace.Types.Timing.TraceWindowMicroSeconds, parent: Trace.Types.Timing.TraceWindowMicroSeconds): boolean;
+    constructor(initialTraceWindow: Trace.Types.Timing.TraceWindowMicro);
+    add(newBreadcrumbTraceWindow: Trace.Types.Timing.TraceWindowMicro): Trace.Types.File.Breadcrumb;
+    isTraceWindowWithinTraceWindow(child: Trace.Types.Timing.TraceWindowMicro, parent: Trace.Types.Timing.TraceWindowMicro): boolean;
     setInitialBreadcrumbFromLoadedModifications(initialBreadcrumb: Trace.Types.File.Breadcrumb): void;
     /**
      * Sets a breadcrumb to be active.

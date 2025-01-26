@@ -14,6 +14,7 @@ export declare class InspectedPagePlaceholder extends InspectedPagePlaceholder_b
     static instance(opts?: {
         forceNew: null;
     }): InspectedPagePlaceholder;
+    wasShown(): void;
     onResize(): void;
     restoreMinimumSize(): void;
     clearMinimumSize(): void;

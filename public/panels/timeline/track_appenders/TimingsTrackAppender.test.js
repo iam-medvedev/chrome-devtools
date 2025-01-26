@@ -57,7 +57,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
             for (const event of [...performanceMarks, ...performanceMeasures, ...consoleTimings, ...consoleTimestamps]) {
                 const markerIndex = entryData.indexOf(event);
                 assert.exists(markerIndex);
-                assert.strictEqual(flameChartData.entryStartTimes[markerIndex], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
+                assert.strictEqual(flameChartData.entryStartTimes[markerIndex], Trace.Helpers.Timing.microToMilli(event.ts));
             }
         });
         it('adds total times correctly', () => {
@@ -73,7 +73,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
                     continue;
                 }
                 const expectedTotalTimeForEvent = event.dur ?
-                    Trace.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
+                    Trace.Helpers.Timing.microToMilli(event.dur) :
                     Timeline.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
                 assert.strictEqual(flameChartData.entryTotalTimes[markerIndex], expectedTotalTimeForEvent);
             }
@@ -227,7 +227,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
         it('creates a TimelineFlameChartMarker for each extension marker event in a trace', () => {
             const extensionMarkers = parsedTrace.ExtensionTraceData.extensionMarkers;
             for (const traceMarker of extensionMarkers) {
-                const markerTimeMs = Trace.Helpers.Timing.microSecondsToMilliseconds(traceMarker.ts);
+                const markerTimeMs = Trace.Helpers.Timing.microToMilli(traceMarker.ts);
                 const flameChartMarker = flameChartData.markers.find(flameChartMarker => flameChartMarker.startTime() === markerTimeMs);
                 assert.exists(flameChartMarker);
             }
@@ -288,7 +288,7 @@ describeWithEnvironment('TimingTrackAppender', function () {
                 timingsTrackAppender.appendTrackAtLevel(0);
                 const extensionMarkers = parsedTrace.ExtensionTraceData.extensionMarkers;
                 for (const traceMarker of extensionMarkers) {
-                    const markerTimeMs = Trace.Helpers.Timing.microSecondsToMilliseconds(traceMarker.ts);
+                    const markerTimeMs = Trace.Helpers.Timing.microToMilli(traceMarker.ts);
                     const flameChartMarker = flameChartData.markers.find(flameChartMarker => flameChartMarker.startTime() === markerTimeMs);
                     assert.isUndefined(flameChartMarker);
                 }

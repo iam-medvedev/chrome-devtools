@@ -1,4 +1,5 @@
 import type * as Common from '../../../core/common/common.js';
+import type * as Protocol from '../../../generated/protocol.js';
 import type * as Handlers from '../handlers/handlers.js';
 import type * as Lantern from '../lantern/lantern.js';
 import type * as Types from '../types/types.js';
@@ -8,12 +9,12 @@ import type * as Models from './Models.js';
  */
 export type InsightSetContext = InsightSetContextWithoutNavigation | InsightSetContextWithNavigation;
 export interface InsightSetContextWithoutNavigation {
-    bounds: Types.Timing.TraceWindowMicroSeconds;
+    bounds: Types.Timing.TraceWindowMicro;
     frameId: string;
     navigation?: never;
 }
 export interface InsightSetContextWithNavigation {
-    bounds: Types.Timing.TraceWindowMicroSeconds;
+    bounds: Types.Timing.TraceWindowMicro;
     frameId: string;
     navigation: Types.Events.NavigationStart;
     navigationId: string;
@@ -24,6 +25,17 @@ export interface LanternContext {
     simulator: Lantern.Simulation.Simulator<Types.Events.SyntheticNetworkRequest>;
     metrics: Record<string, Lantern.Metrics.MetricResult>;
 }
+export interface ForcedReflowAggregatedData {
+    topLevelFunctionCall: Types.Events.CallFrame | Protocol.Runtime.CallFrame;
+    totalReflowTime: number;
+    bottomUpData: Set<string>;
+    topLevelFunctionCallEvents: Types.Events.Event[];
+}
+export interface BottomUpCallStack {
+    bottomUpData: Types.Events.CallFrame | Protocol.Runtime.CallFrame;
+    totalTime: number;
+    relatedEvents: Types.Events.Event[];
+}
 export type InsightModelsType = typeof Models;
 export declare enum InsightWarning {
     NO_FP = "NO_FP",
@@ -32,11 +44,11 @@ export declare enum InsightWarning {
     NO_LAYOUT = "NO_LAYOUT"
 }
 export interface MetricSavings {
-    FCP?: Types.Timing.MilliSeconds;
-    LCP?: Types.Timing.MilliSeconds;
-    TBT?: Types.Timing.MilliSeconds;
+    FCP?: Types.Timing.Milli;
+    LCP?: Types.Timing.Milli;
+    TBT?: Types.Timing.Milli;
     CLS?: number;
-    INP?: Types.Timing.MilliSeconds;
+    INP?: Types.Timing.Milli;
 }
 export declare enum InsightCategory {
     ALL = "All",
@@ -66,7 +78,7 @@ export interface InsightSet {
     /** The URL to show in the accordion list. */
     url: URL;
     frameId: string;
-    bounds: Types.Timing.TraceWindowMicroSeconds;
+    bounds: Types.Timing.TraceWindowMicro;
     model: InsightModels;
     navigation?: Types.Events.NavigationStart;
 }

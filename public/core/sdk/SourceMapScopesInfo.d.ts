@@ -1,10 +1,11 @@
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
-import type { SourceMap, SourceMapV3Object } from './SourceMap.js';
-import { type GeneratedRange, type OriginalPosition, type OriginalScope, type Position } from './SourceMapScopes.js';
+import type { SourceMap } from './SourceMap.js';
+import type { GeneratedRange, OriginalPosition, OriginalScope, Position } from './SourceMapScopes.js';
 export declare class SourceMapScopesInfo {
     #private;
     constructor(sourceMap: SourceMap, originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
-    static parseFromMap(sourceMap: SourceMap, sourceMapJson: Pick<SourceMapV3Object, 'names' | 'originalScopes' | 'generatedRanges'>): SourceMapScopesInfo;
+    addOriginalScopes(scopes: (OriginalScope | undefined)[]): void;
+    addGeneratedRanges(ranges: GeneratedRange[]): void;
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their

@@ -632,14 +632,13 @@ async function getFunctionNameFromScopeStart(script, lineNumber, columnNumber) {
     if (!sourceMap) {
         return null;
     }
+    const scopeName = sourceMap.findOriginalFunctionName({ line: lineNumber, column: columnNumber });
+    if (scopeName !== null) {
+        return scopeName;
+    }
     const mappingEntry = sourceMap.findEntry(lineNumber, columnNumber);
     if (!mappingEntry || !mappingEntry.sourceURL) {
         return null;
-    }
-    const scopeName = sourceMap.findScopeEntry(mappingEntry.sourceURL, mappingEntry.sourceLineNumber, mappingEntry.sourceColumnNumber)
-        ?.scopeName();
-    if (scopeName) {
-        return scopeName;
     }
     const name = mappingEntry.name;
     if (!name) {

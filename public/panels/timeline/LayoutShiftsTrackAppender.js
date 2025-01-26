@@ -31,7 +31,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // them more easily. Long term we will explore a better UI solution to
 // allow us to do this properly and not hack around it.
 // TODO: Delete this once the new Layout Shift UI ships out of the TIMELINE_LAYOUT_SHIFT_DETAILS experiment
-export const LAYOUT_SHIFT_SYNTHETIC_DURATION = Trace.Types.Timing.MicroSeconds(5_000);
+export const LAYOUT_SHIFT_SYNTHETIC_DURATION = Trace.Types.Timing.Micro(5_000);
 export class LayoutShiftsTrackAppender {
     appenderName = 'LayoutShifts';
     #compatibilityBuilder;
@@ -107,12 +107,12 @@ export class LayoutShiftsTrackAppender {
         return renderingColor;
     }
     setPopoverInfo(event, info) {
-        const score = Trace.Types.Events.isLayoutShift(event) ? event.args.data?.weighted_score_delta ?? 0 :
+        const score = Trace.Types.Events.isSyntheticLayoutShift(event) ? event.args.data?.weighted_score_delta ?? 0 :
             Trace.Types.Events.isSyntheticLayoutShiftCluster(event) ? event.clusterCumulativeScore :
                 -1;
         // Score isn't a duration, but the UI works anyhow.
         info.formattedTime = score.toFixed(4);
-        info.title = Trace.Types.Events.isLayoutShift(event) ? i18nString(UIStrings.layoutShift) :
+        info.title = Trace.Types.Events.isSyntheticLayoutShift(event) ? i18nString(UIStrings.layoutShift) :
             Trace.Types.Events.isSyntheticLayoutShiftCluster(event) ? i18nString(UIStrings.layoutShiftCluster) :
                 event.name;
         if (Trace.Types.Events.isSyntheticLayoutShift(event)) {
@@ -126,7 +126,7 @@ export class LayoutShiftsTrackAppender {
         }
     }
     getDrawOverride(event) {
-        if (Trace.Types.Events.isLayoutShift(event)) {
+        if (Trace.Types.Events.isSyntheticLayoutShift(event)) {
             const score = event.args.data?.weighted_score_delta || 0;
             // `buffer` is how much space is between the actual diamond shape and the
             // edge of its select box. The select box will have a constant size

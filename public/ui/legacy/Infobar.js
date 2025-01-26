@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import infobarStyles from './infobar.css.legacy.js';
+import infobarStyles from './infobar.css.js';
 import { Keys } from './KeyboardShortcut.js';
 import { createShadowRootWithCoreStyles, createTextButton } from './UIUtils.js';
 const UIStrings = {
@@ -36,8 +36,6 @@ export class Infobar {
     infoMessage;
     infoText;
     actionContainer;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disableSetting;
     closeContainer;
     toggleElement;
@@ -45,17 +43,13 @@ export class Infobar {
     closeCallback;
     #firstFocusableElement = null;
     parentView;
-    constructor(
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type, text, actions, disableSetting, 
-    /* TODO(crbug.com/1354548) Remove with JS Profiler deprecation */ isCloseable = true, jslogContext) {
+    constructor(type, text, actions, disableSetting, jslogContext) {
         this.element = document.createElement('div');
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Enter|Escape' })}`);
         }
         this.element.classList.add('flex-none');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: [infobarStyles] });
         this.contentElement = this.shadowRoot.createChild('div', 'infobar infobar-' + type);
         this.mainRow = this.contentElement.createChild('div', 'infobar-main-row');
         this.detailsRows = this.contentElement.createChild('div', 'infobar-details-rows hidden');
@@ -100,7 +94,6 @@ export class Infobar {
         this.toggleElement.setAttribute('role', 'link');
         this.closeContainer.appendChild(this.toggleElement);
         this.closeButton = this.closeContainer.createChild('dt-close-button', 'close-button');
-        this.closeButton.hidden = !isCloseable;
         this.closeButton.setTabbable(true);
         ARIAUtils.setDescription(this.closeButton, i18nString(UIStrings.close));
         self.onInvokeElement(this.closeButton, this.dispose.bind(this));
@@ -125,14 +118,11 @@ export class Infobar {
         });
         this.closeCallback = null;
     }
-    static create(
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type, text, actions, disableSetting, jslogContext) {
+    static create(type, text, actions, disableSetting, jslogContext) {
         if (disableSetting && disableSetting.get()) {
             return null;
         }
-        return new Infobar(type, text, actions, disableSetting, undefined, jslogContext);
+        return new Infobar(type, text, actions, disableSetting, jslogContext);
     }
     dispose() {
         this.element.remove();

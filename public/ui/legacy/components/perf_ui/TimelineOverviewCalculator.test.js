@@ -4,7 +4,7 @@
 import * as Trace from '../../../../models/trace/trace.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as PerfUI from './perf_ui.js';
-const { MilliSeconds } = Trace.Types.Timing;
+const { Milli: MilliSeconds } = Trace.Types.Timing;
 describeWithLocale('TimelineOverviewCalculator', () => {
     it('can calculate pixels for a given time', async () => {
         const calculator = new PerfUI.TimelineOverviewCalculator.TimelineOverviewCalculator();

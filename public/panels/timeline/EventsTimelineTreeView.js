@@ -165,7 +165,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         function durationFilterChanged() {
             const duration = durationFilterUI.selectedOption().value;
             const minimumRecordDuration = parseInt(duration, 10);
-            this.durationFilter.setMinimumRecordDuration(Trace.Types.Timing.MilliSeconds(minimumRecordDuration));
+            this.durationFilter.setMinimumRecordDuration(Trace.Types.Timing.Milli(minimumRecordDuration));
             this.notifyFiltersChanged();
         }
         function categoriesFilterChanged(name) {

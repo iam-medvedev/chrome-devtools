@@ -33,7 +33,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { GlassPane } from './GlassPane.js';
 import { InspectorView } from './InspectorView.js';
-import softContextMenuStyles from './softContextMenu.css.legacy.js';
+import softContextMenuStyles from './softContextMenu.css.js';
 import { Tooltip } from './Tooltip.js';
 import { createTextChild, ElementFocusRestorer } from './UIUtils.js';
 const UIStrings = {
@@ -98,7 +98,7 @@ export class SoftContextMenu {
         this.document = document;
         this.glassPane = new GlassPane();
         this.glassPane.setPointerEventsBehavior(this.parentMenu ? "PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */ : "BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
-        this.glassPane.registerRequiredCSS(softContextMenuStyles);
+        this.glassPane.registerCSSFiles([softContextMenuStyles]);
         this.glassPane.setContentAnchorBox(anchorBox);
         this.glassPane.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NO_MARGIN */);

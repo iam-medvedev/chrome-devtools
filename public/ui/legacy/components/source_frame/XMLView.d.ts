@@ -6,6 +6,7 @@ export declare class XMLView extends UI.Widget.Widget implements UI.SearchableVi
     private currentSearchTreeElements;
     private searchConfig;
     constructor(parsedXML: Document);
+    wasShown(): void;
     static createSearchableView(parsedXML: Document): UI.SearchableView.SearchableView;
     static parseXML(text: string, mimeType: string): Document | null;
     private jumpToMatch;

@@ -41,9 +41,9 @@ import { ContextMenu } from './ContextMenu.js';
 import { GlassPane } from './GlassPane.js';
 import { bindCheckbox } from './SettingsUI.js';
 import { TextPrompt } from './TextPrompt.js';
-import toolbarStyles from './toolbar.css.legacy.js';
+import toolbarStyles from './toolbar.css.js';
 import { Tooltip } from './Tooltip.js';
-import { CheckboxLabel, createShadowRootWithCoreStyles, LongClickController } from './UIUtils.js';
+import { CheckboxLabel, LongClickController } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
@@ -77,17 +77,19 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * @prop {boolean} wrappable - The `"wrappable"` attribute is reflected as property.
  */
 export class Toolbar extends HTMLElement {
+    #shadowRoot = this.attachShadow({ mode: 'open' });
     items = [];
     enabled = true;
     compactLayout = false;
     constructor() {
         super();
-        createShadowRootWithCoreStyles(this, { cssFile: toolbarStyles }).createChild('slot');
+        this.#shadowRoot.createChild('slot');
     }
     connectedCallback() {
         if (!this.hasAttribute('role')) {
             this.setAttribute('role', 'toolbar');
         }
+        this.#shadowRoot.adoptedStyleSheets = [toolbarStyles];
     }
     /**
      * Returns whether this toolbar is floating.
@@ -486,7 +488,6 @@ export class ToolbarButton extends ToolbarItem {
         }
         button.classList.add('toolbar-button');
         this.element.addEventListener('click', this.clicked.bind(this), false);
-        this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
         button.textContent = text || '';
         this.setTitle(title);
         if (jslogContext) {
@@ -569,12 +570,6 @@ export class ToolbarButton extends ToolbarItem {
         this.dispatchEventToListeners("Click" /* ToolbarButton.Events.CLICK */, event);
         event.consume();
     }
-    mouseDown(event) {
-        if (!this.enabled) {
-            return;
-        }
-        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MOUSE_DOWN */, event);
-    }
 }
 export class ToolbarCombobox extends ToolbarItem {
     textElement;
@@ -593,7 +588,6 @@ export class ToolbarCombobox extends ToolbarItem {
         element.classList.add('toolbar-button');
         super(element);
         this.element.addEventListener('click', this.clicked.bind(this), false);
-        this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
         this.iconName = iconName;
         this.setTitle(title);
         if (jslogContext) {
@@ -647,12 +641,6 @@ export class ToolbarCombobox extends ToolbarItem {
         }
         this.dispatchEventToListeners("Click" /* ToolbarButton.Events.CLICK */, event);
         event.consume();
-    }
-    mouseDown(event) {
-        if (!this.enabled) {
-            return;
-        }
-        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MOUSE_DOWN */, event);
     }
 }
 export class ToolbarInput extends ToolbarItem {
@@ -810,6 +798,7 @@ export class ToolbarMenuButton extends ToolbarCombobox {
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context(jslogContext)}`);
         }
+        this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
         this.contextMenuHandler = contextMenuHandler;
         this.useSoftMenu = Boolean(useSoftMenu);
         ARIAUtils.markAsMenuButton(this.element);
@@ -822,7 +811,6 @@ export class ToolbarMenuButton extends ToolbarCombobox {
             return;
         }
         if (event.buttons !== 1) {
-            super.mouseDown(event);
             return;
         }
         if (!this.triggerTimeoutId) {

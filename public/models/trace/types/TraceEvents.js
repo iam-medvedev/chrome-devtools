@@ -283,7 +283,7 @@ export function isSyntheticAnimation(event) {
     return 'beginEvent' in data && 'endEvent' in data;
 }
 export function isLayoutShift(event) {
-    return event.name === 'LayoutShift';
+    return event.name === "LayoutShift" /* Name.LAYOUT_SHIFT */;
 }
 export function isLayoutInvalidationTracking(event) {
     return event.name === "LayoutInvalidationTracking" /* Name.LAYOUT_INVALIDATION_TRACKING */;
@@ -421,10 +421,7 @@ export function isParseHTML(event) {
     return event.name === 'ParseHTML';
 }
 export function isSyntheticLayoutShift(event) {
-    if (!isLayoutShift(event) || !event.args.data) {
-        return false;
-    }
-    return 'rawEvent' in event.args.data;
+    return event.name === "SyntheticLayoutShift" /* Name.SYNTHETIC_LAYOUT_SHIFT */;
 }
 export function isSyntheticLayoutShiftCluster(event) {
     return event.name === "SyntheticLayoutShiftCluster" /* Name.SYNTHETIC_LAYOUT_SHIFT_CLUSTER */;

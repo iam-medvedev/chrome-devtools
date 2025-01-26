@@ -24,7 +24,9 @@ declare global {
  */
 export declare class MarkdownLitRenderer {
     #private;
-    setCustomClasses(customClasses: Record<Marked.Marked.Token['type'], string>): void;
+    addCustomClasses(customClasses: Record<Marked.Marked.Token['type'], string>): void;
+    removeCustomClasses(customClasses: Record<Marked.Marked.Token['type'], string>): void;
+    protected customClassMapForToken(type: Marked.Marked.Token['type']): LitHtml.Directive.DirectiveResult;
     renderChildTokens(token: Marked.Marked.Token): LitHtml.TemplateResult[];
     /**
      * Unescape will get rid of the escaping done by Marked to avoid double escaping due to escaping it also with Lit-html.

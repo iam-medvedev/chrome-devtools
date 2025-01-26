@@ -83,8 +83,8 @@ export class SidebarWidget extends UI.Widget.VBox {
         }
         this.#tabbedPane.setSuffixElement('annotations', countAdorner);
     }
-    setParsedTrace(parsedTrace) {
-        this.#insightsView.setParsedTrace(parsedTrace);
+    setParsedTrace(parsedTrace, metadata) {
+        this.#insightsView.setParsedTrace(parsedTrace, metadata);
     }
     setInsights(insights) {
         this.#insightsView.setInsights(insights);
@@ -104,8 +104,9 @@ class InsightsView extends UI.Widget.VBox {
         this.element.classList.add('sidebar-insights');
         this.element.appendChild(this.#component);
     }
-    setParsedTrace(data) {
-        this.#component.parsedTrace = data;
+    setParsedTrace(parsedTrace, metadata) {
+        this.#component.parsedTrace = parsedTrace;
+        this.#component.traceMetadata = metadata;
     }
     setInsights(data) {
         this.#component.insights = data;

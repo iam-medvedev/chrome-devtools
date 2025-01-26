@@ -36,7 +36,7 @@ import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
-import imageViewStyles from './imageView.css.legacy.js';
+import imageViewStyles from './imageView.css.js';
 const UIStrings = {
     /**
      *@description Text in Image View of the Sources panel
@@ -95,7 +95,6 @@ export class ImageView extends UI.View.SimpleView {
     cachedContent;
     constructor(mimeType, contentProvider) {
         super(i18nString(UIStrings.image));
-        this.registerRequiredCSS(imageViewStyles);
         this.element.tabIndex = -1;
         this.element.classList.add('image-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('image-view')}`);
@@ -131,6 +130,8 @@ export class ImageView extends UI.View.SimpleView {
         ];
     }
     wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([imageViewStyles]);
         void this.updateContentIfNeeded();
     }
     disposeView() {

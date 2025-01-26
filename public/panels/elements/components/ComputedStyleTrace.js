@@ -12,8 +12,8 @@ export class ComputedStyleTrace extends HTMLElement {
     #onNavigateToSource = () => { };
     #ruleOriginNode;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [computedStyleTraceStyles];
         UI.UIUtils.injectCoreStyles(this.#shadow);
+        this.#shadow.adoptedStyleSheets.push(computedStyleTraceStyles);
     }
     set data(data) {
         this.#selector = data.selector;

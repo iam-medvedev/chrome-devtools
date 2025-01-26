@@ -38,6 +38,8 @@ class DataGridElement extends HTMLElement {
     #mutationObserver = new MutationObserver(this.#onChange.bind(this));
     #shadowRoot;
     #columnsOrder = [];
+    #hideableColumns = new Set();
+    #hiddenColumns = new Set();
     constructor() {
         super();
         // TODO(dsv): Move this to the data_grid.css once all the data grid usage is migrated to this web component.
@@ -50,6 +52,21 @@ class DataGridElement extends HTMLElement {
         this.#dataGrid.addEventListener("DeselectedNode" /* DataGridEvents.DESELECTED_NODE */, () => this.dispatchEvent(new CustomEvent('select', { detail: null })));
         this.#dataGrid.setRowContextMenuCallback((menu, node) => {
             this.dispatchEvent(new CustomEvent('contextmenu', { detail: { menu, element: node.configElement } }));
+        });
+        this.#dataGrid.setHeaderContextMenuCallback(menu => {
+            for (const columnId of this.#columnsOrder) {
+                if (this.#hideableColumns.has(columnId)) {
+                    menu.defaultSection().appendCheckboxItem(this.#dataGrid.columns[columnId].title, () => {
+                        if (this.#hiddenColumns.has(columnId)) {
+                            this.#hiddenColumns.delete(columnId);
+                        }
+                        else {
+                            this.#hiddenColumns.add(columnId);
+                        }
+                        this.#dataGrid.setColumnsVisibility(new Set(this.#columnsOrder.filter(column => !this.#hiddenColumns.has(column))));
+                    });
+                }
+            }
         });
         this.#mutationObserver.observe(this, { childList: true, attributes: true, subtree: true, characterData: true });
         this.#updateColumns();
@@ -91,11 +108,20 @@ class DataGridElement extends HTMLElement {
         for (const column of Object.keys(this.#dataGrid.columns)) {
             this.#dataGrid.removeColumn(column);
         }
+        this.#hideableColumns.clear();
         this.#columnsOrder = [];
         for (const column of this.querySelectorAll('th[id]') || []) {
             const id = column.id;
             this.#columnsOrder.push(id);
-            const title = (column.textContent?.trim() || '');
+            let title = column.textContent?.trim() || '';
+            const titleDOMFragment = column.firstElementChild ? document.createDocumentFragment() : undefined;
+            if (titleDOMFragment) {
+                title = '';
+                for (const child of column.children) {
+                    titleDOMFragment.appendChild(child.cloneNode(true));
+                    title += child.shadowRoot ? child.shadowRoot.textContent : child.textContent;
+                }
+            }
             const sortable = column.hasAttribute('sortable');
             const width = column.getAttribute('width') ?? undefined;
             const fixedWidth = column.hasAttribute('fixed');
@@ -103,10 +129,24 @@ class DataGridElement extends HTMLElement {
             if (align !== "center" /* Align.CENTER */ && align !== "right" /* Align.RIGHT */) {
                 align = undefined;
             }
-            this.#dataGrid.addColumn({ id, title, sortable, fixedWidth, width, align });
+            const weight = parseInt(column.getAttribute('weight') || '', 10) ?? undefined;
+            this.#dataGrid.addColumn({
+                id,
+                title: title,
+                titleDOMFragment,
+                sortable,
+                fixedWidth,
+                width,
+                align,
+                weight
+            });
+            if (column.hasAttribute('hideable')) {
+                this.#hideableColumns.add(id);
+            }
         }
-        if (this.#columnsOrder.length) {
-            this.#dataGrid.setColumnsVisibility(new Set(this.#columnsOrder));
+        const visibleColumns = new Set(this.#columnsOrder.filter(column => !this.#hiddenColumns.has(column)));
+        if (visibleColumns.size) {
+            this.#dataGrid.setColumnsVisibility(visibleColumns);
         }
     }
     #needUpdateColumns(mutationList) {

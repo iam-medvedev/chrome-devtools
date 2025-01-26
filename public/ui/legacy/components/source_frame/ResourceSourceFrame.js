@@ -35,7 +35,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as FormatterActions from '../../../../entrypoints/formatter_worker/FormatterActions.js'; // eslint-disable-line rulesdir/es-modules-import
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as UI from '../../legacy.js';
-import resourceSourceFrameStyles from './resourceSourceFrame.css.legacy.js';
+import resourceSourceFrameStyles from './resourceSourceFrame.css.js';
 import { SourceFrameImpl } from './SourceFrame.js';
 const UIStrings = {
     /**
@@ -84,7 +84,6 @@ export class SearchableContainer extends UI.Widget.VBox {
     sourceFrame;
     constructor(resource, contentType) {
         super(true);
-        this.registerRequiredCSS(resourceSourceFrameStyles);
         const simpleContentType = Common.ResourceType.ResourceType.simplifyContentType(contentType);
         const sourceFrame = new ResourceSourceFrame(resource, simpleContentType);
         this.sourceFrame = sourceFrame;
@@ -100,6 +99,10 @@ export class SearchableContainer extends UI.Widget.VBox {
         void sourceFrame.toolbarItems().then(items => {
             items.map(item => toolbar.appendToolbarItem(item));
         });
+    }
+    wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([resourceSourceFrameStyles]);
     }
     async revealPosition(position) {
         this.sourceFrame.revealPosition(position, true);

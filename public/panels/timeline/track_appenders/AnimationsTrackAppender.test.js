@@ -36,7 +36,7 @@ describeWithEnvironment('AnimationsTrackAppender', function () {
             const animationsRequests = parsedTrace.Animations.animations;
             for (let i = 0; i < animationsRequests.length; ++i) {
                 const event = animationsRequests[i];
-                assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts));
+                assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microToMilli(event.ts));
             }
         });
         it('adds total times correctly', function () {
@@ -48,7 +48,7 @@ describeWithEnvironment('AnimationsTrackAppender', function () {
                     continue;
                 }
                 const expectedTotalTimeForEvent = event.dur ?
-                    Trace.Helpers.Timing.microSecondsToMilliseconds(event.dur) :
+                    Trace.Helpers.Timing.microToMilli(event.dur) :
                     Timeline.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
                 assert.strictEqual(flameChartData.entryTotalTimes[i], expectedTotalTimeForEvent);
             }

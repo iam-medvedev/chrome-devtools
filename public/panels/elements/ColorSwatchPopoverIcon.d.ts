@@ -28,7 +28,7 @@ export declare const enum ColorSwatchPopoverIconEvents {
     COLOR_CHANGED = "colorchanged"
 }
 export interface ColorSwatchPopoverIconEventTypes {
-    [ColorSwatchPopoverIconEvents.COLOR_CHANGED]: string;
+    [ColorSwatchPopoverIconEvents.COLOR_CHANGED]: Common.Color.Color;
 }
 export declare class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper<ColorSwatchPopoverIconEventTypes> {
     private treeElement;

@@ -52,7 +52,7 @@ export const SORT_ORDER_PAGE_LOAD_MARKERS = {
 };
 // Threshold to match up overlay markers that are off by a tiny amount so they aren't rendered
 // on top of each other.
-const TIMESTAMP_THRESHOLD_MS = Trace.Types.Timing.MicroSeconds(10);
+const TIMESTAMP_THRESHOLD_MS = Trace.Types.Timing.Micro(10);
 export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     delegate;
     /**
@@ -93,6 +93,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     selectedSearchResult;
     searchRegex;
     #parsedTrace;
+    #traceMetadata;
     #traceInsightSets = null;
     #eventToRelatedInsightsMap = null;
     #selectedGroupName = null;
@@ -121,13 +122,21 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #onNetworkEntryInvoked;
     #currentSelection = null;
     #entityMapper = null;
-    #activeThirdPartyDimmingSetting = false;
+    // Only one dimmer is used at a time. The first dimmer, as defined by the following
+    // order, that is `active` within this array is used.
+    #flameChartDimmers = [];
+    #searchDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
+    #treeRowHoverDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
+    #thirdPartyRowHoverDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
+    #activeInsightDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
+    #thirdPartyCheckboxDimmer = this.#registerFlameChartDimmer({ inclusive: true, outline: false });
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
         this.delegate = delegate;
         this.eventListeners = [];
         this.#parsedTrace = null;
+        this.#traceMetadata = null;
         const flameChartsContainer = new UI.Widget.VBox();
         flameChartsContainer.element.classList.add('flame-charts-container');
         // Create main and network flamecharts.
@@ -282,26 +291,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             if (!Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
                 return;
             }
-            const events = node?.data?.events;
-            if (events) {
-                this.#dimInsightRelatedEvents(events);
-            }
-            else {
-                this.disableAllDimming();
-            }
+            const events = node?.data?.events ?? null;
+            this.#updateFlameChartDimmerWithEvents(this.#treeRowHoverDimmer, events);
         });
         this.detailsView.addEventListener("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node => {
             if (!Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */)) {
                 return;
             }
-            const entityEvents = node.data;
-            if (entityEvents && entityEvents.length) {
-                // Dim events not related to third party entity.
-                this.#dimUnrelatedEvents(entityEvents, false);
-            }
-            else {
-                this.disableAllDimming();
-            }
+            this.#updateFlameChartDimmerWithEvents(this.#thirdPartyRowHoverDimmer, node.data);
         });
         /**
          * NOTE: ENTRY_SELECTED, ENTRY_INVOKED and ENTRY_HOVERED are not always super obvious:
@@ -341,38 +338,48 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     containingElement() {
         return this.element;
     }
-    dimEvents(events) {
-        const relatedMainIndices = events.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
-        const relatedNetworkIndices = events.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
-        this.mainFlameChart.enableDimming(relatedMainIndices, false /** shouldAddOutlines */);
-        this.networkFlameChart.enableDimming(relatedNetworkIndices, false /** shouldAddOutlines */);
+    setActiveThirdPartyDimmingSetting(thirdPartyEvents) {
+        this.#updateFlameChartDimmerWithEvents(this.#thirdPartyCheckboxDimmer, thirdPartyEvents);
     }
-    /**
-     * dimUnrelatedEvents calls for dimming of all events except the relatedEvents provided.
-     *
-     * @param relatedEvents
-     * @param shouldAddOutlines whether to add outlines to add an outline ot events that are undimmed.
-     * Currently this is being used by dimming from 3rd parties and insight related events dimming.
-     * We don't use outlines for 3rd party dimming, since outlines can add a lot of noise.
-     */
-    #dimUnrelatedEvents(relatedEvents, shouldAddOutlines) {
-        const relatedMainIndices = relatedEvents.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
-        const relatedNetworkIndices = relatedEvents.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
-        this.mainFlameChart.enableDimmingForUnrelatedEntries(relatedMainIndices, shouldAddOutlines);
-        this.networkFlameChart.enableDimmingForUnrelatedEntries(relatedNetworkIndices, shouldAddOutlines);
+    #registerFlameChartDimmer(opts) {
+        const dimmer = {
+            active: false,
+            mainChartIndices: [],
+            networkChartIndices: [],
+            inclusive: opts.inclusive,
+            outline: opts.outline
+        };
+        this.#flameChartDimmers.push(dimmer);
+        return dimmer;
     }
-    setActiveThirdPartyDimmingSetting(active) {
-        this.#activeThirdPartyDimmingSetting = active;
-    }
-    // This wraps disabling dimming to include a check for 3p checkbox.
-    disableAllDimming() {
-        this.mainFlameChart.disableDimming();
-        this.networkFlameChart.disableDimming();
-        // If 3p checkbox is enabled, we should dim again.
-        if (this.#activeThirdPartyDimmingSetting) {
-            const thirdPartyEvents = this.#entityMapper?.thirdPartyEvents() ?? [];
-            this.dimEvents(thirdPartyEvents);
+    #updateFlameChartDimmerWithEvents(dimmer, events) {
+        if (events) {
+            dimmer.active = true;
+            dimmer.mainChartIndices = events.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
+            dimmer.networkChartIndices = events.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
         }
+        else {
+            dimmer.active = false;
+            dimmer.mainChartIndices = [];
+            dimmer.networkChartIndices = [];
+        }
+        this.#refreshDimming();
+    }
+    #updateFlameChartDimmerWithIndices(dimmer, mainChartIndices, networkChartIndices) {
+        dimmer.active = true;
+        dimmer.mainChartIndices = mainChartIndices;
+        dimmer.networkChartIndices = networkChartIndices;
+        this.#refreshDimming();
+    }
+    #refreshDimming() {
+        const dimmer = this.#flameChartDimmers.find(dimmer => dimmer.active);
+        if (!dimmer) {
+            this.mainFlameChart.disableDimming();
+            this.networkFlameChart.disableDimming();
+            return;
+        }
+        this.mainFlameChart.enableDimming(dimmer.mainChartIndices, dimmer.inclusive, dimmer.outline);
+        this.networkFlameChart.enableDimming(dimmer.networkChartIndices, dimmer.inclusive, dimmer.outline);
     }
     #dimInsightRelatedEvents(relatedEvents) {
         // Dim all events except those related to the active insight.
@@ -417,8 +424,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             }
             relevantEvents.push(...provider.search(bounds).map(r => r.index));
         }
-        this.mainFlameChart.enableDimmingForUnrelatedEntries(relatedMainIndices, true);
-        this.networkFlameChart.enableDimmingForUnrelatedEntries(relatedNetworkIndices, true);
+        this.#updateFlameChartDimmerWithIndices(this.#activeInsightDimmer, relatedMainIndices, relatedNetworkIndices);
     }
     #sortMarkersForPreferredVisualOrder(markers) {
         markers.sort((m1, m2) => {
@@ -426,6 +432,40 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             const m2Index = SORT_ORDER_PAGE_LOAD_MARKERS[m2.name] ?? Infinity;
             return m1Index - m2Index;
         });
+    }
+    #amendMarkerWithFieldData() {
+        if (!this.#traceMetadata?.cruxFieldData || !this.#traceInsightSets) {
+            return;
+        }
+        const fieldMetricResultsByNavigationId = new Map();
+        for (const [key, insightSet] of this.#traceInsightSets) {
+            if (insightSet.navigation) {
+                fieldMetricResultsByNavigationId.set(key, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#traceMetadata));
+            }
+        }
+        for (const marker of this.#markers) {
+            for (const event of marker.entries) {
+                const navigationId = event.args?.data?.navigationId;
+                if (!navigationId) {
+                    continue;
+                }
+                const fieldMetricResults = fieldMetricResultsByNavigationId.get(navigationId);
+                if (!fieldMetricResults) {
+                    continue;
+                }
+                let fieldMetricResult;
+                if (event.name === "firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */) {
+                    fieldMetricResult = fieldMetricResults.fcp;
+                }
+                else if (event.name === "largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */) {
+                    fieldMetricResult = fieldMetricResults.lcp;
+                }
+                if (!fieldMetricResult) {
+                    continue;
+                }
+                marker.entryToFieldResult.set(event, fieldMetricResult);
+            }
+        }
     }
     setMarkers(parsedTrace) {
         if (!parsedTrace) {
@@ -457,6 +497,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 const overlay = {
                     type: 'TIMINGS_MARKER',
                     entries: [marker],
+                    entryToFieldResult: new Map(),
                     adjustedTimestamp,
                 };
                 overlayByTs.set(marker.ts, overlay);
@@ -467,6 +508,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (this.#markers.length === 0) {
             return;
         }
+        this.#amendMarkerWithFieldData();
         this.bulkAddOverlays(this.#markers);
     }
     setOverlays(overlays, options) {
@@ -490,7 +532,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
             // The insight's `relatedEvents` property likely already includes the events associated with
-            // and overlay, but just in case not, include both arrays. Duplicates are fine.
+            // an overlay, but just in case not, include both arrays. Duplicates are fine.
             let relatedEventsList = this.#activeInsight?.model.relatedEvents;
             if (!relatedEventsList) {
                 relatedEventsList = [];
@@ -544,7 +586,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#activeInsight = insight;
         this.bulkRemoveOverlays(this.#currentInsightOverlays);
         if (!this.#activeInsight) {
-            this.disableAllDimming();
+            this.#updateFlameChartDimmerWithEvents(this.#activeInsightDimmer, null);
         }
     }
     /**
@@ -655,14 +697,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                         if (this.#currentSelection) {
                             startTime = rangeForSelection(this.#currentSelection).min;
                         }
-                        this.#createNewTimeRangeFromKeyboard(startTime, Trace.Types.Timing.MicroSeconds(startTime + timeRangeIncrementValue));
+                        this.#createNewTimeRangeFromKeyboard(startTime, Trace.Types.Timing.Micro(startTime + timeRangeIncrementValue));
                         return true;
                     }
                     return false;
                 }
                 // Grow the RHS of the range, but limit it to the visible window.
-                this.#timeRangeSelectionAnnotation.bounds.max = Trace.Types.Timing.MicroSeconds(Math.min(this.#timeRangeSelectionAnnotation.bounds.max + timeRangeIncrementValue, visibleWindow.max));
-                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                this.#timeRangeSelectionAnnotation.bounds.max = Trace.Types.Timing.Micro(Math.min(this.#timeRangeSelectionAnnotation.bounds.max + timeRangeIncrementValue, visibleWindow.max));
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.Micro(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
                 ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
                 return true;
             }
@@ -670,10 +712,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 if (!this.#timeRangeSelectionAnnotation) {
                     return false;
                 }
-                this.#timeRangeSelectionAnnotation.bounds.max = Trace.Types.Timing.MicroSeconds(
+                this.#timeRangeSelectionAnnotation.bounds.max = Trace.Types.Timing.Micro(
                 // Shrink the RHS of the range, but make sure it cannot go below the min value.
                 Math.max(this.#timeRangeSelectionAnnotation.bounds.max - timeRangeIncrementValue, this.#timeRangeSelectionAnnotation.bounds.min + 1));
-                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.Micro(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
                 ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
                 return true;
             }
@@ -682,10 +724,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 if (!this.#timeRangeSelectionAnnotation) {
                     return false;
                 }
-                this.#timeRangeSelectionAnnotation.bounds.min = Trace.Types.Timing.MicroSeconds(
+                this.#timeRangeSelectionAnnotation.bounds.min = Trace.Types.Timing.Micro(
                 // Increase the LHS of the range, but make sure it cannot go above the max value.
                 Math.min(this.#timeRangeSelectionAnnotation.bounds.min + timeRangeIncrementValue, this.#timeRangeSelectionAnnotation.bounds.max - 1));
-                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.Micro(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
                 ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
                 return true;
             }
@@ -693,10 +735,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 if (!this.#timeRangeSelectionAnnotation) {
                     return false;
                 }
-                this.#timeRangeSelectionAnnotation.bounds.min = Trace.Types.Timing.MicroSeconds(
+                this.#timeRangeSelectionAnnotation.bounds.min = Trace.Types.Timing.Micro(
                 // Decrease the LHS, but make sure it cannot go beyond the minimum visible window.
                 Math.max(this.#timeRangeSelectionAnnotation.bounds.min - timeRangeIncrementValue, visibleWindow.min));
-                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.MicroSeconds(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
+                this.#timeRangeSelectionAnnotation.bounds.range = Trace.Types.Timing.Micro(this.#timeRangeSelectionAnnotation.bounds.max - this.#timeRangeSelectionAnnotation.bounds.min);
                 ModificationsManager.activeManager()?.updateAnnotation(this.#timeRangeSelectionAnnotation);
                 return true;
             }
@@ -797,15 +839,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     refreshMainFlameChart() {
         this.mainFlameChart.update();
     }
-    extensionDataVisibilityChanged() {
-        this.reset();
-        this.setupWindowTimes();
-        this.mainDataProvider.reset();
-        this.mainDataProvider.timelineData(true);
-        this.refreshMainFlameChart();
-    }
     windowChanged(windowStartTime, windowEndTime, animate) {
-        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(windowStartTime), Trace.Types.Timing.MilliSeconds(windowEndTime)), { shouldAnimate: animate });
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(windowStartTime), Trace.Types.Timing.Milli(windowEndTime)), { shouldAnimate: animate });
     }
     /**
      * @param startTime - the start time of the selection in MilliSeconds
@@ -813,10 +848,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
      * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
      */
     updateRangeSelection(startTime, endTime) {
-        this.delegate.select(selectionFromRangeMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime)));
+        this.delegate.select(selectionFromRangeMilliSeconds(Trace.Types.Timing.Milli(startTime), Trace.Types.Timing.Milli(endTime)));
         // We need to check if the user is updating the range because they are
         // creating a time range annotation.
-        const bounds = Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(startTime), Trace.Types.Timing.MilliSeconds(endTime));
+        const bounds = Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(startTime), Trace.Types.Timing.Milli(endTime));
         // If the current time range annotation exists, the range selection
         // for it is in progress and we need to update its bounds.
         //
@@ -852,23 +887,41 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#selectedEvents = group ? this.mainDataProvider.groupTreeEvents(group) : null;
         this.#updateDetailViews();
     }
-    setModel(newParsedTrace, isCpuProfile = false) {
+    setModel(newParsedTrace, traceMetadata) {
         if (newParsedTrace === this.#parsedTrace) {
             return;
         }
-        this.#selectedGroupName = null;
         this.#parsedTrace = newParsedTrace;
+        this.#traceMetadata = traceMetadata;
+        for (const dimmer of this.#flameChartDimmers) {
+            dimmer.active = false;
+            dimmer.mainChartIndices = [];
+            dimmer.networkChartIndices = [];
+        }
+        this.rebuildDataForTrace();
+    }
+    /**
+     * Resets the state of the UI data and initializes it again with the
+     * current parsed trace.
+     */
+    rebuildDataForTrace() {
+        if (!this.#parsedTrace) {
+            return;
+        }
+        this.#selectedGroupName = null;
         Common.EventTarget.removeEventListeners(this.eventListeners);
         this.#selectedEvents = null;
-        this.mainDataProvider.setModel(newParsedTrace, isCpuProfile);
-        this.networkDataProvider.setModel(newParsedTrace);
+        this.#entityMapper = new Utils.EntityMapper.EntityMapper(this.#parsedTrace);
+        // order is important: |reset| needs to be called after the trace
+        // model has been set in the data providers.
+        this.mainDataProvider.setModel(this.#parsedTrace);
+        this.networkDataProvider.setModel(this.#parsedTrace);
         this.reset();
         this.setupWindowTimes();
         this.updateSearchResults(false, false);
         this.refreshMainFlameChart();
         this.#updateFlameCharts();
-        this.setMarkers(newParsedTrace);
-        this.#entityMapper = new Utils.EntityMapper.EntityMapper(this.#parsedTrace);
+        this.setMarkers(this.#parsedTrace);
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {
@@ -1308,8 +1361,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (!this.searchRegex) {
             return;
         }
-        this.mainFlameChart.removeSearchResultHighlights();
-        this.networkFlameChart.removeSearchResultHighlights();
         const regExpFilter = new TimelineRegExp(this.searchRegex);
         const visibleWindow = traceBoundsState.micro.timelineTraceWindow;
         /**
@@ -1328,8 +1379,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             return m1.startTimeMilli - m2.startTimeMilli;
         });
         this.searchableView.updateSearchMatchesCount(this.searchResults.length);
-        this.mainFlameChart.highlightAllEntries(mainMatches.map(m => m.index));
-        this.networkFlameChart.highlightAllEntries(networkMatches.map(m => m.index));
+        if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
+            this.#updateFlameChartDimmerWithIndices(this.#searchDimmer, mainMatches.map(m => m.index), networkMatches.map(m => m.index));
+        }
         if (!shouldJump || !this.searchResults.length) {
             return;
         }
@@ -1365,9 +1417,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         delete this.selectedSearchResult;
         delete this.searchRegex;
         this.mainFlameChart.showPopoverForSearchResult(null);
-        this.mainFlameChart.removeSearchResultHighlights();
         this.networkFlameChart.showPopoverForSearchResult(null);
-        this.networkFlameChart.removeSearchResultHighlights();
+        this.#updateFlameChartDimmerWithEvents(this.#searchDimmer, null);
     }
     performSearch(searchConfig, shouldJump, jumpBackwards) {
         this.searchRegex = searchConfig.toSearchRegex().regex;

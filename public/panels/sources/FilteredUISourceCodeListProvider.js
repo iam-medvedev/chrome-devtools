@@ -119,6 +119,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
         return score + multiplier * (contentTypeBonus + this.scorer.calculateScore(fullDisplayName, null));
     }
     renderItem(itemIndex, query, titleElement, subtitleElement) {
+        titleElement.parentElement?.parentElement?.classList.toggle('search-mode', Boolean(query));
         query = this.rewriteQuery(query);
         const uiSourceCode = this.uiSourceCodes[itemIndex];
         const fullDisplayName = uiSourceCode.fullDisplayName();

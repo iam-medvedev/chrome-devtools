@@ -40,7 +40,7 @@ import { Dialog } from './Dialog.js';
 import { DockController } from './DockController.js';
 import { GlassPane } from './GlassPane.js';
 import { Infobar } from './Infobar.js';
-import inspectorViewTabbedPaneStyles from './inspectorViewTabbedPane.css.legacy.js';
+import inspectorViewTabbedPaneStyles from './inspectorViewTabbedPane.css.js';
 import { KeyboardShortcut } from './KeyboardShortcut.js';
 import { SplitWidget } from './SplitWidget.js';
 import { Events as TabbedPaneEvents } from './TabbedPane.js';
@@ -191,7 +191,6 @@ export class InspectorView extends VBox {
         // the Device mode button is not added and so the allocated space is smaller.
         const allocatedSpace = Root.Runtime.conditions.canDock() ? '69px' : '41px';
         this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
-        this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPaneStyles);
         this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'main'), this);
         const selectedTab = this.tabbedPane.selectedTabId;
         if (selectedTab) {
@@ -238,10 +237,13 @@ export class InspectorView extends VBox {
         inspectorViewInstance = null;
     }
     wasShown() {
+        super.wasShown();
+        this.tabbedPane.registerCSSFiles([inspectorViewTabbedPaneStyles]);
         this.element.ownerDocument.addEventListener('keydown', this.keyDownBound, false);
     }
     willHide() {
         this.element.ownerDocument.removeEventListener('keydown', this.keyDownBound, false);
+        super.willHide();
     }
     resolveLocation(locationName) {
         if (locationName === 'drawer-view') {
@@ -425,7 +427,7 @@ export class InspectorView extends VBox {
                     icon: 'refresh',
                     jslogContext: 'main.debug-reload',
                 },
-            ], undefined, undefined, 'reload-required');
+            ], undefined, 'reload-required');
             infobar.setParentView(this);
             this.attachInfobar(infobar);
             this.reloadRequiredInfobar = infobar;
@@ -449,7 +451,7 @@ export class InspectorView extends VBox {
                     dismiss: false,
                     jslogContext: 'main.debug-reload',
                 },
-            ], undefined, undefined, 'reload-required');
+            ], undefined, 'reload-required');
             infobar.setParentView(this);
             this.attachInfobar(infobar);
             this.reloadRequiredInfobar = infobar;
@@ -468,7 +470,7 @@ export class InspectorView extends VBox {
                     dismiss: true,
                     jslogContext: 'select-folder',
                 },
-            ], undefined, undefined, 'select-override-folder');
+            ], undefined, 'select-override-folder');
             infobar.setParentView(this);
             this.attachInfobar(infobar);
             this.#selectOverrideFolderInfobar = infobar;
@@ -536,7 +538,7 @@ function createLocaleInfobar() {
             dismiss: true,
             jslogContext: 'set-to-specific-language',
         },
-    ], getDisableLocaleInfoBarSetting(), undefined, 'language-mismatch');
+    ], getDisableLocaleInfoBarSetting(), 'language-mismatch');
 }
 function reloadDevTools() {
     if (DockController.instance().canDock() && DockController.instance().dockSide() === "undocked" /* DockState.UNDOCKED */) {

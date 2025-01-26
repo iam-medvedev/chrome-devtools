@@ -90,7 +90,7 @@ devtools-text-prompt {
 }
 
 .filtered-list-widget-item {
-  white-space: nowrap;
+  white-space: break-spaces;
   overflow: hidden;
   text-overflow: ellipsis;
   align-self: center;
@@ -102,15 +102,12 @@ devtools-text-prompt {
   color: var(--sys-color-state-disabled);
 }
 
-.filtered-list-widget-item.two-rows span.highlight {
-  color: var(--sys-color-primary);
-}
-
-.filtered-list-widget-item.one-row span.highlight {
+.filtered-list-widget-item span.highlight {
   font-weight: var(--ref-typeface-weight-bold);
 }
 
 .filtered-list-widget-item .filtered-list-widget-title {
+  white-space: nowrap;
   flex: initial;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -150,7 +147,7 @@ devtools-text-prompt {
 }
 
 .filtered-list-widget-item.one-row .filtered-list-widget-title {
-  display: flex;
+  display: inline;
 }
 
 .filtered-list-widget-item.two-rows {
@@ -159,7 +156,7 @@ devtools-text-prompt {
   gap: var(--sys-size-2);
 }
 
-.filtered-list-widget-item.two-rows .filtered-list-widget-title {
+.filtered-list-widget-item-wrapper:not(.search-mode) .filtered-list-widget-item.two-rows .filtered-list-widget-title {
   font-weight: var(--ref-typeface-weight-bold);
 }
 

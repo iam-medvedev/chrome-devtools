@@ -142,6 +142,7 @@ export declare class CheckboxLabel extends HTMLElement {
     checkboxElement: HTMLInputElement;
     textElement: HTMLElement;
     constructor();
+    connectedCallback(): void;
     static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
     /** Only to be used when the checkbox label is 'generated' (a regex, a className, etc). Most checkboxes should be create()'d with UIStrings */
     static createWithStringLiteral(title?: string, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
@@ -153,8 +154,10 @@ export declare class DevToolsIconLabel extends HTMLElement {
     set data(data: IconButton.Icon.IconData);
 }
 export declare class DevToolsSmallBubble extends HTMLElement {
+    #private;
     private textElement;
     constructor();
+    connectedCallback(): void;
     set type(type: string);
 }
 export declare class DevToolsCloseButton extends HTMLElement {
@@ -235,8 +238,7 @@ export interface ConfirmDialogOptions {
     cancelButtonLabel?: string;
     jslogContext?: string;
 }
-export declare function injectCoreStyles(root: Element | ShadowRoot): void;
-export declare function injectTextButtonStyles(root: Element | ShadowRoot): void;
+export declare function injectCoreStyles(elementOrShadowRoot: Element | ShadowRoot): void;
 /**
  * Creates a new shadow DOM tree with the core styles and an optional list of
  * additional styles, and attaches it to the specified `element`.
@@ -247,9 +249,7 @@ export declare function injectTextButtonStyles(root: Element | ShadowRoot): void
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
  */
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
-    cssFile?: CSSStyleSheet[] | {
-        cssContent: string;
-    };
+    cssFile?: CSSStyleSheet[];
     delegatesFocus?: boolean;
 }): ShadowRoot;
 export declare function resetMeasuredScrollbarWidthForTest(): void;

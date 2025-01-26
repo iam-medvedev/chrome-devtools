@@ -61,7 +61,7 @@ export class AICallTree {
             return null;
         }
         const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
-        const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.millisecondsToMicroseconds(startTime), Trace.Helpers.Timing.millisecondsToMicroseconds(endTime));
+        const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
         let threadEvents = parsedTrace.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
         if (!threadEvents) {
             // None from the renderer: try the samples handler, this might be a CPU trace.
@@ -166,7 +166,7 @@ export class AITreeFilter extends Trace.Extras.TraceFilter.TraceFilter {
     constructor(selectedEvent) {
         super();
         // The larger the selected event is, the less small ones matter. We'll exclude items under ½% of the selected event's size
-        this.#minDuration = Trace.Types.Timing.MicroSeconds((selectedEvent.dur ?? 1) * 0.005);
+        this.#minDuration = Trace.Types.Timing.Micro((selectedEvent.dur ?? 1) * 0.005);
         this.#selectedEvent = selectedEvent;
     }
     accept(event) {

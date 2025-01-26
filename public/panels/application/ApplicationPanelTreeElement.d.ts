@@ -14,10 +14,15 @@ export declare class ExpandableApplicationPanelTreeElement extends ApplicationPa
     protected readonly expandedSetting: Common.Settings.Setting<boolean>;
     protected readonly categoryName: string;
     protected categoryLink: Platform.DevToolsPath.UrlString | null;
-    constructor(resourcesPanel: ResourcesPanel, categoryName: string, settingsKey: string, settingsDefault?: boolean);
+    protected emptyCategoryHeadline: string;
+    protected categoryDescription: string;
+    constructor(resourcesPanel: ResourcesPanel, categoryName: string, emptyCategoryHeadline: string, categoryDescription: string, settingsKey: string, settingsDefault?: boolean);
     get itemURL(): Platform.DevToolsPath.UrlString;
     setLink(link: Platform.DevToolsPath.UrlString): void;
     onselect(selectedByUser: boolean | undefined): boolean;
+    private updateCategoryView;
+    appendChild(child: UI.TreeOutline.TreeElement, comparator?: ((arg0: UI.TreeOutline.TreeElement, arg1: UI.TreeOutline.TreeElement) => number) | undefined): void;
+    removeChild(child: UI.TreeOutline.TreeElement): void;
     onattach(): void;
     onexpand(): void;
     oncollapse(): void;

@@ -40,11 +40,12 @@ export function generateInsight(parsedTrace, context) {
             continue;
         }
         const display = event.args.display;
-        let wastedTime = Types.Timing.MilliSeconds(0);
+        let wastedTime = Types.Timing.Milli(0);
         if (/^(block|fallback|auto)$/.test(display)) {
-            const wastedTimeMicro = Types.Timing.MicroSeconds(request.args.data.syntheticData.finishTime - request.args.data.syntheticData.sendStartTime);
+            const wastedTimeMicro = Types.Timing.Micro(request.args.data.syntheticData.finishTime - request.args.data.syntheticData.sendStartTime);
             // TODO(crbug.com/352244504): should really end at the time of the next Commit trace event.
-            wastedTime = Platform.NumberUtilities.floor(Helpers.Timing.microSecondsToMilliseconds(wastedTimeMicro), 1 / 5);
+            wastedTime =
+                Platform.NumberUtilities.floor(Helpers.Timing.microToMilli(wastedTimeMicro), 1 / 5);
             // All browsers wait for no more than 3s.
             wastedTime = Math.min(wastedTime, 3000);
         }

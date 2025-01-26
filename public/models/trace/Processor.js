@@ -286,6 +286,8 @@ export class TraceProcessor extends EventTarget {
             DOMSize: null,
             ThirdParties: null,
             SlowCSSSelector: null,
+            LongCriticalNetworkTree: null,
+            ForcedReflow: null,
         };
         // Determine the weights for each metric based on field data, utilizing the same scoring curve that Lighthouse uses.
         const weights = Insights.Common.calculateMetricWeightsForSorting(insightSet, metadata);
@@ -401,7 +403,7 @@ export class TraceProcessor extends EventTarget {
         if (navigations.length) {
             const bounds = Helpers.Timing.traceWindowFromMicroSeconds(parsedTrace.Meta.traceBounds.min, navigations[0].ts);
             // When using "Record and reload" option, it typically takes ~5ms. So use 50ms to be safe.
-            const threshold = Helpers.Timing.millisecondsToMicroseconds(50);
+            const threshold = Helpers.Timing.milliToMicro(50);
             if (bounds.range > threshold) {
                 const context = {
                     bounds,
@@ -469,7 +471,7 @@ export class TraceProcessor extends EventTarget {
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are
  * declared in the `deps` field.
- * @returns A map from trace event handler name to trace event hander whose entries
+ * @returns A map from trace event handler name to trace event handler whose entries
  * iterate in such a way that each handler is visited after its dependencies.
  */
 export function sortHandlers(traceHandlers) {

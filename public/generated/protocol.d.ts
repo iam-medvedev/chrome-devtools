@@ -14082,6 +14082,23 @@ export declare namespace Storage {
     interface GetRelatedWebsiteSetsResponse extends ProtocolResponseWithError {
         sets: RelatedWebsiteSet[];
     }
+    interface GetAffectedUrlsForThirdPartyCookieMetadataRequest {
+        /**
+         * The URL of the page currently being visited.
+         */
+        firstPartyUrl: string;
+        /**
+         * The list of embedded resource URLs from the page.
+         */
+        thirdPartyUrls: string[];
+    }
+    interface GetAffectedUrlsForThirdPartyCookieMetadataResponse extends ProtocolResponseWithError {
+        /**
+         * Array of matching URLs. If there is a primary pattern match for the first-
+         * party URL, only the first-party URL is returned in the array.
+         */
+        matchedUrls: string[];
+    }
     /**
      * A cache's contents have been modified.
      */

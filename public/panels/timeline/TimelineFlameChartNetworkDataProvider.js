@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -113,7 +114,7 @@ export class TimelineFlameChartNetworkDataProvider {
         if (!networkRequest || !Trace.Types.Events.isSyntheticNetworkRequest(networkRequest)) {
             return;
         }
-        const timelineNetworkRequest = TimelineUtils.NetworkRequest.createTimelineNetworkRequest(networkRequest);
+        const timelineNetworkRequest = SDK.TraceObject.RevealableNetworkRequest.create(networkRequest);
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.appendApplicableItems(timelineNetworkRequest);
         return contextMenu;
@@ -202,15 +203,15 @@ export class TimelineFlameChartNetworkDataProvider {
      * @returns the pixels to draw waiting time and left and right whiskers and url text
      */
     getDecorationPixels(event, unclippedBarX, timeToPixelRatio) {
-        const beginTime = Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts);
+        const beginTime = Trace.Helpers.Timing.microToMilli(event.ts);
         const timeToPixel = (time) => unclippedBarX + (time - beginTime) * timeToPixelRatio;
-        const startTime = Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-        const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds((event.ts + event.dur));
-        const sendStartTime = Trace.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.sendStartTime);
-        const headersEndTime = Trace.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.downloadStart);
+        const startTime = Trace.Helpers.Timing.microToMilli(event.ts);
+        const endTime = Trace.Helpers.Timing.microToMilli((event.ts + event.dur));
+        const sendStartTime = Trace.Helpers.Timing.microToMilli(event.args.data.syntheticData.sendStartTime);
+        const headersEndTime = Trace.Helpers.Timing.microToMilli(event.args.data.syntheticData.downloadStart);
         const sendStart = Math.max(timeToPixel(sendStartTime), unclippedBarX);
         const headersEnd = Math.max(timeToPixel(headersEndTime), sendStart);
-        const finish = Math.max(timeToPixel(Trace.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.finishTime)), headersEnd);
+        const finish = Math.max(timeToPixel(Trace.Helpers.Timing.microToMilli(event.args.data.syntheticData.finishTime)), headersEnd);
         const start = timeToPixel(startTime);
         const end = Math.max(timeToPixel(endTime), finish);
         return { sendStart, headersEnd, finish, start, end };
@@ -308,9 +309,9 @@ export class TimelineFlameChartNetworkDataProvider {
     #decorateSyntheticWebSocketConnection(index, context, barY, barHeight, unclippedBarX, timeToPixelRatio) {
         context.save();
         const event = this.#events[index];
-        const beginTime = Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts);
+        const beginTime = Trace.Helpers.Timing.microToMilli(event.ts);
         const timeToPixel = (time) => Math.floor(unclippedBarX + (time - beginTime) * timeToPixelRatio);
-        const endTime = Trace.Helpers.Timing.microSecondsToMilliseconds((event.ts + event.dur));
+        const endTime = Trace.Helpers.Timing.microToMilli((event.ts + event.dur));
         const start = timeToPixel(beginTime) + 0.5;
         const end = timeToPixel(endTime) - 0.5;
         context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
@@ -358,8 +359,8 @@ export class TimelineFlameChartNetworkDataProvider {
      */
     #setTimingBoundsData(newParsedTrace) {
         const { traceBounds } = newParsedTrace.Meta;
-        const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(traceBounds.min);
-        const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(traceBounds.max);
+        const minTime = Trace.Helpers.Timing.microToMilli(traceBounds.min);
+        const maxTime = Trace.Helpers.Timing.microToMilli(traceBounds.max);
         this.#minimumBoundary = minTime;
         this.#timeSpan = minTime === maxTime ? 1000 : maxTime - this.#minimumBoundary;
     }
@@ -422,7 +423,7 @@ export class TimelineFlameChartNetworkDataProvider {
                 continue;
             }
             if (!filter || filter.accept(entry, this.#parsedTrace ?? undefined)) {
-                const startTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
+                const startTimeMilli = Trace.Helpers.Timing.microToMilli(entry.ts);
                 results.push({ startTimeMilli, index: i, provider: 'network' });
             }
         }

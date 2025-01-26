@@ -39,22 +39,17 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
-import applicationColorTokensStyles from './applicationColorTokens.css.legacy.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import checkboxTextLabelStyles from './checkboxTextLabel.css.legacy.js';
-import confirmDialogStyles from './confirmDialog.css.legacy.js';
-import designTokensStyles from './designTokens.css.legacy.js';
+import checkboxTextLabelStyles from './checkboxTextLabel.css.js';
+import confirmDialogStyles from './confirmDialog.css.js';
 import { Dialog } from './Dialog.js';
 import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
-import inlineButtonStyles from './inlineButton.css.legacy.js';
+import inlineButtonStyles from './inlineButton.css.js';
 import inspectorCommonStyles from './inspectorCommon.css.legacy.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
-import smallBubbleStyles from './smallBubble.css.legacy.js';
-import textButtonStyles from './textButton.css.legacy.js';
+import smallBubbleStyles from './smallBubble.css.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
-import themeColorsStyles from './themeColors.css.legacy.js';
-import tokens from './tokens.css.legacy.js';
 import { Tooltip } from './Tooltip.js';
 import { Widget } from './Widget.js';
 const UIStrings = {
@@ -1127,13 +1122,16 @@ export class CheckboxLabel extends HTMLElement {
         super();
         CheckboxLabel.lastId = CheckboxLabel.lastId + 1;
         const id = 'ui-checkbox-label' + CheckboxLabel.lastId;
-        this.shadowRootInternal = createShadowRootWithCoreStyles(this, { cssFile: checkboxTextLabelStyles });
+        this.shadowRootInternal = createShadowRootWithCoreStyles(this);
         this.checkboxElement = this.shadowRootInternal.createChild('input');
         this.checkboxElement.type = 'checkbox';
         this.checkboxElement.setAttribute('id', id);
         this.textElement = this.shadowRootInternal.createChild('label', 'dt-checkbox-text');
         this.textElement.setAttribute('for', id);
         this.shadowRootInternal.createChild('slot');
+    }
+    connectedCallback() {
+        this.shadowRootInternal.adoptedStyleSheets.push(checkboxTextLabelStyles);
     }
     static create(title, checked, subtitle, jslogContext, small) {
         const element = document.createElement('dt-checkbox');
@@ -1184,13 +1182,17 @@ export class DevToolsIconLabel extends HTMLElement {
 }
 customElements.define('dt-icon-label', DevToolsIconLabel);
 export class DevToolsSmallBubble extends HTMLElement {
+    #shadowRoot;
     textElement;
     constructor() {
         super();
-        const root = createShadowRootWithCoreStyles(this, { cssFile: smallBubbleStyles });
-        this.textElement = root.createChild('div');
+        this.#shadowRoot = createShadowRootWithCoreStyles(this);
+        this.textElement = this.#shadowRoot.createChild('div');
         this.textElement.className = 'info';
         this.textElement.createChild('slot');
+    }
+    connectedCallback() {
+        this.#shadowRoot.adoptedStyleSheets.push(smallBubbleStyles);
     }
     set type(type) {
         this.textElement.className = type;
@@ -1393,7 +1395,7 @@ export class MessageDialog {
         const dialog = new Dialog(jslogContext);
         dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         dialog.setDimmed(true);
-        const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: confirmDialogStyles });
+        const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: [confirmDialogStyles] });
         const content = shadowRoot.createChild('div', 'widget');
         await new Promise(resolve => {
             const okButton = createTextButton(i18nString(UIStrings.ok), resolve, { jslogContext: 'confirm', variant: "primary" /* Buttons.Button.Variant.PRIMARY */ });
@@ -1415,7 +1417,7 @@ export class ConfirmDialog {
         dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         dialog.setDimmed(true);
         ARIAUtils.setLabel(dialog.contentElement, message);
-        const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: confirmDialogStyles });
+        const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: [confirmDialogStyles] });
         const content = shadowRoot.createChild('div', 'widget');
         content.createChild('div', 'message').createChild('span').textContent = message;
         const buttonsBar = content.createChild('div', 'button');
@@ -1437,7 +1439,7 @@ export class ConfirmDialog {
 }
 export function createInlineButton(toolbarButton) {
     const element = document.createElement('span');
-    const shadowRoot = createShadowRootWithCoreStyles(element, { cssFile: inlineButtonStyles });
+    const shadowRoot = createShadowRootWithCoreStyles(element, { cssFile: [inlineButtonStyles] });
     element.classList.add('inline-button');
     const toolbar = shadowRoot.createChild('devtools-toolbar');
     toolbar.appendToolbarItem(toolbarButton);
@@ -1582,17 +1584,12 @@ function focusChanged(event) {
     updateWidgetfocusWidgetForNode(element);
     updateXWidgetfocusWidgetForNode(element);
 }
-export function injectCoreStyles(root) {
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, applicationColorTokensStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, designTokensStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, inspectorCommonStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, textButtonStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, themeColorsStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, tokens);
-    ThemeSupport.ThemeSupport.instance().injectHighlightStyleSheets(root);
-}
-export function injectTextButtonStyles(root) {
-    ThemeSupport.ThemeSupport.instance().appendStyle(root, textButtonStyles);
+export function injectCoreStyles(elementOrShadowRoot) {
+    ThemeSupport.ThemeSupport.instance().appendStyle(elementOrShadowRoot, inspectorCommonStyles);
+    const shadowRootOrDocument = (elementOrShadowRoot instanceof ShadowRoot) ?
+        elementOrShadowRoot :
+        (elementOrShadowRoot.shadowRoot ?? elementOrShadowRoot.ownerDocument);
+    shadowRootOrDocument.adoptedStyleSheets.push(Buttons.textButtonStyles);
 }
 /**
  * Creates a new shadow DOM tree with the core styles and an optional list of
@@ -1607,17 +1604,10 @@ export function createShadowRootWithCoreStyles(element, options = {
     delegatesFocus: undefined,
     cssFile: undefined,
 }) {
-    const { cssFile, delegatesFocus, } = options;
+    const { cssFile = [], delegatesFocus, } = options;
     const shadowRoot = element.attachShadow({ mode: 'open', delegatesFocus });
     injectCoreStyles(shadowRoot);
-    if (cssFile) {
-        if ('cssContent' in cssFile) {
-            ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, cssFile);
-        }
-        else {
-            shadowRoot.adoptedStyleSheets = cssFile;
-        }
-    }
+    shadowRoot.adoptedStyleSheets.push(...cssFile);
     shadowRoot.addEventListener('focus', focusChanged, true);
     return shadowRoot;
 }

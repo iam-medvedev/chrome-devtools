@@ -8,10 +8,10 @@ import { data as metaHandlerData } from './MetaHandler.js';
 import { data as screenshotsHandlerData } from './ScreenshotsHandler.js';
 // This represents the maximum #time we will allow a cluster to go before we
 // reset it.
-export const MAX_CLUSTER_DURATION = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(5000));
+export const MAX_CLUSTER_DURATION = Helpers.Timing.milliToMicro(Types.Timing.Milli(5000));
 // This represents the maximum #time we will allow between layout shift events
 // before considering it to be the start of a new cluster.
-export const MAX_SHIFT_TIME_DELTA = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(1000));
+export const MAX_SHIFT_TIME_DELTA = Helpers.Timing.milliToMicro(Types.Timing.Milli(1000));
 // Layout shifts are reported globally to the developer, irrespective of which
 // frame they originated in. However, each process does have its own individual
 // CLS score, so we need to segment by process. This means Layout Shifts from
@@ -100,12 +100,12 @@ function traceWindowFromTime(time) {
     return {
         min: time,
         max: time,
-        range: Types.Timing.MicroSeconds(0),
+        range: Types.Timing.Micro(0),
     };
 }
 function updateTraceWindowMax(traceWindow, newMax) {
     traceWindow.max = newMax;
-    traceWindow.range = Types.Timing.MicroSeconds(traceWindow.max - traceWindow.min);
+    traceWindow.range = Types.Timing.Micro(traceWindow.max - traceWindow.min);
 }
 function findScreenshots(timestamp) {
     const screenshots = screenshotsHandlerData().all;
@@ -221,7 +221,7 @@ async function buildLayoutShiftsClusters() {
             // If there is an existing cluster update its closing time.
             if (clusters.length > 0) {
                 const currentCluster = clusters[clusters.length - 1];
-                updateTraceWindowMax(currentCluster.clusterWindow, Types.Timing.MicroSeconds(previousClusterEndTime));
+                updateTraceWindowMax(currentCluster.clusterWindow, Types.Timing.Micro(previousClusterEndTime));
             }
             // If this cluster happened after a navigation, set the navigationId to
             // the current navigation. This lets us easily group clusters by
@@ -248,7 +248,7 @@ async function buildLayoutShiftsClusters() {
                 tid: event.tid,
                 ph: "X" /* Types.Events.Phase.COMPLETE */,
                 cat: '',
-                dur: Types.Timing.MicroSeconds(-1), // This `cluster.dur` is updated below.
+                dur: Types.Timing.Micro(-1), // This `cluster.dur` is updated below.
             });
             firstShiftTime = clusterStartTime;
         }
@@ -256,7 +256,7 @@ async function buildLayoutShiftsClusters() {
         // recent one and append the shift, bump its score and window values accordingly.
         const currentCluster = clusters[clusters.length - 1];
         const timeFromNavigation = currentShiftNavigation !== null ?
-            Types.Timing.MicroSeconds(event.ts - navigations[currentShiftNavigation].ts) :
+            Types.Timing.Micro(event.ts - navigations[currentShiftNavigation].ts) :
             undefined;
         currentCluster.clusterCumulativeScore += event.args.data ? event.args.data.weighted_score_delta : 0;
         if (!event.args.data) {
@@ -265,6 +265,7 @@ async function buildLayoutShiftsClusters() {
         const shift = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: event,
             ...event,
+            name: "SyntheticLayoutShift" /* Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT */,
             args: {
                 frame: event.args.frame,
                 data: {
@@ -305,7 +306,7 @@ async function buildLayoutShiftsClusters() {
             const nextNavigationIndex = Platform.ArrayUtilities.nearestIndexFromBeginning(navigations, nav => nav.ts > cluster.clusterWindow.max);
             const nextNavigationTime = nextNavigationIndex ? navigations[nextNavigationIndex].ts : Infinity;
             const clusterEnd = Math.min(clusterEndByMaxDuration, clusterEndByMaxGap, traceBounds.max, nextNavigationTime);
-            updateTraceWindowMax(cluster.clusterWindow, Types.Timing.MicroSeconds(clusterEnd));
+            updateTraceWindowMax(cluster.clusterWindow, Types.Timing.Micro(clusterEnd));
         }
         let largestScore = 0;
         let worstShiftEvent = null;
@@ -323,7 +324,7 @@ async function buildLayoutShiftsClusters() {
             else if (weightedScore >= 0.1 /* LayoutShiftsThreshold.NEEDS_IMPROVEMENT */ && weightedScore < 0.25 /* LayoutShiftsThreshold.BAD */) {
                 if (!cluster.scoreWindows.needsImprovement) {
                     // Close the Good window, and open the needs improvement window.
-                    updateTraceWindowMax(cluster.scoreWindows.good, Types.Timing.MicroSeconds(ts - 1));
+                    updateTraceWindowMax(cluster.scoreWindows.good, Types.Timing.Micro(ts - 1));
                     cluster.scoreWindows.needsImprovement = traceWindowFromTime(ts);
                 }
                 // Expand the needs improvement window.
@@ -333,10 +334,10 @@ async function buildLayoutShiftsClusters() {
                 if (!cluster.scoreWindows.bad) {
                     // We may jump from Good to Bad here, so update whichever window is open.
                     if (cluster.scoreWindows.needsImprovement) {
-                        updateTraceWindowMax(cluster.scoreWindows.needsImprovement, Types.Timing.MicroSeconds(ts - 1));
+                        updateTraceWindowMax(cluster.scoreWindows.needsImprovement, Types.Timing.Micro(ts - 1));
                     }
                     else {
-                        updateTraceWindowMax(cluster.scoreWindows.good, Types.Timing.MicroSeconds(ts - 1));
+                        updateTraceWindowMax(cluster.scoreWindows.good, Types.Timing.Micro(ts - 1));
                     }
                     cluster.scoreWindows.bad = traceWindowFromTime(shift.ts);
                 }
@@ -373,7 +374,7 @@ async function buildLayoutShiftsClusters() {
         cluster.ts = cluster.events[0].ts;
         const lastShiftTimings = Helpers.Timing.eventTimingsMicroSeconds(cluster.events[cluster.events.length - 1]);
         // Add MAX_SHIFT_TIME_DELTA, the section gap after the last layout shift. This marks the end of the cluster.
-        cluster.dur = Types.Timing.MicroSeconds((lastShiftTimings.endTime - cluster.events[0].ts) + MAX_SHIFT_TIME_DELTA);
+        cluster.dur = Types.Timing.Micro((lastShiftTimings.endTime - cluster.events[0].ts) + MAX_SHIFT_TIME_DELTA);
         if (weightedScore > sessionMaxScore) {
             clsWindowID = windowID;
             sessionMaxScore = weightedScore;

@@ -82,6 +82,7 @@ core/sdk/ServerTiming.test.js
 core/sdk/ServiceWorkerCacheModel.test.js
 core/sdk/ServiceWorkerManager.test.js
 core/sdk/SourceMap.test.js
+core/sdk/SourceMapFunctionRanges.test.js
 core/sdk/SourceMapManager.test.js
 core/sdk/SourceMapScopeChainEntry.test.js
 core/sdk/SourceMapScopes.test.js
@@ -216,6 +217,7 @@ models/trace/insights/Common.test.js
 models/trace/insights/DOMSize.test.js
 models/trace/insights/DocumentLatency.test.js
 models/trace/insights/FontDisplay.test.js
+models/trace/insights/ForcedReflow.test.js
 models/trace/insights/ImageDelivery.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LCPDiscovery.test.js
@@ -335,11 +337,14 @@ panels/elements/components/StylePropertyEditor.test.js
 panels/elements/AccessibilityTreeView.test.js
 panels/elements/CSSRuleValidator.test.js
 panels/elements/ClassesPaneWidget.test.js
+panels/elements/ColorSwatchPopoverIcon.test.js
 panels/elements/ComputedStyleModel.test.js
+panels/elements/ComputedStyleWidget.test.js
 panels/elements/DOMLinkifier.test.js
 panels/elements/ElementStatePaneWidget.test.js
 panels/elements/ElementsPanel.test.js
 panels/elements/ElementsTreeElementHighlighter.test.js
+panels/elements/ElementsTreeOutline.test.js
 panels/elements/InspectElementModeController.test.js
 panels/elements/PlatformFontsWidget.test.js
 panels/elements/PropertiesWidget.test.js
@@ -466,6 +471,7 @@ panels/timeline/TimelineFlameChartView.test.js
 panels/timeline/TimelineHistoryManager.test.js
 panels/timeline/TimelineLoader.test.js
 panels/timeline/TimelineMiniMap.test.js
+panels/timeline/TimelinePanel.test.js
 panels/timeline/TimelineSelection.test.js
 panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
@@ -593,7 +599,6 @@ ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js
 ui/legacy/components/inline_editor/BezierUI.test.js
 ui/legacy/components/inline_editor/CSSAngle.test.js
-ui/legacy/components/inline_editor/CSSLength.test.js
 ui/legacy/components/inline_editor/CSSLinearEasingModel.test.js
 ui/legacy/components/inline_editor/CSSShadowEditor.test.js
 ui/legacy/components/inline_editor/ColorMixSwatch.test.js

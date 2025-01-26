@@ -263,7 +263,8 @@ export declare class StorageCategoryView extends UI.Widget.VBox {
     private emptyWidget;
     private linkElement;
     constructor();
-    setHeader(header: string): void;
+    setText(text: string): void;
+    setHeadline(header: string): void;
     setLink(link: Platform.DevToolsPath.UrlString | null): void;
 }
 export declare class ResourcesSection implements SDK.TargetManager.Observer {

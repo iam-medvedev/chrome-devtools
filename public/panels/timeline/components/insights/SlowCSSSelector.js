@@ -132,7 +132,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
                     return {
                         values: [
                             html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-                            time(Trace.Types.Timing.MicroSeconds(selector['elapsed (us)']))
+                            time(Trace.Types.Timing.Micro(selector['elapsed (us)']))
                         ],
                     };
                 }),

@@ -32,7 +32,7 @@ export declare class TimelineUIUtils {
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
     static buildTraceEventDetails(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean, entityMapper: Utils.EntityMapper.EntityMapper | null): Promise<DocumentFragment>;
-    static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): {
+    static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): {
         [x: string]: number;
     };
     private static renderEventJson;
@@ -98,7 +98,7 @@ export interface TimelineMarkerStyle {
  * where the user has navigated multiple times in the trace, so that we can show
  * the LCP (for example) relative to the last navigation.
  **/
-export declare function timeStampForEventAdjustedForClosestNavigationIfPossible(event: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace | null): Trace.Types.Timing.MilliSeconds;
+export declare function timeStampForEventAdjustedForClosestNavigationIfPossible(event: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace | null): Trace.Types.Timing.Milli;
 /**
  * Determines if an event is potentially a marker event. A marker event here
  * is a single moment in time that we want to highlight on the timeline, such as

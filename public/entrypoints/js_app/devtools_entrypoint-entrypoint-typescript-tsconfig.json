@@ -58,6 +58,9 @@
       "path": "../../panels/mobile_throttling/meta-tsconfig.json"
     },
     {
+      "path": "../../panels/network/meta-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
     },
     {

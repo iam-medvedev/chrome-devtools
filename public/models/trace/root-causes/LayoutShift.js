@@ -264,7 +264,7 @@ export class LayoutShiftRootCauses {
         if (lastRequestIndex === null) {
             return [];
         }
-        const MAX_DELTA_FOR_FONT_REQUEST = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
+        const MAX_DELTA_FOR_FONT_REQUEST = Helpers.Timing.secondsToMicro(Types.Timing.Seconds(0.5));
         const requestsInInvalidationWindow = [];
         // Get all requests finished within the valid window.
         for (let i = lastRequestIndex; i > -1; i--) {

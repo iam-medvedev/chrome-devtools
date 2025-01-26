@@ -58,14 +58,12 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
     containingElement(): HTMLElement;
-    dimEvents(events: Trace.Types.Events.Event[]): void;
-    setActiveThirdPartyDimmingSetting(active: boolean): void;
-    disableAllDimming(): void;
+    setActiveThirdPartyDimmingSetting(thirdPartyEvents: Trace.Types.Events.Event[] | null): void;
     setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
-    addTimestampMarkerOverlay(timestamp: Trace.Types.Timing.MicroSeconds): void;
+    addTimestampMarkerOverlay(timestamp: Trace.Types.Timing.Micro): void;
     removeTimestampMarkerOverlay(): Promise<void>;
     runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
@@ -73,8 +71,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     getMainDataProvider(): TimelineFlameChartDataProvider;
     getNetworkDataProvider(): TimelineFlameChartNetworkDataProvider;
     refreshMainFlameChart(): void;
-    extensionDataVisibilityChanged(): void;
-    windowChanged(windowStartTime: Trace.Types.Timing.MilliSeconds, windowEndTime: Trace.Types.Timing.MilliSeconds, animate: boolean): void;
+    windowChanged(windowStartTime: Trace.Types.Timing.Milli, windowEndTime: Trace.Types.Timing.Milli, animate: boolean): void;
     /**
      * @param startTime - the start time of the selection in MilliSeconds
      * @param endTime - the end time of the selection in MilliSeconds
@@ -84,7 +81,12 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
-    setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace, isCpuProfile?: boolean): void;
+    setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace, traceMetadata: Trace.Types.File.MetaData | null): void;
+    /**
+     * Resets the state of the UI data and initializes it again with the
+     * current parsed trace.
+     */
+    rebuildDataForTrace(): void;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
     reset(): void;
     setupWindowTimes(): void;

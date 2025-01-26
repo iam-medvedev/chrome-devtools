@@ -32,9 +32,8 @@ export class OriginTreeElement extends SecurityPanelSidebarTreeElement {
     origin() {
         return this.#originInternal;
     }
-    onselect() {
+    showElement() {
         this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#originInternal));
-        return true;
     }
 }
 //# sourceMappingURL=OriginTreeElement.js.map

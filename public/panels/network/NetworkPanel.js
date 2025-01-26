@@ -46,7 +46,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Search from '../search/search.js';
-import * as TimelineUtils from '../timeline/utils/utils.js';
 import { NetworkItemView } from './NetworkItemView.js';
 import { NetworkLogView } from './NetworkLogView.js';
 import { NetworkOverview } from './NetworkOverview.js';
@@ -446,7 +445,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
         const timestamps = filmStrip.frames.map(frame => {
             // The network view works in seconds.
-            return Trace.Helpers.Timing.microSecondsToSeconds(frame.screenshotEvent.ts);
+            return Trace.Helpers.Timing.microToSeconds(frame.screenshotEvent.ts);
         });
         this.networkLogView.addFilmStripFrames(timestamps);
     }
@@ -646,7 +645,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.openInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
                 .showView('network')
                 .then(this.networkLogView.resetFilter.bind(this.networkLogView))
-                .then(this.selectAndActivateRequest.bind(this, request.request, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, 
+                .then(this.selectAndActivateRequest.bind(this, request.networkRequest, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, 
             /* FilterOptions= */ undefined)), { jslogContext: 'timeline.reveal-in-network' });
         };
         if (event.target.isSelfOrDescendant(this.element)) {
@@ -671,7 +670,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             }
             return;
         }
-        if (target instanceof TimelineUtils.NetworkRequest.TimelineNetworkRequest) {
+        if (target instanceof SDK.TraceObject.RevealableNetworkRequest) {
             appendRevealItemAndSelect(target);
             return;
         }
@@ -697,7 +696,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         const { request } = event.data;
         this.calculator.updateBoundaries(request);
         // FIXME: Unify all time units across the frontend!
-        this.overviewPane.setBounds(Trace.Types.Timing.MilliSeconds(this.calculator.minimumBoundary() * 1000), Trace.Types.Timing.MilliSeconds(this.calculator.maximumBoundary() * 1000));
+        this.overviewPane.setBounds(Trace.Types.Timing.Milli(this.calculator.minimumBoundary() * 1000), Trace.Types.Timing.Milli(this.calculator.maximumBoundary() * 1000));
         this.networkOverview.updateRequest(request);
     }
     resolveLocation(locationName) {
@@ -760,7 +759,7 @@ export class FilmStripRecorder {
             return;
         }
         const zeroTimeInSeconds = Trace.Types.Timing.Seconds(this.timeCalculator.minimumBoundary());
-        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data, Trace.Helpers.Timing.secondsToMicroseconds(zeroTimeInSeconds));
+        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data, Trace.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
         if (this.callback) {
             this.callback(filmStrip);
         }

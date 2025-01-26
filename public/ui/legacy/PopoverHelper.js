@@ -29,11 +29,11 @@
  */
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import { GlassPane } from './GlassPane.js';
-import popoverStyles from './popover.css.legacy.js';
+import popoverStyles from './popover.css.js';
 export class PopoverHelper {
     static createPopover = (jslogContext) => {
         const popover = new GlassPane(`${VisualLogging.popover(jslogContext).parent('mapped')}`);
-        popover.registerRequiredCSS(popoverStyles);
+        popover.registerCSSFiles([popoverStyles]);
         popover.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         popover.setMarginBehavior("Arrow" /* MarginBehavior.ARROW */);
         return popover;

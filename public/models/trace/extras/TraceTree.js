@@ -105,8 +105,8 @@ export class TopDownNode extends Node {
             onStartEvent,
             onEndEvent,
             onInstantEvent: instantEventCallback,
-            startTime: Helpers.Timing.millisecondsToMicroseconds(startTime),
-            endTime: Helpers.Timing.millisecondsToMicroseconds(endTime),
+            startTime: Helpers.Timing.milliToMicro(startTime),
+            endTime: Helpers.Timing.milliToMicro(endTime),
             eventFilter: root.filter,
             ignoreAsyncEvents: false,
         });
@@ -319,8 +319,8 @@ export class BottomUpRootNode extends Node {
         Helpers.Trace.forEachEvent(this.events, {
             onStartEvent,
             onEndEvent,
-            startTime: Helpers.Timing.millisecondsToMicroseconds(this.startTime),
-            endTime: Helpers.Timing.millisecondsToMicroseconds(this.endTime),
+            startTime: Helpers.Timing.milliToMicro(this.startTime),
+            endTime: Helpers.Timing.milliToMicro(this.endTime),
             eventFilter: this.filter,
             ignoreAsyncEvents: false,
         });
@@ -444,8 +444,8 @@ export class BottomUpNode extends Node {
         Helpers.Trace.forEachEvent(this.root.events, {
             onStartEvent,
             onEndEvent,
-            startTime: Helpers.Timing.millisecondsToMicroseconds(startTime),
-            endTime: Helpers.Timing.millisecondsToMicroseconds(endTime),
+            startTime: Helpers.Timing.milliToMicro(startTime),
+            endTime: Helpers.Timing.milliToMicro(endTime),
             eventFilter: this.root.filter,
             ignoreAsyncEvents: false,
         });

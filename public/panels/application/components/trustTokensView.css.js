@@ -19,9 +19,9 @@ styles.replaceSync(
   font-size: 15px;
 }
 
-devtools-data-grid-controller {
-  border: 1px solid var(--sys-color-divider);
+devtools-new-data-grid {
   margin-top: 20px;
+  height: 240px;
 
   & devtools-button {
     width: 14px;

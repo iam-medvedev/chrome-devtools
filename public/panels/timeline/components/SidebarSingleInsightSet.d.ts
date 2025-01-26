@@ -6,6 +6,7 @@ export interface SidebarSingleInsightSetData {
     activeCategory: Trace.Insights.Types.InsightCategory;
     activeInsight: ActiveInsight | null;
     parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
+    traceMetadata: Trace.Types.File.MetaData | null;
 }
 export declare class SidebarSingleInsightSet extends HTMLElement {
     #private;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import targetCrashedScreenStyles from './targetCrashedScreen.css.legacy.js';
+import targetCrashedScreenStyles from './targetCrashedScreen.css.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
     /**
@@ -20,15 +20,19 @@ export class TargetCrashedScreen extends VBox {
     hideCallback;
     constructor(hideCallback) {
         super(true);
-        this.registerRequiredCSS(targetCrashedScreenStyles);
         this.contentElement.createChild('div', 'message').textContent =
             i18nString(UIStrings.devtoolsWasDisconnectedFromThe);
         this.contentElement.createChild('div', 'message').textContent =
             i18nString(UIStrings.oncePageIsReloadedDevtoolsWill);
         this.hideCallback = hideCallback;
     }
+    wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([targetCrashedScreenStyles]);
+    }
     willHide() {
         this.hideCallback.call(null);
+        super.willHide();
     }
 }
 //# sourceMappingURL=TargetCrashedScreen.js.map

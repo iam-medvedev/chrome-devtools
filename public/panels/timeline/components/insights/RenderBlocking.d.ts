@@ -9,7 +9,7 @@ export declare class RenderBlocking extends BaseInsightComponent<RenderBlockingI
     static readonly litTagName: LitHtml.StaticHtml.StaticValue;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    getEstimatedSavingsTime(): Trace.Types.Timing.MilliSeconds | null;
+    getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     renderContent(): LitHtml.LitTemplate;
 }
 declare global {

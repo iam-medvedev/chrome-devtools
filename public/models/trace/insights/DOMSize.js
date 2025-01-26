@@ -18,7 +18,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/DOMSize.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const DOM_UPDATE_LIMIT = 800;
+const DOM_SIZE_DURATION_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(40));
+// These thresholds were selected to maximize the number of long (>40ms) events above
+// the threshold while maximizing the number of short (<40ms) events below the threshold.
+// See go/rpp-dom-size-thresholds for the analysis that produced these thresholds.
+const LAYOUT_OBJECTS_THRESHOLD = 100;
+const STYLE_RECALC_ELEMENTS_THRESHOLD = 300;
 export function deps() {
     return ['Renderer', 'AuctionWorklets', 'DOMStats'];
 }
@@ -63,25 +68,25 @@ export function generateInsight(parsedTrace, context) {
         }
         const first = entries[0];
         const last = entries[entries.length - 1];
-        const timeRange = Helpers.Timing.traceWindowFromMicroSeconds(first.ts, Types.Timing.MicroSeconds(last.ts + (last.dur ?? 0)));
+        const timeRange = Helpers.Timing.traceWindowFromMicroSeconds(first.ts, Types.Timing.Micro(last.ts + (last.dur ?? 0)));
         if (!Helpers.Timing.boundsIncludeTimeRange({ timeRange, bounds: context.bounds })) {
             continue;
         }
         for (const event of layoutEvents) {
-            if (!isWithinContext(event)) {
+            if (event.dur < DOM_SIZE_DURATION_THRESHOLD || !isWithinContext(event)) {
                 continue;
             }
             const { dirtyObjects } = event.args.beginData;
-            if (dirtyObjects > DOM_UPDATE_LIMIT) {
+            if (dirtyObjects > LAYOUT_OBJECTS_THRESHOLD) {
                 largeLayoutUpdates.push(event);
             }
         }
         for (const event of updateLayoutTreeEvents) {
-            if (!isWithinContext(event)) {
+            if (event.dur < DOM_SIZE_DURATION_THRESHOLD || !isWithinContext(event)) {
                 continue;
             }
             const { elementCount } = event.args;
-            if (elementCount > DOM_UPDATE_LIMIT) {
+            if (elementCount > STYLE_RECALC_ELEMENTS_THRESHOLD) {
                 largeStyleRecalcs.push(event);
             }
         }

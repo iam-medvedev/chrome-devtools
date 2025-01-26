@@ -14,7 +14,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    setWindowTimes(startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): void;
+    setWindowTimes(startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): void;
     createSelection(index: number): TimelineSelection | null;
     customizedContextMenu(event: MouseEvent, eventIndex: number, _groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     indexForEvent(event: Trace.Types.Events.Event): number | null;
@@ -80,7 +80,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * searches entries within the specified time and returns a list of entry
      * indexes
      */
-    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicro, filter?: Trace.Extras.TraceFilter.TraceFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     /**
      * Returns a map of navigations that happened in the main frame, ignoring any
      * that happened in other frames.

@@ -4,7 +4,7 @@
 import '../icon_button/icon_button.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import buttonStyles from './button.css.legacy.js';
+import buttonStyles from './button.css.js';
 const { html, Directives: { ifDefined, ref, classMap } } = LitHtml;
 export class Button extends HTMLElement {
     static formAssociated = true;
@@ -26,13 +26,20 @@ export class Button extends HTMLElement {
         super();
         this.setAttribute('role', 'presentation');
         this.addEventListener('click', this.#boundOnClick, true);
-        // TODO(crbug.com/359141904): Ideally we would be using
-        // adopted style sheets for installing css styles, but this
-        // currently throws an error when sharing the styles across
-        // multiple documents. This is a workaround.
-        const styleElement = document.createElement('style');
-        styleElement.textContent = buttonStyles.cssContent;
-        this.#shadow.appendChild(styleElement);
+    }
+    #eventListeners = [];
+    addEventListener(...args) {
+        super.addEventListener(...args);
+        this.#eventListeners.push(args);
+    }
+    cloneNode(deep) {
+        const node = super.cloneNode(deep);
+        Object.assign(node.#props, this.#props);
+        for (const args of this.#eventListeners) {
+            node.addEventListener(...args);
+        }
+        node.#render();
+        return node;
     }
     /**
      * Perfer using the .data= setter instead of setting the individual properties
@@ -40,7 +47,6 @@ export class Button extends HTMLElement {
      */
     set data(data) {
         this.#props.variant = data.variant;
-        this.#props.iconUrl = data.iconUrl;
         this.#props.iconName = data.iconName;
         this.#props.toggledIconName = data.toggledIconName;
         this.#props.toggleOnClick = data.toggleOnClick !== undefined ? data.toggleOnClick : true;
@@ -61,10 +67,6 @@ export class Button extends HTMLElement {
         this.#props.title = data.title;
         this.#props.jslogContext = data.jslogContext;
         this.#props.longClickable = data.longClickable;
-        this.#render();
-    }
-    set iconUrl(iconUrl) {
-        this.#props.iconUrl = iconUrl;
         this.#render();
     }
     set iconName(iconName) {
@@ -148,6 +150,7 @@ export class Button extends HTMLElement {
         this.#render();
     }
     connectedCallback() {
+        this.#shadow.adoptedStyleSheets = [buttonStyles];
         this.#render();
     }
     #onClick(event) {
@@ -201,7 +204,7 @@ export class Button extends HTMLElement {
             throw new Error('Button requires a variant to be defined');
         }
         if (this.#isToolbarVariant()) {
-            if (!this.#props.iconUrl && !this.#props.iconName) {
+            if (!this.#props.iconName) {
                 throw new Error('Toolbar button requires an icon');
             }
             if (!isEmpty) {
@@ -209,17 +212,14 @@ export class Button extends HTMLElement {
             }
         }
         if (this.#props.variant === "icon" /* Variant.ICON */) {
-            if (!this.#props.iconUrl && !this.#props.iconName) {
+            if (!this.#props.iconName) {
                 throw new Error('Icon button requires an icon');
             }
             if (!isEmpty) {
                 throw new Error('Icon button does not accept children');
             }
         }
-        if (this.#props.iconName && this.#props.iconUrl) {
-            throw new Error('Both iconName and iconUrl are provided.');
-        }
-        const hasIcon = Boolean(this.#props.iconUrl) || Boolean(this.#props.iconName);
+        const hasIcon = Boolean(this.#props.iconName);
         const classes = {
             primary: this.#props.variant === "primary" /* Variant.PRIMARY */,
             tonal: this.#props.variant === "tonal" /* Variant.TONAL */,
@@ -257,7 +257,7 @@ export class Button extends HTMLElement {
                 @keydown=${this.#onKeydown}
         >${hasIcon
             ? html `
-                <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName || this.#props.iconUrl)}>
+                <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName)}>
                 </devtools-icon>`
             : ''}
           ${this.#props.longClickable ? html `<devtools-icon name=${'triangle-bottom-right'} class="long-click"

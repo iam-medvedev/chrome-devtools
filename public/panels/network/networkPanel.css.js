@@ -163,6 +163,7 @@ styles.replaceSync(
 
 .network-toolbar-container {
   display: flex;
+  align-items: flex-start;
   flex: none;
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);

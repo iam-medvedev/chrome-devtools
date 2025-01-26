@@ -30,7 +30,7 @@ export class ReportingApiReportsView extends UI.SplitWidget.SplitWidget {
         bottomPanel.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
         this.setSidebarWidget(bottomPanel);
         topPanel.contentElement.appendChild(this.reportsGrid);
-        this.reportsGrid.addEventListener('cellfocused', this.onFocus.bind(this));
+        this.reportsGrid.addEventListener('select', this.onFocus.bind(this));
         bottomPanel.contentElement.classList.add('placeholder');
         const centered = bottomPanel.contentElement.createChild('div');
         centered.textContent = i18nString(UIStrings.clickToDisplayBody);
@@ -54,9 +54,8 @@ export class ReportingApiReportsView extends UI.SplitWidget.SplitWidget {
         this.reportsGrid.data = { reports: this.reports };
     }
     async onFocus(event) {
-        const focusedEvent = event;
-        const cell = focusedEvent.data.row.cells.find(cell => cell.columnId === 'id');
-        const report = cell && this.reports.find(report => report.id === cell.value);
+        const selectEvent = event;
+        const report = this.reports.find(report => report.id === selectEvent.detail);
         if (report) {
             const jsonView = await SourceFrame.JSONView.JSONView.createView(JSON.stringify(report.body));
             jsonView?.setMinimumSize(0, 40);

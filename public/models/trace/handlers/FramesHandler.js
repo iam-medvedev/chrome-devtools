@@ -189,7 +189,7 @@ export class TimelineFrameModel {
             this.#flushFrame(this.#lastFrame, startTime);
         }
         this.#lastFrame =
-            new TimelineFrame(seqId, startTime, Types.Timing.MicroSeconds(startTime - metaHandlerData().traceBounds.min));
+            new TimelineFrame(seqId, startTime, Types.Timing.Micro(startTime - metaHandlerData().traceBounds.min));
     }
     #flushFrame(frame, endTime) {
         frame.setLayerTree(this.#lastLayerTree);
@@ -345,7 +345,7 @@ class TimelineFrame {
         this.ts = startTime;
         this.startTimeOffset = startTimeOffset;
         this.endTime = this.startTime;
-        this.duration = Types.Timing.MicroSeconds(0);
+        this.duration = Types.Timing.Micro(0);
         this.idle = false;
         this.dropped = false;
         this.isPartial = false;
@@ -358,7 +358,7 @@ class TimelineFrame {
     }
     setEndTime(endTime) {
         this.endTime = endTime;
-        this.duration = Types.Timing.MicroSeconds(this.endTime - this.startTime);
+        this.duration = Types.Timing.Micro(this.endTime - this.startTime);
     }
     setLayerTree(layerTree) {
         this.layerTree = layerTree;

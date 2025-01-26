@@ -6,20 +6,20 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Components from './components.js';
 describeWithEnvironment('Sidebar', () => {
-    async function renderSidebar(parsedTrace, insights) {
+    async function renderSidebar(parsedTrace, metadata, insights) {
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         const sidebar = new Components.Sidebar.SidebarWidget();
         sidebar.markAsRoot();
-        sidebar.setParsedTrace(parsedTrace);
+        sidebar.setParsedTrace(parsedTrace, metadata);
         sidebar.setInsights(insights);
         sidebar.show(container);
         await raf();
         return sidebar;
     }
     it('renders with two tabs for insights & annotations', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const sidebar = await renderSidebar(parsedTrace, insights);
+        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const sidebar = await renderSidebar(parsedTrace, metadata, insights);
         const tabbedPane = sidebar.element.querySelector('.tabbed-pane')?.shadowRoot;
         assert.isOk(tabbedPane);
         const tabs = Array.from(tabbedPane.querySelectorAll('[role="tab"]'));
@@ -28,8 +28,8 @@ describeWithEnvironment('Sidebar', () => {
         assert.deepEqual(labels, ['Insights', 'Annotations']);
     });
     it('selects the insights tab by default', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const sidebar = await renderSidebar(parsedTrace, insights);
+        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const sidebar = await renderSidebar(parsedTrace, metadata, insights);
         const tabbedPane = sidebar.element.querySelector('.tabbed-pane')?.shadowRoot;
         assert.isOk(tabbedPane);
         const tabs = Array.from(tabbedPane.querySelectorAll('[role="tab"]'));
@@ -37,8 +37,8 @@ describeWithEnvironment('Sidebar', () => {
         assert.deepEqual(selectedTabLabels, ['Insights']);
     });
     it('disables the insights tab if there are no insights', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const sidebar = await renderSidebar(parsedTrace, null);
+        const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const sidebar = await renderSidebar(parsedTrace, metadata, null);
         const tabbedPane = sidebar.element.querySelector('.tabbed-pane')?.shadowRoot;
         assert.isOk(tabbedPane);
         const tabs = Array.from(tabbedPane.querySelectorAll('[role="tab"]'));

@@ -4,7 +4,7 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
  * An EntryBreakdown, or section, that makes up a TimespanBreakdown.
  */
 export interface EntryBreakdown {
-    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
+    bounds: Trace.Types.Timing.TraceWindowMicro;
     label: string | LitHtml.LitTemplate;
     showDuration: boolean;
 }

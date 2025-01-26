@@ -8,9 +8,11 @@ export class CookieReportTreeElement extends SecurityPanelSidebarTreeElement {
         super(title, false, jslogContext);
         this.setLeadingIcons([IconButton.Icon.create('cookie', 'cookie-icon')]);
     }
-    onselect() {
+    get elemId() {
+        return 'report';
+    }
+    showElement() {
         this.listItemElement.dispatchEvent(new CustomEvent('showCookieReport', { bubbles: true, composed: true }));
-        return true;
     }
 }
 //# sourceMappingURL=CookieReportTreeElement.js.map

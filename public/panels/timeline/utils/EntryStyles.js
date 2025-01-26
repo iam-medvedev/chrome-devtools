@@ -729,7 +729,11 @@ export function maybeInitSylesMap() {
         ["DoVerify" /* Trace.Types.Events.Name.CRYPTO_DO_VERIFY */]: new TimelineRecordStyle(i18nString(UIStrings.verify), defaultCategoryStyles.scripting),
         ["DoVerifyReply" /* Trace.Types.Events.Name.CRYPTO_DO_VERIFY_REPLY */]: new TimelineRecordStyle(i18nString(UIStrings.verifyReply), defaultCategoryStyles.scripting),
         ["AsyncTask" /* Trace.Types.Events.Name.ASYNC_TASK */]: new TimelineRecordStyle(i18nString(UIStrings.asyncTask), defaultCategoryStyles.async),
-        ["LayoutShift" /* Trace.Types.Events.Name.LAYOUT_SHIFT */]: new TimelineRecordStyle(i18nString(UIStrings.layoutShift), defaultCategoryStyles.experience),
+        ["LayoutShift" /* Trace.Types.Events.Name.LAYOUT_SHIFT */]: new TimelineRecordStyle(i18nString(UIStrings.layoutShift), defaultCategoryStyles.experience, 
+        /* Mark LayoutShifts as hidden; in the timeline we render
+        * SyntheticLayoutShifts so those are the ones visible to the user */
+        true),
+        ["SyntheticLayoutShift" /* Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT */]: new TimelineRecordStyle(i18nString(UIStrings.layoutShift), defaultCategoryStyles.experience),
         ["SyntheticLayoutShiftCluster" /* Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT_CLUSTER */]: new TimelineRecordStyle(i18nString(UIStrings.layoutShiftCluster), defaultCategoryStyles.experience),
         ["EventTiming" /* Trace.Types.Events.Name.EVENT_TIMING */]: new TimelineRecordStyle(i18nString(UIStrings.eventTiming), defaultCategoryStyles.experience),
         ["HandlePostMessage" /* Trace.Types.Events.Name.HANDLE_POST_MESSAGE */]: new TimelineRecordStyle(i18nString(UIStrings.onMessage), defaultCategoryStyles.messaging),

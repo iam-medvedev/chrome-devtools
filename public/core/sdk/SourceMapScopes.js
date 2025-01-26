@@ -11,6 +11,22 @@
  * in this file to change frequently.
  */
 import { TokenIterator } from './SourceMap.js';
+/** @returns 0 if both positions are equal, a negative number if a < b and a positive number if a > b */
+export function comparePositions(a, b) {
+    return a.line - b.line || a.column - b.column;
+}
+export function decodeScopes(map, basePosition = {
+    line: 0,
+    column: 0
+}) {
+    if (!map.originalScopes || map.generatedRanges === undefined) {
+        throw new Error('Cant decode scopes without "originalScopes" or "generatedRanges"');
+    }
+    const scopeTrees = decodeOriginalScopes(map.originalScopes, map.names ?? []);
+    const originalScopes = scopeTrees.map(tree => tree.root);
+    const generatedRanges = decodeGeneratedRanges(map.generatedRanges, scopeTrees, map.names ?? [], basePosition);
+    return { originalScopes, generatedRanges };
+}
 export function decodeOriginalScopes(encodedOriginalScopes, names) {
     return encodedOriginalScopes.map(scope => decodeOriginalScope(scope, names));
 }
@@ -96,7 +112,10 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
         yield [itemCount++, startItem];
     }
 }
-export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, names) {
+export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, names, basePosition = {
+    line: 0,
+    column: 0
+}) {
     // We insert a pseudo range as there could be multiple top-level ranges and we need a root range those can be attached to.
     const rangeStack = [{
             start: { line: 0, column: 0 },
@@ -107,7 +126,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
             values: [],
         }];
     const rangeToStartItem = new Map();
-    for (const item of decodeGeneratedRangeItems(encodedGeneratedRange)) {
+    for (const item of decodeGeneratedRangeItems(encodedGeneratedRange, basePosition)) {
         if (isRangeStart(item)) {
             const range = {
                 start: { line: item.line, column: item.column },
@@ -180,14 +199,14 @@ function resolveBindings(range, names, bindingsForAllVars) {
 function isRangeStart(item) {
     return 'flags' in item;
 }
-function* decodeGeneratedRangeItems(encodedGeneratedRange) {
+function* decodeGeneratedRangeItems(encodedGeneratedRange, basePosition) {
     const iter = new TokenIterator(encodedGeneratedRange);
-    let line = 0;
+    let line = basePosition.line;
     // The state are the fields of the last produced item, tracked because many
     // are relative to the preceeding item.
     const state = {
-        line: 0,
-        column: 0,
+        line: basePosition.line,
+        column: basePosition.column,
         defSourceIdx: 0,
         defScopeIdx: 0,
         callsiteSourceIdx: 0,

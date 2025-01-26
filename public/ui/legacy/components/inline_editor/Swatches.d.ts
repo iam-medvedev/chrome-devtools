@@ -3,8 +3,6 @@ import type { CSSShadowModel } from './CSSShadowEditor.js';
 export declare class BezierSwatch extends HTMLElement {
     #private;
     constructor();
-    connectedCallback(): void;
-    disconnectedCallback(): void;
     static create(): BezierSwatch;
     bezierText(): string;
     setBezierText(text: string): void;

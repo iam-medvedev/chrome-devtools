@@ -29,9 +29,7 @@
 import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import * as Helpers from '../components/helpers/helpers.js';
 import { Constraints, Size } from './Geometry.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
 import { XWidget } from './XWidget.js';
 // Remember the original DOM mutation methods here, since we
@@ -45,14 +43,46 @@ function assert(condition, message) {
         throw new Error(message);
     }
 }
-export class WidgetElement extends HTMLElement {
+export class WidgetConfig {
     widgetClass;
-    widgetParams = [];
+    widgetParams;
+    constructor(widgetClass, widgetParams) {
+        this.widgetClass = widgetClass;
+        this.widgetParams = widgetParams;
+    }
+}
+export function widgetConfig(widgetClass, widgetParams) {
+    return new WidgetConfig(widgetClass, widgetParams);
+}
+export class WidgetElement extends HTMLElement {
+    #widgetClass;
+    #widgetParams;
     createWidget() {
-        if (!this.widgetClass) {
+        if (!this.#widgetClass) {
             throw new Error('No widgetClass defined');
         }
-        return new this.widgetClass(...this.widgetParams, this);
+        const widget = new this.#widgetClass(this);
+        if (this.#widgetParams) {
+            Object.assign(widget, this.#widgetParams);
+        }
+        return widget;
+    }
+    set widgetConfig(config) {
+        const widget = Widget.get(this);
+        if (widget) {
+            let needsUpdate = false;
+            for (const key in config.widgetParams) {
+                if (config.widgetParams.hasOwnProperty(key) && config.widgetParams[key] !== this.#widgetParams?.[key]) {
+                    needsUpdate = true;
+                }
+            }
+            if (needsUpdate) {
+                Object.assign(widget, this.#widgetParams);
+                widget.requestUpdate();
+            }
+        }
+        this.#widgetClass = config.widgetClass;
+        this.#widgetParams = config.widgetParams;
     }
     connectedCallback() {
         Widget.getOrCreateWidget(this).show(this.parentElement);
@@ -458,12 +488,16 @@ export class Widget {
         this.notify(this.onLayout);
         this.doResize();
     }
-    registerRequiredCSS(cssFile) {
-        ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot ?? this.element, cssFile);
-    }
-    registerCSSFiles(cssFiles) {
-        const root = this.shadowRoot ?? Helpers.GetRootNode.getRootNode(this.contentElement);
-        root.adoptedStyleSheets = root.adoptedStyleSheets.concat(cssFiles);
+    registerCSSFiles(styleSheets) {
+        const root = (this.shadowRoot ?? this.contentElement.getRootNode());
+        // Make sure to properly deduplicate CSSStyleSheet instances (after the
+        // DOMExtension.ts magic kicked in), so we don't end up just appending
+        // the same style sheets over and over again when hiding and showing.
+        // TODO(http://crbug.com/391381439): We should get rid of this and
+        // instead use a declarative approach to associate style sheets with
+        // widgets, similar to how `LitElement` uses the `styles` class property.
+        root.adoptedStyleSheets.push(...styleSheets);
+        root.adoptedStyleSheets = [...new Set(root.adoptedStyleSheets)];
     }
     printWidgetHierarchy() {
         const lines = [];

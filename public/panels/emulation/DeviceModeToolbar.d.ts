@@ -33,10 +33,10 @@ export declare class DeviceModeToolbar {
     private cachedModelMode?;
     constructor(model: EmulationModel.DeviceModeModel.DeviceModeModel, showMediaInspectorSetting: Common.Settings.Setting<boolean>, showRulersSetting: Common.Settings.Setting<boolean>);
     private createEmptyToolbarElement;
-    private fillLeftToolbar;
-    private fillMainToolbar;
-    private fillRightToolbar;
-    private fillModeToolbar;
+    private appendDeviceSelectMenu;
+    private appendDimensionInputs;
+    private appendDisplaySettings;
+    private appendDevicePositionItems;
     private createExperimentalButton;
     private experimentalClicked;
     private fillOptionsToolbar;
@@ -49,7 +49,6 @@ export declare class DeviceModeToolbar {
     private appendUserAgentMenuItems;
     private appendOptionsMenuItems;
     private reset;
-    private wrapToolbarItem;
     private emulateDevice;
     private switchToResponsive;
     private filterDevices;

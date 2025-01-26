@@ -61,8 +61,8 @@ export class CLSCulprits extends BaseInsightComponent {
         if (!worstCluster) {
             return [];
         }
-        const range = Trace.Types.Timing.MicroSeconds(worstCluster.dur ?? 0);
-        const max = Trace.Types.Timing.MicroSeconds(worstCluster.ts + range);
+        const range = Trace.Types.Timing.Micro(worstCluster.dur ?? 0);
+        const max = Trace.Types.Timing.Micro(worstCluster.ts + range);
         const label = html `<div>${i18nString(UIStrings.worstLayoutShiftCluster)}</div>`;
         return [{
                 type: 'TIMESPAN_BREAKDOWN',
@@ -128,7 +128,7 @@ export class CLSCulprits extends BaseInsightComponent {
         if (culprits.length === 0) {
             return html `<div class="insight-section">${i18nString(UIStrings.noCulprits)}</div>`;
         }
-        const ts = Trace.Types.Timing.MicroSeconds(worstCluster.ts - this.bounds.min);
+        const ts = Trace.Types.Timing.Micro(worstCluster.ts - this.bounds.min);
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // clang-format off
         return html `

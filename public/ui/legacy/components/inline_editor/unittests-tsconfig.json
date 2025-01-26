@@ -42,7 +42,6 @@
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/AnimationTimingUI.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/BezierUI.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngle.test.ts",
-    "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLength.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.test.ts",

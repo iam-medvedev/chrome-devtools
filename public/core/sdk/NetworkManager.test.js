@@ -14,18 +14,19 @@ import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const LONG_URL_PART = 'LoremIpsumDolorSitAmetConsecteturAdipiscingElitPhasellusVitaeOrciInAugueCondimentumTinciduntUtEgetDolorQuisqueEfficiturUltricesTinciduntVivamusVelitPurusCommodoQuisErosSitAmetTemporMalesuadaNislNullamTtempusVulputateAugueEgetScelerisqueLacusVestibulumNon/index.html';
 describeWithMockConnection('NetworkManager', () => {
-    it('setCookieControls gets invoked when network agent auto attach', () => {
-        const enableThirdPartyCookieRestrictionSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', true);
-        const disableThirdPartyCookieMetadataSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', false);
-        const disableThirdPartyCookieHeuristicsSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', false);
-        assert.isTrue(enableThirdPartyCookieRestrictionSetting.get());
-        assert.isFalse(disableThirdPartyCookieMetadataSetting.get());
-        assert.isFalse(disableThirdPartyCookieHeuristicsSetting.get());
+    it('setCookieControls gets invoked with expected values when network agent auto attach', () => {
+        const enableThirdPartyCookieRestrictionSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', false);
+        const disableThirdPartyCookieMetadataSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', true);
+        const disableThirdPartyCookieHeuristicsSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', true);
+        assert.isFalse(enableThirdPartyCookieRestrictionSetting.get());
+        assert.isTrue(disableThirdPartyCookieMetadataSetting.get());
+        assert.isTrue(disableThirdPartyCookieHeuristicsSetting.get());
         const target = createTarget();
         const expectedCall = sinon.spy(target.networkAgent(), 'invoke_setCookieControls');
         new SDK.NetworkManager.NetworkManager(target);
+        // Metadata and heuristics should be disabled when cookie controls is disabled.
         assert.isTrue(expectedCall.calledOnceWith({
-            enableThirdPartyCookieRestriction: true,
+            enableThirdPartyCookieRestriction: false,
             disableThirdPartyCookieMetadata: false,
             disableThirdPartyCookieHeuristics: false
         }));

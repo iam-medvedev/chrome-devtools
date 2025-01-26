@@ -99,8 +99,8 @@ export declare function getRegisteredProviders(): ProviderRegistration[];
 export interface ProviderRegistration {
     prefix: string;
     iconName: string;
-    iconWidth: string;
     provider: () => Promise<Provider>;
+    helpTitle: (() => string);
     titlePrefix: (() => string);
     titleSuggestion?: (() => string);
 }

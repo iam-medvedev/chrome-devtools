@@ -52,7 +52,12 @@ const UIStrings = {
      */
     gracePeriodExplanation: 'If this site or a site embedded on it is enrolled in the {PH1}, then the site can access third-party cookies',
     /**
-     *@description Text used for link within the gracePeriodExplanation to let the user learn more about the grace period
+     *@description Text shown when a site and its embedded resources are not enrolled in a grace period.
+     *@example {grace period} PH1
+     */
+    enrollGracePeriod: 'To use this, enroll this site or sites embedded on it in the {PH1}',
+    /**
+     *@description Text used for link within gracePeriodExplanation and enrollGracePeriod to let the user learn more about the grace period
      */
     gracePeriod: 'grace period',
     /**
@@ -99,6 +104,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const i18nFormatString = i18n.i18n.getFormatLocalizedString.bind(undefined, str_);
 export class CookieControlsView extends UI.Widget.VBox {
     #view;
+    #isGracePeriodActive;
     constructor(element, view = (input, output, target) => {
         const thirdPartyControlsDict = Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls;
         // createSetting() allows us to initialize the settings with the UI binding values the first
@@ -144,7 +150,7 @@ export class CookieControlsView extends UI.Widget.VBox {
       </div>
     `;
         const gracePeriodControlDisabled = (thirdPartyControlsDict ? (!thirdPartyControlsDict.thirdPartyCookieMetadataEnabled) : false) ||
-            enterpriseEnabledSetting.get() || !toggleEnabledSetting.get();
+            enterpriseEnabledSetting.get() || !toggleEnabledSetting.get() || !this.#isGracePeriodActive;
         const gracePeriodControl = html `
       <div class="card-row">
         <label class='checkbox-label'>
@@ -165,7 +171,7 @@ export class CookieControlsView extends UI.Widget.VBox {
                 i18nFormatString(UIStrings.enableFlag, {
                     PH1: UI.Fragment.html `<x-link class="x-link" href="chrome://flags/#tpcd-metadata-grants" jslog=${VisualLogging.link('metadata-grants-flag-link').track({ click: true })}>${i18nString(UIStrings.tpcdMetadataGrants)}</x-link>`,
                 }) :
-                i18nFormatString(UIStrings.gracePeriodExplanation, {
+                i18nFormatString(this.#isGracePeriodActive ? UIStrings.gracePeriodExplanation : UIStrings.enrollGracePeriod, {
                     PH1: UI.Fragment.html `<x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link('grace-period-link').track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`,
                 })}
             </div>
@@ -225,7 +231,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             <div class="title">${i18nString(UIStrings.viewTitle)}</div>
             <div class="body">${i18nString(UIStrings.viewExplanation)}</div>
           </div>
-          <devtools-card>
+          <devtools-card class="card-container">
             <div slot="content" class=${Boolean(enterpriseEnabledSetting.get()) ? 'card enterprise-disabled' : 'card'}>
               ${cardHeader}
               <div>
@@ -246,7 +252,12 @@ export class CookieControlsView extends UI.Widget.VBox {
     }) {
         super(true, undefined, element);
         this.#view = view;
+        this.#isGracePeriodActive = false;
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.ResourceAdded, this.checkGracePeriodActive, this);
+        this.checkGracePeriodActive().catch(error => {
+            console.error(error);
+        });
         this.requestUpdate();
     }
     performUpdate() {
@@ -270,11 +281,41 @@ export class CookieControlsView extends UI.Widget.VBox {
         });
     }
     #onPrimaryPageChanged() {
+        this.#isGracePeriodActive = false;
+        this.checkGracePeriodActive().catch(error => {
+            console.error(error);
+        });
         UI.InspectorView.InspectorView.instance().removeDebuggedTabReloadRequiredWarning();
     }
     wasShown() {
         super.wasShown();
         this.registerCSSFiles([Input.checkboxStyles, cookieControlsViewStyles]);
+    }
+    async checkGracePeriodActive(event) {
+        if (this.#isGracePeriodActive) {
+            return;
+        }
+        const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (!mainTarget) {
+            return;
+        }
+        const urls = [];
+        if (!event) {
+            for (const resourceTreeModel of SDK.TargetManager.TargetManager.instance().models(SDK.ResourceTreeModel.ResourceTreeModel)) {
+                resourceTreeModel.forAllResources(r => {
+                    urls.push(r.url);
+                    return true;
+                });
+            }
+        }
+        else {
+            urls.push(event.data.url);
+        }
+        const result = await mainTarget.storageAgent().invoke_getAffectedUrlsForThirdPartyCookieMetadata({ firstPartyUrl: mainTarget.inspectedURL(), thirdPartyUrls: urls });
+        if (result.matchedUrls && result.matchedUrls.length > 0) {
+            this.#isGracePeriodActive = true;
+            this.requestUpdate();
+        }
     }
 }
 //# sourceMappingURL=CookieControlsView.js.map

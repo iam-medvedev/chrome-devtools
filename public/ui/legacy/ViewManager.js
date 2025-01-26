@@ -12,7 +12,7 @@ import * as ARIAUtils from './ARIAUtils.js';
 import { Events as TabbedPaneEvents, TabbedPane } from './TabbedPane.js';
 import { ToolbarMenuButton } from './Toolbar.js';
 import { createTextChild } from './UIUtils.js';
-import viewContainersStyles from './viewContainers.css.legacy.js';
+import viewContainersStyles from './viewContainers.css.js';
 import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
@@ -343,7 +343,6 @@ class ExpandableContainerWidget extends VBox {
     constructor(view) {
         super(true);
         this.element.classList.add('flex-none');
-        this.registerRequiredCSS(viewContainersStyles);
         this.titleElement = document.createElement('div');
         this.titleElement.classList.add('expandable-view-title');
         this.titleElement.setAttribute('jslog', `${VisualLogging.sectionHeader().context(view.viewId()).track({
@@ -366,6 +365,8 @@ class ExpandableContainerWidget extends VBox {
         expandableContainerForView.set(view, this);
     }
     wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([viewContainersStyles]);
         if (this.widget && this.materializePromise) {
             void this.materializePromise.then(() => {
                 if (this.titleElement.classList.contains('expanded') && this.widget) {

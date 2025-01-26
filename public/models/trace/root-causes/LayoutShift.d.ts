@@ -46,18 +46,18 @@ export declare class LayoutShiftRootCauses {
      * events the first time that it's called. That then populates the cache for
      * each shift, so any subsequent calls are just a constant lookup.
      */
-    rootCausesForEvent(modelData: ParsedTrace, event: Types.Events.LayoutShift): Promise<Readonly<LayoutShiftRootCausesData> | null>;
+    rootCausesForEvent(modelData: ParsedTrace, event: Types.Events.SyntheticLayoutShift): Promise<Readonly<LayoutShiftRootCausesData> | null>;
     /**
      * Determines potential root causes for shifts
      */
-    blameShifts(layoutShifts: Types.Events.LayoutShift[], modelData: ParsedTrace): Promise<void>;
+    blameShifts(layoutShifts: Types.Events.SyntheticLayoutShift[], modelData: ParsedTrace): Promise<void>;
     /**
      * "LayoutInvalidations" are a set of trace events dispatched in Blink under the name
      * "layoutInvalidationTracking", which track invalidations on the "Layout"stage of the
      * rendering pipeline. This function utilizes this event to flag potential root causes
      * to layout shifts.
      */
-    linkShiftsToLayoutInvalidations(layoutShifts: Types.Events.LayoutShift[], modelData: ParsedTrace): Promise<void>;
+    linkShiftsToLayoutInvalidations(layoutShifts: Types.Events.SyntheticLayoutShift[], modelData: ParsedTrace): Promise<void>;
     /**
      * For every shift looks up the initiator of its corresponding Layout event. This initiator
      * is assigned by the RendererHandler and contains the stack trace of the point in a script
@@ -66,7 +66,7 @@ export declare class LayoutShiftRootCauses {
      * Note that a Layout cannot always be linked to a script, in that case, we cannot add a
      * "script causing reflow" as a potential root cause to the corresponding shift.
      */
-    linkShiftsToLayoutEvents(layoutShifts: Types.Events.LayoutShift[], modelData: ParsedTrace): void;
+    linkShiftsToLayoutEvents(layoutShifts: Types.Events.SyntheticLayoutShift[], modelData: ParsedTrace): void;
     /**
      * Given a LayoutInvalidation trace event, determines if it was dispatched
      * because a media element without dimensions was resized.

@@ -62,8 +62,10 @@ export declare class DOMNode {
     pseudoIdentifier(): string | undefined;
     hasPseudoElements(): boolean;
     pseudoElements(): Map<string, DOMNode[]>;
+    checkmarkPseudoElement(): DOMNode | undefined;
     beforePseudoElement(): DOMNode | undefined;
     afterPseudoElement(): DOMNode | undefined;
+    pickerIconPseudoElement(): DOMNode | undefined;
     markerPseudoElement(): DOMNode | undefined;
     backdropPseudoElement(): DOMNode | undefined;
     viewTransitionPseudoElements(): DOMNode[];

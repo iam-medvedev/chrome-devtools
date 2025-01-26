@@ -849,7 +849,7 @@ export class NavigatorView extends UI.Widget.VBox {
         }
     }
     async removeUISourceCodeFromProject(node) {
-        node.children().forEach(async (child) => {
+        node.children().slice(0).forEach(async (child) => {
             await this.removeUISourceCodeFromProject(child);
         });
         if (node instanceof NavigatorUISourceCodeTreeNode) {
@@ -1276,18 +1276,18 @@ export class NavigatorTreeNode {
     id;
     navigatorView;
     type;
-    childrenInternal;
     populated;
     isMerged;
     parent;
     title;
     tooltip;
     recursiveProperties;
+    #children = [];
+    #childById = new Map();
     constructor(navigatorView, id, type, tooltip) {
         this.id = id;
         this.navigatorView = navigatorView;
         this.type = type;
-        this.childrenInternal = new Map();
         this.tooltip = tooltip;
         this.populated = false;
         this.isMerged = false;
@@ -1358,27 +1358,40 @@ export class NavigatorTreeNode {
         return this.populated;
     }
     isEmpty() {
-        return !this.childrenInternal.size;
+        return !this.#children.length;
     }
     children() {
-        return [...this.childrenInternal.values()];
+        return this.#children;
     }
     child(id) {
-        return this.childrenInternal.get(id) || null;
+        return this.#childById.get(id) ?? null;
     }
     appendChild(node) {
-        this.childrenInternal.set(node.id, node);
+        this.#children.push(node);
+        this.#childById.set(node.id, node);
         node.parent = this;
         this.didAddChild(node);
     }
     removeChild(node) {
         this.willRemoveChild(node);
-        this.childrenInternal.delete(node.id);
+        const idx = this.#children.findIndex(n => n.id === node.id);
+        if (idx >= 0) {
+            this.#children.splice(idx, 1);
+        }
+        this.#childById.delete(node.id);
         node.parent = null;
         node.dispose();
     }
     reset() {
-        this.childrenInternal.clear();
+        this.#children = [];
+        this.#childById.clear();
+    }
+    updateId(newId) {
+        if (this.parent) {
+            this.parent.#childById.delete(this.id);
+            this.parent.#childById.set(newId, this);
+        }
+        this.id = newId;
     }
 }
 export class NavigatorRootTreeNode extends NavigatorTreeNode {
@@ -1455,9 +1468,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         }
         this.treeElement.tooltip = tooltip;
         this.treeElement.updateAccessibleName();
-        this.parent?.childrenInternal.delete(this.id);
-        this.id = 'UISourceCode:' + this.uiSourceCodeInternal.canononicalScriptId();
-        this.parent?.childrenInternal.set(this.id, this);
+        this.updateId('UISourceCode:' + this.uiSourceCodeInternal.canononicalScriptId());
     }
     hasChildren() {
         return false;

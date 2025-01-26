@@ -13,7 +13,7 @@ export declare class TimeRangeOverlay extends HTMLElement {
     connectedCallback(): void;
     constructor(initialLabel: string);
     set canvasRect(rect: DOMRect | null);
-    set duration(duration: Trace.Types.Timing.MicroSeconds | null);
+    set duration(duration: Trace.Types.Timing.Micro | null);
     /**
      * We use this method after the overlay has been positioned in order to move
      * the label as required to keep it on screen.

@@ -72,6 +72,9 @@
       "path": "../../ui/legacy/components/source_frame/bundle-tsconfig.json"
     },
     {
+      "path": "../ai_assistance/bundle-tsconfig.json"
+    },
+    {
       "path": "../console/bundle-tsconfig.json"
     },
     {

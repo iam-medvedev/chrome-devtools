@@ -714,6 +714,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 steps: [],
             };
             let step = { isLoading: true };
+            /**
+             * Commits the step to props only if necessary.
+             */
+            function commitStep() {
+                if (systemMessage.steps.at(-1) !== step) {
+                    systemMessage.steps.push(step);
+                }
+            }
             this.#viewProps.isLoading = true;
             for await (const data of generator) {
                 step.sideEffect = undefined;
@@ -741,24 +749,18 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         step.title = data.title;
                         step.contextDetails = data.details;
                         step.isLoading = false;
-                        if (systemMessage.steps.at(-1) !== step) {
-                            systemMessage.steps.push(step);
-                        }
+                        commitStep();
                         break;
                     }
                     case "title" /* ResponseType.TITLE */: {
                         step.title = data.title;
-                        if (systemMessage.steps.at(-1) !== step) {
-                            systemMessage.steps.push(step);
-                        }
+                        commitStep();
                         break;
                     }
                     case "thought" /* ResponseType.THOUGHT */: {
                         step.isLoading = false;
                         step.thought = data.thought;
-                        if (systemMessage.steps.at(-1) !== step) {
-                            systemMessage.steps.push(step);
-                        }
+                        commitStep();
                         break;
                     }
                     case "side-effect" /* ResponseType.SIDE_EFFECT */: {
@@ -767,9 +769,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         step.sideEffect = {
                             onAnswer: data.confirm,
                         };
-                        if (systemMessage.steps.at(-1) !== step) {
-                            systemMessage.steps.push(step);
-                        }
+                        commitStep();
                         break;
                     }
                     case "action" /* ResponseType.ACTION */: {
@@ -777,9 +777,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         step.code = data.code;
                         step.output = data.output;
                         step.canceled = data.canceled;
-                        if (systemMessage.steps.at(-1) !== step) {
-                            systemMessage.steps.push(step);
-                        }
+                        commitStep();
                         break;
                     }
                     case "answer" /* ResponseType.ANSWER */: {
@@ -812,13 +810,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         }
                     }
                 }
-                void this.doUpdate();
-                // This handles scrolling to the bottom for live conversations when:
-                // * User submits the query & the context step is shown.
-                // * There is a side effect dialog  shown.
-                if (!this.#viewProps.isReadOnly &&
-                    (data.type === "context" /* ResponseType.CONTEXT */ || data.type === "side-effect" /* ResponseType.SIDE_EFFECT */)) {
-                    this.#viewOutput.chatView?.scrollToBottom();
+                // Commit update intermediated step when not
+                // in read only mode.
+                if (!this.#viewProps.isReadOnly) {
+                    void this.doUpdate();
+                    // This handles scrolling to the bottom for live conversations when:
+                    // * User submits the query & the context step is shown.
+                    // * There is a side effect dialog  shown.
+                    if (data.type === "context" /* ResponseType.CONTEXT */ || data.type === "side-effect" /* ResponseType.SIDE_EFFECT */) {
+                        this.#viewOutput.chatView?.scrollToBottom();
+                    }
                 }
             }
             this.#viewProps.isLoading = false;

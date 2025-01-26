@@ -1,5 +1,5 @@
 import * as Trace from '../trace.js';
-export interface ExtensionTestData {
+export interface PerformanceAPIExtensionTestData {
     detail: {
         devtools?: Trace.Types.Extensions.ExtensionDataPayload;
     };
@@ -7,4 +7,13 @@ export interface ExtensionTestData {
     ts: number;
     dur?: number;
 }
-export declare function createTraceExtensionDataFromTestInput(extensionData: ExtensionTestData[]): Promise<Trace.Handlers.ModelHandlers.ExtensionTraceData.ExtensionTraceData>;
+export interface ConsoleAPIExtensionTestData {
+    name: string;
+    start?: string;
+    end?: string;
+    track?: string;
+    trackGroup?: string;
+    color?: string;
+    ts: number;
+}
+export declare function createTraceExtensionDataFromPerformanceAPITestInput(extensionData: PerformanceAPIExtensionTestData[]): Promise<Trace.Handlers.ModelHandlers.ExtensionTraceData.ExtensionTraceData>;

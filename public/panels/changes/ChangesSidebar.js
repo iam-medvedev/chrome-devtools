@@ -26,8 +26,9 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
     workspaceDiff;
     constructor(workspaceDiff) {
         super();
-        this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow();
+        this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.treeoutline.setFocusable(false);
+        this.treeoutline.hideOverflow();
         this.treeoutline.setComparator((a, b) => Platform.StringUtilities.compare(a.titleAsText(), b.titleAsText()));
         this.treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged, this);
         UI.ARIAUtils.markAsTablist(this.treeoutline.contentElement);

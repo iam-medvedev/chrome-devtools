@@ -95,7 +95,7 @@ export class LCPPhases extends BaseInsightComponent {
         if (!phases || !lcpTs) {
             return [];
         }
-        const lcpMicroseconds = Trace.Types.Timing.MicroSeconds(Trace.Helpers.Timing.millisecondsToMicroseconds(lcpTs));
+        const lcpMicroseconds = Trace.Types.Timing.Micro(Trace.Helpers.Timing.milliToMicro(lcpTs));
         const overlays = [];
         if (this.model.lcpRequest) {
             overlays.push({ type: 'ENTRY_OUTLINE', entry: this.model.lcpRequest, outlineReason: 'INFO' });
@@ -103,20 +103,20 @@ export class LCPPhases extends BaseInsightComponent {
         const sections = [];
         // For text LCP, we should only have ttfb and renderDelay sections.
         if (!phases?.loadDelay && !phases?.loadTime) {
-            const renderBegin = Trace.Types.Timing.MicroSeconds(lcpMicroseconds - Trace.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
+            const renderBegin = Trace.Types.Timing.Micro(lcpMicroseconds - Trace.Helpers.Timing.milliToMicro(phases.renderDelay));
             const renderDelay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
-            const mainReqStart = Trace.Types.Timing.MicroSeconds(renderBegin - Trace.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
+            const mainReqStart = Trace.Types.Timing.Micro(renderBegin - Trace.Helpers.Timing.milliToMicro(phases.ttfb));
             const ttfb = Trace.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, renderBegin);
             sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte), showDuration: true }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay), showDuration: true });
         }
         else if (phases?.loadDelay && phases?.loadTime) {
-            const renderBegin = Trace.Types.Timing.MicroSeconds(lcpMicroseconds - Trace.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
+            const renderBegin = Trace.Types.Timing.Micro(lcpMicroseconds - Trace.Helpers.Timing.milliToMicro(phases.renderDelay));
             const renderDelay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
-            const loadBegin = Trace.Types.Timing.MicroSeconds(renderBegin - Trace.Helpers.Timing.millisecondsToMicroseconds(phases.loadTime));
+            const loadBegin = Trace.Types.Timing.Micro(renderBegin - Trace.Helpers.Timing.milliToMicro(phases.loadTime));
             const loadTime = Trace.Helpers.Timing.traceWindowFromMicroSeconds(loadBegin, renderBegin);
-            const loadDelayStart = Trace.Types.Timing.MicroSeconds(loadBegin - Trace.Helpers.Timing.millisecondsToMicroseconds(phases.loadDelay));
+            const loadDelayStart = Trace.Types.Timing.Micro(loadBegin - Trace.Helpers.Timing.milliToMicro(phases.loadDelay));
             const loadDelay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(loadDelayStart, loadBegin);
-            const mainReqStart = Trace.Types.Timing.MicroSeconds(loadDelayStart - Trace.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
+            const mainReqStart = Trace.Types.Timing.Micro(loadDelayStart - Trace.Helpers.Timing.milliToMicro(phases.ttfb));
             const ttfb = Trace.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, loadDelayStart);
             sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte), showDuration: true }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay), showDuration: true }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadDuration), showDuration: true }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay), showDuration: true });
         }

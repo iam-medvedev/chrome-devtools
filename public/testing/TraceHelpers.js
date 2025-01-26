@@ -48,8 +48,8 @@ export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNa
     dataProvider.buildFromTrackAppendersForTest({ filterThreadsByName: trackName, expandedTracks: expanded ? trackAppenderNames : undefined });
     const delegate = new MockFlameChartDelegate();
     const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
-    const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
-    const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
+    const minTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+    const maxTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
     flameChart.setWindowTimes(minTime, maxTime);
     flameChart.markAsRoot();
     flameChart.update();
@@ -66,8 +66,8 @@ export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNa
 export async function getNetworkFlameChart(traceFileName, expanded) {
     await initializeGlobalVars();
     const { parsedTrace } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
-    const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
-    const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.max);
+    const minTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+    const maxTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
     const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
     dataProvider.setModel(parsedTrace);
     dataProvider.setWindowTimes(minTime, maxTime);
@@ -87,7 +87,7 @@ export const defaultTraceEvent = {
     name: 'process_name',
     tid: Trace.Types.Events.ThreadID(0),
     pid: Trace.Types.Events.ProcessID(0),
-    ts: Trace.Types.Timing.MicroSeconds(0),
+    ts: Trace.Types.Timing.Micro(0),
     cat: 'test',
     ph: "M" /* Trace.Types.Events.Phase.METADATA */,
 };
@@ -194,8 +194,8 @@ export function makeCompleteEvent(name, ts, dur, cat = '*', pid = 0, tid = 0) {
         ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(ts),
-        dur: Trace.Types.Timing.MicroSeconds(dur),
+        ts: Trace.Types.Timing.Micro(ts),
+        dur: Trace.Types.Timing.Micro(dur),
     };
 }
 export function makeAsyncStartEvent(name, ts, pid = 0, tid = 0) {
@@ -206,7 +206,7 @@ export function makeAsyncStartEvent(name, ts, pid = 0, tid = 0) {
         ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(ts),
+        ts: Trace.Types.Timing.Micro(ts),
     };
 }
 export function makeAsyncEndEvent(name, ts, pid = 0, tid = 0) {
@@ -217,7 +217,7 @@ export function makeAsyncEndEvent(name, ts, pid = 0, tid = 0) {
         ph: "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(ts),
+        ts: Trace.Types.Timing.Micro(ts),
     };
 }
 /**
@@ -232,8 +232,8 @@ export function makeFlowPhaseEvent(name, ts, cat = '*', ph, id = 0, pid = 0, tid
         ph,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(ts),
-        dur: Trace.Types.Timing.MicroSeconds(0),
+        ts: Trace.Types.Timing.Micro(ts),
+        dur: Trace.Types.Timing.Micro(0),
     };
 }
 /**
@@ -256,7 +256,7 @@ export function makeFlowEvents(events, flowId = 0) {
     return [flowStart, ...flowSteps, flowEnd];
 }
 export function makeCompleteEventInMilliseconds(name, tsMillis, durMillis, cat = '*', pid = 0, tid = 0) {
-    return makeCompleteEvent(name, Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(tsMillis)), Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(durMillis)), cat, pid, tid);
+    return makeCompleteEvent(name, Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(tsMillis)), Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(durMillis)), cat, pid, tid);
 }
 /**
  * Builds a mock Instant.
@@ -269,7 +269,7 @@ export function makeInstantEvent(name, tsMicroseconds, cat = '', pid = 0, tid = 
         ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(tsMicroseconds),
+        ts: Trace.Types.Timing.Micro(tsMicroseconds),
         s,
     };
 }
@@ -284,7 +284,7 @@ export function makeBeginEvent(name, ts, cat = '*', pid = 0, tid = 0) {
         ph: "B" /* Trace.Types.Events.Phase.BEGIN */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(ts),
+        ts: Trace.Types.Timing.Micro(ts),
     };
 }
 /**
@@ -298,7 +298,7 @@ export function makeEndEvent(name, ts, cat = '*', pid = 0, tid = 0) {
         ph: "E" /* Trace.Types.Events.Phase.END */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(ts),
+        ts: Trace.Types.Timing.Micro(ts),
     };
 }
 export function makeProfileCall(functionName, tsUs, durUs, pid = 0, tid = 0, nodeId = 0, url = '') {
@@ -311,8 +311,8 @@ export function makeProfileCall(functionName, tsUs, durUs, pid = 0, tid = 0, nod
         ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
         pid: Trace.Types.Events.ProcessID(pid),
         tid: Trace.Types.Events.ThreadID(tid),
-        ts: Trace.Types.Timing.MicroSeconds(tsUs),
-        dur: Trace.Types.Timing.MicroSeconds(durUs),
+        ts: Trace.Types.Timing.Micro(tsUs),
+        dur: Trace.Types.Timing.Micro(durUs),
         callFrame: {
             functionName,
             scriptId: '',
@@ -369,8 +369,8 @@ export function makeMockSamplesHandlerData(profileCalls) {
     const { tree, entryToNode } = Trace.Helpers.TreeHelpers.treify(profileCalls, { filter: { has: () => true } });
     const profile = {
         nodes: [],
-        startTime: profileCalls.at(0)?.ts || Trace.Types.Timing.MicroSeconds(0),
-        endTime: profileCalls.at(-1)?.ts || Trace.Types.Timing.MicroSeconds(10e5),
+        startTime: profileCalls.at(0)?.ts || Trace.Types.Timing.Micro(0),
+        endTime: profileCalls.at(-1)?.ts || Trace.Types.Timing.Micro(10e5),
         samples: [],
         timeDeltas: [],
     };
@@ -520,9 +520,9 @@ export function getBaseTraceParseModelData(overrides = {}) {
         },
         Meta: {
             traceBounds: {
-                min: Trace.Types.Timing.MicroSeconds(0),
-                max: Trace.Types.Timing.MicroSeconds(100),
-                range: Trace.Types.Timing.MicroSeconds(100),
+                min: Trace.Types.Timing.Micro(0),
+                max: Trace.Types.Timing.Micro(100),
+                range: Trace.Types.Timing.Micro(100),
             },
             browserProcessId: Trace.Types.Events.ProcessID(-1),
             browserThreadId: Trace.Types.Events.ThreadID(-1),
@@ -598,6 +598,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
             entryToNode: new Map(),
             extensionMarkers: [],
             extensionTrackData: [],
+            syntheticConsoleEntriesForTimingsTrack: [],
         },
         Frames: {
             frames: [],
@@ -688,9 +689,9 @@ export function microsecondsTraceWindow(min, max) {
     return Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
 }
 export function microseconds(x) {
-    return Trace.Types.Timing.MicroSeconds(x);
+    return Trace.Types.Timing.Micro(x);
 }
 export function milliseconds(x) {
-    return Trace.Types.Timing.MilliSeconds(x);
+    return Trace.Types.Timing.Milli(x);
 }
 //# sourceMappingURL=TraceHelpers.js.map

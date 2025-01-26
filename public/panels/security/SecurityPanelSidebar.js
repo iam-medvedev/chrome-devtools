@@ -52,35 +52,35 @@ const UIStrings = {
      *@description Text in Security Panel of the Security panel
      */
     reloadToViewDetails: 'Reload to view details',
-    /**
-     *@description New parent title in Security Panel of the Security panel
-     */
-    mainOriginSecure: 'Main origin (secure)',
-    /**
-     *@description New parent title in Security Panel of the Security panel
-     */
-    mainOriginNonsecure: 'Main origin (non-secure)',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/SecurityPanelSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SecurityPanelSidebar extends UI.Widget.VBox {
+    #securitySidebarLastItemSetting;
     sidebarTree;
     #originGroupTitles;
     #originGroups;
     securityOverviewElement;
+    #cookieControlsTreeElement;
+    #cookieReportTreeElement;
     #elementsByOrigin;
     #mainViewReloadMessage;
     #mainOrigin;
     constructor(element) {
         super(undefined, undefined, element);
+        this.#securitySidebarLastItemSetting =
+            Common.Settings.Settings.instance().createSetting('security-last-selected-element-path', 'overview');
         this.#mainOrigin = null;
         this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.sidebarTree.element.classList.add('security-sidebar');
         this.contentElement.appendChild(this.sidebarTree.element);
         if (Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled) {
             const privacyTreeSection = this.#addSidebarSection(i18nString(UIStrings.privacy), 'privacy');
-            privacyTreeSection.appendChild(new CookieControlsTreeElement(i18nString(UIStrings.flagControls), 'cookie-flag-controls'));
-            privacyTreeSection.appendChild(new CookieReportTreeElement(i18nString(UIStrings.cookieReport), 'cookie-report'));
+            this.#cookieControlsTreeElement =
+                new CookieControlsTreeElement(i18nString(UIStrings.flagControls), 'cookie-flag-controls');
+            privacyTreeSection.appendChild(this.#cookieControlsTreeElement);
+            this.#cookieReportTreeElement = new CookieReportTreeElement(i18nString(UIStrings.cookieReport), 'cookie-report');
+            privacyTreeSection.appendChild(this.#cookieReportTreeElement);
         }
         const securitySectionTitle = i18nString(UIStrings.security);
         const securityTreeSection = this.#addSidebarSection(securitySectionTitle, 'security');
@@ -89,14 +89,32 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
         this.securityOverviewElement.tooltip = i18nString(UIStrings.overview);
         securityTreeSection.appendChild(this.securityOverviewElement);
         this.#originGroupTitles = new Map([
-            [OriginGroup.MainOrigin, i18nString(UIStrings.mainOrigin)],
-            [OriginGroup.NonSecure, i18nString(UIStrings.nonsecureOrigins)],
-            [OriginGroup.Secure, i18nString(UIStrings.secureOrigins)],
-            [OriginGroup.Unknown, i18nString(UIStrings.unknownCanceled)],
+            [OriginGroup.MainOrigin, { title: i18nString(UIStrings.mainOrigin) }],
+            [
+                OriginGroup.NonSecure,
+                {
+                    title: i18nString(UIStrings.nonsecureOrigins),
+                    icon: getSecurityStateIconForDetailedView("insecure" /* Protocol.Security.SecurityState.Insecure */, `lock-icon lock-icon-${"insecure" /* Protocol.Security.SecurityState.Insecure */}`),
+                },
+            ],
+            [
+                OriginGroup.Secure,
+                {
+                    title: i18nString(UIStrings.secureOrigins),
+                    icon: getSecurityStateIconForDetailedView("secure" /* Protocol.Security.SecurityState.Secure */, `lock-icon lock-icon-${"secure" /* Protocol.Security.SecurityState.Secure */}`),
+                },
+            ],
+            [
+                OriginGroup.Unknown,
+                {
+                    title: i18nString(UIStrings.unknownCanceled),
+                    icon: getSecurityStateIconForDetailedView("unknown" /* Protocol.Security.SecurityState.Unknown */, `lock-icon lock-icon-${"unknown" /* Protocol.Security.SecurityState.Unknown */}`),
+                },
+            ],
         ]);
         this.#originGroups = new Map();
         for (const group of Object.values(OriginGroup)) {
-            const element = this.#createOriginGroupElement(this.#originGroupTitles.get(group));
+            const element = this.#createOriginGroupElement(this.#originGroupTitles.get(group)?.title, this.#originGroupTitles.get(group)?.icon);
             this.#originGroups.set(group, element);
             securityTreeSection.appendChild(element);
         }
@@ -107,6 +125,24 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
         treeElement.appendChild(this.#mainViewReloadMessage);
         this.#clearOriginGroups();
         this.#elementsByOrigin = new Map();
+        this.element.addEventListener('update-sidebar-selection', (event) => {
+            const id = event.detail.id;
+            this.#securitySidebarLastItemSetting.set(id);
+        });
+        this.showLastSelectedElement();
+    }
+    showLastSelectedElement() {
+        if (this.#cookieControlsTreeElement &&
+            this.#securitySidebarLastItemSetting.get() === this.#cookieControlsTreeElement.elemId) {
+            this.#cookieControlsTreeElement.showElement();
+        }
+        else if (this.#cookieReportTreeElement &&
+            this.#securitySidebarLastItemSetting.get() === this.#cookieReportTreeElement.elemId) {
+            this.#cookieReportTreeElement.showElement();
+        }
+        else {
+            this.securityOverviewElement.showElement();
+        }
     }
     #addSidebarSection(title, jslogContext) {
         const treeElement = new UI.TreeOutline.TreeElement(title, true, jslogContext);
@@ -119,16 +155,19 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
         return treeElement;
     }
     #originGroupTitle(originGroup) {
-        return this.#originGroupTitles.get(originGroup);
+        return this.#originGroupTitles.get(originGroup)?.title;
     }
     #originGroupElement(originGroup) {
         return this.#originGroups.get(originGroup);
     }
-    #createOriginGroupElement(originGroupTitle) {
+    #createOriginGroupElement(originGroupTitle, originGroupIcon) {
         const originGroup = new UI.TreeOutline.TreeElement(originGroupTitle, true);
         originGroup.selectable = false;
         originGroup.expand();
         originGroup.listItemElement.classList.add('security-sidebar-origins');
+        if (originGroupIcon) {
+            originGroup.setLeadingIcons([originGroupIcon]);
+        }
         UI.ARIAUtils.setLabel(originGroup.childrenListElement, originGroupTitle);
         return originGroup;
     }
@@ -159,11 +198,12 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
         let newParent;
         if (origin === this.#mainOrigin) {
             newParent = this.#originGroups.get(OriginGroup.MainOrigin);
+            newParent.title = i18nString(UIStrings.mainOrigin);
             if (securityState === "secure" /* Protocol.Security.SecurityState.Secure */) {
-                newParent.title = i18nString(UIStrings.mainOriginSecure);
+                newParent.setLeadingIcons([getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`)]);
             }
             else {
-                newParent.title = i18nString(UIStrings.mainOriginNonsecure);
+                newParent.setLeadingIcons([getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`)]);
             }
             UI.ARIAUtils.setLabel(newParent.childrenListElement, newParent.title);
         }

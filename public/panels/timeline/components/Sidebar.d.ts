@@ -31,7 +31,7 @@ export declare class SidebarWidget extends UI.Widget.VBox {
     constructor();
     wasShown(): void;
     setAnnotations(updatedAnnotations: Trace.Types.File.Annotation[], annotationEntryToColorMap: Map<Trace.Types.Events.Event, string>): void;
-    setParsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
+    setParsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, metadata: Trace.Types.File.MetaData | null): void;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null): void;
     setActiveInsight(activeInsight: ActiveInsight | null): void;
 }

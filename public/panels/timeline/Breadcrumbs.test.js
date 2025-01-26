@@ -6,19 +6,19 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as TimelineComponents from './components/components.js';
 function nestedBreadcrumbs() {
     const initialTraceWindow = {
-        min: Trace.Types.Timing.MicroSeconds(1000),
-        max: Trace.Types.Timing.MicroSeconds(10000),
-        range: Trace.Types.Timing.MicroSeconds(9000),
+        min: Trace.Types.Timing.Micro(1000),
+        max: Trace.Types.Timing.Micro(10000),
+        range: Trace.Types.Timing.Micro(9000),
     };
     const traceWindow1 = {
-        min: Trace.Types.Timing.MicroSeconds(3000),
-        max: Trace.Types.Timing.MicroSeconds(9000),
-        range: Trace.Types.Timing.MicroSeconds(6000),
+        min: Trace.Types.Timing.Micro(3000),
+        max: Trace.Types.Timing.Micro(9000),
+        range: Trace.Types.Timing.Micro(6000),
     };
     const traceWindow2 = {
-        min: Trace.Types.Timing.MicroSeconds(4000),
-        max: Trace.Types.Timing.MicroSeconds(6000),
-        range: Trace.Types.Timing.MicroSeconds(2000),
+        min: Trace.Types.Timing.Micro(4000),
+        max: Trace.Types.Timing.Micro(6000),
+        range: Trace.Types.Timing.Micro(2000),
     };
     const breadcrumb2 = {
         window: traceWindow2,
@@ -92,9 +92,9 @@ describe('Timeline breadcrumbs', () => {
         assert.deepEqual(crumbs.activeBreadcrumb, initialBreadcrumb);
         // Add a new breadcrumb
         const traceWindow4 = {
-            min: Trace.Types.Timing.MicroSeconds(2000),
-            max: Trace.Types.Timing.MicroSeconds(5000),
-            range: Trace.Types.Timing.MicroSeconds(3000),
+            min: Trace.Types.Timing.Micro(2000),
+            max: Trace.Types.Timing.Micro(5000),
+            range: Trace.Types.Timing.Micro(3000),
         };
         const breadcrumb4 = {
             window: traceWindow4,
@@ -136,21 +136,21 @@ describe('Timeline breadcrumbs', () => {
     });
     it('can create breadcrumbs with equal start or end as the parent breadcrumb', () => {
         const initialTraceWindow = {
-            min: Trace.Types.Timing.MicroSeconds(1000),
-            max: Trace.Types.Timing.MicroSeconds(10000),
-            range: Trace.Types.Timing.MicroSeconds(9000),
+            min: Trace.Types.Timing.Micro(1000),
+            max: Trace.Types.Timing.Micro(10000),
+            range: Trace.Types.Timing.Micro(9000),
         };
         TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(initialTraceWindow);
         const crumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(initialTraceWindow);
         const traceWindow1 = {
-            min: Trace.Types.Timing.MicroSeconds(1000),
-            max: Trace.Types.Timing.MicroSeconds(9000),
-            range: Trace.Types.Timing.MicroSeconds(8000),
+            min: Trace.Types.Timing.Micro(1000),
+            max: Trace.Types.Timing.Micro(9000),
+            range: Trace.Types.Timing.Micro(8000),
         };
         const traceWindow2 = {
-            min: Trace.Types.Timing.MicroSeconds(3000),
-            max: Trace.Types.Timing.MicroSeconds(9000),
-            range: Trace.Types.Timing.MicroSeconds(6000),
+            min: Trace.Types.Timing.Micro(3000),
+            max: Trace.Types.Timing.Micro(9000),
+            range: Trace.Types.Timing.Micro(6000),
         };
         crumbs.add(traceWindow1);
         crumbs.add(traceWindow2);

@@ -12,7 +12,7 @@ export declare class OriginTreeElement extends SecurityPanelSidebarTreeElement {
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
     securityState(): Protocol.Security.SecurityState | null;
     origin(): Platform.DevToolsPath.UrlString | null;
-    onselect(): boolean;
+    showElement(): void;
 }
 declare global {
     interface HTMLElementEventMap {

@@ -19,8 +19,8 @@ interface LayoutShifts {
     scoreRecords: readonly ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];
 }
-export declare const MAX_CLUSTER_DURATION: Types.Timing.MicroSeconds;
-export declare const MAX_SHIFT_TIME_DELTA: Types.Timing.MicroSeconds;
+export declare const MAX_CLUSTER_DURATION: Types.Timing.Micro;
+export declare const MAX_SHIFT_TIME_DELTA: Types.Timing.Micro;
 interface ScoreRecord {
     ts: number;
     score: number;

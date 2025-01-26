@@ -4,6 +4,9 @@
         "outDir": "."
     },
     "files": [
+        "chartViewport.css.js",
+        "filmStripView.css.js",
+        "flameChart.css.js",
         "pieChart.css.js",
         "timelineOverviewInfo.css.js"
     ]

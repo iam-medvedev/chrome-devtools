@@ -107,6 +107,12 @@ export const generatedPropertyValues: {
     "animation-timing-function": {
         values: string[];
     };
+    "animation-trigger-timeline": {
+        values: string[];
+    };
+    "animation-trigger-type": {
+        values: string[];
+    };
     "app-region": {
         values: string[];
     };

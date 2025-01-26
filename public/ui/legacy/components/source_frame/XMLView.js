@@ -5,8 +5,8 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as UI from '../../legacy.js';
-import xmlTreeStyles from './xmlTree.css.legacy.js';
-import xmlViewStyles from './xmlView.css.legacy.js';
+import xmlTreeStyles from './xmlTree.css.js';
+import xmlViewStyles from './xmlView.css.js';
 const UIStrings = {
     /**
      *@description Text to find an item
@@ -23,10 +23,8 @@ export class XMLView extends UI.Widget.Widget {
     searchConfig;
     constructor(parsedXML) {
         super(true);
-        this.registerRequiredCSS(xmlViewStyles);
         this.contentElement.classList.add('shadow-xml-view', 'source-code');
         this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-        this.treeOutline.registerRequiredCSS(xmlTreeStyles);
         this.contentElement.appendChild(this.treeOutline.element);
         this.currentSearchFocusIndex = 0;
         this.currentSearchTreeElements = [];
@@ -35,6 +33,11 @@ export class XMLView extends UI.Widget.Widget {
         if (firstChild) {
             firstChild.select(true /* omitFocus */, false /* selectedByUser */);
         }
+    }
+    wasShown() {
+        super.wasShown();
+        this.treeOutline.registerCSSFiles([xmlTreeStyles]);
+        this.registerCSSFiles([xmlViewStyles]);
     }
     static createSearchableView(parsedXML) {
         const xmlView = new XMLView(parsedXML);

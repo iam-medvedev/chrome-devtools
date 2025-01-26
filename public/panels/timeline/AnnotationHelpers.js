@@ -79,11 +79,11 @@ export function getAnnotationEntries(annotation) {
  */
 export function getAnnotationWindow(annotation) {
     let annotationWindow = null;
-    const minVisibleEntryDuration = Trace.Types.Timing.MilliSeconds(1);
+    const minVisibleEntryDuration = Trace.Types.Timing.Milli(1);
     switch (annotation.type) {
         case 'ENTRY_LABEL': {
-            const eventDuration = annotation.entry.dur ?? Trace.Helpers.Timing.millisecondsToMicroseconds(minVisibleEntryDuration);
-            annotationWindow = Trace.Helpers.Timing.traceWindowFromMicroSeconds(annotation.entry.ts, Trace.Types.Timing.MicroSeconds(annotation.entry.ts + eventDuration));
+            const eventDuration = annotation.entry.dur ?? Trace.Helpers.Timing.milliToMicro(minVisibleEntryDuration);
+            annotationWindow = Trace.Helpers.Timing.traceWindowFromMicroSeconds(annotation.entry.ts, Trace.Types.Timing.Micro(annotation.entry.ts + eventDuration));
             break;
         }
         case 'TIME_RANGE': {
@@ -102,7 +102,7 @@ export function getAnnotationWindow(annotation) {
             const fromEntryEndTS = (annotation.entryFrom.ts + fromEventDuration);
             const toEntryEndTS = (annotation.entryTo.ts + toEventDuration);
             const maxTimestamp = Math.max(fromEntryEndTS, toEntryEndTS);
-            annotationWindow = Trace.Helpers.Timing.traceWindowFromMicroSeconds(annotation.entryFrom.ts, Trace.Types.Timing.MicroSeconds(maxTimestamp));
+            annotationWindow = Trace.Helpers.Timing.traceWindowFromMicroSeconds(annotation.entryFrom.ts, Trace.Types.Timing.Micro(maxTimestamp));
             break;
         }
         default:
@@ -171,8 +171,8 @@ export function ariaAnnouncementForModifiedEvent(event) {
                 return '';
             }
             const { min, max } = overlay.bounds;
-            const minText = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(Trace.Types.Timing.MicroSeconds(min - traceBounds.min));
-            const maxText = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(Trace.Types.Timing.MicroSeconds(max - traceBounds.min));
+            const minText = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(Trace.Types.Timing.Micro(min - traceBounds.min));
+            const maxText = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(Trace.Types.Timing.Micro(max - traceBounds.min));
             return i18nString(UIStrings.srTimeRangeBoundsUpdated, {
                 PH1: minText,
                 PH2: maxText,

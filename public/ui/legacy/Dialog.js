@@ -30,7 +30,7 @@
 import * as Common from '../../core/common/common.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import dialogStyles from './dialog.css.legacy.js';
+import dialogStyles from './dialog.css.js';
 import { GlassPane } from './GlassPane.js';
 import { InspectorView } from './InspectorView.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
@@ -45,7 +45,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     escapeKeyCallback;
     constructor(jslogContext) {
         super();
-        this.registerRequiredCSS(dialogStyles);
+        this.registerCSSFiles([dialogStyles]);
         this.contentElement.tabIndex = 0;
         this.contentElement.addEventListener('focus', () => this.widget().focus(), false);
         if (jslogContext) {
@@ -72,7 +72,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         return Dialog.instance;
     }
     show(where) {
-        const document = (where instanceof Document ? where : (where || InspectorView.instance().element).ownerDocument);
+        const document = where instanceof Document ? where : (where ?? InspectorView.instance().element).ownerDocument;
         this.targetDocument = document;
         this.targetDocument.addEventListener('keydown', this.targetDocumentKeyDownHandler, true);
         if (Dialog.instance) {

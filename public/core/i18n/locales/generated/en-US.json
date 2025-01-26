@@ -1742,6 +1742,12 @@
   "models/trace/insights/FontDisplay.ts | title": {
     "message": "Font display"
   },
+  "models/trace/insights/ForcedReflow.ts | description": {
+    "message": "Many APIs, typically reading layout geometry, force the rendering engine to pause script execution in order to calculate the style and layout. Learn more about [forced reflow](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and its mitigations."
+  },
+  "models/trace/insights/ForcedReflow.ts | title": {
+    "message": "Forced reflow"
+  },
   "models/trace/insights/ImageDelivery.ts | description": {
     "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)"
   },
@@ -1777,6 +1783,12 @@
   },
   "models/trace/insights/LCPPhases.ts | title": {
     "message": "LCP by phase"
+  },
+  "models/trace/insights/LongCriticalNetworkTree.ts | description": {
+    "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
+  },
+  "models/trace/insights/LongCriticalNetworkTree.ts | title": {
+    "message": "Long critical network tree"
   },
   "models/trace/insights/RenderBlocking.ts | description": {
     "message": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) can move these network requests out of the critical path."
@@ -2405,11 +2417,14 @@
   "panels/application/ApplicationPanelSidebar.ts | cookies": {
     "message": "Cookies"
   },
+  "panels/application/ApplicationPanelSidebar.ts | cookiesDescription": {
+    "message": "On this page you can view, add, edit, and delete cookies."
+  },
   "panels/application/ApplicationPanelSidebar.ts | cookiesUsedByFramesFromS": {
     "message": "Cookies used by frames from {PH1}"
   },
   "panels/application/ApplicationPanelSidebar.ts | documentNotAvailable": {
-    "message": "Document not available"
+    "message": "No document detected"
   },
   "panels/application/ApplicationPanelSidebar.ts | extensionLocalStorage": {
     "message": "Local"
@@ -2423,6 +2438,9 @@
   "panels/application/ApplicationPanelSidebar.ts | extensionStorage": {
     "message": "Extension storage"
   },
+  "panels/application/ApplicationPanelSidebar.ts | extensionStorageDescription": {
+    "message": "On this page you can view, add, edit, and delete extension storage key-value pairs."
+  },
   "panels/application/ApplicationPanelSidebar.ts | extensionSyncStorage": {
     "message": "Sync"
   },
@@ -2431,6 +2449,9 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | indexeddb": {
     "message": "IndexedDB"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | indexeddbDescription": {
+    "message": "On this page you can view and delete indexedDB key-value pairs and databases."
   },
   "panels/application/ApplicationPanelSidebar.ts | keyPathS": {
     "message": "Key path: {PH1}"
@@ -2441,11 +2462,32 @@
   "panels/application/ApplicationPanelSidebar.ts | localStorage": {
     "message": "Local storage"
   },
+  "panels/application/ApplicationPanelSidebar.ts | localStorageDescription": {
+    "message": "On this page you can view, add, edit, and delete local storage key-value pairs."
+  },
   "panels/application/ApplicationPanelSidebar.ts | manifest": {
     "message": "Manifest"
   },
+  "panels/application/ApplicationPanelSidebar.ts | manifestDescription": {
+    "message": "A manifest defines how your app appears on phone’s home screens and what the app looks like on launch."
+  },
+  "panels/application/ApplicationPanelSidebar.ts | noCookies": {
+    "message": "No cookies set"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | noExtensionStorage": {
+    "message": "No extension storage detected"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | noIndexeddb": {
+    "message": "No indexedDB detected"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | noLocalStorage": {
+    "message": "No local storage detected"
+  },
   "panels/application/ApplicationPanelSidebar.ts | noManifestDetected": {
     "message": "No manifest detected"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | noSessionStorage": {
+    "message": "No session storage detected"
   },
   "panels/application/ApplicationPanelSidebar.ts | onInvokeAlert": {
     "message": "Scrolled to {PH1}"
@@ -2456,11 +2498,20 @@
   "panels/application/ApplicationPanelSidebar.ts | openedWindows": {
     "message": "Opened Windows"
   },
+  "panels/application/ApplicationPanelSidebar.ts | openedWindowsDescription": {
+    "message": "On this page you can view windows opened via window.open()."
+  },
   "panels/application/ApplicationPanelSidebar.ts | refreshIndexeddb": {
     "message": "Refresh IndexedDB"
   },
+  "panels/application/ApplicationPanelSidebar.ts | resourceDescription": {
+    "message": "On this page you can view the frame's resources."
+  },
   "panels/application/ApplicationPanelSidebar.ts | sessionStorage": {
     "message": "Session storage"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | sessionStorageDescription": {
+    "message": "On this page you can view, add, edit, and delete session storage key-value pairs."
   },
   "panels/application/ApplicationPanelSidebar.ts | storage": {
     "message": "Storage"
@@ -2485,6 +2536,9 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "worker"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | workerDescription": {
+    "message": "On this page you can view dedicated workers that are created by the parent frame."
   },
   "panels/application/AppManifestView.ts | actualHeightSpxOfSSDoesNotMatch": {
     "message": "Actual height ({PH1}px) of {PH2} {PH3} does not match specified height ({PH4}px)"
@@ -4433,8 +4487,14 @@
   "panels/application/ServiceWorkerCacheTreeElement.ts | cacheStorage": {
     "message": "Cache storage"
   },
+  "panels/application/ServiceWorkerCacheTreeElement.ts | cacheStorageDescription": {
+    "message": "On this page you can view and delete cache data."
+  },
   "panels/application/ServiceWorkerCacheTreeElement.ts | delete": {
     "message": "Delete"
+  },
+  "panels/application/ServiceWorkerCacheTreeElement.ts | noCacheStorage": {
+    "message": "No cache storage detected"
   },
   "panels/application/ServiceWorkerCacheTreeElement.ts | refreshCaches": {
     "message": "Refresh Caches"
@@ -4640,8 +4700,14 @@
   "panels/application/SharedStorageListTreeElement.ts | sharedStorage": {
     "message": "Shared storage"
   },
+  "panels/application/StorageBucketsTreeElement.ts | noStorageBuckets": {
+    "message": "No storage buckets detected"
+  },
   "panels/application/StorageBucketsTreeElement.ts | storageBuckets": {
     "message": "Storage buckets"
+  },
+  "panels/application/StorageBucketsTreeElement.ts | storageBucketsDescription": {
+    "message": "On this page you can view and delete storage buckets, and their associated storageAPIs."
   },
   "panels/application/StorageItemsView.ts | clearAll": {
     "message": "Clear All"
@@ -7947,7 +8013,7 @@
     "message": "Calibrate"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationConfirmationPrompt": {
-    "message": "Calibration will take ~10 seconds, and temporarily navigate away from your current page. Do you wish to continue?"
+    "message": "Calibration will take ~5 seconds, and temporarily navigate away from your current page. Do you wish to continue?"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | calibrationCTA": {
     "message": "To use the CPU throttling presets, run the calibration process to determine the ideal throttling rate for your device."
@@ -7966,6 +8032,9 @@
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | continue": {
     "message": "Continue"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | cpuCalibrationDescription": {
+    "message": "These presets throttle your CPU to approximate the performance of typical low or mid-tier mobile devices."
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | cpuThrottlingPresets": {
     "message": "CPU throttling presets"
@@ -10676,6 +10745,9 @@
   "panels/security/CookieControlsView.ts | enableFlag": {
     "message": "To use this, set {PH1} to Default"
   },
+  "panels/security/CookieControlsView.ts | enrollGracePeriod": {
+    "message": "To use this, enroll this site or sites embedded on it in the {PH1}"
+  },
   "panels/security/CookieControlsView.ts | enterpriseDisclaimer": {
     "message": "Your organization manages third-party cookie access for this site"
   },
@@ -10740,7 +10812,7 @@
     "message": "Blocked"
   },
   "panels/security/CookieReportView.ts | body": {
-    "message": "This site might not work if third-party cookies are limited in Chrome."
+    "message": "This site might not work if third-party cookies and other cookies are limited in Chrome."
   },
   "panels/security/CookieReportView.ts | cdnCookieTypeString": {
     "message": "CDN"
@@ -10844,17 +10916,17 @@
   "panels/security/CookieReportView.ts | videoCookieTypeString": {
     "message": "Video"
   },
+  "panels/security/security-meta.ts | PrivacyAndSecurity": {
+    "message": "Privacy and security"
+  },
   "panels/security/security-meta.ts | security": {
     "message": "Security"
   },
-  "panels/security/security-meta.ts | securityAndPrivacy": {
-    "message": "Security & Privacy"
+  "panels/security/security-meta.ts | showPrivacyAndSecurity": {
+    "message": "Show Privacy and security"
   },
   "panels/security/security-meta.ts | showSecurity": {
     "message": "Show Security"
-  },
-  "panels/security/security-meta.ts | showSecurityAndPrivacy": {
-    "message": "Show Security and Privacy"
   },
   "panels/security/SecurityModel.ts | cipherWithMAC": {
     "message": "{PH1} with {PH2}"
@@ -11164,12 +11236,6 @@
   },
   "panels/security/SecurityPanelSidebar.ts | mainOrigin": {
     "message": "Main origin"
-  },
-  "panels/security/SecurityPanelSidebar.ts | mainOriginNonsecure": {
-    "message": "Main origin (non-secure)"
-  },
-  "panels/security/SecurityPanelSidebar.ts | mainOriginSecure": {
-    "message": "Main origin (secure)"
   },
   "panels/security/SecurityPanelSidebar.ts | nonsecureOrigins": {
     "message": "Non-secure origins"
@@ -11861,6 +11927,9 @@
   "panels/snippets/SnippetsQuickOpen.ts | run": {
     "message": "Run"
   },
+  "panels/snippets/SnippetsQuickOpen.ts | runSnippet": {
+    "message": "Run snippet"
+  },
   "panels/snippets/SnippetsQuickOpen.ts | snippet": {
     "message": "Snippet"
   },
@@ -12533,6 +12602,9 @@
   "panels/sources/sources-meta.ts | goToLine": {
     "message": "Go to line"
   },
+  "panels/sources/sources-meta.ts | goToSymbol": {
+    "message": "Go to symbol"
+  },
   "panels/sources/sources-meta.ts | incrementCssUnitBy": {
     "message": "Increment CSS unit by {PH1}"
   },
@@ -12559,6 +12631,9 @@
   },
   "panels/sources/sources-meta.ts | open": {
     "message": "Open"
+  },
+  "panels/sources/sources-meta.ts | openFile": {
+    "message": "Open file"
   },
   "panels/sources/sources-meta.ts | pauseScriptExecution": {
     "message": "Pause script execution"
@@ -13133,6 +13208,15 @@
   "panels/timeline/components/insights/FontDisplay.ts | wastedTimeColumn": {
     "message": "Wasted time"
   },
+  "panels/timeline/components/insights/ForcedReflow.ts | relatedStackTrace": {
+    "message": "Stack trace"
+  },
+  "panels/timeline/components/insights/ForcedReflow.ts | topTimeConsumingFunctionCall": {
+    "message": "Top function call"
+  },
+  "panels/timeline/components/insights/ForcedReflow.ts | totalReflowTime": {
+    "message": "Total reflow time"
+  },
   "panels/timeline/components/insights/ImageDelivery.ts | noOptimizableImages": {
     "message": "No optimizable images"
   },
@@ -13204,6 +13288,9 @@
   },
   "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
     "message": "Time to first byte"
+  },
+  "panels/timeline/components/insights/LongCriticalNetworkTree.ts | noLongCriticalNetworkTree": {
+    "message": "No rendering tasks impacted by long critical network tree"
   },
   "panels/timeline/components/insights/RenderBlocking.ts | duration": {
     "message": "Duration"
@@ -13763,6 +13850,9 @@
   "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
     "message": "{PH1}: {PH2} {PH3} score"
   },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | metricScoreUnavailable": {
+    "message": "{PH1}: unavailable"
+  },
   "panels/timeline/components/SidebarSingleInsightSet.ts | passedInsights": {
     "message": "Passed insights ({PH1})"
   },
@@ -13849,6 +13939,12 @@
   },
   "panels/timeline/overlays/components/TimeRangeOverlay.ts | timeRange": {
     "message": "Time range"
+  },
+  "panels/timeline/overlays/OverlaysImpl.ts | fieldMetricMarkerField": {
+    "message": "{PH1} - Field ({PH2})"
+  },
+  "panels/timeline/overlays/OverlaysImpl.ts | fieldMetricMarkerLocal": {
+    "message": "{PH1} - Local"
   },
   "panels/timeline/ServerTimingsTrackAppender.ts | serverSideTrack": {
     "message": "Server Timings — {PH1}"
@@ -14106,7 +14202,7 @@
     "message": "Disables JavaScript sampling, reduces overhead when running against mobile devices"
   },
   "panels/timeline/TimelinePanel.ts | downloadAfterError": {
-    "message": "Download raw trace events"
+    "message": "Download trace"
   },
   "panels/timeline/TimelinePanel.ts | dropTimelineFileOrUrlHere": {
     "message": "Drop timeline file or URL here"
@@ -14288,8 +14384,17 @@
   "panels/timeline/TimelineTreeView.ts | activity": {
     "message": "Activity"
   },
+  "panels/timeline/TimelineTreeView.ts | bottomUp": {
+    "message": "Bottom-up"
+  },
   "panels/timeline/TimelineTreeView.ts | chromeExtensionsOverhead": {
     "message": "[Chrome extensions overhead]"
+  },
+  "panels/timeline/TimelineTreeView.ts | extension": {
+    "message": "Extension"
+  },
+  "panels/timeline/TimelineTreeView.ts | firstParty": {
+    "message": "1st party"
   },
   "panels/timeline/TimelineTreeView.ts | groupBy": {
     "message": "Group by"
@@ -14365,6 +14470,9 @@
   },
   "panels/timeline/TimelineTreeView.ts | useRegularExpression": {
     "message": "Use regular expression"
+  },
+  "panels/timeline/TimelineTreeView.ts | viewBottomUp": {
+    "message": "View Bottom-up"
   },
   "panels/timeline/TimelineTreeView.ts | vRuntime": {
     "message": "[V8 Runtime]"
@@ -14465,18 +14573,6 @@
   "panels/timeline/TimelineUIUtils.ts | consumedCacheSize": {
     "message": "Consumed cache size"
   },
-  "panels/timeline/TimelineUIUtils.ts | cumulativeLayoutShifts": {
-    "message": "Cumulative Layout Shifts"
-  },
-  "panels/timeline/TimelineUIUtils.ts | cumulativeScore": {
-    "message": "Cumulative score"
-  },
-  "panels/timeline/TimelineUIUtils.ts | currentClusterId": {
-    "message": "Current cluster ID"
-  },
-  "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
-    "message": "Current cluster score"
-  },
   "panels/timeline/TimelineUIUtils.ts | delay": {
     "message": "Delay"
   },
@@ -14507,9 +14603,6 @@
   "panels/timeline/TimelineUIUtils.ts | entryIsHidden": {
     "message": "(entry is hidden)"
   },
-  "panels/timeline/TimelineUIUtils.ts | evolvedClsLink": {
-    "message": "evolved"
-  },
   "panels/timeline/TimelineUIUtils.ts | failedToLoadScriptFromCache": {
     "message": "failed to load script from cache"
   },
@@ -14524,9 +14617,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | function": {
     "message": "Function"
-  },
-  "panels/timeline/TimelineUIUtils.ts | hadRecentInput": {
-    "message": "Had recent input"
   },
   "panels/timeline/TimelineUIUtils.ts | idleCallbackRequested": {
     "message": "Idle callback requested"
@@ -14578,15 +14668,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | module": {
     "message": "Module"
-  },
-  "panels/timeline/TimelineUIUtils.ts | movedFrom": {
-    "message": "Moved from"
-  },
-  "panels/timeline/TimelineUIUtils.ts | movedTo": {
-    "message": "Moved to"
-  },
-  "panels/timeline/TimelineUIUtils.ts | no": {
-    "message": "No"
   },
   "panels/timeline/TimelineUIUtils.ts | nodesThatNeedLayout": {
     "message": "Nodes that need layout"
@@ -14642,14 +14723,8 @@
   "panels/timeline/TimelineUIUtils.ts | sChildren": {
     "message": "{PH1} (children)"
   },
-  "panels/timeline/TimelineUIUtils.ts | sCLSInformation": {
-    "message": "{PH1} can result in poor user experiences. It has recently {PH2}."
-  },
   "panels/timeline/TimelineUIUtils.ts | sCollected": {
     "message": "{PH1} collected"
-  },
-  "panels/timeline/TimelineUIUtils.ts | score": {
-    "message": "Score"
   },
   "panels/timeline/TimelineUIUtils.ts | script": {
     "message": "Script"
@@ -14734,9 +14809,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | warning": {
     "message": "Warning"
-  },
-  "panels/timeline/TimelineUIUtils.ts | yes": {
-    "message": "Yes"
   },
   "panels/timeline/TimingsTrackAppender.ts | timings": {
     "message": "Timings"
@@ -15997,6 +16069,9 @@
   },
   "ui/legacy/components/quick_open/CommandMenu.ts | run": {
     "message": "Run"
+  },
+  "ui/legacy/components/quick_open/CommandMenu.ts | runCommand": {
+    "message": "Run command"
   },
   "ui/legacy/components/quick_open/FilteredListWidget.ts | noResultsFound": {
     "message": "No results found"

@@ -21,8 +21,8 @@ const jsInvokeStack = [];
  * Tracks reflow events in a task.
  */
 const taskReflowEvents = [];
-export const FORCED_REFLOW_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(30));
-export const LONG_MAIN_THREAD_TASK_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(50));
+export const FORCED_REFLOW_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(30));
+export const LONG_MAIN_THREAD_TASK_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(50));
 export function reset() {
     warningsPerEvent.clear();
     eventsPerWarning.clear();

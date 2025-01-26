@@ -66,7 +66,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         const left = (event.data.startTime > 0) ? event.data.startTime : traceBoundsState.milli.entireTraceBounds.min;
         const right = Number.isFinite(event.data.endTime) ? event.data.endTime : traceBoundsState.milli.entireTraceBounds.max;
-        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(left), Trace.Types.Timing.MilliSeconds(right)), {
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(left), Trace.Types.Timing.Milli(right)), {
             shouldAnimate: true,
         });
     }
@@ -136,8 +136,8 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         // this case we change them to be the min and max values of the minimap
         // bounds.
         const breadcrumbTimes = {
-            startTime: Trace.Types.Timing.MilliSeconds(Math.max(startTime, bounds.min)),
-            endTime: Trace.Types.Timing.MilliSeconds(Math.min(endTime, bounds.max)),
+            startTime: Trace.Types.Timing.Milli(Math.max(startTime, bounds.min)),
+            endTime: Trace.Types.Timing.Milli(Math.min(endTime, bounds.max)),
         };
         const newVisibleTraceWindow = Trace.Helpers.Timing.traceWindowFromMilliSeconds(breadcrumbTimes.startTime, breadcrumbTimes.endTime);
         const addedBreadcrumb = this.breadcrumbs.add(newVisibleTraceWindow);
@@ -181,7 +181,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const { Meta } = parsedTrace;
         // Only add markers for navigation start times.
         const navStartEvents = Meta.mainFrameNavigations;
-        const minTimeInMilliseconds = Trace.Helpers.Timing.microSecondsToMilliseconds(Meta.traceBounds.min);
+        const minTimeInMilliseconds = Trace.Helpers.Timing.microToMilli(Meta.traceBounds.min);
         for (const event of navStartEvents) {
             const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
             markers.set(startTime, TimelineUIUtils.createEventDivider(event, minTimeInMilliseconds));

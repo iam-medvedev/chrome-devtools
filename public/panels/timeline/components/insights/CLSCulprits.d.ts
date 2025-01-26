@@ -11,7 +11,7 @@ export declare class CLSCulprits extends BaseInsightComponent<CLSCulpritsInsight
     /**
      * getTopCulprits gets the top 3 shift root causes based on worst cluster.
      */
-    getTopCulprits(cluster: Trace.Types.Events.SyntheticLayoutShiftCluster, culpritsByShift: Map<Trace.Types.Events.LayoutShift, Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData>): string[];
+    getTopCulprits(cluster: Trace.Types.Events.SyntheticLayoutShiftCluster, culpritsByShift: Map<Trace.Types.Events.SyntheticLayoutShift, Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData>): string[];
     renderContent(): LitHtml.LitTemplate;
 }
 declare global {

@@ -9,6 +9,10 @@ import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const { SourceMapScopesInfo } = SDK.SourceMapScopesInfo;
 describe('SourceMapScopesInfo', () => {
+    function parseFromMap(sourceMap, sourceMapJson) {
+        const { originalScopes, generatedRanges } = SDK.SourceMapScopes.decodeScopes(sourceMapJson);
+        return new SourceMapScopesInfo(sourceMap, originalScopes, generatedRanges);
+    }
     describe('findInlinedFunctions', () => {
         it('returns the single original function name if nothing was inlined', () => {
             const names = [];
@@ -24,7 +28,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 5)
                 .end(0, 5)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             assert.deepEqual(info.findInlinedFunctions(0, 3), { originalFunctionName: 'foo', inlinedFunctions: [] });
         });
         it('returns the names of the surrounding function plus all the inlined function names', () => {
@@ -50,7 +54,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 10)
                 .end(0, 10)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             assert.deepEqual(info.findInlinedFunctions(0, 4), { originalFunctionName: 'foo', inlinedFunctions: [] });
             assert.deepEqual(info.findInlinedFunctions(0, 7), {
                 originalFunctionName: 'foo',
@@ -116,7 +120,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(1, 27)
                 .end(3, 0)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             {
                 const callFrame = setUpCallFrame({ line: 0, column: 13 }, 'n'); // Pause on 'print'.
                 const expandedFrames = info.expandCallFrame(callFrame);
@@ -177,7 +181,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 38)
                 .end(2, 0)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             {
                 const callFrame = setUpCallFrame({ line: 0, column: 22 }, 'm'); // Pause on 'print'.
                 const expandedFrames = info.expandCallFrame(callFrame);
@@ -240,7 +244,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 14)
                 .end(1, 0)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             {
                 const callFrame = setUpCallFrame({ line: 0, column: 0 }, ''); // Pause on 'print'.
                 const expandedFrames = info.expandCallFrame(callFrame);
@@ -269,7 +273,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 20)
                 .end(0, 30)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             assert.isFalse(info.hasVariablesAndBindings());
         });
         it('returns false for scope info with variables but no bindings', () => {
@@ -286,7 +290,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 20)
                 .end(0, 30)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             assert.isFalse(info.hasVariablesAndBindings());
         });
         it('returns true for scope info with variables and bindings', () => {
@@ -303,7 +307,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 20)
                 .end(0, 30)
                 .build();
-            const info = SourceMapScopesInfo.parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sinon.createStubInstance(SDK.SourceMap.SourceMap), { names, originalScopes, generatedRanges });
             assert.isTrue(info.hasVariablesAndBindings());
         });
     });
@@ -342,7 +346,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 100)
                 .build();
             const { sourceMap, callFrame } = setUpCallFrameAndSourceMap({ generatedPausedPosition: { line: 0, column: 15 } });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             const scopeChain = info.resolveMappedScopeChain(callFrame);
             assert.isNull(scopeChain);
         });
@@ -354,7 +358,7 @@ describe('SourceMapScopesInfo', () => {
                 generatedPausedPosition: { line: 0, column: 50 },
                 mappedPausedPosition: { sourceIndex: 0, line: 10, column: 0 },
             });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             const scopeChain = info.resolveMappedScopeChain(callFrame);
             assert.isNotNull(scopeChain);
             assert.lengthOf(scopeChain, 1);
@@ -378,7 +382,7 @@ describe('SourceMapScopesInfo', () => {
                 generatedPausedPosition: { line: 0, column: 50 },
                 mappedPausedPosition: { sourceIndex: 0, line: 10, column: 0 },
             });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             const scopeChain = info.resolveMappedScopeChain(callFrame);
             assert.isNotNull(scopeChain);
             assert.lengthOf(scopeChain, 2);
@@ -406,7 +410,7 @@ describe('SourceMapScopesInfo', () => {
                 mappedPausedPosition: { sourceIndex: 0, line: 10, column: 0 },
                 returnValue: new SDK.RemoteObject.LocalJSONObject(42),
             });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             const scopeChain = info.resolveMappedScopeChain(callFrame);
             assert.isNotNull(scopeChain);
             assert.lengthOf(scopeChain, 1);
@@ -452,7 +456,7 @@ describe('SourceMapScopesInfo', () => {
                 generatedPausedPosition: { line: 0, column: 50 },
                 mappedPausedPosition: { sourceIndex: 0, line: 15, column: 0 },
             });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             const scopeChain = info.resolveMappedScopeChain(callFrame);
             assert.isNotNull(scopeChain);
             assert.lengthOf(scopeChain, 2);
@@ -511,7 +515,7 @@ describe('SourceMapScopesInfo', () => {
                 generatedPausedPosition: { line: 0, column: 50 },
                 mappedPausedPosition: { sourceIndex: 0, line: 5, column: 0 },
             });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             const scopeChain = info.resolveMappedScopeChain(callFrame);
             assert.isNotNull(scopeChain);
             assert.lengthOf(scopeChain, 1);
@@ -585,7 +589,7 @@ describe('SourceMapScopesInfo', () => {
                 generatedPausedPosition: { line: 0, column: 10 },
                 mappedPausedPosition: { sourceIndex: 0, line: 3, column: 2 },
             });
-            const info = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const info = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             {
                 const scopeChain = info.resolveMappedScopeChain(callFrame);
                 assert.isNotNull(scopeChain);
@@ -648,7 +652,7 @@ describe('SourceMapScopesInfo', () => {
                     .end(60, 1)
                     .end(70, 0)
                     .build()];
-            const scopeInfoWithMappings = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges: '' });
+            const scopeInfoWithMappings = parseFromMap(sourceMap, { names, originalScopes, generatedRanges: '' });
             const generatedRanges = new GeneratedRangeBuilder(names)
                 .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
                 .start(0, 20, { definition: { sourceIdx: 0, scopeIdx: 1 } })
@@ -661,7 +665,7 @@ describe('SourceMapScopesInfo', () => {
                 .end(0, 160)
                 .end(0, 180)
                 .build();
-            const scopeInfoWithRanges = SourceMapScopesInfo.parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
+            const scopeInfoWithRanges = parseFromMap(sourceMap, { names, originalScopes, generatedRanges });
             return [scopeInfoWithRanges, scopeInfoWithMappings];
         })();
         [{ name: 'with GeneratedRanges', scopeInfo: scopeInfoWithRanges },

@@ -41,12 +41,18 @@ export class ExpandableApplicationPanelTreeElement extends ApplicationPanelTreeE
     expandedSetting;
     categoryName;
     categoryLink;
-    constructor(resourcesPanel, categoryName, settingsKey, settingsDefault = false) {
+    // These strings are used for the empty state in each top most tree element
+    // in the Application Panel.
+    emptyCategoryHeadline;
+    categoryDescription;
+    constructor(resourcesPanel, categoryName, emptyCategoryHeadline, categoryDescription, settingsKey, settingsDefault = false) {
         super(resourcesPanel, categoryName, false, settingsKey);
         this.expandedSetting =
             Common.Settings.Settings.instance().createSetting('resources-' + settingsKey + '-expanded', settingsDefault);
         this.categoryName = categoryName;
         this.categoryLink = null;
+        this.emptyCategoryHeadline = emptyCategoryHeadline;
+        this.categoryDescription = categoryDescription;
     }
     get itemURL() {
         return 'category://' + this.categoryName;
@@ -56,8 +62,26 @@ export class ExpandableApplicationPanelTreeElement extends ApplicationPanelTreeE
     }
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
-        this.resourcesPanel.showCategoryView(this.categoryName, this.categoryLink);
+        this.updateCategoryView();
         return false;
+    }
+    updateCategoryView() {
+        const headline = this.childCount() === 0 ? this.emptyCategoryHeadline : this.categoryName;
+        this.resourcesPanel.showCategoryView(this.categoryName, headline, this.categoryDescription, this.categoryLink);
+    }
+    appendChild(child, comparator) {
+        super.appendChild(child, comparator);
+        // Only update if relevant (changing from 0 to 1 child).
+        if (this.selected && this.childCount() === 1) {
+            this.updateCategoryView();
+        }
+    }
+    removeChild(child) {
+        super.removeChild(child);
+        // Only update if relevant (changing to 0 children).
+        if (this.selected && this.childCount() === 0) {
+            this.updateCategoryView();
+        }
     }
     onattach() {
         super.onattach();

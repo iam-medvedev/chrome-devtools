@@ -1,2 +1,3 @@
 import * as Button from './Button.js';
-export { Button, };
+import textButtonStyles from './textButton.css.js';
+export { Button, textButtonStyles, };

@@ -34,6 +34,8 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
+import { buildOriginalScopes, decodePastaRanges } from './SourceMapFunctionRanges.js';
+import { decodeScopes } from './SourceMapScopes.js';
 import { SourceMapScopesInfo } from './SourceMapScopesInfo.js';
 /**
  * Parses the {@link content} as JSON, ignoring BOM markers in the beginning, and
@@ -76,41 +78,14 @@ export class SourceMapEntry {
         return entry1.columnNumber - entry2.columnNumber;
     }
 }
-function comparePositions(a, b) {
-    return a.lineNumber - b.lineNumber || a.columnNumber - b.columnNumber;
-}
-class ScopeTreeEntry {
-    startLineNumber;
-    startColumnNumber;
-    endLineNumber;
-    endColumnNumber;
-    name;
-    children = [];
-    constructor(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber, name) {
-        this.startLineNumber = startLineNumber;
-        this.startColumnNumber = startColumnNumber;
-        this.endLineNumber = endLineNumber;
-        this.endColumnNumber = endColumnNumber;
-        this.name = name;
-    }
-    scopeName() {
-        return this.name;
-    }
-    start() {
-        return { lineNumber: this.startLineNumber, columnNumber: this.startColumnNumber };
-    }
-    end() {
-        return { lineNumber: this.endLineNumber, columnNumber: this.endColumnNumber };
-    }
-}
-const sourceMapToSourceList = new WeakMap();
 export class SourceMap {
     #json;
     #compiledURLInternal;
     #sourceMappingURL;
     #baseURL;
     #mappingsInternal;
-    #sourceInfos;
+    #sourceInfos = [];
+    #sourceInfoByURL = new Map();
     #scopesInfo = null;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
@@ -122,7 +97,6 @@ export class SourceMap {
         this.#sourceMappingURL = sourceMappingURL;
         this.#baseURL = (Common.ParsedURL.schemeIs(sourceMappingURL, 'data:')) ? compiledURL : sourceMappingURL;
         this.#mappingsInternal = null;
-        this.#sourceInfos = new Map();
         if ('sections' in this.#json) {
             if (this.#json.sections.find(section => 'url' in section)) {
                 Common.Console.Console.instance().warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
@@ -137,10 +111,10 @@ export class SourceMap {
         return this.#sourceMappingURL;
     }
     sourceURLs() {
-        return [...this.#sourceInfos.keys()];
+        return [...this.#sourceInfoByURL.keys()];
     }
     embeddedContentByURL(sourceURL) {
-        const entry = this.#sourceInfos.get(sourceURL);
+        const entry = this.#sourceInfoByURL.get(sourceURL);
         if (!entry) {
             return null;
         }
@@ -279,7 +253,7 @@ export class SourceMap {
     }
     reversedMappings(sourceURL) {
         this.#ensureMappingsProcessed();
-        return this.#sourceInfos.get(sourceURL)?.reverseMappings ?? [];
+        return this.#sourceInfoByURL.get(sourceURL)?.reverseMappings ?? [];
     }
     #ensureMappingsProcessed() {
         if (this.#mappingsInternal === null) {
@@ -312,7 +286,7 @@ export class SourceMap {
             reverseMap.push(i);
         }
         for (const [url, reverseMap] of reverseMappingsPerUrl.entries()) {
-            const info = this.#sourceInfos.get(url);
+            const info = this.#sourceInfoByURL.get(url);
             if (!info) {
                 continue;
             }
@@ -331,18 +305,19 @@ export class SourceMap {
             return;
         }
         if ('sections' in this.#json) {
+            let sourcesIndex = 0;
             for (const section of this.#json.sections) {
                 if ('map' in section) {
-                    callback(section.map, section.offset.line, section.offset.column);
+                    callback(section.map, sourcesIndex, section.offset.line, section.offset.column);
+                    sourcesIndex += section.map.sources.length;
                 }
             }
         }
         else {
-            callback(this.#json, 0, 0);
+            callback(this.#json, 0, 0, 0);
         }
     }
     parseSources(sourceMap) {
-        const sourcesList = [];
         const sourceRoot = sourceMap.sourceRoot ?? '';
         const ignoreList = new Set(sourceMap.ignoreList ?? sourceMap.x_google_ignoreList);
         for (let i = 0; i < sourceMap.sources.length; ++i) {
@@ -362,30 +337,28 @@ export class SourceMap {
             }
             const url = Common.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
             const source = sourceMap.sourcesContent && sourceMap.sourcesContent[i];
-            sourcesList.push(url);
-            if (!this.#sourceInfos.has(url)) {
-                const content = source ?? null;
-                const ignoreListHint = ignoreList.has(i);
-                this.#sourceInfos.set(url, { content, ignoreListHint, reverseMappings: null, scopeTree: null });
+            const sourceInfo = {
+                sourceURL: url,
+                content: source ?? null,
+                ignoreListHint: ignoreList.has(i),
+                reverseMappings: null,
+            };
+            this.#sourceInfos.push(sourceInfo);
+            if (!this.#sourceInfoByURL.has(url)) {
+                this.#sourceInfoByURL.set(url, sourceInfo);
             }
         }
-        sourceMapToSourceList.set(sourceMap, sourcesList);
     }
-    parseMap(map, lineNumber, columnNumber) {
-        let sourceIndex = 0;
+    parseMap(map, baseSourceIndex, baseLineNumber, baseColumnNumber) {
+        let sourceIndex = baseSourceIndex;
+        let lineNumber = baseLineNumber;
+        let columnNumber = baseColumnNumber;
         let sourceLineNumber = 0;
         let sourceColumnNumber = 0;
         let nameIndex = 0;
-        // TODO(crbug.com/1011811): refactor away map.
-        // `sources` can be undefined if it wasn't previously
-        // processed and added to the list. However, that
-        // is not WAI and we should make sure that we can
-        // only reach this point when we are certain
-        // we have the list available.
-        const sources = sourceMapToSourceList.get(map);
         const names = map.names ?? [];
         const tokenIter = new TokenIterator(map.mappings);
-        let sourceURL = sources && sources[sourceIndex];
+        let sourceURL = this.#sourceInfos[sourceIndex].sourceURL;
         while (true) {
             if (tokenIter.peek() === ',') {
                 tokenIter.next();
@@ -408,9 +381,7 @@ export class SourceMap {
             const sourceIndexDelta = tokenIter.nextVLQ();
             if (sourceIndexDelta) {
                 sourceIndex += sourceIndexDelta;
-                if (sources) {
-                    sourceURL = sources[sourceIndex];
-                }
+                sourceURL = this.#sourceInfos[sourceIndex].sourceURL;
             }
             sourceLineNumber += tokenIter.nextVLQ();
             sourceColumnNumber += tokenIter.nextVLQ();
@@ -422,104 +393,40 @@ export class SourceMap {
             this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
         if (Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
-            this.parseBloombergScopes(map);
-            this.#parseScopes(map);
+            if (!this.#scopesInfo) {
+                this.#scopesInfo = new SourceMapScopesInfo(this, [], []);
+            }
+            if (map.originalScopes && map.generatedRanges) {
+                const { originalScopes, generatedRanges } = decodeScopes(map, { line: baseLineNumber, column: baseColumnNumber });
+                this.#scopesInfo.addOriginalScopes(originalScopes);
+                this.#scopesInfo.addGeneratedRanges(generatedRanges);
+            }
+            else if (map.x_com_bloomberg_sourcesFunctionMappings) {
+                const originalScopes = this.parseBloombergScopes(map);
+                this.#scopesInfo.addOriginalScopes(originalScopes);
+            }
+            else {
+                // Keep the OriginalScope[] tree array consistent with sources.
+                this.#scopesInfo.addOriginalScopes(new Array(map.sources.length));
+            }
         }
     }
     parseBloombergScopes(map) {
-        if (!map.x_com_bloomberg_sourcesFunctionMappings) {
-            return;
+        const scopeList = map.x_com_bloomberg_sourcesFunctionMappings;
+        if (!scopeList) {
+            throw new Error('Cant decode pasta scopes without x_com_bloomberg_sourcesFunctionMappings field');
         }
-        const sources = sourceMapToSourceList.get(map);
-        if (!sources) {
-            return;
+        else if (scopeList.length !== map.sources.length) {
+            throw new Error(`x_com_bloomberg_sourcesFunctionMappings must have ${map.sources.length} scope trees`);
         }
         const names = map.names ?? [];
-        const scopeList = map.x_com_bloomberg_sourcesFunctionMappings;
-        for (let i = 0; i < sources?.length; i++) {
-            if (!scopeList[i] || !sources[i]) {
-                continue;
+        return scopeList.map(rawScopes => {
+            if (!rawScopes) {
+                return undefined;
             }
-            const sourceInfo = this.#sourceInfos.get(sources[i]);
-            if (!sourceInfo) {
-                continue;
-            }
-            const scopes = scopeList[i];
-            let nameIndex = 0;
-            let startLineNumber = 0;
-            let startColumnNumber = 0;
-            let endLineNumber = 0;
-            let endColumnNumber = 0;
-            const tokenIter = new TokenIterator(scopes);
-            const entries = [];
-            let atStart = true;
-            while (tokenIter.hasNext()) {
-                if (atStart) {
-                    atStart = false;
-                }
-                else if (tokenIter.peek() === ',') {
-                    tokenIter.next();
-                }
-                else {
-                    // Unexpected character.
-                    return;
-                }
-                nameIndex += tokenIter.nextVLQ();
-                startLineNumber += tokenIter.nextVLQ();
-                startColumnNumber += tokenIter.nextVLQ();
-                endLineNumber += tokenIter.nextVLQ();
-                endColumnNumber += tokenIter.nextVLQ();
-                entries.push(new ScopeTreeEntry(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber, names[nameIndex] ?? '<invalid>'));
-            }
-            sourceInfo.scopeTree = this.buildScopeTree(entries);
-        }
-    }
-    buildScopeTree(entries) {
-        const toplevel = [];
-        entries.sort((l, r) => comparePositions(l.start(), r.start()));
-        const stack = [];
-        for (const entry of entries) {
-            const start = entry.start();
-            // Pop all the scopes that precede the current entry.
-            while (stack.length > 0) {
-                const top = stack[stack.length - 1];
-                if (comparePositions(top.end(), start) < 0) {
-                    stack.pop();
-                }
-                else {
-                    break;
-                }
-            }
-            if (stack.length > 0) {
-                stack[stack.length - 1].children.push(entry);
-            }
-            else {
-                toplevel.push(entry);
-            }
-            stack.push(entry);
-        }
-        return toplevel;
-    }
-    #parseScopes(map) {
-        if (map.originalScopes && map.generatedRanges) {
-            this.#scopesInfo = SourceMapScopesInfo.parseFromMap(this, map);
-        }
-    }
-    findScopeEntry(sourceURL, sourceLineNumber, sourceColumnNumber) {
-        const sourceInfo = this.#sourceInfos.get(sourceURL);
-        if (!sourceInfo || !sourceInfo.scopeTree) {
-            return null;
-        }
-        const position = { lineNumber: sourceLineNumber, columnNumber: sourceColumnNumber };
-        let current = null;
-        while (true) {
-            const children = current?.children ?? sourceInfo.scopeTree;
-            const match = children.find(child => comparePositions(child.start(), position) <= 0 && comparePositions(position, child.end()) <= 0);
-            if (!match) {
-                return current;
-            }
-            current = match;
-        }
+            const ranges = decodePastaRanges(rawScopes, names);
+            return buildOriginalScopes(ranges);
+        });
     }
     isSeparator(char) {
         return char === ',' || char === ';';
@@ -601,7 +508,7 @@ export class SourceMap {
         return false;
     }
     hasIgnoreListHint(sourceURL) {
-        return this.#sourceInfos.get(sourceURL)?.ignoreListHint ?? false;
+        return this.#sourceInfoByURL.get(sourceURL)?.ignoreListHint ?? false;
     }
     /**
      * Returns a list of ranges in the generated script for original sources that
@@ -666,6 +573,10 @@ export class SourceMap {
             return null;
         }
         return this.#scopesInfo.resolveMappedScopeChain(frame);
+    }
+    findOriginalFunctionName(position) {
+        this.#ensureMappingsProcessed();
+        return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
     }
 }
 const VLQ_BASE_SHIFT = 5;

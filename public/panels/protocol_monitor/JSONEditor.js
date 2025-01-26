@@ -1034,7 +1034,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                        @click=${this.#copyToClipboard}></devtools-button>
         <div class=toolbar-spacer></div>
       <devtools-button title=${Host.Platform.isMac() ? i18nString(UIStrings.sendCommandCmdEnter) : i18nString(UIStrings.sendCommandCtrlEnter)}
-                       .iconUrl=${'send'}
+                       .iconName=${'send'}
                        jslogContext=${'protocol-monitor.send-command'}
                        .variant=${"primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */}
                        @click=${this.#handleCommandSend}></devtools-button>

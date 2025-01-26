@@ -77,7 +77,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 524288 /* Capability.EVENT_BREAKPOINTS */ | 16 /* Capability.NETWORK */;
                 break;
             case Type.NODE:
-                this.#capabilitiesMask = 4 /* Capability.JS */;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */;
                 break;
             case Type.AUCTION_WORKLET:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 524288 /* Capability.EVENT_BREAKPOINTS */;

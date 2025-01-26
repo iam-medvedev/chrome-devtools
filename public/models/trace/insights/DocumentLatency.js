@@ -31,7 +31,7 @@ function getServerResponseTime(request) {
     if (!timing) {
         return null;
     }
-    const ms = Helpers.Timing.microSecondsToMilliseconds(request.args.data.syntheticData.waiting);
+    const ms = Helpers.Timing.microToMilli(request.args.data.syntheticData.waiting);
     return Math.round(ms);
 }
 function getCompressionSavings(request) {
@@ -137,7 +137,7 @@ export function generateInsight(parsedTrace, context) {
         data: {
             serverResponseTime,
             serverResponseTooSlow,
-            redirectDuration: Types.Timing.MilliSeconds(redirectDuration),
+            redirectDuration: Types.Timing.Milli(redirectDuration),
             uncompressedResponseBytes: getCompressionSavings(documentRequest),
             documentRequest,
         },

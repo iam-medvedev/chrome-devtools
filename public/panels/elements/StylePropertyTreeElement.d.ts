@@ -4,7 +4,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { type AnchorFunctionMatch, AnchorFunctionMatcher, AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type CSSWideKeywordMatch, type FlexGridMatch, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LengthMatch, LengthMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type PositionAnchorMatch, PositionAnchorMatcher, type PositionTryMatch, PositionTryMatcher, type ShadowMatch, ShadowMatcher, ShadowType } from './PropertyMatchers.js';
+import { type AnchorFunctionMatch, AnchorFunctionMatcher, AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type CSSWideKeywordMatch, type FlexGridMatch, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type PositionAnchorMatch, PositionAnchorMatcher, type PositionTryMatch, PositionTryMatcher, type ShadowMatch, ShadowMatcher, ShadowType } from './PropertyMatchers.js';
 import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
 import type { StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
@@ -130,12 +130,6 @@ export declare class FontRenderer implements MatchRenderer<FontMatch> {
 export declare class GridTemplateRenderer implements MatchRenderer<GridTemplateMatch> {
     render(match: GridTemplateMatch, context: RenderingContext): Node[];
     matcher(): GridTemplateMatcher;
-}
-export declare class LengthRenderer implements MatchRenderer<LengthMatch> {
-    #private;
-    constructor(treeElement: StylePropertyTreeElement);
-    render(match: LengthMatch, _context: RenderingContext): Node[];
-    matcher(): LengthMatcher;
 }
 export declare class AnchorFunctionRenderer implements MatchRenderer<AnchorFunctionMatch> {
     #private;

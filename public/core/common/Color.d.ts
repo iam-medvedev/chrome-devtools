@@ -241,6 +241,7 @@ declare abstract class ShortFormatColorBase implements Color {
     protected readonly color: Legacy;
     constructor(color: Legacy);
     get alpha(): number | null;
+    rgba(): Color4D;
     equal(color: Color): boolean;
     setAlpha(alpha: number): Color;
     format(): Format;

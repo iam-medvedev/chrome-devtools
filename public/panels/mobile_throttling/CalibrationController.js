@@ -78,6 +78,7 @@ export class CalibrationController {
         margin: 0;
         background-color: antiquewhite;
         font-size: 18px;
+        text-align: center;
 
         display: flex;
         flex-direction: column;
@@ -90,19 +91,15 @@ export class CalibrationController {
             moonEl.textContent = '🌑';
             moonEl.style.cssText = 'font-size: 5em';
         }
-        await runtimeModel.agent.invoke_evaluate({
-            expression: 'window.location.href = "about:blank"',
-        });
-        await runtimeModel.agent.invoke_evaluate({
-            expression: `(${setupTestPage})(${JSON.stringify(i18nString(UIStrings.runningCalibration))})`,
-        });
+        await primaryPageTarget.pageAgent().invoke_navigate({ url: 'about:blank' });
         await runtimeModel.agent.invoke_evaluate({
             expression: `
-          ${computeBenchmarkIndex}
+          (${setupTestPage})(${JSON.stringify(i18nString(UIStrings.runningCalibration))});
+
           window.runBenchmark = () => {
             window.runs = window.runs ?? 0;
-            moon.textContent = ['🌑', '🌒','🌓', '🌔', '🌕', '🌖', '🌗', '🌘'][window.runs++ % 8];
-            return computeBenchmarkIndex(${benchmarkDurationMs});
+            moon.textContent = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'][window.runs++ % 8];
+            return (${computeBenchmarkIndex})(${benchmarkDurationMs});
           }`,
         });
         // Warm up - give v8 a change to optimize.
@@ -125,7 +122,11 @@ export class CalibrationController {
             expression: 'runBenchmark()',
         });
         if (!Number.isFinite(result.value)) {
-            throw new Error(`unexpected score from benchmark: ${result.value}`);
+            let err = `unexpected score from benchmark: ${result.value}`;
+            if (result.description) {
+                err += `\n${result.description}`;
+            }
+            throw new Error(err);
         }
         return result.value;
     }

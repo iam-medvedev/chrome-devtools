@@ -33,7 +33,7 @@ import * as SDK from '../../../../core/sdk/sdk.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
-import jsonViewStyles from './jsonView.css.legacy.js';
+import jsonViewStyles from './jsonView.css.js';
 const UIStrings = {
     /**
      *@description Text to find an item
@@ -54,7 +54,6 @@ export class JSONView extends UI.Widget.VBox {
     constructor(parsedJSON, startCollapsed) {
         super();
         this.initialized = false;
-        this.registerRequiredCSS(jsonViewStyles);
         this.parsedJSON = parsedJSON;
         this.startCollapsed = Boolean(startCollapsed);
         this.element.classList.add('json-view');
@@ -136,6 +135,8 @@ export class JSONView extends UI.Widget.VBox {
         return { start, end, length };
     }
     wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([jsonViewStyles]);
         this.initialize();
     }
     initialize() {

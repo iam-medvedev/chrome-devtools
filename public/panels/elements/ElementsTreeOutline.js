@@ -1161,6 +1161,10 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         if (markerPseudoElement) {
             visibleChildren.push(markerPseudoElement);
         }
+        const checkmarkPseudoElement = node.checkmarkPseudoElement();
+        if (checkmarkPseudoElement) {
+            visibleChildren.push(checkmarkPseudoElement);
+        }
         const beforePseudoElement = node.beforePseudoElement();
         if (beforePseudoElement) {
             visibleChildren.push(beforePseudoElement);
@@ -1176,6 +1180,10 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         const afterPseudoElement = node.afterPseudoElement();
         if (afterPseudoElement) {
             visibleChildren.push(afterPseudoElement);
+        }
+        const pickerIconPseudoElement = node.pickerIconPseudoElement();
+        if (pickerIconPseudoElement) {
+            visibleChildren.push(pickerIconPseudoElement);
         }
         const backdropPseudoElement = node.backdropPseudoElement();
         if (backdropPseudoElement) {

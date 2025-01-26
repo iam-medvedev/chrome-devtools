@@ -189,19 +189,6 @@ export declare class FontMatcher extends FontMatcher_base {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
-export declare class LengthMatch implements Match {
-    readonly text: string;
-    readonly node: CodeMirror.SyntaxNode;
-    constructor(text: string, node: CodeMirror.SyntaxNode);
-}
-declare const LengthMatcher_base: new () => {
-    matchType: SDK.CSSPropertyParser.Constructor<LengthMatch>;
-    accepts(_propertyName: string): boolean;
-    matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
-};
-export declare class LengthMatcher extends LengthMatcher_base {
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
-}
 export declare class FlexGridMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;

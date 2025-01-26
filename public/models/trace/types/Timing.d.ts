@@ -1,25 +1,19 @@
-export type MicroSeconds = number & {
+export type Micro = number & {
     _tag: 'MicroSeconds';
 };
-export declare function MicroSeconds(value: number): MicroSeconds;
-export type MilliSeconds = number & {
+export declare function Micro(value: number): Micro;
+export type Milli = number & {
     _tag: 'MilliSeconds';
 };
-export declare function MilliSeconds(value: number): MilliSeconds;
+export declare function Milli(value: number): Milli;
 export type Seconds = number & {
     _tag: 'Seconds';
 };
 export declare function Seconds(value: number): Seconds;
-export declare const enum TimeUnit {
-    MICROSECONDS = 0,
-    MILLISECONDS = 1,
-    SECONDS = 2,
-    MINUTES = 3
-}
-export interface TraceWindow<TimeFormat extends MicroSeconds | MilliSeconds> {
+export interface TraceWindow<TimeFormat extends Micro | Milli> {
     min: TimeFormat;
     max: TimeFormat;
     range: TimeFormat;
 }
-export type TraceWindowMicroSeconds = TraceWindow<MicroSeconds>;
-export type TraceWindowMilliSeconds = TraceWindow<MilliSeconds>;
+export type TraceWindowMicro = TraceWindow<Micro>;
+export type TraceWindowMilli = TraceWindow<Milli>;

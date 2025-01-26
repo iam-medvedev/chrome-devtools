@@ -13,10 +13,10 @@ export declare class StateChangedEvent extends Event {
 export declare function onChange(cb: (event: StateChangedEvent) => void): void;
 export declare function removeListener(cb: (event: StateChangedEvent) => void): void;
 export interface State {
-    readonly micro: Readonly<TraceWindows<Trace.Types.Timing.MicroSeconds>>;
-    readonly milli: Readonly<TraceWindows<Trace.Types.Timing.MilliSeconds>>;
+    readonly micro: Readonly<TraceWindows<Trace.Types.Timing.Micro>>;
+    readonly milli: Readonly<TraceWindows<Trace.Types.Timing.Milli>>;
 }
-export interface TraceWindows<TimeFormat extends Trace.Types.Timing.MicroSeconds | Trace.Types.Timing.MilliSeconds> {
+export interface TraceWindows<TimeFormat extends Trace.Types.Timing.Micro | Trace.Types.Timing.Milli> {
     /**
      * This is the bounds of the entire trace. Once a trace is imported/recorded
      * and this is set, it cannot be changed.
@@ -50,9 +50,9 @@ export declare class BoundsManager extends EventTarget {
     }): BoundsManager;
     static removeInstance(): void;
     private constructor();
-    resetWithNewBounds(initialBounds: Trace.Types.Timing.TraceWindowMicroSeconds): this;
+    resetWithNewBounds(initialBounds: Trace.Types.Timing.TraceWindowMicro): this;
     state(): Readonly<State> | null;
-    setMiniMapBounds(newBounds: Trace.Types.Timing.TraceWindowMicroSeconds): void;
+    setMiniMapBounds(newBounds: Trace.Types.Timing.TraceWindowMicro): void;
     /**
      * Updates the visible part of the trace that the user can see.
      * @param options.ignoreMiniMapBounds - by default the visible window will be
@@ -61,7 +61,7 @@ export declare class BoundsManager extends EventTarget {
      * with this! Unless you deal with this situation, the UI of the performance
      * panel will break.
      */
-    setTimelineVisibleWindow(newWindow: Trace.Types.Timing.TraceWindowMicroSeconds, options?: {
+    setTimelineVisibleWindow(newWindow: Trace.Types.Timing.TraceWindowMicro, options?: {
         shouldAnimate?: boolean;
         ignoreMiniMapBounds?: boolean;
     }): void;

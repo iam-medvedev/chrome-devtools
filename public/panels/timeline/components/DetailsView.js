@@ -71,7 +71,7 @@ export function buildWarningElementsForEvent(event, parsedTrace) {
         return warningElements;
     }
     for (const warning of warnings) {
-        const duration = Trace.Helpers.Timing.microSecondsToMilliseconds(Trace.Types.Timing.MicroSeconds(event.dur || 0));
+        const duration = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(event.dur || 0));
         const span = document.createElement('span');
         switch (warning) {
             case 'FORCED_REFLOW': {

@@ -17,7 +17,6 @@ export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     private domStorageView;
     private extensionStorageView;
     private cookieView;
-    private readonly emptyWidget;
     private readonly sidebar;
     private constructor();
     static instance(opts?: {
@@ -31,7 +30,7 @@ export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     resetView(): void;
     showView(view: UI.Widget.Widget | null): void;
     scheduleShowView(viewPromise: Promise<UI.Widget.Widget>): Promise<UI.Widget.Widget | null>;
-    showCategoryView(categoryName: string, categoryLink: Platform.DevToolsPath.UrlString | null): void;
+    showCategoryView(categoryName: string, categoryHeadline: string, categoryDescription: string, categoryLink: Platform.DevToolsPath.UrlString | null): void;
     showDOMStorage(domStorage: DOMStorage): void;
     showExtensionStorage(extensionStorage: ExtensionStorage): void;
     showCookies(cookieFrameTarget: SDK.Target.Target, cookieDomain: string): void;

@@ -272,11 +272,17 @@ export class DOMNode {
     pseudoElements() {
         return this.#pseudoElements;
     }
+    checkmarkPseudoElement() {
+        return this.#pseudoElements.get("checkmark" /* Protocol.DOM.PseudoType.Checkmark */)?.at(-1);
+    }
     beforePseudoElement() {
         return this.#pseudoElements.get("before" /* Protocol.DOM.PseudoType.Before */)?.at(-1);
     }
     afterPseudoElement() {
         return this.#pseudoElements.get("after" /* Protocol.DOM.PseudoType.After */)?.at(-1);
+    }
+    pickerIconPseudoElement() {
+        return this.#pseudoElements.get("picker-icon" /* Protocol.DOM.PseudoType.PickerIcon */)?.at(-1);
     }
     markerPseudoElement() {
         return this.#pseudoElements.get("marker" /* Protocol.DOM.PseudoType.Marker */)?.at(-1);

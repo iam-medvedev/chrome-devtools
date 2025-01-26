@@ -39,8 +39,8 @@ styles.replaceSync(
   text-align: center;
 }
 
-devtools-data-grid-controller {
-  border: 1px solid var(--sys-color-divider);
+devtools-new-data-grid {
+  flex: auto;
 }
 
 .inline-icon {

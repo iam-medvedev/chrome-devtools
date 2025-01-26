@@ -10,17 +10,17 @@ const UIStrings = {
      */
     security: 'Security',
     /**
-     *@description Title of security and privacy panel. This is used when the kDevToolsPrivacyUI feature flag is enabled.
+     *@description Title of privacy and security panel. This is used when the kDevToolsPrivacyUI feature flag is enabled.
      */
-    securityAndPrivacy: 'Security & Privacy',
+    PrivacyAndSecurity: 'Privacy and security',
     /**
      *@description Default command to open the security panel
      */
     showSecurity: 'Show Security',
     /**
-     *@description Command to open the security and privacy panel. This is used when the kDevToolsPrivacyUI feature flag is enabled
+     *@description Command to open the privacy and security panel. This is used when the kDevToolPrivacyUI feature flag is enabled
      */
-    showSecurityAndPrivacy: 'Show Security and Privacy',
+    showPrivacyAndSecurity: 'Show Privacy and security',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/security-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -35,10 +35,10 @@ UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
     id: 'security',
     title: () => Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled ?
-        i18nLazyString(UIStrings.securityAndPrivacy)() :
+        i18nLazyString(UIStrings.PrivacyAndSecurity)() :
         i18nLazyString(UIStrings.security)(),
     commandPrompt: () => Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled ?
-        i18nLazyString(UIStrings.showSecurityAndPrivacy)() :
+        i18nLazyString(UIStrings.showPrivacyAndSecurity)() :
         i18nLazyString(UIStrings.showSecurity)(),
     order: 80,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,

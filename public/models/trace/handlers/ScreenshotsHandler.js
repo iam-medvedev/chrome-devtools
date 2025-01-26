@@ -27,7 +27,7 @@ export async function finalize() {
     const pipelineReporterEvents = Helpers.Trace.createMatchedSortedSyntheticEvents(unpairedAsyncEvents);
     frameSequenceToTs = Object.fromEntries(pipelineReporterEvents.map(evt => {
         const frameSequenceId = evt.args.data.beginEvent.args.chrome_frame_reporter.frame_sequence;
-        const presentationTs = Types.Timing.MicroSeconds(evt.ts + evt.dur);
+        const presentationTs = Types.Timing.Micro(evt.ts + evt.dur);
         return [frameSequenceId, presentationTs];
     }));
     for (const snapshotEvent of snapshotEvents) {

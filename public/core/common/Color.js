@@ -1450,6 +1450,9 @@ class ShortFormatColorBase {
     get alpha() {
         return this.color.alpha;
     }
+    rgba() {
+        return this.color.rgba();
+    }
     equal(color) {
         return this.color.equal(color);
     }

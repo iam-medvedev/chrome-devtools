@@ -20,12 +20,6 @@ export class BezierSwatch extends HTMLElement {
         this.#text = document.createElement('span');
         root.createChild('slot');
     }
-    connectedCallback() {
-        this.append(this.#text);
-    }
-    disconnectedCallback() {
-        this.#text.remove();
-    }
     static create() {
         return document.createElement('devtools-bezier-swatch');
     }
@@ -33,6 +27,9 @@ export class BezierSwatch extends HTMLElement {
         return this.#text.textContent || '';
     }
     setBezierText(text) {
+        if (!this.#text.parentElement) {
+            this.append(this.#text);
+        }
         this.#text.textContent = text;
     }
     hideText(hide) {
