@@ -1,7 +1,7 @@
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type CompatibilityTracksAppender, type DrawOverride, type PopoverInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
-export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.MicroSeconds;
+export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.Micro;
 export declare class LayoutShiftsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;

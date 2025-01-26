@@ -64,7 +64,7 @@ function extractServerTimings() {
 function createSyntheticServerTiming(request, serverStart, serverEnd, timingsInRequest) {
     const clientStart = request.args.data.syntheticData.sendStartTime;
     const clientEndTime = request.args.data.syntheticData.sendStartTime + request.args.data.syntheticData.waiting;
-    const offset = Types.Timing.MicroSeconds((serverStart - clientStart + serverEnd - clientEndTime) / 2);
+    const offset = Types.Timing.Micro((serverStart - clientStart + serverEnd - clientEndTime) / 2);
     const convertedServerTimings = [];
     for (const timing of timingsInRequest) {
         if (timing.metric === RESPONSE_START_METRIC_NAME || timing.metric === RESPONSE_END_METRIC_NAME) {
@@ -73,7 +73,7 @@ function createSyntheticServerTiming(request, serverStart, serverEnd, timingsInR
         if (timing.start === null) {
             continue;
         }
-        const convertedTimestamp = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(timing.start)) - offset;
+        const convertedTimestamp = Helpers.Timing.milliToMicro(Types.Timing.Milli(timing.start)) - offset;
         const parsedUrl = new URL(request.args.data.url);
         const origin = parsedUrl.origin;
         const serverTiming = Helpers.SyntheticEvents.SyntheticEventsManager.registerServerTiming({
@@ -82,8 +82,8 @@ function createSyntheticServerTiming(request, serverStart, serverEnd, timingsInR
             ph: "X" /* Types.Events.Phase.COMPLETE */,
             pid: Types.Events.ProcessID(0),
             tid: Types.Events.ThreadID(0),
-            ts: Types.Timing.MicroSeconds(convertedTimestamp),
-            dur: Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(timing.value)),
+            ts: Types.Timing.Micro(convertedTimestamp),
+            dur: Helpers.Timing.milliToMicro(Types.Timing.Milli(timing.value)),
             cat: 'devtools.server-timing',
             args: { data: { desc: timing.description || undefined, origin } },
         });

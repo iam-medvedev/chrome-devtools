@@ -7,26 +7,26 @@ export declare function getFrameIdForPageLoadEvent(event: Types.Events.PageLoadE
  * Classifications sourced from
  * https://web.dev/fcp/
  */
-export declare function scoreClassificationForFirstContentfulPaint(fcpScoreInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
+export declare function scoreClassificationForFirstContentfulPaint(fcpScoreInMicroseconds: Types.Timing.Micro): ScoreClassification;
 /**
  * Classifications sourced from
  * https://web.dev/interactive/#how-lighthouse-determines-your-tti-score
  */
-export declare function scoreClassificationForTimeToInteractive(ttiTimeInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
+export declare function scoreClassificationForTimeToInteractive(ttiTimeInMicroseconds: Types.Timing.Micro): ScoreClassification;
 /**
  * Classifications sourced from
  * https://web.dev/lcp/#what-is-lcp
  */
-export declare function scoreClassificationForLargestContentfulPaint(lcpTimeInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
+export declare function scoreClassificationForLargestContentfulPaint(lcpTimeInMicroseconds: Types.Timing.Micro): ScoreClassification;
 /**
  * DCL does not have a classification.
  */
-export declare function scoreClassificationForDOMContentLoaded(_dclTimeInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
+export declare function scoreClassificationForDOMContentLoaded(_dclTimeInMicroseconds: Types.Timing.Micro): ScoreClassification;
 /**
  * Classifications sourced from
  * https://web.dev/lighthouse-total-blocking-#time/
  */
-export declare function scoreClassificationForTotalBlockingTime(tbtTimeInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
+export declare function scoreClassificationForTotalBlockingTime(tbtTimeInMicroseconds: Types.Timing.Micro): ScoreClassification;
 export declare function finalize(): Promise<void>;
 export interface PageLoadMetricsData {
     /**
@@ -67,5 +67,5 @@ export interface MetricScore {
     event?: Types.Events.PageLoadEvent;
     navigation?: Types.Events.NavigationStart;
     estimated?: boolean;
-    timing: Types.Timing.MicroSeconds;
+    timing: Types.Timing.Micro;
 }

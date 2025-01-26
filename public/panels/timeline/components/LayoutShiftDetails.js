@@ -5,8 +5,8 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Helpers from '../../../models/trace/helpers/helpers.js';
 import * as Trace from '../../../models/trace/trace.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
-import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Utils from '../utils/utils.js';
 import * as Insights from './insights/insights.js';
@@ -78,9 +78,11 @@ export class LayoutShiftDetails extends HTMLElement {
     #parsedTrace = null;
     #isFreshRecording = false;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [layoutShiftDetailsStyles];
-        // Styles for linkifier button.
-        UI.UIUtils.injectTextButtonStyles(this.#shadow);
+        this.#shadow.adoptedStyleSheets = [
+            layoutShiftDetailsStyles,
+            // Styles for linkifier button.
+            Buttons.textButtonStyles,
+        ];
         this.#render();
     }
     setData(event, traceInsightsSets, parsedTrace, isFreshRecording) {
@@ -189,9 +191,9 @@ export class LayoutShiftDetails extends HTMLElement {
     `;
     }
     #renderStartTime(shift, parsedTrace) {
-        const ts = Trace.Types.Timing.MicroSeconds(shift.ts - parsedTrace.Meta.traceBounds.min);
+        const ts = Trace.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
         if (shift === this.#event) {
-            return html `${i18n.TimeUtilities.preciseMillisToString(Helpers.Timing.microSecondsToMilliseconds(ts))}`;
+            return html `${i18n.TimeUtilities.preciseMillisToString(Helpers.Timing.microToMilli(ts))}`;
         }
         const shiftTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // clang-format off
@@ -230,7 +232,7 @@ export class LayoutShiftDetails extends HTMLElement {
         if (!cluster) {
             return null;
         }
-        const ts = Trace.Types.Timing.MicroSeconds(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
+        const ts = Trace.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // clang-format off
         return html `

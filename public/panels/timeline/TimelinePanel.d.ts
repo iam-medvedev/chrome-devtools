@@ -51,11 +51,13 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private traceLoadStart;
     private primaryPageTargetPromiseCallback;
     private primaryPageTargetPromise;
-    constructor();
+    constructor(traceModel?: Trace.TraceModel.Model);
     static instance(opts?: {
         forceNew: boolean | null;
         isNode: boolean;
+        traceModel?: Trace.TraceModel.Model;
     } | undefined): TimelinePanel;
+    static removeInstance(): void;
     static extensionDataVisibilitySetting(): Common.Settings.Setting<boolean>;
     searchableView(): UI.SearchableView.SearchableView | null;
     wasShown(): void;
@@ -120,7 +122,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
      *
      * IMPORTANT: All the code in here should be code that is only required when we have
      * recorded or loaded a brand new trace. If you need the code to run when the
-     * user switches to an existing trace, please {@see setModel} and put your
+     * user switches to an existing trace, please @see #setModelForActiveTrace and put your
      * code in there.
      **/
     loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: (Trace.Extras.TraceFilter.TraceFilter | null) | undefined, metadata: Trace.Types.File.MetaData | null): Promise<void>;
@@ -164,11 +166,11 @@ export declare class StatusPane extends UI.Widget.VBox {
     private startTime;
     private timeUpdateTimer?;
     constructor(options: {
+        hideStopButton: boolean;
         showTimer?: boolean;
         showProgress?: boolean;
         description?: string;
         buttonText?: string;
-        buttonDisabled?: boolean;
     }, buttonCallback: () => (Promise<void> | void));
     finish(): void;
     enableDownloadOfEvents(rawEvents: Trace.Types.Events.Event[]): void;
@@ -180,7 +182,6 @@ export declare class StatusPane extends UI.Widget.VBox {
     startTimer(): void;
     private stopTimer;
     private updateTimer;
-    private arrangeDialog;
     wasShown(): void;
 }
 export declare class LoadTimelineHandler implements Common.QueryParamHandler.QueryParamHandler {

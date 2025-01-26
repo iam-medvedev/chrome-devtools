@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Types from '../types/types.js';
-import { millisecondsToMicroseconds } from './Timing.js';
+import { milliToMicro } from './Timing.js';
 import { makeProfileCall, mergeEventsInOrder } from './Trace.js';
 /**
  * This is a helper that integrates CPU profiling data coming in the
@@ -202,7 +202,7 @@ export class SamplesIntegrator {
         // Because the event has ended, any frames that happened after
         // this event are terminated. Frames that are ancestors to this
         // event are extended to cover its ending.
-        const endTime = Types.Timing.MicroSeconds(event.ts + (event.dur ?? 0));
+        const endTime = Types.Timing.Micro(event.ts + (event.dur ?? 0));
         this.#truncateJSStack(this.#lockedJsStackDepth.pop() || 0, endTime);
     }
     /**
@@ -222,7 +222,7 @@ export class SamplesIntegrator {
         let prevNode;
         for (let i = 0; i < samples.length; i++) {
             const node = this.#profileModel.nodeByIndex(i);
-            const timestamp = millisecondsToMicroseconds(Types.Timing.MilliSeconds(timestamps[i]));
+            const timestamp = milliToMicro(Types.Timing.Milli(timestamps[i]));
             if (!node) {
                 continue;
             }
@@ -302,7 +302,7 @@ export class SamplesIntegrator {
             }
             // Scoot the right edge of this callFrame to the right
             this.#currentJSStack[i].dur =
-                Types.Timing.MicroSeconds(Math.max(this.#currentJSStack[i].dur || 0, endTime - this.#currentJSStack[i].ts));
+                Types.Timing.Micro(Math.max(this.#currentJSStack[i].dur || 0, endTime - this.#currentJSStack[i].ts));
         }
         // If there are call frames in the sample that differ with the stack
         // we have, update the stack, but keeping the common frames in place
@@ -359,7 +359,7 @@ export class SamplesIntegrator {
             depth = this.#currentJSStack.length;
         }
         for (let k = 0; k < this.#currentJSStack.length; ++k) {
-            this.#currentJSStack[k].dur = Types.Timing.MicroSeconds(Math.max(time - this.#currentJSStack[k].ts, 0));
+            this.#currentJSStack[k].dur = Types.Timing.Micro(Math.max(time - this.#currentJSStack[k].ts, 0));
         }
         this.#currentJSStack.length = depth;
     }
@@ -372,7 +372,7 @@ export class SamplesIntegrator {
             },
             ph: "I" /* Types.Events.Phase.INSTANT */,
             ts: timestamp,
-            dur: Types.Timing.MicroSeconds(0),
+            dur: Types.Timing.Micro(0),
             pid: this.#processId,
             tid: this.#threadId,
         };

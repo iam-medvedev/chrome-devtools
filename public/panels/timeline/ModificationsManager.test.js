@@ -76,9 +76,9 @@ describeWithEnvironment('ModificationsManager', () => {
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.MicroSeconds(0),
-                max: Trace.Types.Timing.MicroSeconds(10),
-                range: Trace.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.Micro(0),
+                max: Trace.Types.Timing.Micro(10),
+                range: Trace.Types.Timing.Micro(10),
             },
             label: 'range label',
         });
@@ -90,9 +90,9 @@ describeWithEnvironment('ModificationsManager', () => {
                 }],
             labelledTimeRanges: [{
                     bounds: {
-                        min: Trace.Types.Timing.MicroSeconds(0),
-                        max: Trace.Types.Timing.MicroSeconds(10),
-                        range: Trace.Types.Timing.MicroSeconds(10),
+                        min: Trace.Types.Timing.Micro(0),
+                        max: Trace.Types.Timing.Micro(10),
+                        range: Trace.Types.Timing.Micro(10),
                     },
                     label: 'range label',
                 }],
@@ -166,9 +166,9 @@ describeWithEnvironment('ModificationsManager', () => {
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.MicroSeconds(0),
-                max: Trace.Types.Timing.MicroSeconds(10),
-                range: Trace.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.Micro(0),
+                max: Trace.Types.Timing.Micro(10),
+                range: Trace.Types.Timing.Micro(10),
             },
             label: 'label',
         });
@@ -176,9 +176,9 @@ describeWithEnvironment('ModificationsManager', () => {
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.MicroSeconds(3),
-                max: Trace.Types.Timing.MicroSeconds(10),
-                range: Trace.Types.Timing.MicroSeconds(7),
+                min: Trace.Types.Timing.Micro(3),
+                max: Trace.Types.Timing.Micro(10),
+                range: Trace.Types.Timing.Micro(7),
             },
             label: '',
         });
@@ -186,9 +186,9 @@ describeWithEnvironment('ModificationsManager', () => {
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.MicroSeconds(5),
-                max: Trace.Types.Timing.MicroSeconds(10),
-                range: Trace.Types.Timing.MicroSeconds(5),
+                min: Trace.Types.Timing.Micro(5),
+                max: Trace.Types.Timing.Micro(10),
+                range: Trace.Types.Timing.Micro(5),
             },
             label: '',
         });
@@ -197,9 +197,9 @@ describeWithEnvironment('ModificationsManager', () => {
         // Make sure that the annotations with an empty label were deleted
         assert.deepEqual(modifications.labelledTimeRanges, [{
                 bounds: {
-                    min: Trace.Types.Timing.MicroSeconds(0),
-                    max: Trace.Types.Timing.MicroSeconds(10),
-                    range: Trace.Types.Timing.MicroSeconds(10),
+                    min: Trace.Types.Timing.Micro(0),
+                    max: Trace.Types.Timing.Micro(10),
+                    range: Trace.Types.Timing.Micro(10),
                 },
                 label: 'label',
             }]);

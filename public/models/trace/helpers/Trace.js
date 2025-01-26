@@ -198,7 +198,7 @@ export function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
         pid,
         tid,
         ts,
-        dur: Types.Timing.MicroSeconds(0),
+        dur: Types.Timing.Micro(0),
         callFrame: node.callFrame,
         sampleIndex,
         profileId,
@@ -285,7 +285,7 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
             // Both events have the same name, so it doesn't matter which we pick to
             // use as the description
             name: beginEvent.name,
-            dur: Types.Timing.MicroSeconds(targetEvent.ts - beginEvent.ts),
+            dur: Types.Timing.Micro(targetEvent.ts - beginEvent.ts),
             ts: beginEvent.ts,
             args: {
                 data: triplet,
@@ -497,8 +497,8 @@ export function findPreviousEventBeforeTimestamp(candidates, ts) {
  * overriden making use of the config.ignoreAsyncEvents parameter.
  */
 export function forEachEvent(events, config) {
-    const globalStartTime = config.startTime ?? Types.Timing.MicroSeconds(0);
-    const globalEndTime = config.endTime || Types.Timing.MicroSeconds(Infinity);
+    const globalStartTime = config.startTime ?? Types.Timing.Micro(0);
+    const globalEndTime = config.endTime || Types.Timing.Micro(Infinity);
     const ignoreAsyncEvents = config.ignoreAsyncEvents === false ? false : true;
     const stack = [];
     const startEventIndex = topLevelEventIndexEndingAfter(events, globalStartTime);

@@ -102,7 +102,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     currentLevel = 0;
     compatibilityTracksAppender = null;
     parsedTrace = null;
-    isCpuProfile = false;
     #minimumBoundary = 0;
     timeSpan = 0;
     framesGroupStyle;
@@ -350,13 +349,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         };
         return Object.assign(defaultGroupStyle, extra);
     }
-    setModel(parsedTrace, isCpuProfile = false) {
+    setModel(parsedTrace) {
         this.reset();
         this.parsedTrace = parsedTrace;
-        this.isCpuProfile = isCpuProfile;
         const { traceBounds } = parsedTrace.Meta;
-        const minTime = Trace.Helpers.Timing.microSecondsToMilliseconds(traceBounds.min);
-        const maxTime = Trace.Helpers.Timing.microSecondsToMilliseconds(traceBounds.max);
+        const minTime = Trace.Helpers.Timing.microToMilli(traceBounds.min);
+        const maxTime = Trace.Helpers.Timing.microToMilli(traceBounds.max);
         this.#minimumBoundary = minTime;
         this.timeSpan = minTime === maxTime ? 1000 : maxTime - this.#minimumBoundary;
     }
@@ -439,10 +437,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     entryFont(_index) {
         return this.#font;
     }
-    // Clear the cache and rebuild the timeline data
-    // This should be called when the trace file is the same but we want to rebuild the timeline date.
-    // Some possible example: when we hide/unhide an event, or the ignore list is changed etc.
-    clearTimelineDataCache() {
+    /**
+     * Clear the cache and rebuild the timeline data This should be called
+     * when the trace file is the same but we want to rebuild the timeline
+     * data. Some possible example: when we hide/unhide an event, or the
+     * ignore list is changed etc.
+     */
+    rebuildTimelineData() {
         this.currentLevel = 0;
         this.entryData = [];
         this.entryTypeByLevel = [];
@@ -453,11 +454,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             this.compatibilityTracksAppender?.threadAppenders().forEach(threadAppender => threadAppender.setHeaderAppended(false));
         }
     }
-    // Reset all data other than the UI elements.
-    // This should be called when
-    // - initialized the data provider
-    // - a new trace file is coming (when `setModel()` is called)
-    // etc.
+    /**
+     * Reset all data other than the UI elements.
+     * This should be called when
+     * - initialized the data provider
+     * - a new trace file is coming (when `setModel()` is called)
+     * etc.
+     */
     reset() {
         this.currentLevel = 0;
         this.entryData = [];
@@ -488,7 +491,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (rebuild) {
             // This function will interact with the |compatibilityTracksAppender|, which needs the reference of
             // |timelineDataInternal|, so make sure this is called after the correct |timelineDataInternal|.
-            this.clearTimelineDataCache();
+            this.rebuildTimelineData();
         }
         this.currentLevel = 0;
         if (this.parsedTrace) {
@@ -522,10 +525,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
     }
     #processInspectorTrace() {
-        if (!this.isCpuProfile) {
-            // CPU Profiles do not have frames and screenshots.
-            this.#appendFramesAndScreenshotsTrack();
-        }
+        // In CPU Profiles the trace data will not have frames nor
+        // screenshots, so we can keep this call as it will be a no-op in
+        // these cases.
+        this.#appendFramesAndScreenshotsTrack();
         const weight = (track) => {
             switch (track.appenderName) {
                 case 'Animations':
@@ -601,7 +604,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 continue;
             }
             if (!filter || filter.accept(entry, this.parsedTrace || undefined)) {
-                const startTimeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
+                const startTimeMilli = Trace.Helpers.Timing.microToMilli(entry.ts);
                 results.push({ index: i, startTimeMilli, provider: 'main' });
             }
         }
@@ -623,6 +626,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(this.parsedTrace);
         const hasScreenshots = filmStrip.frames.length > 0;
+        const hasFrames = this.parsedTrace.Frames.frames.length > 0;
+        if (!hasFrames && !hasScreenshots) {
+            return;
+        }
         this.framesGroupStyle.collapsible = hasScreenshots;
         const expanded = Root.Runtime.Runtime.queryParam('flamechart-force-expand') === 'frames';
         this.appendHeader(i18nString(UIStrings.frames), this.framesGroupStyle, false /* selectable */, expanded);
@@ -644,7 +651,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.entryTypeByLevel[this.currentLevel] = "Screenshot" /* EntryType.SCREENSHOT */;
         let prevTimestamp = undefined;
         for (const filmStripFrame of filmStrip.frames) {
-            const screenshotTimeInMilliSeconds = Trace.Helpers.Timing.microSecondsToMilliseconds(filmStripFrame.screenshotEvent.ts);
+            const screenshotTimeInMilliSeconds = Trace.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
             this.entryData.push(filmStripFrame.screenshotEvent);
             this.timelineDataInternal.entryLevels.push(this.currentLevel);
             this.timelineDataInternal.entryStartTimes.push(screenshotTimeInMilliSeconds);
@@ -689,8 +696,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         else if (entryType === "Frame" /* EntryType.FRAME */) {
             const frame = this.entryData[entryIndex];
-            time =
-                i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microSecondsToMilliseconds(frame.duration), 1);
+            time = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microToMilli(frame.duration), 1);
             if (frame.idle) {
                 title = i18nString(UIStrings.idleFrame);
             }
@@ -826,7 +832,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
         }
         context.fillRect(barX, barY, barWidth, barHeight);
-        const frameDurationText = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microSecondsToMilliseconds(frame.duration), 1);
+        const frameDurationText = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microToMilli(frame.duration), 1);
         const textWidth = context.measureText(frameDurationText).width;
         if (textWidth <= barWidth) {
             context.fillStyle = this.textColor(entryIndex);
@@ -900,10 +906,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
          * replace it with the whiskers.
          * TODO(crbug.com/1495248): rework how we draw whiskers to avoid this inefficiency
          */
-        const beginTime = Trace.Helpers.Timing.microSecondsToMilliseconds(entry.ts);
+        const beginTime = Trace.Helpers.Timing.microToMilli(entry.ts);
         const entireBarEndXPixel = barX + barWidth;
         function timeToPixel(time) {
-            const timeMilli = Trace.Helpers.Timing.microSecondsToMilliseconds(time);
+            const timeMilli = Trace.Helpers.Timing.microToMilli(time);
             return Math.floor(unclippedBarXStartPixel + (timeMilli - beginTime) * timeToPixelRatio);
         }
         context.save();
@@ -928,7 +934,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // The left whisker starts at the enty timestamp, and continues until the start of the box (processingStart).
         const leftWhiskerX = timeToPixel(entry.ts);
         // The right whisker ends at (entry.ts + entry.dur). We draw the line from the end of the box (processingEnd).
-        const rightWhiskerX = timeToPixel(Trace.Types.Timing.MicroSeconds(entry.ts + entry.dur));
+        const rightWhiskerX = timeToPixel(Trace.Types.Timing.Micro(entry.ts + entry.dur));
         context.beginPath();
         context.lineWidth = 1;
         context.strokeStyle = '#ccc';
@@ -983,14 +989,14 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     #appendFrame(frame) {
         const index = this.entryData.length;
         this.entryData.push(frame);
-        const durationMilliseconds = Trace.Helpers.Timing.microSecondsToMilliseconds(frame.duration);
+        const durationMilliseconds = Trace.Helpers.Timing.microToMilli(frame.duration);
         this.entryIndexToTitle[index] = i18n.TimeUtilities.millisToString(durationMilliseconds, true);
         if (!this.timelineDataInternal) {
             return;
         }
         this.timelineDataInternal.entryLevels[index] = this.currentLevel;
         this.timelineDataInternal.entryTotalTimes[index] = durationMilliseconds;
-        this.timelineDataInternal.entryStartTimes[index] = Trace.Helpers.Timing.microSecondsToMilliseconds(frame.startTime);
+        this.timelineDataInternal.entryStartTimes[index] = Trace.Helpers.Timing.microToMilli(frame.startTime);
     }
     createSelection(entryIndex) {
         const entry = this.entryData[entryIndex];
@@ -1144,5 +1150,5 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return null;
     }
 }
-export const InstantEventVisibleDurationMs = Trace.Types.Timing.MilliSeconds(0.001);
+export const InstantEventVisibleDurationMs = Trace.Types.Timing.Milli(0.001);
 //# sourceMappingURL=TimelineFlameChartDataProvider.js.map

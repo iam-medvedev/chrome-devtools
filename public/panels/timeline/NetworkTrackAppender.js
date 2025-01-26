@@ -105,7 +105,7 @@ export class NetworkTrackAppender {
                 });
             }
         }
-        return this.relayoutEntriesWithinBounds(events, Trace.Types.Timing.MilliSeconds(-Infinity), Trace.Types.Timing.MilliSeconds(Infinity));
+        return this.relayoutEntriesWithinBounds(events, Trace.Types.Timing.Milli(-Infinity), Trace.Types.Timing.Milli(Infinity));
     }
     /**
      * Adds an event to the flame chart data at a defined level.
@@ -116,9 +116,9 @@ export class NetworkTrackAppender {
     #appendEventAtLevel(event, level) {
         const index = this.#flameChartData.entryLevels.length;
         this.#flameChartData.entryLevels[index] = level;
-        this.#flameChartData.entryStartTimes[index] = Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-        const dur = event.dur || Trace.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
-        this.#flameChartData.entryTotalTimes[index] = Trace.Helpers.Timing.microSecondsToMilliseconds(dur);
+        this.#flameChartData.entryStartTimes[index] = Trace.Helpers.Timing.microToMilli(event.ts);
+        const dur = event.dur || Trace.Helpers.Timing.milliToMicro(InstantEventVisibleDurationMs);
+        this.#flameChartData.entryTotalTimes[index] = Trace.Helpers.Timing.microToMilli(dur);
         return level;
     }
     /**
@@ -137,8 +137,8 @@ export class NetworkTrackAppender {
         let maxLevel = 0;
         for (let i = 0; i < events.length; ++i) {
             const event = events[i];
-            const beginTime = Trace.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-            const dur = event.dur ? Trace.Helpers.Timing.microSecondsToMilliseconds(event.dur) : InstantEventVisibleDurationMs;
+            const beginTime = Trace.Helpers.Timing.microToMilli(event.ts);
+            const dur = event.dur ? Trace.Helpers.Timing.microToMilli(event.dur) : InstantEventVisibleDurationMs;
             const endTime = beginTime + dur;
             const isBetweenTimes = beginTime < maxTime && endTime > minTime;
             // Exclude events outside the the specified timebounds

@@ -8,6 +8,21 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { EntryStyles } from '../../timeline/utils/utils.js';
 import * as Components from './components/components.js';
+const UIStrings = {
+    /**
+     * @description Text for showing that a metric was observed in the local environment.
+     * @example {LCP} PH1
+     */
+    fieldMetricMarkerLocal: '{PH1} - Local',
+    /**
+     * @description Text for showing that a metric was observed in the field, from real use data (CrUX). Also denotes if from URL or Origin dataset.
+     * @example {LCP} PH1
+     * @example {URL} PH2
+     */
+    fieldMetricMarkerField: '{PH1} - Field ({PH2})',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/OverlaysImpl.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * Below the network track there is a resize bar the user can click and drag.
  */
@@ -18,8 +33,8 @@ const NETWORK_RESIZE_ELEM_HEIGHT_PX = 8;
  * `overlays` is expected to be non-empty, and this will return `null` if it is empty.
  */
 export function traceWindowContainingOverlays(overlays) {
-    let minTime = Trace.Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
-    let maxTime = Trace.Types.Timing.MicroSeconds(Number.NEGATIVE_INFINITY);
+    let minTime = Trace.Types.Timing.Micro(Number.POSITIVE_INFINITY);
+    let maxTime = Trace.Types.Timing.Micro(Number.NEGATIVE_INFINITY);
     if (overlays.length === 0) {
         return null;
     }
@@ -108,8 +123,8 @@ function traceWindowForOverlay(overlay) {
         default:
             Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
     }
-    const min = Trace.Types.Timing.MicroSeconds(Math.min(...overlayMinBounds));
-    const max = Trace.Types.Timing.MicroSeconds(Math.max(...overlayMaxBounds));
+    const min = Trace.Types.Timing.Micro(Math.min(...overlayMinBounds));
+    const max = Trace.Types.Timing.Micro(Math.max(...overlayMaxBounds));
     return Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
 }
 /**
@@ -317,7 +332,7 @@ export class Overlays extends EventTarget {
         if (linkInProgressElement) {
             const component = linkInProgressElement.querySelector('devtools-entries-link-overlay');
             const yCoordinate = mouseEvent.offsetY + ((chart === 'main') ? networkHeight : 0);
-            component.toEntryCoordinateAndDimentions = { x: mouseEvent.offsetX, y: yCoordinate };
+            component.toEntryCoordinateAndDimensions = { x: mouseEvent.offsetX, y: yCoordinate };
         }
     }
     /**
@@ -411,6 +426,12 @@ export class Overlays extends EventTarget {
             }
         }
         return matches;
+    }
+    /**
+     * @returns all overlays.
+     */
+    allOverlays() {
+        return [...this.#overlaysToElements.keys()];
     }
     /**
      * Removes the provided overlay from the list of overlays and destroys any
@@ -770,7 +791,7 @@ export class Overlays extends EventTarget {
                     const fromCutOffHeight = fromEntryParams?.cutOffHeight;
                     fromEntryX = fromEntryParams?.x;
                     fromEntryY = fromEntryParams?.y;
-                    component.fromEntryCoordinateAndDimentions =
+                    component.fromEntryCoordinateAndDimensions =
                         { x: fromEntryX, y: fromEntryY, length: fromEntryWidth, height: fromEntryHeight - fromCutOffHeight };
                 }
                 else {
@@ -783,7 +804,7 @@ export class Overlays extends EventTarget {
             if (!entryFromVisibility && overlay.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
                 this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
             }
-            // If entryTo exists, pass the coordinates and dimentions of the entry that the arrow snaps to.
+            // If entryTo exists, pass the coordinates and dimensions of the entry that the arrow snaps to.
             // If it does not, the event tracking mouse coordinates updates 'to coordinates' so the arrow follows the mouse instead.
             const entryToWrapper = component.entryToWrapper();
             if (entryTo && entryToWrapper) {
@@ -798,7 +819,7 @@ export class Overlays extends EventTarget {
                         const toCutOffHeight = toEntryParams?.cutOffHeight;
                         toEntryX = toEntryParams?.x;
                         toEntryY = toEntryParams?.y;
-                        component.toEntryCoordinateAndDimentions = {
+                        component.toEntryCoordinateAndDimensions = {
                             x: toEntryX,
                             y: toEntryY,
                             length: toEntryWidth,
@@ -1209,18 +1230,38 @@ export class Overlays extends EventTarget {
     #clickEvent(event) {
         this.dispatchEvent(new EventReferenceClick(event));
     }
-    #createOverlayPopover(adjustedTimestamp, name) {
+    #createOverlayPopover(adjustedTimestamp, name, fieldResult) {
         const popoverElement = document.createElement('div');
         const popoverContents = popoverElement.createChild('div', 'overlay-popover');
         popoverContents.createChild('span', 'overlay-popover-time').textContent =
             i18n.TimeUtilities.formatMicroSecondsTime(adjustedTimestamp);
-        popoverContents.createChild('span', 'overlay-popover-title').textContent = name;
+        popoverContents.createChild('span', 'overlay-popover-title').textContent =
+            fieldResult ? i18nString(UIStrings.fieldMetricMarkerLocal, { PH1: name }) : name;
+        // If there's field data, make another row.
+        if (fieldResult) {
+            const popoverContents = popoverElement.createChild('div', 'overlay-popover');
+            popoverContents.createChild('span', 'overlay-popover-time').textContent =
+                i18n.TimeUtilities.formatMicroSecondsTime(fieldResult.value);
+            let scope = fieldResult.pageScope;
+            if (fieldResult.pageScope === 'url') {
+                scope = 'URL';
+            }
+            else if (fieldResult.pageScope === 'origin') {
+                scope = 'Origin';
+            }
+            popoverContents.createChild('span', 'overlay-popover-title').textContent =
+                i18nString(UIStrings.fieldMetricMarkerField, {
+                    PH1: name,
+                    PH2: scope,
+                });
+        }
         return popoverElement;
     }
-    #mouseMoveOverlay(event, name, overlay, markers, marker) {
-        const popoverElement = this.#createOverlayPopover(overlay.adjustedTimestamp, name);
-        this.#lastMouseOffsetX = event.offsetX + (markers.offsetLeft || 0) + (marker.offsetLeft || 0);
-        this.#lastMouseOffsetY = event.offsetY + markers.offsetTop || 0;
+    #mouseMoveOverlay(e, event, name, overlay, markers, marker) {
+        const fieldResult = overlay.entryToFieldResult.get(event);
+        const popoverElement = this.#createOverlayPopover(overlay.adjustedTimestamp, name, fieldResult);
+        this.#lastMouseOffsetX = e.offsetX + (markers.offsetLeft || 0) + (marker.offsetLeft || 0);
+        this.#lastMouseOffsetY = e.offsetY + markers.offsetTop || 0;
         this.#charts.mainChart.updateMouseOffset(this.#lastMouseOffsetX, this.#lastMouseOffsetY);
         this.#charts.mainChart.updatePopoverContents(popoverElement);
     }
@@ -1242,7 +1283,7 @@ export class Overlays extends EventTarget {
             markers.appendChild(marker);
             marker.addEventListener('click', () => this.#clickEvent(entry));
             // Popover.
-            marker.addEventListener('mousemove', event => this.#mouseMoveOverlay(event, title, overlay, markers, marker));
+            marker.addEventListener('mousemove', e => this.#mouseMoveOverlay(e, entry, title, overlay, markers, marker));
             marker.addEventListener('mouseout', () => this.#mouseOutOverlay());
         }
         return markers;

@@ -48,7 +48,7 @@ describeWithEnvironment('SamplesHandler', function () {
                 ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
                 pid,
                 tid: Trace.Types.Events.ThreadID(0),
-                ts: Trace.Types.Timing.MicroSeconds(ts),
+                ts: Trace.Types.Timing.Micro(ts),
                 id,
                 args: {
                     data: {
@@ -60,7 +60,7 @@ describeWithEnvironment('SamplesHandler', function () {
                                 id: Trace.Types.Events.CallFrameID(node.id),
                             })),
                         },
-                        timeDeltas: timeDeltas.map(Trace.Types.Timing.MicroSeconds),
+                        timeDeltas: timeDeltas.map(Trace.Types.Timing.Micro),
                     },
                 },
             };
@@ -75,11 +75,11 @@ describeWithEnvironment('SamplesHandler', function () {
             const mockProfileEvent = {
                 name: 'Profile',
                 id,
-                args: { data: { startTime: Trace.Types.Timing.MicroSeconds(0) } },
+                args: { data: { startTime: Trace.Types.Timing.Micro(0) } },
                 cat: '',
                 pid,
                 tid,
-                ts: Trace.Types.Timing.MicroSeconds(0),
+                ts: Trace.Types.Timing.Micro(0),
                 ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
             };
             /**

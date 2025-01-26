@@ -35,9 +35,9 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const labelledTimeRangeAnnotation = {
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.MicroSeconds(0),
-                max: Trace.Types.Timing.MicroSeconds(10),
-                range: Trace.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.Micro(0),
+                max: Trace.Types.Timing.Micro(10),
+                range: Trace.Types.Timing.Micro(10),
             },
             label: 'Labelled Time Range',
         };
@@ -157,9 +157,9 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const labelledTimeRangeAnnotation = {
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.MicroSeconds(0),
-                max: Trace.Types.Timing.MicroSeconds(10),
-                range: Trace.Types.Timing.MicroSeconds(10),
+                min: Trace.Types.Timing.Micro(0),
+                max: Trace.Types.Timing.Micro(10),
+                range: Trace.Types.Timing.Micro(10),
             },
             label: 'Labelled Time Range',
         };

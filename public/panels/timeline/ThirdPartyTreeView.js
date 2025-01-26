@@ -28,6 +28,10 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/ThirdPartyTreeView.ts'
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView {
     #thirdPartySummaries = null;
+    // By default the TimelineTreeView will auto-select the first row
+    // when the grid is refreshed but for the ThirdParty view we only
+    // want to do this when the user hovers.
+    autoSelectFirstChildOnRefresh = false;
     constructor() {
         super();
         this.element.setAttribute('jslog', `${VisualLogging.pane('third-party-tree').track({ hover: true })}`);
@@ -40,9 +44,9 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
             return new Trace.Extras.TraceTree.BottomUpRootNode([], this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction());
         }
         // Update summaries.
-        const min = Trace.Helpers.Timing.millisecondsToMicroseconds(this.startTime);
-        const max = Trace.Helpers.Timing.millisecondsToMicroseconds(this.endTime);
-        const bounds = { max, min, range: Trace.Types.Timing.MicroSeconds(max - min) };
+        const min = Trace.Helpers.Timing.milliToMicro(this.startTime);
+        const max = Trace.Helpers.Timing.milliToMicro(this.endTime);
+        const bounds = { max, min, range: Trace.Types.Timing.Micro(max - min) };
         this.#thirdPartySummaries =
             Trace.Extras.ThirdParties.getSummariesAndEntitiesWithMapping(parsedTrace, bounds, entityMapper.mappings());
         const events = this.#thirdPartySummaries?.entityByEvent.keys();
@@ -137,15 +141,15 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
     }
     extractThirdPartySummary(node) {
         if (!this.#thirdPartySummaries) {
-            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.MicroSeconds(0) };
+            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.Micro(0) };
         }
         const entity = this.#thirdPartySummaries.entityByEvent.get(node.event);
         if (!entity) {
-            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.MicroSeconds(0) };
+            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.Micro(0) };
         }
         const summary = this.#thirdPartySummaries.summaries.byEntity.get(entity);
         if (!summary) {
-            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.MicroSeconds(0) };
+            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.Micro(0) };
         }
         return { transferSize: summary.transferSize, mainThreadTime: summary.mainThreadTime };
     }

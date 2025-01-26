@@ -117,10 +117,8 @@ export class BoundsManager extends EventTarget {
         }
         if (!options.ignoreMiniMapBounds) {
             // Ensure that the setTimelineVisibleWindow can never go outside the bounds of the minimap bounds.
-            newWindow.min =
-                Trace.Types.Timing.MicroSeconds(Math.max(this.#currentState.minimapTraceBounds.min, newWindow.min));
-            newWindow.max =
-                Trace.Types.Timing.MicroSeconds(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
+            newWindow.min = Trace.Types.Timing.Micro(Math.max(this.#currentState.minimapTraceBounds.min, newWindow.min));
+            newWindow.max = Trace.Types.Timing.Micro(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
         }
         if (newWindow.min === existingWindow.min && newWindow.max === existingWindow.max) {
             // If, after we adjust for the minimap bounds, the new window matches the

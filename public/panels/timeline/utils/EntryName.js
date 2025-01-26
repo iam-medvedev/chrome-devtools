@@ -86,7 +86,7 @@ export function nameForEntry(entry, parsedTrace) {
     if (Trace.Types.Events.isSyntheticInteraction(entry)) {
         return nameForInteractionEvent(entry);
     }
-    if (Trace.Types.Events.isLayoutShift(entry)) {
+    if (Trace.Types.Events.isSyntheticLayoutShift(entry)) {
         return i18nString(UIStrings.layoutShift);
     }
     if (Trace.Types.Events.isSyntheticAnimation(entry) && entry.args.data.beginEvent.args.data.displayName) {

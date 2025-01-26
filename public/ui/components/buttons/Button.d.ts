@@ -27,7 +27,6 @@ export declare const enum ToggleType {
 type ButtonType = 'button' | 'submit' | 'reset';
 interface CommonButtonData {
     variant: Variant;
-    iconUrl?: string;
     iconName?: string;
     toggledIconName?: string;
     toggleType?: ToggleType;
@@ -47,9 +46,6 @@ interface CommonButtonData {
 }
 export type ButtonData = CommonButtonData & ({
     variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
-    iconUrl: string;
-} | {
-    variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
     iconName: string;
 } | {
     variant: Variant.PRIMARY | Variant.OUTLINED | Variant.TONAL | Variant.TEXT | Variant.ADORNER_ICON;
@@ -64,12 +60,14 @@ export declare class Button extends HTMLElement {
     #private;
     static formAssociated: boolean;
     constructor();
+    addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
+    cloneNode(deep?: boolean): Node;
     /**
      * Perfer using the .data= setter instead of setting the individual properties
      * for increased type-safety.
      */
     set data(data: ButtonData);
-    set iconUrl(iconUrl: string | undefined);
     set iconName(iconName: string | undefined);
     set toggledIconName(toggledIconName: string);
     set toggleType(toggleType: ToggleType);

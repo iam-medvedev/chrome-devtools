@@ -6,7 +6,7 @@ export declare class EntryLinkStartCreating extends Event {
 }
 export declare class EntriesLinkOverlay extends HTMLElement {
     #private;
-    constructor(initialFromEntryCoordinateAndDimentions: {
+    constructor(initialFromEntryCoordinateAndDimensions: {
         x: number;
         y: number;
         width: number;
@@ -21,7 +21,7 @@ export declare class EntriesLinkOverlay extends HTMLElement {
      * but hide only the arrow.
      */
     set hideArrow(shouldHide: boolean);
-    set fromEntryCoordinateAndDimentions(fromEntryParams: {
+    set fromEntryCoordinateAndDimensions(fromEntryParams: {
         x: number;
         y: number;
         length: number;
@@ -31,7 +31,7 @@ export declare class EntriesLinkOverlay extends HTMLElement {
         fromEntryVisibility: boolean;
         toEntryVisibility: boolean;
     });
-    set toEntryCoordinateAndDimentions(toEntryParams: {
+    set toEntryCoordinateAndDimensions(toEntryParams: {
         x: number;
         y: number;
         length?: number;

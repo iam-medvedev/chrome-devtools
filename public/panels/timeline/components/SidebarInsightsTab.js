@@ -29,6 +29,7 @@ export class SidebarInsightsTab extends HTMLElement {
     #boundRender = this.#render.bind(this);
     #shadow = this.attachShadow({ mode: 'open' });
     #parsedTrace = null;
+    #traceMetadata = null;
     #insights = null;
     #activeInsight = null;
     #selectedCategory = Trace.Insights.Types.InsightCategory.ALL;
@@ -51,6 +52,14 @@ export class SidebarInsightsTab extends HTMLElement {
         this.#insightSetKey = null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
+    set traceMetadata(data) {
+        if (data === this.#traceMetadata) {
+            return;
+        }
+        this.#traceMetadata = data;
+        this.#insightSetKey = null;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
     set insights(data) {
         if (data === this.#insights) {
             return;
@@ -64,7 +73,7 @@ export class SidebarInsightsTab extends HTMLElement {
         // - greater than 5s in duration
         // - or, has a navigation
         // In practice this means selecting either the first or the second insight set.
-        const trivialThreshold = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(5000));
+        const trivialThreshold = Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(5000));
         const insightSets = [...this.#insights.values()];
         this.#insightSetKey =
             insightSets.find(insightSet => insightSet.navigation || insightSet.bounds.range > trivialThreshold)?.id
@@ -164,6 +173,7 @@ export class SidebarInsightsTab extends HTMLElement {
                 activeCategory: this.#selectedCategory,
                 activeInsight: this.#activeInsight,
                 parsedTrace: this.#parsedTrace,
+                traceMetadata: this.#traceMetadata,
             };
             const contents = html `
             <devtools-performance-sidebar-single-navigation

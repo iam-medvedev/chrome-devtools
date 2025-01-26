@@ -1,10 +1,19 @@
 import '../../core/dom_extension/dom_extension.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { Constraints } from './Geometry.js';
-export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
-    widgetClass?: new (...args: any[]) => WidgetT;
-    widgetParams: unknown[];
+interface WidgetConstructor<WidgetT extends Widget & WidgetParams, WidgetParams> {
+    new (element: WidgetElement<WidgetT, WidgetParams>): WidgetT;
+}
+export declare class WidgetConfig<WidgetT extends Widget & WidgetParams, WidgetParams> {
+    readonly widgetClass: WidgetConstructor<WidgetT, WidgetParams>;
+    readonly widgetParams?: WidgetParams | undefined;
+    constructor(widgetClass: WidgetConstructor<WidgetT, WidgetParams>, widgetParams?: WidgetParams | undefined);
+}
+export declare function widgetConfig<WidgetT extends Widget & WidgetParams, WidgetParams>(widgetClass: WidgetConstructor<WidgetT, WidgetParams>, widgetParams?: WidgetParams): WidgetConfig<any, any>;
+export declare class WidgetElement<WidgetT extends Widget & WidgetParams, WidgetParams = {}> extends HTMLElement {
+    #private;
     createWidget(): WidgetT;
+    set widgetConfig(config: WidgetConfig<WidgetT, WidgetParams>);
     connectedCallback(): void;
 }
 interface Constructor<T, Args extends unknown[]> {
@@ -75,10 +84,7 @@ export declare class Widget {
     restoreScrollPositions(): void;
     doResize(): void;
     doLayout(): void;
-    registerRequiredCSS(cssFile: {
-        cssContent: string;
-    }): void;
-    registerCSSFiles(cssFiles: CSSStyleSheet[]): void;
+    registerCSSFiles(styleSheets: CSSStyleSheet[]): void;
     printWidgetHierarchy(): void;
     private collectWidgetHierarchy;
     setDefaultFocusedElement(element: Element | null): void;

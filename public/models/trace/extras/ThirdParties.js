@@ -50,12 +50,12 @@ export function getEntitiesByRequest(requests) {
 function getSummaryMap(requests, entityByRequest, selfTimeByUrl) {
     const byRequest = new Map();
     const byEntity = new Map();
-    const defaultSummary = { transferSize: 0, mainThreadTime: Types.Timing.MicroSeconds(0) };
+    const defaultSummary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
     for (const request of requests) {
         const urlSummary = byRequest.get(request) || { ...defaultSummary };
         urlSummary.transferSize += request.args.data.encodedDataLength;
         urlSummary.mainThreadTime =
-            Types.Timing.MicroSeconds(urlSummary.mainThreadTime + (selfTimeByUrl.get(request.args.data.url) ?? 0));
+            Types.Timing.Micro(urlSummary.mainThreadTime + (selfTimeByUrl.get(request.args.data.url) ?? 0));
         byRequest.set(request, urlSummary);
     }
     // Map each request's stat to a particular entity.
@@ -68,8 +68,7 @@ function getSummaryMap(requests, entityByRequest, selfTimeByUrl) {
         }
         const entitySummary = byEntity.get(entity) || { ...defaultSummary };
         entitySummary.transferSize += requestSummary.transferSize;
-        entitySummary.mainThreadTime =
-            Types.Timing.MicroSeconds(entitySummary.mainThreadTime + requestSummary.mainThreadTime);
+        entitySummary.mainThreadTime = Types.Timing.Micro(entitySummary.mainThreadTime + requestSummary.mainThreadTime);
         byEntity.set(entity, entitySummary);
         const entityRequests = requestsByEntity.get(entity) || [];
         entityRequests.push(request);
@@ -91,14 +90,14 @@ export function getSummariesAndEntitiesForTraceBounds(parsedTrace, traceBounds, 
 function getSummaryMapWithMapping(events, entityByEvent, selfTimeByUrl, eventsByEntity, parsedTrace) {
     const byEvent = new Map();
     const byEntity = new Map();
-    const defaultSummary = { transferSize: 0, mainThreadTime: Types.Timing.MicroSeconds(0) };
+    const defaultSummary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
     for (const event of events) {
         const url = Handlers.Helpers.getNonResolvedURL(event, parsedTrace) ?? '';
         const urlSummary = byEvent.get(event) || { ...defaultSummary };
         if (Types.Events.isSyntheticNetworkRequest(event)) {
             urlSummary.transferSize += event.args.data.encodedDataLength;
         }
-        urlSummary.mainThreadTime = Types.Timing.MicroSeconds(urlSummary.mainThreadTime + (selfTimeByUrl.get(url) ?? 0));
+        urlSummary.mainThreadTime = Types.Timing.Micro(urlSummary.mainThreadTime + (selfTimeByUrl.get(url) ?? 0));
         byEvent.set(event, urlSummary);
     }
     // Map each request's stat to a particular entity.
@@ -110,8 +109,7 @@ function getSummaryMapWithMapping(events, entityByEvent, selfTimeByUrl, eventsBy
         }
         const entitySummary = byEntity.get(entity) || { ...defaultSummary };
         entitySummary.transferSize += requestSummary.transferSize;
-        entitySummary.mainThreadTime =
-            Types.Timing.MicroSeconds(entitySummary.mainThreadTime + requestSummary.mainThreadTime);
+        entitySummary.mainThreadTime = Types.Timing.Micro(entitySummary.mainThreadTime + requestSummary.mainThreadTime);
         byEntity.set(entity, entitySummary);
     }
     return { byEntity, byEvent, eventsByEntity };

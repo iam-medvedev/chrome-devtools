@@ -878,7 +878,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["network-panel-filter-bar-redesign"] = 79] = "network-panel-filter-bar-redesign";
     DevtoolsExperiments[DevtoolsExperiments["autofill-view"] = 82] = "autofill-view";
-    DevtoolsExperiments[DevtoolsExperiments["css-type-component-length-deprecate"] = 85] = "css-type-component-length-deprecate";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";

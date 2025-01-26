@@ -6,10 +6,10 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
+import * as AiAssistance from '../ai_assistance/ai_assistance.js';
 const MAX_MESSAGE_SIZE = 1000;
 const MAX_STACK_TRACE_SIZE = 1000;
 const MAX_CODE_SIZE = 1000;
-const MAX_HEADERS_SIZE = 1000;
 export var SourceType;
 (function (SourceType) {
     SourceType["MESSAGE"] = "message";
@@ -101,11 +101,14 @@ export class PromptBuilder {
         };
     }
     formatPrompt({ message, relatedCode, relatedRequest }) {
-        let prompt = `Why does browser show an error
-${message}`;
+        let prompt = `Please explain the following console error or warning:
+
+\`\`\`
+${message}
+\`\`\``;
         if (relatedCode) {
             prompt += `
-For the following code in my web app
+For the following code:
 
 \`\`\`
 ${relatedCode}
@@ -113,7 +116,7 @@ ${relatedCode}
         }
         if (relatedRequest) {
             prompt += `
-For the following network request in my web app
+For the following network request:
 
 \`\`\`
 ${relatedRequest}
@@ -221,14 +224,11 @@ function formatLines(title, lines, maxLength) {
     return result && title ? title + '\n' + result : result;
 }
 export function formatNetworkRequest(request) {
-    const formatHeaders = (title, headers) => formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
-    // TODO: anything else that might be relavant?
-    // TODO: handle missing headers
     return `Request: ${request.url()}
 
-${formatHeaders('Request headers:', request.requestHeaders())}
+${AiAssistance.formatHeaders('Request headers:', request.requestHeaders())}
 
-${formatHeaders('Response headers:', request.responseHeaders)}
+${AiAssistance.formatHeaders('Response headers:', request.responseHeaders)}
 
 Response status: ${request.statusCode} ${request.statusText}`;
 }

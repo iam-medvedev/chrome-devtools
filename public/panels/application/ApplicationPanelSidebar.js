@@ -75,17 +75,42 @@ const UIStrings = {
      */
     storage: 'Storage',
     /**
+     *@description Text in Application Panelthat shows if no local storage
+     *             can be shown.
+     */
+    noLocalStorage: 'No local storage detected',
+    /**
      *@description Text in Application Panel Sidebar of the Application panel
      */
     localStorage: 'Local storage',
+    /**
+     *@description Text in the Application panel describing the local storage tab.
+     */
+    localStorageDescription: 'On this page you can view, add, edit, and delete local storage key-value pairs.',
     /**
      *@description Text in Application Panel Sidebar of the Application panel
      */
     sessionStorage: 'Session storage',
     /**
+     *@description Text in Application Panel if no session storage can be shown.
+     */
+    noSessionStorage: 'No session storage detected',
+    /**
+     *@description Text in the Application panel describing the session storage tab.
+     */
+    sessionStorageDescription: 'On this page you can view, add, edit, and delete session storage key-value pairs.',
+    /**
      *@description Text in Application Panel Sidebar of the Application panel
      */
     extensionStorage: 'Extension storage',
+    /**
+     *@description Text in Application Panel if no extension storage can be shown
+     */
+    noExtensionStorage: 'No extension storage detected',
+    /**
+     *@description Text in the Application panel describing the extension storage tab.
+     */
+    extensionStorageDescription: 'On this page you can view, add, edit, and delete extension storage key-value pairs.',
     /**
      *@description Text for extension session storage in Application panel
      */
@@ -107,6 +132,14 @@ const UIStrings = {
      */
     cookies: 'Cookies',
     /**
+     *@description Text in the Application Panel if no cookies are set
+     */
+    noCookies: 'No cookies set',
+    /**
+     *@description Text for web cookies
+     */
+    cookiesDescription: 'On this page you can view, add, edit, and delete cookies.',
+    /**
      *@description Text in Application Panel Sidebar of the Application panel
      */
     backgroundServices: 'Background services',
@@ -123,6 +156,10 @@ const UIStrings = {
      */
     noManifestDetected: 'No manifest detected',
     /**
+     *@description Description text on manifests in App Manifest View of the Application panel which describes the app manifest view tab
+     */
+    manifestDescription: 'A manifest defines how your app appears on phone’s home screens and what the app looks like on launch.',
+    /**
      *@description Text in App Manifest View of the Application panel
      */
     appManifest: 'App Manifest',
@@ -130,6 +167,14 @@ const UIStrings = {
      *@description Text in Application Panel Sidebar of the Application panel
      */
     indexeddb: 'IndexedDB',
+    /**
+     *@description Text in Application Panel if no indexedDB is detected
+     */
+    noIndexeddb: 'No indexedDB detected',
+    /**
+     *@description Text in the Application panel describing the extension storage tab.
+     */
+    indexeddbDescription: 'On this page you can view and delete indexedDB key-value pairs and databases.',
     /**
      *@description A context menu item in the Application Panel Sidebar of the Application panel
      */
@@ -167,13 +212,17 @@ const UIStrings = {
      */
     openedWindows: 'Opened Windows',
     /**
+     *@description Text in Frames View of the Application panel
+     */
+    openedWindowsDescription: 'On this page you can view windows opened via window\.open\(\).',
+    /**
      *@description Label for plural of worker type: web workers
      */
     webWorkers: 'Web Workers',
     /**
      *@description Label in frame tree for unavailable document
      */
-    documentNotAvailable: 'Document not available',
+    documentNotAvailable: 'No document detected',
     /**
      *@description Description of content of unavailable document in Application panel
      */
@@ -186,6 +235,10 @@ const UIStrings = {
      *@description Default name for worker
      */
     worker: 'worker',
+    /**
+     *@description Description text for describing the dedicated worker tab.
+     */
+    workerDescription: 'On this page you can view dedicated workers that are created by the parent frame.',
     /**
      * @description Aria text for screen reader to announce they can scroll to top of manifest if invoked
      */
@@ -209,6 +262,10 @@ const UIStrings = {
      *@example {https://example.com} PH1
      */
     thirdPartyPhaseout: 'Cookies from {PH1} may have been blocked due to third-party cookie phaseout.',
+    /**
+     * @description Description text in the Application Panel describing a frame's resources
+     */
+    resourceDescription: 'On this page you can view the frame\'s resources.'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ApplicationPanelSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -292,20 +349,17 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.applicationTreeElement.appendChild(clearStorageTreeElement);
         const storageSectionTitle = i18nString(UIStrings.storage);
         const storageTreeElement = this.addSidebarSection(storageSectionTitle, 'storage');
-        this.localStorageListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.localStorage), 'local-storage');
+        this.localStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.localStorage), i18nString(UIStrings.noLocalStorage), i18nString(UIStrings.localStorageDescription), 'local-storage');
         this.localStorageListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/localstorage/?utm_source=devtools');
         const localStorageIcon = IconButton.Icon.create('table');
         this.localStorageListTreeElement.setLeadingIcons([localStorageIcon]);
         storageTreeElement.appendChild(this.localStorageListTreeElement);
-        this.sessionStorageListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.sessionStorage), 'session-storage');
+        this.sessionStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.sessionStorage), i18nString(UIStrings.noSessionStorage), i18nString(UIStrings.sessionStorageDescription), 'session-storage');
         this.sessionStorageListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/sessionstorage/?utm_source=devtools');
         const sessionStorageIcon = IconButton.Icon.create('table');
         this.sessionStorageListTreeElement.setLeadingIcons([sessionStorageIcon]);
         storageTreeElement.appendChild(this.sessionStorageListTreeElement);
-        this.extensionStorageListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.extensionStorage), 'extension-storage');
+        this.extensionStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.extensionStorage), i18nString(UIStrings.noExtensionStorage), i18nString(UIStrings.extensionStorageDescription), 'extension-storage');
         this.extensionStorageListTreeElement.setLink('https://developer.chrome.com/docs/extensions/reference/api/storage/?utm_source=devtools');
         const extensionStorageIcon = IconButton.Icon.create('table');
         this.extensionStorageListTreeElement.setLeadingIcons([extensionStorageIcon]);
@@ -313,8 +367,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.indexedDBListTreeElement = new IndexedDBTreeElement(panel);
         this.indexedDBListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/indexeddb/?utm_source=devtools');
         storageTreeElement.appendChild(this.indexedDBListTreeElement);
-        this.cookieListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), 'cookies');
+        this.cookieListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), i18nString(UIStrings.noCookies), i18nString(UIStrings.cookiesDescription), 'cookies');
         this.cookieListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/cookies/?utm_source=devtools');
         const cookieIcon = IconButton.Icon.create('cookie');
         this.cookieListTreeElement.setLeadingIcons([cookieIcon]);
@@ -908,7 +961,7 @@ export class AppManifestTreeElement extends ApplicationPanelTreeElement {
         const icon = IconButton.Icon.create('document');
         this.setLeadingIcons([icon]);
         self.onInvokeElement(this.listItemElement, this.onInvoke.bind(this));
-        const emptyView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noManifestDetected), '');
+        const emptyView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noManifestDetected), i18nString(UIStrings.manifestDescription));
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         const reportView = new UI.ReportView.ReportView(i18nString(UIStrings.appManifest));
         this.view = new AppManifestView(emptyView, reportView, new Common.Throttler.Throttler(1000));
@@ -1012,7 +1065,7 @@ export class IndexedDBTreeElement extends ExpandableApplicationPanelTreeElement 
     idbDatabaseTreeElements;
     storageBucket;
     constructor(storagePanel, storageBucket) {
-        super(storagePanel, i18nString(UIStrings.indexeddb), 'indexed-db');
+        super(storagePanel, i18nString(UIStrings.indexeddb), i18nString(UIStrings.noIndexeddb), i18nString(UIStrings.indexeddbDescription), 'indexed-db');
         const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
         this.idbDatabaseTreeElements = [];
@@ -1519,7 +1572,10 @@ export class StorageCategoryView extends UI.Widget.VBox {
         this.linkElement = null;
         this.emptyWidget.show(this.element);
     }
-    setHeader(header) {
+    setText(text) {
+        this.emptyWidget.text = text;
+    }
+    setHeadline(header) {
         this.emptyWidget.header = header;
     }
     setLink(link) {
@@ -1841,7 +1897,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         const categoryName = resourceType.name();
         let categoryElement = resourceType === Common.ResourceType.resourceTypes.Document ? this : this.categoryElements.get(categoryName);
         if (!categoryElement) {
-            categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, resource.resourceType().category().title(), categoryName, categoryName === 'Frames');
+            categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, resource.resourceType().category().title(), '', i18nString(UIStrings.resourceDescription), categoryName, categoryName === 'Frames');
             this.categoryElements.set(resourceType.name(), categoryElement);
             this.appendChild(categoryElement, FrameTreeElement.presentationOrderCompare);
         }
@@ -1853,7 +1909,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         const categoryKey = 'opened-windows';
         let categoryElement = this.categoryElements.get(categoryKey);
         if (!categoryElement) {
-            categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, i18nString(UIStrings.openedWindows), categoryKey);
+            categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, i18nString(UIStrings.openedWindows), '', i18nString(UIStrings.openedWindowsDescription), categoryKey);
             this.categoryElements.set(categoryKey, categoryElement);
             this.appendChild(categoryElement, FrameTreeElement.presentationOrderCompare);
         }
@@ -1869,7 +1925,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
             i18nString(UIStrings.webWorkers);
         let categoryElement = this.categoryElements.get(categoryKey);
         if (!categoryElement) {
-            categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, categoryName, categoryKey);
+            categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, categoryName, '', i18nString(UIStrings.workerDescription), categoryKey);
             this.categoryElements.set(categoryKey, categoryElement);
             this.appendChild(categoryElement, FrameTreeElement.presentationOrderCompare);
         }
@@ -1955,7 +2011,7 @@ export class FrameResourceTreeElement extends ApplicationPanelTreeElement {
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
         if (this.resource.isGenerated) {
-            this.panel.showCategoryView(i18nString(UIStrings.theContentOfThisDocumentHasBeen), null);
+            this.panel.showCategoryView('', i18nString(UIStrings.documentNotAvailable), i18nString(UIStrings.theContentOfThisDocumentHasBeen), null);
         }
         else {
             void this.panel.scheduleShowView(this.preparePreview());

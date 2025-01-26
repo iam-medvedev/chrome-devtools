@@ -12,7 +12,7 @@ describe('ScreenshotsHandler', function () {
         // that match the Browser process and CrBrowserMain in defaultTraceEvents.
         pid: Trace.Types.Events.ProcessID(8017),
         tid: Trace.Types.Events.ThreadID(775),
-        ts: Trace.Types.Timing.MicroSeconds(0),
+        ts: Trace.Types.Timing.Micro(0),
         args: {},
         cat: 'test',
         ph: "O" /* Trace.Types.Events.Phase.OBJECT_SNAPSHOT */,
@@ -31,8 +31,8 @@ describe('ScreenshotsHandler', function () {
             const defaultTraceEvents = await TraceLoader.rawEvents(this, 'basic.json.gz');
             baseEvents = [
                 ...defaultTraceEvents,
-                { ...baseEvent, ts: Trace.Types.Timing.MicroSeconds(100) },
-                { ...baseEvent, ts: Trace.Types.Timing.MicroSeconds(200) },
+                { ...baseEvent, ts: Trace.Types.Timing.Micro(100) },
+                { ...baseEvent, ts: Trace.Types.Timing.Micro(200) },
             ];
             Trace.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(baseEvents);
             for (const event of baseEvents) {

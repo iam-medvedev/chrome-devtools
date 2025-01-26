@@ -147,7 +147,7 @@ const createAccessibilityTreeToggleButton = (isActive) => {
     button.data = {
         active: isActive,
         variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
-        iconUrl: new URL('../../Images/person.svg', import.meta.url).toString(),
+        iconName: 'person',
         title,
         jslogContext: 'toggle-accessibility-tree',
     };

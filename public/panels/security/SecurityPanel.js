@@ -18,6 +18,7 @@ import { ShowOriginEvent } from './OriginTreeElement.js';
 import originViewStyles from './originView.css.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
+const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
      *@description Summary div text content in Security Panel of the Security panel
@@ -436,7 +437,7 @@ const SignatureSchemeStrings = new Map([
 ]);
 const LOCK_ICON_NAME = 'lock';
 const WARNING_ICON_NAME = 'warning';
-const INFO_ICON_NAME = 'info';
+const UNKNOWN_ICON_NAME = 'indeterminate-question-box';
 export function getSecurityStateIconForDetailedView(securityState, className) {
     let iconName;
     switch (securityState) {
@@ -450,7 +451,7 @@ export function getSecurityStateIconForDetailedView(securityState, className) {
             break;
         case "info" /* Protocol.Security.SecurityState.Info */: // fallthrough
         case "unknown" /* Protocol.Security.SecurityState.Unknown */:
-            iconName = INFO_ICON_NAME;
+            iconName = UNKNOWN_ICON_NAME;
             break;
     }
     return IconButton.Icon.create(iconName, className);
@@ -460,7 +461,7 @@ export function getSecurityStateIconForOverview(securityState, className) {
     switch (securityState) {
         case "unknown" /* Protocol.Security.SecurityState.Unknown */: // fallthrough
         case "neutral" /* Protocol.Security.SecurityState.Neutral */:
-            iconName = INFO_ICON_NAME;
+            iconName = UNKNOWN_ICON_NAME;
             break;
         case "insecure" /* Protocol.Security.SecurityState.Insecure */: // fallthrough
         case "insecure-broken" /* Protocol.Security.SecurityState.InsecureBroken */:
@@ -512,13 +513,12 @@ export class SecurityPanel extends UI.Panel.Panel {
     ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, e => { output.splitWidget = e; })}>
         <devtools-widget
           slot="main"
-          .widgetClass=${SecurityMainView}
-          .widgetParams=${[input.panel]}
+          .widgetConfig=${widgetConfig(SecurityMainView, { panel: input.panel })}
           ${UI.Widget.widgetRef(SecurityMainView, e => { output.mainView = e; })}>
         </devtools-widget>
         <devtools-widget
           slot="sidebar"
-          .widgetClass=${SecurityPanelSidebar}
+          .widgetConfig=${widgetConfig(SecurityPanelSidebar)}
           @showCookieReport=${() => output.setVisibleView(new CookieReportView())}
           @showFlagControls=${() => output.setVisibleView(new CookieControlsView())}
           ${UI.Widget.widgetRef(SecurityPanelSidebar, e => { output.sidebar = e; })}>
@@ -585,10 +585,6 @@ export class SecurityPanel extends UI.Panel.Panel {
     onVisibleSecurityStateChanged({ data }) {
         this.updateVisibleSecurityState(data);
     }
-    selectAndSwitchToMainView() {
-        // The sidebar element will trigger displaying the main view. Rather than making a redundant call to display the main view, we rely on this.
-        this.sidebar.securityOverviewElement.select(true);
-    }
     showOrigin(origin) {
         const originState = this.origins.get(origin);
         if (!originState) {
@@ -602,7 +598,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     wasShown() {
         super.wasShown();
         if (!this.visibleView) {
-            this.selectAndSwitchToMainView();
+            this.sidebar.showLastSelectedElement();
         }
     }
     focus() {
@@ -728,9 +724,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     onPrimaryPageChanged(event) {
         const { frame } = event.data;
         const request = this.lastResponseReceivedForLoaderId.get(frame.loaderId);
-        if (!(this.visibleView instanceof CookieReportView) && !(this.visibleView instanceof CookieControlsView)) {
-            this.selectAndSwitchToMainView();
-        }
+        this.sidebar.showLastSelectedElement();
         this.sidebar.clearOrigins();
         this.origins.clear();
         this.lastResponseReceivedForLoaderId.clear();
@@ -750,8 +744,8 @@ export class SecurityPanel extends UI.Panel.Panel {
     onInterstitialShown() {
         // The panel might have been displaying the origin view on the
         // previously loaded page. When showing an interstitial, switch
-        // back to the Overview view.
-        this.selectAndSwitchToMainView();
+        // back to the sidebar's last shown view.
+        this.sidebar.showLastSelectedElement();
         this.sidebar.toggleOriginsList(true /* hidden */);
     }
     onInterstitialHidden() {
@@ -776,12 +770,11 @@ export class SecurityMainView extends UI.Widget.VBox {
     summaryText;
     explanations;
     securityState;
-    constructor(panel, element) {
+    constructor(element) {
         super(undefined, undefined, element);
         this.element.setAttribute('jslog', `${VisualLogging.pane('security.main-view')}`);
         this.setMinimumSize(200, 100);
         this.contentElement.classList.add('security-main-view');
-        this.panel = panel;
         this.summarySection = this.contentElement.createChild('div', 'security-summary');
         // Info explanations should appear after all others.
         this.securityExplanationsMain =

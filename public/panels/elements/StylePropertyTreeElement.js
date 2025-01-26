@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, CSSWideKeywordMatcher, FlexGridMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, } from './PropertyMatchers.js';
+import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, CSSWideKeywordMatcher, FlexGridMatcher, FontMatcher, GridTemplateMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, } from './PropertyMatchers.js';
 import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
@@ -351,10 +351,7 @@ export class ColorRenderer {
         if (editable) {
             const swatchIcon = new ColorSwatchPopoverIcon(this.treeElement, this.treeElement.parentPane().swatchPopoverHelper(), swatch);
             swatchIcon.addEventListener("colorchanged" /* ColorSwatchPopoverIconEvents.COLOR_CHANGED */, ev => {
-                const color = Common.Color.parse(ev.data);
-                if (color) {
-                    swatch.setColorText(color);
-                }
+                swatch.setColorText(ev.data);
             });
             void this.#addColorContrastInfo(swatchIcon);
         }
@@ -942,39 +939,6 @@ export class GridTemplateRenderer {
         return new GridTemplateMatcher();
     }
 }
-export class LengthRenderer {
-    #treeElement;
-    constructor(treeElement) {
-        this.#treeElement = treeElement;
-    }
-    render(match, _context) {
-        const lengthText = match.text;
-        if (!this.#treeElement.editable()) {
-            return [document.createTextNode(lengthText)];
-        }
-        const cssLength = new InlineEditor.CSSLength.CSSLength();
-        const valueElement = document.createElement('span');
-        valueElement.textContent = lengthText;
-        cssLength.data = { lengthText };
-        cssLength.append(valueElement);
-        const onValueChanged = (event) => {
-            const { data } = event;
-            valueElement.textContent = data.value;
-            this.#treeElement.parentPane().setEditingStyle(true);
-            void this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), false);
-        };
-        const onDraggingFinished = () => {
-            this.#treeElement.parentPane().setEditingStyle(false);
-            void this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), true);
-        };
-        cssLength.addEventListener('valuechanged', onValueChanged);
-        cssLength.addEventListener('draggingfinished', onDraggingFinished);
-        return [cssLength];
-    }
-    matcher() {
-        return new LengthMatcher();
-    }
-}
 async function decorateAnchorForAnchorLink(container, treeElement, options) {
     const anchorNode = await treeElement.node()?.getAnchorBySpecifier(options.identifier) ?? undefined;
     const link = new ElementsComponents.AnchorFunctionLinkSwatch.AnchorFunctionLinkSwatch({
@@ -1461,9 +1425,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 new FontRenderer(this),
             ] :
             [];
-        if (!Root.Runtime.experiments.isEnabled('css-type-component-length-deprecate') && this.property.parsedOk) {
-            renderers.push(new LengthRenderer(this));
-        }
         this.listItemElement.removeChildren();
         this.valueElement = Renderer.renderValueElement(this.name, this.value, renderers);
         this.nameElement = Renderer.renderNameElement(this.name);

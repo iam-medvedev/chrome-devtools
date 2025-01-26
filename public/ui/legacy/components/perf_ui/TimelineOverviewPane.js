@@ -98,9 +98,9 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         // in the flame chart.
         const timeInMilliSeconds = this.overviewCalculator.positionToTime(this.cursorPosition);
         const timeWindow = this.overviewGrid.calculateWindowValue();
-        if (Trace.Types.Timing.MilliSeconds(timeWindow.rawStartValue) <= timeInMilliSeconds &&
-            timeInMilliSeconds <= Trace.Types.Timing.MilliSeconds(timeWindow.rawEndValue)) {
-            const timeInMicroSeconds = Trace.Helpers.Timing.millisecondsToMicroseconds(timeInMilliSeconds);
+        if (Trace.Types.Timing.Milli(timeWindow.rawStartValue) <= timeInMilliSeconds &&
+            timeInMilliSeconds <= Trace.Types.Timing.Milli(timeWindow.rawEndValue)) {
+            const timeInMicroSeconds = Trace.Helpers.Timing.milliToMicro(timeInMilliSeconds);
             this.dispatchEventToListeners("OverviewPaneMouseMove" /* Events.OVERVIEW_PANE_MOUSE_MOVE */, { timeInMicroSeconds });
         }
         else {
@@ -197,7 +197,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
             if (!marker) {
                 continue;
             }
-            const timeInMicroSeconds = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(time));
+            const timeInMicroSeconds = Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(time));
             const dim = highlightBounds && !Trace.Helpers.Timing.timestampIsInBounds(highlightBounds, timeInMicroSeconds);
             // `filter: grayscale(1)`  will make the element fully completely grayscale.
             marker.style.filter = `grayscale(${dim ? 1 : 0})`;
@@ -207,7 +207,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         const filteredMarkers = new Map();
         for (const time of this.markers.keys()) {
             const marker = this.markers.get(time);
-            const position = Math.round(this.overviewCalculator.computePosition(Trace.Types.Timing.MilliSeconds(time)));
+            const position = Math.round(this.overviewCalculator.computePosition(Trace.Types.Timing.Milli(time)));
             // Limit the number of markers to one per pixel.
             if (filteredMarkers.has(position)) {
                 continue;
@@ -238,8 +238,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     }
     onBreadcrumbAdded() {
         this.dispatchEventToListeners("OverviewPaneBreadcrumbAdded" /* Events.OVERVIEW_PANE_BREADCRUMB_ADDED */, {
-            startTime: Trace.Types.Timing.MilliSeconds(this.windowStartTime),
-            endTime: Trace.Types.Timing.MilliSeconds(this.windowEndTime),
+            startTime: Trace.Types.Timing.Milli(this.windowStartTime),
+            endTime: Trace.Types.Timing.Milli(this.windowEndTime),
         });
     }
     onWindowChanged(event) {
@@ -255,8 +255,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowEndTime =
             event.data.rawEndValue === this.overviewCalculator.maximumBoundary() ? Infinity : event.data.rawEndValue;
         const windowTimes = {
-            startTime: Trace.Types.Timing.MilliSeconds(this.windowStartTime),
-            endTime: Trace.Types.Timing.MilliSeconds(this.windowEndTime),
+            startTime: Trace.Types.Timing.Milli(this.windowStartTime),
+            endTime: Trace.Types.Timing.Milli(this.windowEndTime),
         };
         this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OVERVIEW_PANE_WINDOW_CHANGED */, windowTimes);
     }
@@ -268,8 +268,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowEndTime = endTime;
         this.updateWindow();
         this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OVERVIEW_PANE_WINDOW_CHANGED */, {
-            startTime: Trace.Types.Timing.MilliSeconds(startTime),
-            endTime: Trace.Types.Timing.MilliSeconds(endTime),
+            startTime: Trace.Types.Timing.Milli(startTime),
+            endTime: Trace.Types.Timing.Milli(endTime),
         });
     }
     updateWindow() {
@@ -344,8 +344,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         bracket?.classList.add('hidden');
     }
     highlightBounds(bounds, withBracket) {
-        const left = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.min));
-        const right = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microSecondsToMilliseconds(bounds.max));
+        const left = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microToMilli(bounds.min));
+        const right = this.overviewCalculator.computePosition(Trace.Helpers.Timing.microToMilli(bounds.max));
         this.#dimMarkers(bounds);
         // Update the punch out rectangle to the not-to-desaturate time range.
         const punchRect = this.#dimHighlightSVG.querySelector('rect.punch');

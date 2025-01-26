@@ -1,6 +1,7 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
+import { type Position as GeneratedPosition } from './SourceMapScopes.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -69,15 +70,6 @@ export declare class SourceMapEntry {
     constructor(lineNumber: number, columnNumber: number, sourceIndex?: number, sourceURL?: Platform.DevToolsPath.UrlString, sourceLineNumber?: number, sourceColumnNumber?: number, name?: string);
     static compare(entry1: SourceMapEntry, entry2: SourceMapEntry): number;
 }
-interface Position {
-    lineNumber: number;
-    columnNumber: number;
-}
-export interface ScopeEntry {
-    scopeName(): string;
-    start(): Position;
-    end(): Position;
-}
 export declare class SourceMap {
     #private;
     /**
@@ -106,8 +98,6 @@ export declare class SourceMap {
     private parseSources;
     private parseMap;
     private parseBloombergScopes;
-    private buildScopeTree;
-    findScopeEntry(sourceURL: Platform.DevToolsPath.UrlString, sourceLineNumber: number, sourceColumnNumber: number): ScopeEntry | null;
     private isSeparator;
     /**
      * Finds all the reverse mappings that intersect with the given `textRange` within the
@@ -146,6 +136,7 @@ export declare class SourceMap {
     compatibleForURL(sourceURL: Platform.DevToolsPath.UrlString, other: SourceMap): boolean;
     expandCallFrame(frame: CallFrame): CallFrame[];
     resolveScopeChain(frame: CallFrame): ScopeChainEntry[] | null;
+    findOriginalFunctionName(position: GeneratedPosition): string | null;
 }
 export declare class TokenIterator {
     #private;
@@ -162,4 +153,3 @@ export declare class TokenIterator {
      */
     peekVLQ(): null | number;
 }
-export {};

@@ -8,7 +8,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as LitHtml from '../lit-html/lit-html.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import listWidgetStyles from './listWidget.css.legacy.js';
+import listWidgetStyles from './listWidget.css.js';
 import { Tooltip } from './Tooltip.js';
 import { createInput, createTextButton, ElementFocusRestorer } from './UIUtils.js';
 import { VBox } from './Widget.js';
@@ -60,7 +60,6 @@ export class ListWidget extends VBox {
     isTable;
     constructor(delegate, delegatesFocus = true, isTable = false) {
         super(true, delegatesFocus);
-        this.registerRequiredCSS(listWidgetStyles);
         this.delegate = delegate;
         this.list = this.contentElement.createChild('div', 'list');
         this.lastSeparator = false;
@@ -190,6 +189,7 @@ export class ListWidget extends VBox {
     }
     wasShown() {
         super.wasShown();
+        this.registerCSSFiles([listWidgetStyles]);
         this.stopEditing();
     }
     updatePlaceholder() {

@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import mediaQueryInspectorStyles from './mediaQueryInspector.css.legacy.js';
+import mediaQueryInspectorStyles from './mediaQueryInspector.css.js';
 const UIStrings = {
     /**
      * @description A context menu item/command in the Media Query Inspector of the Device Toolbar.
@@ -29,7 +29,6 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     cachedQueryModels;
     constructor(getWidthCallback, setWidthCallback, mediaThrottler) {
         super(true);
-        this.registerRequiredCSS(mediaQueryInspectorStyles);
         this.contentElement.classList.add('media-inspector-view');
         this.contentElement.setAttribute('jslog', `${VisualLogging.mediaInspectorView().track({ click: true })}`);
         this.contentElement.addEventListener('click', this.onMediaQueryClicked.bind(this), false);
@@ -227,6 +226,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     }
     wasShown() {
         super.wasShown();
+        this.registerCSSFiles([mediaQueryInspectorStyles]);
         this.scheduleMediaQueriesUpdate();
     }
     createElementFromMediaQueryModel(model) {

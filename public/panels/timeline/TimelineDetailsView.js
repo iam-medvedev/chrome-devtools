@@ -107,12 +107,39 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.#thirdPartyTree.addEventListener("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node => {
             this.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node.data);
         });
+        this.#thirdPartyTree.addEventListener("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, node => this.#bottomUpClicked(node));
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
         this.#layoutShiftDetails = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
         this.lazySelectorStatsView = null;
+    }
+    #bottomUpClicked(event) {
+        // Select bottom up tree.
+        this.tabbedPane.selectTab(Tab.BottomUp, true, true);
+        if (!(this.tabbedPane.visibleView instanceof BottomUpTimelineTreeView)) {
+            return;
+        }
+        const bottomUp = this.tabbedPane.visibleView;
+        const thirdPartyNodeSelected = event.data;
+        if (!thirdPartyNodeSelected) {
+            return;
+        }
+        // Group by 3P.
+        bottomUp.setGroupBySetting(BottomUpTimelineTreeView.GroupBy.ThirdParties);
+        bottomUp.refreshTree();
+        // Look for the matching node in the bottom up tree using selected node event data.
+        const treeNode = bottomUp.eventToTreeNode.get(thirdPartyNodeSelected.event);
+        if (!treeNode) {
+            return;
+        }
+        bottomUp.selectProfileNode(treeNode, true);
+        // Reveal/expand the bottom up tree grid node.
+        const gridNode = bottomUp.dataGridNodeForTreeNode(treeNode);
+        if (gridNode) {
+            gridNode.expand();
+        }
     }
     #createContentWidget() {
         const defaultDetailsContentWidget = new UI.Widget.VBox();
@@ -265,7 +292,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (!filmStripFrame) {
             return null;
         }
-        const frameTimeMilliSeconds = Trace.Helpers.Timing.microSecondsToMilliseconds(filmStripFrame.screenshotEvent.ts);
+        const frameTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
         return frameTimeMilliSeconds - frame.endTime < 10 ? filmStripFrame : null;
     }
     #setSelectionForTimelineFrame(frame) {
@@ -429,7 +456,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();
         if (this.#selectedEvents && isSelectorStatsEnabled) {
-            const eventsInRange = Trace.Helpers.Trace.findUpdateLayoutTreeEvents(this.#selectedEvents, Trace.Helpers.Timing.millisecondsToMicroseconds(startTime), Trace.Helpers.Timing.millisecondsToMicroseconds(endTime));
+            const eventsInRange = Trace.Helpers.Trace.findUpdateLayoutTreeEvents(this.#selectedEvents, Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
             if (eventsInRange.length > 0) {
                 this.showAggregatedSelectorStats(eventsInRange);
             }

@@ -7,9 +7,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as Elements from '../../panels/elements/elements.js';
 import { doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from '../../testing/SourceMapHelpers.js';
 import { getBaseTraceParseModelData, getEventOfType, getMainThread, makeCompleteEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
@@ -20,6 +19,10 @@ import * as Timeline from './timeline.js';
 import * as Utils from './utils/utils.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('TimelineUIUtils', function () {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => await deinitializeGlobalVars());
     let target;
     // Trace events contain script ids as strings. However, the linkifier
     // utilities assume it is a number because that's how it's defined at
@@ -63,8 +66,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
                 ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
                 cat: 'devtools-timeline',
-                dur: Trace.Types.Timing.MicroSeconds(100),
-                ts: Trace.Types.Timing.MicroSeconds(100),
+                dur: Trace.Types.Timing.Micro(100),
+                ts: Trace.Types.Timing.Micro(100),
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 args: {
@@ -92,8 +95,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
                 ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
                 cat: 'devtools-timeline',
-                dur: Trace.Types.Timing.MicroSeconds(100),
-                ts: Trace.Types.Timing.MicroSeconds(100),
+                dur: Trace.Types.Timing.Micro(100),
+                ts: Trace.Types.Timing.Micro(100),
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 args: {
@@ -272,7 +275,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const traceMinBound = parsedTrace.Meta.traceBounds.min;
             // Round the time to 2DP to avoid needlessly long expectation numbers!
             const unadjustedStartTimeMilliseconds = Trace.Helpers.Timing
-                .microSecondsToMilliseconds(Trace.Types.Timing.MicroSeconds(dclEvent.ts - traceMinBound))
+                .microToMilli(Trace.Types.Timing.Micro(dclEvent.ts - traceMinBound))
                 .toFixed(2);
             assert.strictEqual(unadjustedStartTimeMilliseconds, String(190.79));
             const adjustedTime = Timeline.TimelineUIUtils.timeStampForEventAdjustedForClosestNavigationIfPossible(dclEvent, parsedTrace);
@@ -601,60 +604,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     value: 'false: inline script',
                 },
                 { title: 'Compilation cache status', value: 'script not eligible' },
-            ]);
-        });
-        it('renders the details for a layout shift properly', async function () {
-            // Set related CDP methods responses to return our mock document and node.
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            assert.exists(domModel);
-            const documentNode = { nodeId: 1 };
-            const docc = new SDK.DOMModel.DOMNode(domModel);
-            const domNode2 = new SDK.DOMModel.DOMNode(domModel);
-            const domID = 58;
-            domNode2.id = domID;
-            setMockConnectionResponseHandler('DOM.pushNodesByBackendIdsToFrontend', () => ({ nodeIds: [domID] }));
-            setMockConnectionResponseHandler('DOM.getDocument', () => ({ root: documentNode }));
-            await domModel.requestDocument();
-            domModel.registerNode(domNode2);
-            domNode2.init(docc, false, { nodeName: 'A test node name', nodeId: domID });
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
-            const layoutShift = parsedTrace.LayoutShifts.clusters[0].events[0];
-            Common.Linkifier.registerLinkifier({
-                contextTypes() {
-                    return [Timeline.CLSLinkifier.CLSRect];
-                },
-                async loadLinkifier() {
-                    return Timeline.CLSLinkifier.Linkifier.instance();
-                },
-            });
-            Common.Linkifier.registerLinkifier({
-                contextTypes() {
-                    return [
-                        SDK.DOMModel.DOMNode,
-                    ];
-                },
-                async loadLinkifier() {
-                    return Elements.DOMLinkifier.Linkifier.instance();
-                },
-            });
-            if (!layoutShift) {
-                throw new Error('Could not find LayoutShift event.');
-            }
-            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, layoutShift, new Components.Linkifier.Linkifier(), false, null);
-            const rowData = getRowDataForDetailsElement(details);
-            assert.deepEqual(rowData, [
-                {
-                    title: 'Warning',
-                    value: 'Cumulative Layout Shifts can result in poor user experiences. It has recently evolved.',
-                },
-                { title: 'Score', value: '0.04218' },
-                { title: 'Cumulative score', value: '0.04218' },
-                { title: 'Current cluster ID', value: '1' },
-                { title: 'Current cluster score', value: '0.2952' },
-                { title: 'Had recent input', value: 'No' },
-                { title: 'Moved from', value: 'Location: [120,670], Size: [900x900]' },
-                { title: 'Moved to', value: 'Location: [120,1270], Size: [900x478]' },
-                { title: 'Related node', value: 'A test node name' },
             ]);
         });
         it('renders the details for an extension entry properly', async function () {
@@ -1024,7 +973,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const mainThread = Trace.Types.Events.ThreadID(1);
             const pid = Trace.Types.Events.ProcessID(100);
             function microsec(x) {
-                return Trace.Types.Timing.MicroSeconds(x);
+                return Trace.Types.Timing.Micro(x);
             }
             const events = [
                 {
@@ -1138,14 +1087,14 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     },
                 },
             ];
-            const rangeStats101To103 = Timeline.TimelineUIUtils.TimelineUIUtils.statsForTimeRange(events, Trace.Types.Timing.MilliSeconds(101), Trace.Types.Timing.MilliSeconds(103));
+            const rangeStats101To103 = Timeline.TimelineUIUtils.TimelineUIUtils.statsForTimeRange(events, Trace.Types.Timing.Milli(101), Trace.Types.Timing.Milli(103));
             assert.deepEqual(rangeStats101To103, {
                 other: 1,
                 rendering: 1,
                 scripting: 0,
                 idle: 0,
             });
-            const rangeStats104To109 = Timeline.TimelineUIUtils.TimelineUIUtils.statsForTimeRange(events, Trace.Types.Timing.MilliSeconds(104), Trace.Types.Timing.MilliSeconds(109));
+            const rangeStats104To109 = Timeline.TimelineUIUtils.TimelineUIUtils.statsForTimeRange(events, Trace.Types.Timing.Milli(104), Trace.Types.Timing.Milli(109));
             assert.deepEqual(rangeStats104To109, {
                 other: 2,
                 rendering: 1,

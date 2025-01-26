@@ -1,7 +1,7 @@
 import * as Types from '../types/types.js';
 import { ScoreClassification } from './PageLoadMetricsHandler.js';
 import type { HandlerName } from './types.js';
-export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.MicroSeconds;
+export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.Micro;
 export interface UserInteractionsData {
     /** All the user events we found in the trace */
     allEvents: readonly Types.Events.EventTimingBeginOrEnd[];
@@ -66,4 +66,4 @@ export declare function deps(): HandlerName[];
  * Classifications sourced from
  * https://web.dev/articles/inp#good-score
  */
-export declare function scoreClassificationForInteractionToNextPaint(timing: Types.Timing.MicroSeconds): ScoreClassification;
+export declare function scoreClassificationForInteractionToNextPaint(timing: Types.Timing.Micro): ScoreClassification;

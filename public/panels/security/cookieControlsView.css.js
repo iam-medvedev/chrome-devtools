@@ -18,16 +18,23 @@ styles.replaceSync(
 .controls {
   display: flex;
   flex-direction: column;
-  padding: var(--sys-size-5) var(--sys-size-8) var(--sys-size-5) var(--sys-size-5);
+  padding: var(--sys-size-5) var(--sys-size-3) var(--sys-size-5) var(--sys-size-5);
   min-width: var(--sys-size-33);
 }
 
 .header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-5);
   padding-left: var(--sys-size-5);
 }
 
 .title {
   font: var(--sys-typescale-headline4);
+}
+
+.card-container {
+  max-width: 100%;
 }
 
 .card {

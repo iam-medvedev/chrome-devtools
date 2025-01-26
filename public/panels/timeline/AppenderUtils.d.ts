@@ -32,7 +32,7 @@ export declare function buildTrackHeader(jslogContext: VisualLoggingTrackName | 
  * @param selfTime the self time of the hovered event.
  * @returns the formatted time string for popoverInfo
  */
-export declare function getFormattedTime(totalTime?: Trace.Types.Timing.MicroSeconds, selfTime?: Trace.Types.Timing.MicroSeconds): string;
+export declare function getFormattedTime(totalTime?: Trace.Types.Timing.Micro, selfTime?: Trace.Types.Timing.Micro): string;
 /**
  * Returns the first level that is available for an event.
  * Important: if you are walking through an array of events and calling this,

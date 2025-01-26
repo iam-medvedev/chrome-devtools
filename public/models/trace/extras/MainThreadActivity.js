@@ -66,12 +66,12 @@ export function calculateWindow(traceBounds, mainThreadEntries) {
     // we give the range we want to zoom a bit of breathing space. At the
     // same time, ensure that we do not stray beyond the bounds of the
     // min/max time of the entire trace.
-    leftTime = Types.Timing.MicroSeconds(Math.max(leftTime - 0.05 * zoomedInSpan, traceBounds.min));
-    rightTime = Types.Timing.MicroSeconds(Math.min(rightTime + 0.05 * zoomedInSpan, traceBounds.max));
+    leftTime = Types.Timing.Micro(Math.max(leftTime - 0.05 * zoomedInSpan, traceBounds.min));
+    rightTime = Types.Timing.Micro(Math.min(rightTime + 0.05 * zoomedInSpan, traceBounds.max));
     return {
         min: leftTime,
         max: rightTime,
-        range: Types.Timing.MicroSeconds(rightTime - leftTime),
+        range: Types.Timing.Micro(rightTime - leftTime),
     };
 }
 //# sourceMappingURL=MainThreadActivity.js.map

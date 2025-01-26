@@ -1,4 +1,4 @@
-import type { Args, Event, PerformanceMark, PerformanceMeasureBegin, Phase, SyntheticBased } from './TraceEvents.js';
+import type { Args, ConsoleTimeStamp, Event, PerformanceMark, PerformanceMeasureBegin, Phase, SyntheticBased } from './TraceEvents.js';
 export type ExtensionEntryType = 'track-entry' | 'marker';
 export declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error", "warning"];
 export type ExtensionColorFromPalette = typeof extensionPalette[number];
@@ -20,7 +20,7 @@ export interface ExtensionMarkerPayload extends ExtensionDataPayloadBase {
 /**
  * Synthetic events created for extension tracks.
  */
-export interface SyntheticExtensionTrackEntry extends SyntheticBased<Phase.COMPLETE, PerformanceMeasureBegin | PerformanceMark> {
+export interface SyntheticExtensionTrackEntry extends SyntheticBased<Phase.COMPLETE, PerformanceMeasureBegin | PerformanceMark | ConsoleTimeStamp> {
     args: Args & ExtensionTrackEntryPayload;
 }
 /**

@@ -23,7 +23,7 @@ export function getLCP(insights, key) {
     if (!insight || !insight.lcpMs || !insight.lcpEvent) {
         return null;
     }
-    const value = Helpers.Timing.millisecondsToMicroseconds(insight.lcpMs);
+    const value = Helpers.Timing.milliToMicro(insight.lcpMs);
     return { value, event: insight.lcpEvent };
 }
 export function getINP(insights, key) {
@@ -60,6 +60,53 @@ export function evaluateINPMetricScore(value) {
 export function evaluateCLSMetricScore(value) {
     return getLogNormalScore({ p10: 0.1, median: 0.25 }, value);
 }
+function getPageResult(cruxFieldData, url, origin) {
+    return cruxFieldData.find(result => {
+        const key = (result['url-ALL'] || result['origin-ALL'])?.record.key;
+        return (key?.url && key.url === url) || (key?.origin && key.origin === origin);
+    });
+}
+function getMetricResult(pageResult, name) {
+    let value = pageResult['url-ALL']?.record.metrics[name]?.percentiles?.p75;
+    if (typeof value === 'string') {
+        value = Number(value);
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return { value, pageScope: 'url' };
+    }
+    value = pageResult['origin-ALL']?.record.metrics[name]?.percentiles?.p75;
+    if (typeof value === 'string') {
+        value = Number(value);
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return { value, pageScope: 'origin' };
+    }
+    return null;
+}
+function getMetricTimingResult(pageResult, name) {
+    const result = getMetricResult(pageResult, name);
+    if (result) {
+        const valueMs = result.value;
+        return { value: Helpers.Timing.milliToMicro(valueMs), pageScope: result.pageScope };
+    }
+    return null;
+}
+export function getFieldMetricsForInsightSet(insightSet, metadata) {
+    const cruxFieldData = metadata?.cruxFieldData;
+    if (!cruxFieldData) {
+        return null;
+    }
+    const pageResult = getPageResult(cruxFieldData, insightSet.url.href, insightSet.url.origin);
+    if (!pageResult) {
+        return null;
+    }
+    return {
+        fcp: getMetricTimingResult(pageResult, 'first_contentful_paint'),
+        lcp: getMetricTimingResult(pageResult, 'largest_contentful_paint'),
+        inp: getMetricTimingResult(pageResult, 'interaction_to_next_paint'),
+        cls: getMetricResult(pageResult, 'cumulative_layout_shift'),
+    };
+}
 export function calculateMetricWeightsForSorting(insightSet, metadata) {
     const weights = {
         lcp: 1 / 3,
@@ -70,30 +117,13 @@ export function calculateMetricWeightsForSorting(insightSet, metadata) {
     if (!cruxFieldData) {
         return weights;
     }
-    const getPageResult = (url, origin) => {
-        return cruxFieldData.find(result => {
-            const key = (result['url-ALL'] || result['origin-ALL'])?.record.key;
-            return (key?.url && key.url === url) || (key?.origin && key.origin === origin);
-        });
-    };
-    const getMetricValue = (pageResult, name) => {
-        const score = pageResult['url-ALL']?.record.metrics[name]?.percentiles?.p75 ??
-            pageResult['origin-ALL']?.record.metrics[name]?.percentiles?.p75;
-        if (typeof score === 'number') {
-            return score;
-        }
-        if (typeof score === 'string' && Number.isFinite(Number(score))) {
-            return Number(score);
-        }
-        return null;
-    };
-    const pageResult = getPageResult(insightSet.url.href, insightSet.url.origin);
-    if (!pageResult) {
+    const fieldMetrics = getFieldMetricsForInsightSet(insightSet, metadata);
+    if (!fieldMetrics) {
         return weights;
     }
-    const fieldLcp = getMetricValue(pageResult, 'largest_contentful_paint');
-    const fieldInp = getMetricValue(pageResult, 'interaction_to_next_paint');
-    const fieldCls = getMetricValue(pageResult, 'cumulative_layout_shift');
+    const fieldLcp = fieldMetrics.lcp?.value ?? null;
+    const fieldInp = fieldMetrics.inp?.value ?? null;
+    const fieldCls = fieldMetrics.cls?.value ?? null;
     const fieldLcpScore = fieldLcp !== null ? evaluateLCPMetricScore(fieldLcp) : 0;
     const fieldInpScore = fieldInp !== null ? evaluateINPMetricScore(fieldInp) : 0;
     const fieldClsScore = fieldCls !== null ? evaluateCLSMetricScore(fieldCls) : 0;

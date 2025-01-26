@@ -37,7 +37,6 @@
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngleEditor.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngleUtils.ts",
-    "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLength.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.ts",
@@ -78,6 +77,9 @@
     },
     {
       "path": "../../../../third_party/codemirror.next/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../components/buttons/bundle-tsconfig.json"
     },
     {
       "path": "../../../components/helpers/bundle-tsconfig.json"

@@ -52,7 +52,7 @@ export interface EntriesLink {
  */
 export interface TimeRangeLabel {
     type: 'TIME_RANGE';
-    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
+    bounds: Trace.Types.Timing.TraceWindowMicro;
     label: string;
     showDuration: boolean;
 }
@@ -61,7 +61,7 @@ export interface TimeRangeLabel {
  * trace window that will contain all of the overlays.
  * `overlays` is expected to be non-empty, and this will return `null` if it is empty.
  */
-export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): Trace.Types.Timing.TraceWindowMicroSeconds | null;
+export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): Trace.Types.Timing.TraceWindowMicro | null;
 /**
  * Get a list of entries for a given overlay.
  */
@@ -74,7 +74,7 @@ export declare function chartForEntry(entry: OverlayEntry): EntryChartLocation;
  */
 export interface CandyStripedTimeRange {
     type: 'CANDY_STRIPED_TIME_RANGE';
-    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
+    bounds: Trace.Types.Timing.TraceWindowMicro;
     entry: Trace.Types.Events.Event;
 }
 /**
@@ -89,7 +89,7 @@ export interface TimespanBreakdown {
 }
 export interface TimestampMarker {
     type: 'TIMESTAMP_MARKER';
-    timestamp: Trace.Types.Timing.MicroSeconds;
+    timestamp: Trace.Types.Timing.Micro;
 }
 /**
  * Represents a timings marker. This has a line that runs up the whole canvas.
@@ -98,9 +98,11 @@ export interface TimestampMarker {
  */
 export interface TimingsMarker {
     type: 'TIMINGS_MARKER';
-    entries: Trace.Types.Events.Event[];
-    adjustedTimestamp: Trace.Types.Timing.MicroSeconds;
+    entries: Trace.Types.Events.PageLoadEvent[];
+    entryToFieldResult: Map<Trace.Types.Events.PageLoadEvent, TimingsMarkerFieldResult>;
+    adjustedTimestamp: Trace.Types.Timing.Micro;
 }
+export type TimingsMarkerFieldResult = Trace.Insights.Common.CrUXFieldMetricTimingResult;
 /**
  * All supported overlay types.
  */
@@ -210,6 +212,10 @@ export declare class Overlays extends EventTarget {
      */
     overlaysOfType<T extends TimelineOverlay>(type: T['type']): NoInfer<T>[];
     /**
+     * @returns all overlays.
+     */
+    allOverlays(): TimelineOverlay[];
+    /**
      * Removes the provided overlay from the list of overlays and destroys any
      * DOM associated with it.
      */
@@ -223,7 +229,7 @@ export declare class Overlays extends EventTarget {
      * Update the visible window of the UI.
      * IMPORTANT: this does not trigger a re-draw. You must call the render() method manually.
      */
-    updateVisibleWindow(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds): void;
+    updateVisibleWindow(visibleWindow: Trace.Types.Timing.TraceWindowMicro): void;
     /**
      * Clears all overlays and all data. Call this when the trace is changing
      * (e.g. the user has imported/recorded a new trace) and we need to start from
@@ -289,7 +295,7 @@ export declare class Overlays extends EventTarget {
  * helper exists to return a consistent set of timings regardless of the type
  * of entry.
  */
-export declare function timingsForOverlayEntry(entry: OverlayEntry): Trace.Helpers.Timing.EventTimingsData<Trace.Types.Timing.MicroSeconds>;
+export declare function timingsForOverlayEntry(entry: OverlayEntry): Trace.Helpers.Timing.EventTimingsData<Trace.Types.Timing.Micro>;
 /**
  * Defines if the overlay container `div` should have a jslog context attached.
  * Note that despite some of the overlays being used currently exclusively

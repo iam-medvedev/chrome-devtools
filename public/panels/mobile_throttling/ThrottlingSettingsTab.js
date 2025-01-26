@@ -139,15 +139,18 @@ const UIStrings = {
      * @description Text to use to indicate that a CPU calibration has not been run yet.
      */
     needsCalibration: 'Needs calibration',
-    // TODO(crbug.com/311438112): Add 'Learn more' link.
     /**
      *@description Text to explain why the user should run the CPU calibration process.
      */
     calibrationCTA: 'To use the CPU throttling presets, run the calibration process to determine the ideal throttling rate for your device.',
     /**
+     *@description Text to explain what CPU throttling presets are.
+     */
+    cpuCalibrationDescription: 'These presets throttle your CPU to approximate the performance of typical low or mid-tier mobile devices.',
+    /**
      *@description Text to explain how the CPU calibration process will work.
      */
-    calibrationConfirmationPrompt: 'Calibration will take ~10 seconds, and temporarily navigate away from your current page. Do you wish to continue?',
+    calibrationConfirmationPrompt: 'Calibration will take ~5 seconds, and temporarily navigate away from your current page. Do you wish to continue?',
     /**
      *@description Text to explain an issue that may impact the CPU calibration process.
      */
@@ -203,6 +206,8 @@ export class CPUThrottlingCard {
     constructor() {
         this.setting = Common.Settings.Settings.instance().createSetting('calibrated-cpu-throttling', {}, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
         const card = new Cards.Card.Card();
+        const descriptionEl = card.createChild('span');
+        descriptionEl.textContent = i18nString(UIStrings.cpuCalibrationDescription);
         this.lowTierMobileDeviceEl = card.createChild('div', 'cpu-preset-section');
         this.lowTierMobileDeviceEl.append('Low-tier mobile device');
         this.lowTierMobileDeviceEl.createChild('div', 'cpu-preset-result');
@@ -233,7 +238,7 @@ export class CPUThrottlingCard {
         this.calibrateEl.append(this.progress.element);
         card.data = {
             heading: i18nString(UIStrings.cpuThrottlingPresets),
-            content: [this.lowTierMobileDeviceEl, this.midTierMobileDeviceEl, this.calibrateEl],
+            content: [descriptionEl, this.lowTierMobileDeviceEl, this.midTierMobileDeviceEl, this.calibrateEl],
         };
         this.element = card;
         this.updateState();
@@ -263,9 +268,11 @@ export class CPUThrottlingCard {
             this.calibrateButton.style.display = '';
             this.calibrateButton.textContent =
                 hasCalibrated ? i18nString(UIStrings.recalibrate) : i18nString(UIStrings.calibrate);
-            this.textEl.style.display = '';
-            this.textEl.textContent = '';
-            this.textEl.append(this.createTextWithIcon(i18nString(UIStrings.calibrationCTA), 'info'));
+            if (!hasCalibrated) {
+                this.textEl.style.display = '';
+                this.textEl.textContent = '';
+                this.textEl.append(this.createTextWithIcon(i18nString(UIStrings.calibrationCTA), 'info'));
+            }
         }
         else if (this.state === 'prompting') {
             this.calibrateButton.style.display = '';

@@ -59,7 +59,7 @@ export function treify(entries, options) {
         // node for it, mark it as a root, then proceed with the next event.
         if (stack.length === 0) {
             tree.roots.add(node);
-            node.selfTime = Types.Timing.MicroSeconds(duration);
+            node.selfTime = Types.Timing.Micro(duration);
             stack.push(node);
             tree.maxDepth = Math.max(tree.maxDepth, stack.length);
             entryToNode.set(event, node);
@@ -113,9 +113,9 @@ export function treify(entries, options) {
         node.depth = stack.length;
         node.parent = parentNode;
         parentNode.children.push(node);
-        node.selfTime = Types.Timing.MicroSeconds(duration);
+        node.selfTime = Types.Timing.Micro(duration);
         if (parentNode.selfTime !== undefined) {
-            parentNode.selfTime = Types.Timing.MicroSeconds(parentNode.selfTime - (event.dur || 0));
+            parentNode.selfTime = Types.Timing.Micro(parentNode.selfTime - (event.dur || 0));
         }
         stack.push(node);
         tree.maxDepth = Math.max(tree.maxDepth, stack.length);
@@ -187,7 +187,7 @@ function walkTreeByNode(entryToNode, rootNode, onEntryStart, onEntryEnd, traceWi
         return;
     }
     if (typeof minDuration !== 'undefined') {
-        const duration = Types.Timing.MicroSeconds(rootNode.entry.ts + Types.Timing.MicroSeconds(rootNode.entry.dur ?? 0));
+        const duration = Types.Timing.Micro(rootNode.entry.ts + Types.Timing.Micro(rootNode.entry.dur ?? 0));
         if (duration < minDuration) {
             return;
         }

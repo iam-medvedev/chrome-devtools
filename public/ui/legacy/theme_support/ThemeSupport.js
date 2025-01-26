@@ -33,7 +33,6 @@
  */
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
-import inspectorSyntaxHighlightStyles from '../inspectorSyntaxHighlight.css.legacy.js';
 let themeSupportInstance;
 const themeValueByTargetByName = new Map();
 export class ThemeSupport extends EventTarget {
@@ -122,9 +121,6 @@ export class ThemeSupport extends EventTarget {
     }
     themeName() {
         return this.themeNameInternal;
-    }
-    injectHighlightStyleSheets(element) {
-        this.appendStyle(element, inspectorSyntaxHighlightStyles);
     }
     appendStyle(node, { cssContent }) {
         const styleElement = document.createElement('style');

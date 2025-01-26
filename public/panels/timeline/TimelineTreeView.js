@@ -8,6 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ThirdPartyWeb from '../../third_party/third-party-web/third-party-web.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -16,6 +17,7 @@ import { ActiveFilters } from './ActiveFilters.js';
 import * as Extensions from './extensions/extensions.js';
 import { Tracker } from './FreshRecording.js';
 import { targetForEvent } from './TargetForEvent.js';
+import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { rangeForSelection } from './TimelineSelection.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
@@ -139,6 +141,22 @@ const UIStrings = {
      * @description Text for Match whole word button
      */
     matchWholeWord: 'Match whole word',
+    /**
+     * @description Text for bottom up tree button
+     */
+    bottomUp: 'Bottom-up',
+    /**
+     * @description Text referring to view bottom up tree
+     */
+    viewBottomUp: 'View Bottom-up',
+    /**
+     * @description Text referring to a 1st party entity
+     */
+    firstParty: '1st party',
+    /**
+     * @description Text referring to an entity that is an extension
+     */
+    extension: 'Extension',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -169,6 +187,11 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     #entityMapper = null;
     #lastHighlightedEvent = null;
     eventToTreeNode = new WeakMap();
+    /**
+     * Determines if the first child in the data grid will be selected
+     * by default when refreshTree() gets called.
+     */
+    autoSelectFirstChildOnRefresh = true;
     constructor() {
         super();
         this.#selectedEvents = null;
@@ -236,7 +259,6 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.splitWidget.hideSidebar();
         this.splitWidget.show(this.element);
         this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.SHOW_MODE_CHANGED */, this.onShowModeChanged, this);
-        this.lastSelectedNodeInternal;
     }
     lastSelectedNode() {
         return this.lastSelectedNodeInternal;
@@ -361,7 +383,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
             this.searchableView.refreshSearch();
         }
         const rootNode = this.dataGrid.rootNode();
-        if (rootNode.children.length > 0) {
+        if (this.autoSelectFirstChildOnRefresh && rootNode.children.length > 0) {
             rootNode.children[0].select(/* supressSelectedEvent */ true);
         }
     }
@@ -587,17 +609,18 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 iconContainer.insertBefore(info.icon, icon);
             }
             // Include badges with the name, if relevant.
-            if (columnId === 'site' && this.treeView) {
+            if (columnId === 'site' && this.treeView instanceof ThirdPartyTreeView.ThirdPartyTreeViewWidget) {
                 const thirdPartyTree = this.treeView;
                 let badgeText = '';
                 if (thirdPartyTree.nodeIsFirstParty(this.profileNode)) {
-                    badgeText = '1st party';
+                    badgeText = i18nString(UIStrings.firstParty);
                 }
                 else if (thirdPartyTree.nodeIsExtension(this.profileNode)) {
-                    badgeText = 'Extension';
+                    badgeText = i18nString(UIStrings.extension);
                 }
                 if (badgeText) {
                     const badge = container.createChild('div', 'entity-badge');
+                    UI.ARIAUtils.setLabel(badge, badgeText);
                     badge.createChild('div', 'entity-badge-name').textContent = badgeText;
                 }
             }
@@ -629,6 +652,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         let maxTime;
         let event;
         let isSize = false;
+        let showBottomUpButton = false;
         const thirdPartyView = this.treeView;
         switch (columnId) {
             case 'start-time':
@@ -640,13 +664,14 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                     }
                     const timings = event && Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
                     const startTime = timings?.startTime ?? 0;
-                    value = startTime - Trace.Helpers.Timing.microSecondsToMilliseconds(parsedTrace.Meta.traceBounds.min);
+                    value = startTime - Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
                 }
                 break;
             case 'self':
                 value = this.profileNode.selfTime;
                 maxTime = this.maxSelfTime;
                 showPercents = true;
+                showBottomUpButton = thirdPartyView instanceof ThirdPartyTreeView.ThirdPartyTreeViewWidget;
                 break;
             case 'total':
                 value = this.profileNode.totalTime;
@@ -682,7 +707,33 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             cell.createChild('div', 'background-bar-container').createChild('div', 'background-bar').style.width =
                 (value * 100 / maxTime).toFixed(1) + '%';
         }
+        // Generate button on hover for 3P self time cell.
+        if (showBottomUpButton) {
+            this.generateBottomUpButton(cell);
+        }
         return cell;
+    }
+    // Generates bottom up tree hover button and appends it to the provided cell element.
+    generateBottomUpButton(cell) {
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        cell.classList.add('hover-bottom-up-button');
+        const button = new Buttons.Button.Button();
+        button.data = {
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            iconName: 'account-tree',
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            toggledIconName: i18nString(UIStrings.bottomUp),
+        };
+        UI.ARIAUtils.setLabel(button, i18nString(UIStrings.viewBottomUp));
+        button.addEventListener('click', () => this.#bottomUpButtonClicked());
+        buttonContainer.appendChild(button);
+        UI.Tooltip.Tooltip.install(button, i18nString(UIStrings.bottomUp));
+        // Append the button to the last column
+        cell.appendChild(buttonContainer);
+    }
+    #bottomUpButtonClicked() {
+        this.treeView.dispatchEventToListeners("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, this.profileNode);
     }
 }
 export class TreeGridNode extends GridNode {
@@ -721,7 +772,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         this.stackView = new TimelineStackView(this);
         this.stackView.addEventListener("SelectionChanged" /* TimelineStackView.Events.SELECTION_CHANGED */, this.onStackViewSelectionChanged, this);
     }
-    setGroupBySettingForTests(groupBy) {
+    setGroupBySetting(groupBy) {
         this.groupBySetting.set(groupBy);
     }
     updateContents(selection) {

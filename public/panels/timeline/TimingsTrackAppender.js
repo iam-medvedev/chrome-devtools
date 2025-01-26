@@ -50,8 +50,8 @@ export class TimingsTrackAppender {
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
         const extensionMarkersAreEmpty = this.#extensionMarkers.length === 0;
-        const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(m));
-        const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(m));
+        const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m));
+        const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m));
         const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents;
         const consoleTimings = this.#parsedTrace.UserTimings.consoleTimings;
         if (extensionMarkersAreEmpty && performanceMarks.length === 0 && performanceMeasures.length === 0 &&
@@ -99,14 +99,14 @@ export class TimingsTrackAppender {
             // FlameChart.ts relies on us setting this to NaN
             this.#compatibilityBuilder.getFlameChartTimelineData().entryTotalTimes[index] = Number.NaN;
         }
-        const minTimeMs = Trace.Helpers.Timing.microSecondsToMilliseconds(this.#parsedTrace.Meta.traceBounds.min);
+        const minTimeMs = Trace.Helpers.Timing.microToMilli(this.#parsedTrace.Meta.traceBounds.min);
         const flameChartMarkers = markers.map(marker => {
             // The timestamp for user timing trace events is set to the
             // start time passed by the user at the call site of the timing
             // (based on the UserTiming spec), meaning we can use event.ts
             // directly.
             // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/timing/performance_user_timing.cc;l=236;drc=494419358caf690316f160a1f27d9e771a14c033
-            const startTimeMs = Trace.Helpers.Timing.microSecondsToMilliseconds(marker.ts);
+            const startTimeMs = Trace.Helpers.Timing.microToMilli(marker.ts);
             const style = this.markerStyleForExtensionMarker(marker);
             return new TimelineFlameChartMarker(startTimeMs, startTimeMs - minTimeMs, style);
         });

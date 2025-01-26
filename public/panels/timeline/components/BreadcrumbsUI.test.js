@@ -7,7 +7,7 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
 function milliToMicro(x) {
-    return Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(x));
+    return Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(x));
 }
 describeWithEnvironment('BreadcrumbsUI', () => {
     const { BreadcrumbsUI } = TimelineComponents.BreadcrumbsUI;

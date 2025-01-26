@@ -43,7 +43,7 @@ export class InterestGroupStorageView extends UI.SplitWidget.SplitWidget {
         this.setSidebarWidget(this.noDisplayView);
         this.noDataView.setMinimumSize(0, 40);
         topPanel.contentElement.appendChild(this.interestGroupGrid);
-        this.interestGroupGrid.addEventListener('cellfocused', this.onFocus.bind(this));
+        this.interestGroupGrid.addEventListener('select', this.onFocus.bind(this));
         this.noDisplayView.contentElement.classList.add('placeholder');
         this.noDisplayView.contentElement.setAttribute('jslog', `${VisualLogging.pane('details').track({ resize: true })}`);
         const noDisplayDiv = this.noDisplayView.contentElement.createChild('div');
@@ -76,16 +76,7 @@ export class InterestGroupStorageView extends UI.SplitWidget.SplitWidget {
     }
     async onFocus(event) {
         const focusedEvent = event;
-        const row = focusedEvent.data.row;
-        if (!row) {
-            return;
-        }
-        const ownerOrigin = row.cells.find(cell => cell.columnId === 'event-group-owner')?.value;
-        const name = row.cells.find(cell => cell.columnId === 'event-group-name')?.value;
-        const eventType = row.cells.find(cell => cell.columnId === 'event-type')?.value;
-        if (!ownerOrigin || !name) {
-            return;
-        }
+        const { ownerOrigin, name, type: eventType } = focusedEvent.detail;
         let details = null;
         // Details of additional bids can't be looked up like regular bids,
         // they are ephemeral to the auction.

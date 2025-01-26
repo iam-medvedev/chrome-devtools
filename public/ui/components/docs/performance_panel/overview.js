@@ -42,7 +42,7 @@ async function renderMiniMap(containerSelector, options) {
         },
     });
     if (customStartWindowTime && customEndWindowTime) {
-        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.MilliSeconds(Number(customStartWindowTime)), Trace.Types.Timing.MilliSeconds(Number(customEndWindowTime))));
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(Number(customStartWindowTime)), Trace.Types.Timing.Milli(Number(customEndWindowTime))));
     }
 }
 await renderMiniMap('.container', { showMemory: false });

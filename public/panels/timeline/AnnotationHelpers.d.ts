@@ -7,7 +7,7 @@ export declare function getAnnotationEntries(annotation: Trace.Types.File.Annota
  * if there is no valid window (an ENTRIES_LINK without a `to` entry for
  * example.)
  */
-export declare function getAnnotationWindow(annotation: Trace.Types.File.Annotation): Trace.Types.Timing.TraceWindowMicroSeconds | null;
+export declare function getAnnotationWindow(annotation: Trace.Types.File.Annotation): Trace.Types.Timing.TraceWindowMicro | null;
 export declare function isTimeRangeLabel(overlay: Overlays.Overlays.TimelineOverlay): overlay is Overlays.Overlays.TimeRangeLabel;
 export declare function isEntriesLink(overlay: Overlays.Overlays.TimelineOverlay): overlay is Overlays.Overlays.EntriesLink;
 export declare function isEntryLabel(overlay: Overlays.Overlays.TimelineOverlay): overlay is Overlays.Overlays.EntryLabel;

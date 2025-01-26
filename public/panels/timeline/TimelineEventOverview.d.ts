@@ -7,7 +7,7 @@ export declare abstract class TimelineEventOverview extends PerfUI.TimelineOverv
 export declare class TimelineEventOverviewNetwork extends TimelineEventOverview {
     #private;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
-    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
+    update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
 }
 export declare class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
     #private;
@@ -19,7 +19,7 @@ export declare class TimelineEventOverviewCPUActivity extends TimelineEventOverv
 export declare class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
     #private;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
-    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
+    update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
 }
 export declare class TimelineFilmStripOverview extends TimelineEventOverview {
     #private;
@@ -29,7 +29,7 @@ export declare class TimelineFilmStripOverview extends TimelineEventOverview {
     private drawGeneration?;
     private emptyImage?;
     constructor(filmStrip: Trace.Extras.FilmStrip.Data);
-    update(customStartTime?: Trace.Types.Timing.MilliSeconds, customEndTime?: Trace.Types.Timing.MilliSeconds): void;
+    update(customStartTime?: Trace.Types.Timing.Milli, customEndTime?: Trace.Types.Timing.Milli): void;
     private imageByFrame;
     private drawFrames;
     overviewInfoPromise(x: number): Promise<Element | null>;
@@ -41,7 +41,7 @@ export declare class TimelineEventOverviewMemory extends TimelineEventOverview {
     private heapSizeLabel;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
     resetHeapSizeLabels(): void;
-    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
+    update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
 }
 export declare class Quantizer {
     private lastTime;

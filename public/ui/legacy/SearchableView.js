@@ -40,7 +40,7 @@ import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { InspectorView } from './InspectorView.js';
-import searchableViewStyles from './searchableView.css.legacy.js';
+import searchableViewStyles from './searchableView.css.js';
 import { ToolbarButton, ToolbarText, ToolbarToggle } from './Toolbar.js'; // eslint-disable-line import/no-duplicates
 import { createHistoryInput, createTextButton } from './UIUtils.js';
 import { VBox } from './Widget.js';
@@ -160,7 +160,6 @@ export class SearchableView extends VBox {
     valueChangedTimeoutId;
     constructor(searchable, replaceable, settingName) {
         super(true);
-        this.registerRequiredCSS(searchableViewStyles);
         searchableViewsByElement.set(this.element, this);
         this.searchProvider = searchable;
         this.replaceProvider = replaceable;
@@ -605,6 +604,10 @@ export class SearchableView extends VBox {
         }
         delete this.valueChangedTimeoutId;
         this.performSearch(false, true);
+    }
+    wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([searchableViewStyles]);
     }
 }
 const searchableViewsByElement = new WeakMap();

@@ -30,7 +30,7 @@ describe('MetaHandler', function () {
                 },
                 pid: Trace.Types.Events.ProcessID(23456),
                 tid: Trace.Types.Events.ThreadID(775),
-                ts: Trace.Types.Timing.MicroSeconds(100),
+                ts: Trace.Types.Timing.Micro(100),
                 name: 'navigationStart',
             },
             {
@@ -46,7 +46,7 @@ describe('MetaHandler', function () {
                 },
                 pid: Trace.Types.Events.ProcessID(23456),
                 tid: Trace.Types.Events.ThreadID(775),
-                ts: Trace.Types.Timing.MicroSeconds(800),
+                ts: Trace.Types.Timing.Micro(800),
                 name: 'navigationStart',
             },
             {
@@ -61,7 +61,7 @@ describe('MetaHandler', function () {
                 },
                 pid: Trace.Types.Events.ProcessID(23456),
                 tid: Trace.Types.Events.ThreadID(775),
-                ts: Trace.Types.Timing.MicroSeconds(1000),
+                ts: Trace.Types.Timing.Micro(1000),
                 name: 'navigationStart',
             },
         ];

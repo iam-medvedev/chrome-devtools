@@ -12,7 +12,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private currentLevel;
     private compatibilityTracksAppender;
     private parsedTrace;
-    private isCpuProfile;
     private timeSpan;
     private readonly framesGroupStyle;
     private readonly screenshotsGroupStyle;
@@ -32,7 +31,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
-    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace, isCpuProfile?: boolean): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace): void;
     /**
      * Instances and caches a CompatibilityTracksAppender using the
      * internal flame chart data and the trace parsed data coming from the
@@ -53,7 +52,20 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     entryTitle(entryIndex: number): string | null;
     textColor(index: number): string;
     entryFont(_index: number): string | null;
-    clearTimelineDataCache(): void;
+    /**
+     * Clear the cache and rebuild the timeline data This should be called
+     * when the trace file is the same but we want to rebuild the timeline
+     * data. Some possible example: when we hide/unhide an event, or the
+     * ignore list is changed etc.
+     */
+    rebuildTimelineData(): void;
+    /**
+     * Reset all data other than the UI elements.
+     * This should be called when
+     * - initialized the data provider
+     * - a new trace file is coming (when `setModel()` is called)
+     * etc.
+     */
     reset(): void;
     maxStackDepth(): number;
     /**
@@ -63,7 +75,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    search(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): PerfUI.FlameChart.DataProviderSearchResult[];
+    search(visibleWindow: Trace.Types.Timing.TraceWindowMicro, filter?: Trace.Extras.TraceFilter.TraceFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     getEntryTypeForLevel(level: number): EntryType;
     preparePopoverElement(entryIndex: number): Element | null;
     preparePopoverForCollapsedArrow(entryIndex: number): Element | null;
@@ -94,7 +106,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     buildFlowForInitiator(entryIndex: number): boolean;
     eventByIndex(entryIndex: number): Trace.Types.Events.Event | null;
 }
-export declare const InstantEventVisibleDurationMs: Trace.Types.Timing.MilliSeconds;
+export declare const InstantEventVisibleDurationMs: Trace.Types.Timing.Milli;
 export declare const enum Events {
     DATA_CHANGED = "DataChanged",
     FLAME_CHART_ITEM_HOVERED = "FlameChartItemHovered"

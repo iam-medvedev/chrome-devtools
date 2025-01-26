@@ -72,8 +72,8 @@ export function generateInsight(parsedTrace, context) {
     const imageFetchPriorityHint = lcpRequest?.args.data.fetchPriorityHint;
     // This is the earliest discovery time an LCP request could have - it's TTFB.
     const earliestDiscoveryTime = docRequest && docRequest.args.data.timing ?
-        Helpers.Timing.secondsToMicroseconds(docRequest.args.data.timing.requestTime) +
-            Helpers.Timing.millisecondsToMicroseconds(docRequest.args.data.timing.receiveHeadersStart) :
+        Helpers.Timing.secondsToMicro(docRequest.args.data.timing.requestTime) +
+            Helpers.Timing.milliToMicro(docRequest.args.data.timing.receiveHeadersStart) :
         undefined;
     return finalize({
         lcpEvent,
@@ -81,7 +81,7 @@ export function generateInsight(parsedTrace, context) {
         shouldIncreasePriorityHint: imageFetchPriorityHint !== 'high',
         shouldPreloadImage: !imgPreloadedOrFoundInHTML,
         lcpRequest,
-        earliestDiscoveryTimeTs: earliestDiscoveryTime ? Types.Timing.MicroSeconds(earliestDiscoveryTime) : undefined,
+        earliestDiscoveryTimeTs: earliestDiscoveryTime ? Types.Timing.Micro(earliestDiscoveryTime) : undefined,
     });
 }
 //# sourceMappingURL=LCPDiscovery.js.map

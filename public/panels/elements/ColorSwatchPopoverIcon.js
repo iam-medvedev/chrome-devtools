@@ -167,22 +167,49 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
         this.swatchPopoverHelper.reposition();
     }
     async spectrumChanged(event) {
-        const color = Common.Color.parse(event.data);
+        const getColor = (colorText) => {
+            const color = Common.Color.parse(colorText);
+            const customProperty = this.spectrum?.colorName()?.startsWith('--') && `var(${this.spectrum.colorName()})`;
+            if (!color || !customProperty) {
+                return color;
+            }
+            if (color.is("hex" /* Common.Color.Format.HEX */) || color.is("hexa" /* Common.Color.Format.HEXA */) ||
+                color.is("rgb" /* Common.Color.Format.RGB */) || color.is("rgba" /* Common.Color.Format.RGBA */)) {
+                return new Common.Color.Legacy(color.rgba(), color.format(), customProperty);
+            }
+            if (color.is("hsl" /* Common.Color.Format.HSL */)) {
+                return new Common.Color.HSL(color.h, color.s, color.l, color.alpha, customProperty);
+            }
+            if (color.is("hwb" /* Common.Color.Format.HWB */)) {
+                return new Common.Color.HWB(color.h, color.w, color.b, color.alpha, customProperty);
+            }
+            if (color.is("lch" /* Common.Color.Format.LCH */)) {
+                return new Common.Color.LCH(color.l, color.c, color.h, color.alpha, customProperty);
+            }
+            if (color.is("oklch" /* Common.Color.Format.OKLCH */)) {
+                return new Common.Color.Oklch(color.l, color.c, color.h, color.alpha, customProperty);
+            }
+            if (color.is("lab" /* Common.Color.Format.LAB */)) {
+                return new Common.Color.Lab(color.l, color.a, color.b, color.alpha, customProperty);
+            }
+            if (color.is("oklab" /* Common.Color.Format.OKLAB */)) {
+                return new Common.Color.Oklab(color.l, color.a, color.b, color.alpha, customProperty);
+            }
+            if (color.is("srgb" /* Common.Color.Format.SRGB */) || color.is("srgb-linear" /* Common.Color.Format.SRGB_LINEAR */) ||
+                color.is("display-p3" /* Common.Color.Format.DISPLAY_P3 */) || color.is("a98-rgb" /* Common.Color.Format.A98_RGB */) ||
+                color.is("prophoto-rgb" /* Common.Color.Format.PROPHOTO_RGB */) || color.is("rec2020" /* Common.Color.Format.REC_2020 */) ||
+                color.is("xyz" /* Common.Color.Format.XYZ */) || color.is("xyz-d50" /* Common.Color.Format.XYZ_D50 */) ||
+                color.is("xyz-d65" /* Common.Color.Format.XYZ_D65 */)) {
+                return new Common.Color.ColorFunction(color.colorSpace, color.p0, color.p1, color.p2, color.alpha, customProperty);
+            }
+            throw new Error(`Forgot to handle color format ${color.format()}`);
+        };
+        const color = getColor(event.data);
         if (!color) {
             return;
         }
-        const colorName = this.spectrum ? this.spectrum.colorName() : undefined;
-        const text = colorName && colorName.startsWith('--') ? `var(${colorName})` : (color.getAuthoredText() ?? color.asString());
         this.swatch.renderColor(color);
-        const value = this.swatch.firstElementChild;
-        if (value) {
-            value.remove();
-            this.swatch.createChild('span').textContent = text;
-        }
-        // `asString` somehow can return null.
-        if (text) {
-            this.dispatchEventToListeners("colorchanged" /* ColorSwatchPopoverIconEvents.COLOR_CHANGED */, text);
-        }
+        this.dispatchEventToListeners("colorchanged" /* ColorSwatchPopoverIconEvents.COLOR_CHANGED */, color);
     }
     onScroll(_event) {
         this.swatchPopoverHelper.hide(true);

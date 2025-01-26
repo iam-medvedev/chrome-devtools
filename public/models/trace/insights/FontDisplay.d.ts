@@ -5,7 +5,7 @@ export type FontDisplayInsightModel = InsightModel<{
     fonts: Array<{
         request: Types.Events.SyntheticNetworkRequest;
         display: string;
-        wastedTime: Types.Timing.MilliSeconds;
+        wastedTime: Types.Timing.Milli;
     }>;
 }>;
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): FontDisplayInsightModel;

@@ -18,7 +18,6 @@ export declare class ThemeSupport extends EventTarget {
     getComputedValue(propertyName: string, target?: Element | null): string;
     hasTheme(): boolean;
     themeName(): string;
-    injectHighlightStyleSheets(element: Element | ShadowRoot): void;
     appendStyle(node: Node, { cssContent }: {
         cssContent: string;
     }): void;

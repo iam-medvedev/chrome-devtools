@@ -27,7 +27,7 @@ export declare class NetworkTrackAppender implements TrackAppender {
      * invisible events to the last level, and hide them.
      * @returns the number of levels used by this track
      */
-    relayoutEntriesWithinBounds(events: NetworkTrackEvent[], minTime: Trace.Types.Timing.MilliSeconds, maxTime: Trace.Types.Timing.MilliSeconds): number;
+    relayoutEntriesWithinBounds(events: NetworkTrackEvent[], minTime: Trace.Types.Timing.Milli, maxTime: Trace.Types.Timing.Milli): number;
     getWebSocketLevel(event: Trace.Types.Events.WebSocketEvent, lastTimestampByLevel: LastTimestampByLevel): number;
     /**
      * Gets the color an event added by this appender should be rendered with.

@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import progressIndicatorStyles from './progressIndicator.css.legacy.js';
+import progressIndicatorStyles from './progressIndicator.css.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
 export class ProgressIndicator {
     element;
@@ -42,7 +42,7 @@ export class ProgressIndicator {
     constructor(options = { showStopButton: true }) {
         this.element = document.createElement('div');
         this.element.classList.add('progress-indicator');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: progressIndicatorStyles });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: [progressIndicatorStyles] });
         this.contentElement = this.shadowRoot.createChild('div', 'progress-indicator-shadow-container');
         this.labelElement = this.contentElement.createChild('div', 'title');
         this.progressElement = this.contentElement.createChild('progress');

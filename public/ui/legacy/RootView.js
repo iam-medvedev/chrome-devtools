@@ -1,7 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import rootViewStyles from './rootView.css.legacy.js';
+import rootViewStyles from './rootView.css.js';
 import { VBox } from './Widget.js';
 import { ZoomManager } from './ZoomManager.js';
 export class RootView extends VBox {
@@ -10,7 +10,6 @@ export class RootView extends VBox {
         super();
         this.markAsRoot();
         this.element.classList.add('root-view');
-        this.registerRequiredCSS(rootViewStyles);
         this.element.setAttribute('spellcheck', 'false');
     }
     attachToDocument(document) {
@@ -20,6 +19,10 @@ export class RootView extends VBox {
         this.window = document.defaultView;
         this.doResize();
         this.show(document.body);
+    }
+    wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([rootViewStyles]);
     }
     doResize() {
         if (this.window) {

@@ -69,7 +69,7 @@ export async function finalize() {
                 .registerSyntheticEvent({
                 rawSourceEvent: startEvent,
                 ...startEvent,
-                dur: Types.Timing.MicroSeconds(endEvent.ts - startEvent.ts),
+                dur: Types.Timing.Micro(endEvent.ts - startEvent.ts),
                 args: {
                     data: {
                         beginEvent: startEvent,

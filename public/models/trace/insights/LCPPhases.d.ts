@@ -6,25 +6,25 @@ interface LCPPhases {
      * The time between when the user initiates loading the page until when
      * the browser receives the first byte of the html response.
      */
-    ttfb: Types.Timing.MilliSeconds;
+    ttfb: Types.Timing.Milli;
     /**
      * The time between ttfb and the LCP request request being started.
      * For a text LCP, this is undefined given no request is loaded.
      */
-    loadDelay?: Types.Timing.MilliSeconds;
+    loadDelay?: Types.Timing.Milli;
     /**
      * The time it takes to load the LCP request.
      */
-    loadTime?: Types.Timing.MilliSeconds;
+    loadTime?: Types.Timing.Milli;
     /**
      * The time between when the LCP request finishes loading and when
      * the LCP element is rendered.
      */
-    renderDelay: Types.Timing.MilliSeconds;
+    renderDelay: Types.Timing.Milli;
 }
 export type LCPPhasesInsightModel = InsightModel<{
-    lcpMs?: Types.Timing.MilliSeconds;
-    lcpTs?: Types.Timing.MilliSeconds;
+    lcpMs?: Types.Timing.Milli;
+    lcpTs?: Types.Timing.Milli;
     lcpEvent?: Types.Events.LargestContentfulPaintCandidate;
     /** The network request for the LCP image, if there was one. */
     lcpRequest?: Types.Events.SyntheticNetworkRequest;

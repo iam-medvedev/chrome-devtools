@@ -9,20 +9,20 @@ export declare class TimelineOverviewCalculator implements Calculator {
      * @param time
      * @returns position in pixel
      */
-    computePosition(time: Trace.Types.Timing.MilliSeconds): number;
-    positionToTime(position: number): Trace.Types.Timing.MilliSeconds;
-    setBounds(minimumBoundary: Trace.Types.Timing.MilliSeconds, maximumBoundary: Trace.Types.Timing.MilliSeconds): void;
+    computePosition(time: Trace.Types.Timing.Milli): number;
+    positionToTime(position: number): Trace.Types.Timing.Milli;
+    setBounds(minimumBoundary: Trace.Types.Timing.Milli, maximumBoundary: Trace.Types.Timing.Milli): void;
     setNavStartTimes(navStartTimes: readonly Trace.Types.Events.NavigationStart[]): void;
     setDisplayWidth(clientWidth: number): void;
     reset(): void;
-    formatValue(time: Trace.Types.Timing.MilliSeconds, precision?: number): string;
-    maximumBoundary(): Trace.Types.Timing.MilliSeconds;
-    minimumBoundary(): Trace.Types.Timing.MilliSeconds;
-    zeroTime(): Trace.Types.Timing.MilliSeconds;
+    formatValue(time: Trace.Types.Timing.Milli, precision?: number): string;
+    maximumBoundary(): Trace.Types.Timing.Milli;
+    minimumBoundary(): Trace.Types.Timing.Milli;
+    zeroTime(): Trace.Types.Timing.Milli;
     /**
      * This function returns the time different between min time and max time of current minimap.
      *
      * @returns the time range in milliseconds
      */
-    boundarySpan(): Trace.Types.Timing.MilliSeconds;
+    boundarySpan(): Trace.Types.Timing.Milli;
 }

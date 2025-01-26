@@ -152,8 +152,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/AISettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const chevronDownIconUrl = new URL('../../Images/chevron-down.svg', import.meta.url).toString();
-const chevronUpIconUrl = new URL('../../Images/chevron-up.svg', import.meta.url).toString();
 export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #consoleInsightsSetting;
@@ -391,7 +389,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             .data=${{
             title: this.#isConsoleInsightsSettingExpanded ? i18nString(UIStrings.showLess) : i18nString(UIStrings.showMore),
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            iconUrl: this.#isConsoleInsightsSettingExpanded ? chevronUpIconUrl : chevronDownIconUrl,
+            iconName: this.#isConsoleInsightsSettingExpanded ? 'chevron-up' : 'chevron-down',
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             jslogContext: 'console-insights.accordion',
         }}
@@ -459,7 +457,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             .data=${{
             title: this.#isAiAssistanceSettingExpanded ? i18nString(UIStrings.showLess) : i18nString(UIStrings.showMore),
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            iconUrl: this.#isAiAssistanceSettingExpanded ? chevronUpIconUrl : chevronDownIconUrl,
+            iconName: this.#isAiAssistanceSettingExpanded ? 'chevron-up' : 'chevron-down',
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             jslogContext: 'freestyler.accordion',
         }}

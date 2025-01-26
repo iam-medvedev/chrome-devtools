@@ -36,10 +36,10 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     onResize(): void;
     setOverviewControls(overviewControls: TimelineOverview[]): void;
     set showingScreenshots(isShowing: boolean);
-    setBounds(minimumBoundary: Trace.Types.Timing.MilliSeconds, maximumBoundary: Trace.Types.Timing.MilliSeconds): void;
+    setBounds(minimumBoundary: Trace.Types.Timing.Milli, maximumBoundary: Trace.Types.Timing.Milli): void;
     setNavStartTimes(navStartTimes: readonly Trace.Types.Events.NavigationStart[]): void;
-    scheduleUpdate(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
-    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
+    scheduleUpdate(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
+    update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
     setMarkers(markers: Map<number, HTMLDivElement>): void;
     getMarkers(): Map<number, HTMLDivElement>;
     private updateMarkers;
@@ -49,7 +49,7 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     private onWindowChanged;
     setWindowTimes(startTime: number, endTime: number): void;
     private updateWindow;
-    highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicroSeconds, withBracket: boolean): void;
+    highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicro, withBracket: boolean): void;
     clearBoundsHighlight(): void;
 }
 export declare const enum Events {
@@ -59,15 +59,15 @@ export declare const enum Events {
     OVERVIEW_PANE_MOUSE_LEAVE = "OverviewPaneMouseLeave"
 }
 export interface OverviewPaneWindowChangedEvent {
-    startTime: Trace.Types.Timing.MilliSeconds;
-    endTime: Trace.Types.Timing.MilliSeconds;
+    startTime: Trace.Types.Timing.Milli;
+    endTime: Trace.Types.Timing.Milli;
 }
 export interface OverviewPaneBreadcrumbAddedEvent {
-    startTime: Trace.Types.Timing.MilliSeconds;
-    endTime: Trace.Types.Timing.MilliSeconds;
+    startTime: Trace.Types.Timing.Milli;
+    endTime: Trace.Types.Timing.Milli;
 }
 export interface OverviewPaneMouseMoveEvent {
-    timeInMicroSeconds: Trace.Types.Timing.MicroSeconds;
+    timeInMicroSeconds: Trace.Types.Timing.Micro;
 }
 export interface EventTypes {
     [Events.OVERVIEW_PANE_WINDOW_CHANGED]: OverviewPaneWindowChangedEvent;
@@ -77,7 +77,7 @@ export interface EventTypes {
 }
 export interface TimelineOverview {
     show(parentElement: Element, insertBefore?: Element | null): void;
-    update(start?: Trace.Types.Timing.MilliSeconds, end?: Trace.Types.Timing.MilliSeconds): void;
+    update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
     dispose(): void;
     reset(): void;
     overviewInfoPromise(x: number): Promise<Element | null>;

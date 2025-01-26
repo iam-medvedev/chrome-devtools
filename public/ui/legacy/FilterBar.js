@@ -34,10 +34,9 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import filterStyles from './filter.css.legacy.js';
+import filterStyles from './filter.css.js';
 import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { bindCheckbox } from './SettingsUI.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { ToolbarFilter, ToolbarSettingToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, createTextChild } from './UIUtils.js';
@@ -72,7 +71,6 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     showingWidget;
     constructor(name, visibleByDefault) {
         super();
-        this.registerRequiredCSS(filterStyles);
         this.enabled = true;
         this.element.classList.add('filter-bar');
         this.element.setAttribute('jslog', `${VisualLogging.toolbar('filter-bar')}`);
@@ -118,6 +116,7 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     }
     wasShown() {
         super.wasShown();
+        this.registerCSSFiles([filterStyles]);
         this.updateFilterBar();
     }
     updateFilterBar() {
@@ -236,7 +235,7 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
         return this.#namedBitSetFilterUI;
     }
     connectedCallback() {
-        ThemeSupport.ThemeSupport.instance().appendStyle(this.#shadow, filterStyles);
+        this.#shadow.adoptedStyleSheets = [filterStyles];
     }
     #filterChanged() {
         const domEvent = new CustomEvent('filterChanged');

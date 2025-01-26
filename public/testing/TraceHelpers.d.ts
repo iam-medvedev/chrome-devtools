@@ -139,7 +139,7 @@ export declare function getEventOfType<T extends Trace.Types.Events.Event>(event
 export declare function setupIgnoreListManagerEnvironment(): {
     ignoreListManager: Bindings.IgnoreListManager.IgnoreListManager;
 };
-export declare function microsecondsTraceWindow(min: number, max: number): Trace.Types.Timing.TraceWindowMicroSeconds;
-export declare function microseconds(x: number): Trace.Types.Timing.MicroSeconds;
-export declare function milliseconds(x: number): Trace.Types.Timing.MilliSeconds;
+export declare function microsecondsTraceWindow(min: number, max: number): Trace.Types.Timing.TraceWindowMicro;
+export declare function microseconds(x: number): Trace.Types.Timing.Micro;
+export declare function milliseconds(x: number): Trace.Types.Timing.Milli;
 export {};

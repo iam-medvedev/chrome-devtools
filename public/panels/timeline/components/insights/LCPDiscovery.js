@@ -70,7 +70,7 @@ function getImageData(model) {
     };
     if (model.earliestDiscoveryTimeTs && model.lcpRequest) {
         const discoveryDelay = model.lcpRequest.ts - model.earliestDiscoveryTimeTs;
-        data.discoveryDelay = Trace.Types.Timing.MicroSeconds(discoveryDelay);
+        data.discoveryDelay = Trace.Types.Timing.Micro(discoveryDelay);
     }
     return data;
 }
@@ -103,7 +103,7 @@ export class LCPDiscovery extends BaseInsightComponent {
         if (!imageResults || !imageResults.discoveryDelay) {
             return [];
         }
-        const delay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.MicroSeconds(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
+        const delay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.Micro(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
         const label = html `<div class="discovery-delay"> ${this.#renderDiscoveryDelay(delay.range)}</div>`;
         return [
             {

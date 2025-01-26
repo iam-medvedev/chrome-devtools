@@ -10,7 +10,7 @@ export interface TraceEntryTree {
 export interface TraceEntryNode {
     entry: Types.Events.Event;
     depth: number;
-    selfTime?: Types.Timing.MicroSeconds;
+    selfTime?: Types.Timing.Micro;
     id: TraceEntryNodeId;
     parent: TraceEntryNode | null;
     children: TraceEntryNode[];
@@ -88,7 +88,7 @@ export declare function walkTreeFromEntry(entryToNode: Map<Types.Events.Event, T
  * 11. End E
  *
  */
-export declare function walkEntireTree(entryToNode: Map<Types.Events.Event, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.Events.Event) => void, onEntryEnd: (entry: Types.Events.Event) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
+export declare function walkEntireTree(entryToNode: Map<Types.Events.Event, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.Events.Event) => void, onEntryEnd: (entry: Types.Events.Event) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicro, minDuration?: Types.Timing.Micro): void;
 /**
  * Determines if the given events, which are assumed to be ordered can
  * be organized into tree structures.

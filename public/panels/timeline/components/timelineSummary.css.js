@@ -81,6 +81,9 @@ styles.replaceSync(
   tr .site-column {
     border-left: none;
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    height: auto;
+    min-height: var(--sys-size-12);
+    align-content: center;
   }
 
   .bottom-filler-td,
@@ -90,10 +93,14 @@ styles.replaceSync(
 
   th {
     background-color: var(--sys-color-cdt-base-container);
+    font-weight: var(--ref-typeface-weight-medium);
   }
 
-  tr.revealed.selected {
-    background-color: transparent;
+  tr.revealed:hover {
+    .button-container {
+      align-items: center;
+      display: block;
+    }
   }
 }
 
@@ -133,6 +140,17 @@ styles.replaceSync(
   text-overflow: ellipsis;
   overflow: inherit;
   max-width: 60%;
+}
+
+.hover-bottom-up-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button-container {
+  display: none;
 }
 
 /*# sourceURL=timelineSummary.css */

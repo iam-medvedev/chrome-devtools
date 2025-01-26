@@ -6,7 +6,7 @@ export interface InsightDetails {
     description: string;
     internalName: string;
     expanded: boolean;
-    estimatedSavingsTime?: Trace.Types.Timing.MilliSeconds;
+    estimatedSavingsTime?: Trace.Types.Timing.Milli;
     estimatedSavingsBytes?: number;
 }
 export declare class InsightActivated extends Event {
@@ -20,14 +20,14 @@ export declare class InsightDeactivated extends Event {
     constructor();
 }
 export declare class InsightSetHovered extends Event {
-    bounds?: Trace.Types.Timing.TraceWindowMicroSeconds | undefined;
+    bounds?: Trace.Types.Timing.TraceWindowMicro | undefined;
     static readonly eventName = "insightsethovered";
-    constructor(bounds?: Trace.Types.Timing.TraceWindowMicroSeconds | undefined);
+    constructor(bounds?: Trace.Types.Timing.TraceWindowMicro | undefined);
 }
 export declare class InsightSetZoom extends Event {
-    bounds: Trace.Types.Timing.TraceWindowMicroSeconds;
+    bounds: Trace.Types.Timing.TraceWindowMicro;
     static readonly eventName = "insightsetzoom";
-    constructor(bounds: Trace.Types.Timing.TraceWindowMicroSeconds);
+    constructor(bounds: Trace.Types.Timing.TraceWindowMicro);
 }
 export declare class InsightProvideOverlays extends Event {
     overlays: Array<Overlays.Overlays.TimelineOverlay>;

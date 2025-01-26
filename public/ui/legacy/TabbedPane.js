@@ -37,7 +37,7 @@ import * as IconButton from '../components/icon_button/icon_button.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { ContextMenu } from './ContextMenu.js';
 import { Constraints, Size } from './Geometry.js';
-import tabbedPaneStyles from './tabbedPane.css.legacy.js';
+import tabbedPaneStyles from './tabbedPane.css.js';
 import { Tooltip } from './Tooltip.js';
 import { installDragHandle, invokeOnceAfterBatchUpdate } from './UIUtils.js';
 import { VBox } from './Widget.js';
@@ -115,7 +115,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     automaticReorder;
     constructor() {
         super(true);
-        this.registerRequiredCSS(tabbedPaneStyles);
         this.element.classList.add('tabbed-pane');
         this.contentElement.classList.add('tabbed-pane-shadow');
         this.contentElement.tabIndex = -1;
@@ -457,6 +456,8 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.updateTabElements();
     }
     wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([tabbedPaneStyles]);
         const effectiveTab = this.currentTab || this.tabsHistory[0];
         if (effectiveTab && this.autoSelectFirstItemOnShow) {
             this.selectTab(effectiveTab.id);

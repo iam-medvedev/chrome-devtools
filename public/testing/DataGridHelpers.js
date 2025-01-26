@@ -13,14 +13,14 @@ export const getFocusableCell = (shadowRoot) => {
     return tabIndexCells[0];
 };
 export const getCellByIndexes = (shadowRoot, indexes) => {
-    const cell = shadowRoot.querySelector(`[data-row-index="${indexes.row}"][data-col-index="${indexes.column}"]`);
+    const cell = shadowRoot.querySelector(`tr:nth-child(${indexes.row + 1}) td:nth-child(${indexes.column + 1})`);
     assert.instanceOf(cell, HTMLTableCellElement);
     return cell;
 };
 export const getHeaderCells = (shadowRoot, options = {
     onlyVisible: false,
 }) => {
-    const cells = shadowRoot.querySelectorAll('[data-grid-header-cell]');
+    const cells = shadowRoot.querySelectorAll('th[jslog]');
     assertElements(cells, HTMLTableCellElement);
     return Array.from(cells).filter(cell => {
         if (!options.onlyVisible) {
@@ -44,7 +44,7 @@ export const getValuesOfBodyRowByAriaIndex = (shadowRoot, ariaIndex, options = {
     });
 };
 export const getAllRows = (shadowRoot) => {
-    const rows = shadowRoot.querySelectorAll('[aria-rowindex]');
+    const rows = shadowRoot.querySelectorAll('tbody tr[jslog]');
     assertElements(rows, HTMLTableRowElement);
     return Array.from(rows);
 };
@@ -95,9 +95,10 @@ export const getValuesOfAllBodyRows = (shadowRoot, options = {
         .map(row => {
         // now decide if the row should be included or not
         const rowIsHidden = row.classList.contains('hidden');
-        const rowIndex = window.parseInt(row.getAttribute('aria-rowindex') || '-1', 10);
         return {
-            rowValues: getValuesOfBodyRowByAriaIndex(shadowRoot, rowIndex, options),
+            rowValues: [...row.querySelectorAll('td[jslog]')]
+                .filter(cell => !options.onlyVisible || !cell.classList.contains('hidden'))
+                .map(cell => cell.innerText.trim()),
             hidden: options.onlyVisible && rowIsHidden,
         };
     })

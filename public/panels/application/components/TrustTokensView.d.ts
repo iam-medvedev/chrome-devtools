@@ -1,4 +1,5 @@
 import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/legacy/components/data_grid/data_grid.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;

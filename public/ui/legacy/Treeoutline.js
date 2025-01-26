@@ -36,9 +36,8 @@ import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { InplaceEditor } from './InplaceEditor.js';
 import { Keys } from './KeyboardShortcut.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { Tooltip } from './Tooltip.js';
-import treeoutlineStyles from './treeoutline.css.legacy.js';
+import treeoutlineStyles from './treeoutline.css.js';
 import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing, } from './UIUtils.js';
 const nodeToParentTreeElementMap = new WeakMap();
 export var Events;
@@ -351,16 +350,13 @@ export class TreeOutlineInShadow extends TreeOutline {
         super();
         this.contentElement.classList.add('tree-outline');
         this.element = document.createElement('div');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: treeoutlineStyles });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: [treeoutlineStyles] });
         this.disclosureElement = this.shadowRoot.createChild('div', 'tree-outline-disclosure');
         this.disclosureElement.appendChild(this.contentElement);
         this.renderSelection = true;
         if (variant === "NavigationTree" /* TreeVariant.NAVIGATION_TREE */) {
             this.contentElement.classList.add('tree-variant-navigation');
         }
-    }
-    registerRequiredCSS(cssFile) {
-        ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot, cssFile);
     }
     registerCSSFiles(cssFiles) {
         this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.concat(cssFiles);

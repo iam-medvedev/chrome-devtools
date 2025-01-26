@@ -4,6 +4,7 @@ export declare function getRemoteBase(location?: string): {
     version: string;
 } | null;
 export declare function getPathName(): string;
+export declare function isNodeEntry(pathname: string): boolean;
 export declare class Runtime {
     private constructor();
     static instance(opts?: {
@@ -12,9 +13,7 @@ export declare class Runtime {
     static removeInstance(): void;
     static queryParam(name: string): string | null;
     static setQueryParamForTesting(name: string, value: string): void;
-    static experimentsSetting(): {
-        [x: string]: boolean;
-    };
+    static isNode(): boolean;
     static setPlatform(platform: string): void;
     static platform(): string;
     static isDescriptorEnabled(descriptor: {
@@ -31,9 +30,7 @@ export interface Option {
 }
 export declare class ExperimentsSupport {
     #private;
-    constructor();
     allConfigurableExperiments(): Experiment[];
-    private setExperimentsSetting;
     register(experimentName: string, experimentTitle: string, unstable?: boolean, docLink?: string, feedbackLink?: string): void;
     isEnabled(experimentName: string): boolean;
     setEnabled(experimentName: string, enabled: boolean): void;

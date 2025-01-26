@@ -5,13 +5,13 @@ import { makeCompleteEvent, } from '../../../testing/TraceHelpers.js';
 import * as Trace from '../trace.js';
 const DEVTOOLS_CATEGORY = 'disabled-by-default-devtools.timeline';
 function milliToMicro(x) {
-    return Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(x));
+    return Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(x));
 }
 function makeFakeBounds(min, max) {
     return {
-        min: Trace.Types.Timing.MicroSeconds(min),
-        max: Trace.Types.Timing.MicroSeconds(max),
-        range: Trace.Types.Timing.MicroSeconds(max - min),
+        min: Trace.Types.Timing.Micro(min),
+        max: Trace.Types.Timing.Micro(max),
+        range: Trace.Types.Timing.Micro(max - min),
     };
 }
 describe('MainThreadActivity', function () {

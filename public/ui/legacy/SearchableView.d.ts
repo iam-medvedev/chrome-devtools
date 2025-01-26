@@ -60,6 +60,7 @@ export declare class SearchableView extends VBox {
     private replaceAll;
     private onInput;
     private onValueChanged;
+    wasShown(): void;
 }
 export interface Searchable {
     onSearchCanceled(): void;

@@ -18,7 +18,7 @@ function getPassedInsights(component) {
 }
 describeWithEnvironment('SidebarSingleInsightSet', () => {
     it('renders a list of insights', async function () {
-        const { insights, parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { insights, metadata, parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         assert.isOk(insights);
         // only one navigation in this trace.
         assert.strictEqual(insights.size, 1);
@@ -33,6 +33,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
             activeInsight: null,
             parsedTrace,
+            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
@@ -43,13 +44,14 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'LCP request discovery',
             'Render blocking requests',
             'Document request latency',
-            'Optimize DOM size',
             'Third parties',
             'INP by phase',
             'Layout shift culprits',
             'Improve image delivery',
             'Optimize viewport for mobile',
+            'Optimize DOM size',
             'CSS Selector costs',
+            'Forced reflow',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -59,11 +61,13 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Layout shift culprits',
             'Improve image delivery',
             'Optimize viewport for mobile',
+            'Optimize DOM size',
             'CSS Selector costs',
+            'Forced reflow',
         ]);
     });
     it('does not render experimental insights by default', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
+        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
         const firstNavigation = parsedTrace.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
@@ -74,6 +78,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
             activeInsight: null,
             parsedTrace,
+            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
@@ -92,6 +97,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Optimize viewport for mobile',
             'Optimize DOM size',
             'CSS Selector costs',
+            'Forced reflow',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -105,10 +111,11 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Optimize viewport for mobile',
             'Optimize DOM size',
             'CSS Selector costs',
+            'Forced reflow',
         ]);
     });
     it('renders experimental insights if the experiment is turned on', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
+        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         Root.Runtime.experiments.enableForTest("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */);
         renderElementIntoDOM(component);
@@ -120,6 +127,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
             activeInsight: null,
             parsedTrace,
+            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
@@ -139,6 +147,8 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Optimize viewport for mobile',
             'Optimize DOM size',
             'CSS Selector costs',
+            'Long critical network tree',
+            'Forced reflow',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -151,10 +161,12 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Optimize viewport for mobile',
             'Optimize DOM size',
             'CSS Selector costs',
+            'Long critical network tree',
+            'Forced reflow',
         ]);
     });
     it('will render the active insight fully', async function () {
-        const { insights, parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const { insights, metadata, parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         assert.isOk(insights);
         // only one navigation in this trace.
         assert.strictEqual(insights.size, 1);
@@ -176,6 +188,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
                 insightSetKey: navigationId,
             },
             parsedTrace,
+            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const expandedInsight = getUserVisibleInsights(component).find(insight => {

@@ -1,4 +1,4 @@
-import '../../../ui/components/data_grid/data_grid.js';
+import '../../../ui/legacy/components/data_grid/data_grid.js';
 import '../../../ui/components/icon_button/icon_button.js';
 import '../../../ui/legacy/legacy.js';
 import type * as Protocol from '../../../generated/protocol.js';

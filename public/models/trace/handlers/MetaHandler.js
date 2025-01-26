@@ -22,9 +22,9 @@ let devicePixelRatio = null;
 const processNames = new Map();
 const topLevelRendererIds = new Set();
 const traceBounds = {
-    min: Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY),
-    max: Types.Timing.MicroSeconds(Number.NEGATIVE_INFINITY),
-    range: Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY),
+    min: Types.Timing.Micro(Number.POSITIVE_INFINITY),
+    max: Types.Timing.Micro(Number.NEGATIVE_INFINITY),
+    range: Types.Timing.Micro(Number.POSITIVE_INFINITY),
 };
 /**
  * These represent the user navigating. Values such as First Contentful Paint,
@@ -47,7 +47,7 @@ const mainFrameNavigations = [];
 // Represents all the threads in the trace, organized by process. This is mostly for internal
 // bookkeeping so that during the finalize pass we can obtain the main and browser thread IDs.
 const threadsInProcess = new Map();
-let traceStartedTimeFromTracingStartedEvent = Types.Timing.MicroSeconds(-1);
+let traceStartedTimeFromTracingStartedEvent = Types.Timing.Micro(-1);
 const eventPhasesOfInterestForTraceBounds = new Set([
     "B" /* Types.Events.Phase.BEGIN */,
     "E" /* Types.Events.Phase.END */,
@@ -80,10 +80,10 @@ export function reset() {
     threadsInProcess.clear();
     rendererProcessesByFrameId.clear();
     framesByProcessId.clear();
-    traceBounds.min = Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
-    traceBounds.max = Types.Timing.MicroSeconds(Number.NEGATIVE_INFINITY);
-    traceBounds.range = Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
-    traceStartedTimeFromTracingStartedEvent = Types.Timing.MicroSeconds(-1);
+    traceBounds.min = Types.Timing.Micro(Number.POSITIVE_INFINITY);
+    traceBounds.max = Types.Timing.Micro(Number.NEGATIVE_INFINITY);
+    traceBounds.range = Types.Timing.Micro(Number.POSITIVE_INFINITY);
+    traceStartedTimeFromTracingStartedEvent = Types.Timing.Micro(-1);
     traceIsGeneric = true;
 }
 function updateRendererProcessByFrame(event, frame) {
@@ -105,8 +105,8 @@ function updateRendererProcessByFrame(event, frame) {
         frame,
         window: {
             min: event.ts,
-            max: Types.Timing.MicroSeconds(0),
-            range: Types.Timing.MicroSeconds(0),
+            max: Types.Timing.Micro(0),
+            range: Types.Timing.Micro(0),
         },
     });
 }
@@ -123,9 +123,9 @@ export function handleEvent(event) {
     // The UMA events in particular seem to be reported on page unloading, which
     // often extends the bounds of the trace unhelpfully.
     if (event.ts !== 0 && !event.name.endsWith('::UMA') && eventPhasesOfInterestForTraceBounds.has(event.ph)) {
-        traceBounds.min = Types.Timing.MicroSeconds(Math.min(event.ts, traceBounds.min));
-        const eventDuration = event.dur ?? Types.Timing.MicroSeconds(0);
-        traceBounds.max = Types.Timing.MicroSeconds(Math.max(event.ts + eventDuration, traceBounds.max));
+        traceBounds.min = Types.Timing.Micro(Math.min(event.ts, traceBounds.min));
+        const eventDuration = event.dur ?? Types.Timing.Micro(0);
+        traceBounds.max = Types.Timing.Micro(Math.max(event.ts + eventDuration, traceBounds.max));
     }
     if (Types.Events.isProcessName(event) && (event.args.name === 'Browser' || event.args.name === 'HeadlessBrowser')) {
         browserProcessId = event.pid;
@@ -281,7 +281,7 @@ export async function finalize() {
     if (traceStartedTimeFromTracingStartedEvent >= 0) {
         traceBounds.min = traceStartedTimeFromTracingStartedEvent;
     }
-    traceBounds.range = Types.Timing.MicroSeconds(traceBounds.max - traceBounds.min);
+    traceBounds.range = Types.Timing.Micro(traceBounds.max - traceBounds.min);
     // If we go from foo.com to example.com we will get a new renderer, and
     // therefore the "top level renderer" will have a different PID as it has
     // changed. Here we step through each renderer process and updated its window
@@ -296,12 +296,12 @@ export async function finalize() {
             // For the last window we set its max to be positive infinity.
             // TODO: Move the trace bounds handler into meta so we can clamp first and last windows.
             if (!nextWindow) {
-                currentWindow.window.max = Types.Timing.MicroSeconds(traceBounds.max);
-                currentWindow.window.range = Types.Timing.MicroSeconds(traceBounds.max - currentWindow.window.min);
+                currentWindow.window.max = Types.Timing.Micro(traceBounds.max);
+                currentWindow.window.range = Types.Timing.Micro(traceBounds.max - currentWindow.window.min);
             }
             else {
-                currentWindow.window.max = Types.Timing.MicroSeconds(nextWindow.window.min - 1);
-                currentWindow.window.range = Types.Timing.MicroSeconds(currentWindow.window.max - currentWindow.window.min);
+                currentWindow.window.max = Types.Timing.Micro(nextWindow.window.min - 1);
+                currentWindow.window.range = Types.Timing.Micro(currentWindow.window.max - currentWindow.window.min);
             }
         }
     }
@@ -334,7 +334,7 @@ export async function finalize() {
     // navigation happened very soon (0.5 seconds) after the trace started
     // recording.
     const firstMainFrameNav = mainFrameNavigations.at(0);
-    const firstNavTimeThreshold = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
+    const firstNavTimeThreshold = Helpers.Timing.secondsToMicro(Types.Timing.Seconds(0.5));
     if (firstMainFrameNav) {
         const navigationIsWithinThreshold = firstMainFrameNav.ts - traceBounds.min < firstNavTimeThreshold;
         if (firstMainFrameNav.args.data?.isOutermostMainFrame && firstMainFrameNav.args.data?.documentLoaderURL &&

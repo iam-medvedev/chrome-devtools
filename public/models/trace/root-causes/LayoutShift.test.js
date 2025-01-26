@@ -63,7 +63,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 shift.args = {
                     frame: 'frame-id-123',
                 };
-                shift.name = 'LayoutShift';
+                shift.name = "SyntheticLayoutShift" /* Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT */;
             }
             const clusters = [{ events: shifts }];
             // PrePaint events to which each layout shift belongs.
@@ -245,7 +245,6 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 const authoredDimensions = rootCause?.unsizedMedia[0].authoredDimensions;
                 if (!authoredDimensions) {
                     assert.fail('Expected defined authored dimensions');
-                    return;
                 }
                 // Assert inline styles are preferred.
                 assert.strictEqual(authoredDimensions.height, '20px');
@@ -263,7 +262,6 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 const authoredDimensions = rootCause?.unsizedMedia[0].authoredDimensions;
                 if (!authoredDimensions) {
                     assert.fail('Expected defined authored dimensions');
-                    return;
                 }
                 // Assert matched CSS rules styles are preferred.
                 assert.strictEqual(authoredDimensions.height, '30px');
@@ -279,7 +277,6 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 const computedDimensions = rootCause?.unsizedMedia[0].computedDimensions;
                 if (!computedDimensions) {
                     assert.fail('Expected defined computed dimensions');
-                    return;
                 }
                 // Assert correct computed styles are set.
                 assert.strictEqual(computedDimensions.height, height);
@@ -351,7 +348,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                     shift.args = {
                         frame: 'frame-id-123',
                     };
-                    shift.name = 'LayoutShift';
+                    shift.name = "SyntheticLayoutShift" /* Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT */;
                 }
                 const clusters = [{ events: shifts }];
                 modelMut.LayoutShifts.clusters = clusters;
@@ -394,8 +391,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             // that correspond to font changes.
             const fontRequests = [
                 {
-                    dur: Trace.Types.Timing.MicroSeconds(2),
-                    ts: Trace.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.Micro(2),
+                    ts: Trace.Types.Timing.Micro(0),
                     args: {
                         data: {
                             url: fontSource,
@@ -404,8 +401,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
                     },
                 },
                 {
-                    dur: Trace.Types.Timing.MicroSeconds(30),
-                    ts: Trace.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.Micro(30),
+                    ts: Trace.Types.Timing.Micro(0),
                     args: {
                         data: {
                             url: fontSource,
@@ -432,8 +429,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             });
             it('ignores requests for fonts whose font-display property is "optional"', async () => {
                 const optionalFontRequests = [{
-                        dur: Trace.Types.Timing.MicroSeconds(2),
-                        ts: Trace.Types.Timing.MicroSeconds(0),
+                        dur: Trace.Types.Timing.Micro(2),
+                        ts: Trace.Types.Timing.Micro(0),
                         args: {
                             data: {
                                 url: fontSource,
@@ -456,8 +453,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
             });
             it('ignores requests for fonts that lie outside the fixed time window from ending at the "font change" layout invalidation event', async () => {
                 const optionalFontRequests = [{
-                        dur: Trace.Types.Timing.MicroSeconds(2),
-                        ts: Trace.Types.Timing.MicroSeconds(85),
+                        dur: Trace.Types.Timing.Micro(2),
+                        ts: Trace.Types.Timing.Micro(85),
                         args: {
                             data: {
                                 url: fontSource,
@@ -482,8 +479,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
         describe('Render blocking request', () => {
             const RenderBlockingRequest = [
                 {
-                    dur: Trace.Types.Timing.MicroSeconds(2),
-                    ts: Trace.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.Micro(2),
+                    ts: Trace.Types.Timing.Micro(0),
                     args: {
                         data: {
                             url: renderBlockSource,
@@ -493,8 +490,8 @@ describeWithMockConnection('LayoutShift root causes', () => {
                     },
                 },
                 {
-                    dur: Trace.Types.Timing.MicroSeconds(30),
-                    ts: Trace.Types.Timing.MicroSeconds(0),
+                    dur: Trace.Types.Timing.Micro(30),
+                    ts: Trace.Types.Timing.Micro(0),
                     args: {
                         data: {
                             url: renderBlockSource,

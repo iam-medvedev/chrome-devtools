@@ -20,10 +20,19 @@ styles.replaceSync(
   to { width: 100%; }
 }
 
+@keyframes expand {
+  from { height: 0; }
+  to { height: auto; }
+}
+
 .animating {
   overflow: hidden;
   white-space: nowrap;
   animation: typing 0.4s steps(40, end);
+}
+
+devtools-code-block.animating {
+  animation: expand 0.1s linear;
 }
 
 .pending {
@@ -85,6 +94,11 @@ devtools-code-block {
   outline-offset: 2px;
   text-decoration: underline;
   cursor: pointer;
+}
+
+h1.insight, h2.insight, h3.insight, h4.insight, h5.insight, h6.insight {
+  font: var(--sys-typescale-body4-bold);
+  margin: var(--sys-size-1) 0 10px;
 }
 
 /*# sourceURL=markdownView.css */

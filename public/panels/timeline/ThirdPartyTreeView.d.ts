@@ -4,6 +4,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineTreeView from './TimelineTreeView.js';
 export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView {
     #private;
+    protected autoSelectFirstChildOnRefresh: boolean;
     constructor();
     buildTree(): Trace.Extras.TraceTree.Node;
     protected groupingFunction(): ((arg0: Trace.Types.Events.Event) => string) | null;
@@ -20,7 +21,7 @@ export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineT
     };
     extractThirdPartySummary(node: Trace.Extras.TraceTree.Node): {
         transferSize: number;
-        mainThreadTime: Trace.Types.Timing.MicroSeconds;
+        mainThreadTime: Trace.Types.Timing.Micro;
     };
     nodeIsFirstParty(node: Trace.Extras.TraceTree.Node): boolean;
     nodeIsExtension(node: Trace.Extras.TraceTree.Node): boolean;

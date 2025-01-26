@@ -53,7 +53,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/network/components/ResponseHeaderSection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-const plusIconUrl = new URL('../../../Images/plus.svg', import.meta.url).toString();
 export const RESPONSE_HEADER_SECTION_DATA_KEY = 'ResponseHeaderSection';
 class ResponseHeaderSectionBase extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
@@ -464,7 +463,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
         <devtools-button
           class="add-header-button"
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
-          .iconUrl=${plusIconUrl}
+          .iconName=${'plus'}
           @click=${this.#onAddHeaderClick}
           jslog=${VisualLogging.action('add-header').track({ click: true })}>
           ${i18nString(UIStrings.addHeader)}

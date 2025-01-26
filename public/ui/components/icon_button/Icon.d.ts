@@ -59,6 +59,7 @@ export declare class Icon extends HTMLElement {
     #private;
     static readonly observedAttributes: string[];
     constructor();
+    connectedCallback(): void;
     /**
      * @deprecated use `name` and CSS instead.
      */

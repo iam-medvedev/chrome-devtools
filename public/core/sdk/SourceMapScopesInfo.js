@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { SourceMapScopeChainEntry } from './SourceMapScopeChainEntry.js';
-import { decodeGeneratedRanges, decodeOriginalScopes, } from './SourceMapScopes.js';
 export class SourceMapScopesInfo {
     #sourceMap;
     #originalScopes;
@@ -13,14 +12,15 @@ export class SourceMapScopesInfo {
         this.#originalScopes = originalScopes;
         this.#generatedRanges = generatedRanges;
     }
-    static parseFromMap(sourceMap, sourceMapJson) {
-        if (!sourceMapJson.originalScopes || sourceMapJson.generatedRanges === undefined) {
-            throw new Error('Cant create SourceMapScopesInfo without encoded scopes');
+    addOriginalScopes(scopes) {
+        for (const scope of scopes) {
+            this.#originalScopes.push(scope);
         }
-        const scopeTrees = decodeOriginalScopes(sourceMapJson.originalScopes, sourceMapJson.names ?? []);
-        const originalScopes = scopeTrees.map(tree => tree.root);
-        const generatedRanges = decodeGeneratedRanges(sourceMapJson.generatedRanges, scopeTrees, sourceMapJson.names ?? []);
-        return new SourceMapScopesInfo(sourceMap, originalScopes, generatedRanges);
+    }
+    addGeneratedRanges(ranges) {
+        for (const range of ranges) {
+            this.#generatedRanges.push(range);
+        }
     }
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
@@ -109,6 +109,9 @@ export class SourceMapScopesInfo {
         // generated ranges with a non-empty binding list.
         function walkTree(nodes) {
             for (const node of nodes) {
+                if (!node) {
+                    continue;
+                }
                 if ('variables' in node && node.variables.length > 0) {
                     return true;
                 }
@@ -234,6 +237,10 @@ export class SourceMapScopesInfo {
      * to inner.
      */
     #findOriginalScopeChain({ sourceIndex, line, column }) {
+        const scope = this.#originalScopes[sourceIndex];
+        if (!scope) {
+            return [];
+        }
         const result = [];
         (function walkScopes(scopes) {
             for (const scope of scopes) {
@@ -243,7 +250,7 @@ export class SourceMapScopesInfo {
                 result.push(scope);
                 walkScopes(scope.children);
             }
-        })([this.#originalScopes[sourceIndex]]);
+        })([scope]);
         return result;
     }
 }

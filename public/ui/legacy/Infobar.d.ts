@@ -20,8 +20,8 @@ export declare class Infobar {
     private readonly closeButton;
     private closeCallback;
     private parentView?;
-    constructor(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<any>, isCloseable?: boolean, jslogContext?: string);
-    static create(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<any>, jslogContext?: string): Infobar | null;
+    constructor(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<boolean>, jslogContext?: string);
+    static create(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<boolean>, jslogContext?: string): Infobar | null;
     dispose(): void;
     setText(text: string): void;
     setCloseCallback(callback: (() => void) | null): void;

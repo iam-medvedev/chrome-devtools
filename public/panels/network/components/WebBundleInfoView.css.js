@@ -12,6 +12,10 @@ styles.replaceSync(
  */
 :host {
   --icon-padding: 4px;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .header {
@@ -23,6 +27,10 @@ styles.replaceSync(
 
 .icon {
   margin: 0 var(--icon-padding);
+}
+
+devtools-new-data-grid {
+  height: 100%;
 }
 
 /*# sourceURL=WebBundleInfoView.css */

@@ -287,7 +287,7 @@ describeWithEnvironment('ThreadAppender', function () {
             { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
             {
                 type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                startAtTime: Trace.Types.Timing.MicroSeconds(50_000),
+                startAtTime: Trace.Types.Timing.Micro(50_000),
             },
         ]);
     });

@@ -8,6 +8,6 @@ export type LCPDiscoveryInsightModel = InsightModel<{
     shouldPreloadImage?: boolean;
     /** The network request for the LCP image, if there was one. */
     lcpRequest?: Types.Events.SyntheticNetworkRequest;
-    earliestDiscoveryTimeTs?: Types.Timing.MicroSeconds;
+    earliestDiscoveryTimeTs?: Types.Timing.Micro;
 }>;
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): LCPDiscoveryInsightModel;

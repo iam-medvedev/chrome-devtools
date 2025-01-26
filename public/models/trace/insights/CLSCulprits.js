@@ -24,7 +24,6 @@ export function deps() {
  * Each failure reason is represented by a bit flag. The bit shift operator '<<' is used to define
  * which bit corresponds to each failure reason.
  * https://source.chromium.org/search?q=f:compositor_animations.h%20%22enum%20FailureReason%22
- * @type {{flag: number, failure: AnimationFailureReasons}[]}
  */
 const ACTIONABLE_FAILURE_REASONS = [
     {
@@ -104,7 +103,7 @@ const ACTIONABLE_FAILURE_REASONS = [
 ];
 // 500ms window.
 // Use this window to consider events and requests that may have caused a layout shift.
-const ROOT_CAUSE_WINDOW = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
+const ROOT_CAUSE_WINDOW = Helpers.Timing.secondsToMicro(Types.Timing.Seconds(0.5));
 /**
  * Returns if an event happens within the root cause window, before the target event.
  *          ROOT_CAUSE_WINDOW               v target event
@@ -238,7 +237,7 @@ function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePai
             // Look for the first dom event that occurs within the bounds of the iframe event.
             // This contains the frame id.
             const domEvent = domLoadingEvents.find(e => {
-                const maxIframe = Types.Timing.MicroSeconds(iframeEvent.ts + (iframeEvent.dur ?? 0));
+                const maxIframe = Types.Timing.Micro(iframeEvent.ts + (iframeEvent.dur ?? 0));
                 return e.ts >= iframeEvent.ts && e.ts <= maxIframe;
             });
             if (domEvent && domEvent.args.frame) {

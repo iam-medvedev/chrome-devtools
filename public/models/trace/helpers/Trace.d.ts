@@ -23,8 +23,8 @@ export declare function extractOriginFromTrace(firstNavigationURL: string): stri
 export type EventsInThread<T extends Types.Events.Event> = Map<Types.Events.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.Events.Event>(event: T, eventsInProcessThread: Map<Types.Events.ProcessID, EventsInThread<T>>): void;
 export interface TimeSpan {
-    ts: Types.Timing.MicroSeconds;
-    dur?: Types.Timing.MicroSeconds;
+    ts: Types.Timing.Micro;
+    dur?: Types.Timing.Micro;
 }
 export declare function eventTimeComparator(a: TimeSpan, b: TimeSpan): -1 | 0 | 1;
 /**
@@ -32,8 +32,8 @@ export declare function eventTimeComparator(a: TimeSpan, b: TimeSpan): -1 | 0 | 
  * the same start time, orders them by longest first.
  */
 export declare function sortTraceEventsInPlace(events: {
-    ts: Types.Timing.MicroSeconds;
-    dur?: Types.Timing.MicroSeconds;
+    ts: Types.Timing.Micro;
+    dur?: Types.Timing.Micro;
 }[]): void;
 /**
  * Returns an array of ordered events that results after merging the two
@@ -42,9 +42,9 @@ export declare function sortTraceEventsInPlace(events: {
 export declare function mergeEventsInOrder<T1 extends Types.Events.Event, T2 extends Types.Events.Event>(eventsArray1: readonly T1[], eventsArray2: readonly T2[]): (T1 | T2)[];
 export declare function getNavigationForTraceEvent(event: Types.Events.Event, eventFrameId: string, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Events.NavigationStart | null;
 export declare function extractId(event: Types.Events.PairableAsync | Types.Events.SyntheticEventPair<Types.Events.PairableAsync>): string | undefined;
-export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.MicroSeconds, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, {
+export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.Micro, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, {
     frame: Types.Events.TraceFrame;
-    window: Types.Timing.TraceWindowMicroSeconds;
+    window: Types.Timing.TraceWindowMicro;
 }[]>>): string | null;
 /**
  * @param node the node attached to the profile call. Here a node represents a function in the call tree.
@@ -56,7 +56,7 @@ export declare function activeURLForFrameAtTime(frameId: string, time: Types.Tim
  *
  * See `panels/timeline/docs/profile_calls.md` for more context on how these events are created.
  */
-export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, profileId: Types.Events.ProfileID, sampleIndex: number, ts: Types.Timing.MicroSeconds, pid: Types.Events.ProcessID, tid: Types.Events.ThreadID): Types.Events.SyntheticProfileCall;
+export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, profileId: Types.Events.ProfileID, sampleIndex: number, ts: Types.Timing.Micro, pid: Types.Events.ProcessID, tid: Types.Events.ThreadID): Types.Events.SyntheticProfileCall;
 /**
  * Matches beginning events with PairableAsyncEnd and PairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
  * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
@@ -98,16 +98,16 @@ export declare function getZeroIndexedStackTraceForEvent(event: Types.Events.Eve
 export declare function makeZeroBasedCallFrame(callFrame: Types.Events.CallFrame): Types.Events.CallFrame;
 export declare function frameIDForEvent(event: Types.Events.Event): string | null;
 export declare function isTopLevelEvent(event: Types.Events.Event): boolean;
-export declare function findUpdateLayoutTreeEvents(events: Types.Events.Event[], startTime: Types.Timing.MicroSeconds, endTime?: Types.Timing.MicroSeconds): Types.Events.UpdateLayoutTree[];
-export declare function findNextEventAfterTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.MicroSeconds): T | null;
-export declare function findPreviousEventBeforeTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.MicroSeconds): T | null;
+export declare function findUpdateLayoutTreeEvents(events: Types.Events.Event[], startTime: Types.Timing.Micro, endTime?: Types.Timing.Micro): Types.Events.UpdateLayoutTree[];
+export declare function findNextEventAfterTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.Micro): T | null;
+export declare function findPreviousEventBeforeTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.Micro): T | null;
 export interface ForEachEventConfig {
     onStartEvent: (event: Types.Events.Event) => void;
     onEndEvent: (event: Types.Events.Event) => void;
     onInstantEvent?: (event: Types.Events.Event) => void;
     eventFilter?: (event: Types.Events.Event) => boolean;
-    startTime?: Types.Timing.MicroSeconds;
-    endTime?: Types.Timing.MicroSeconds;
+    startTime?: Types.Timing.Micro;
+    endTime?: Types.Timing.Micro;
     ignoreAsyncEvents?: boolean;
 }
 /**
@@ -147,5 +147,5 @@ export declare function nodeIdForInvalidationEvent(event: Types.Events.Invalidat
  * This compares Types.Events.CallFrame with Protocol.Runtime.CallFrame and checks for equality.
  */
 export declare function isMatchingCallFrame(eventFrame: Types.Events.CallFrame, nodeFrame: Protocol.Runtime.CallFrame): boolean;
-export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.MicroSeconds): boolean;
+export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.Micro): boolean;
 export {};

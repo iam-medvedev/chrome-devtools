@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-import glassPaneStyles from './glassPane.css.legacy.js';
+import glassPaneStyles from './glassPane.css.js';
 import { deepElementFromEvent, measuredScrollbarWidth } from './UIUtils.js';
 import { Widget } from './Widget.js';
 export class GlassPane {
@@ -33,7 +33,7 @@ export class GlassPane {
         if (this.element.shadowRoot) {
             this.element.shadowRoot.appendChild(this.arrowElement);
         }
-        this.registerRequiredCSS(glassPaneStyles);
+        this.registerCSSFiles([glassPaneStyles]);
         this.setPointerEventsBehavior("PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */);
         this.onMouseDownBound = this.onMouseDown.bind(this);
         this.onClickOutsideCallback = null;
@@ -50,9 +50,6 @@ export class GlassPane {
     }
     isShowing() {
         return this.widgetInternal.isShowing();
-    }
-    registerRequiredCSS(cssFile) {
-        this.widgetInternal.registerRequiredCSS(cssFile);
     }
     registerCSSFiles(cssFiles) {
         this.widgetInternal.registerCSSFiles(cssFiles);

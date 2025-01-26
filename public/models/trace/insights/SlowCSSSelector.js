@@ -80,7 +80,7 @@ export function generateInsight(parsedTrace, context) {
     return finalize({
         // TODO: should we identify UpdateLayout events as linked to this insight?
         relatedEvents: [],
-        totalElapsedMs: Types.Timing.MilliSeconds(totalElapsedUs / 1000.0),
+        totalElapsedMs: Types.Timing.Milli(totalElapsedUs / 1000.0),
         totalMatchAttempts,
         totalMatchCount,
         topElapsedMs: sortByElapsedMs.slice(0, 3),

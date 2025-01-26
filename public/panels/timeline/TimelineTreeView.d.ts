@@ -24,8 +24,8 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     private lastHoveredProfileNode;
     private textFilterInternal;
     private taskFilter;
-    protected startTime: Trace.Types.Timing.MilliSeconds;
-    protected endTime: Trace.Types.Timing.MilliSeconds;
+    protected startTime: Trace.Types.Timing.Milli;
+    protected endTime: Trace.Types.Timing.Milli;
     splitWidget: UI.SplitWidget.SplitWidget;
     detailsView: UI.Widget.Widget;
     private searchableView;
@@ -38,6 +38,11 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     private regexButton;
     private matchWholeWord;
     eventToTreeNode: WeakMap<Trace.Types.Events.Event, Trace.Extras.TraceTree.Node>;
+    /**
+     * Determines if the first child in the data grid will be selected
+     * by default when refreshTree() gets called.
+     */
+    protected autoSelectFirstChildOnRefresh: boolean;
     constructor();
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
     setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null, entityMappings?: Utils.EntityMapper.EntityMapper | null): void;
@@ -46,7 +51,7 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     init(): void;
     lastSelectedNode(): Trace.Extras.TraceTree.Node | null | undefined;
     updateContents(selection: TimelineSelection): void;
-    setRange(startTime: Trace.Types.Timing.MilliSeconds, endTime: Trace.Types.Timing.MilliSeconds): void;
+    setRange(startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): void;
     highlightEventInTree(event: Trace.Types.Events.Event | null): void;
     filters(): Trace.Extras.TraceFilter.TraceFilter[];
     filtersWithoutTextFilter(): Trace.Extras.TraceFilter.TraceFilter[];
@@ -81,14 +86,17 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
 export declare namespace TimelineTreeView {
     const enum Events {
         TREE_ROW_HOVERED = "TreeRowHovered",
-        THIRD_PARTY_ROW_HOVERED = "ThirdPartyRowHovered"
+        THIRD_PARTY_ROW_HOVERED = "ThirdPartyRowHovered",
+        BOTTOM_UP_BUTTON_CLICKED = "BottomUpButtonClicked"
     }
     interface EventTypes {
         [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
         [Events.THIRD_PARTY_ROW_HOVERED]: Trace.Types.Events.Event[] | null;
+        [Events.BOTTOM_UP_BUTTON_CLICKED]: Trace.Extras.TraceTree.Node | null;
     }
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
+    #private;
     protected populated: boolean;
     profileNode: Trace.Extras.TraceTree.Node;
     protected treeView: TimelineTreeView;
@@ -100,6 +108,7 @@ export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGrid
     createCell(columnId: string): HTMLElement;
     private createNameCell;
     private createValueCell;
+    private generateBottomUpButton;
 }
 export declare class TreeGridNode extends GridNode {
     constructor(profileNode: Trace.Extras.TraceTree.Node, grandTotalTime: number, maxSelfTime: number, maxTotalTime: number, treeView: TimelineTreeView);
@@ -110,7 +119,7 @@ export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     private readonly stackView;
     private executionContextNamesByOrigin;
     constructor();
-    setGroupBySettingForTests(groupBy: AggregatedTimelineTreeView.GroupBy): void;
+    setGroupBySetting(groupBy: AggregatedTimelineTreeView.GroupBy): void;
     updateContents(selection: TimelineSelection): void;
     private updateExtensionResolver;
     private beautifyDomainName;

@@ -14,5 +14,6 @@ export declare class ResourceSourceFrame extends SourceFrameImpl {
 export declare class SearchableContainer extends UI.Widget.VBox {
     private readonly sourceFrame;
     constructor(resource: TextUtils.ContentProvider.ContentProvider, contentType: string);
+    wasShown(): void;
     revealPosition(position: RevealPosition): Promise<void>;
 }

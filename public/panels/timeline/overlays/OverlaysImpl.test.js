@@ -84,8 +84,8 @@ describeWithEnvironment('Overlays', () => {
             scrollOffsetPixels: 0,
             allGroupsCollapsed: false,
         });
-        const windowMin = Trace.Types.Timing.MicroSeconds(0);
-        const windowMax = Trace.Types.Timing.MicroSeconds(100);
+        const windowMin = Trace.Types.Timing.Micro(0);
+        const windowMax = Trace.Types.Timing.Micro(100);
         // Set the visible window to be 0-100 microseconds
         overlays.updateVisibleWindow(Trace.Helpers.Timing.traceWindowFromMicroSeconds(windowMin, windowMax));
         // Now set an event to be at 50 microseconds.
@@ -620,7 +620,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(overlayDOM);
             const firstWidth = window.parseInt(overlayDOM.style.width);
             // change the bounds so the new min is +1second of time.
-            const newBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.MicroSeconds(rangeOverlay.bounds.min + (1_000 * 1_000)), rangeOverlay.bounds.max);
+            const newBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.Micro(rangeOverlay.bounds.min + (1_000 * 1_000)), rangeOverlay.bounds.max);
             overlays.updateExisting(rangeOverlay, { bounds: newBounds });
             await overlays.update();
             const secondWidth = window.parseInt(overlayDOM.style.width);
@@ -638,8 +638,8 @@ describeWithEnvironment('Overlays', () => {
                 type: 'ENTRY_SELECTED',
                 entry: layoutShiftEvent,
             });
-            const boundsRange = Trace.Types.Timing.MicroSeconds(20_000);
-            const boundsMax = Trace.Types.Timing.MicroSeconds(layoutShiftEvent.ts + boundsRange);
+            const boundsRange = Trace.Types.Timing.Micro(20_000);
+            const boundsMax = Trace.Types.Timing.Micro(layoutShiftEvent.ts + boundsRange);
             overlays.updateVisibleWindow({ min: layoutShiftEvent.ts, max: boundsMax, range: boundsRange });
             await overlays.update();
             const overlayDOM = container.querySelector('.overlay-type-ENTRY_SELECTED');

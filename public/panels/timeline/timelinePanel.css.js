@@ -36,6 +36,7 @@ styles.replaceSync(
 
 .timeline-toolbar-container {
   display: flex;
+  align-items: flex-start;
   flex: none;
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);
@@ -600,11 +601,6 @@ styles.replaceSync(
 
 .timeline-tree-view .data-grid .name-container div {
   flex: none;
-}
-
-.status-pane-container > .small-dialog {
-  width: 100%;
-  height: 100%;
 }
 
 devtools-feedback-button {

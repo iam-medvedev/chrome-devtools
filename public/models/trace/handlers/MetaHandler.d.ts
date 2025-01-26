@@ -4,7 +4,7 @@ export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export interface MetaHandlerData {
     traceIsGeneric: boolean;
-    traceBounds: Types.Timing.TraceWindowMicroSeconds;
+    traceBounds: Types.Timing.TraceWindowMicro;
     browserProcessId: Types.Events.ProcessID;
     processNames: Map<Types.Events.ProcessID, Types.Events.ProcessName>;
     browserThreadId: Types.Events.ThreadID;
@@ -32,6 +32,6 @@ export interface MetaHandlerData {
 }
 export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, {
     frame: Types.Events.TraceFrame;
-    window: Types.Timing.TraceWindowMicroSeconds;
+    window: Types.Timing.TraceWindowMicro;
 }[]>>;
 export declare function data(): MetaHandlerData;

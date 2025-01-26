@@ -176,6 +176,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private totalTime?;
     private lastPopoverState;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
+    wasShown(): void;
     willHide(): void;
     canvasBoundingClientRect(): DOMRect | null;
     /**
@@ -194,13 +195,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     enableRuler(enable: boolean): void;
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
-    enableDimming(entryIndices: number[], shouldAddOutlines: boolean): void;
-    enableDimmingForUnrelatedEntries(entryIndicesToNotDim: number[], shouldAddOutlines?: boolean): void;
+    enableDimming(entryIndices: number[], inclusive: boolean, shouldAddOutlines: boolean): void;
     disableDimming(): void;
     getColorForEntry(entryIndex: number): string;
     highlightEntry(entryIndex: number): void;
-    highlightAllEntries(entries: number[]): void;
-    removeSearchResultHighlights(): void;
     hideHighlight(): void;
     private createCandyStripePattern;
     private resetCanvas;
@@ -446,7 +444,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private entryHasDecoration;
     getCustomDrawnPositionForEntryIndex(entryIndex: number): PositionOverride | null;
     /**
-     * Update position of an Element. By default, the element is treated as a full entry and it's dimentions are set to the full entry width/length/height.
+     * Update position of an Element. By default, the element is treated as a full entry and it's dimensions are set to the full entry width/length/height.
      * If isDecoration parameter is set to true, the element will be positioned on the right side of the entry and have a square shape where width == height of the entry.
      */
     private updateElementPosition;
@@ -482,10 +480,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private enabled;
     computePosition(time: number): number;
     formatValue(value: number, precision?: number): string;
-    maximumBoundary(): Trace.Types.Timing.MilliSeconds;
-    minimumBoundary(): Trace.Types.Timing.MilliSeconds;
-    zeroTime(): Trace.Types.Timing.MilliSeconds;
-    boundarySpan(): Trace.Types.Timing.MilliSeconds;
+    maximumBoundary(): Trace.Types.Timing.Milli;
+    minimumBoundary(): Trace.Types.Timing.Milli;
+    zeroTime(): Trace.Types.Timing.Milli;
+    boundarySpan(): Trace.Types.Timing.Milli;
 }
 export declare const RulerHeight = 15;
 export declare const MinimalTimeWindowMs = 0.5;
@@ -520,12 +518,12 @@ export declare const enum FlameChartDecorationType {
  **/
 export type FlameChartDecoration = {
     type: FlameChartDecorationType.CANDY;
-    startAtTime: Trace.Types.Timing.MicroSeconds;
-    endAtTime?: Trace.Types.Timing.MicroSeconds;
+    startAtTime: Trace.Types.Timing.Micro;
+    endAtTime?: Trace.Types.Timing.Micro;
 } | {
     type: FlameChartDecorationType.WARNING_TRIANGLE;
-    customStartTime?: Trace.Types.Timing.MicroSeconds;
-    customEndTime?: Trace.Types.Timing.MicroSeconds;
+    customStartTime?: Trace.Types.Timing.Micro;
+    customEndTime?: Trace.Types.Timing.Micro;
 } | {
     type: FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW;
 };
@@ -557,12 +555,12 @@ export declare class FlameChartTimelineData {
 }
 export interface DataProviderSearchResult {
     index: number;
-    startTimeMilli: Trace.Types.Timing.MilliSeconds;
+    startTimeMilli: Trace.Types.Timing.Milli;
     provider: 'main' | 'network' | 'other';
 }
 export interface DataProviderSearchResult {
     index: number;
-    startTimeMilli: Trace.Types.Timing.MilliSeconds;
+    startTimeMilli: Trace.Types.Timing.Milli;
     provider: 'main' | 'network' | 'other';
 }
 export interface FlameChartDataProvider {
@@ -587,7 +585,7 @@ export interface FlameChartDataProvider {
     indexForEvent?(event: Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame): number | null;
     buildFlowForInitiator?(index: number): unknown;
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicroSeconds, filter?: Trace.Extras.TraceFilter.TraceFilter): DataProviderSearchResult[];
+    search?(visibleWindow: Trace.Types.Timing.TraceWindowMicro, filter?: Trace.Extras.TraceFilter.TraceFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
     entryHasAnnotations?(entryIndex: number): boolean;
     deleteAnnotationsForEntry?(entryIndex: number): void;
@@ -666,11 +664,11 @@ export interface EventTypes {
             scrollOffsetPixels: number;
             allGroupsCollapsed: boolean;
         };
-        traceWindow: Trace.Types.Timing.TraceWindowMicroSeconds;
+        traceWindow: Trace.Types.Timing.TraceWindowMicro;
     };
     [Events.MOUSE_MOVE]: {
         mouseEvent: MouseEvent;
-        timeInMicroSeconds: Trace.Types.Timing.MicroSeconds;
+        timeInMicroSeconds: Trace.Types.Timing.Micro;
     };
 }
 export interface Group {

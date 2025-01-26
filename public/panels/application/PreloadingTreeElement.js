@@ -66,7 +66,7 @@ export class PreloadingSummaryTreeElement extends ExpandableApplicationPanelTree
     #ruleSet = null;
     #attempt = null;
     constructor(panel) {
-        super(panel, i18nString(UIStrings.speculativeLoads), 'preloading');
+        super(panel, i18nString(UIStrings.speculativeLoads), '', '', 'preloading');
         const icon = IconButton.Icon.create('arrow-up-down');
         this.setLeadingIcons([icon]);
         this.#selectedInternal = false;
@@ -74,7 +74,7 @@ export class PreloadingSummaryTreeElement extends ExpandableApplicationPanelTree
     }
     // Note that
     //
-    // - TreeElement.ensureSelection assumes TreeElement.treeOutline initalized.
+    // - TreeElement.ensureSelection assumes TreeElement.treeOutline initialized.
     // - TreeElement.treeOutline is propagated in TreeElement.appendChild.
     //
     // So, `this.constructChildren` should be called just after `parent.appendChild(this)`

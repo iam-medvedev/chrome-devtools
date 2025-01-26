@@ -6,4 +6,5 @@ export declare class EmptyWidget extends VBox {
     appendLink(link: Platform.DevToolsPath.UrlString): HTMLElement;
     set text(text: string);
     set header(header: string);
+    wasShown(): void;
 }

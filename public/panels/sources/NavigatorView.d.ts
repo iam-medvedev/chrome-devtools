@@ -151,10 +151,10 @@ export interface NavigatorRecursiveTreeNodeProperties {
     exclusivelyContentScripts: boolean | null;
 }
 export declare class NavigatorTreeNode {
+    #private;
     id: string;
     protected navigatorView: NavigatorView;
     type: string;
-    childrenInternal: Map<string, NavigatorTreeNode>;
     private populated;
     isMerged: boolean;
     parent: NavigatorTreeNode | null;
@@ -177,11 +177,12 @@ export declare class NavigatorTreeNode {
     willRemoveChild(node: NavigatorTreeNode): void;
     isPopulated(): boolean;
     isEmpty(): boolean;
-    children(): NavigatorTreeNode[];
+    children(): readonly NavigatorTreeNode[];
     child(id: string): NavigatorTreeNode | null;
     appendChild(node: NavigatorTreeNode): void;
     removeChild(node: NavigatorTreeNode): void;
     reset(): void;
+    updateId(newId: string): void;
 }
 export declare class NavigatorRootTreeNode extends NavigatorTreeNode {
     constructor(navigatorView: NavigatorView);

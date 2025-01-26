@@ -6,5 +6,6 @@ export declare class ThrottledWidget extends VBox {
     constructor(useShadowDom?: boolean, timeout?: number);
     protected doUpdate(): Promise<void>;
     update(): void;
+    get updateComplete(): Promise<boolean>;
     wasShown(): void;
 }

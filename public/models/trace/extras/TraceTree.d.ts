@@ -40,15 +40,15 @@ export declare class TopDownNode extends Node {
 }
 export declare class TopDownRootNode extends TopDownNode {
     readonly filter: (e: Types.Events.Event) => boolean;
-    readonly startTime: Types.Timing.MilliSeconds;
-    readonly endTime: Types.Timing.MilliSeconds;
+    readonly startTime: Types.Timing.Milli;
+    readonly endTime: Types.Timing.Milli;
     eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null | undefined;
     /** Default behavior is to aggregate similar trace events into one Node based on generateEventID(), eventGroupIdCallback(), etc. Set true to keep nodes 1:1 with events. */
     readonly doNotAggregate: boolean | undefined;
     readonly includeInstantEvents?: boolean;
     totalTime: number;
     selfTime: number;
-    constructor(events: Types.Events.Event[], filters: TraceFilter[], startTime: Types.Timing.MilliSeconds, endTime: Types.Timing.MilliSeconds, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null, includeInstantEvents?: boolean);
+    constructor(events: Types.Events.Event[], filters: TraceFilter[], startTime: Types.Timing.Milli, endTime: Types.Timing.Milli, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null, includeInstantEvents?: boolean);
     children(): ChildrenCache;
     private grouppedTopNodes;
     getEventGroupIdCallback(): ((arg0: Types.Events.Event) => string) | null | undefined;
@@ -57,11 +57,11 @@ export declare class BottomUpRootNode extends Node {
     private childrenInternal;
     private textFilter;
     readonly filter: (e: Types.Events.Event) => boolean;
-    readonly startTime: Types.Timing.MilliSeconds;
-    readonly endTime: Types.Timing.MilliSeconds;
+    readonly startTime: Types.Timing.Milli;
+    readonly endTime: Types.Timing.Milli;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: Types.Events.Event[], textFilter: TraceFilter, filters: TraceFilter[], startTime: Types.Timing.MilliSeconds, endTime: Types.Timing.MilliSeconds, eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null);
+    constructor(events: Types.Events.Event[], textFilter: TraceFilter, filters: TraceFilter[], startTime: Types.Timing.Milli, endTime: Types.Timing.Milli, eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null);
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;

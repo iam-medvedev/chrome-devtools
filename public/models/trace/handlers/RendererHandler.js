@@ -332,7 +332,7 @@ export function makeCompleteEvent(event) {
         }
         // Update the begin event's duration using the timestamp of the end
         // event.
-        beginEvent.dur = Types.Timing.MicroSeconds(event.ts - beginEvent.ts);
+        beginEvent.dur = Types.Timing.Micro(event.ts - beginEvent.ts);
         return null;
     }
     // Create a synthetic event using the begin event, when we find the
@@ -340,7 +340,7 @@ export function makeCompleteEvent(event) {
     const syntheticComplete = {
         ...event,
         ph: "X" /* Types.Events.Phase.COMPLETE */,
-        dur: Types.Timing.MicroSeconds(0),
+        dur: Types.Timing.Micro(0),
     };
     completeEventStack.push(syntheticComplete);
     return syntheticComplete;

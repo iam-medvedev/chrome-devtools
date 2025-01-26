@@ -49,33 +49,33 @@ describeWithEnvironment('AppenderUtils', () => {
     describe('getFormattedTime', () => {
         // Helper method. Treat input as milliseconds
         const getFormattedTime = (tot, self) => {
-            const totalTime = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(tot));
-            const selfTime = Trace.Helpers.Timing.millisecondsToMicroseconds(Trace.Types.Timing.MilliSeconds(self));
+            const totalTime = Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(tot));
+            const selfTime = Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(self));
             return Timeline.AppenderUtils.getFormattedTime(totalTime, selfTime);
         };
         it('returns the time info for a entry with no duration correctly', async () => {
-            const totalTime = Trace.Types.Timing.MicroSeconds(0);
+            const totalTime = Trace.Types.Timing.Micro(0);
             const formattedTime = Timeline.AppenderUtils.getFormattedTime(totalTime);
             assert.strictEqual(formattedTime, '');
             const formattedTime2 = Timeline.AppenderUtils.getFormattedTime(undefined);
             assert.strictEqual(formattedTime2, '');
         });
         it('returns the time info for given total time correctly', async () => {
-            const totalTime = Trace.Types.Timing.MicroSeconds(10000);
+            const totalTime = Trace.Types.Timing.Micro(10000);
             const formattedTime = Timeline.AppenderUtils.getFormattedTime(totalTime);
             // The i18n encodes spaces using the u00A0 unicode character.
             assert.strictEqual(formattedTime, '10.00\u00A0ms');
         });
         it('returns the time info for given total time and self time correctly', async () => {
-            const totalTime = Trace.Types.Timing.MicroSeconds(10000);
-            const selfTime = Trace.Types.Timing.MicroSeconds(1000);
+            const totalTime = Trace.Types.Timing.Micro(10000);
+            const selfTime = Trace.Types.Timing.Micro(1000);
             const formattedTime = Timeline.AppenderUtils.getFormattedTime(totalTime, selfTime);
             // The i18n encodes spaces using the u00A0 unicode character.
             assert.strictEqual(formattedTime, '10.00\u00A0ms (self 1.00\u00A0ms)');
         });
         it('returns the time info for same total time and self time correctly', async () => {
-            const totalTime = Trace.Types.Timing.MicroSeconds(10000);
-            const selfTime = Trace.Types.Timing.MicroSeconds(10000);
+            const totalTime = Trace.Types.Timing.Micro(10000);
+            const selfTime = Trace.Types.Timing.Micro(10000);
             const formattedTime = Timeline.AppenderUtils.getFormattedTime(totalTime, selfTime);
             // The i18n encodes spaces using the u00A0 unicode character.
             assert.strictEqual(formattedTime, '10.00\u00A0ms');
@@ -108,18 +108,18 @@ describeWithEnvironment('AppenderUtils', () => {
             const lastTimestampByLevel = [];
             const eventOne = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(0),
-                dur: Trace.Types.Timing.MicroSeconds(10),
+                ts: Trace.Types.Timing.Micro(0),
+                dur: Trace.Types.Timing.Micro(10),
             };
             const eventTwo = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(5),
-                dur: Trace.Types.Timing.MicroSeconds(10),
+                ts: Trace.Types.Timing.Micro(5),
+                dur: Trace.Types.Timing.Micro(10),
             };
             const eventThree = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(20),
-                dur: Trace.Types.Timing.MicroSeconds(10),
+                ts: Trace.Types.Timing.Micro(20),
+                dur: Trace.Types.Timing.Micro(10),
             };
             let level = Timeline.AppenderUtils.getEventLevel(eventOne, lastTimestampByLevel);
             // For first event, the track is empty, so it always returns 0.
@@ -135,23 +135,23 @@ describeWithEnvironment('AppenderUtils', () => {
             const lastTimestampByLevel = [];
             const eventOne = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(0),
-                dur: Trace.Types.Timing.MicroSeconds(30),
+                ts: Trace.Types.Timing.Micro(0),
+                dur: Trace.Types.Timing.Micro(30),
             };
             const eventTwo = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(5),
-                dur: Trace.Types.Timing.MicroSeconds(10),
+                ts: Trace.Types.Timing.Micro(5),
+                dur: Trace.Types.Timing.Micro(10),
             };
             const eventThree = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(10),
-                dur: Trace.Types.Timing.MicroSeconds(2),
+                ts: Trace.Types.Timing.Micro(10),
+                dur: Trace.Types.Timing.Micro(2),
             };
             const eventFour = {
                 ...defaultTraceEvent,
-                ts: Trace.Types.Timing.MicroSeconds(20),
-                dur: Trace.Types.Timing.MicroSeconds(10),
+                ts: Trace.Types.Timing.Micro(20),
+                dur: Trace.Types.Timing.Micro(10),
             };
             let level = Timeline.AppenderUtils.getEventLevel(eventOne, lastTimestampByLevel);
             // For first event, the track is empty, so it always returns 0.

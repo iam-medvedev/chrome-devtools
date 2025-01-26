@@ -5,7 +5,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as RenderCoordinator from '../../../components/render_coordinator/render_coordinator.js';
 import * as UI from '../../legacy.js';
-import chartViewPortStyles from './chartViewport.css.legacy.js';
+import chartViewPortStyles from './chartViewport.css.js';
 import { MinimalTimeWindowMs } from './FlameChart.js';
 export class ChartViewport extends UI.Widget.VBox {
     delegate;
@@ -41,7 +41,6 @@ export class ChartViewport extends UI.Widget.VBox {
     constructor(delegate, config) {
         super();
         this.#config = config;
-        this.registerRequiredCSS(chartViewPortStyles);
         this.delegate = delegate;
         this.viewportElement = this.contentElement.createChild('div', 'fill');
         this.viewportElement.addEventListener('mousemove', this.updateCursorPosition.bind(this), false);
@@ -73,6 +72,10 @@ export class ChartViewport extends UI.Widget.VBox {
     }
     isDragging() {
         return this.isDraggingInternal;
+    }
+    wasShown() {
+        super.wasShown();
+        this.registerCSSFiles([chartViewPortStyles]);
     }
     elementsToRestoreScrollPositionsFor() {
         return [this.vScrollElement];

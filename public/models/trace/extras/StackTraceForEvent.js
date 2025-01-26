@@ -106,7 +106,11 @@ function getForExtensionEntry(event, parsedTrace) {
     }
     const eventCallTime = Types.Events.isPerformanceMeasureBegin(event.rawSourceEvent) ?
         event.rawSourceEvent.args.callTime :
-        event.rawSourceEvent.args.data?.callTime;
+        Types.Events.isPerformanceMark(event.rawSourceEvent) ?
+            event.rawSourceEvent.args.data?.callTime :
+            // event added with console.timeStamp: take the original event's
+            // ts.
+            event.rawSourceEvent.ts;
     if (eventCallTime === undefined) {
         return null;
     }

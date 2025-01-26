@@ -67,11 +67,11 @@ export function buildTrackHeader(jslogContext, startLevel, name, style, selectab
  * @returns the formatted time string for popoverInfo
  */
 export function getFormattedTime(totalTime, selfTime) {
-    const formattedTotalTime = Trace.Helpers.Timing.microSecondsToMilliseconds((totalTime || 0));
-    if (formattedTotalTime === Trace.Types.Timing.MilliSeconds(0)) {
+    const formattedTotalTime = Trace.Helpers.Timing.microToMilli((totalTime || 0));
+    if (formattedTotalTime === Trace.Types.Timing.Milli(0)) {
         return '';
     }
-    const formattedSelfTime = Trace.Helpers.Timing.microSecondsToMilliseconds((selfTime || 0));
+    const formattedSelfTime = Trace.Helpers.Timing.microToMilli((selfTime || 0));
     const minSelfTimeSignificance = 1e-6;
     const formattedTime = Math.abs(formattedTotalTime - formattedSelfTime) > minSelfTimeSignificance &&
         formattedSelfTime > minSelfTimeSignificance ?

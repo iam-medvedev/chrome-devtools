@@ -39,7 +39,6 @@ export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetM
     update(): void;
     private updateVisibleSecurityState;
     private onVisibleSecurityStateChanged;
-    selectAndSwitchToMainView(): void;
     showOrigin(origin: Platform.DevToolsPath.UrlString): void;
     wasShown(): void;
     focus(): void;
@@ -62,7 +61,7 @@ export declare enum OriginGroup {
     Unknown = "Unknown"
 }
 export declare class SecurityMainView extends UI.Widget.VBox {
-    private readonly panel;
+    panel: SecurityPanel;
     private readonly summarySection;
     private readonly securityExplanationsMain;
     private readonly securityExplanationsExtra;
@@ -70,7 +69,7 @@ export declare class SecurityMainView extends UI.Widget.VBox {
     private summaryText;
     private explanations;
     private securityState;
-    constructor(panel: SecurityPanel, element?: HTMLElement);
+    constructor(element?: HTMLElement);
     getLockSpectrumDiv(securityState: Protocol.Security.SecurityState): HTMLElement;
     private addExplanation;
     updateVisibleSecurityState(visibleSecurityState: PageVisibleSecurityState): void;

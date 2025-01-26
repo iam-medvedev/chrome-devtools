@@ -16,9 +16,29 @@ styles.replaceSync(
   padding: 5px 10px;
 }
 
+.metrics {
+  display: grid;
+  align-items: end;
+  grid-template-columns: repeat(3, 1fr) 0.5fr;
+  grid-row-gap: 5px;
+}
+
+.row-border {
+  grid-column: 1/5;
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
+}
+
+.row-label {
+  visibility: hidden;
+  font-size: var(--sys-size-7);
+}
+
+.metrics--field .row-label {
+  visibility: visible;
+}
+
 .metrics-row {
-  display: flex;
-  flex-direction: row;
+  display: contents;
 }
 
 .metric {
@@ -35,7 +55,7 @@ styles.replaceSync(
 }
 
 .metric-value {
-  font-size: var(--sys-size-11);
+  font-size: var(--sys-size-10);
 }
 
 .metric-value-bad {

@@ -25,7 +25,6 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     domStorageView;
     extensionStorageView;
     cookieView;
-    emptyWidget;
     sidebar;
     constructor() {
         super('resources');
@@ -42,7 +41,6 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
         this.domStorageView = null;
         this.extensionStorageView = null;
         this.cookieView = null;
-        this.emptyWidget = null;
         this.sidebar = new ApplicationPanelSidebar(this);
         this.sidebar.show(this.panelSidebarElement());
     }
@@ -110,12 +108,13 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
         this.showView(view);
         return view;
     }
-    showCategoryView(categoryName, categoryLink) {
+    showCategoryView(categoryName, categoryHeadline, categoryDescription, categoryLink) {
         if (!this.categoryView) {
             this.categoryView = new StorageCategoryView();
         }
         this.categoryView.element.setAttribute('jslog', `${VisualLogging.pane().context(Platform.StringUtilities.toKebabCase(categoryName))}`);
-        this.categoryView.setHeader(categoryName);
+        this.categoryView.setHeadline(categoryHeadline);
+        this.categoryView.setText(categoryDescription);
         this.categoryView.setLink(categoryLink);
         this.showView(this.categoryView);
     }

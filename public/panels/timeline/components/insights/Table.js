@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
+import * as UI from '../../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import { EventReferenceClick } from './EventRef.js';
 import tableStyles from './table.css.js';
@@ -26,6 +27,7 @@ export class Table extends HTMLElement {
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets.push(tableStyles);
+        UI.UIUtils.injectCoreStyles(this.#shadow);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     #onHoverRow(e) {

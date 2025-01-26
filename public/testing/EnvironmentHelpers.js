@@ -94,7 +94,6 @@ const REGISTERED_EXPERIMENTS = [
     'timeline-v8-runtime-call-stats',
     'timeline-invalidation-tracking',
     "instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */,
-    'css-type-component-length-deprecate',
     "styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */,
     "header-overrides" /* Root.Runtime.ExperimentName.HEADER_OVERRIDES */,
     "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,

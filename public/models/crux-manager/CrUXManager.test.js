@@ -136,6 +136,7 @@ describeWithMockConnection('CrUXManager', () => {
                 {
                     formFactor: 'DESKTOP',
                     metrics: [
+                        'first_contentful_paint',
                         'largest_contentful_paint',
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
@@ -147,6 +148,7 @@ describeWithMockConnection('CrUXManager', () => {
                 {
                     formFactor: 'PHONE',
                     metrics: [
+                        'first_contentful_paint',
                         'largest_contentful_paint',
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
@@ -157,6 +159,7 @@ describeWithMockConnection('CrUXManager', () => {
                 },
                 {
                     metrics: [
+                        'first_contentful_paint',
                         'largest_contentful_paint',
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
@@ -168,6 +171,7 @@ describeWithMockConnection('CrUXManager', () => {
                 {
                     formFactor: 'DESKTOP',
                     metrics: [
+                        'first_contentful_paint',
                         'largest_contentful_paint',
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
@@ -179,6 +183,7 @@ describeWithMockConnection('CrUXManager', () => {
                 {
                     formFactor: 'PHONE',
                     metrics: [
+                        'first_contentful_paint',
                         'largest_contentful_paint',
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
@@ -189,6 +194,7 @@ describeWithMockConnection('CrUXManager', () => {
                 },
                 {
                     metrics: [
+                        'first_contentful_paint',
                         'largest_contentful_paint',
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
