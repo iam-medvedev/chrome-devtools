@@ -137,12 +137,14 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
     hasDOMAccessValue;
     constructor(targetInfo, isWindowClosed) {
         super();
+        this.registerRequiredCSS(openedWindowDetailsViewStyles);
         this.targetInfo = targetInfo;
         this.isWindowClosed = isWindowClosed;
         this.contentElement.classList.add('frame-details-container');
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         this.reportView = new UI.ReportView.ReportView(this.buildTitle());
         this.reportView.show(this.contentElement);
+        this.reportView.registerRequiredCSS(openedWindowDetailsViewStyles);
         this.reportView.element.classList.add('frame-details-report-container');
         this.documentSection = this.reportView.appendSection(i18nString(UIStrings.document));
         this.#urlFieldValue =
@@ -184,11 +186,6 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
     setTargetInfo(targetInfo) {
         this.targetInfo = targetInfo;
     }
-    wasShown() {
-        super.wasShown();
-        this.reportView.registerCSSFiles([openedWindowDetailsViewStyles]);
-        this.registerCSSFiles([openedWindowDetailsViewStyles]);
-    }
 }
 export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     targetInfo;
@@ -198,12 +195,14 @@ export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     coepPolicy;
     constructor(targetInfo) {
         super();
+        this.registerRequiredCSS(openedWindowDetailsViewStyles);
         this.targetInfo = targetInfo;
         this.contentElement.classList.add('frame-details-container');
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         this.reportView =
             new UI.ReportView.ReportView(this.targetInfo.title || this.targetInfo.url || i18nString(UIStrings.worker));
         this.reportView.show(this.contentElement);
+        this.reportView.registerRequiredCSS(openedWindowDetailsViewStyles);
         this.reportView.element.classList.add('frame-details-report-container');
         this.documentSection = this.reportView.appendSection(i18nString(UIStrings.document));
         const URLFieldValue = this.documentSection.appendField(i18nString(UIStrings.url)).createChild('div', 'text-ellipsis');
@@ -260,11 +259,6 @@ export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     }
     async doUpdate() {
         await this.updateCoopCoepStatus();
-    }
-    wasShown() {
-        super.wasShown();
-        this.reportView.registerCSSFiles([openedWindowDetailsViewStyles]);
-        this.registerCSSFiles([openedWindowDetailsViewStyles]);
     }
 }
 //# sourceMappingURL=OpenedWindowDetailsView.js.map

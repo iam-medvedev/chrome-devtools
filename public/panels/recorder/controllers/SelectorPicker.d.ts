@@ -1,5 +1,5 @@
 import * as SDK from '../../../core/sdk/sdk.js';
-import type * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import type * as Lit from '../../../ui/lit/lit.js';
 import * as Models from '../models/models.js';
 export declare class SelectorPickedEvent extends Event {
     static readonly eventName = "selectorpicked";
@@ -14,7 +14,7 @@ export declare class RequestSelectorAttributeEvent extends Event {
 export declare class SelectorPicker implements SDK.TargetManager.Observer {
     #private;
     active: boolean;
-    constructor(element: LitHtml.LitElement);
+    constructor(element: Lit.LitElement);
     start: () => Promise<void>;
     stop: () => Promise<void>;
     toggle: () => Promise<void>;

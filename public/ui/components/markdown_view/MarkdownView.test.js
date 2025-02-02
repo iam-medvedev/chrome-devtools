@@ -4,15 +4,15 @@
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Marked from '../../../third_party/marked/marked.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as MarkdownView from './markdown_view.js';
-const { html } = LitHtml;
+const { html } = Lit;
 function getFakeToken(token) {
     return token;
 }
 function renderTemplateResult(templateResult) {
     const container = document.createElement('container');
-    LitHtml.render(templateResult, container); // eslint-disable-line rulesdir/lit-html-host-this
+    Lit.render(templateResult, container); // eslint-disable-line rulesdir/lit-host-this
     return container;
 }
 describeWithEnvironment('MarkdownView', () => {

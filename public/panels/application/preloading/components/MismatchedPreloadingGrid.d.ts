@@ -1,4 +1,4 @@
-import '../../../../ui/components/data_grid/data_grid.js';
+import '../../../../ui/legacy/components/data_grid/data_grid.js';
 import type * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../../generated/protocol.js';

@@ -47,7 +47,6 @@ export type FontInfo = Map<string, Map<string, Map<string, number[]>>>;
 export declare class CSSOverviewCompletedView extends UI.Widget.VBox {
     #private;
     constructor(controller: OverviewController);
-    wasShown(): void;
     initializeModels(target: SDK.Target.Target): void;
     setOverviewData(data: OverviewData): void;
     static readonly pushedNodes: Set<Protocol.DOM.BackendNodeId>;

@@ -118,7 +118,7 @@ export class TraceProcessor extends EventTarget {
         }
         try {
             this.#status = "PARSING" /* Status.PARSING */;
-            await this.#computeParsedTrace(traceEvents);
+            await this.#computeParsedTrace(traceEvents, options);
             if (this.#data && !options.isCPUProfile) { // We do not calculate insights for CPU Profiles.
                 this.#computeInsights(this.#data, traceEvents, options);
             }
@@ -132,7 +132,7 @@ export class TraceProcessor extends EventTarget {
     /**
      * Run all the handlers and set the result to `#data`.
      */
-    async #computeParsedTrace(traceEvents) {
+    async #computeParsedTrace(traceEvents, options) {
         /**
          * We want to yield regularly to maintain responsiveness. If we yield too often, we're wasting idle time.
          * We could do this by checking `performance.now()` regularly, but it's an expensive call in such a hot loop.
@@ -169,7 +169,7 @@ export class TraceProcessor extends EventTarget {
                 // Yield to the UI because finalize() calls can be expensive
                 // TODO(jacktfranklin): consider using `scheduler.yield()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
                 await new Promise(resolve => setTimeout(resolve, 0));
-                await handler.finalize();
+                await handler.finalize(options);
             }
             const percent = calculateProgress(i / sortedHandlers.length, 0.8 /* ProgressPhase.FINALIZE */);
             this.dispatchEvent(new TraceParseProgressEvent({ percent }));

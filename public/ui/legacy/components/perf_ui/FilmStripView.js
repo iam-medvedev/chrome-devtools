@@ -39,13 +39,10 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
     #filmStrip = null;
     constructor() {
         super(true);
+        this.registerRequiredCSS(filmStripViewStyles);
         this.contentElement.classList.add('film-strip-view');
         this.statusLabel = this.contentElement.createChild('div', 'label');
         this.reset();
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([filmStripViewStyles]);
     }
     static setImageData(imageElement, dataUri) {
         if (dataUri) {
@@ -80,7 +77,8 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
         element.addEventListener('dblclick', this.onDoubleClick.bind(this, frame), false);
         element.addEventListener('focusin', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FRAME_ENTER */, time), false);
         element.addEventListener('focusout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FRAME_EXIT */, time), false);
-        FilmStripView.setImageData(imageElement, frame.screenshotEvent.args.dataUri);
+        const imgData = Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(frame.screenshotEvent);
+        FilmStripView.setImageData(imageElement, imgData);
         return element;
     }
     update() {
@@ -227,7 +225,8 @@ export class Dialog {
         this.fragment.$('time').textContent = i18n.TimeUtilities.millisToString(timestamp - this.#zeroTime());
         const image = this.fragment.$('image');
         image.setAttribute('data-frame-index', this.index.toString());
-        FilmStripView.setImageData(image, frame.screenshotEvent.args.dataUri);
+        const imgData = Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(frame.screenshotEvent);
+        FilmStripView.setImageData(image, imgData);
         this.resize();
     }
 }

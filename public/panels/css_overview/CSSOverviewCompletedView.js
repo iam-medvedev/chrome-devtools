@@ -191,6 +191,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
     #fragment;
     constructor(controller) {
         super();
+        this.registerRequiredCSS(cssOverviewCompletedViewStyles);
         this.#controller = controller;
         this.#formatter = new Intl.NumberFormat('en-US');
         this.#splitWidget = new UI.SplitWidget.SplitWidget(true, false, undefined, 200);
@@ -210,6 +211,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         this.#mainContainer.setVertical(false);
         this.#mainContainer.setSecondIsSidebar(true);
         this.#mainContainer.setSidebarMinimized(true);
+        this.#mainContainer.registerRequiredCSS(cssOverviewCompletedViewStyles);
         this.#sideBar = new CSSOverviewSidebarPanel();
         this.#sideBar.setMinimumSize(100, 25);
         this.#splitWidget.setSidebarWidget(this.#sideBar);
@@ -228,12 +230,6 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         this.#controller.addEventListener("PopulateNodes" /* CSSOverViewControllerEvents.POPULATE_NODES */, this.#createElementsView, this);
         this.#resultsContainer.element.addEventListener('click', this.#onClick.bind(this));
         this.#data = null;
-    }
-    wasShown() {
-        super.wasShown();
-        this.#mainContainer.registerCSSFiles([cssOverviewCompletedViewStyles]);
-        this.registerCSSFiles([cssOverviewCompletedViewStyles]);
-        // TODO(paullewis): update the links in the panels in case source has been .
     }
     initializeModels(target) {
         const cssModel = target.model(SDK.CSSModel.CSSModel);

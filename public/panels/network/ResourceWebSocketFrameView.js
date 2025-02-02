@@ -157,6 +157,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
     messageFilterSetting = Common.Settings.Settings.instance().createSetting('network-web-socket-message-filter', '');
     constructor(request) {
         super();
+        this.registerRequiredCSS(webSocketFrameViewStyles);
         this.element.classList.add('websocket-frame-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('web-socket-messages').track({ resize: true })}`);
         this.request = request;
@@ -245,8 +246,8 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         return i18nString(UIStrings.sOpcodeS, { PH1: localizedDescription(), PH2: opCode });
     }
     wasShown() {
+        super.wasShown();
         this.refresh();
-        this.registerCSSFiles([webSocketFrameViewStyles]);
         this.request.addEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.frameAdded, this);
     }
     willHide() {

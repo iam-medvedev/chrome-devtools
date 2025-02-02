@@ -407,7 +407,8 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
         let imagePromise = this.frameToImagePromise.get(frame);
         if (!imagePromise) {
             // TODO(paulirish): Adopt Util.ImageCache
-            imagePromise = UI.UIUtils.loadImage(frame.screenshotEvent.args.dataUri);
+            const uri = Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(frame.screenshotEvent);
+            imagePromise = UI.UIUtils.loadImage(uri);
             this.frameToImagePromise.set(frame, imagePromise);
         }
         return imagePromise;

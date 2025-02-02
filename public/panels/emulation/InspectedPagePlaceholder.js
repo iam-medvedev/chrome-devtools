@@ -9,6 +9,7 @@ export class InspectedPagePlaceholder extends Common.ObjectWrapper.eventMixin(UI
     updateId;
     constructor() {
         super(true);
+        this.registerRequiredCSS(inspectedPagePlaceholderStyles);
         UI.ZoomManager.ZoomManager.instance().addEventListener("ZoomChanged" /* UI.ZoomManager.Events.ZOOM_CHANGED */, this.onResize, this);
         this.restoreMinimumSize();
     }
@@ -18,10 +19,6 @@ export class InspectedPagePlaceholder extends Common.ObjectWrapper.eventMixin(UI
             inspectedPagePlaceholderInstance = new InspectedPagePlaceholder();
         }
         return inspectedPagePlaceholderInstance;
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([inspectedPagePlaceholderStyles]);
     }
     onResize() {
         if (this.updateId) {

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseOutEvent, dispatchMouseOverEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../testing/DOMHelpers.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import { html } from '../../lit/lit.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as TreeOutline from './tree_outline.js';
-const { html } = LitHtml;
 async function renderTreeOutline({ tree, defaultRenderer, filter, }) {
     const component = new TreeOutline.TreeOutline.TreeOutline();
     const data = {
@@ -25,7 +24,7 @@ async function renderTreeOutline({ tree, defaultRenderer, filter, }) {
 }
 /**
  * Wait for a certain number of children are rendered. We need this as the
- * component uses LitHtml's until directive, which is async and not within the
+ * component uses Lit's until directive, which is async and not within the
  * render coordinator's control.
  */
 async function waitForRenderedTreeNodeCount(shadowRoot, expectedNodeCount) {

@@ -111,7 +111,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     showPreloadingAttemptViewWithFilter(filter: PreloadingHelper.PreloadingForward.AttemptViewWithFilter): void;
     private onmousemove;
     private onmouseleave;
-    wasShown(): void;
 }
 export declare class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
     private serviceName;

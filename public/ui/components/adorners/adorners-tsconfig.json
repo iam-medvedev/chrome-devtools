@@ -40,7 +40,7 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../lit-html/bundle-tsconfig.json"
+      "path": "../../lit/bundle-tsconfig.json"
     },
     {
       "path": "../../visual_logging/bundle-tsconfig.json"

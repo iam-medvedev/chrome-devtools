@@ -15,5 +15,4 @@ export declare class PlayerMessagesView extends UI.Widget.VBox {
     addMessage(message: Protocol.Media.PlayerMessage): void;
     private errorToDiv;
     addError(error: Protocol.Media.PlayerError): void;
-    wasShown(): void;
 }

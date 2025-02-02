@@ -4,11 +4,14 @@
 import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../forward/forward.js';
-import requestHeaderSectionStyles from './RequestHeaderSection.css.js';
-const { render, html } = LitHtml;
+import requestHeaderSectionStylesRaw from './RequestHeaderSection.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const requestHeaderSectionStyles = new CSSStyleSheet();
+requestHeaderSectionStyles.replaceSync(requestHeaderSectionStylesRaw.cssContent);
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description Text that is usually a hyperlink to more documentation
@@ -70,7 +73,7 @@ export class RequestHeaderSection extends HTMLElement {
     }
     #maybeRenderProvisionalHeadersWarning() {
         if (!this.#request || this.#request.requestHeadersText() !== undefined) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         let cautionText;
         let cautionTitle = '';

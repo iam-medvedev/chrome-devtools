@@ -413,7 +413,7 @@ export const NativeFunctions = [
     },
     {
         name: "slice",
-        signatures: [["begin", "?end"]],
+        signatures: [["?begin", "?end"]],
         receivers: ["ArrayBuffer", "SharedArrayBuffer"]
     },
     {
@@ -1000,7 +1000,7 @@ export const NativeFunctions = [
     {
         name: "addEventListener",
         signatures: [["type", "listener", "?options"]],
-        receivers: ["AbortSignal", "SharedWorker", "Worker", "ServiceWorker", "Animation", "AudioBufferSourceNode", "AudioContext", "AudioScheduledSourceNode", "AudioWorkletNode", "BaseAudioContext", "BroadcastChannel", "CSSAnimation", "CSSTransition", "CanvasCaptureMediaStreamTrack", "ConstantSourceNode", "Document", "Element", "EventSource", "FileReader", "FontFaceSet", "Window", "HTMLElement", "MathMLElement", "SVGElement", "HTMLAnchorElement", "HTMLAreaElement", "HTMLAudioElement", "HTMLBRElement", "HTMLBaseElement", "HTMLBodyElement", "HTMLButtonElement", "HTMLCanvasElement", "HTMLDListElement", "HTMLDataElement", "HTMLDataListElement", "HTMLDetailsElement", "HTMLDialogElement", "HTMLDirectoryElement", "HTMLDivElement", "HTMLDocument", "HTMLEmbedElement", "HTMLFieldSetElement", "HTMLFontElement", "HTMLFormElement", "HTMLFrameElement", "HTMLFrameSetElement", "HTMLHRElement", "HTMLHeadElement", "HTMLHeadingElement", "HTMLHtmlElement", "HTMLIFrameElement", "HTMLImageElement", "HTMLInputElement", "HTMLLIElement", "HTMLLabelElement", "HTMLLegendElement", "HTMLLinkElement", "HTMLMapElement", "HTMLMarqueeElement", "HTMLMediaElement", "HTMLMenuElement", "HTMLMetaElement", "HTMLMeterElement", "HTMLModElement", "HTMLOListElement", "HTMLObjectElement", "HTMLOptGroupElement", "HTMLOptionElement", "HTMLOutputElement", "HTMLParagraphElement", "HTMLParamElement", "HTMLPictureElement", "HTMLPreElement", "HTMLProgressElement", "HTMLQuoteElement", "HTMLScriptElement", "HTMLSelectElement", "HTMLSlotElement", "HTMLSourceElement", "HTMLSpanElement", "HTMLStyleElement", "HTMLTableCaptionElement", "HTMLTableCellElement", "HTMLTableColElement", "HTMLTableDataCellElement", "HTMLTableElement", "HTMLTableHeaderCellElement", "HTMLTableRowElement", "HTMLTableSectionElement", "HTMLTemplateElement", "HTMLTextAreaElement", "HTMLTimeElement", "HTMLTitleElement", "HTMLTrackElement", "HTMLUListElement", "HTMLUnknownElement", "HTMLVideoElement", "IDBDatabase", "IDBOpenDBRequest", "IDBRequest", "IDBTransaction", "MIDIAccess", "MIDIInput", "MIDIOutput", "MIDIPort", "MediaDevices", "MediaKeySession", "MediaQueryList", "MediaRecorder", "MediaSource", "MediaStream", "MediaStreamTrack", "MessagePort", "Notification", "OfflineAudioContext", "OffscreenCanvas", "OscillatorNode", "PaymentRequest", "Performance", "PermissionStatus", "PictureInPictureWindow", "RTCDTMFSender", "RTCDataChannel", "RTCDtlsTransport", "RTCIceTransport", "RTCPeerConnection", "RTCSctpTransport", "RemotePlayback", "SVGAElement", "SVGAnimateElement", "SVGAnimateMotionElement", "SVGAnimateTransformElement", "SVGAnimationElement", "SVGCircleElement", "SVGClipPathElement", "SVGComponentTransferFunctionElement", "SVGDefsElement", "SVGDescElement", "SVGEllipseElement", "SVGFEBlendElement", "SVGFEColorMatrixElement", "SVGFEComponentTransferElement", "SVGFECompositeElement", "SVGFEConvolveMatrixElement", "SVGFEDiffuseLightingElement", "SVGFEDisplacementMapElement", "SVGFEDistantLightElement", "SVGFEDropShadowElement", "SVGFEFloodElement", "SVGFEFuncAElement", "SVGFEFuncBElement", "SVGFEFuncGElement", "SVGFEFuncRElement", "SVGFEGaussianBlurElement", "SVGFEImageElement", "SVGFEMergeElement", "SVGFEMergeNodeElement", "SVGFEMorphologyElement", "SVGFEOffsetElement", "SVGFEPointLightElement", "SVGFESpecularLightingElement", "SVGFESpotLightElement", "SVGFETileElement", "SVGFETurbulenceElement", "SVGFilterElement", "SVGForeignObjectElement", "SVGGElement", "SVGGeometryElement", "SVGGradientElement", "SVGGraphicsElement", "SVGImageElement", "SVGLineElement", "SVGLinearGradientElement", "SVGMPathElement", "SVGMarkerElement", "SVGMaskElement", "SVGMetadataElement", "SVGPathElement", "SVGPatternElement", "SVGPolygonElement", "SVGPolylineElement", "SVGRadialGradientElement", "SVGRectElement", "SVGSVGElement", "SVGScriptElement", "SVGSetElement", "SVGStopElement", "SVGStyleElement", "SVGSwitchElement", "SVGSymbolElement", "SVGTSpanElement", "SVGTextContentElement", "SVGTextElement", "SVGTextPathElement", "SVGTextPositioningElement", "SVGTitleElement", "SVGUseElement", "SVGViewElement", "ScreenOrientation", "ScriptProcessorNode", "ServiceWorkerContainer", "ServiceWorkerRegistration", "ShadowRoot", "SourceBuffer", "SourceBufferList", "SpeechSynthesis", "SpeechSynthesisUtterance", "TextTrack", "TextTrackCue", "TextTrackList", "VTTCue", "VideoDecoder", "VideoEncoder", "VisualViewport", "WakeLockSentinel", "WebSocket", "XMLDocument", "XMLHttpRequest", "XMLHttpRequestEventTarget", "XMLHttpRequestUpload", "DedicatedWorkerGlobalScope", "ServiceWorkerGlobalScope", "SharedWorkerGlobalScope", "WorkerGlobalScope", "Highlight"]
+        receivers: ["AbortSignal", "SharedWorker", "Worker", "ServiceWorker", "Animation", "AudioBufferSourceNode", "AudioContext", "AudioDecoder", "AudioEncoder", "AudioScheduledSourceNode", "AudioWorkletNode", "BaseAudioContext", "BroadcastChannel", "CSSAnimation", "CSSTransition", "CanvasCaptureMediaStreamTrack", "ConstantSourceNode", "Document", "Element", "EventSource", "FileReader", "FontFaceSet", "Window", "HTMLElement", "MathMLElement", "SVGElement", "HTMLAnchorElement", "HTMLAreaElement", "HTMLAudioElement", "HTMLBRElement", "HTMLBaseElement", "HTMLBodyElement", "HTMLButtonElement", "HTMLCanvasElement", "HTMLDListElement", "HTMLDataElement", "HTMLDataListElement", "HTMLDetailsElement", "HTMLDialogElement", "HTMLDirectoryElement", "HTMLDivElement", "HTMLDocument", "HTMLEmbedElement", "HTMLFieldSetElement", "HTMLFontElement", "HTMLFormElement", "HTMLFrameElement", "HTMLFrameSetElement", "HTMLHRElement", "HTMLHeadElement", "HTMLHeadingElement", "HTMLHtmlElement", "HTMLIFrameElement", "HTMLImageElement", "HTMLInputElement", "HTMLLIElement", "HTMLLabelElement", "HTMLLegendElement", "HTMLLinkElement", "HTMLMapElement", "HTMLMarqueeElement", "HTMLMediaElement", "HTMLMenuElement", "HTMLMetaElement", "HTMLMeterElement", "HTMLModElement", "HTMLOListElement", "HTMLObjectElement", "HTMLOptGroupElement", "HTMLOptionElement", "HTMLOutputElement", "HTMLParagraphElement", "HTMLParamElement", "HTMLPictureElement", "HTMLPreElement", "HTMLProgressElement", "HTMLQuoteElement", "HTMLScriptElement", "HTMLSelectElement", "HTMLSlotElement", "HTMLSourceElement", "HTMLSpanElement", "HTMLStyleElement", "HTMLTableCaptionElement", "HTMLTableCellElement", "HTMLTableColElement", "HTMLTableDataCellElement", "HTMLTableElement", "HTMLTableHeaderCellElement", "HTMLTableRowElement", "HTMLTableSectionElement", "HTMLTemplateElement", "HTMLTextAreaElement", "HTMLTimeElement", "HTMLTitleElement", "HTMLTrackElement", "HTMLUListElement", "HTMLUnknownElement", "HTMLVideoElement", "IDBDatabase", "IDBOpenDBRequest", "IDBRequest", "IDBTransaction", "MIDIAccess", "MIDIInput", "MIDIOutput", "MIDIPort", "MediaDevices", "MediaKeySession", "MediaQueryList", "MediaRecorder", "MediaSource", "MediaStream", "MediaStreamTrack", "MessagePort", "Notification", "OfflineAudioContext", "OffscreenCanvas", "OscillatorNode", "PaymentRequest", "PaymentResponse", "Performance", "PermissionStatus", "PictureInPictureWindow", "RTCDTMFSender", "RTCDataChannel", "RTCDtlsTransport", "RTCIceTransport", "RTCPeerConnection", "RTCSctpTransport", "RemotePlayback", "SVGAElement", "SVGAnimateElement", "SVGAnimateMotionElement", "SVGAnimateTransformElement", "SVGAnimationElement", "SVGCircleElement", "SVGClipPathElement", "SVGComponentTransferFunctionElement", "SVGDefsElement", "SVGDescElement", "SVGEllipseElement", "SVGFEBlendElement", "SVGFEColorMatrixElement", "SVGFEComponentTransferElement", "SVGFECompositeElement", "SVGFEConvolveMatrixElement", "SVGFEDiffuseLightingElement", "SVGFEDisplacementMapElement", "SVGFEDistantLightElement", "SVGFEDropShadowElement", "SVGFEFloodElement", "SVGFEFuncAElement", "SVGFEFuncBElement", "SVGFEFuncGElement", "SVGFEFuncRElement", "SVGFEGaussianBlurElement", "SVGFEImageElement", "SVGFEMergeElement", "SVGFEMergeNodeElement", "SVGFEMorphologyElement", "SVGFEOffsetElement", "SVGFEPointLightElement", "SVGFESpecularLightingElement", "SVGFESpotLightElement", "SVGFETileElement", "SVGFETurbulenceElement", "SVGFilterElement", "SVGForeignObjectElement", "SVGGElement", "SVGGeometryElement", "SVGGradientElement", "SVGGraphicsElement", "SVGImageElement", "SVGLineElement", "SVGLinearGradientElement", "SVGMPathElement", "SVGMarkerElement", "SVGMaskElement", "SVGMetadataElement", "SVGPathElement", "SVGPatternElement", "SVGPolygonElement", "SVGPolylineElement", "SVGRadialGradientElement", "SVGRectElement", "SVGSVGElement", "SVGScriptElement", "SVGSetElement", "SVGStopElement", "SVGStyleElement", "SVGSwitchElement", "SVGSymbolElement", "SVGTSpanElement", "SVGTextContentElement", "SVGTextElement", "SVGTextPathElement", "SVGTextPositioningElement", "SVGTitleElement", "SVGUseElement", "SVGViewElement", "ScreenOrientation", "ScriptProcessorNode", "ServiceWorkerContainer", "ServiceWorkerRegistration", "ShadowRoot", "SourceBuffer", "SourceBufferList", "SpeechSynthesis", "SpeechSynthesisUtterance", "TextTrack", "TextTrackCue", "TextTrackList", "VTTCue", "VideoDecoder", "VideoEncoder", "VisualViewport", "WakeLockSentinel", "WebSocket", "XMLDocument", "XMLHttpRequest", "XMLHttpRequestEventTarget", "XMLHttpRequestUpload", "DedicatedWorkerGlobalScope", "ServiceWorkerGlobalScope", "SharedWorkerGlobalScope", "WorkerGlobalScope", "Highlight"]
     },
     {
         name: "addEventListener",
@@ -1010,7 +1010,7 @@ export const NativeFunctions = [
     {
         name: "removeEventListener",
         signatures: [["type", "listener", "?options"]],
-        receivers: ["AbortSignal", "SharedWorker", "Worker", "ServiceWorker", "Animation", "AudioBufferSourceNode", "AudioContext", "AudioScheduledSourceNode", "AudioWorkletNode", "BaseAudioContext", "BroadcastChannel", "CSSAnimation", "CSSTransition", "CanvasCaptureMediaStreamTrack", "ConstantSourceNode", "Document", "Element", "EventSource", "FileReader", "FontFaceSet", "Window", "HTMLElement", "MathMLElement", "SVGElement", "HTMLAnchorElement", "HTMLAreaElement", "HTMLAudioElement", "HTMLBRElement", "HTMLBaseElement", "HTMLBodyElement", "HTMLButtonElement", "HTMLCanvasElement", "HTMLDListElement", "HTMLDataElement", "HTMLDataListElement", "HTMLDetailsElement", "HTMLDialogElement", "HTMLDirectoryElement", "HTMLDivElement", "HTMLDocument", "HTMLEmbedElement", "HTMLFieldSetElement", "HTMLFontElement", "HTMLFormElement", "HTMLFrameElement", "HTMLFrameSetElement", "HTMLHRElement", "HTMLHeadElement", "HTMLHeadingElement", "HTMLHtmlElement", "HTMLIFrameElement", "HTMLImageElement", "HTMLInputElement", "HTMLLIElement", "HTMLLabelElement", "HTMLLegendElement", "HTMLLinkElement", "HTMLMapElement", "HTMLMarqueeElement", "HTMLMediaElement", "HTMLMenuElement", "HTMLMetaElement", "HTMLMeterElement", "HTMLModElement", "HTMLOListElement", "HTMLObjectElement", "HTMLOptGroupElement", "HTMLOptionElement", "HTMLOutputElement", "HTMLParagraphElement", "HTMLParamElement", "HTMLPictureElement", "HTMLPreElement", "HTMLProgressElement", "HTMLQuoteElement", "HTMLScriptElement", "HTMLSelectElement", "HTMLSlotElement", "HTMLSourceElement", "HTMLSpanElement", "HTMLStyleElement", "HTMLTableCaptionElement", "HTMLTableCellElement", "HTMLTableColElement", "HTMLTableDataCellElement", "HTMLTableElement", "HTMLTableHeaderCellElement", "HTMLTableRowElement", "HTMLTableSectionElement", "HTMLTemplateElement", "HTMLTextAreaElement", "HTMLTimeElement", "HTMLTitleElement", "HTMLTrackElement", "HTMLUListElement", "HTMLUnknownElement", "HTMLVideoElement", "IDBDatabase", "IDBOpenDBRequest", "IDBRequest", "IDBTransaction", "MIDIAccess", "MIDIInput", "MIDIOutput", "MIDIPort", "MediaDevices", "MediaKeySession", "MediaQueryList", "MediaRecorder", "MediaSource", "MediaStream", "MediaStreamTrack", "MessagePort", "Notification", "OfflineAudioContext", "OffscreenCanvas", "OscillatorNode", "PaymentRequest", "Performance", "PermissionStatus", "PictureInPictureWindow", "RTCDTMFSender", "RTCDataChannel", "RTCDtlsTransport", "RTCIceTransport", "RTCPeerConnection", "RTCSctpTransport", "RemotePlayback", "SVGAElement", "SVGAnimateElement", "SVGAnimateMotionElement", "SVGAnimateTransformElement", "SVGAnimationElement", "SVGCircleElement", "SVGClipPathElement", "SVGComponentTransferFunctionElement", "SVGDefsElement", "SVGDescElement", "SVGEllipseElement", "SVGFEBlendElement", "SVGFEColorMatrixElement", "SVGFEComponentTransferElement", "SVGFECompositeElement", "SVGFEConvolveMatrixElement", "SVGFEDiffuseLightingElement", "SVGFEDisplacementMapElement", "SVGFEDistantLightElement", "SVGFEDropShadowElement", "SVGFEFloodElement", "SVGFEFuncAElement", "SVGFEFuncBElement", "SVGFEFuncGElement", "SVGFEFuncRElement", "SVGFEGaussianBlurElement", "SVGFEImageElement", "SVGFEMergeElement", "SVGFEMergeNodeElement", "SVGFEMorphologyElement", "SVGFEOffsetElement", "SVGFEPointLightElement", "SVGFESpecularLightingElement", "SVGFESpotLightElement", "SVGFETileElement", "SVGFETurbulenceElement", "SVGFilterElement", "SVGForeignObjectElement", "SVGGElement", "SVGGeometryElement", "SVGGradientElement", "SVGGraphicsElement", "SVGImageElement", "SVGLineElement", "SVGLinearGradientElement", "SVGMPathElement", "SVGMarkerElement", "SVGMaskElement", "SVGMetadataElement", "SVGPathElement", "SVGPatternElement", "SVGPolygonElement", "SVGPolylineElement", "SVGRadialGradientElement", "SVGRectElement", "SVGSVGElement", "SVGScriptElement", "SVGSetElement", "SVGStopElement", "SVGStyleElement", "SVGSwitchElement", "SVGSymbolElement", "SVGTSpanElement", "SVGTextContentElement", "SVGTextElement", "SVGTextPathElement", "SVGTextPositioningElement", "SVGTitleElement", "SVGUseElement", "SVGViewElement", "ScreenOrientation", "ScriptProcessorNode", "ServiceWorkerContainer", "ServiceWorkerRegistration", "ShadowRoot", "SourceBuffer", "SourceBufferList", "SpeechSynthesis", "SpeechSynthesisUtterance", "TextTrack", "TextTrackCue", "TextTrackList", "VTTCue", "VideoDecoder", "VideoEncoder", "VisualViewport", "WakeLockSentinel", "WebSocket", "XMLDocument", "XMLHttpRequest", "XMLHttpRequestEventTarget", "XMLHttpRequestUpload", "DedicatedWorkerGlobalScope", "ServiceWorkerGlobalScope", "SharedWorkerGlobalScope", "WorkerGlobalScope", "Highlight"]
+        receivers: ["AbortSignal", "SharedWorker", "Worker", "ServiceWorker", "Animation", "AudioBufferSourceNode", "AudioContext", "AudioDecoder", "AudioEncoder", "AudioScheduledSourceNode", "AudioWorkletNode", "BaseAudioContext", "BroadcastChannel", "CSSAnimation", "CSSTransition", "CanvasCaptureMediaStreamTrack", "ConstantSourceNode", "Document", "Element", "EventSource", "FileReader", "FontFaceSet", "Window", "HTMLElement", "MathMLElement", "SVGElement", "HTMLAnchorElement", "HTMLAreaElement", "HTMLAudioElement", "HTMLBRElement", "HTMLBaseElement", "HTMLBodyElement", "HTMLButtonElement", "HTMLCanvasElement", "HTMLDListElement", "HTMLDataElement", "HTMLDataListElement", "HTMLDetailsElement", "HTMLDialogElement", "HTMLDirectoryElement", "HTMLDivElement", "HTMLDocument", "HTMLEmbedElement", "HTMLFieldSetElement", "HTMLFontElement", "HTMLFormElement", "HTMLFrameElement", "HTMLFrameSetElement", "HTMLHRElement", "HTMLHeadElement", "HTMLHeadingElement", "HTMLHtmlElement", "HTMLIFrameElement", "HTMLImageElement", "HTMLInputElement", "HTMLLIElement", "HTMLLabelElement", "HTMLLegendElement", "HTMLLinkElement", "HTMLMapElement", "HTMLMarqueeElement", "HTMLMediaElement", "HTMLMenuElement", "HTMLMetaElement", "HTMLMeterElement", "HTMLModElement", "HTMLOListElement", "HTMLObjectElement", "HTMLOptGroupElement", "HTMLOptionElement", "HTMLOutputElement", "HTMLParagraphElement", "HTMLParamElement", "HTMLPictureElement", "HTMLPreElement", "HTMLProgressElement", "HTMLQuoteElement", "HTMLScriptElement", "HTMLSelectElement", "HTMLSlotElement", "HTMLSourceElement", "HTMLSpanElement", "HTMLStyleElement", "HTMLTableCaptionElement", "HTMLTableCellElement", "HTMLTableColElement", "HTMLTableDataCellElement", "HTMLTableElement", "HTMLTableHeaderCellElement", "HTMLTableRowElement", "HTMLTableSectionElement", "HTMLTemplateElement", "HTMLTextAreaElement", "HTMLTimeElement", "HTMLTitleElement", "HTMLTrackElement", "HTMLUListElement", "HTMLUnknownElement", "HTMLVideoElement", "IDBDatabase", "IDBOpenDBRequest", "IDBRequest", "IDBTransaction", "MIDIAccess", "MIDIInput", "MIDIOutput", "MIDIPort", "MediaDevices", "MediaKeySession", "MediaQueryList", "MediaRecorder", "MediaSource", "MediaStream", "MediaStreamTrack", "MessagePort", "Notification", "OfflineAudioContext", "OffscreenCanvas", "OscillatorNode", "PaymentRequest", "PaymentResponse", "Performance", "PermissionStatus", "PictureInPictureWindow", "RTCDTMFSender", "RTCDataChannel", "RTCDtlsTransport", "RTCIceTransport", "RTCPeerConnection", "RTCSctpTransport", "RemotePlayback", "SVGAElement", "SVGAnimateElement", "SVGAnimateMotionElement", "SVGAnimateTransformElement", "SVGAnimationElement", "SVGCircleElement", "SVGClipPathElement", "SVGComponentTransferFunctionElement", "SVGDefsElement", "SVGDescElement", "SVGEllipseElement", "SVGFEBlendElement", "SVGFEColorMatrixElement", "SVGFEComponentTransferElement", "SVGFECompositeElement", "SVGFEConvolveMatrixElement", "SVGFEDiffuseLightingElement", "SVGFEDisplacementMapElement", "SVGFEDistantLightElement", "SVGFEDropShadowElement", "SVGFEFloodElement", "SVGFEFuncAElement", "SVGFEFuncBElement", "SVGFEFuncGElement", "SVGFEFuncRElement", "SVGFEGaussianBlurElement", "SVGFEImageElement", "SVGFEMergeElement", "SVGFEMergeNodeElement", "SVGFEMorphologyElement", "SVGFEOffsetElement", "SVGFEPointLightElement", "SVGFESpecularLightingElement", "SVGFESpotLightElement", "SVGFETileElement", "SVGFETurbulenceElement", "SVGFilterElement", "SVGForeignObjectElement", "SVGGElement", "SVGGeometryElement", "SVGGradientElement", "SVGGraphicsElement", "SVGImageElement", "SVGLineElement", "SVGLinearGradientElement", "SVGMPathElement", "SVGMarkerElement", "SVGMaskElement", "SVGMetadataElement", "SVGPathElement", "SVGPatternElement", "SVGPolygonElement", "SVGPolylineElement", "SVGRadialGradientElement", "SVGRectElement", "SVGSVGElement", "SVGScriptElement", "SVGSetElement", "SVGStopElement", "SVGStyleElement", "SVGSwitchElement", "SVGSymbolElement", "SVGTSpanElement", "SVGTextContentElement", "SVGTextElement", "SVGTextPathElement", "SVGTextPositioningElement", "SVGTitleElement", "SVGUseElement", "SVGViewElement", "ScreenOrientation", "ScriptProcessorNode", "ServiceWorkerContainer", "ServiceWorkerRegistration", "ShadowRoot", "SourceBuffer", "SourceBufferList", "SpeechSynthesis", "SpeechSynthesisUtterance", "TextTrack", "TextTrackCue", "TextTrackList", "VTTCue", "VideoDecoder", "VideoEncoder", "VisualViewport", "WakeLockSentinel", "WebSocket", "XMLDocument", "XMLHttpRequest", "XMLHttpRequestEventTarget", "XMLHttpRequestUpload", "DedicatedWorkerGlobalScope", "ServiceWorkerGlobalScope", "SharedWorkerGlobalScope", "WorkerGlobalScope", "Highlight"]
     },
     {
         name: "removeEventListener",
@@ -1137,6 +1137,81 @@ export const NativeFunctions = [
         name: "suspend",
         signatures: [["suspendTime"]],
         receivers: ["OfflineAudioContext"]
+    },
+    {
+        name: "allocationSize",
+        signatures: [["options"]],
+        receivers: ["AudioData"]
+    },
+    {
+        name: "allocationSize",
+        signatures: [["?options"]],
+        receivers: ["VideoFrame"]
+    },
+    {
+        name: "copyTo",
+        signatures: [["destination", "options"]],
+        receivers: ["AudioData"]
+    },
+    {
+        name: "copyTo",
+        signatures: [["destination"]],
+        receivers: ["EncodedAudioChunk", "EncodedVideoChunk"]
+    },
+    {
+        name: "copyTo",
+        signatures: [["destination", "?options"]],
+        receivers: ["VideoFrame"]
+    },
+    {
+        name: "copyTo",
+        signatures: [["parent", "name"]],
+        receivers: ["EntrySync"]
+    },
+    {
+        name: "copyTo",
+        signatures: [["parent", "?name", "?successCallback", "?errorCallback"]],
+        receivers: ["Entry"]
+    },
+    {
+        name: "configure",
+        signatures: [["config"]],
+        receivers: ["AudioDecoder", "AudioEncoder", "VideoDecoder", "VideoEncoder"]
+    },
+    {
+        name: "configure",
+        signatures: [["descriptor"]],
+        receivers: ["GPUCanvasContext"]
+    },
+    {
+        name: "decode",
+        signatures: [["chunk"]],
+        receivers: ["AudioDecoder", "VideoDecoder"]
+    },
+    {
+        name: "decode",
+        signatures: [["?input", "?options"]],
+        receivers: ["TextDecoder"]
+    },
+    {
+        name: "decode",
+        signatures: [["?options"]],
+        receivers: ["ImageDecoder"]
+    },
+    {
+        name: "encode",
+        signatures: [["data"]],
+        receivers: ["AudioEncoder"]
+    },
+    {
+        name: "encode",
+        signatures: [["?input"]],
+        receivers: ["TextEncoder"]
+    },
+    {
+        name: "encode",
+        signatures: [["frame", "?options"]],
+        receivers: ["VideoEncoder"]
     },
     {
         name: "setOrientation",
@@ -1864,11 +1939,6 @@ export const NativeFunctions = [
     },
     {
         name: "translate",
-        signatures: [["input", "?options"]],
-        receivers: ["AITranslator"]
-    },
-    {
-        name: "translate",
         signatures: [["input"]],
         receivers: ["LanguageTranslator"]
     },
@@ -1977,11 +2047,6 @@ export const NativeFunctions = [
         name: "write",
         signatures: [["buffer", "?options"]],
         receivers: ["FileSystemSyncAccessHandle"]
-    },
-    {
-        name: "write",
-        signatures: [["input", "?options"]],
-        receivers: ["AIWriter"]
     },
     {
         name: "write",
@@ -2232,6 +2297,10 @@ export const NativeFunctions = [
     {
         name: "adoptNode",
         signatures: [["node"]]
+    },
+    {
+        name: "caretPositionFromPoint",
+        signatures: [["x", "y", "?options"]]
     },
     {
         name: "caretRangeFromPoint",
@@ -2515,31 +2584,6 @@ export const NativeFunctions = [
         signatures: [["?flags", "?message", "?anchor"]]
     },
     {
-        name: "copyTo",
-        signatures: [["destination"]],
-        receivers: ["EncodedVideoChunk", "EncodedAudioChunk"]
-    },
-    {
-        name: "copyTo",
-        signatures: [["destination", "?options"]],
-        receivers: ["VideoFrame"]
-    },
-    {
-        name: "copyTo",
-        signatures: [["parent", "name"]],
-        receivers: ["EntrySync"]
-    },
-    {
-        name: "copyTo",
-        signatures: [["parent", "?name", "?successCallback", "?errorCallback"]],
-        receivers: ["Entry"]
-    },
-    {
-        name: "copyTo",
-        signatures: [["destination", "options"]],
-        receivers: ["AudioData"]
-    },
-    {
         name: "initEvent",
         signatures: [["type", "?bubbles", "?cancelable"]]
     },
@@ -2799,21 +2843,6 @@ export const NativeFunctions = [
         name: "submit",
         signatures: [["buffers"]],
         receivers: ["GPUQueue"]
-    },
-    {
-        name: "decode",
-        signatures: [["?input", "?options"]],
-        receivers: ["TextDecoder"]
-    },
-    {
-        name: "decode",
-        signatures: [["chunk"]],
-        receivers: ["VideoDecoder", "AudioDecoder"]
-    },
-    {
-        name: "decode",
-        signatures: [["?options"]],
-        receivers: ["ImageDecoder"]
     },
     {
         name: "select",
@@ -3256,10 +3285,6 @@ export const NativeFunctions = [
     {
         name: "initMouseEvent",
         signatures: [["typeArg", "canBubbleArg", "cancelableArg", "viewArg", "detailArg", "screenXArg", "screenYArg", "clientXArg", "clientYArg", "ctrlKeyArg", "altKeyArg", "shiftKeyArg", "metaKeyArg", "buttonArg", "relatedTargetArg"], ["type", "?bubbles", "?cancelable", "?view", "?detail", "?screenX", "?screenY", "?clientX", "?clientY", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey", "?button", "?relatedTarget"]]
-    },
-    {
-        name: "initMutationEvent",
-        signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?relatedNodeArg", "?prevValueArg", "?newValueArg", "?attrNameArg", "?attrChangeArg"], ["type", "?bubbles", "?cancelable", "?relatedNode", "?prevValue", "?newValue", "?attrName", "?attrChange"]]
     },
     {
         name: "getNamedItem",
@@ -4086,21 +4111,6 @@ export const NativeFunctions = [
         signatures: [["offset"]]
     },
     {
-        name: "encode",
-        signatures: [["?input"]],
-        receivers: ["TextEncoder"]
-    },
-    {
-        name: "encode",
-        signatures: [["frame", "?options"]],
-        receivers: ["VideoEncoder"]
-    },
-    {
-        name: "encode",
-        signatures: [["data"]],
-        receivers: ["AudioEncoder"]
-    },
-    {
         name: "encodeInto",
         signatures: [["source", "destination"]]
     },
@@ -4128,26 +4138,6 @@ export const NativeFunctions = [
     {
         name: "initUIEvent",
         signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?detailArg"], ["type", "?bubbles", "?cancelable", "?view", "?detail"]]
-    },
-    {
-        name: "configure",
-        signatures: [["config"]],
-        receivers: ["VideoDecoder", "VideoEncoder", "AudioDecoder", "AudioEncoder"]
-    },
-    {
-        name: "configure",
-        signatures: [["descriptor"]],
-        receivers: ["GPUCanvasContext"]
-    },
-    {
-        name: "allocationSize",
-        signatures: [["?options"]],
-        receivers: ["VideoFrame"]
-    },
-    {
-        name: "allocationSize",
-        signatures: [["options"]],
-        receivers: ["AudioData"]
     },
     {
         name: "getTranslatedShaderSource",
@@ -5688,12 +5678,20 @@ export const NativeFunctions = [
         signatures: [["o", "v"]]
     },
     {
+        name: "at",
+        signatures: [["index"]]
+    },
+    {
+        name: "groupBy",
+        signatures: [["items", "keySelector"]]
+    },
+    {
         name: "waitAsync",
         signatures: [["typedArray", "index", "value", "?timeout"]]
     },
     {
-        name: "at",
-        signatures: [["index"]]
+        name: "grow",
+        signatures: [["?newByteLength"]]
     },
     {
         name: "use",
@@ -5723,10 +5721,6 @@ export const NativeFunctions = [
         name: "move",
         signatures: [["new_entry_name"], ["destination_directory", "?new_entry_name"]],
         receivers: ["FileSystemFileHandle", "FileSystemHandle"]
-    },
-    {
-        name: "groupBy",
-        signatures: [["items", "keySelector"]]
     },
     {
         name: "addInitializer",
@@ -5919,6 +5913,18 @@ export const NativeFunctions = [
     {
         name: "with",
         signatures: [["index", "value"]]
+    },
+    {
+        name: "resize",
+        signatures: [["?newByteLength"]]
+    },
+    {
+        name: "transfer",
+        signatures: [["?newByteLength"]]
+    },
+    {
+        name: "transferToFixedLength",
+        signatures: [["?newByteLength"]]
     },
     {
         name: "fromAsync",
@@ -6468,10 +6474,6 @@ export const NativeFunctions = [
         signatures: [["html", "?options"]]
     },
     {
-        name: "caretPositionFromPoint",
-        signatures: [["x", "y", "?options"]]
-    },
-    {
         name: "hasPrivateToken",
         signatures: [["issuer"]]
     },
@@ -6676,6 +6678,10 @@ export const NativeFunctions = [
     {
         name: "MouseEvent",
         signatures: [["type", "?eventInitDict"]]
+    },
+    {
+        name: "initMutationEvent",
+        signatures: [["type", "?bubbles", "?cancelable", "?relatedNode", "?prevValue", "?newValue", "?attrName", "?attrChange"]]
     },
     {
         name: "OverscrollEvent",
@@ -7269,24 +7275,12 @@ export const NativeFunctions = [
         signatures: [["?options"]]
     },
     {
-        name: "rewrite",
-        signatures: [["input", "?options"]]
-    },
-    {
-        name: "rewriteStreaming",
-        signatures: [["input", "?options"]]
-    },
-    {
         name: "createOptionsAvailable",
         signatures: [["options"]]
     },
     {
         name: "languageAvailable",
         signatures: [["languageTag"]]
-    },
-    {
-        name: "writeStreaming",
-        signatures: [["input", "?options"]]
     },
     {
         name: "detect",
@@ -8524,6 +8518,10 @@ export const NativeFunctions = [
     {
         name: "SpeechRecognitionPhrase",
         signatures: [["phrase", "?boost"]]
+    },
+    {
+        name: "updateContext",
+        signatures: [["context"]]
     },
     {
         name: "onDeviceWebSpeechAvailable",

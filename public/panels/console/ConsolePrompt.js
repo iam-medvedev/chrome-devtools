@@ -77,6 +77,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     }
     constructor() {
         super();
+        this.registerRequiredCSS(consolePromptStyles);
         this.addCompletionsFromHistory = true;
         this.historyInternal = new TextEditor.AutocompleteHistory.AutocompleteHistory(Common.Settings.Settings.instance().createLocalSetting('console-history', []));
         this.initialText = '';
@@ -188,11 +189,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             executionContext.runtimeModel.releaseEvaluationResult(result);
         }
     }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([consolePromptStyles]);
-    }
     willHide() {
+        super.willHide();
         if (this.highlightingNode) {
             this.highlightingNode = false;
             SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();

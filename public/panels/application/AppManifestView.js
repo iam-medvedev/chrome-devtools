@@ -448,6 +448,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     protocolHandlersView;
     constructor(emptyView, reportView, throttler) {
         super(true);
+        this.registerRequiredCSS(appManifestViewStyles);
         this.contentElement.classList.add('manifest-container');
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('manifest')}`);
         this.emptyView = emptyView;
@@ -455,6 +456,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.emptyView.show(this.contentElement);
         this.emptyView.hideWidget();
         this.reportView = reportView;
+        this.reportView.registerRequiredCSS(appManifestViewStyles);
         this.reportView.element.classList.add('manifest-view-header');
         this.reportView.show(this.contentElement);
         this.reportView.hideWidget();
@@ -1063,11 +1065,6 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         field.appendChild(wrapper);
         return { imageResourceErrors, squareSizedIconAvailable, naturalWidth, naturalHeight };
-    }
-    wasShown() {
-        super.wasShown();
-        this.reportView.registerCSSFiles([appManifestViewStyles]);
-        this.registerCSSFiles([appManifestViewStyles]);
     }
     async appendWindowControlsToSection(overlayModel, url, themeColor) {
         const wcoStyleSheetText = await overlayModel.hasStyleSheetText(url);

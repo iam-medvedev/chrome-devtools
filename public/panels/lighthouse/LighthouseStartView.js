@@ -55,6 +55,7 @@ export class StartView extends UI.Widget.Widget {
     changeFormMode;
     constructor(controller, panel) {
         super(true /* useShadowDom */);
+        this.registerRequiredCSS(lighthouseStartViewStyles);
         this.controller = controller;
         this.panel = panel;
         this.settingsToolbarInternal = document.createElement('devtools-toolbar');
@@ -253,7 +254,6 @@ export class StartView extends UI.Widget.Widget {
     wasShown() {
         super.wasShown();
         this.controller.recomputePageAuditability();
-        this.registerCSSFiles([lighthouseStartViewStyles]);
     }
     settingsToolbar() {
         return this.settingsToolbarInternal;

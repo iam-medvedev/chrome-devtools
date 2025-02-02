@@ -19,5 +19,4 @@ export declare class ReleaseNoteView extends UI.Widget.VBox {
     constructor(element?: HTMLElement, view?: View);
     static getFileContent(): Promise<string>;
     performUpdate(): Promise<void>;
-    wasShown(): void;
 }

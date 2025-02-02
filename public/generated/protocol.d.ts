@@ -2997,6 +2997,13 @@ export declare namespace CSS {
          * Identifier of the frame where "via-inspector" stylesheet should be created.
          */
         frameId: Page.FrameId;
+        /**
+         * If true, creates a new stylesheet for every call. If false,
+         * returns a stylesheet previously created by a call with force=false
+         * for the frame's document if it exists or creates a new stylesheet
+         * (default: false).
+         */
+        force?: boolean;
     }
     interface CreateStyleSheetResponse extends ProtocolResponseWithError {
         /**
@@ -8493,7 +8500,8 @@ export declare namespace Network {
         EnterprisePolicy = "EnterprisePolicy",
         StorageAccess = "StorageAccess",
         TopLevelStorageAccess = "TopLevelStorageAccess",
-        Scheme = "Scheme"
+        Scheme = "Scheme",
+        SameSiteNoneCookiesInSandbox = "SameSiteNoneCookiesInSandbox"
     }
     /**
      * A cookie which was not stored from a response with the corresponding reason.
@@ -12577,6 +12585,43 @@ export declare namespace Page {
          * Frame object.
          */
         frame: Frame;
+    }
+    const enum FrameStartedNavigatingEventNavigationType {
+        Reload = "reload",
+        ReloadBypassingCache = "reloadBypassingCache",
+        Restore = "restore",
+        RestoreWithPost = "restoreWithPost",
+        HistorySameDocument = "historySameDocument",
+        HistoryDifferentDocument = "historyDifferentDocument",
+        SameDocument = "sameDocument",
+        DifferentDocument = "differentDocument"
+    }
+    /**
+     * Fired when a navigation starts. This event is fired for both
+     * renderer-initiated and browser-initiated navigations. For renderer-initiated
+     * navigations, the event is fired after `frameRequestedNavigation`.
+     * Navigation may still be cancelled after the event is issued. Multiple events
+     * can be fired for a single navigation, for example, when a same-document
+     * navigation becomes a cross-document navigation (such as in the case of a
+     * frameset).
+     */
+    interface FrameStartedNavigatingEvent {
+        /**
+         * ID of the frame that is being navigated.
+         */
+        frameId: FrameId;
+        /**
+         * The URL the navigation started with. The final URL can be different.
+         */
+        url: string;
+        /**
+         * Loader identifier. Even though it is present in case of same-document
+         * navigation, the previously committed loaderId would not change unless
+         * the navigation changes from a same-document to a cross-document
+         * navigation.
+         */
+        loaderId: Network.LoaderId;
+        navigationType: FrameStartedNavigatingEventNavigationType;
     }
     /**
      * Fired when a renderer-initiated navigation is requested.
@@ -16810,6 +16855,16 @@ export declare namespace Debugger {
          */
         externalURL?: string;
     }
+    interface ResolvedBreakpoint {
+        /**
+         * Breakpoint unique identifier.
+         */
+        breakpointId: BreakpointId;
+        /**
+         * Actual breakpoint location.
+         */
+        location: Location;
+    }
     const enum ContinueToLocationRequestTargetCallFrames {
         Any = "any",
         Current = "current"
@@ -17291,6 +17346,7 @@ export declare namespace Debugger {
     }
     /**
      * Fired when breakpoint is resolved to an actual script and location.
+     * Deprecated in favor of `resolvedBreakpoints` in the `scriptParsed` event.
      */
     interface BreakpointResolvedEvent {
         /**
@@ -17512,6 +17568,12 @@ export declare namespace Debugger {
          * The name the embedder supplied for this script.
          */
         embedderName?: string;
+        /**
+         * The list of set breakpoints in this script if calls to `setBreakpointByUrl`
+         * matches this script's URL or hash. Clients that use this list can ignore the
+         * `breakpointResolved` event. They are equivalent.
+         */
+        resolvedBreakpoints?: ResolvedBreakpoint[];
     }
 }
 export declare namespace HeapProfiler {
@@ -18698,13 +18760,21 @@ export declare namespace Runtime {
     }
     interface GetHeapUsageResponse extends ProtocolResponseWithError {
         /**
-         * Used heap size in bytes.
+         * Used JavaScript heap size in bytes.
          */
         usedSize: number;
         /**
-         * Allocated heap size in bytes.
+         * Allocated JavaScript heap size in bytes.
          */
         totalSize: number;
+        /**
+         * Used size in bytes in the embedder's garbage-collected heap.
+         */
+        embedderHeapUsedSize: number;
+        /**
+         * Size in bytes of backing storage for array buffers and external strings.
+         */
+        backingStorageSize: number;
     }
     interface GetPropertiesRequest {
         /**

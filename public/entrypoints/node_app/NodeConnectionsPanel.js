@@ -59,7 +59,7 @@ export class NodeConnectionsPanel extends UI.Panel.Panel {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([nodeConnectionsPanelStyles]);
+        this.registerRequiredCSS(nodeConnectionsPanelStyles);
     }
 }
 export class NodeConnectionsView extends UI.Widget.VBox {
@@ -75,6 +75,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
         const documentationLink = UI.XLink.XLink.create('https://nodejs.org/en/docs/inspector/', i18nString(UIStrings.nodejsDebuggingGuide), undefined, undefined, 'node-js-debugging');
         networkDiscoveryFooter.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.specifyNetworkEndpointAnd, { PH1: documentationLink }));
         this.#list = new UI.ListWidget.ListWidget(this);
+        this.#list.registerRequiredCSS(nodeConnectionsPanelStyles);
         this.#list.element.classList.add('network-discovery-list');
         const placeholder = document.createElement('div');
         placeholder.classList.add('network-discovery-list-empty');
@@ -151,10 +152,6 @@ export class NodeConnectionsView extends UI.Widget.VBox {
                 errorMessage: undefined,
             };
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.#list.registerCSSFiles([nodeConnectionsPanelStyles]);
     }
 }
 //# sourceMappingURL=NodeConnectionsPanel.js.map

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-const { html } = LitHtml;
+import { html, render } from '../../../ui/lit/lit.js';
 // clean-css does not compile this file correctly. So as a workaround adding styles inline.
 const styles = `
   :host {
@@ -159,7 +158,7 @@ export class SplitView extends HTMLElement {
     };
     #render = () => {
         // clang-format off
-        LitHtml.render(html `
+        render(html `
         <div class="wrapper ${this.#mainAxisIdx === 1 ? 'horizontal' : ''}">
           <div class="container">
             <slot name="main"></slot>

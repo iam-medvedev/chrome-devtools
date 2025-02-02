@@ -35,11 +35,11 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ApplicationComponents from './components/components.js';
 import indexedDBViewsStyles from './indexedDBViews.css.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Text in Indexed DBViews of the Application panel
@@ -154,7 +154,7 @@ export class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.S
     }
     async renderReportContent() {
         if (!this.database) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       ${await super.renderReportContent()}
@@ -243,6 +243,7 @@ export class IDBDataView extends UI.View.SimpleView {
     summaryBarElement;
     constructor(model, databaseId, objectStore, index, refreshObjectStoreCallback) {
         super(i18nString(UIStrings.idb));
+        this.registerRequiredCSS(indexedDBViewsStyles);
         this.model = model;
         this.databaseId = databaseId;
         this.isIndex = Boolean(index);
@@ -569,10 +570,6 @@ export class IDBDataView extends UI.View.SimpleView {
             sheet.replaceSync('::selection {background-color: var(--sys-color-state-focus-select);}');
             shadowRoot?.adoptedStyleSheets.push(sheet);
         });
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([indexedDBViewsStyles]);
     }
 }
 export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {

@@ -61,7 +61,7 @@ export declare class BottomUpRootNode extends Node {
     readonly endTime: Types.Timing.Milli;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: Types.Events.Event[], textFilter: TraceFilter, filters: TraceFilter[], startTime: Types.Timing.Milli, endTime: Types.Timing.Milli, eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null);
+    constructor(events: Types.Events.Event[], textFilter: TraceFilter, filters: readonly TraceFilter[], startTime: Types.Timing.Milli, endTime: Types.Timing.Milli, eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null);
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;

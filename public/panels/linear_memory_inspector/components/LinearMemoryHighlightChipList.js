@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import linearMemoryHighlightChipListStyles from './linearMemoryHighlightChipList.css.js';
+import linearMemoryHighlightChipListStylesRaw from './linearMemoryHighlightChipList.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linearMemoryHighlightChipListStyles = new CSSStyleSheet();
+linearMemoryHighlightChipListStyles.replaceSync(linearMemoryHighlightChipListStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an inspected variable's button in the Linear Memory Highlight Chip List.
@@ -21,7 +24,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 export class DeleteMemoryHighlightEvent extends Event {
     static eventName = 'deletememoryhighlight';
     data;
@@ -76,7 +79,7 @@ export class LinearMemoryHighlightChipList extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
-      <div class=${LitHtml.Directives.classMap(classMap)}>
+      <div class=${Lit.Directives.classMap(classMap)}>
         <button class="jump-to-highlight-button" title=${i18nString(UIStrings.jumpToAddress)}
             jslog=${VisualLogging.action('linear-memory-inspector.jump-to-highlight').track({ click: true })}
             @click=${() => this.#onJumpToHighlightClick(highlightInfo.startAddress)}>

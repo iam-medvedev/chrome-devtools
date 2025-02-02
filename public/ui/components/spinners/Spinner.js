@@ -1,9 +1,11 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../lit-html/lit-html.js';
-import spinnerStyles from './spinner.css.js';
-const { html } = LitHtml;
+import { html, render } from '../../lit/lit.js';
+import spinnerStylesRaw from './spinner.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const spinnerStyles = new CSSStyleSheet();
+spinnerStyles.replaceSync(spinnerStylesRaw.cssContent);
 export class Spinner extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
@@ -16,7 +18,7 @@ export class Spinner extends HTMLElement {
         // https://github.com/material-components/material-components-web/tree/master/packages/mdc-circular-progress.
         // Changing the value of the radius will cause errors in animation.
         // clang-format off
-        LitHtml.render(html `
+        render(html `
       <div class="indeterminate-spinner">
         <div class="left-circle-graphic-container">
           <svg class="left-circle-graphic" viewBox="0 0 100 100">

@@ -1,5 +1,5 @@
 import type * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import type * as BaseInsightComponent from './BaseInsightComponent.js';
 type BaseInsightComponent = BaseInsightComponent.BaseInsightComponent<Trace.Insights.Types.InsightModel<{}>>;
@@ -28,7 +28,7 @@ export interface TableData {
     rows: TableDataRow[];
 }
 export interface TableDataRow {
-    values: Array<number | string | LitHtml.LitTemplate>;
+    values: Array<number | string | Lit.LitTemplate>;
     overlays?: Overlays.Overlays.TimelineOverlay[];
 }
 export declare class Table extends HTMLElement {

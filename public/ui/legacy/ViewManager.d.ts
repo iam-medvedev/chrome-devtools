@@ -81,4 +81,4 @@ declare class Location {
     showView(_view: View, _insertBefore?: View | null, _userGesture?: boolean, _omitFocus?: boolean, _shouldSelectTab?: boolean): Promise<void>;
     removeView(_view: View): void;
 }
-export { ViewRegistration, ViewPersistence, getRegisteredViewExtensions, maybeRemoveViewExtension, registerViewExtension, ViewLocationValues, getRegisteredLocationResolvers, registerLocationResolver, ViewLocationCategory, getLocalizedViewLocationCategory, resetViewRegistration, };
+export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, ViewRegistration, };

@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 import '../icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
-import settingDeprecationWarning from './settingDeprecationWarning.css.js';
-const { html } = LitHtml;
+import * as Lit from '../../lit/lit.js';
+import settingDeprecationWarningRaw from './settingDeprecationWarning.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const settingDeprecationWarning = new CSSStyleSheet();
+settingDeprecationWarning.replaceSync(settingDeprecationWarningRaw.cssContent);
+const { html } = Lit;
 export class SettingDeprecationWarning extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
@@ -24,7 +27,7 @@ export class SettingDeprecationWarning extends HTMLElement {
                 void Common.Revealer.reveal(experiment);
             };
         }
-        LitHtml.render(html `<devtools-icon class=${LitHtml.Directives.classMap(classes)} .data=${iconData} title=${warning} @click=${onclick}></devtools-icon>`, this.#shadow, { host: this });
+        Lit.render(html `<devtools-icon class=${Lit.Directives.classMap(classes)} .data=${iconData} title=${warning} @click=${onclick}></devtools-icon>`, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-setting-deprecation-warning', SettingDeprecationWarning);

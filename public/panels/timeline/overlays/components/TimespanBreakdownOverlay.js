@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import styles from './timespanBreakdownOverlay.css.js';
-const { html } = LitHtml;
+import * as Lit from '../../../../ui/lit/lit.js';
+import stylesRaw from './timespanBreakdownOverlay.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const styles = new CSSStyleSheet();
+styles.replaceSync(stylesRaw.cssContent);
+const { html } = Lit;
 export class TimespanBreakdownOverlay extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #canvasRect = null;
@@ -130,7 +133,7 @@ export class TimespanBreakdownOverlay extends HTMLElement {
         ${section.showDuration ?
             html `
             <span class="duration-text">${i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(section.bounds.range)}</span>
-          ` : LitHtml.nothing}
+          ` : Lit.nothing}
           <span class="section-label-text">
             ${section.label}
           </span>
@@ -143,7 +146,7 @@ export class TimespanBreakdownOverlay extends HTMLElement {
             this.classList.toggle('odd-number-of-sections', this.#sections.length % 2 === 1);
             this.classList.toggle('even-number-of-sections', this.#sections.length % 2 === 0);
         }
-        LitHtml.render(html `${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
+        Lit.render(html `${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
         this.checkSectionLabelPositioning();
     }
 }

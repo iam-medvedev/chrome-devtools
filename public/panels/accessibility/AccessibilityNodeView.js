@@ -121,6 +121,7 @@ export class AXNodeSubPane extends AccessibilitySubPane {
     ignoredReasonsTree;
     constructor() {
         super(i18nString(UIStrings.computedProperties));
+        this.registerRequiredCSS(accessibilityNodeStyles);
         this.axNode = null;
         this.contentElement.classList.add('ax-subpane');
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('computed-properties')}`);
@@ -196,10 +197,6 @@ export class AXNodeSubPane extends AccessibilitySubPane {
     setNode(node) {
         super.setNode(node);
         this.axNode = null;
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([accessibilityNodeStyles]);
     }
 }
 export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {

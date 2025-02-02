@@ -30,7 +30,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -54,10 +53,9 @@ import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ExecutionContextSelector } from './ExecutionContextSelector.js';
-const { html, render } = LitHtml;
 const UIStrings = {
     /**
      *@description Title of item in main
@@ -309,6 +307,8 @@ export class MainImpl {
             "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
             "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
             "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
+            "timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */,
+            "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();

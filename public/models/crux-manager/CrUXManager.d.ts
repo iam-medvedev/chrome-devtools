@@ -5,6 +5,10 @@ export type FormFactor = 'DESKTOP' | 'PHONE' | 'TABLET';
 export type DeviceScope = FormFactor | 'ALL';
 export type DeviceOption = DeviceScope | 'AUTO';
 export type PageScope = 'url' | 'origin';
+export interface Scope {
+    pageScope: PageScope;
+    deviceScope: DeviceScope;
+}
 export type ConnectionType = 'offline' | 'slow-2G' | '2G' | '3G' | '4G';
 export interface CrUXRequest {
     effectiveConnectionType?: ConnectionType;
@@ -83,18 +87,10 @@ export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<Even
     getConfigSetting(): Common.Settings.Setting<ConfigSetting>;
     isEnabled(): boolean;
     getFieldDataForPage(pageUrl: string): Promise<PageResult>;
-    /**
-     * In general, this function should use the main document URL
-     * (i.e. the URL after all redirects but before SPA navigations)
-     *
-     * However, we can't detect the main document URL of the current page if it's
-     * navigation occurred before DevTools was first opened. This function will fall
-     * back to the currently inspected URL (i.e. what is displayed in the omnibox) if
-     * the main document URL cannot be found.
-     */
-    getFieldDataForCurrentPage(): Promise<PageResult>;
+    getFieldDataForCurrentPageForTesting(): Promise<PageResult>;
     refresh(): Promise<void>;
     getSelectedDeviceScope(): DeviceScope;
+    getSelectedScope(): Scope;
     getSelectedFieldResponse(): CrUXResponse | null | undefined;
     getSelectedFieldMetricData(fieldMetric: StandardMetricNames): MetricResponse | undefined;
     getFieldResponse(pageScope: PageScope, deviceScope: DeviceScope): CrUXResponse | null | undefined;

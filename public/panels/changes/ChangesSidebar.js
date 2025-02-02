@@ -27,6 +27,7 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
     constructor(workspaceDiff) {
         super();
         this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
+        this.treeoutline.registerRequiredCSS(changesSidebarStyles);
         this.treeoutline.setFocusable(false);
         this.treeoutline.hideOverflow();
         this.treeoutline.setComparator((a, b) => Platform.StringUtilities.compare(a.titleAsText(), b.titleAsText()));
@@ -90,10 +91,6 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
         if (!this.treeoutline.selectedTreeElement) {
             treeElement.select(true);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.treeoutline.registerCSSFiles([changesSidebarStyles]);
     }
 }
 export class UISourceCodeTreeElement extends UI.TreeOutline.TreeElement {

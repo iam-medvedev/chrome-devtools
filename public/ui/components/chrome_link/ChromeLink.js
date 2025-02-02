@@ -5,11 +5,13 @@ import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import { html, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
-import chromeLinkStyles from './chromeLink.css.js';
-const { html } = LitHtml;
+import chromeLinkStylesRaw from './chromeLink.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const chromeLinkStyles = new CSSStyleSheet();
+chromeLinkStyles.replaceSync(chromeLinkStylesRaw.cssContent);
 // Use this component to render links to 'chrome://...'-URLs
 // (for which regular <x-link>s do not work).
 export class ChromeLink extends HTMLElement {
@@ -47,9 +49,9 @@ export class ChromeLink extends HTMLElement {
         urlForContext.search = '';
         const jslogContext = Platform.StringUtilities.toKebabCase(urlForContext.toString());
         // clang-format off
-        LitHtml.render(
+        render(
         /* x-link doesn't work with custom click/keydown handlers */
-        /* eslint-disable rulesdir/no-a-tags-in-lit-html */
+        /* eslint-disable rulesdir/no-a-tags-in-lit */
         html `
         <a href=${this.#href} class="link" target="_blank"
           jslog=${VisualLogging.link().track({ click: true }).context(jslogContext)}

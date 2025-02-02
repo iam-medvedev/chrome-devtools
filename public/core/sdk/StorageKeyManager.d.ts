@@ -1,6 +1,6 @@
-import { type Target } from './Target.js';
-import { SDKModel } from './SDKModel.js';
 import type * as Platform from '../platform/platform.js';
+import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class StorageKeyManager extends SDKModel<EventTypes> {
     #private;
     constructor(target: Target);

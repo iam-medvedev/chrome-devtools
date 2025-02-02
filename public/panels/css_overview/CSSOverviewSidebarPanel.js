@@ -25,6 +25,7 @@ export class CSSOverviewSidebarPanel extends Common.ObjectWrapper.eventMixin(UI.
     containerElement;
     constructor() {
         super(true);
+        this.registerRequiredCSS(cssOverviewSidebarPanelStyles);
         this.contentElement.classList.add('overview-sidebar-panel');
         this.contentElement.addEventListener('click', this.#onItemClick.bind(this));
         this.contentElement.addEventListener('keydown', this.#onItemKeyDown.bind(this));
@@ -128,10 +129,6 @@ export class CSSOverviewSidebarPanel extends Common.ObjectWrapper.eventMixin(UI.
             target.focus();
             target.contentEditable = 'false';
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([cssOverviewSidebarPanelStyles]);
     }
 }
 //# sourceMappingURL=CSSOverviewSidebarPanel.js.map

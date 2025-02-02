@@ -109,7 +109,7 @@
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../ui/lit/bundle-tsconfig.json"
     }
   ]
 }

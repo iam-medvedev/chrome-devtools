@@ -16,7 +16,6 @@ export declare class OpenedWindowDetailsView extends UI.ThrottledWidget.Throttle
     buildTitle(): string;
     setIsWindowClosed(isWindowClosed: boolean): void;
     setTargetInfo(targetInfo: Protocol.Target.TargetInfo): void;
-    wasShown(): void;
 }
 export declare class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     private readonly targetInfo;
@@ -29,5 +28,4 @@ export declare class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidge
     private updateCoopCoepStatus;
     private fillCrossOriginPolicy;
     doUpdate(): Promise<void>;
-    wasShown(): void;
 }

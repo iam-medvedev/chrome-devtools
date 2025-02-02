@@ -2,7 +2,7 @@ import '../../../../ui/components/markdown_view/markdown_view.js';
 import type * as Protocol from '../../../../generated/protocol.js';
 import type { InsightModel } from '../../../../models/trace/insights/types.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import type { TableState } from './Table.js';
 export interface BaseInsightData {
@@ -13,7 +13,7 @@ export interface BaseInsightData {
 export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> extends HTMLElement {
     #private;
     abstract internalName: string;
-    static readonly litTagName: LitHtml.StaticHtml.StaticValue;
+    static readonly litTagName: Lit.StaticHtml.StaticValue;
     get model(): T | null;
     protected data: BaseInsightData;
     readonly sharedTableState: TableState;
@@ -38,8 +38,8 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> e
     toggleTemporaryOverlays(overlays: Overlays.Overlays.TimelineOverlay[] | null, options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     getInitialOverlays(): Overlays.Overlays.TimelineOverlay[];
     protected abstract createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    protected abstract renderContent(): LitHtml.LitTemplate;
+    protected abstract renderContent(): Lit.LitTemplate;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     getEstimatedSavingsBytes(): number | null;
-    protected renderNode(backendNodeId: Protocol.DOM.BackendNodeId, fallbackText?: string): LitHtml.LitTemplate;
+    protected renderNode(backendNodeId: Protocol.DOM.BackendNodeId, fallbackText?: string): Lit.LitTemplate;
 }

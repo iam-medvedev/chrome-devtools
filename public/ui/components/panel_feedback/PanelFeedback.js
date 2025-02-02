@@ -5,10 +5,12 @@ import '../../legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import { html, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import panelFeedbackStyles from './panelFeedback.css.js';
-const { html } = LitHtml;
+import panelFeedbackStylesRaw from './panelFeedback.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const panelFeedbackStyles = new CSSStyleSheet();
+panelFeedbackStyles.replaceSync(panelFeedbackStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Introduction sentence to convey the feature is being actively worked on and we are looking for feedback.
@@ -51,7 +53,7 @@ export class PanelFeedback extends HTMLElement {
             throw new Error('PanelFeedback render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
+        render(html `
       <div class="preview">
         <h2 class="flex">
           <devtools-icon .data=${{

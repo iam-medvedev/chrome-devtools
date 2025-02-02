@@ -1,5 +1,5 @@
-import type * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Platform from '../platform/platform.js';
 export declare const DevToolsStubErrorCode = -32015;
 interface MessageParams {
     [x: string]: any;

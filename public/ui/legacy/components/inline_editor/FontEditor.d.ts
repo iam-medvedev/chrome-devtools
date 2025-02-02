@@ -17,7 +17,6 @@ export declare class FontEditor extends FontEditor_base {
     private fontSelectors;
     private fontsList;
     constructor(propertyMap: Map<string, string>);
-    wasShown(): void;
     private createFontSelectorSection;
     private createFontsList;
     private splitComputedFontArray;

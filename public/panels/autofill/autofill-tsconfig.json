@@ -49,10 +49,10 @@
       "path": "../../models/autofill_manager/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/data_grid/bundle-tsconfig.json"
+      "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
+      "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
     }
   ]
 }

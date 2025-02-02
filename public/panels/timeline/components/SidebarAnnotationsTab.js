@@ -8,12 +8,15 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Utils from '../utils/utils.js';
 import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
-import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
-const { html } = LitHtml;
+import sidebarAnnotationsTabStylesRaw from './sidebarAnnotationsTab.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const sidebarAnnotationsTabStyles = new CSSStyleSheet();
+sidebarAnnotationsTabStyles.replaceSync(sidebarAnnotationsTabStylesRaw.cssContent);
+const { html } = Lit;
 const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
 const entryLabelImageUrl = new URL('../../../Images/performance-panel-entry-label.svg', import.meta.url).toString();
 const timeRangeImageUrl = new URL('../../../Images/performance-panel-time-range.svg', import.meta.url).toString();
@@ -92,6 +95,9 @@ export class SidebarAnnotationsTab extends HTMLElement {
     constructor() {
         super();
         this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting('annotations-hidden');
+    }
+    deduplicatedAnnotations() {
+        return this.#annotations;
     }
     set annotations(annotations) {
         this.#annotations = this.#processAnnotationsList(annotations);
@@ -173,12 +179,12 @@ export class SidebarAnnotationsTab extends HTMLElement {
             };
             // clang-format off
             return html `
-        <span class="annotation-identifier" style=${LitHtml.Directives.styleMap(styleForToAnnotationIdentifier)}>
+        <span class="annotation-identifier" style=${Lit.Directives.styleMap(styleForToAnnotationIdentifier)}>
           ${entryToName}
         </span>`;
             // clang-format on
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     /**
      * Renders the Annotation 'identifier' or 'name' in the annotations list.
@@ -202,7 +208,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                     color,
                 };
                 return html `
-              <span class="annotation-identifier" style=${LitHtml.Directives.styleMap(styleForAnnotationIdentifier)}>
+              <span class="annotation-identifier" style=${Lit.Directives.styleMap(styleForAnnotationIdentifier)}>
                 ${entryName}
               </span>
         `;
@@ -228,7 +234,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
                 // clang-format off
                 return html `
           <div class="entries-link">
-            <span class="annotation-identifier" style=${LitHtml.Directives.styleMap(styleForFromAnnotationIdentifier)}>
+            <span class="annotation-identifier" style=${Lit.Directives.styleMap(styleForFromAnnotationIdentifier)}>
               ${entryFromName}
             </span>
             <devtools-icon class="inline-icon" .data=${{
@@ -291,7 +297,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
     }
     #render() {
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
         <span class="annotations">
           ${this.#annotations.length === 0 ?
             this.#renderTutorialCard() :

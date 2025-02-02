@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import * as Adorners from '../../../ui/components/adorners/adorners.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { SidebarAnnotationsTab } from './SidebarAnnotationsTab.js';
 import { SidebarInsightsTab } from './SidebarInsightsTab.js';
@@ -29,7 +28,6 @@ export class SidebarWidget extends UI.Widget.VBox {
     #tabbedPane = new UI.TabbedPane.TabbedPane();
     #insightsView = new InsightsView();
     #annotationsView = new AnnotationsView();
-    #annotationCount = 0;
     /**
      * Track if the user has opened the sidebar before. We do this so that the
      * very first time they record/import a trace after the sidebar ships, we can
@@ -66,22 +64,13 @@ export class SidebarWidget extends UI.Widget.VBox {
     }
     setAnnotations(updatedAnnotations, annotationEntryToColorMap) {
         this.#annotationsView.setAnnotations(updatedAnnotations, annotationEntryToColorMap);
-        this.#annotationCount = updatedAnnotations.length;
         this.#updateAnnotationsCountBadge();
     }
     #updateAnnotationsCountBadge() {
-        let countAdorner = null;
-        if (this.#annotationCount > 0) {
-            countAdorner = new Adorners.Adorner.Adorner();
-            const countSpan = document.createElement('span');
-            countSpan.textContent = this.#annotationCount.toString();
-            countAdorner.data = {
-                name: 'countWrapper',
-                content: countSpan,
-            };
-            countAdorner.classList.add('annotations-count');
+        const annotations = this.#annotationsView.deduplicatedAnnotations();
+        if (annotations.length) {
+            this.#tabbedPane.setBadge('annotations', annotations.length.toString(), 'primary');
         }
-        this.#tabbedPane.setSuffixElement('annotations', countAdorner);
     }
     setParsedTrace(parsedTrace, metadata) {
         this.#insightsView.setParsedTrace(parsedTrace, metadata);
@@ -127,6 +116,15 @@ class AnnotationsView extends UI.Widget.VBox {
         // set the `annotationEntryToColorMap` first.
         this.#component.annotationEntryToColorMap = annotationEntryToColorMap;
         this.#component.annotations = annotations;
+    }
+    /**
+     * The component "de-duplicates" annotations to ensure implementation details
+     * about how we create pending annotations don't leak into the UI. We expose
+     * these here because we use this count to show the number of annotations in
+     * the small adorner in the sidebar tab.
+     */
+    deduplicatedAnnotations() {
+        return this.#component.deduplicatedAnnotations();
     }
 }
 //# sourceMappingURL=Sidebar.js.map

@@ -45,7 +45,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     escapeKeyCallback;
     constructor(jslogContext) {
         super();
-        this.registerCSSFiles([dialogStyles]);
+        this.registerRequiredCSS(dialogStyles);
         this.contentElement.tabIndex = 0;
         this.contentElement.addEventListener('focus', () => this.widget().focus(), false);
         if (jslogContext) {
@@ -72,7 +72,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         return Dialog.instance;
     }
     show(where) {
-        const document = where instanceof Document ? where : (where ?? InspectorView.instance().element).ownerDocument;
+        const document = (where instanceof Document ? where : (where || InspectorView.instance().element).ownerDocument);
         this.targetDocument = document;
         this.targetDocument.addEventListener('keydown', this.targetDocumentKeyDownHandler, true);
         if (Dialog.instance) {

@@ -1,5 +1,5 @@
 import '../../core/dom_extension/dom_extension.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import { Constraints } from './Geometry.js';
 interface WidgetConstructor<WidgetT extends Widget & WidgetParams, WidgetParams> {
     new (element: WidgetElement<WidgetT, WidgetParams>): WidgetT;
@@ -19,7 +19,7 @@ export declare class WidgetElement<WidgetT extends Widget & WidgetParams, Widget
 interface Constructor<T, Args extends unknown[]> {
     new (...args: Args): T;
 }
-export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof LitHtml.Directives.ref>;
+export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
 export declare class Widget {
     #private;
     readonly element: HTMLElement;
@@ -71,7 +71,7 @@ export declare class Widget {
     onLayout(): void;
     onDetach(): void;
     ownerViewDisposed(): Promise<void>;
-    show(parentElement: Element, insertBefore?: Node | null): void;
+    show(parentElement: Element, insertBefore?: Node | null, suppressOrphanWidgetError?: boolean): void;
     private attach;
     showWidget(): void;
     private showWidgetInternal;
@@ -84,7 +84,9 @@ export declare class Widget {
     restoreScrollPositions(): void;
     doResize(): void;
     doLayout(): void;
-    registerCSSFiles(styleSheets: CSSStyleSheet[]): void;
+    registerRequiredCSS(...cssFiles: {
+        cssContent: string;
+    }[]): void;
     printWidgetHierarchy(): void;
     private collectWidgetHierarchy;
     setDefaultFocusedElement(element: Element | null): void;

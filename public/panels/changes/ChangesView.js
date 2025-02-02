@@ -13,15 +13,24 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ChangesSidebar } from './ChangesSidebar.js';
 import changesViewStyles from './changesView.css.js';
+const CHANGES_VIEW_URL = 'https://developer.chrome.com/docs/devtools/changes';
 const UIStrings = {
     /**
-     *@description Text in Changes View of the Changes tab
+     *@description Text in Changes View of the Changes tab if no change has been made so far.
      */
-    noChanges: 'No changes',
+    noChanges: 'No changes yet',
     /**
-     *@description Text in Changes View of the Changes tab
+     *@description Text in Changes View of the Changes tab to explain the Changes panel.
      */
-    binaryData: 'Binary data',
+    changesViewDescription: 'On this page you can track code changes made within DevTools.',
+    /**
+     *@description Text in Changes View of the Changes tab if the changed content is of a binary type.
+     */
+    noTextualDiff: 'No textual diff available',
+    /**
+     *@description Text in Changes View of the Changes tab when binary data has been changed
+     */
+    binaryDataDescription: 'The changes tab doesn\'t show binary data changes',
     /**
      * @description Text in the Changes tab that indicates how many lines of code have changed in the
      * selected file. An insertion refers to an added line of code. The (+) is a visual cue to indicate
@@ -55,12 +64,14 @@ export class ChangesView extends UI.Widget.VBox {
     changesSidebar;
     selectedUISourceCode;
     #selectedSourceCodeFormattedMapping;
+    #learnMoreLinkElement;
     diffContainer;
     toolbar;
     diffStats;
     diffView;
     constructor() {
         super(true);
+        this.registerRequiredCSS(changesViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('changes').track({ resize: true })}`);
         const splitWidget = new UI.SplitWidget.SplitWidget(true /* vertical */, false /* sidebar on left */);
         const mainWidget = new UI.Widget.VBox();
@@ -86,7 +97,7 @@ export class ChangesView extends UI.Widget.VBox {
         this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('changes.copy', {
             label: i18nLazyString(UIStrings.copy),
         }));
-        this.hideDiff(i18nString(UIStrings.noChanges));
+        this.hideDiff(i18nString(UIStrings.noChanges), i18nString(UIStrings.changesViewDescription), CHANGES_VIEW_URL);
         this.selectedUISourceCodeChanged();
     }
     selectedUISourceCodeChanged() {
@@ -107,7 +118,7 @@ export class ChangesView extends UI.Widget.VBox {
         if (!uiSourceCode) {
             return;
         }
-        const diffResponse = await this.workspaceDiff.requestDiff(uiSourceCode, { shouldFormatDiff: true });
+        const diffResponse = await this.workspaceDiff.requestDiff(uiSourceCode);
         // Diff array with real diff will contain at least 2 lines.
         if (!diffResponse || diffResponse?.diff.length < 2) {
             return;
@@ -160,7 +171,6 @@ export class ChangesView extends UI.Widget.VBox {
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(ChangesView, this);
-        this.registerCSSFiles([changesViewStyles]);
         super.wasShown();
         void this.refreshDiff();
     }
@@ -178,26 +188,38 @@ export class ChangesView extends UI.Widget.VBox {
         }
         const uiSourceCode = this.selectedUISourceCode;
         if (!uiSourceCode.contentType().isTextType()) {
-            this.hideDiff(i18nString(UIStrings.binaryData));
+            this.hideDiff(i18nString(UIStrings.noTextualDiff), i18nString(UIStrings.binaryDataDescription));
             return;
         }
-        const diffResponse = await this.workspaceDiff.requestDiff(uiSourceCode, { shouldFormatDiff: true });
+        const diffResponse = await this.workspaceDiff.requestDiff(uiSourceCode);
         if (this.selectedUISourceCode !== uiSourceCode) {
             return;
         }
         this.#selectedSourceCodeFormattedMapping = diffResponse?.formattedCurrentMapping;
         this.renderDiffRows(diffResponse?.diff);
     }
-    hideDiff(message) {
+    hideDiff(header, text, link) {
         this.diffStats.setText('');
         this.toolbar.setEnabled(false);
         this.diffContainer.style.display = 'none';
-        this.emptyWidget.header = message;
+        this.emptyWidget.header = header;
+        this.emptyWidget.text = text;
+        if (link && !this.#learnMoreLinkElement) {
+            this.#learnMoreLinkElement = this.emptyWidget.appendLink(link);
+        }
+        else if (link && this.#learnMoreLinkElement) {
+            this.#learnMoreLinkElement.setAttribute('href', link);
+            this.#learnMoreLinkElement.setAttribute('title', link);
+        }
+        else if (!link && this.#learnMoreLinkElement) {
+            this.#learnMoreLinkElement.remove();
+            this.#learnMoreLinkElement = undefined;
+        }
         this.emptyWidget.showWidget();
     }
     renderDiffRows(diff) {
         if (!diff || (diff.length === 1 && diff[0][0] === Diff.Diff.Operation.Equal)) {
-            this.hideDiff(i18nString(UIStrings.noChanges));
+            this.hideDiff(i18nString(UIStrings.noChanges), i18nString(UIStrings.changesViewDescription), CHANGES_VIEW_URL);
         }
         else {
             this.diffStats.setText(diffStats(diff));

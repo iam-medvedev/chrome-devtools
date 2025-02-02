@@ -1,9 +1,9 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as Host from '../../core/host/host.js';
 import { AffectedResourcesView } from './AffectedResourcesView.js';
 const UIStrings = {
     /**

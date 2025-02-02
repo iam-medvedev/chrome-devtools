@@ -69,6 +69,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
     loader;
     constructor() {
         super(true);
+        this.registerRequiredCSS(developerResourcesViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('developer-resources').track({ resize: true })}`);
         const toolbarContainer = this.contentElement.createChild('div', 'developer-resource-view-toolbar-container');
         toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
@@ -142,10 +143,6 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
             resourceMatch = i18nString(UIStrings.numberOfResourceMatch, { n: numberOfResourceMatch });
         }
         UI.ARIAUtils.alert(resourceMatch);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([developerResourcesViewStyles]);
     }
 }
 //# sourceMappingURL=DeveloperResourcesView.js.map

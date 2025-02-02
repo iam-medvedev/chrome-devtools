@@ -194,6 +194,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     cssStyleTrackerByCSSModel;
     constructor() {
         super('elements');
+        this.registerRequiredCSS(elementsPanelStyles);
         this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'elements-panel-split-view-state', 325, 325);
         this.splitWidget.addEventListener("SidebarSizeChanged" /* UI.SplitWidget.Events.SIDEBAR_SIZE_CHANGED */, this.updateTreeOutlineVisibleWidth.bind(this));
         this.splitWidget.show(this.element);
@@ -399,7 +400,6 @@ export class ElementsPanel extends UI.Panel.Panel {
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().setFlavor(ElementsPanel, this);
-        this.registerCSSFiles([elementsPanelStyles]);
         for (const treeOutline of this.treeOutlines) {
             // Attach heavy component lazily
             if (treeOutline.element.parentElement !== this.domTreeContainer) {

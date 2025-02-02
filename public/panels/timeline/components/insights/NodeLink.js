@@ -5,8 +5,8 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-const { html } = LitHtml;
+import * as Lit from '../../../../ui/lit/lit.js';
+const { html } = Lit;
 export class NodeLink extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
@@ -56,9 +56,9 @@ export class NodeLink extends HTMLElement {
             template = html `<span>${this.#fallbackText}</span>`;
         }
         else {
-            template = LitHtml.nothing;
+            template = Lit.nothing;
         }
-        LitHtml.render(template, this.#shadow, { host: this });
+        Lit.render(template, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-performance-node-link', NodeLink);

@@ -328,6 +328,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         super();
         this.panel = panel;
         this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
+        this.sidebarTree.registerRequiredCSS(resourcesSidebarStyles);
         this.sidebarTree.element.classList.add('resources-sidebar');
         this.sidebarTree.hideOverflow();
         this.sidebarTree.element.classList.add('filter-all');
@@ -863,10 +864,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             this.previousHoveredElement.hovered = false;
             delete this.previousHoveredElement;
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.sidebarTree.registerCSSFiles([resourcesSidebarStyles]);
     }
 }
 export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {

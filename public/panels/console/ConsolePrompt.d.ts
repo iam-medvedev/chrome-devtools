@@ -31,7 +31,6 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     belowEditorElement(): Element;
     private onTextChanged;
     private requestPreview;
-    wasShown(): void;
     willHide(): void;
     history(): TextEditor.AutocompleteHistory.AutocompleteHistory;
     clearAutocomplete(): void;

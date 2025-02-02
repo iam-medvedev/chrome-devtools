@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../../../front_end/ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../../../front_end/ui/lit-html/lit-html.js';
+import * as Lit from '../../../../../front_end/ui/lit/lit.js';
 import * as RecorderComponents from '../../../../panels/recorder/components/components.js';
 import * as FrontendHelpers from '../../../../testing/EnvironmentHelpers.js';
-const { html } = LitHtml;
+const { html } = Lit;
 await ComponentHelpers.ComponentServerSetup.setup();
 await FrontendHelpers.initializeGlobalVars();
 const container = document.getElementById('container');
@@ -51,7 +51,7 @@ function litRender(template) {
     div.style.margin = '10px';
     div.style.flexDirection = 'row-reverse';
     container?.appendChild(div);
-    LitHtml.render(template, div);
+    Lit.render(template, div);
 }
 litRender(html `
     <devtools-select-button .items=${items} .value=${items[0].value}></devtools-select-button>`);

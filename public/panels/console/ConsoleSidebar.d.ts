@@ -22,7 +22,6 @@ export declare class ConsoleSidebar extends ConsoleSidebar_base {
     onMessageAdded(viewMessage: ConsoleViewMessage): void;
     shouldBeVisible(viewMessage: ConsoleViewMessage): boolean;
     private selectionChanged;
-    wasShown(): void;
 }
 export declare const enum Events {
     FILTER_SELECTED = "FilterSelected"

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../report_view/report_view.js';
-import * as LitHtml from '../../../lit-html/lit-html.js';
+import * as Lit from '../../../lit/lit.js';
 import * as ComponentHelpers from '../../helpers/helpers.js';
-const { html } = LitHtml;
+const { html } = Lit;
 await ComponentHelpers.ComponentServerSetup.setup();
 const exampleRenderHelper = (key, value) => html `
           <devtools-report-key>${key}</devtools-report-key>
@@ -14,7 +14,7 @@ const container = document.querySelector('#container');
 if (!container) {
     throw new Error('Could not find container');
 }
-LitHtml.render(html `
+Lit.render(html `
         <style>
           .source-code {
             font-family: monospace;

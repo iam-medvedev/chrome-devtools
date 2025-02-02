@@ -35,7 +35,6 @@ export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     showExtensionStorage(extensionStorage: ExtensionStorage): void;
     showCookies(cookieFrameTarget: SDK.Target.Target, cookieDomain: string): void;
     clearCookies(target: SDK.Target.Target, cookieDomain: string): void;
-    wasShown(): void;
 }
 export declare class ResourceRevealer implements Common.Revealer.Revealer<SDK.Resource.Resource> {
     reveal(resource: SDK.Resource.Resource): Promise<void>;

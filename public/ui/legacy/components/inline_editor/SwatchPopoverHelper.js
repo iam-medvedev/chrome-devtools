@@ -51,7 +51,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
             this.hide(true);
         }
         VisualLogging.setMappedParent(view.contentElement, anchorElement);
-        this.popover.registerCSSFiles([swatchPopoverStyles]);
+        this.popover.registerRequiredCSS(swatchPopoverStyles);
         this.dispatchEventToListeners("WillShowPopover" /* Events.WILL_SHOW_POPOVER */);
         this.isHidden = false;
         this.anchorElement = anchorElement;

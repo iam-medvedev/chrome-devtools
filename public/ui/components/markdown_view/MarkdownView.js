@@ -5,11 +5,14 @@ import './CodeBlock.js';
 import './MarkdownImage.js';
 import './MarkdownLink.js';
 import * as UI from '../../legacy/legacy.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import markdownViewStyles from './markdownView.css.js';
-const html = LitHtml.html;
-const render = LitHtml.render;
+import markdownViewStylesRaw from './markdownView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const markdownViewStyles = new CSSStyleSheet();
+markdownViewStyles.replaceSync(markdownViewStylesRaw.cssContent);
+const html = Lit.html;
+const render = Lit.render;
 export class MarkdownView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #tokenData = [];
@@ -123,7 +126,7 @@ export class MarkdownLitRenderer {
     customClassMapForToken(type) {
         const classNames = this.#customClasses[type] || new Set();
         const classInfo = Object.fromEntries([...classNames].map(className => [className, true]));
-        return LitHtml.Directives.classMap(classInfo);
+        return Lit.Directives.classMap(classInfo);
     }
     renderChildTokens(token) {
         if ('tokens' in token && token.tokens) {
@@ -132,7 +135,7 @@ export class MarkdownLitRenderer {
         throw new Error('Tokens not found');
     }
     /**
-     * Unescape will get rid of the escaping done by Marked to avoid double escaping due to escaping it also with Lit-html.
+     * Unescape will get rid of the escaping done by Marked to avoid double escaping due to escaping it also with lit.
      * Table taken from: front_end/third_party/marked/package/src/helpers.js
      */
     unescape(text) {

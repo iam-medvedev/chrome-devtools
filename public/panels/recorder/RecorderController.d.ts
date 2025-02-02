@@ -1,8 +1,8 @@
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as Components from './components/components.js';
 import * as Models from './models/models.js';
 import * as Actions from './recorder-actions/recorder-actions.js';
-declare const LitElement: typeof LitHtml.LitElement;
+declare const LitElement: typeof Lit.LitElement;
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-recorder-controller': RecorderController;
@@ -61,6 +61,6 @@ export declare class RecorderController extends LitElement {
     getUserFlow(): Models.Schema.UserFlow | undefined;
     handleActions(actionId: Actions.RecorderActions): void;
     isActionPossible(actionId: Actions.RecorderActions): boolean;
-    protected render(): LitHtml.TemplateResult;
+    protected render(): Lit.TemplateResult;
 }
 export {};

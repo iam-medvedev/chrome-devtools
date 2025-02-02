@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 const UIStrings = {
     /**
@@ -13,9 +13,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LongCriticalNetworkTree.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { html } = LitHtml;
+const { html } = Lit;
 export class LongCriticalNetworkTree extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
     internalName = 'long-critical-network-tree';
     createOverlays() {
         if (!this.model) {
@@ -29,12 +29,12 @@ export class LongCriticalNetworkTree extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         if (!this.model.longChains.length) {
             return html `<div class="insight-section">${i18nString(UIStrings.noLongCriticalNetworkTree)}</div>`;
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
 }
 customElements.define('devtools-performance-long-critical-network-tree', LongCriticalNetworkTree);

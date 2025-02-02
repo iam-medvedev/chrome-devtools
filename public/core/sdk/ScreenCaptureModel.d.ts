@@ -34,6 +34,7 @@ export declare class ScreenCaptureModel extends SDKModel<void> implements Protoc
     frameStartedLoading(_params: Protocol.Page.FrameStartedLoadingEvent): void;
     frameStoppedLoading(_params: Protocol.Page.FrameStoppedLoadingEvent): void;
     frameRequestedNavigation(_params: Protocol.Page.FrameRequestedNavigationEvent): void;
+    frameStartedNavigating(_params: Protocol.Page.FrameStartedNavigatingEvent): void;
     frameSubtreeWillBeDetached(_params: Protocol.Page.FrameSubtreeWillBeDetachedEvent): void;
     frameScheduledNavigation(_params: Protocol.Page.FrameScheduledNavigationEvent): void;
     frameClearedScheduledNavigation(_params: Protocol.Page.FrameClearedScheduledNavigationEvent): void;

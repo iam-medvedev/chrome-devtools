@@ -26,6 +26,7 @@ export class AddDebugInfoURLDialog extends UI.Widget.HBox {
     callback;
     constructor(label, jslogContext, callback) {
         super(/* useShadowDom */ true);
+        this.registerRequiredCSS(dialogStyles);
         this.contentElement.createChild('label').textContent = label;
         this.input = UI.UIUtils.createInput('add-source-map', 'text', 'url');
         this.input.addEventListener('keydown', this.onKeyDown.bind(this), false);
@@ -65,10 +66,6 @@ export class AddDebugInfoURLDialog extends UI.Widget.HBox {
             event.consume(true);
             this.apply();
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([dialogStyles]);
     }
 }
 //# sourceMappingURL=AddSourceMapURLDialog.js.map

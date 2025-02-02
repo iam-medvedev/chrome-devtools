@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as UI from './legacy.js';
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 describeWithEnvironment('NamedBitSetFilterUI', () => {
     it('is functional from template', async () => {
         const container = document.createElement('div');
@@ -23,7 +23,7 @@ describeWithEnvironment('NamedBitSetFilterUI', () => {
         render(html `
             <devtools-named-bit-set-filter
               .options=${{ items: filterItems }}
-              ${LitHtml.Directives.ref((el) => {
+              ${Lit.Directives.ref((el) => {
             if (!el || !(el instanceof UI.FilterBar.NamedBitSetFilterUIElement)) {
                 return;
             }

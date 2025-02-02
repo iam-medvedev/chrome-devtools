@@ -186,8 +186,10 @@ export class NavigatorView extends UI.Widget.VBox {
     groupByFolder;
     constructor(jslogContext, enableAuthoredGrouping) {
         super(true);
+        this.registerRequiredCSS(navigatorViewStyles);
         this.placeholder = null;
         this.scriptsTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
+        this.scriptsTree.registerRequiredCSS(navigatorTreeStyles);
         this.scriptsTree.hideOverflow();
         this.scriptsTree.setComparator(NavigatorView.treeElementsCompare);
         this.scriptsTree.setFocusable(false);
@@ -1029,11 +1031,6 @@ export class NavigatorView extends UI.Widget.VBox {
         if (targetNode) {
             targetNode.setTitle(target.name());
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.scriptsTree.registerCSSFiles([navigatorTreeStyles]);
-        this.registerCSSFiles([navigatorViewStyles]);
     }
 }
 const boostOrderForNode = new WeakSet();

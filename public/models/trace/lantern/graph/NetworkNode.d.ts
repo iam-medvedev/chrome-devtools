@@ -1,5 +1,5 @@
-import { BaseNode } from './BaseNode.js';
 import type * as Lantern from '../types/types.js';
+import { BaseNode } from './BaseNode.js';
 declare class NetworkNode<T = Lantern.AnyNetworkObject> extends BaseNode<T> {
     _request: Lantern.NetworkRequest<T>;
     constructor(networkRequest: Lantern.NetworkRequest<T>);

@@ -81,9 +81,6 @@
       "path": "../../ui/components/adorners/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/data_grid/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/linkifier/bundle-tsconfig.json"
     },
     {
@@ -99,7 +96,7 @@
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "components/bundle-tsconfig.json"

@@ -5,11 +5,14 @@ import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import recordingListViewStyles from './recordingListView.css.js';
-const { html } = LitHtml;
+import recordingListViewStylesRaw from './recordingListView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const recordingListViewStyles = new CSSStyleSheet();
+recordingListViewStyles.replaceSync(recordingListViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description The title of the page that contains a list of saved recordings that the user has..
@@ -111,7 +114,7 @@ export class RecordingListView extends HTMLElement {
     }
     #render = () => {
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
         <div class="wrapper">
           <div class="header">
             <h1>${i18nString(UIStrings.savedRecordings)}</h1>

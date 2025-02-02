@@ -33,9 +33,11 @@ export class NetworkManageCustomHeadersView extends UI.Widget.VBox {
     editor;
     constructor(columnData, addHeaderColumnCallback, changeHeaderColumnCallback, removeHeaderColumnCallback) {
         super(true);
+        this.registerRequiredCSS(networkManageCustomHeadersViewStyles);
         this.contentElement.classList.add('custom-headers-wrapper');
         this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.manageHeaderColumns);
         this.list = new UI.ListWidget.ListWidget(this);
+        this.list.registerRequiredCSS(networkManageCustomHeadersViewStyles);
         this.list.element.classList.add('custom-headers-list');
         const placeholder = document.createElement('div');
         placeholder.classList.add('custom-headers-list-list-empty');
@@ -54,9 +56,8 @@ export class NetworkManageCustomHeadersView extends UI.Widget.VBox {
         this.contentElement.tabIndex = 0;
     }
     wasShown() {
+        super.wasShown();
         this.headersUpdated();
-        this.list.registerCSSFiles([networkManageCustomHeadersViewStyles]);
-        this.registerCSSFiles([networkManageCustomHeadersViewStyles]);
     }
     headersUpdated() {
         this.list.clear();

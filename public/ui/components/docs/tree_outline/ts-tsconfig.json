@@ -58,7 +58,7 @@
       "path": "../../tree_outline/bundle-tsconfig.json"
     },
     {
-      "path": "../../../lit-html/bundle-tsconfig.json"
+      "path": "../../../lit/bundle-tsconfig.json"
     }
   ]
 }

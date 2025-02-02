@@ -22,6 +22,5 @@ export declare class BreakpointEditDialog extends UI.Widget.Widget {
     private getPlaceholder;
     private updateTooltip;
     finishEditing(committed: boolean, condition: string): void;
-    wasShown(): void;
     get editorForTest(): TextEditor.TextEditor.TextEditor;
 }

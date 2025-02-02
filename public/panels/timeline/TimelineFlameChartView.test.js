@@ -17,6 +17,8 @@ class MockViewDelegate {
     select(selection) {
         this.selection = selection;
     }
+    set3PCheckboxDisabled(_disabled) {
+    }
     selectEntryAtTime(_events, _time) {
     }
     highlightEvent(_event) {

@@ -319,7 +319,11 @@ const UIStrings = {
     /**
      * @description Title for the Dim 3rd Parties checkbox.
      */
-    dimThirdParties: 'Dim 3rd Parties',
+    dimThirdParties: 'Dim 3rd parties',
+    /**
+     * @description Description for the Dim 3rd Parties checkbox tooltip describing how 3rd parties are classified.
+     */
+    thirdPartiesByThirdPartyWeb: '3rd parties classified by third-party-web',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -346,6 +350,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     #minimapComponent = new TimelineMiniMap();
     #viewMode = { mode: 'LANDING_PAGE' };
     #dimThirdPartiesSetting = null;
+    #thirdPartyCheckbox = null;
     /**
      * We get given any filters for a new trace when it is recorded/imported.
      * Because the user can then use the dropdown to navigate to another trace,
@@ -435,6 +440,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     #onMainEntryHovered;
     constructor(traceModel) {
         super('timeline');
+        this.registerRequiredCSS(timelinePanelStyles);
         const adornerContent = document.createElement('span');
         adornerContent.innerHTML = `<div style="
       font-size: 12px;
@@ -618,11 +624,25 @@ export class TimelinePanel extends UI.Panel.Panel {
         });
     }
     #setActiveInsight(insight) {
+        // When an insight is selected, ensure that the 3P checkbox is disabled
+        // to avoid dimming interference.
         if (insight) {
             this.#splitWidget.showBoth();
         }
         this.#sideBar.setActiveInsight(insight);
         this.flameChart.setActiveInsight(insight);
+    }
+    /**
+     * This "disables" the 3P checkbox in the toolbar.
+     * Disabling here does a couple of things:
+     * 1) makes the checkbox dimmed and unclickable
+     * 2) gives the checkbox UI an indeterminate state
+     */
+    set3PCheckboxDisabled(disabled) {
+        if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
+            this.#thirdPartyCheckbox?.applyEnabledState(!disabled);
+            this.#thirdPartyCheckbox?.setIndeterminate(disabled);
+        }
     }
     static instance(opts = { forceNew: null, isNode: false }) {
         const { forceNew, isNode: isNodeMode } = opts;
@@ -660,7 +680,6 @@ export class TimelinePanel extends UI.Panel.Panel {
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().setFlavor(TimelinePanel, this);
-        this.registerCSSFiles([timelinePanelStyles]);
         // Record the performance tool load time.
         Host.userMetrics.panelLoaded('timeline', 'DevTools.Launch.Timeline');
         const cruxManager = CrUXManager.CrUXManager.instance();
@@ -977,7 +996,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.panelToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(showIgnoreListSetting));
         if (Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */) &&
             this.#dimThirdPartiesSetting) {
-            const dimThirdPartiesCheckbox = this.createSettingCheckbox(this.#dimThirdPartiesSetting, i18nString(UIStrings.dimThirdParties));
+            const dimThirdPartiesCheckbox = this.createSettingCheckbox(this.#dimThirdPartiesSetting, i18nString(UIStrings.thirdPartiesByThirdPartyWeb));
+            this.#thirdPartyCheckbox = dimThirdPartiesCheckbox;
             this.panelToolbar.appendToolbarItem(dimThirdPartiesCheckbox);
         }
         // Isolate selector
@@ -1851,7 +1871,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (!parsedTrace) {
             return;
         }
-        const checkboxState = this.#dimThirdPartiesSetting?.get() ?? false;
+        const checkboxState = this.#dimThirdPartiesSetting?.getIfNotDisabled() ?? false;
         const thirdPartyEvents = this.#entityMapper?.thirdPartyEvents() ?? [];
         if (checkboxState && thirdPartyEvents.length) {
             this.flameChart.setActiveThirdPartyDimmingSetting(thirdPartyEvents);
@@ -2397,7 +2417,7 @@ export class StatusPane extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([timelineStatusDialogStyles]);
+        this.registerRequiredCSS(timelineStatusDialogStyles);
     }
 }
 let loadTimelineHandlerInstance;

@@ -26,7 +26,6 @@ export declare class AXBreadcrumbsPane extends AccessibilitySubPane {
     private setHoveredBreadcrumb;
     private inspectDOMNode;
     private contextMenuEventFired;
-    wasShown(): void;
 }
 export declare class AXBreadcrumb {
     private readonly axNodeInternal;

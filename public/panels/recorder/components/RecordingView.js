@@ -16,11 +16,14 @@ import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_h
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import recordingViewStyles from './recordingView.css.js';
-const { html } = LitHtml;
+import recordingViewStylesRaw from './recordingView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const recordingViewStyles = new CSSStyleSheet();
+recordingViewStyles.replaceSync(recordingViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Depicts that the recording was done on a mobile device (e.g., a smartphone or tablet).
@@ -627,7 +630,7 @@ export class RecordingView extends HTMLElement {
       <div class="settings-row">
         <div class="settings-container">
           <div
-            class=${LitHtml.Directives.classMap(replaySettingsButtonClassMap)}
+            class=${Lit.Directives.classMap(replaySettingsButtonClassMap)}
             @keydown=${isEditable && this.#onReplaySettingsKeydown}
             @click=${isEditable && this.#onToggleReplaySettings}
             tabindex="0"
@@ -642,7 +645,7 @@ export class RecordingView extends HTMLElement {
                   </devtools-icon>`
             : ''}
           </div>
-          <div class=${LitHtml.Directives.classMap(replaySettingsClassMap)}>
+          <div class=${Lit.Directives.classMap(replaySettingsClassMap)}>
             ${replaySettingsFragments.length
             ? replaySettingsFragments
             : html `<div>${i18nString(UIStrings.default)}</div>`}
@@ -943,11 +946,11 @@ export class RecordingView extends HTMLElement {
                   id="title-input"
                   .contentEditable=${isTitleEditable ? 'true' : 'false'}
                   jslog=${VisualLogging.value('title').track({ change: true })}
-                  class=${LitHtml.Directives.classMap({
+                  class=${Lit.Directives.classMap({
             'has-error': this.#isTitleInvalid,
             disabled: !isTitleEditable,
         })}
-                  .innerText=${LitHtml.Directives.live(title)}></span>
+                  .innerText=${Lit.Directives.live(title)}></span>
             <div class="title-button-bar">
               <devtools-button
                 @click=${this.#onEditTitleButtonClick}
@@ -1021,8 +1024,8 @@ export class RecordingView extends HTMLElement {
             'was-failure': this.#lastReplayResult === "Failure" /* Models.RecordingPlayer.ReplayResult.FAILURE */,
         };
         // clang-format off
-        LitHtml.render(html `
-      <div @click=${this.#onWrapperClick} class=${LitHtml.Directives.classMap(classNames)}>
+        Lit.render(html `
+      <div @click=${this.#onWrapperClick} class=${Lit.Directives.classMap(classNames)}>
         <div class="main">
           ${this.#renderHeader()}
           ${this.#extensionDescriptor

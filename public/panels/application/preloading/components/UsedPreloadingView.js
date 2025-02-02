@@ -12,12 +12,15 @@ import * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import * as PreloadingHelper from '../helper/helper.js';
 import { prefetchFailureReason, prerenderFailureReason } from './PreloadingString.js';
-import usedPreloadingStyles from './usedPreloadingView.css.js';
-const { html } = LitHtml;
+import usedPreloadingStylesRaw from './usedPreloadingView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const usedPreloadingStyles = new CSSStyleSheet();
+usedPreloadingStyles.replaceSync(usedPreloadingStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Header for preloading status.
@@ -128,7 +131,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     async #render() {
         await RenderCoordinator.write('UsedPreloadingView render', () => {
-            LitHtml.render(this.#renderInternal(), this.#shadow, { host: this });
+            Lit.render(this.#renderInternal(), this.#shadow, { host: this });
         });
     }
     #renderInternal() {
@@ -217,7 +220,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
             assertNotNullOrUndefined(prerender);
             maybeFailureReasonMessage = prerenderFailureReason(prerender);
         }
-        let maybeFailureReason = LitHtml.nothing;
+        let maybeFailureReason = Lit.nothing;
         if (maybeFailureReasonMessage !== undefined) {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
@@ -253,7 +256,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     #maybeMismatchedSections(kind) {
         if (kind !== "NoPreloads" /* UsedKind.NO_PRELOADS */ || this.#data.previousAttempts.length === 0) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const rows = this.#data.previousAttempts.map(attempt => {
             return {
@@ -286,7 +289,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
     #maybeMismatchedHTTPHeadersSections() {
         const attempt = this.#data.previousAttempts.find(attempt => attempt.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */ && attempt.mismatchedHeaders !== null);
         if (attempt === undefined) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         if (attempt.key.url !== this.#data.pageURL) {
             // This place should never be reached since mismatched headers is reported only if the activation is attempted.

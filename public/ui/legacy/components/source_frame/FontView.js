@@ -57,6 +57,7 @@ export class FontView extends UI.View.SimpleView {
     inResize;
     constructor(mimeType, contentProvider) {
         super(i18nString(UIStrings.font));
+        this.registerRequiredCSS(fontViewStyles);
         this.element.classList.add('font-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('font-view')}`);
         this.url = contentProvider.contentURL();
@@ -111,8 +112,6 @@ export class FontView extends UI.View.SimpleView {
         this.element.appendChild(this.fontPreviewElement);
     }
     wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([fontViewStyles]);
         this.createContentIfNeeded();
         this.updateFontPreviewSize();
     }

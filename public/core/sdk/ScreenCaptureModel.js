@@ -97,6 +97,8 @@ export class ScreenCaptureModel extends SDKModel {
     }
     frameRequestedNavigation(_params) {
     }
+    frameStartedNavigating(_params) {
+    }
     frameSubtreeWillBeDetached(_params) {
     }
     frameScheduledNavigation(_params) {

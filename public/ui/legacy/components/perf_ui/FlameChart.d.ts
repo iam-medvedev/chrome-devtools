@@ -170,13 +170,13 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private rawTimelineData?;
     private forceDecorationCache?;
     private entryColorsCache?;
-    private entryIndicesToNotDim?;
-    private entryIndicesToDim?;
     private colorDimmingCache;
     private totalTime?;
     private lastPopoverState;
+    private dimIndicies?;
+    /** When true, all undimmed entries are outlined. When an array, only those indices are outlined (if not dimmed). */
+    private dimShouldOutlineUndimmedEntries;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
-    wasShown(): void;
     willHide(): void;
     canvasBoundingClientRect(): DOMRect | null;
     /**
@@ -195,8 +195,9 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     enableRuler(enable: boolean): void;
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
-    enableDimming(entryIndices: number[], inclusive: boolean, shouldAddOutlines: boolean): void;
+    enableDimming(entryIndices: number[], inclusive: boolean, outline: boolean | number[]): void;
     disableDimming(): void;
+    isDimming(): boolean;
     getColorForEntry(entryIndex: number): string;
     highlightEntry(entryIndex: number): void;
     hideHighlight(): void;
@@ -342,12 +343,13 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     /**
      * Preprocess the data to be drawn to speed the rendering time.
      * Especifically:
-     *  - Groups events into color buckets.
+     *  - Groups events into draw batches - same color + same outline - to help drawing performance
+     *    by reducing how often `context.fillStyle` is changed.
      *  - Discards non visible events.
      *  - Gathers marker events (LCP, FCP, DCL, etc.).
      *  - Gathers event titles that should be rendered.
      */
-    private getDrawableData;
+    private getDrawBatches;
     /**
      * The function to draw the group headers. It will draw the title by default.
      * And when a group is hovered, it will add a edit button.

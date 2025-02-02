@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as LitHtml from '../lit-html/lit-html.js';
+import { html } from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { html as xhtml } from './Fragment.js';
 import { Tooltip } from './Tooltip.js';
 import { addReferrerToURLIfNecessary, copyLinkAddressLabel, MaxLengthForDisplayedURLs, openLinkExternallyLabel, } from './UIUtils.js';
 import { XElement } from './XElement.js';
-const { html } = LitHtml;
 export class XLink extends XElement {
     hrefInternal;
     clickable;

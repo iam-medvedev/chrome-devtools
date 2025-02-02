@@ -9,10 +9,13 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import permissionsPolicySectionStyles from './permissionsPolicySection.css.js';
-const { html } = LitHtml;
+import permissionsPolicySectionStylesRaw from './permissionsPolicySection.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const permissionsPolicySectionStyles = new CSSStyleSheet();
+permissionsPolicySectionStyles.replaceSync(permissionsPolicySectionStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Label for a button. When clicked more details (for the content this button refers to) will be shown.
@@ -87,7 +90,7 @@ export class PermissionsPolicySection extends HTMLElement {
     #renderAllowed() {
         const allowed = this.#permissionsPolicySectionData.policies.filter(p => p.allowed).map(p => p.feature).sort();
         if (!allowed.length) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-key>${i18nString(UIStrings.allowedFeatures)}</devtools-report-key>
@@ -100,7 +103,7 @@ export class PermissionsPolicySection extends HTMLElement {
         const disallowed = this.#permissionsPolicySectionData.policies.filter(p => !p.allowed)
             .sort((a, b) => a.feature.localeCompare(b.feature));
         if (!disallowed.length) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         if (!this.#permissionsPolicySectionData.showDetails) {
             return html `
@@ -164,9 +167,9 @@ export class PermissionsPolicySection extends HTMLElement {
           <div class="block-reason">${blockReasonText}</div>
           <div>
             ${linkTargetDOMNode ? renderIconLink('code-circle', i18nString(UIStrings.clickToShowIframe), () => Common.Revealer.reveal(linkTargetDOMNode), 'reveal-in-elements') :
-                LitHtml.nothing}
+                Lit.nothing}
             ${linkTargetRequest ? renderIconLink('arrow-up-down-circle', i18nString(UIStrings.clickToShowHeader), revealHeader, 'reveal-in-network') :
-                LitHtml.nothing}
+                Lit.nothing}
           </div>
         </div>
       `;
@@ -192,10 +195,10 @@ export class PermissionsPolicySection extends HTMLElement {
         await RenderCoordinator.write('PermissionsPolicySection render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
           <devtools-report-section-header>${i18n.i18n.lockedString('Permissions Policy')}</devtools-report-section-header>
           ${this.#renderAllowed()}
-          ${LitHtml.Directives.until(this.#renderDisallowed(), LitHtml.nothing)}
+          ${Lit.Directives.until(this.#renderDisallowed(), Lit.nothing)}
           <devtools-report-divider></devtools-report-divider>
         `, this.#shadow, { host: this });
             // clang-format on

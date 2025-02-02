@@ -1,48 +1,39 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { defaultTraceEvent } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('ScreenshotsHandler', function () {
-    const baseEvent = {
-        ...defaultTraceEvent,
-        name: 'Screenshot',
-        // Ensure that the screenshots are held against the pid & tid values
-        // that match the Browser process and CrBrowserMain in defaultTraceEvents.
-        pid: Trace.Types.Events.ProcessID(8017),
-        tid: Trace.Types.Events.ThreadID(775),
-        ts: Trace.Types.Timing.Micro(0),
-        args: {},
-        cat: 'test',
-        ph: "O" /* Trace.Types.Events.Phase.OBJECT_SNAPSHOT */,
-    };
-    let baseEvents;
     beforeEach(async function () {
-        // The screenshot handler requires the meta handler because it needs
-        // to know the browser process and thread IDs. Here, then, we reset
-        // and later we will pass events to the meta handler, otherwise the
-        // screenshots handler will fail.
         Trace.Handlers.ModelHandlers.Meta.reset();
         Trace.Handlers.ModelHandlers.Screenshots.reset();
     });
-    describe('frames', () => {
-        it('obtains them if present', async function () {
-            const defaultTraceEvents = await TraceLoader.rawEvents(this, 'basic.json.gz');
-            baseEvents = [
-                ...defaultTraceEvents,
-                { ...baseEvent, ts: Trace.Types.Timing.Micro(100) },
-                { ...baseEvent, ts: Trace.Types.Timing.Micro(200) },
-            ];
-            Trace.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(baseEvents);
-            for (const event of baseEvents) {
+    describe('supporting old and new screenshot formats', () => {
+        async function runHandler(events) {
+            Trace.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(events);
+            for (const event of events) {
                 Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
                 Trace.Handlers.ModelHandlers.Screenshots.handleEvent(event);
             }
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.Screenshots.finalize();
-            const data = Trace.Handlers.ModelHandlers.Screenshots.data().all;
-            assert.lengthOf(data, 2);
+        }
+        it('finds the screenshots in traces using the OBJECT_SNAPSHOT screenshot format', async function () {
+            const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
+            await runHandler(events);
+            const data = Trace.Handlers.ModelHandlers.Screenshots.data();
+            assert.isOk(data.legacySyntheticScreenshots);
+            assert.isNull(data.screenshots);
+            assert.lengthOf(data.legacySyntheticScreenshots, 18);
+        });
+        // TODO: leave explainer comment here
+        it('finds the screenshots in traces using the new instant event screenshot format', async function () {
+            const events = await TraceLoader.rawEvents(this, 'web-dev-screenshot-source-ids.json.gz');
+            await runHandler(events);
+            const data = Trace.Handlers.ModelHandlers.Screenshots.data();
+            assert.isOk(data.screenshots);
+            assert.isNull(data.legacySyntheticScreenshots);
+            assert.lengthOf(data.screenshots, 20);
         });
     });
     describe('presentation timestamps', () => {
@@ -63,8 +54,9 @@ describe('ScreenshotsHandler', function () {
             }
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.Screenshots.finalize();
-            const syntheticScreenshots = Trace.Handlers.ModelHandlers.Screenshots.data().all;
-            const originalScreenshotEvents = events.filter(Trace.Types.Events.isScreenshot);
+            const syntheticScreenshots = Trace.Handlers.ModelHandlers.Screenshots.data().legacySyntheticScreenshots;
+            assert.isOk(syntheticScreenshots);
+            const originalScreenshotEvents = events.filter(Trace.Types.Events.isLegacyScreenshot);
             assert.strictEqual(syntheticScreenshots.length, originalScreenshotEvents.length);
             for (const oEvent of originalScreenshotEvents) {
                 assert.notStrictEqual(oEvent.id, '0x1'); // The id (frame sequence) shouldn't be the old default of 1.
@@ -85,8 +77,9 @@ describe('ScreenshotsHandler', function () {
             }
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.Screenshots.finalize();
-            const syntheticScreenshots = Trace.Handlers.ModelHandlers.Screenshots.data().all;
-            const originalScreenshotEvents = events.filter(Trace.Types.Events.isScreenshot);
+            const syntheticScreenshots = Trace.Handlers.ModelHandlers.Screenshots.data().legacySyntheticScreenshots;
+            const originalScreenshotEvents = events.filter(Trace.Types.Events.isLegacyScreenshot);
+            assert.isOk(syntheticScreenshots);
             assert.strictEqual(syntheticScreenshots.length, originalScreenshotEvents.length);
             for (const oEvent of originalScreenshotEvents) {
                 assert.strictEqual(oEvent.id, '0x1'); // The ids here aren't the new frame sequence, but the hardcoded 1.

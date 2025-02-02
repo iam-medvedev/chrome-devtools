@@ -214,6 +214,7 @@ export class NetworkPanel extends UI.Panel.Panel {
     displayScreenshotDelay;
     constructor(displayScreenshotDelay) {
         super('network');
+        this.registerRequiredCSS(networkPanelStyles);
         this.displayScreenshotDelay = displayScreenshotDelay;
         this.networkLogShowOverviewSetting =
             Common.Settings.Settings.instance().createSetting('network-log-show-overview', true);
@@ -529,13 +530,14 @@ export class NetworkPanel extends UI.Panel.Panel {
         return this.networkLogView.elementsToRestoreScrollPositionsFor();
     }
     wasShown() {
+        super.wasShown();
         UI.Context.Context.instance().setFlavor(NetworkPanel, this);
-        this.registerCSSFiles([networkPanelStyles]);
         // Record the network tool load time after the panel has loaded.
         Host.userMetrics.panelLoaded('network', 'DevTools.Launch.Network');
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(NetworkPanel, null);
+        super.willHide();
     }
     revealAndHighlightRequest(request) {
         this.hideRequestPanel();

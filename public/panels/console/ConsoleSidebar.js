@@ -53,6 +53,7 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.setMinimumSize(125, 0);
         this.tree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
+        this.tree.registerRequiredCSS(consoleSidebarStyles);
         this.tree.hideOverflow();
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.contentElement.appendChild(this.tree.element);
@@ -100,10 +101,6 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     selectionChanged(event) {
         this.selectedTreeElement = event.data;
         this.dispatchEventToListeners("FilterSelected" /* Events.FILTER_SELECTED */);
-    }
-    wasShown() {
-        super.wasShown();
-        this.tree.registerCSSFiles([consoleSidebarStyles]);
     }
 }
 class ConsoleSidebarTreeElement extends UI.TreeOutline.TreeElement {

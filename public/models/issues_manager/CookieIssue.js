@@ -252,6 +252,7 @@ export class CookieIssue extends Issue {
                 UIStrings.consoleTpcdWarningMessage, {
                 url: this.#issueDetails.request?.url,
                 affectedResources: { requestId: this.#issueDetails.request?.requestId, issueId: this.issueId },
+                isCookieReportIssue: true
             });
         }
         return;

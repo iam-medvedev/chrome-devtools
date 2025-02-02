@@ -8,7 +8,6 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
-import { StringMatcher, URLMatcher, } from './PropertyMatchers.js';
 import { unescapeCssString } from './StylesSidebarPane.js';
 const UIStrings = {
     /**
@@ -179,7 +178,7 @@ export class URLRenderer {
         return [container];
     }
     matcher() {
-        return new URLMatcher();
+        return new SDK.CSSPropertyParserMatchers.URLMatcher();
     }
 }
 export class StringRenderer {
@@ -190,7 +189,7 @@ export class StringRenderer {
         return [element];
     }
     matcher() {
-        return new StringMatcher();
+        return new SDK.CSSPropertyParserMatchers.StringMatcher();
     }
 }
 //# sourceMappingURL=PropertyRenderer.js.map

@@ -5,9 +5,9 @@ import * as Trace from '../../../../models/trace/trace.js';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import * as Insights from './insights.js';
-const { html } = LitHtml;
+const { html } = Lit;
 describeWithEnvironment('BaseInsightComponent', () => {
     const { BaseInsightComponent } = Insights.BaseInsightComponent;
     class TestInsightComponent extends BaseInsightComponent {

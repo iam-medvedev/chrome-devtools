@@ -74,9 +74,9 @@ export class TimelineLoader {
         const loader = new TimelineLoader(client);
         loader.#traceIsCPUProfile = true;
         try {
-            const events = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
+            const contents = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
             window.setTimeout(async () => {
-                void loader.addEvents(events);
+                void loader.addEvents(contents.traceEvents);
             });
         }
         catch (e) {
@@ -230,8 +230,8 @@ export class TimelineLoader {
         return this.#traceFinalizedPromiseForTest;
     }
     #parseCPUProfileFormatFromFile(parsedTrace) {
-        const traceEvents = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, Trace.Types.Events.ThreadID(1));
-        this.#collectEvents(traceEvents);
+        const traceFile = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, Trace.Types.Events.ThreadID(1));
+        this.#collectEvents(traceFile.traceEvents);
     }
     #collectEvents(events) {
         this.#collectedEvents = this.#collectedEvents.concat(events);

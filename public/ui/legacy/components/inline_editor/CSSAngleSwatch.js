@@ -1,11 +1,14 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../../lit-html/lit-html.js';
-import cssAngleSwatchStyles from './cssAngleSwatch.css.js';
+import * as Lit from '../../../lit/lit.js';
+import cssAngleSwatchStylesRaw from './cssAngleSwatch.css.js';
 import { get2DTranslationsForAngle } from './CSSAngleUtils.js';
-const { render, html } = LitHtml;
-const styleMap = LitHtml.Directives.styleMap;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssAngleSwatchStyles = new CSSStyleSheet();
+cssAngleSwatchStyles.replaceSync(cssAngleSwatchStylesRaw.cssContent);
+const { render, html } = Lit;
+const styleMap = Lit.Directives.styleMap;
 const swatchWidth = 11;
 export class CSSAngleSwatch extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });

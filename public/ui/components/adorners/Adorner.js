@@ -1,10 +1,12 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualElements from '../../visual_logging/visual_logging.js';
-import adornerStyles from './adorner.css.js';
-const { render, html } = LitHtml;
+import adornerStylesRaw from './adorner.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const adornerStyles = new CSSStyleSheet();
+adornerStyles.replaceSync(adornerStylesRaw.cssContent);
 export class Adorner extends HTMLElement {
     name = '';
     #shadow = this.attachShadow({ mode: 'open' });
@@ -16,11 +18,18 @@ export class Adorner extends HTMLElement {
     set data(data) {
         this.name = data.name;
         this.#jslogContext = data.jslogContext;
-        data.content.slot = 'content';
-        this.#content?.remove();
-        this.append(data.content);
-        this.#content = data.content;
+        if (data.content) {
+            data.content.slot = 'content';
+            this.#content?.remove();
+            this.append(data.content);
+            this.#content = data.content;
+        }
         this.#render();
+    }
+    cloneNode(deep) {
+        const node = super.cloneNode(deep);
+        node.data = { name: this.name, content: this.#content, jslogContext: this.#jslogContext };
+        return node;
     }
     connectedCallback() {
         if (!this.getAttribute('aria-label')) {

@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CookieControlsView } from './CookieControlsView.js';
 import { CookieReportView } from './CookieReportView.js';
@@ -493,7 +493,6 @@ export function createHighlightedUrl(url, securityState) {
     highlightedUrl.createChild('span').textContent = content;
     return highlightedUrl;
 }
-const { render, html } = LitHtml;
 export class SecurityPanel extends UI.Panel.Panel {
     view;
     mainView;
@@ -548,6 +547,7 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.securityModel = null;
         SDK.TargetManager.TargetManager.instance().observeModels(SecurityModel, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+        this.sidebar.showLastSelectedElement();
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -772,6 +772,7 @@ export class SecurityMainView extends UI.Widget.VBox {
     securityState;
     constructor(element) {
         super(undefined, undefined, element);
+        this.registerRequiredCSS(lockIconStyles, mainViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('security.main-view')}`);
         this.setMinimumSize(200, 100);
         this.contentElement.classList.add('security-main-view');
@@ -1101,16 +1102,13 @@ export class SecurityMainView extends UI.Widget.VBox {
         e.consume();
         void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([{ filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey }]));
     }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([lockIconStyles, mainViewStyles]);
-    }
 }
 export class SecurityOriginView extends UI.Widget.VBox {
     panel;
     originLockIcon;
     constructor(panel, origin, originState) {
         super();
+        this.registerRequiredCSS(originViewStyles, lockIconStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('security.origin-view')}`);
         this.panel = panel;
         this.setMinimumSize(200, 100);
@@ -1342,10 +1340,6 @@ export class SecurityOriginView extends UI.Widget.VBox {
         const icon = getSecurityStateIconForDetailedView(newSecurityState, `security-property security-property-${newSecurityState}`);
         this.originLockIcon.appendChild(icon);
     }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([originViewStyles, lockIconStyles]);
-    }
 }
 export class SecurityDetailsTable {
     elementInternal;
@@ -1365,6 +1359,21 @@ export class SecurityDetailsTable {
         }
         else {
             valueCell.appendChild(value);
+        }
+    }
+}
+export class SecurityRevealer {
+    async reveal(cookieReportView) {
+        await UI.ViewManager.ViewManager.instance().showView('security');
+        const view = UI.ViewManager.ViewManager.instance().view('security');
+        if (view) {
+            const securityPanel = await view.widget();
+            if (securityPanel instanceof SecurityPanel) {
+                securityPanel.setVisibleView(cookieReportView);
+            }
+            else {
+                throw new Error('Expected securityPanel to be an instance of SecurityPanel');
+            }
         }
     }
 }

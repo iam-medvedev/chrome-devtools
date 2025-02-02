@@ -14,10 +14,12 @@ export class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement 
     showElement() {
         throw new Error('Unimplemented Method');
     }
-    onselect() {
-        const id = this.elemId;
-        this.listItemElement.dispatchEvent(new CustomEvent('update-sidebar-selection', { bubbles: true, composed: true, detail: { id } }));
-        this.showElement();
+    onselect(selectedByUser) {
+        if (selectedByUser) {
+            const id = this.elemId;
+            this.listItemElement.dispatchEvent(new CustomEvent('update-sidebar-selection', { bubbles: true, composed: true, detail: { id } }));
+            this.showElement();
+        }
         return false;
     }
 }

@@ -123,6 +123,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #animationGroupUpdatedThrottler = new Common.Throttler.Throttler(10);
     constructor() {
         super(true);
+        this.registerRequiredCSS(animationTimelineStyles);
         this.element.classList.add('animations-timeline');
         this.element.setAttribute('jslog', `${VisualLogging.panel('animations').track({ resize: true })}`);
         this.#timelineControlsResizer = this.contentElement.createChild('div', 'timeline-controls-resizer');
@@ -186,11 +187,11 @@ export class AnimationTimeline extends UI.Widget.VBox {
         return this.#groupBuffer;
     }
     wasShown() {
+        super.wasShown();
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
             this.#addExistingAnimationGroups(animationModel);
             this.addEventListeners(animationModel);
         }
-        this.registerCSSFiles([animationTimelineStyles]);
     }
     willHide() {
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {

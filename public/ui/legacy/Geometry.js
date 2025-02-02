@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import * as SDK from '../../core/sdk/sdk.js';
 const EPS = 1e-5;
 export class Vector {
     x;
@@ -79,7 +80,7 @@ export class CubicBezier {
         this.controlPoints = [point1, point2];
     }
     static parse(text) {
-        const keywordValues = CubicBezier.KeywordValues;
+        const keywordValues = SDK.CSSMetadata.CubicBezierKeywordValues;
         const value = text.toLowerCase().replace(/\s+/g, '');
         if (keywordValues.has(value)) {
             return CubicBezier.parse(keywordValues.get(value));
@@ -103,7 +104,7 @@ export class CubicBezier {
     }
     asCSSText() {
         const raw = 'cubic-bezier(' + this.controlPoints.join(', ') + ')';
-        const keywordValues = CubicBezier.KeywordValues;
+        const keywordValues = SDK.CSSMetadata.CubicBezierKeywordValues;
         for (const [keyword, value] of keywordValues) {
             // We special case `linear` in here as we
             // treat `linear` keyword as a CSSLinearEasingModel.
@@ -119,15 +120,6 @@ export class CubicBezier {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static Regex = /((cubic-bezier\([^)]+\))|\b(linear(?![-\(])|ease-in-out|ease-in|ease-out|ease)\b)|(linear\([^)]+\))/g;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static KeywordValues = new Map([
-        ['linear', 'cubic-bezier(0, 0, 1, 1)'],
-        ['ease', 'cubic-bezier(0.25, 0.1, 0.25, 1)'],
-        ['ease-in', 'cubic-bezier(0.42, 0, 1, 1)'],
-        ['ease-in-out', 'cubic-bezier(0.42, 0, 0.58, 1)'],
-        ['ease-out', 'cubic-bezier(0, 0, 0.58, 1)'],
-    ]);
 }
 export const LINEAR_BEZIER = new CubicBezier(new Point(0, 0), new Point(1, 1));
 export class EulerAngles {

@@ -13,12 +13,11 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 // eslint-disable-next-line rulesdir/es-modules-import
 import emptyWidgetStyles from '../../../ui/legacy/emptyWidget.css.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PreloadingComponents from './components/components.js';
 import preloadingViewStyles from './preloadingView.css.js';
 import preloadingViewDropDownStyles from './preloadingViewDropDown.css.js';
-const { html } = LitHtml;
 const UIStrings = {
     /**
      *@description DropDown title for filtering preloading attempts by rule set
@@ -169,6 +168,7 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
     shouldPrettyPrint = Common.Settings.Settings.instance().moduleSetting('auto-pretty-print-minified').get();
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        this.registerRequiredCSS(emptyWidgetStyles, preloadingViewStyles);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
@@ -188,13 +188,13 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
         this.warningsContainer.classList.add('flex-none');
         this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
         this.warningsView.show(this.warningsContainer);
-        this.ruleSetGrid.addEventListener('cellfocused', this.onRuleSetsGridCellFocused.bind(this));
+        this.ruleSetGrid.addEventListener('select', this.onRuleSetsGridCellFocused.bind(this));
         const onPrettyPrintToggle = () => {
             this.shouldPrettyPrint = !this.shouldPrettyPrint;
             this.updateRuleSetDetails();
         };
         // clang-format off
-        LitHtml.render(html `
+        render(html `
         <devtools-split-view .horizontal=${true} style="--min-sidebar-size: max(100vh-200px, 0px)">
           <div slot="main" class="overflow-auto" style="height: 100%">
             ${this.ruleSetGrid}
@@ -221,7 +221,6 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([emptyWidgetStyles, preloadingViewStyles]);
         this.warningsView.wasShown();
         this.render();
     }
@@ -262,8 +261,7 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
     }
     onRuleSetsGridCellFocused(event) {
         const focusedEvent = event;
-        this.focusedRuleSetId =
-            focusedEvent.data.row.cells.find(cell => cell.columnId === 'id')?.value;
+        this.focusedRuleSetId = focusedEvent.detail;
         this.render();
     }
     getInfobarContainerForTest() {
@@ -288,6 +286,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     ruleSetSelector;
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        this.registerRequiredCSS(emptyWidgetStyles, preloadingViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('preloading-speculations')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
@@ -315,8 +314,8 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.ruleSetSelector = new PreloadingRuleSetSelector(() => this.render());
         toolbar.appendToolbarItem(this.ruleSetSelector.item());
-        this.preloadingGrid.addEventListener('cellfocused', this.onPreloadingGridCellFocused.bind(this));
-        LitHtml.render(html `
+        this.preloadingGrid.addEventListener('select', this.onPreloadingGridCellFocused.bind(this));
+        render(html `
         <devtools-split-view .horizontal=${true} style="--min-sidebar-size: 0px">
           <div slot="main" class="overflow-auto" style="height: 100%">
             ${this.preloadingGrid}
@@ -329,7 +328,6 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([emptyWidgetStyles, preloadingViewStyles]);
         this.warningsView.wasShown();
         this.render();
     }
@@ -383,7 +381,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     }
     onPreloadingGridCellFocused(event) {
         const focusedEvent = event;
-        this.focusedPreloadingAttemptId = focusedEvent.data.row.cells.find(cell => cell.columnId === 'id')?.value;
+        this.focusedPreloadingAttemptId = focusedEvent.detail;
         this.render();
     }
     getRuleSetSelectorToolbarItemForTest() {
@@ -406,6 +404,7 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
     usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        this.registerRequiredCSS(emptyWidgetStyles, preloadingViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('speculative-loads')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
@@ -421,7 +420,6 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([emptyWidgetStyles, preloadingViewStyles]);
         this.warningsView.wasShown();
         this.render();
     }
@@ -539,7 +537,7 @@ class PreloadingRuleSetSelector {
     // Method for UI.SoftDropDown.Delegate<Protocol.Preload.RuleSetId|typeof AllRuleSetRootId>
     createElementForItem(id) {
         const element = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [preloadingViewDropDownStyles] });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: preloadingViewDropDownStyles });
         const title = shadowRoot.createChild('div', 'title');
         UI.UIUtils.createTextChild(title, Platform.StringUtilities.trimEndWithMaxLength(this.titleFor(id), 100));
         const subTitle = shadowRoot.createChild('div', 'subtitle');
@@ -562,10 +560,10 @@ export class PreloadingWarningsView extends UI.Widget.VBox {
     infobar = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
     constructor() {
         super(/* isWebComponent */ false, /* delegatesFocus */ false);
+        this.registerRequiredCSS(emptyWidgetStyles);
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([emptyWidgetStyles]);
         this.contentElement.append(this.infobar);
     }
     onWarningsUpdated(args) {

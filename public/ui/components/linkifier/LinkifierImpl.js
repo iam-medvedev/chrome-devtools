@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
-import linkifierImplStyles from './linkifierImpl.css.js';
+import linkifierImplStylesRaw from './linkifierImpl.css.js';
 import * as LinkifierUtils from './LinkifierUtils.js';
-const { html } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linkifierImplStyles = new CSSStyleSheet();
+linkifierImplStyles.replaceSync(linkifierImplStylesRaw.cssContent);
+const { html } = Lit;
 export class LinkifierClick extends Event {
     data;
     static eventName = 'linkifieractivated';
@@ -37,6 +40,17 @@ export class Linkifier extends HTMLElement {
         }
         void this.#render();
     }
+    cloneNode(deep) {
+        const node = super.cloneNode(deep);
+        node.data = {
+            url: this.#url,
+            lineNumber: this.#lineNumber,
+            columnNumber: this.#columnNumber,
+            linkText: this.#linkText,
+            title: this.#title
+        };
+        return node;
+    }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [linkifierImplStyles];
     }
@@ -54,8 +68,8 @@ export class Linkifier extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         await RenderCoordinator.write(() => {
             // clang-format off
-            // eslint-disable-next-line rulesdir/no-a-tags-in-lit-html
-            LitHtml.render(html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation} title=${LitHtml.Directives.ifDefined(this.#title)}><slot>${linkText}</slot></a>`, this.#shadow, { host: this });
+            // eslint-disable-next-line rulesdir/no-a-tags-in-lit
+            Lit.render(html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation} title=${Lit.Directives.ifDefined(this.#title)}><slot>${linkText}</slot></a>`, this.#shadow, { host: this });
             // clang-format on
         });
     }

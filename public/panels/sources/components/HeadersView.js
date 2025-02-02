@@ -8,10 +8,13 @@ import * as Workspace from '../../../models/workspace/workspace.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import HeadersViewStyles from './HeadersView.css.js';
-const { html } = LitHtml;
+import HeadersViewStylesRaw from './HeadersView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const HeadersViewStyles = new CSSStyleSheet();
+HeadersViewStyles.replaceSync(HeadersViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description The title of a button that adds a field to input a header in the editor form.
@@ -295,7 +298,7 @@ export class HeadersViewComponent extends HTMLElement {
         if (this.#parsingError) {
             const fileName = this.#uiSourceCode?.name() || '.headers';
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
         <div class="center-wrapper">
           <div class="centered">
             <div class="error-header">${i18nString(UIStrings.errorWhenParsing, { PH1: fileName })}</div>
@@ -307,7 +310,7 @@ export class HeadersViewComponent extends HTMLElement {
             return;
         }
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       ${this.#headerOverrides.map((headerOverride, blockIndex) => html `
           ${this.#renderApplyToRow(headerOverride.applyTo, blockIndex)}
           ${headerOverride.headers.map((header, headerIndex) => html `
@@ -394,7 +397,7 @@ export class HeadersViewComponent extends HTMLElement {
         // clang-format on
     }
     #renderEditable(value, className, isKey) {
-        // This uses LitHtml's `live`-directive, so that when checking whether to
+        // This uses Lit's `live`-directive, so that when checking whether to
         // update during re-render, `value` is compared against the actual live DOM
         // value of the contenteditable element and not the potentially outdated
         // value from the previous render.
@@ -404,7 +407,7 @@ export class HeadersViewComponent extends HTMLElement {
                               contenteditable="true"
                               class="editable ${className}"
                               tabindex="0"
-                              .innerText=${LitHtml.Directives.live(value)}></span>`;
+                              .innerText=${Lit.Directives.live(value)}></span>`;
         // clang-format on
     }
 }

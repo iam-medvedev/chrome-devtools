@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { EventReferenceClick } from './EventRef.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Text indicating the worst layout shift cluster.
@@ -53,7 +53,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/CLSCulprits.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CLSCulprits extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-cls-culprits`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-cls-culprits`;
     internalName = 'cls-culprits';
     createOverlays() {
         const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
@@ -116,7 +116,7 @@ export class CLSCulprits extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model || !this.bounds) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         if (!this.model.clusters.length || !this.model.worstCluster) {
             return html `<div class="insight-section">${i18nString(UIStrings.noLayoutShifts)}</div>`;

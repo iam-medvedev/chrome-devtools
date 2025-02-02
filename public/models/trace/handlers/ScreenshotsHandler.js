@@ -6,18 +6,23 @@ import * as Types from '../types/types.js';
 // Each thread contains events. Events indicate the thread and process IDs, which are
 // used to store the event in the correct process thread entry below.
 const unpairedAsyncEvents = [];
-const snapshotEvents = [];
+const legacyScreenshotEvents = [];
+const modernScreenshotEvents = [];
 const syntheticScreenshots = [];
 let frameSequenceToTs = {};
 export function reset() {
     unpairedAsyncEvents.length = 0;
-    snapshotEvents.length = 0;
+    legacyScreenshotEvents.length = 0;
     syntheticScreenshots.length = 0;
+    modernScreenshotEvents.length = 0;
     frameSequenceToTs = {};
 }
 export function handleEvent(event) {
-    if (Types.Events.isScreenshot(event)) {
-        snapshotEvents.push(event);
+    if (Types.Events.isLegacyScreenshot(event)) {
+        legacyScreenshotEvents.push(event);
+    }
+    else if (Types.Events.isScreenshot(event)) {
+        modernScreenshotEvents.push(event);
     }
     else if (Types.Events.isPipelineReporter(event)) {
         unpairedAsyncEvents.push(event);
@@ -30,7 +35,7 @@ export async function finalize() {
         const presentationTs = Types.Timing.Micro(evt.ts + evt.dur);
         return [frameSequenceId, presentationTs];
     }));
-    for (const snapshotEvent of snapshotEvents) {
+    for (const snapshotEvent of legacyScreenshotEvents) {
         const { cat, name, ph, pid, tid } = snapshotEvent;
         const syntheticEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: snapshotEvent,
@@ -48,6 +53,12 @@ export async function finalize() {
         });
         syntheticScreenshots.push(syntheticEvent);
     }
+}
+export function screenshotImageDataUri(event) {
+    if (Types.Events.isLegacySyntheticScreenshot(event)) {
+        return event.args.dataUri;
+    }
+    return `data:image/jpg;base64,${event.args.snapshot}`;
 }
 /**
  * Correct the screenshot timestamps
@@ -75,7 +86,10 @@ function getPresentationTimestamp(screenshotEvent) {
 }
 // TODO(crbug/41484172): should be readonly
 export function data() {
-    return { all: syntheticScreenshots };
+    return {
+        legacySyntheticScreenshots: syntheticScreenshots.length ? syntheticScreenshots : null,
+        screenshots: modernScreenshotEvents.length ? modernScreenshotEvents : null,
+    };
 }
 export function deps() {
     return ['Meta'];

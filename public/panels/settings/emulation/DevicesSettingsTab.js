@@ -78,11 +78,13 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super();
+        this.registerRequiredCSS(devicesSettingsTabStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('devices')}`);
         this.containerElement =
             this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         this.containerElement.classList.add('settings-card-container', 'ignore-list-settings');
         this.#defaultDeviceList = new UI.ListWidget.ListWidget(this, false /* delegatesFocus */);
+        this.#defaultDeviceList.registerRequiredCSS(devicesSettingsTabStyles);
         this.#defaultDeviceList.element.classList.add('devices-list', 'device-card-content');
         this.muteUpdate = false;
         this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
@@ -104,6 +106,7 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         };
         this.containerElement.appendChild(customDevicesCard);
         this.#customDeviceList = new UI.ListWidget.ListWidget(this, false /* delegatesFocus */);
+        this.#customDeviceList.registerRequiredCSS(devicesSettingsTabStyles);
         this.#customDeviceList.element.classList.add('devices-list');
         this.#customDeviceList.show(deviceList);
         const defaultDevicesCard = new Cards.Card.Card();
@@ -116,9 +119,6 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     wasShown() {
         super.wasShown();
         this.devicesUpdated();
-        this.registerCSSFiles([devicesSettingsTabStyles]);
-        this.#defaultDeviceList.registerCSSFiles([devicesSettingsTabStyles]);
-        this.#customDeviceList.registerCSSFiles([devicesSettingsTabStyles]);
     }
     devicesUpdated() {
         if (this.muteUpdate) {

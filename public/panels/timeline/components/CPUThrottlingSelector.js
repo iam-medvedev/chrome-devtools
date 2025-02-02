@@ -7,11 +7,14 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
-import cpuThrottlingSelectorStyles from './cpuThrottlingSelector.css.js';
-const { html } = LitHtml;
+import cpuThrottlingSelectorStylesRaw from './cpuThrottlingSelector.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cpuThrottlingSelectorStyles = new CSSStyleSheet();
+cpuThrottlingSelectorStyles.replaceSync(cpuThrottlingSelectorStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text label for a selection box showing which CPU throttling option is applied.
@@ -160,20 +163,20 @@ export class CPUThrottlingSelector extends HTMLElement {
                   `;
             })}
                 ${group.name === 'Calibrated presets' ? html `<devtools-menu-item
-                  .value=${1 /* This won't be displayed unless it has some value. */}
+                  .value=${-1 /* This won't be displayed unless it has some value. */}
                   .title=${calibrationLabel}
                   jslog=${VisualLogging.action('cpu-throttling-selector-calibrate').track({ click: true })}
                   @click=${this.#onCalibrateClick}
                 >
                   ${calibrationLabel}
-                </devtools-menu-item>` : LitHtml.nothing}
+                </devtools-menu-item>` : Lit.nothing}
               </devtools-menu-group>`;
         })}
       </devtools-select-menu>
       ${recommendedInfoEl}
     `;
         // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     };
 }
 customElements.define('devtools-cpu-throttling-selector', CPUThrottlingSelector);

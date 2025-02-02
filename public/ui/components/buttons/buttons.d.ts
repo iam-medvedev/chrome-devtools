@@ -1,3 +1,3 @@
 import * as Button from './Button.js';
-import textButtonStyles from './textButton.css.js';
+declare const textButtonStyles: CSSStyleSheet;
 export { Button, textButtonStyles, };

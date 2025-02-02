@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import '../../../ui/components/data_grid/data_grid.js';
 import './OriginMap.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
@@ -10,9 +9,12 @@ import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import fieldSettingsDialogStyles from './fieldSettingsDialog.css.js';
+import fieldSettingsDialogStylesRaw from './fieldSettingsDialog.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const fieldSettingsDialogStyles = new CSSStyleSheet();
+fieldSettingsDialogStyles.replaceSync(fieldSettingsDialogStylesRaw.cssContent);
 const UIStrings = {
     /**
      * @description Text label for a button that opens a dialog to set up field data.
@@ -83,7 +85,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/FieldSettingsDialog.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { html, nothing, Directives: { ifDefined } } = LitHtml;
+const { html, nothing, Directives: { ifDefined } } = Lit;
 export class ShowDialog extends Event {
     static eventName = 'showdialog';
     constructor() {
@@ -348,7 +350,7 @@ export class FieldSettingsDialog extends HTMLElement {
       </devtools-dialog>
     `;
         // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     };
 }
 customElements.define('devtools-field-settings-dialog', FieldSettingsDialog);

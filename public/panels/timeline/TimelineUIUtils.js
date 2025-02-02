@@ -44,7 +44,7 @@ import * as CodeHighlighter from '../../ui/components/code_highlighter/code_high
 import codeHighlighterStyles from '../../ui/components/code_highlighter/codeHighlighter.css.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 // eslint-disable-next-line rulesdir/es-modules-import
-import imagePreviewStyles from '../../ui/legacy/components/utils/imagePreview.css.js';
+import imagePreviewStylesRaw from '../../ui/legacy/components/utils/imagePreview.css.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
@@ -56,6 +56,9 @@ import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
 import { TimelinePanel } from './TimelinePanel.js';
 import { selectionFromEvent } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const imagePreviewStyles = new CSSStyleSheet();
+imagePreviewStyles.replaceSync(imagePreviewStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Text that only contain a placeholder
@@ -502,7 +505,11 @@ const UIStrings = {
     /**
      * @description Text to refer to a 3rd Party entity.
      */
-    entity: '3rd party entity',
+    entity: 'Third party',
+    /**
+     * @description Label for third party table.
+     */
+    thirdPartyTable: '1st / 3rd party table',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineUIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -618,7 +625,7 @@ export class TimelineUIUtils {
         if (Trace.Helpers.Trace.eventHasCategory(event, Trace.Types.Events.Categories.Console)) {
             return title;
         }
-        if (Trace.Types.Events.isConsoleTimeStamp(event)) {
+        if (Trace.Types.Events.isConsoleTimeStamp(event) && event.args.data) {
             return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.name });
         }
         if (Trace.Types.Events.isAnimation(event) && event.args.data.name) {
@@ -1535,7 +1542,7 @@ export class TimelineUIUtils {
         const eventStr = JSON.stringify(obj, null, indentLength).slice(0, 10_000).replace(/{\n  /, '{ ');
         // Use CodeHighlighter for syntax highlighting.
         const highlightContainer = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(highlightContainer, { cssFile: [codeHighlighterStyles] });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(highlightContainer, { cssFile: codeHighlighterStyles });
         const elem = shadowRoot.createChild('div');
         elem.classList.add('monospace', 'source-code');
         elem.textContent = eventStr;
@@ -1929,6 +1936,7 @@ export class TimelineUIUtils {
         const treeSlot = document.createElement('slot');
         const thirdPartyDiv = document.createElement('div');
         thirdPartyDiv.className = 'third-party-table';
+        UI.ARIAUtils.setLabel(thirdPartyDiv, i18nString(UIStrings.thirdPartyTable));
         treeSlot.name = 'third-party-table';
         treeSlot.append(treeView);
         thirdPartyDiv.appendChild(treeSlot);
@@ -1946,8 +1954,8 @@ export class TimelineUIUtils {
             const filmStripPreview = document.createElement('div');
             filmStripPreview.classList.add('timeline-filmstrip-preview');
             // TODO(paulirish): Adopt Util.ImageCache
-            void UI.UIUtils.loadImage(filmStripFrame.screenshotEvent.args.dataUri)
-                .then(image => image && filmStripPreview.appendChild(image));
+            const uri = Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(filmStripFrame.screenshotEvent);
+            void UI.UIUtils.loadImage(uri).then(image => image && filmStripPreview.appendChild(image));
             contentHelper.appendElementRow('', filmStripPreview);
             filmStripPreview.addEventListener('click', frameClicked.bind(null, filmStrip, filmStripFrame), false);
         }

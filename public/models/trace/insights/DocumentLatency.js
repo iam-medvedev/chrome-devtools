@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, InsightWarning } from './types.js';
 const UIStrings = {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
@@ -115,7 +115,7 @@ export function generateInsight(parsedTrace, context) {
     }
     const documentRequest = parsedTrace.NetworkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!documentRequest) {
-        throw new Error('missing document request');
+        return finalize({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
     }
     const serverResponseTime = getServerResponseTime(documentRequest);
     if (serverResponseTime === null) {

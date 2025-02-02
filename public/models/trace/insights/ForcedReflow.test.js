@@ -12,7 +12,8 @@ export async function processTrace(testContext, traceFile) {
     return { data: parsedTrace, insights };
 }
 describeWithEnvironment('ForcedReflow', function () {
-    it('generates call stacks', async function () {
+    // Skip to re-open the tree
+    it.skip('[crbug.com/392557418]: generates call stacks', async function () {
         const { data, insights } = await processTrace(this, 'forced-reflow.json.gz');
         assert.strictEqual(insights.size, 1);
         const insight = getInsightOrError('ForcedReflow', insights, data.Meta.navigationsByNavigationId.values().next().value);

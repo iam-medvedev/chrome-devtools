@@ -33,5 +33,4 @@ export declare class TimelinePaintImageView extends UI.Widget.Widget {
     private updateImagePosition;
     showImage(imageURL?: string): void;
     setMask(maskRectangle: Protocol.DOM.Rect | null): void;
-    wasShown(): void;
 }

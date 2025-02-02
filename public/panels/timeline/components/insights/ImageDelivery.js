@@ -4,10 +4,10 @@
 import '../../../../ui/components/icon_button/icon_button.js';
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { imageRef } from './EventRef.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Column header for a table column containing network requests for images which can improve their file size (e.g. use a different format, increase compression, etc).
@@ -27,7 +27,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Im
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const MAX_REQUESTS = 10;
 export class ImageDelivery extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-image-delivery`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-image-delivery`;
     internalName = 'image-delivery';
     createOverlays() {
         if (!this.model) {
@@ -48,7 +48,7 @@ export class ImageDelivery extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const optimizableImages = [...this.model.optimizableImages];
         const topImages = optimizableImages.sort((a, b) => b.request.args.data.decodedBodyLength - a.request.args.data.decodedBodyLength);

@@ -1,6 +1,6 @@
-import type * as UI from '../../ui/legacy/legacy.js';
-import { ProfileDataGridNode, ProfileDataGridTree, type Formatter } from './ProfileDataGrid.js';
 import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
+import type * as UI from '../../ui/legacy/legacy.js';
+import { type Formatter, ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
 export declare class TopDownProfileDataGridNode extends ProfileDataGridNode {
     remainingChildren: CPUProfile.ProfileTreeModel.ProfileNode[];
     constructor(profileNode: CPUProfile.ProfileTreeModel.ProfileNode, owningTree: TopDownProfileDataGridTree);

@@ -24,7 +24,7 @@ export class TimelineJSProfileProcessor {
         appendEvent('TracingStartedInPage', { data: { sessionId: '1' } }, 0, 0, "M" /* Types.Events.Phase.METADATA */);
         appendEvent("thread_name" /* Types.Events.Name.THREAD_NAME */, { name: threadName }, 0, 0, "M" /* Types.Events.Phase.METADATA */, '__metadata');
         if (!profile) {
-            return events;
+            return { traceEvents: events, metadata: {} };
         }
         // Append a root to show the start time of the profile (which is earlier than first sample), so the Performance
         // panel won't truncate this time period.
@@ -33,7 +33,12 @@ export class TimelineJSProfileProcessor {
         appendEvent('JSRoot', {}, profile.startTime, profile.endTime - profile.startTime, "X" /* Types.Events.Phase.COMPLETE */, 'toplevel');
         // TODO: create a `Profile` event instead, as `cpuProfile` is legacy
         appendEvent('CpuProfile', { data: { cpuProfile: profile } }, profile.endTime, 0, "X" /* Types.Events.Phase.COMPLETE */);
-        return events;
+        return {
+            traceEvents: events,
+            metadata: {
+                dataOrigin: "CPUProfile" /* Types.File.DataOrigin.CPU_PROFILE */,
+            }
+        };
         function appendEvent(name, args, ts, dur, ph, cat) {
             const event = {
                 cat: cat || 'disabled-by-default-devtools.timeline',

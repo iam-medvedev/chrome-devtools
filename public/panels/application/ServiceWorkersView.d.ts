@@ -22,7 +22,6 @@ export declare class ServiceWorkersView extends UI.Widget.VBox implements SDK.Ta
     private removeRegistrationFromList;
     private isRegistrationVisible;
     private updateListVisibility;
-    wasShown(): void;
 }
 export declare class Section {
     private manager;

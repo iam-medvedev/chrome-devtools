@@ -229,6 +229,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     #isEnabling;
     constructor() {
         super(true);
+        this.registerRequiredCSS(webauthnPaneStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('webauthn').track({ resize: true })}`);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.WebAuthnModel.WebAuthnModel, this, { scoped: true });
         this.contentElement.classList.add('webauthn-pane');
@@ -777,10 +778,6 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         }
         this.#activeAuthId = null;
         this.#updateActiveButtons();
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([webauthnPaneStyles]);
     }
 }
 //# sourceMappingURL=WebauthnPane.js.map

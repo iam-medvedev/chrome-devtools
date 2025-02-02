@@ -1,7 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import highlightingStyles from './highlighting.css.js';
+import highlightingStylesRaw from './highlighting.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const highlightingStyles = new CSSStyleSheet();
+highlightingStyles.replaceSync(highlightingStylesRaw.cssContent);
 export class RangeWalker {
     root;
     #offset = 0;

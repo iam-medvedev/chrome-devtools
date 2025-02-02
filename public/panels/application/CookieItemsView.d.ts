@@ -28,5 +28,4 @@ export declare class CookieItemsView extends StorageItemsView {
     deleteSelectedItem(): void;
     private onCookieListUpdate;
     refreshItems(): void;
-    wasShown(): void;
 }

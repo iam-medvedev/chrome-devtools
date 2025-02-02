@@ -18,7 +18,7 @@ const entryToNode = new Map();
 // are matched by profile id, which we then finish processing to export
 // events matched by thread id.
 const preprocessedData = new Map();
-function buildProfileCalls() {
+function parseCPUProfileData(parseOptions) {
     for (const [processId, profiles] of preprocessedData) {
         for (const [profileId, preProcessedData] of profiles) {
             const threadId = preProcessedData.threadId;
@@ -37,49 +37,55 @@ function buildProfileCalls() {
                 profileId,
             };
             const dataByThread = Platform.MapUtilities.getWithDefault(profilesInProcess, processId, () => new Map());
-            profileModel.forEachFrame(openFrameCallback, closeFrameCallback);
             dataByThread.set(threadId, finalizedData);
-            function openFrameCallback(depth, node, sampleIndex, timeStampMilliseconds) {
-                if (threadId === undefined) {
-                    return;
-                }
-                const ts = Helpers.Timing.milliToMicro(Types.Timing.Milli(timeStampMilliseconds));
-                const nodeId = node.id;
-                const profileCall = Helpers.Trace.makeProfileCall(node, profileId, sampleIndex, ts, processId, threadId);
-                finalizedData.profileCalls.push(profileCall);
-                indexStack.push(finalizedData.profileCalls.length - 1);
-                const traceEntryNode = Helpers.TreeHelpers.makeEmptyTraceEntryNode(profileCall, nodeId);
-                entryToNode.set(profileCall, traceEntryNode);
-                traceEntryNode.depth = depth;
-                if (indexStack.length === 1) {
-                    // First call in the stack is a root call.
-                    finalizedData.profileTree?.roots.add(traceEntryNode);
-                }
+            // Only need to build pure JS ProfileCalls if we're parsing a CPU Profile, otherwise SamplesIntegrator does the work.
+            if (parseOptions.isCPUProfile) {
+                buildProfileCallsForCPUProfile();
             }
-            function closeFrameCallback(_depth, _node, _sampleIndex, _timeStampMillis, durMs, selfTimeMs) {
-                const profileCallIndex = indexStack.pop();
-                const profileCall = profileCallIndex !== undefined && finalizedData.profileCalls[profileCallIndex];
-                if (!profileCall) {
-                    return;
+            function buildProfileCallsForCPUProfile() {
+                profileModel.forEachFrame(openFrameCallback, closeFrameCallback);
+                function openFrameCallback(depth, node, sampleIndex, timeStampMilliseconds) {
+                    if (threadId === undefined) {
+                        return;
+                    }
+                    const ts = Helpers.Timing.milliToMicro(Types.Timing.Milli(timeStampMilliseconds));
+                    const nodeId = node.id;
+                    const profileCall = Helpers.Trace.makeProfileCall(node, profileId, sampleIndex, ts, processId, threadId);
+                    finalizedData.profileCalls.push(profileCall);
+                    indexStack.push(finalizedData.profileCalls.length - 1);
+                    const traceEntryNode = Helpers.TreeHelpers.makeEmptyTraceEntryNode(profileCall, nodeId);
+                    entryToNode.set(profileCall, traceEntryNode);
+                    traceEntryNode.depth = depth;
+                    if (indexStack.length === 1) {
+                        // First call in the stack is a root call.
+                        finalizedData.profileTree?.roots.add(traceEntryNode);
+                    }
                 }
-                const { callFrame, ts, pid, tid } = profileCall;
-                const traceEntryNode = entryToNode.get(profileCall);
-                if (callFrame === undefined || ts === undefined || pid === undefined || profileId === undefined ||
-                    tid === undefined || traceEntryNode === undefined) {
-                    return;
+                function closeFrameCallback(_depth, _node, _sampleIndex, _timeStampMillis, durMs, selfTimeMs) {
+                    const profileCallIndex = indexStack.pop();
+                    const profileCall = profileCallIndex !== undefined && finalizedData.profileCalls[profileCallIndex];
+                    if (!profileCall) {
+                        return;
+                    }
+                    const { callFrame, ts, pid, tid } = profileCall;
+                    const traceEntryNode = entryToNode.get(profileCall);
+                    if (callFrame === undefined || ts === undefined || pid === undefined || profileId === undefined ||
+                        tid === undefined || traceEntryNode === undefined) {
+                        return;
+                    }
+                    const dur = Helpers.Timing.milliToMicro(Types.Timing.Milli(durMs));
+                    const selfTime = Helpers.Timing.milliToMicro(Types.Timing.Milli(selfTimeMs));
+                    profileCall.dur = dur;
+                    traceEntryNode.selfTime = selfTime;
+                    const parentIndex = indexStack.at(-1);
+                    const parent = parentIndex !== undefined && finalizedData.profileCalls.at(parentIndex);
+                    const parentNode = parent && entryToNode.get(parent);
+                    if (!parentNode) {
+                        return;
+                    }
+                    traceEntryNode.parent = parentNode;
+                    parentNode.children.push(traceEntryNode);
                 }
-                const dur = Helpers.Timing.milliToMicro(Types.Timing.Milli(durMs));
-                const selfTime = Helpers.Timing.milliToMicro(Types.Timing.Milli(selfTimeMs));
-                profileCall.dur = dur;
-                traceEntryNode.selfTime = selfTime;
-                const parentIndex = indexStack.at(-1);
-                const parent = parentIndex !== undefined && finalizedData.profileCalls.at(parentIndex);
-                const parentNode = parent && entryToNode.get(parent);
-                if (!parentNode) {
-                    return;
-                }
-                traceEntryNode.parent = parentNode;
-                parentNode.children.push(traceEntryNode);
             }
         }
     }
@@ -161,8 +167,8 @@ export function handleEvent(event) {
         return;
     }
 }
-export async function finalize() {
-    buildProfileCalls();
+export async function finalize(parseOptions = {}) {
+    parseCPUProfileData(parseOptions);
 }
 export function data() {
     return {

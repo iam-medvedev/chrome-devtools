@@ -191,6 +191,7 @@ export class InspectorView extends VBox {
         // the Device mode button is not added and so the allocated space is smaller.
         const allocatedSpace = Root.Runtime.conditions.canDock() ? '69px' : '41px';
         this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
+        this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPaneStyles);
         this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'main'), this);
         const selectedTab = this.tabbedPane.selectedTabId;
         if (selectedTab) {
@@ -237,13 +238,10 @@ export class InspectorView extends VBox {
         inspectorViewInstance = null;
     }
     wasShown() {
-        super.wasShown();
-        this.tabbedPane.registerCSSFiles([inspectorViewTabbedPaneStyles]);
         this.element.ownerDocument.addEventListener('keydown', this.keyDownBound, false);
     }
     willHide() {
         this.element.ownerDocument.removeEventListener('keydown', this.keyDownBound, false);
-        super.willHide();
     }
     resolveLocation(locationName) {
         if (locationName === 'drawer-view') {
@@ -290,10 +288,10 @@ export class InspectorView extends VBox {
             let icon = null;
             if (warnings.length !== 0) {
                 const warning = warnings.length === 1 ? warnings[0] : '· ' + warnings.join('\n· ');
-                icon = IconButton.Icon.create('warning-filled');
+                icon = IconButton.Icon.create('warning-filled', 'warning');
                 Tooltip.install(icon, warning);
             }
-            tabbedPane.setTabIcon(tabId, icon);
+            tabbedPane.setTrailingTabIcon(tabId, icon);
         }
     }
     emitDrawerChangeEvent(isDrawerOpen) {

@@ -15,7 +15,8 @@ export function fromParsedTrace(parsedTrace, customZeroTime) {
     if (fromCache) {
         return fromCache;
     }
-    for (const screenshotEvent of parsedTrace.Screenshots.all) {
+    const screenshots = parsedTrace.Screenshots.screenshots ?? parsedTrace.Screenshots.legacySyntheticScreenshots ?? [];
+    for (const screenshotEvent of screenshots) {
         if (screenshotEvent.ts < zeroTime) {
             continue;
         }

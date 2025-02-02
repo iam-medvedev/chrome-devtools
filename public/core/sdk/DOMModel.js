@@ -299,6 +299,14 @@ export class DOMNode {
             ...this.#pseudoElements.get("view-transition-new" /* Protocol.DOM.PseudoType.ViewTransitionNew */) || [],
         ];
     }
+    carouselPseudoElements() {
+        return [
+            ...this.#pseudoElements.get("scroll-button" /* Protocol.DOM.PseudoType.ScrollButton */) || [],
+            ...this.#pseudoElements.get("column" /* Protocol.DOM.PseudoType.Column */) || [],
+            ...this.#pseudoElements.get("scroll-marker" /* Protocol.DOM.PseudoType.ScrollMarker */) || [],
+            ...this.#pseudoElements.get("scroll-marker-group" /* Protocol.DOM.PseudoType.ScrollMarkerGroup */) || [],
+        ];
+    }
     hasAssignedSlot() {
         return this.assignedSlot !== null;
     }
@@ -1249,9 +1257,10 @@ export class DOMModel extends SDKModel {
             throw new Error('DOMModel._pseudoElementAdded expects pseudoType to be defined.');
         }
         const currentPseudoElements = parent.pseudoElements().get(pseudoType);
-        if (currentPseudoElements) {
-            if (!pseudoType.startsWith('view-transition')) {
-                throw new Error('DOMModel.pseudoElementAdded expects parent to not already have this pseudo type added; only view-transition* pseudo elements can coexist under the same parent.');
+        if (currentPseudoElements && currentPseudoElements.length > 0) {
+            if (!(pseudoType.startsWith('view-transition') || pseudoType.startsWith('scroll-') || pseudoType === 'column')) {
+                throw new Error('DOMModel.pseudoElementAdded expects parent to not already have this pseudo type added; only view-transition* and scrolling pseudo elements can coexist under the same parent.' +
+                    ` ${currentPseudoElements.length} elements of type ${pseudoType} already exist on parent.`);
             }
             currentPseudoElements.push(node);
         }

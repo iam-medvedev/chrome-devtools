@@ -101,7 +101,6 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
             await Promise.all(promises);
-            this.#pageResult = pageResult;
         }
         catch (err) {
             console.error(err);
@@ -126,6 +125,9 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
             return unmappedUrl;
         }
     }
+    async getFieldDataForCurrentPageForTesting() {
+        return this.#getFieldDataForCurrentPage();
+    }
     /**
      * In general, this function should use the main document URL
      * (i.e. the URL after all redirects but before SPA navigations)
@@ -135,12 +137,11 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
      * back to the currently inspected URL (i.e. what is displayed in the omnibox) if
      * the main document URL cannot be found.
      */
-    async getFieldDataForCurrentPage() {
+    async #getFieldDataForCurrentPage() {
         const currentUrl = this.#mainDocumentUrl || await this.#getInspectedURL();
         const urlForCrux = this.#configSetting.get().overrideEnabled ? this.#configSetting.get().override || '' :
             this.#getMappedUrl(currentUrl);
         const result = await this.getFieldDataForPage(urlForCrux);
-        this.#pageResult = result;
         if (currentUrl !== urlForCrux) {
             result.warnings.push(i18nString(UIStrings.fieldOverrideWarning));
         }
@@ -179,7 +180,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.#configSetting.get().enabled) {
             return;
         }
-        this.#pageResult = await this.getFieldDataForCurrentPage();
+        this.#pageResult = await this.#getFieldDataForCurrentPage();
         this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, this.#pageResult);
     }
     #normalizeUrl(inputUrl) {
@@ -254,6 +255,9 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     getSelectedDeviceScope() {
         return this.fieldDeviceOption === 'AUTO' ? this.#getAutoDeviceScope() : this.fieldDeviceOption;
+    }
+    getSelectedScope() {
+        return { pageScope: this.fieldPageScope, deviceScope: this.getSelectedDeviceScope() };
     }
     getSelectedFieldResponse() {
         const pageScope = this.fieldPageScope;

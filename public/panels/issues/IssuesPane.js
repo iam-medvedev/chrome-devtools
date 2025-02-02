@@ -164,6 +164,7 @@ export class IssuesPane extends UI.Widget.VBox {
     #issueViewUpdatePromise = Promise.resolve();
     constructor() {
         super(true);
+        this.registerRequiredCSS(issuesPaneStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('issues')}`);
         this.contentElement.classList.add('issues-pane');
         this.#categoryViews = new Map();
@@ -174,6 +175,7 @@ export class IssuesPane extends UI.Widget.VBox {
         this.#issuesTree = new UI.TreeOutline.TreeOutlineInShadow();
         this.#issuesTree.setShowSelectionOnKeyboardFocus(true);
         this.#issuesTree.contentElement.classList.add('issues');
+        this.#issuesTree.registerRequiredCSS(issuesTreeStyles);
         this.contentElement.appendChild(this.#issuesTree.element);
         this.#hiddenIssuesRow = new HiddenIssuesRow();
         this.#issuesTree.appendChild(this.#hiddenIssuesRow);
@@ -413,11 +415,6 @@ export class IssuesPane extends UI.Widget.VBox {
             issueView.reveal();
             issueView.select(false, true);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.#issuesTree.registerCSSFiles([issuesTreeStyles]);
-        this.registerCSSFiles([issuesPaneStyles]);
     }
 }
 //# sourceMappingURL=IssuesPane.js.map

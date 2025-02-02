@@ -7,12 +7,18 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import metricCardStyles from './metricCard.css.js';
+import * as Lit from '../../../ui/lit/lit.js';
+import metricCardStylesRaw from './metricCard.css.js';
 import { renderCompareText, renderDetailedCompareText } from './MetricCompareStrings.js';
-import metricValueStyles from './metricValueStyles.css.js';
-import { CLS_THRESHOLDS, INP_THRESHOLDS, LCP_THRESHOLDS, rateMetric, renderMetricValue, } from './Utils.js';
-const { html, nothing } = LitHtml;
+import metricValueStylesRaw from './metricValueStyles.css.js';
+import { CLS_THRESHOLDS, determineCompareRating, INP_THRESHOLDS, LCP_THRESHOLDS, rateMetric, renderMetricValue, } from './Utils.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const metricCardStyles = new CSSStyleSheet();
+metricCardStyles.replaceSync(metricCardStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const metricValueStyles = new CSSStyleSheet();
+metricValueStyles.replaceSync(metricValueStylesRaw.cssContent);
+const { html, nothing } = Lit;
 const UIStrings = {
     /**
      * @description Label for a metric value that was measured in the local environment.
@@ -205,16 +211,6 @@ export class MetricCard extends HTMLElement {
             tooltipEl.style.visibility = 'visible';
         });
     }
-    #getCompareThreshold() {
-        switch (this.#data.metric) {
-            case 'LCP':
-                return 1000;
-            case 'CLS':
-                return 0.1;
-            case 'INP':
-                return 200;
-        }
-    }
     #getTitle() {
         switch (this.#data.metric) {
             case 'LCP':
@@ -297,22 +293,7 @@ export class MetricCard extends HTMLElement {
         if (localValue === undefined || fieldValue === undefined) {
             return;
         }
-        const thresholds = this.#getThresholds();
-        const localRating = rateMetric(localValue, thresholds);
-        const fieldRating = rateMetric(fieldValue, thresholds);
-        // It's not worth highlighting a significant difference when both #s
-        // are rated "good"
-        if (localRating === 'good' && fieldRating === 'good') {
-            return 'similar';
-        }
-        const compareThreshold = this.#getCompareThreshold();
-        if (localValue - fieldValue > compareThreshold) {
-            return 'worse';
-        }
-        if (fieldValue - localValue > compareThreshold) {
-            return 'better';
-        }
-        return 'similar';
+        return determineCompareRating(this.#data.metric, localValue, fieldValue);
     }
     #renderCompareString() {
         const localValue = this.#getLocalValue();
@@ -322,7 +303,7 @@ export class MetricCard extends HTMLElement {
           <div class="compare-text">${i18nString(UIStrings.interactToMeasure)}</div>
         `;
             }
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const compare = this.#getCompareRating();
         const rating = rateMetric(localValue, this.#getThresholds());
@@ -343,7 +324,7 @@ export class MetricCard extends HTMLElement {
     #renderEnvironmentRecommendations() {
         const compare = this.#getCompareRating();
         if (!compare || compare === 'similar') {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const recs = [];
         const metric = this.#data.metric;
@@ -376,7 +357,7 @@ export class MetricCard extends HTMLElement {
             recs.push(i18nString(UIStrings.recDynamicContentCLS));
         }
         if (!recs.length) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <details class="environment-recs">
@@ -396,7 +377,7 @@ export class MetricCard extends HTMLElement {
           <div class="detailed-compare-text">${i18nString(UIStrings.interactToMeasure)}</div>
         `;
             }
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const localRating = rateMetric(localValue, this.#getThresholds());
         const fieldValue = this.#getFieldValue();
@@ -495,7 +476,7 @@ export class MetricCard extends HTMLElement {
         const localValue = this.#getLocalValue();
         const phases = this.#data.phases;
         if (!phases || !localValue) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <hr class="divider">
@@ -570,7 +551,7 @@ export class MetricCard extends HTMLElement {
         <slot name="extra-info"></slot>
       </div>
     `;
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     };
 }
 customElements.define('devtools-metric-card', MetricCard);

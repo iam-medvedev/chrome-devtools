@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementWithinComponent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import { html, render } from '../../lit/lit.js';
 import * as ReportView from './report_view.js';
-const { html } = LitHtml;
 describe('ReportView', () => {
     describe('header', () => {
         it('shows the provided report title', () => {
@@ -20,7 +19,7 @@ describe('ReportView', () => {
         it('renders the elements provided for the "key" and "value" slot', () => {
             const report = new ReportView.ReportView.Report();
             // clang-format off
-            LitHtml.render(html `
+            render(html `
         <devtools-report-key>This is the key</devtools-report-key>
         <devtools-report-value>This is the value</devtools-report-value>
       `, report, { host: this });

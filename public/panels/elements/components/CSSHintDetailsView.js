@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import cssHintDetailsViewStyles from './cssHintDetailsView.css.js';
+import { Directives, html, render } from '../../../ui/lit/lit.js';
+import cssHintDetailsViewStylesRaw from './cssHintDetailsView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssHintDetailsViewStyles = new CSSStyleSheet();
+cssHintDetailsViewStyles.replaceSync(cssHintDetailsViewStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Text for button that redirects to CSS property documentation.
@@ -13,7 +16,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/components/CSSHintDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html, Directives } = LitHtml;
 export class CSSHintDetailsView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #authoringHint;

@@ -15,7 +15,6 @@ export declare class CSSOverviewSidebarPanel extends CSSOverviewSidebarPanel_bas
     constructor();
     addItem(name: string, id: string): void;
     select(id: string, focus: boolean): void;
-    wasShown(): void;
 }
 export declare const enum SidebarEvents {
     ITEM_SELECTED = "ItemSelected",

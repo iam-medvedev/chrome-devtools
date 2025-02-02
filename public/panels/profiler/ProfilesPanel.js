@@ -88,10 +88,12 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     constructor(name, profileTypes, recordingActionId) {
         super(name);
         this.profileTypes = profileTypes;
+        this.registerRequiredCSS(objectValueStyles, profilesPanelStyles, heapProfilerStyles);
         const mainContainer = new UI.Widget.VBox();
         this.splitWidget().setMainWidget(mainContainer);
         this.profilesItemTreeElement = new ProfilesSidebarTreeElement(this);
         this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
+        this.sidebarTree.registerRequiredCSS(profilesSidebarTreeStyles);
         this.sidebarTree.element.classList.add('profiles-sidebar-tree-box');
         this.panelSidebarElement().appendChild(this.sidebarTree.element);
         this.sidebarTree.appendChild(this.profilesItemTreeElement);
@@ -376,8 +378,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().setFlavor(ProfilesPanel, this);
-        this.registerCSSFiles([objectValueStyles, profilesPanelStyles, heapProfilerStyles]);
-        this.sidebarTree.registerCSSFiles([profilesSidebarTreeStyles]);
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(ProfilesPanel, null);

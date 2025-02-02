@@ -1,5 +1,6 @@
 import * as Platform from '../../../core/platform/platform.js';
 import type * as Trace from '../../../models/trace/trace.js';
+import type { CompareRating } from './MetricCompareStrings.js';
 export declare enum NetworkCategory {
     DOC = "Doc",
     CSS = "CSS",
@@ -59,3 +60,7 @@ export declare namespace NumberWithUnit {
     function formatMicroSecondsAsSeconds(time: Platform.Timing.MicroSeconds): NumberWithUnitString;
     function formatMicroSecondsAsMillisFixed(time: Platform.Timing.MicroSeconds, fractionDigits?: number): NumberWithUnitString;
 }
+/**
+ * Returns if the local value is better/worse/similar compared to field.
+ */
+export declare function determineCompareRating(metric: 'LCP' | 'CLS' | 'INP', localValue: Trace.Types.Timing.Milli | number, fieldValue: Trace.Types.Timing.Milli | number): CompareRating | undefined;

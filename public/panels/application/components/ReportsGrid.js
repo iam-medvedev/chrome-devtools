@@ -6,9 +6,12 @@ import '../../../ui/components/icon_button/icon_button.js';
 import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import reportingApiGridStyles from './reportingApiGrid.css.js';
+import reportingApiGridStylesRaw from './reportingApiGrid.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const reportingApiGridStyles = new CSSStyleSheet();
+reportingApiGridStyles.replaceSync(reportingApiGridStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Placeholder text when there are no Reporting API reports.
@@ -33,7 +36,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/ReportsGrid.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 export class ReportsGridStatusHeader extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
@@ -78,7 +81,7 @@ export class ReportsGrid extends HTMLElement {
       <div class="reporting-container" jslog=${VisualLogging.section('reports')}>
         <div class="reporting-header">${i18n.i18n.lockedString('Reports')}</div>
         ${this.#reports.length > 0 ? html `
-          <devtools-new-data-grid striped @select=${this.#onSelect}>
+          <devtools-data-grid striped @select=${this.#onSelect}>
             <table>
               <tr>
                 ${this.#protocolMonitorExperimentEnabled ? html `
@@ -105,7 +108,7 @@ export class ReportsGrid extends HTMLElement {
                 </tr>
               `)}
             </table>
-          </devtools-new-data-grid>
+          </devtools-data-grid>
         ` : html `
           <div class="reporting-placeholder">
             <div>${i18nString(UIStrings.noReportsToDisplay)}</div>

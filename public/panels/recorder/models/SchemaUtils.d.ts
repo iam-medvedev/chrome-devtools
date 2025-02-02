@@ -1,5 +1,5 @@
-import { type Step, type SetViewportStep, type EmulateNetworkConditionsStep } from './Schema.js';
 import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+import { type EmulateNetworkConditionsStep, type SetViewportStep, type Step } from './Schema.js';
 export declare function createViewportStep(viewport: {
     clientWidth: number;
     clientHeight: number;

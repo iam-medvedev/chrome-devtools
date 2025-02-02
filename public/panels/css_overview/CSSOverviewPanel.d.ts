@@ -6,5 +6,4 @@ export declare class CSSOverviewPanel extends UI.Panel.Panel implements SDK.Targ
     constructor(controller: OverviewController);
     targetAdded(target: SDK.Target.Target): void;
     targetRemoved(): void;
-    wasShown(): void;
 }

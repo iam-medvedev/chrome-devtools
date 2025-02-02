@@ -1,5 +1,5 @@
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class SecurityOriginManager extends SDKModel<EventTypes> {
     #private;
     constructor(target: Target);

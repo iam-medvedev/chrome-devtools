@@ -3,7 +3,7 @@ import type * as ModelHandlers from './ModelHandlers.js';
 export interface Handler {
     reset(): void;
     handleEvent(data: {}): void;
-    finalize(): Promise<void>;
+    finalize(options?: Types.Configuration.ParseOptions): Promise<void>;
     data(): unknown;
     deps?(): HandlerName[];
     handleUserConfig?(config: Types.Configuration.Configuration): void;

@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import type * as Trace from '../../models/trace/trace.js';
+import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { TimelineMiniMap } from './TimelineMiniMap.js';
 /**

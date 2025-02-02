@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /** Column for a font loaded by the page to render text. */
     fontColumn: 'Font',
@@ -16,7 +16,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/FontDisplay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class FontDisplay extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-font-display`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-font-display`;
     internalName = 'font-display';
     #overlayForRequest = new Map();
     createOverlays() {
@@ -38,7 +38,7 @@ export class FontDisplay extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `
@@ -46,12 +46,11 @@ export class FontDisplay extends BaseInsightComponent {
         ${html `<devtools-performance-table
           .data=${{
             insight: this,
-            headers: [i18nString(UIStrings.fontColumn), 'font-display', i18nString(UIStrings.wastedTimeColumn)],
+            headers: [i18nString(UIStrings.fontColumn), i18nString(UIStrings.wastedTimeColumn)],
             rows: this.model.fonts.map(font => ({
                 values: [
                     // TODO(crbug.com/369422196): the font name would be nicer here.
                     eventRef(font.request),
-                    font.display,
                     i18n.TimeUtilities.millisToString(font.wastedTime),
                 ],
                 overlays: [this.#overlayForRequest.get(font.request)],

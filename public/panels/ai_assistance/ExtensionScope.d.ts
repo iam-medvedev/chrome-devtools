@@ -8,7 +8,7 @@ export declare const FREESTYLER_BINDING_NAME = "__freestyler";
  */
 export declare class ExtensionScope {
     #private;
-    constructor(changes: ChangeManager);
+    constructor(changes: ChangeManager, agentId: string);
     get target(): SDK.Target.Target;
     get frameId(): Protocol.Page.FrameId;
     install(): Promise<void>;

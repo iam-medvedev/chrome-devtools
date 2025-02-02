@@ -1,10 +1,13 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import expandableListStyles from './expandableList.css.js';
-const { html, Directives: { ifDefined } } = LitHtml;
+import expandableListStylesRaw from './expandableList.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const expandableListStyles = new CSSStyleSheet();
+expandableListStyles.replaceSync(expandableListStylesRaw.cssContent);
+const { html, Directives: { ifDefined } } = Lit;
 export class ExpandableList extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #expanded = false;
@@ -28,7 +31,7 @@ export class ExpandableList extends HTMLElement {
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <div class="expandable-list-container">
         <div>
           ${this.#rows.length > 1 ?
@@ -38,7 +41,7 @@ export class ExpandableList extends HTMLElement {
                 jslog=${VisualLogging.expand().track({ click: true })}></span>
               </button>
             `
-            : LitHtml.nothing}
+            : Lit.nothing}
         </div>
         <div class="expandable-list-items">
           ${this.#rows.filter((_, index) => (this.#expanded || index === 0)).map(row => html `

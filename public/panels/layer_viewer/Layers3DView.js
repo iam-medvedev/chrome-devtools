@@ -115,6 +115,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     mouseDownY;
     constructor(layerViewHost) {
         super(true);
+        this.registerRequiredCSS(layers3DViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('layers-3d-view')}`);
         this.contentElement.classList.add('layers-3d-view');
         this.failBanner = new UI.Widget.VBox();
@@ -175,7 +176,6 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     }
     wasShown() {
         this.textureManager.resume();
-        this.registerCSSFiles([layers3DViewStyles]);
         if (!this.needsUpdate) {
             return;
         }

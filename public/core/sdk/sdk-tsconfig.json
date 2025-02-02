@@ -43,6 +43,7 @@
     "../../../../../../front_end/core/sdk/CSSModel.ts",
     "../../../../../../front_end/core/sdk/CSSProperty.ts",
     "../../../../../../front_end/core/sdk/CSSPropertyParser.ts",
+    "../../../../../../front_end/core/sdk/CSSPropertyParserMatchers.ts",
     "../../../../../../front_end/core/sdk/CSSQuery.ts",
     "../../../../../../front_end/core/sdk/CSSRule.ts",
     "../../../../../../front_end/core/sdk/CSSScope.ts",

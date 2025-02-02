@@ -6,7 +6,10 @@ import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import imagePreviewStyles from './imagePreview.css.js';
+import imagePreviewStylesRaw from './imagePreview.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const imagePreviewStyles = new CSSStyleSheet();
+imagePreviewStyles.replaceSync(imagePreviewStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Alt text description of an image's source

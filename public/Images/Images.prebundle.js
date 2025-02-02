@@ -45,9 +45,11 @@ style.setProperty('--image-file-align-self-start', 'url(\"' + new URL('./src/ali
 style.setProperty('--image-file-align-self-stretch', 'url(\"' + new URL('./src/align-self-stretch.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-animation', 'url(\"' + new URL('./src/animation.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-back', 'url(\"' + new URL('./src/arrow-back.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-arrow-collapse', 'url(\"' + new URL('./src/arrow-collapse.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-down', 'url(\"' + new URL('./src/arrow-down.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-drop-down-dark', 'url(\"' + new URL('./src/arrow-drop-down-dark.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-drop-down-light', 'url(\"' + new URL('./src/arrow-drop-down-light.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-arrow-drop-down', 'url(\"' + new URL('./src/arrow-drop-down.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-forward', 'url(\"' + new URL('./src/arrow-forward.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-right-circle', 'url(\"' + new URL('./src/arrow-right-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-up-down-circle', 'url(\"' + new URL('./src/arrow-up-down-circle.svg', import.meta.url).toString() + '\")');
@@ -108,6 +110,7 @@ style.setProperty('--image-file-devices', 'url(\"' + new URL('./src/devices.svg'
 style.setProperty('--image-file-devtools-thumbnail', 'url(\"' + new URL('./src/devtools-thumbnail.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-devtools-tips', 'url(\"' + new URL('./src/devtools-tips.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-devtools', 'url(\"' + new URL('./src/devtools.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-difference', 'url(\"' + new URL('./src/difference.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-bottom', 'url(\"' + new URL('./src/dock-bottom.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-left', 'url(\"' + new URL('./src/dock-left.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-right', 'url(\"' + new URL('./src/dock-right.svg', import.meta.url).toString() + '\")');

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './NodeLink.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-const { html } = LitHtml;
+const { html } = Lit;
 export class Viewport extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-viewport`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-viewport`;
     internalName = 'viewport';
     createOverlays() {
         // TODO(b/351757418): create overlay for synthetic input delay events
@@ -17,11 +17,11 @@ export class Viewport extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model || !this.model.viewportEvent) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const backendNodeId = this.model.viewportEvent.args.data.node_id;
         if (backendNodeId === undefined) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `

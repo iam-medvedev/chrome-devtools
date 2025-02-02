@@ -54,6 +54,7 @@ export class JSONView extends UI.Widget.VBox {
     constructor(parsedJSON, startCollapsed) {
         super();
         this.initialized = false;
+        this.registerRequiredCSS(jsonViewStyles);
         this.parsedJSON = parsedJSON;
         this.startCollapsed = Boolean(startCollapsed);
         this.element.classList.add('json-view');
@@ -135,8 +136,6 @@ export class JSONView extends UI.Widget.VBox {
         return { start, end, length };
     }
     wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([jsonViewStyles]);
         this.initialize();
     }
     initialize() {

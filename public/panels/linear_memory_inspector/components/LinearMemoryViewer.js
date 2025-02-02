@@ -1,11 +1,14 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { toHexString } from './LinearMemoryInspectorUtils.js';
-import linearMemoryViewerStyles from './linearMemoryViewer.css.js';
-const { render, html } = LitHtml;
+import linearMemoryViewerStylesRaw from './linearMemoryViewer.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linearMemoryViewerStyles = new CSSStyleSheet();
+linearMemoryViewerStyles.replaceSync(linearMemoryViewerStylesRaw.cssContent);
+const { render, html } = Lit;
 export class ByteSelectedEvent extends Event {
     static eventName = 'byteselected';
     data;
@@ -183,7 +186,7 @@ export class LinearMemoryViewer extends HTMLElement {
         };
         return html `
     <div class="row">
-      <span class=${LitHtml.Directives.classMap(classMap)}>${toHexString({ number: startIndex + this.#memoryOffset, pad: 8, prefix: false })}</span>
+      <span class=${Lit.Directives.classMap(classMap)}>${toHexString({ number: startIndex + this.#memoryOffset, pad: 8, prefix: false })}</span>
       <span class="divider"></span>
       ${this.#renderByteValues(startIndex, endIndex)}
       <span class="divider"></span>
@@ -212,7 +215,7 @@ export class LinearMemoryViewer extends HTMLElement {
             const byteValue = isSelectableCell ? html `${toHexString({ number: this.#memory[i], pad: 2, prefix: false })}` : '';
             const onSelectedByte = isSelectableCell ? this.#onSelectedByte.bind(this, actualIndex) : '';
             const jslog = VisualLogging.tableCell('linear-memory-inspector.byte-cell').track({ click: true });
-            cells.push(html `<span class=${LitHtml.Directives.classMap(classMap)} @click=${onSelectedByte} jslog=${jslog}>${byteValue}</span>`);
+            cells.push(html `<span class=${Lit.Directives.classMap(classMap)} @click=${onSelectedByte} jslog=${jslog}>${byteValue}</span>`);
         }
         return html `${cells}`;
     }
@@ -233,7 +236,7 @@ export class LinearMemoryViewer extends HTMLElement {
             const value = isSelectableCell ? html `${this.#toAscii(this.#memory[i])}` : '';
             const onSelectedByte = isSelectableCell ? this.#onSelectedByte.bind(this, i + this.#memoryOffset) : '';
             const jslog = VisualLogging.tableCell('linear-memory-inspector.text-cell').track({ click: true });
-            cells.push(html `<span class=${LitHtml.Directives.classMap(classMap)} @click=${onSelectedByte} jslog=${jslog}>${value}</span>`);
+            cells.push(html `<span class=${Lit.Directives.classMap(classMap)} @click=${onSelectedByte} jslog=${jslog}>${value}</span>`);
         }
         return html `${cells}`;
     }

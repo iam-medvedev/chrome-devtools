@@ -4,9 +4,9 @@
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text to tell the user that the document request does not have redirects.
@@ -58,7 +58,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/DocumentLatency.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class DocumentLatency extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-document-latency`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-document-latency`;
     internalName = 'document-latency';
     #check(didPass, good, bad) {
         const icon = didPass ? 'check-circle' : 'clear';
@@ -123,7 +123,7 @@ export class DocumentLatency extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model?.data) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `

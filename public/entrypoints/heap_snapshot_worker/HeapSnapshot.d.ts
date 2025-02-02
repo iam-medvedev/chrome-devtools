@@ -197,6 +197,7 @@ export declare abstract class HeapSnapshot {
     containmentEdges: Platform.TypedArrayUtilities.BigUint32Array;
     strings: string[];
     rootNodeIndexInternal: number;
+    profile: Profile;
     nodeTypeOffset: number;
     nodeNameOffset: number;
     nodeIdOffset: number;
@@ -369,6 +370,7 @@ export interface HeapSnapshotHeader {
     edge_count: number;
     trace_function_count: number;
     root_index: number;
+    extra_native_bytes?: number;
 }
 export declare abstract class HeapSnapshotItemProvider {
     #private;

@@ -4,9 +4,8 @@
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getCellByIndexes, } from '../../../../testing/DataGridHelpers.js';
-import { getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
@@ -23,14 +22,13 @@ async function renderMismatchedPreloadingGrid(data) {
     return component;
 }
 function assertDiff(gridComponent, cellIndex, spansExpected) {
-    const controller = getElementWithinComponent(gridComponent, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
-    const grid = getElementWithinComponent(controller, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
+    const grid = gridComponent.shadowRoot.querySelector('devtools-data-grid');
     assert.isNotNull(grid.shadowRoot);
     const cell = getCellByIndexes(grid.shadowRoot, cellIndex);
     const spans = cell.querySelectorAll('div span');
     for (const [got, expected] of zip2(Array.from(spans), spansExpected)) {
         assert.strictEqual(got.textContent, expected.textContent);
-        assert.include(got.getAttribute('style'), expected.partOfStyle);
+        assert.include(got.getAttribute('style') || '', expected.partOfStyle);
     }
 }
 const FG_GREEN = 'color:var(--sys-color-green);text-decoration:line-through';

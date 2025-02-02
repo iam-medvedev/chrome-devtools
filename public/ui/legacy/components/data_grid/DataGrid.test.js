@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import { html, render } from '../../../../ui/lit/lit.js';
 import * as UI from '../../legacy.js';
 import * as DataGrid from './data_grid.js';
-const { render, html } = LitHtml;
 const widgetRef = UI.Widget.widgetRef;
 describeWithEnvironment('DataGrid', () => {
     it('can be instantiated from template', async () => {

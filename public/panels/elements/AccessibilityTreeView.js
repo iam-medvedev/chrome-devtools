@@ -15,6 +15,7 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
     root = null;
     constructor(toggleButton, accessibilityTreeComponent) {
         super();
+        this.registerRequiredCSS(accessibilityTreeViewStyles);
         // toggleButton is bound to a click handler on ElementsPanel to switch between the DOM tree
         // and accessibility tree views.
         this.toggleButton = toggleButton;
@@ -53,11 +54,11 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
         });
     }
     async wasShown() {
+        super.wasShown();
         await this.refreshAccessibilityTree();
         if (this.inspectedDOMNode) {
             await this.loadSubTreeIntoAccessibilityModel(this.inspectedDOMNode);
         }
-        this.registerCSSFiles([accessibilityTreeViewStyles]);
     }
     async refreshAccessibilityTree() {
         if (!this.root) {

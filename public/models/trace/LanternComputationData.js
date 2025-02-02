@@ -130,10 +130,12 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
     // TODO: set decodedBodyLength for data urls in Trace Engine.
     let resourceSize = request.args.data.decodedBodyLength ?? 0;
     if (url.protocol === 'data:' && resourceSize === 0) {
-        const needle = 'base64,';
-        const index = url.pathname.indexOf(needle);
-        if (index !== -1) {
-            resourceSize = atob(url.pathname.substring(index + needle.length)).length;
+        const commaIndex = url.pathname.indexOf(',');
+        if (url.pathname.substring(0, commaIndex).includes(';base64')) {
+            resourceSize = atob(url.pathname.substring(commaIndex + 1)).length;
+        }
+        else {
+            resourceSize = url.pathname.length - commaIndex - 1;
         }
     }
     return {
@@ -363,5 +365,5 @@ function createGraph(requests, trace, parsedTrace, url) {
     }
     return Lantern.Graph.PageDependencyGraph.createGraph(mainThreadEvents, requests, url);
 }
-export { createProcessedNavigation, createNetworkRequests, createGraph, };
+export { createGraph, createNetworkRequests, createProcessedNavigation, };
 //# sourceMappingURL=LanternComputationData.js.map

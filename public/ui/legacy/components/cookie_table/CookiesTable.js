@@ -117,6 +117,7 @@ export class CookiesTable extends UI.Widget.VBox {
     cookieToExemptionReason;
     constructor(renderInline, saveCallback, refreshCallback, selectedCallback, deleteCallback) {
         super();
+        this.registerRequiredCSS(cookiesTableStyles);
         this.element.classList.add('cookies-table');
         this.saveCallback = saveCallback;
         this.refreshCallback = refreshCallback;
@@ -279,9 +280,6 @@ export class CookiesTable extends UI.Widget.VBox {
         this.cookieDomain = '';
         this.cookieToBlockedReasons = null;
         this.cookieToExemptionReason = null;
-    }
-    wasShown() {
-        this.registerCSSFiles([cookiesTableStyles]);
     }
     setCookies(cookies, cookieToBlockedReasons, cookieToExemptionReason) {
         this.setCookieFolders([{ cookies, folderName: null }], cookieToBlockedReasons, cookieToExemptionReason);

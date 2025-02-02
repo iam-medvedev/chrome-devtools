@@ -9,7 +9,7 @@ import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
 import { ListControl, ListMode } from './ListControl.js';
 import softDropDownStyles from './softDropDown.css.js';
-import softDropDownButtonStyles from './softDropDownButton.css.legacy.js';
+import softDropDownButtonStyles from './softDropDownButton.css.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
 const UIStrings = {
@@ -57,7 +57,7 @@ export class SoftDropDown {
         this.rowHeight = 36;
         this.width = 315;
         createShadowRootWithCoreStyles(this.glassPane.contentElement, {
-            cssFile: [softDropDownStyles]
+            cssFile: softDropDownStyles,
         }).appendChild(this.list.element);
         ARIAUtils.markAsMenu(this.list.element);
         VisualLogging.setMappedParent(this.list.element, this.element);

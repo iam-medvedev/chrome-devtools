@@ -41,9 +41,11 @@
       <include file="Images/align-self-stretch.svg" name="IMAGES_ALIGN_SELF_STRETCH_SVG" resource_path="Images/align-self-stretch.svg" type="BINDATA" compress="false"/>
       <include file="Images/animation.svg" name="IMAGES_ANIMATION_SVG" resource_path="Images/animation.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-back.svg" name="IMAGES_ARROW_BACK_SVG" resource_path="Images/arrow-back.svg" type="BINDATA" compress="false"/>
+      <include file="Images/arrow-collapse.svg" name="IMAGES_ARROW_COLLAPSE_SVG" resource_path="Images/arrow-collapse.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-down.svg" name="IMAGES_ARROW_DOWN_SVG" resource_path="Images/arrow-down.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-drop-down-dark.svg" name="IMAGES_ARROW_DROP_DOWN_DARK_SVG" resource_path="Images/arrow-drop-down-dark.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-drop-down-light.svg" name="IMAGES_ARROW_DROP_DOWN_LIGHT_SVG" resource_path="Images/arrow-drop-down-light.svg" type="BINDATA" compress="false"/>
+      <include file="Images/arrow-drop-down.svg" name="IMAGES_ARROW_DROP_DOWN_SVG" resource_path="Images/arrow-drop-down.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-forward.svg" name="IMAGES_ARROW_FORWARD_SVG" resource_path="Images/arrow-forward.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-right-circle.svg" name="IMAGES_ARROW_RIGHT_CIRCLE_SVG" resource_path="Images/arrow-right-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-up-down-circle.svg" name="IMAGES_ARROW_UP_DOWN_CIRCLE_SVG" resource_path="Images/arrow-up-down-circle.svg" type="BINDATA" compress="false"/>
@@ -108,6 +110,7 @@
       <include file="Images/devtools-thumbnail.svg" name="IMAGES_DEVTOOLS_THUMBNAIL_SVG" resource_path="Images/devtools-thumbnail.svg" type="BINDATA" compress="false"/>
       <include file="Images/devtools-tips.svg" name="IMAGES_DEVTOOLS_TIPS_SVG" resource_path="Images/devtools-tips.svg" type="BINDATA" compress="false"/>
       <include file="Images/devtools.svg" name="IMAGES_DEVTOOLS_SVG" resource_path="Images/devtools.svg" type="BINDATA" compress="false"/>
+      <include file="Images/difference.svg" name="IMAGES_DIFFERENCE_SVG" resource_path="Images/difference.svg" type="BINDATA" compress="false"/>
       <include file="Images/dock-bottom.svg" name="IMAGES_DOCK_BOTTOM_SVG" resource_path="Images/dock-bottom.svg" type="BINDATA" compress="false"/>
       <include file="Images/dock-left.svg" name="IMAGES_DOCK_LEFT_SVG" resource_path="Images/dock-left.svg" type="BINDATA" compress="false"/>
       <include file="Images/dock-right.svg" name="IMAGES_DOCK_RIGHT_SVG" resource_path="Images/dock-right.svg" type="BINDATA" compress="false"/>
@@ -293,7 +296,7 @@
       <include file="Images/width.svg" name="IMAGES_WIDTH_SVG" resource_path="Images/width.svg" type="BINDATA" compress="false"/>
       <include file="Images/zoom-in.svg" name="IMAGES_ZOOM_IN_SVG" resource_path="Images/zoom-in.svg" type="BINDATA" compress="false"/>
       <include file="Tests.js" name="TESTS_JS" resource_path="Tests.js" type="BINDATA" compress="false"/>
-      <include file="application_color_tokens.css" name="APPLICATION_COLOR_TOKENS_CSS" resource_path="application_color_tokens.css" type="BINDATA" compress="false"/>
+      <include file="application_tokens.css" name="APPLICATION_TOKENS_CSS" resource_path="application_tokens.css" type="BINDATA" compress="false"/>
       <include file="core/common/common.js" name="CORE_COMMON_COMMON_JS" resource_path="core/common/common.js" type="BINDATA" compress="false"/>
       <include file="core/dom_extension/dom_extension.js" name="CORE_DOM_EXTENSION_DOM_EXTENSION_JS" resource_path="core/dom_extension/dom_extension.js" type="BINDATA" compress="false"/>
       <include file="core/host/host.js" name="CORE_HOST_HOST_JS" resource_path="core/host/host.js" type="BINDATA" compress="false"/>
@@ -305,7 +308,7 @@
       <include file="core/root/root.js" name="CORE_ROOT_ROOT_JS" resource_path="core/root/root.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/sdk-meta.js" name="CORE_SDK_SDK_META_JS" resource_path="core/sdk/sdk-meta.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/sdk.js" name="CORE_SDK_SDK_JS" resource_path="core/sdk/sdk.js" type="BINDATA" compress="false"/>
-      <include file="design_tokens.css" name="DESIGN_TOKENS_CSS" resource_path="design_tokens.css" type="BINDATA" compress="false"/>
+      <include file="design_system_tokens.css" name="DESIGN_SYSTEM_TOKENS_CSS" resource_path="design_system_tokens.css" type="BINDATA" compress="false"/>
       <include file="device_mode_emulation_frame.html" name="DEVICE_MODE_EMULATION_FRAME_HTML" resource_path="device_mode_emulation_frame.html" type="BINDATA" compress="false"/>
       <include file="devtools_app.html" name="DEVTOOLS_APP_HTML" resource_path="devtools_app.html" type="BINDATA" compress="false"/>
       <include file="devtools_compatibility.js" name="DEVTOOLS_COMPATIBILITY_JS" resource_path="devtools_compatibility.js" type="BINDATA" compress="false"/>
@@ -677,7 +680,6 @@
       <include file="services/trace_bounds/trace_bounds.js" name="SERVICES_TRACE_BOUNDS_TRACE_BOUNDS_JS" resource_path="services/trace_bounds/trace_bounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/tracing.js" name="SERVICES_TRACING_TRACING_JS" resource_path="services/tracing/tracing.js" type="BINDATA" compress="false"/>
       <include file="services/window_bounds/window_bounds.js" name="SERVICES_WINDOW_BOUNDS_WINDOW_BOUNDS_JS" resource_path="services/window_bounds/window_bounds.js" type="BINDATA" compress="false"/>
-      <include file="theme_colors.css" name="THEME_COLORS_CSS" resource_path="theme_colors.css" type="BINDATA" compress="false"/>
       <include file="third_party/acorn/acorn.js" name="THIRD_PARTY_ACORN_ACORN_JS" resource_path="third_party/acorn/acorn.js" type="BINDATA" compress="false"/>
       <include file="third_party/chromium/client-variations/client-variations.js" name="THIRD_PARTY_CHROMIUM_CLIENT_VARIATIONS_CLIENT_VARIATIONS_JS" resource_path="third_party/chromium/client-variations/client-variations.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/angular.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_ANGULAR_JS" resource_path="third_party/codemirror.next/chunk/angular.js" type="BINDATA" compress="false"/>
@@ -714,7 +716,6 @@
       <include file="ui/components/cards/cards.js" name="UI_COMPONENTS_CARDS_CARDS_JS" resource_path="ui/components/cards/cards.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chrome_link.js" name="UI_COMPONENTS_CHROME_LINK_CHROME_LINK_JS" resource_path="ui/components/chrome_link/chrome_link.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/data_grid.js" name="UI_COMPONENTS_DATA_GRID_DATA_GRID_JS" resource_path="ui/components/data_grid/data_grid.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/diff_view.js" name="UI_COMPONENTS_DIFF_VIEW_DIFF_VIEW_JS" resource_path="ui/components/diff_view/diff_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandable_list.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLE_LIST_JS" resource_path="ui/components/expandable_list/expandable_list.js" type="BINDATA" compress="false"/>
@@ -759,7 +760,7 @@
       <include file="ui/legacy/components/utils/utils.js" name="UI_LEGACY_COMPONENTS_UTILS_UTILS_JS" resource_path="ui/legacy/components/utils/utils.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/legacy.js" name="UI_LEGACY_LEGACY_JS" resource_path="ui/legacy/legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/theme_support/theme_support.js" name="UI_LEGACY_THEME_SUPPORT_THEME_SUPPORT_JS" resource_path="ui/legacy/theme_support/theme_support.js" type="BINDATA" compress="false"/>
-      <include file="ui/lit-html/lit-html.js" name="UI_LIT_HTML_LIT_HTML_JS" resource_path="ui/lit-html/lit-html.js" type="BINDATA" compress="false"/>
+      <include file="ui/lit/lit.js" name="UI_LIT_LIT_JS" resource_path="ui/lit/lit.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/visual_logging.js" name="UI_VISUAL_LOGGING_VISUAL_LOGGING_JS" resource_path="ui/visual_logging/visual_logging.js" type="BINDATA" compress="false"/>
       <include file="worker_app.html" name="WORKER_APP_HTML" resource_path="worker_app.html" type="BINDATA" compress="false"/>
       <include file="core/common/App.js" name="CORE_COMMON_APP_JS" resource_path="core/common/App.js" type="BINDATA" compress="false"/>
@@ -842,6 +843,7 @@
       <include file="core/sdk/CSSModel.js" name="CORE_SDK_CSSMODEL_JS" resource_path="core/sdk/CSSModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CSSProperty.js" name="CORE_SDK_CSSPROPERTY_JS" resource_path="core/sdk/CSSProperty.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CSSPropertyParser.js" name="CORE_SDK_CSSPROPERTYPARSER_JS" resource_path="core/sdk/CSSPropertyParser.js" type="BINDATA" compress="false"/>
+      <include file="core/sdk/CSSPropertyParserMatchers.js" name="CORE_SDK_CSSPROPERTYPARSERMATCHERS_JS" resource_path="core/sdk/CSSPropertyParserMatchers.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CSSQuery.js" name="CORE_SDK_CSSQUERY_JS" resource_path="core/sdk/CSSQuery.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CSSRule.js" name="CORE_SDK_CSSRULE_JS" resource_path="core/sdk/CSSRule.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CSSScope.js" name="CORE_SDK_CSSSCOPE_JS" resource_path="core/sdk/CSSScope.js" type="BINDATA" compress="false"/>
@@ -1370,7 +1372,6 @@
       <include file="panels/elements/NodeStackTraceWidget.js" name="PANELS_ELEMENTS_NODESTACKTRACEWIDGET_JS" resource_path="panels/elements/NodeStackTraceWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/PlatformFontsWidget.js" name="PANELS_ELEMENTS_PLATFORMFONTSWIDGET_JS" resource_path="panels/elements/PlatformFontsWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/PropertiesWidget.js" name="PANELS_ELEMENTS_PROPERTIESWIDGET_JS" resource_path="panels/elements/PropertiesWidget.js" type="BINDATA" compress="false"/>
-      <include file="panels/elements/PropertyMatchers.js" name="PANELS_ELEMENTS_PROPERTYMATCHERS_JS" resource_path="panels/elements/PropertyMatchers.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/PropertyNameCategories.js" name="PANELS_ELEMENTS_PROPERTYNAMECATEGORIES_JS" resource_path="panels/elements/PropertyNameCategories.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/PropertyRenderer.js" name="PANELS_ELEMENTS_PROPERTYRENDERER_JS" resource_path="panels/elements/PropertyRenderer.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/StyleEditorWidget.js" name="PANELS_ELEMENTS_STYLEEDITORWIDGET_JS" resource_path="panels/elements/StyleEditorWidget.js" type="BINDATA" compress="false"/>
@@ -1641,7 +1642,6 @@
       <include file="panels/recorder/components/RecordingView.js" name="PANELS_RECORDER_COMPONENTS_RECORDINGVIEW_JS" resource_path="panels/recorder/components/RecordingView.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/ReplaySection.js" name="PANELS_RECORDER_COMPONENTS_REPLAYSECTION_JS" resource_path="panels/recorder/components/ReplaySection.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/SelectButton.js" name="PANELS_RECORDER_COMPONENTS_SELECTBUTTON_JS" resource_path="panels/recorder/components/SelectButton.js" type="BINDATA" compress="false"/>
-      <include file="panels/recorder/components/StartView.js" name="PANELS_RECORDER_COMPONENTS_STARTVIEW_JS" resource_path="panels/recorder/components/StartView.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/StepEditor.js" name="PANELS_RECORDER_COMPONENTS_STEPEDITOR_JS" resource_path="panels/recorder/components/StepEditor.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/StepView.js" name="PANELS_RECORDER_COMPONENTS_STEPVIEW_JS" resource_path="panels/recorder/components/StepView.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/TimelineSection.js" name="PANELS_RECORDER_COMPONENTS_TIMELINESECTION_JS" resource_path="panels/recorder/components/TimelineSection.js" type="BINDATA" compress="false"/>
@@ -1651,7 +1651,6 @@
       <include file="panels/recorder/components/recordingListView.css.js" name="PANELS_RECORDER_COMPONENTS_RECORDINGLISTVIEW_CSS_JS" resource_path="panels/recorder/components/recordingListView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/recordingView.css.js" name="PANELS_RECORDER_COMPONENTS_RECORDINGVIEW_CSS_JS" resource_path="panels/recorder/components/recordingView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/selectButton.css.js" name="PANELS_RECORDER_COMPONENTS_SELECTBUTTON_CSS_JS" resource_path="panels/recorder/components/selectButton.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/recorder/components/startView.css.js" name="PANELS_RECORDER_COMPONENTS_STARTVIEW_CSS_JS" resource_path="panels/recorder/components/startView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/stepEditor.css.js" name="PANELS_RECORDER_COMPONENTS_STEPEDITOR_CSS_JS" resource_path="panels/recorder/components/stepEditor.css.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/stepView.css.js" name="PANELS_RECORDER_COMPONENTS_STEPVIEW_CSS_JS" resource_path="panels/recorder/components/stepView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/components/timelineSection.css.js" name="PANELS_RECORDER_COMPONENTS_TIMELINESECTION_CSS_JS" resource_path="panels/recorder/components/timelineSection.css.js" type="BINDATA" compress="false"/>
@@ -1912,6 +1911,7 @@
       <include file="panels/timeline/timelineMiniMap.css.js" name="PANELS_TIMELINE_TIMELINEMINIMAP_CSS_JS" resource_path="panels/timeline/timelineMiniMap.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelinePaintProfiler.css.js" name="PANELS_TIMELINE_TIMELINEPAINTPROFILER_CSS_JS" resource_path="panels/timeline/timelinePaintProfiler.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelinePanel.css.js" name="PANELS_TIMELINE_TIMELINEPANEL_CSS_JS" resource_path="panels/timeline/timelinePanel.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/timelineSelectorStatsView.css.js" name="PANELS_TIMELINE_TIMELINESELECTORSTATSVIEW_CSS_JS" resource_path="panels/timeline/timelineSelectorStatsView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineStatusDialog.css.js" name="PANELS_TIMELINE_TIMELINESTATUSDIALOG_CSS_JS" resource_path="panels/timeline/timelineStatusDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/AICallTree.js" name="PANELS_TIMELINE_UTILS_AICALLTREE_JS" resource_path="panels/timeline/utils/AICallTree.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntityMapper.js" name="PANELS_TIMELINE_UTILS_ENTITYMAPPER_JS" resource_path="panels/timeline/utils/EntityMapper.js" type="BINDATA" compress="false"/>
@@ -2205,15 +2205,6 @@
       <include file="ui/components/chrome_link/chromeLink.css.js" name="UI_COMPONENTS_CHROME_LINK_CHROMELINK_CSS_JS" resource_path="ui/components/chrome_link/chromeLink.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/CodeHighlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODEHIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/CodeHighlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/codeHighlighter.css.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODEHIGHLIGHTER_CSS_JS" resource_path="ui/components/code_highlighter/codeHighlighter.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGrid.js" name="UI_COMPONENTS_DATA_GRID_DATAGRID_JS" resource_path="ui/components/data_grid/DataGrid.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGridContextMenuUtils.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDCONTEXTMENUUTILS_JS" resource_path="ui/components/data_grid/DataGridContextMenuUtils.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGridController.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDCONTROLLER_JS" resource_path="ui/components/data_grid/DataGridController.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGridControllerIntegrator.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDCONTROLLERINTEGRATOR_JS" resource_path="ui/components/data_grid/DataGridControllerIntegrator.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGridEvents.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDEVENTS_JS" resource_path="ui/components/data_grid/DataGridEvents.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGridRenderers.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDRENDERERS_JS" resource_path="ui/components/data_grid/DataGridRenderers.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/DataGridUtils.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDUTILS_JS" resource_path="ui/components/data_grid/DataGridUtils.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/dataGrid.css.js" name="UI_COMPONENTS_DATA_GRID_DATAGRID_CSS_JS" resource_path="ui/components/data_grid/dataGrid.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/data_grid/dataGridController.css.js" name="UI_COMPONENTS_DATA_GRID_DATAGRIDCONTROLLER_CSS_JS" resource_path="ui/components/data_grid/dataGridController.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/ButtonDialog.js" name="UI_COMPONENTS_DIALOGS_BUTTONDIALOG_JS" resource_path="ui/components/dialogs/ButtonDialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/Dialog.js" name="UI_COMPONENTS_DIALOGS_DIALOG_JS" resource_path="ui/components/dialogs/Dialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/ShortcutDialog.js" name="UI_COMPONENTS_DIALOGS_SHORTCUTDIALOG_JS" resource_path="ui/components/dialogs/ShortcutDialog.js" type="BINDATA" compress="false"/>
@@ -2228,6 +2219,7 @@
       <include file="ui/components/floating_button/floatingButton.css.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATINGBUTTON_CSS_JS" resource_path="ui/components/floating_button/floatingButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/component-server-setup.js" name="UI_COMPONENTS_HELPERS_COMPONENT_SERVER_SETUP_JS" resource_path="ui/components/helpers/component-server-setup.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/directives.js" name="UI_COMPONENTS_HELPERS_DIRECTIVES_JS" resource_path="ui/components/helpers/directives.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/helpers/get-root-node.js" name="UI_COMPONENTS_HELPERS_GET_ROOT_NODE_JS" resource_path="ui/components/helpers/get-root-node.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/scheduled-render.js" name="UI_COMPONENTS_HELPERS_SCHEDULED_RENDER_JS" resource_path="ui/components/helpers/scheduled-render.js" type="BINDATA" compress="false"/>
       <include file="ui/components/highlighting/HighlightManager.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTMANAGER_JS" resource_path="ui/components/highlighting/HighlightManager.js" type="BINDATA" compress="false"/>
       <include file="ui/components/highlighting/highlighting.css.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTING_CSS_JS" resource_path="ui/components/highlighting/highlighting.css.js" type="BINDATA" compress="false"/>
@@ -2439,9 +2431,9 @@
       <include file="ui/legacy/components/perf_ui/chartViewport.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_CHARTVIEWPORT_CSS_JS" resource_path="ui/legacy/components/perf_ui/chartViewport.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/perf_ui/filmStripView.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_FILMSTRIPVIEW_CSS_JS" resource_path="ui/legacy/components/perf_ui/filmStripView.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/perf_ui/flameChart.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_FLAMECHART_CSS_JS" resource_path="ui/legacy/components/perf_ui/flameChart.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/components/perf_ui/overviewGrid.css.legacy.js" name="UI_LEGACY_COMPONENTS_PERF_UI_OVERVIEWGRID_CSS_LEGACY_JS" resource_path="ui/legacy/components/perf_ui/overviewGrid.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/components/perf_ui/overviewGrid.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_OVERVIEWGRID_CSS_JS" resource_path="ui/legacy/components/perf_ui/overviewGrid.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/perf_ui/pieChart.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_PIECHART_CSS_JS" resource_path="ui/legacy/components/perf_ui/pieChart.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/components/perf_ui/timelineGrid.css.legacy.js" name="UI_LEGACY_COMPONENTS_PERF_UI_TIMELINEGRID_CSS_LEGACY_JS" resource_path="ui/legacy/components/perf_ui/timelineGrid.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/components/perf_ui/timelineGrid.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_TIMELINEGRID_CSS_JS" resource_path="ui/legacy/components/perf_ui/timelineGrid.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/perf_ui/timelineOverviewInfo.css.js" name="UI_LEGACY_COMPONENTS_PERF_UI_TIMELINEOVERVIEWINFO_CSS_JS" resource_path="ui/legacy/components/perf_ui/timelineOverviewInfo.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/quick_open/CommandMenu.js" name="UI_LEGACY_COMPONENTS_QUICK_OPEN_COMMANDMENU_JS" resource_path="ui/legacy/components/quick_open/CommandMenu.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/quick_open/FilteredListWidget.js" name="UI_LEGACY_COMPONENTS_QUICK_OPEN_FILTEREDLISTWIDGET_JS" resource_path="ui/legacy/components/quick_open/FilteredListWidget.js" type="BINDATA" compress="false"/>
@@ -2480,7 +2472,6 @@
       <include file="ui/legacy/infobar.css.js" name="UI_LEGACY_INFOBAR_CSS_JS" resource_path="ui/legacy/infobar.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/inlineButton.css.js" name="UI_LEGACY_INLINEBUTTON_CSS_JS" resource_path="ui/legacy/inlineButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/inspectorCommon.css.js" name="UI_LEGACY_INSPECTORCOMMON_CSS_JS" resource_path="ui/legacy/inspectorCommon.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/inspectorCommon.css.legacy.js" name="UI_LEGACY_INSPECTORCOMMON_CSS_LEGACY_JS" resource_path="ui/legacy/inspectorCommon.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/inspectorViewTabbedPane.css.js" name="UI_LEGACY_INSPECTORVIEWTABBEDPANE_CSS_JS" resource_path="ui/legacy/inspectorViewTabbedPane.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/listWidget.css.js" name="UI_LEGACY_LISTWIDGET_CSS_JS" resource_path="ui/legacy/listWidget.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/popover.css.js" name="UI_LEGACY_POPOVER_CSS_JS" resource_path="ui/legacy/popover.css.js" type="BINDATA" compress="false"/>
@@ -2492,17 +2483,17 @@
       <include file="ui/legacy/smallBubble.css.js" name="UI_LEGACY_SMALLBUBBLE_CSS_JS" resource_path="ui/legacy/smallBubble.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/softContextMenu.css.js" name="UI_LEGACY_SOFTCONTEXTMENU_CSS_JS" resource_path="ui/legacy/softContextMenu.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/softDropDown.css.js" name="UI_LEGACY_SOFTDROPDOWN_CSS_JS" resource_path="ui/legacy/softDropDown.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/softDropDownButton.css.legacy.js" name="UI_LEGACY_SOFTDROPDOWNBUTTON_CSS_LEGACY_JS" resource_path="ui/legacy/softDropDownButton.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/softDropDownButton.css.js" name="UI_LEGACY_SOFTDROPDOWNBUTTON_CSS_JS" resource_path="ui/legacy/softDropDownButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/splitWidget.css.js" name="UI_LEGACY_SPLITWIDGET_CSS_JS" resource_path="ui/legacy/splitWidget.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/suggestBox.css.js" name="UI_LEGACY_SUGGESTBOX_CSS_JS" resource_path="ui/legacy/suggestBox.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/tabbedPane.css.js" name="UI_LEGACY_TABBEDPANE_CSS_JS" resource_path="ui/legacy/tabbedPane.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/targetCrashedScreen.css.js" name="UI_LEGACY_TARGETCRASHEDSCREEN_CSS_JS" resource_path="ui/legacy/targetCrashedScreen.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/textPrompt.css.legacy.js" name="UI_LEGACY_TEXTPROMPT_CSS_LEGACY_JS" resource_path="ui/legacy/textPrompt.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/textPrompt.css.js" name="UI_LEGACY_TEXTPROMPT_CSS_JS" resource_path="ui/legacy/textPrompt.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/theme_support/ThemeSupport.js" name="UI_LEGACY_THEME_SUPPORT_THEMESUPPORT_JS" resource_path="ui/legacy/theme_support/ThemeSupport.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/toolbar.css.js" name="UI_LEGACY_TOOLBAR_CSS_JS" resource_path="ui/legacy/toolbar.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/treeoutline.css.js" name="UI_LEGACY_TREEOUTLINE_CSS_JS" resource_path="ui/legacy/treeoutline.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_JS" resource_path="ui/legacy/viewContainers.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/lit-html/i18n-template.js" name="UI_LIT_HTML_I18N_TEMPLATE_JS" resource_path="ui/lit-html/i18n-template.js" type="BINDATA" compress="false"/>
+      <include file="ui/lit/i18n-template.js" name="UI_LIT_I18N_TEMPLATE_JS" resource_path="ui/lit/i18n-template.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/Debugging.js" name="UI_VISUAL_LOGGING_DEBUGGING_JS" resource_path="ui/visual_logging/Debugging.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/DomState.js" name="UI_VISUAL_LOGGING_DOMSTATE_JS" resource_path="ui/visual_logging/DomState.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/KnownContextValues.js" name="UI_VISUAL_LOGGING_KNOWNCONTEXTVALUES_JS" resource_path="ui/visual_logging/KnownContextValues.js" type="BINDATA" compress="false"/>

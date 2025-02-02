@@ -72,7 +72,7 @@ export function stubNoopSettings() {
             type: () => "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             getAsArray: () => [],
         }),
-        getHostConfig: () => { },
+        getHostConfig: () => ({}),
     });
 }
 export function registerNoopActions(actionIds) {
@@ -422,6 +422,9 @@ export function getGetHostConfigStub(config) {
             temperature: -1,
             enabled: false,
             ...config.devToolsAiAssistancePerformanceAgent,
+        },
+        devToolsImprovedWorkspaces: {
+            enabled: false,
         },
         devToolsVeLogging: {
             enabled: true,

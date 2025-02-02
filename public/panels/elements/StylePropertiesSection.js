@@ -183,7 +183,7 @@ export class StylePropertiesSection {
             this.#styleRuleElement.createChild('div', 'styles-section-title ' + (rule ? 'styles-selector' : ''));
         this.propertiesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         this.propertiesTreeOutline.setFocusable(false);
-        this.propertiesTreeOutline.registerCSSFiles([stylePropertiesTreeOutlineStyles]);
+        this.propertiesTreeOutline.registerRequiredCSS(stylePropertiesTreeOutlineStyles);
         this.propertiesTreeOutline.element.classList.add('style-properties', 'matched-styles', 'monospace');
         this.#styleRuleElement.appendChild(this.propertiesTreeOutline.element);
         this.showAllButton = UI.UIUtils.createTextButton('', this.showAllItems.bind(this), {

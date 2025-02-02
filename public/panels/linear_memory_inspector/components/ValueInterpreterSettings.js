@@ -4,11 +4,14 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Input from '../../../ui/components/input/input.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { valueTypeToLocalizedString } from './ValueInterpreterDisplayUtils.js';
-import valueInterpreterSettingsStyles from './valueInterpreterSettings.css.js';
-const { render, html } = LitHtml;
+import valueInterpreterSettingsStylesRaw from './valueInterpreterSettings.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const valueInterpreterSettingsStyles = new CSSStyleSheet();
+valueInterpreterSettingsStyles.replaceSync(valueInterpreterSettingsStylesRaw.cssContent);
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description Name of a group of selectable value types that do not fall under integer and floating point value types, e.g. Pointer32. The group appears name appears under the Value Interpreter Settings.

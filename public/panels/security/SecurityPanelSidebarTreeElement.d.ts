@@ -3,5 +3,5 @@ export declare class SecurityPanelSidebarTreeElement extends UI.TreeOutline.Tree
     constructor(title?: string, expandable?: boolean, jslogContext?: string | number);
     get elemId(): string;
     showElement(): void;
-    onselect(): boolean;
+    onselect(selectedByUser?: boolean): boolean;
 }

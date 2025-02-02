@@ -13,7 +13,6 @@ export declare class SearchResultsPane extends UI.Widget.VBox {
     showAllMatches(): void;
     collapseAllResults(): void;
     private addTreeElement;
-    wasShown(): void;
 }
 export declare const matchesExpandedByDefault = 200;
 export declare const matchesShownAtOnce = 20;

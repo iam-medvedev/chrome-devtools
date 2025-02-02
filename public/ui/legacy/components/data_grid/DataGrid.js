@@ -100,6 +100,15 @@ const UIStrings = {
      *@description Accessible text indicating an empty row is created.
      */
     emptyRowCreated: 'An empty table row has been created. You may double click or use context menu to edit.',
+    /**
+     *@description Text for screen reader to announce when focusing on a sortable column in data grid.
+     *@example {ascending} PH1
+     */
+    enterToSort: 'Column sort state: {PH1}. Press enter to apply sorting filter',
+    /**
+     *@description Label for sortable column headers.
+     */
+    sortableColumn: 'Sortable column. Press enter to apply sorting filter',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/data_grid/DataGrid.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -197,7 +206,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshHeader();
         this.editing = false;
         this.selectedNode = null;
-        this.expandNodesWhenArrowing = false;
+        /** Currently by default this is true to expand nodes when arrowing with keyboard. */
+        this.expandNodesWhenArrowing = true;
         this.setRootNode(new DataGridNode());
         this.setHasSelection(false);
         this.indentWidth = 15;
@@ -367,6 +377,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             .track({ click: column.sortable, resize: true })
             .context(Platform.StringUtilities.toKebabCase(columnId))}`);
         cell.className = columnId + '-column';
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('role', 'columnheader');
         nodeToColumnIdMap.set(cell, columnId);
         this.dataTableHeaders[columnId] = cell;
         const div = document.createElement('div');
@@ -383,10 +395,18 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         if (column.sortable) {
             cell.addEventListener('click', this.clickInHeaderCell.bind(this), false);
+            /**
+             * For a11y reasons to allow for keyboard navigation through the table headers
+             * we additionally have a keydown event listener.
+             */
+            cell.addEventListener('keydown', this.keydownHeaderCell.bind(this), false);
             cell.classList.add('sortable');
             const icon = document.createElement('span');
             icon.className = 'sort-order-icon';
             cell.createChild('div', 'sort-order-icon-container').appendChild(icon);
+            if (column.title) {
+                UI.ARIAUtils.setLabel(cell, i18nString(UIStrings.sortableColumn));
+            }
         }
     }
     addColumn(column, position) {
@@ -1030,6 +1050,10 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         else if (event.key === 'ArrowRight') {
+            /** We do not want to expand if this setting is disabled. */
+            if (!this.expandNodesWhenArrowing) {
+                return;
+            }
             if (!this.selectedNode.revealed) {
                 this.selectedNode.reveal();
                 handled = true;
@@ -1135,6 +1159,17 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.sortByColumnHeaderCell(cell);
     }
+    keydownHeaderCell(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            this.clickInHeaderCell(event);
+        }
+    }
+    /**
+     * Sorts by column header cell.
+     * Additionally applies the aria-sort label to a column's th.
+     * Guidance on values of attribute taken from
+     * https://www.w3.org/TR/wai-aria-practices/examples/grid/dataGrids.html.
+     */
     sortByColumnHeaderCell(cell) {
         if (!nodeToColumnIdMap.has(cell) || !cell.classList.contains('sortable')) {
             return;
@@ -1145,9 +1180,13 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         if (this.sortColumnCell) {
             this.sortColumnCell.classList.remove(Order.Ascending, Order.Descending);
+            this.sortColumnCell.removeAttribute('aria-sort');
         }
         this.sortColumnCell = cell;
         cell.classList.add(sortOrder);
+        const ariaLabel = this.isSortOrderAscending() ? 'ascending' : 'descending';
+        cell.setAttribute('aria-sort', ariaLabel);
+        UI.ARIAUtils.alert(i18nString(UIStrings.enterToSort, { PH1: ariaLabel || '' }));
         this.dispatchEventToListeners("SortingChanged" /* Events.SORTING_CHANGED */);
     }
     markColumnAsSortedBy(columnId, sortOrder) {
@@ -2091,15 +2130,18 @@ export class DataGridWidget extends UI.Widget.VBox {
         this.dataGrid = dataGrid;
         this.element.appendChild(dataGrid.element);
         this.setDefaultFocusedElement(dataGrid.element);
+        this.registerRequiredCSS(dataGridStyles);
     }
     wasShown() {
-        this.registerCSSFiles([dataGridStyles]);
+        super.wasShown();
         this.dataGrid.wasShown();
     }
     willHide() {
         this.dataGrid.willHide();
+        super.willHide();
     }
     onResize() {
+        super.onResize();
         this.dataGrid.onResize();
     }
     elementsToRestoreScrollPositionsFor() {

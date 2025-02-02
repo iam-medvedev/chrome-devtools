@@ -7,9 +7,9 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Column name for count of elements that the engine attempted to match against a style rule
@@ -39,7 +39,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/SlowCSSSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SlowCSSSelector extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-slow-css-selector`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-slow-css-selector`;
     internalName = 'slow-css-selector';
     #selectorLocations = new Map();
     createOverlays() {
@@ -77,14 +77,14 @@ export class SlowCSSSelector extends BaseInsightComponent {
     }
     async getSelectorLinks(cssModel, selector) {
         if (!cssModel) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         if (!selector.style_sheet_id) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const locations = await this.toSourceFileLocation(cssModel, selector);
         if (!locations) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const links = html `
     ${locations.map((location, itemIndex) => {
@@ -95,7 +95,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         const cssModel = target?.model(SDK.CSSModel.CSSModel);
@@ -131,7 +131,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
                 rows: this.model.topElapsedMs.map(selector => {
                     return {
                         values: [
-                            html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
+                            html `${selector.selector} ${Lit.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
                             time(Trace.Types.Timing.Micro(selector['elapsed (us)']))
                         ],
                     };
@@ -153,7 +153,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
                 rows: this.model.topMatchAttempts.map(selector => {
                     return {
                         values: [
-                            html `${selector.selector} ${LitHtml.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
+                            html `${selector.selector} ${Lit.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
                             selector['match_attempts']
                         ],
                     };

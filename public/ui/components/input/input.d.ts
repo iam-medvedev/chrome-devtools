@@ -1,3 +1,4 @@
-import checkboxStyles from './checkbox.css.js';
-import textInputStyles from './textInput.css.js';
-export { checkboxStyles, textInputStyles, };
+import checkboxStylesRaw from './checkbox.css.js';
+declare const checkboxStyles: CSSStyleSheet;
+declare const textInputStyles: CSSStyleSheet;
+export { checkboxStyles, checkboxStylesRaw, textInputStyles, };

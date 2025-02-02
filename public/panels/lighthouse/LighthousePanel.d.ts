@@ -47,5 +47,4 @@ export declare class LighthousePanel extends UI.Panel.Panel {
     private handleDrop;
     private loadedFromFile;
     elementsToRestoreScrollPositionsFor(): Element[];
-    wasShown(): void;
 }

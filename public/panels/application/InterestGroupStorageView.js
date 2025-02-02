@@ -57,7 +57,7 @@ export class InterestGroupStorageView extends UI.SplitWidget.SplitWidget {
         super.wasShown();
         const sbw = this.sidebarWidget();
         if (sbw) {
-            sbw.registerCSSFiles([interestGroupStorageViewStyles]);
+            sbw.registerRequiredCSS(interestGroupStorageViewStyles);
         }
     }
     addEvent(event) {

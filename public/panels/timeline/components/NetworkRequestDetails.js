@@ -8,12 +8,18 @@ import * as Helpers from '../../../models/trace/helpers/helpers.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import NetworkRequestDetailsStyles from './networkRequestDetails.css.js';
-import networkRequestTooltipStyles from './networkRequestTooltip.css.js';
+import * as Lit from '../../../ui/lit/lit.js';
+import NetworkRequestDetailsStylesRaw from './networkRequestDetails.css.js';
+import networkRequestTooltipStylesRaw from './networkRequestTooltip.css.js';
 import { NetworkRequestTooltip } from './NetworkRequestTooltip.js';
 import { colorForNetworkRequest } from './Utils.js';
-const { html } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const NetworkRequestDetailsStyles = new CSSStyleSheet();
+NetworkRequestDetailsStyles.replaceSync(NetworkRequestDetailsStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const networkRequestTooltipStyles = new CSSStyleSheet();
+networkRequestTooltipStyles.replaceSync(networkRequestTooltipStylesRaw.cssContent);
+const { html } = Lit;
 const MAX_URL_LENGTH = 100;
 const UIStrings = {
     /**
@@ -87,7 +93,7 @@ const UIStrings = {
     /**
      * @description Text to refer to a 3rd Party entity.
      */
-    entity: '3rd party entity',
+    entity: 'Third party',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/NetworkRequestDetails.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -125,7 +131,7 @@ export class NetworkRequestDetails extends HTMLElement {
         };
         return html `
       <div class="network-request-details-title">
-        <div style=${LitHtml.Directives.styleMap(style)}></div>
+        <div style=${Lit.Directives.styleMap(style)}></div>
         ${i18nString(UIStrings.networkRequest)}
       </div>
     `;
@@ -305,7 +311,7 @@ export class NetworkRequestDetails extends HTMLElement {
       ${this.#renderInitiatedBy()}
     `; // The last items are outside the 2 column layout because InitiatedBy can be very wide
         // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-performance-network-request-details', NetworkRequestDetails);

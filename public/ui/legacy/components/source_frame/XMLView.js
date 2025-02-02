@@ -23,8 +23,10 @@ export class XMLView extends UI.Widget.Widget {
     searchConfig;
     constructor(parsedXML) {
         super(true);
+        this.registerRequiredCSS(xmlViewStyles);
         this.contentElement.classList.add('shadow-xml-view', 'source-code');
         this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+        this.treeOutline.registerRequiredCSS(xmlTreeStyles);
         this.contentElement.appendChild(this.treeOutline.element);
         this.currentSearchFocusIndex = 0;
         this.currentSearchTreeElements = [];
@@ -33,11 +35,6 @@ export class XMLView extends UI.Widget.Widget {
         if (firstChild) {
             firstChild.select(true /* omitFocus */, false /* selectedByUser */);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.treeOutline.registerCSSFiles([xmlTreeStyles]);
-        this.registerCSSFiles([xmlViewStyles]);
     }
     static createSearchableView(parsedXML) {
         const xmlView = new XMLView(parsedXML);

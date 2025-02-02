@@ -70,6 +70,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
     #hitBreakpoint;
     constructor() {
         super(true);
+        this.registerRequiredCSS(xhrBreakpointsSidebarPaneStyles);
         this.#breakpoints = new UI.ListModel.ListModel();
         this.#list = new UI.ListControl.ListControl(this.#breakpoints, this, UI.ListControl.ListMode.NonViewport);
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('source.xhr-breakpoints')}`);
@@ -345,10 +346,6 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         for (const url of breakpoints.keys()) {
             this.setBreakpoint(url);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([xhrBreakpointsSidebarPaneStyles]);
     }
 }
 //# sourceMappingURL=XHRBreakpointsSidebarPane.js.map

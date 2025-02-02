@@ -7,6 +7,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -127,11 +128,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #flameChartDimmers = [];
     #searchDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
     #treeRowHoverDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
-    #thirdPartyRowHoverDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
+    #thirdPartyRowHoverDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: false });
     #activeInsightDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
     #thirdPartyCheckboxDimmer = this.#registerFlameChartDimmer({ inclusive: true, outline: false });
     constructor(delegate) {
         super();
+        this.registerRequiredCSS(timelineFlameChartViewStyles);
         this.element.classList.add('timeline-flamechart');
         this.delegate = delegate;
         this.eventListeners = [];
@@ -373,18 +375,28 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     }
     #refreshDimming() {
         const dimmer = this.#flameChartDimmers.find(dimmer => dimmer.active);
+        // This checkbox should only be enabled if its dimmer is being used.
+        this.delegate.set3PCheckboxDisabled(Boolean(dimmer && dimmer !== this.#thirdPartyCheckboxDimmer));
         if (!dimmer) {
             this.mainFlameChart.disableDimming();
             this.networkFlameChart.disableDimming();
             return;
         }
-        this.mainFlameChart.enableDimming(dimmer.mainChartIndices, dimmer.inclusive, dimmer.outline);
-        this.networkFlameChart.enableDimming(dimmer.networkChartIndices, dimmer.inclusive, dimmer.outline);
+        const mainOutline = typeof dimmer.outline === 'boolean' ? dimmer.outline : dimmer.outline.main;
+        const networkOutline = typeof dimmer.outline === 'boolean' ? dimmer.outline : dimmer.outline.network;
+        this.mainFlameChart.enableDimming(dimmer.mainChartIndices, dimmer.inclusive, mainOutline);
+        this.networkFlameChart.enableDimming(dimmer.networkChartIndices, dimmer.inclusive, networkOutline);
     }
     #dimInsightRelatedEvents(relatedEvents) {
         // Dim all events except those related to the active insight.
         const relatedMainIndices = relatedEvents.map(event => this.mainDataProvider.indexForEvent(event) ?? -1);
         const relatedNetworkIndices = relatedEvents.map(event => this.networkDataProvider.indexForEvent(event) ?? -1);
+        // Only outline the events that are individually/specifically identified as being related. Don't outline
+        // the events covered by range overlays.
+        this.#activeInsightDimmer.outline = {
+            main: [...relatedMainIndices],
+            network: [...relatedNetworkIndices],
+        };
         // Further, overlays defining a trace bounds do not dim an event that falls within those bounds.
         for (const overlay of this.#currentInsightOverlays) {
             let bounds;
@@ -440,7 +452,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         const fieldMetricResultsByNavigationId = new Map();
         for (const [key, insightSet] of this.#traceInsightSets) {
             if (insightSet.navigation) {
-                fieldMetricResultsByNavigationId.set(key, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#traceMetadata));
+                fieldMetricResultsByNavigationId.set(key, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#traceMetadata, CrUXManager.CrUXManager.instance().getSelectedScope()));
             }
         }
         for (const marker of this.#markers) {
@@ -921,6 +933,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.updateSearchResults(false, false);
         this.refreshMainFlameChart();
         this.#updateFlameCharts();
+        this.resizeToPreferredHeights();
         this.setMarkers(this.#parsedTrace);
     }
     setInsights(insights, eventToRelatedInsightsMap) {
@@ -1055,7 +1068,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         Bindings.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.#boundRefreshAfterIgnoreList);
     }
     wasShown() {
-        this.registerCSSFiles([timelineFlameChartViewStyles]);
+        super.wasShown();
         this.networkFlameChartGroupExpansionSetting.addChangeListener(this.resizeToPreferredHeights, this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.#boundRefreshAfterIgnoreList);
         if (this.needsResizeToPreferredHeights) {

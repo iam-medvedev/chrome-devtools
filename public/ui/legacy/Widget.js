@@ -28,8 +28,9 @@
  */
 import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import { Constraints, Size } from './Geometry.js';
+import * as ThemeSupport from './theme_support/theme_support.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
 import { XWidget } from './XWidget.js';
 // Remember the original DOM mutation methods here, since we
@@ -65,6 +66,7 @@ export class WidgetElement extends HTMLElement {
         if (this.#widgetParams) {
             Object.assign(widget, this.#widgetParams);
         }
+        widget.requestUpdate();
         return widget;
     }
     set widgetConfig(config) {
@@ -77,7 +79,7 @@ export class WidgetElement extends HTMLElement {
                 }
             }
             if (needsUpdate) {
-                Object.assign(widget, this.#widgetParams);
+                Object.assign(widget, config.widgetParams);
                 widget.requestUpdate();
             }
         }
@@ -85,12 +87,15 @@ export class WidgetElement extends HTMLElement {
         this.#widgetParams = config.widgetParams;
     }
     connectedCallback() {
-        Widget.getOrCreateWidget(this).show(this.parentElement);
+        // When using <devtools-widget> we suppress
+        // suppressOrphanWidgetError and allow the Widget instance to be
+        // treated as a root instance if no root widget was found.
+        Widget.getOrCreateWidget(this).show(this.parentElement, undefined, /* suppressOrphanWidgetError= */ true);
     }
 }
 customElements.define('devtools-widget', WidgetElement);
 export function widgetRef(type, callback) {
-    return LitHtml.Directives.ref((e) => {
+    return Lit.Directives.ref((e) => {
         if (!(e instanceof HTMLElement)) {
             return;
         }
@@ -294,7 +299,7 @@ export class Widget {
     }
     async ownerViewDisposed() {
     }
-    show(parentElement, insertBefore) {
+    show(parentElement, insertBefore, suppressOrphanWidgetError = false) {
         assert(parentElement, 'Attempt to attach widget with no parent element');
         if (!this.isRoot) {
             // Update widget hierarchy.
@@ -302,6 +307,12 @@ export class Widget {
             let currentWidget = undefined;
             while (!currentWidget) {
                 if (!currentParent) {
+                    if (suppressOrphanWidgetError) {
+                        this.isRoot = true;
+                        console.warn('A Widget has silently been marked as a root widget');
+                        this.show(parentElement, insertBefore);
+                        return;
+                    }
                     throw new Error('Attempt to attach widget to orphan node');
                 }
                 currentWidget = widgetMap.get(currentParent);
@@ -488,16 +499,10 @@ export class Widget {
         this.notify(this.onLayout);
         this.doResize();
     }
-    registerCSSFiles(styleSheets) {
-        const root = (this.shadowRoot ?? this.contentElement.getRootNode());
-        // Make sure to properly deduplicate CSSStyleSheet instances (after the
-        // DOMExtension.ts magic kicked in), so we don't end up just appending
-        // the same style sheets over and over again when hiding and showing.
-        // TODO(http://crbug.com/391381439): We should get rid of this and
-        // instead use a declarative approach to associate style sheets with
-        // widgets, similar to how `LitElement` uses the `styles` class property.
-        root.adoptedStyleSheets.push(...styleSheets);
-        root.adoptedStyleSheets = [...new Set(root.adoptedStyleSheets)];
+    registerRequiredCSS(...cssFiles) {
+        for (const cssFile of cssFiles) {
+            ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot ?? this.element, cssFile);
+        }
     }
     printWidgetHierarchy() {
         const lines = [];

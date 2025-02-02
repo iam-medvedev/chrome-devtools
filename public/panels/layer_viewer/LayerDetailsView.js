@@ -169,6 +169,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     selection;
     constructor(layerViewHost) {
         super(true);
+        this.registerRequiredCSS(layerDetailsViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('layers-details')}`);
         this.contentElement.classList.add('layer-details-container');
         this.layerViewHost = layerViewHost;
@@ -190,7 +191,6 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([layerDetailsViewStyles]);
         this.update();
     }
     onScrollRectClicked(index, event) {

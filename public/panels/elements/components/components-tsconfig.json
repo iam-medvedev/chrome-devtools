@@ -78,9 +78,6 @@
       "path": "../../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/icon_button/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
@@ -102,7 +99,7 @@
       "path": "../../../ui/legacy/components/inline_editor/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/visual_logging/bundle-tsconfig.json"

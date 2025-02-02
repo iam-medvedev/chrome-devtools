@@ -209,7 +209,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     constructor(computedStyleModel) {
         super(computedStyleModel, true /* delegatesFocus */);
         this.setMinimumSize(96, 26);
-        this.registerCSSFiles([stylesSidebarPaneStyles]);
+        this.registerRequiredCSS(stylesSidebarPaneStyles);
         Common.Settings.Settings.instance().moduleSetting('text-editor-indent').addChangeListener(this.update.bind(this));
         this.currentToolbarPane = null;
         this.animatedToolbarPane = null;
@@ -1279,7 +1279,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (!changeTracker) {
             return;
         }
-        const diffResponse = await WorkspaceDiff.WorkspaceDiff.workspaceDiff().requestDiff(uiSourceCode, { shouldFormatDiff: true });
+        const diffResponse = await WorkspaceDiff.WorkspaceDiff.workspaceDiff().requestDiff(uiSourceCode);
         const changedLines = new Set();
         changeTracker.changedLines = changedLines;
         if (!diffResponse) {
@@ -1297,7 +1297,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     async getFormattedChanges() {
         let allChanges = '';
         for (const [url, { uiSourceCode }] of this.#urlToChangeTracker) {
-            const diffResponse = await WorkspaceDiff.WorkspaceDiff.workspaceDiff().requestDiff(uiSourceCode, { shouldFormatDiff: true });
+            const diffResponse = await WorkspaceDiff.WorkspaceDiff.workspaceDiff().requestDiff(uiSourceCode);
             // Diff array with real diff will contain at least 2 lines.
             if (!diffResponse || diffResponse?.diff.length < 2) {
                 continue;

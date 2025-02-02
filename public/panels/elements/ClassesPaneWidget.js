@@ -43,6 +43,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     previousTarget;
     constructor() {
         super(true);
+        this.registerRequiredCSS(classesPaneWidgetStyles);
         this.contentElement.className = 'styles-element-classes-pane';
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('elements-classes')}`);
         const container = this.contentElement.createChild('div', 'title-container');
@@ -133,7 +134,6 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     wasShown() {
         super.wasShown();
         this.update();
-        this.registerCSSFiles([classesPaneWidgetStyles]);
     }
     update() {
         if (!this.isShowing()) {

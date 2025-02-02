@@ -8,10 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_highlighter.js';
-import codeHighlighterStyles from '../../../ui/components/code_highlighter/codeHighlighter.css.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import codeHighlighterStylesRaw from '../../../ui/components/code_highlighter/codeHighlighter.css.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import contentEditableStyles from './suggestionInput.css.js';
+import contentEditableStylesRaw from './suggestionInput.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const codeHighlighterStyles = new CSSStyleSheet();
+codeHighlighterStyles.replaceSync(codeHighlighterStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const contentEditableStyles = new CSSStyleSheet();
+contentEditableStyles.replaceSync(contentEditableStylesRaw.cssContent);
 const mod = (a, n) => {
     return ((a % n) + n) % n;
 };
@@ -20,7 +26,7 @@ function assert(predicate, message = 'Assertion failed!') {
         throw new Error(message);
     }
 }
-const { html, Decorators, Directives, LitElement } = LitHtml;
+const { html, Decorators, Directives, LitElement } = Lit;
 const { customElement, property, state } = Decorators;
 const { classMap } = Directives;
 const jsonPropertyOptions = {

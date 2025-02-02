@@ -17,12 +17,15 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import frameDetailsReportViewStyles from './frameDetailsReportView.css.js';
+import frameDetailsReportViewStylesRaw from './frameDetailsReportView.css.js';
 import { OriginTrialTreeView } from './OriginTrialTreeView.js';
 import { renderIconLink, } from './PermissionsPolicySection.js';
-const { html } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const frameDetailsReportViewStyles = new CSSStyleSheet();
+frameDetailsReportViewStyles.replaceSync(frameDetailsReportViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Section header in the Frame Details view
@@ -279,14 +282,14 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             }
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
         <devtools-report .data=${{ reportTitle: this.#frame.displayName() }}
         jslog=${VisualLogging.pane('frames')}>
           ${this.#renderDocumentSection()}
           ${this.#renderIsolationSection()}
           ${this.#renderApiAvailabilitySection()}
           ${this.#renderOriginTrial()}
-          ${LitHtml.Directives.until(this.#permissionsPolicies?.then(policies => {
+          ${Lit.Directives.until(this.#permissionsPolicies?.then(policies => {
                 this.#permissionsPolicySectionData.policies = policies || [];
                 return html `
               <devtools-resources-permissions-policy-section
@@ -294,8 +297,8 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
               >
               </devtools-resources-permissions-policy-section>
             `;
-            }), LitHtml.nothing)}
-          ${this.#protocolMonitorExperimentEnabled ? this.#renderAdditionalInfoSection() : LitHtml.nothing}
+            }), Lit.nothing)}
+          ${this.#protocolMonitorExperimentEnabled ? this.#renderAdditionalInfoSection() : Lit.nothing}
         </devtools-report>
       `, this.#shadow, { host: this });
             // clang-format on
@@ -303,7 +306,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #renderOriginTrial() {
         if (!this.#frame) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         this.#originTrialTreeView.classList.add('span-cols');
         void this.#frame.getOriginTrials().then(trials => {
@@ -324,7 +327,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #renderDocumentSection() {
         if (!this.#frame) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-section-header>${i18nString(UIStrings.document)}</devtools-report-section-header>
@@ -338,7 +341,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
       </devtools-report-value>
       ${this.#maybeRenderUnreachableURL()}
       ${this.#maybeRenderOrigin()}
-      ${LitHtml.Directives.until(this.#renderOwnerElement(), LitHtml.nothing)}
+      ${Lit.Directives.until(this.#renderOwnerElement(), Lit.nothing)}
       ${this.#maybeRenderCreationStacktrace()}
       ${this.#maybeRenderAdStatus()}
       <devtools-report-divider></devtools-report-divider>
@@ -346,7 +349,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #maybeRenderSourcesLinkForURL() {
         if (!this.#frame || this.#frame.unreachableUrl()) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const sourceCode = this.#uiSourceCodeForFrame(this.#frame);
         return renderIconLink('breakpoint-circle', i18nString(UIStrings.clickToOpenInSourcesPanel), () => Common.Revealer.reveal(sourceCode), 'reveal-in-sources');
@@ -362,7 +365,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
                 }, 'reveal-in-network');
             }
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #uiSourceCodeForFrame(frame) {
         for (const project of Workspace.Workspace.WorkspaceImpl.instance().projects()) {
@@ -378,7 +381,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #maybeRenderUnreachableURL() {
         if (!this.#frame || !this.#frame.unreachableUrl()) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-key>${i18nString(UIStrings.unreachableUrl)}</devtools-report-key>
@@ -408,7 +411,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
                 }, 'unreachable-url.reveal-in-network');
             }
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #maybeRenderOrigin() {
         if (this.#frame && this.#frame.securityOrigin && this.#frame.securityOrigin !== '://') {
@@ -419,7 +422,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         </devtools-report-value>
       `;
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     async #renderOwnerElement() {
         if (this.#frame) {
@@ -445,7 +448,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
                 // clang-format on
             }
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #maybeRenderCreationStacktrace() {
         const creationStackTraceData = this.#frame?.getCreationStackTraceData();
@@ -466,7 +469,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
       `;
             // clang-format on
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #getAdFrameTypeStrings(type) {
         switch (type) {
@@ -488,11 +491,11 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #maybeRenderAdStatus() {
         if (!this.#frame) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const adFrameType = this.#frame.adFrameType();
         if (adFrameType === "none" /* Protocol.Page.AdFrameType.None */) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const typeStrings = this.#getAdFrameTypeStrings(adFrameType);
         const rows = [html `<div title=${typeStrings.description}>${typeStrings.value}</div>`];
@@ -511,13 +514,13 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
       ${this.#target ? html `
         <devtools-report-key>${i18nString(UIStrings.creatorAdScript)}</devtools-report-key>
         <devtools-report-value class="ad-script-link">${adScriptLinkElement?.setAttribute('jslog', `${VisualLogging.link('ad-script').track({ click: true })}`)}</devtools-report-value>
-      ` : LitHtml.nothing}
+      ` : Lit.nothing}
     `;
         // clang-format on
     }
     #renderIsolationSection() {
         if (!this.#frame) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-section-header>${i18nString(UIStrings.securityIsolation)}</devtools-report-section-header>
@@ -529,7 +532,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
       <devtools-report-value>
         ${this.#frame.isCrossOriginIsolated() ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}
       </devtools-report-value>
-      ${LitHtml.Directives.until(this.#maybeRenderCoopCoepCSPStatus(), LitHtml.nothing)}
+      ${Lit.Directives.until(this.#maybeRenderCoopCoepCSPStatus(), Lit.nothing)}
       <devtools-report-divider></devtools-report-divider>
     `;
     }
@@ -538,7 +541,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         if (explanation) {
             return html `<span class="inline-comment">${explanation}</span>`;
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #getSecureContextExplanation() {
         switch (this.#frame?.getSecureContextType()) {
@@ -565,11 +568,11 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         `;
             }
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #maybeRenderCrossOriginStatus(info, policyName, noneValue) {
         if (!info) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const isEnabled = info.value !== noneValue;
         const isReportOnly = (!isEnabled && info.reportOnlyValue !== noneValue);
@@ -578,9 +581,8 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
       <devtools-report-key>${policyName}</devtools-report-key>
       <devtools-report-value>
         ${isEnabled ? info.value : info.reportOnlyValue}
-        ${isReportOnly ? html `<span class="inline-comment">report-only</span>` : LitHtml.nothing}
-        ${endpoint ? html `<span class="inline-name">${i18nString(UIStrings.reportingTo)}</span>${endpoint}` :
-            LitHtml.nothing}
+        ${isReportOnly ? html `<span class="inline-comment">report-only</span>` : Lit.nothing}
+        ${endpoint ? html `<span class="inline-name">${i18nString(UIStrings.reportingTo)}</span>${endpoint}` : Lit.nothing}
       </devtools-report-value>
     `;
     }
@@ -632,7 +634,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #renderApiAvailabilitySection() {
         if (!this.#frame) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-section-header>${i18nString(UIStrings.apiAvailability)}</devtools-report-section-header>
@@ -660,7 +662,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
                 function renderHint(frame) {
                     switch (frame.getCrossOriginIsolatedContextType()) {
                         case "Isolated" /* Protocol.Page.CrossOriginIsolatedContextType.Isolated */:
-                            return LitHtml.nothing;
+                            return Lit.nothing;
                         case "NotIsolated" /* Protocol.Page.CrossOriginIsolatedContextType.NotIsolated */:
                             if (sabAvailable) {
                                 return html `<span class="inline-comment">${i18nString(UIStrings.willRequireCrossoriginIsolated)}</span>`;
@@ -673,7 +675,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
                             }
                             break;
                     }
-                    return LitHtml.nothing;
+                    return Lit.nothing;
                 }
                 // SharedArrayBuffer is an API name, so we don't translate it.
                 return html `
@@ -684,7 +686,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         `;
             }
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #renderMeasureMemoryAvailability() {
         if (this.#frame) {
@@ -699,11 +701,11 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         </devtools-report-value>
       `;
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #renderAdditionalInfoSection() {
         if (!this.#frame) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-section-header

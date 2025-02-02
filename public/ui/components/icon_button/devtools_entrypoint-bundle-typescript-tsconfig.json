@@ -41,9 +41,6 @@
     },
     {
       "path": "./icon_button-tsconfig.json"
-    },
-    {
-      "path": "./legacy_css_files-tsconfig.json"
     }
   ]
 }

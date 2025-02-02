@@ -63,6 +63,9 @@ function createExtensionFlameChartEntries() {
 export function extractConsoleAPIExtensionEntries() {
     const consoleTimeStamps = userTimingsData().timestampEvents;
     for (const currentTimeStamp of consoleTimeStamps) {
+        if (!currentTimeStamp.args.data) {
+            continue;
+        }
         const timeStampName = String(currentTimeStamp.args.data.name);
         timeStampByName.set(timeStampName, currentTimeStamp);
         const extensionData = extensionDataInConsoleTimeStamp(currentTimeStamp);
@@ -221,6 +224,9 @@ export function extensionDataInPerformanceTiming(timing) {
  *         valid extension data for a track entry, or `null` otherwise.
  */
 export function extensionDataInConsoleTimeStamp(timeStamp) {
+    if (!timeStamp.args.data) {
+        return null;
+    }
     const trackName = timeStamp.args.data.track;
     if (trackName === '' || trackName === undefined) {
         return null;

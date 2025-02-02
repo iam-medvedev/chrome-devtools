@@ -10,7 +10,7 @@ declare class LinearMemoryInspectorView extends UI.Widget.VBox {
     #private;
     constructor();
     wasShown(): void;
-    setMemory(memory: Uint8Array): void;
+    setMemory(memory: Uint8Array<ArrayBuffer>): void;
     refreshData(): void;
 }
 /**

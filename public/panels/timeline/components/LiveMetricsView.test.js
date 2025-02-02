@@ -604,7 +604,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 'url-TABLET': null,
                 warnings: [],
             };
-            sinon.stub(CrUXManager.CrUXManager.instance(), 'getFieldDataForCurrentPage').callsFake(async () => mockFieldData);
+            sinon.stub(CrUXManager.CrUXManager.instance(), 'getFieldDataForPage').callsFake(async () => mockFieldData);
             CrUXManager.CrUXManager.instance().getConfigSetting().set({ enabled: true, override: '' });
         });
         it('should not show when crux is disabled', async () => {

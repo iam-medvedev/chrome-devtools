@@ -10,6 +10,7 @@ export class RootView extends VBox {
         super();
         this.markAsRoot();
         this.element.classList.add('root-view');
+        this.registerRequiredCSS(rootViewStyles);
         this.element.setAttribute('spellcheck', 'false');
     }
     attachToDocument(document) {
@@ -19,10 +20,6 @@ export class RootView extends VBox {
         this.window = document.defaultView;
         this.doResize();
         this.show(document.body);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([rootViewStyles]);
     }
     doResize() {
         if (this.window) {

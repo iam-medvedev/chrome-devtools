@@ -1,7 +1,7 @@
-import type * as Protocol from '../../generated/protocol.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
-import { type Target } from './Target.js';
+import type * as Protocol from '../../generated/protocol.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class StorageBucketsModel extends SDKModel<EventTypes> implements ProtocolProxyApi.StorageDispatcher {
     private enabled;
     readonly storageAgent: ProtocolProxyApi.StorageApi;

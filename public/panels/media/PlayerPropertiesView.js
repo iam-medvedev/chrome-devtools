@@ -405,6 +405,7 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     textTracksTabs;
     constructor() {
         super();
+        this.registerRequiredCSS(playerPropertiesViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('properties')}`);
         this.contentElement.classList.add('media-properties-frame');
         this.mediaElements = [];
@@ -557,10 +558,6 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
         this.attributeMap.set("kAudioTracks" /* PlayerPropertyKeys.AUDIO_TRACKS */, audioTrackManager);
         const textTrackManager = new TextTrackManager(this);
         this.attributeMap.set("kTextTracks" /* PlayerPropertyKeys.TEXT_TRACKS */, textTrackManager);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([playerPropertiesViewStyles]);
     }
 }
 //# sourceMappingURL=PlayerPropertiesView.js.map

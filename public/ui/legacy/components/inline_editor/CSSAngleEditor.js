@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import * as LitHtml from '../../../lit-html/lit-html.js';
+import * as Lit from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
-import cssAngleEditorStyles from './cssAngleEditor.css.js';
+import cssAngleEditorStylesRaw from './cssAngleEditor.css.js';
 import { get2DTranslationsForAngle, getAngleFromRadians, getNewAngleFromEvent, getRadiansFromAngle, } from './CSSAngleUtils.js';
-const { render, html } = LitHtml;
-const styleMap = LitHtml.Directives.styleMap;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssAngleEditorStyles = new CSSStyleSheet();
+cssAngleEditorStyles.replaceSync(cssAngleEditorStylesRaw.cssContent);
+const { render, html } = Lit;
+const styleMap = Lit.Directives.styleMap;
 const CLOCK_DIAL_LENGTH = 6;
 export class CSSAngleEditor extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });

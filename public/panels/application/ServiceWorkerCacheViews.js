@@ -95,6 +95,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     metadataView = new ApplicationComponents.StorageMetadataView.StorageMetadataView();
     constructor(model, cache) {
         super(i18nString(UIStrings.cache));
+        this.registerRequiredCSS(serviceWorkerCacheViewsStyles);
         this.model = model;
         this.entriesForTest = null;
         this.element.classList.add('service-worker-cache-data-view');
@@ -157,7 +158,6 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     }
     wasShown() {
         this.model.addEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CACHE_STORAGE_CONTENT_UPDATED */, this.cacheContentUpdated, this);
-        this.registerCSSFiles([serviceWorkerCacheViewsStyles]);
         void this.updateData(true);
     }
     willHide() {

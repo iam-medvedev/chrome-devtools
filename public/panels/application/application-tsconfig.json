@@ -127,9 +127,6 @@
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/data_grid/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/expandable_list/bundle-tsconfig.json"
     },
     {

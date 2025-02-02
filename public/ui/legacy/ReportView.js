@@ -20,6 +20,7 @@ export class ReportView extends VBox {
     urlElement;
     constructor(title) {
         super(true);
+        this.registerRequiredCSS(reportViewStyles);
         this.contentBox = this.contentElement.createChild('div', 'report-content-box');
         this.headerElement = this.contentBox.createChild('div', 'report-header vbox');
         this.titleElement = this.headerElement.createChild('div', 'report-title');
@@ -31,10 +32,6 @@ export class ReportView extends VBox {
         }
         ARIAUtils.markAsHeading(this.titleElement, 1);
         this.sectionList = this.contentBox.createChild('div', 'vbox');
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([reportViewStyles]);
     }
     getHeaderElement() {
         return this.headerElement;

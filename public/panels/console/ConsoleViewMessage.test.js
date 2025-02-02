@@ -234,7 +234,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             const element = message.toMessageElement(); // Trigger rendering.
             await message.formatErrorStackPromiseForTest();
             const wrapperElement = document.createElement('div');
-            const shadowElement = UI.UIUtils.createShadowRootWithCoreStyles(wrapperElement, { cssFile: [consoleViewStyles] });
+            const shadowElement = UI.UIUtils.createShadowRootWithCoreStyles(wrapperElement, { cssFile: consoleViewStyles });
             shadowElement.appendChild(element);
             renderElementIntoDOM(wrapperElement);
             assert.isTrue(element.checkVisibility());

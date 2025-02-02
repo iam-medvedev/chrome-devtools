@@ -38,5 +38,5 @@ async function getComputationDataFromFixture({ trace, settings, url }) {
         processedNavigation: Trace.LanternComputationData.createProcessedNavigation(parsedTrace, frameId, navigationId),
     };
 }
-export { toLanternTrace, runTrace, getComputationDataFromFixture, };
+export { getComputationDataFromFixture, runTrace, toLanternTrace, };
 //# sourceMappingURL=MetricTestUtils.js.map

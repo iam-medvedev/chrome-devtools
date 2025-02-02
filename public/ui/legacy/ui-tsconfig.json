@@ -122,9 +122,6 @@
       "path": "../components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../components/buttons/bundle-tsconfig.json"
-    },
-    {
       "path": "../components/helpers/bundle-tsconfig.json"
     },
     {
@@ -134,7 +131,7 @@
       "path": "../components/settings/bundle-tsconfig.json"
     },
     {
-      "path": "../lit-html/bundle-tsconfig.json"
+      "path": "../lit/bundle-tsconfig.json"
     },
     {
       "path": "../visual_logging/bundle-tsconfig.json"

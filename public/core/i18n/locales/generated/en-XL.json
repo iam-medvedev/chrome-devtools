@@ -104,6 +104,9 @@
   "core/common/Revealer.ts | networkPanel": {
     "message": "N̂ét̂ẃôŕk̂ ṕâńêĺ"
   },
+  "core/common/Revealer.ts | securityPanel": {
+    "message": "Ŝéĉúr̂ít̂ý p̂án̂él̂"
+  },
   "core/common/Revealer.ts | sourcesPanel": {
     "message": "Ŝóûŕĉéŝ ṕâńêĺ"
   },
@@ -3623,9 +3626,6 @@
   "panels/application/components/SharedStorageAccessGrid.ts | eventType": {
     "message": "Âćĉéŝś T̂ýp̂é"
   },
-  "panels/application/components/SharedStorageAccessGrid.ts | mainFrameId": {
-    "message": "M̂áîń F̂ŕâḿê ÍD̂"
-  },
   "panels/application/components/SharedStorageAccessGrid.ts | noEvents": {
     "message": "N̂ó ŝh́âŕêd́ ŝt́ôŕâǵê év̂én̂t́ŝ ŕêćôŕd̂éd̂."
   },
@@ -5018,11 +5018,8 @@
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | domBreakpointsList": {
     "message": "D̂ÓM̂ B́r̂éâḱp̂óîńt̂ś l̂íŝt́"
   },
-  "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | learnMore": {
-    "message": "L̂éâŕn̂ ḿôŕê"
-  },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | noBreakpoints": {
-    "message": "Ŷóû'ĺl̂ f́îńd̂ D́ÔḾ b̂ŕêák̂ṕôín̂t́ŝ h́êŕê"
+    "message": "N̂ó D̂ÓM̂ b́r̂éâḱp̂óîńt̂ś ŝét̂"
   },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | nodeRemoved": {
     "message": "N̂ód̂é r̂ém̂óv̂éd̂"
@@ -5099,14 +5096,20 @@
   "panels/changes/ChangesSidebar.ts | sFromSourceMap": {
     "message": "{PH1} (f̂ŕôḿ ŝóûŕĉé m̂áp̂)"
   },
-  "panels/changes/ChangesView.ts | binaryData": {
-    "message": "B̂ín̂ár̂ý d̂át̂á"
+  "panels/changes/ChangesView.ts | binaryDataDescription": {
+    "message": "T̂h́ê ćĥán̂ǵêś t̂áb̂ d́ôéŝń't̂ śĥóŵ b́îńâŕŷ d́ât́â ćĥán̂ǵêś"
+  },
+  "panels/changes/ChangesView.ts | changesViewDescription": {
+    "message": "Ôń t̂h́îś p̂áĝé ŷóû ćâń t̂ŕâćk̂ ćôd́ê ćĥán̂ǵêś m̂ád̂é ŵít̂h́îń D̂év̂T́ôól̂ś."
   },
   "panels/changes/ChangesView.ts | copy": {
     "message": "Ĉóp̂ý"
   },
   "panels/changes/ChangesView.ts | noChanges": {
-    "message": "N̂ó ĉh́âńĝéŝ"
+    "message": "N̂ó ĉh́âńĝéŝ ýêt́"
+  },
+  "panels/changes/ChangesView.ts | noTextualDiff": {
+    "message": "N̂ó t̂éx̂t́ûál̂ d́îf́f̂ áv̂áîĺâb́l̂é"
   },
   "panels/changes/ChangesView.ts | sDeletions": {
     "message": "{n, plural, =1 {# d̂él̂ét̂íôń (-)} other {# d̂él̂ét̂íôńŝ (-)}}"
@@ -5482,6 +5485,9 @@
   },
   "panels/console/ConsoleViewMessage.ts | repeatS": {
     "message": "{n, plural, =1 {R̂ép̂éât́êd́ # t̂ím̂é} other {R̂ép̂éât́êd́ # t̂ím̂éŝ}}"
+  },
+  "panels/console/ConsoleViewMessage.ts | SeeIssueInCookieReport": {
+    "message": "Ĉĺîćk̂ t́ô óp̂én̂ ṕr̂ív̂áĉý âńd̂ śêćûŕît́ŷ ṕâńêĺ âńd̂ śĥóŵ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê ŕêṕôŕt̂"
   },
   "panels/console/ConsoleViewMessage.ts | someEvent": {
     "message": "<ŝóm̂é> êv́êńt̂"
@@ -6758,6 +6764,9 @@
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Ŝt́âćk̂t́r̂áĉé"
   },
+  "panels/explain/components/ConsoleInsight.ts | timedOut": {
+    "message": "Ĝén̂ér̂át̂ín̂ǵ â ŕêśp̂ón̂śê t́ôók̂ t́ôó l̂ón̂ǵ. P̂ĺêáŝé t̂ŕŷ áĝáîń."
+  },
   "panels/explain/components/ConsoleInsight.ts | turnOnInSettings": {
     "message": "T̂úr̂ń ôń {PH1} t̂ó r̂éĉéîv́ê ÁÎ áŝśîśt̂án̂ćê f́ôŕ ûńd̂ér̂śt̂án̂d́îńĝ án̂d́ âd́d̂ŕêśŝín̂ǵ ĉón̂śôĺê ẃâŕn̂ín̂ǵŝ án̂d́ êŕr̂ór̂ś."
   },
@@ -7943,6 +7952,9 @@
   "panels/mobile_throttling/ThrottlingManager.ts | addS": {
     "message": "Âd́d̂ {PH1}"
   },
+  "panels/mobile_throttling/ThrottlingManager.ts | calibrate": {
+    "message": "Ĉál̂íb̂ŕât́ê…"
+  },
   "panels/mobile_throttling/ThrottlingManager.ts | cpuThrottling": {
     "message": "ĈṔÛ t́ĥŕôt́t̂ĺîńĝ"
   },
@@ -7963,6 +7975,9 @@
   },
   "panels/mobile_throttling/ThrottlingManager.ts | offline": {
     "message": "Ôf́f̂ĺîńê"
+  },
+  "panels/mobile_throttling/ThrottlingManager.ts | recalibrate": {
+    "message": "R̂éĉál̂íb̂ŕât́ê…"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | recommendedThrottling": {
     "message": "{PH1} – r̂éĉóm̂ḿêńd̂éd̂"
@@ -9167,14 +9182,14 @@
   "panels/network/RequestCookiesView.ts | thisRequestHasNoCookies": {
     "message": "T̂h́îś r̂éq̂úêśt̂ h́âś n̂ó ĉóôḱîéŝ."
   },
+  "panels/network/RequestInitiatorView.ts | noInitiator": {
+    "message": "N̂ó îńît́îát̂ór̂ d́ât́â"
+  },
   "panels/network/RequestInitiatorView.ts | requestCallStack": {
     "message": "R̂éq̂úêśt̂ ćâĺl̂ śt̂áĉḱ"
   },
   "panels/network/RequestInitiatorView.ts | requestInitiatorChain": {
     "message": "R̂éq̂úêśt̂ ín̂ít̂íât́ôŕ ĉh́âín̂"
-  },
-  "panels/network/RequestInitiatorView.ts | thisRequestHasNoInitiatorData": {
-    "message": "T̂h́îś r̂éq̂úêśt̂ h́âś n̂ó îńît́îát̂ór̂ d́ât́â."
   },
   "panels/network/RequestPayloadView.ts | copyPayload": {
     "message": "Ĉóp̂ý"
@@ -9233,8 +9248,11 @@
   "panels/network/RequestResponseView.ts | failedToLoadResponseData": {
     "message": "F̂áîĺêd́ t̂ó l̂óâd́ r̂éŝṕôńŝé d̂át̂á"
   },
+  "panels/network/RequestResponseView.ts | noPreview": {
+    "message": "N̂ót̂h́îńĝ t́ô ṕr̂év̂íêẃ"
+  },
   "panels/network/RequestResponseView.ts | thisRequestHasNoResponseData": {
-    "message": "T̂h́îś r̂éq̂úêśt̂ h́âś n̂ó r̂éŝṕôńŝé d̂át̂á âv́âíl̂áb̂ĺê."
+    "message": "T̂h́îś r̂éq̂úêśt̂ h́âś n̂ó r̂éŝṕôńŝé d̂át̂á âv́âíl̂áb̂ĺê"
   },
   "panels/network/RequestTimingView.ts | cacheStorageCacheNameS": {
     "message": "Ĉáĉh́ê śt̂ór̂áĝé ĉáĉh́ê ńâḿê: {PH1}"
@@ -10253,6 +10271,9 @@
   "panels/protocol_monitor/ProtocolMonitor.ts | save": {
     "message": "Ŝáv̂é"
   },
+  "panels/protocol_monitor/ProtocolMonitor.ts | selectAMessageToView": {
+    "message": "Ŝél̂éĉt́ â ḿêśŝáĝé t̂ó ŝéê ít̂ś d̂ét̂áîĺŝ"
+  },
   "panels/protocol_monitor/ProtocolMonitor.ts | selectTarget": {
     "message": "Ŝél̂éĉt́ â t́âŕĝét̂"
   },
@@ -10448,24 +10469,6 @@
   "panels/recorder/components/ReplaySection.ts | speedGroup": {
     "message": "Ŝṕêéd̂"
   },
-  "panels/recorder/components/StartView.ts | createRecording": {
-    "message": "Ĉŕêát̂é â ńêẃ r̂éĉór̂d́îńĝ"
-  },
-  "panels/recorder/components/StartView.ts | header": {
-    "message": "M̂éâśûŕê ṕêŕf̂ór̂ḿâńĉé âćr̂óŝś âń êńt̂ír̂é ûśêŕ ĵóûŕn̂éŷ"
-  },
-  "panels/recorder/components/StartView.ts | quickStart": {
-    "message": "Q̂úîćk̂ śt̂ár̂t́: l̂éâŕn̂ t́ĥé n̂éŵ Ŕêćôŕd̂ér̂ ṕâńêĺ îń D̂év̂T́ôól̂ś"
-  },
-  "panels/recorder/components/StartView.ts | step1": {
-    "message": "R̂éĉór̂d́ â ćôḿm̂ón̂ úŝér̂ j́ôúr̂ńêý ôń ŷóûŕ ŵéb̂śît́ê ór̂ áp̂ṕ"
-  },
-  "panels/recorder/components/StartView.ts | step2": {
-    "message": "R̂ép̂ĺâý t̂h́ê ŕêćôŕd̂ín̂ǵ t̂ó ĉh́êćk̂ íf̂ t́ĥé f̂ĺôẃ îś ŵór̂ḱîńĝ"
-  },
-  "panels/recorder/components/StartView.ts | step3": {
-    "message": "Ĝén̂ér̂át̂é â d́êt́âíl̂éd̂ ṕêŕf̂ór̂ḿâńĉé t̂ŕâćê ór̂ éx̂ṕôŕt̂ á P̂úp̂ṕêt́êér̂ śĉŕîṕt̂ f́ôŕ t̂éŝt́îńĝ"
-  },
   "panels/recorder/components/StepEditor.ts | addAttribute": {
     "message": "Âd́d̂ {attributeName}"
   },
@@ -10605,7 +10608,7 @@
     "message": "Ĉóp̂ý r̂éĉór̂d́îńĝ ór̂ śêĺêćt̂éd̂ śt̂ép̂"
   },
   "panels/recorder/RecorderController.ts | createRecording": {
-    "message": "Ĉŕêát̂é â ńêẃ r̂éĉór̂d́îńĝ"
+    "message": "Ĉŕêát̂é r̂éĉór̂d́îńĝ"
   },
   "panels/recorder/RecorderController.ts | deleteRecording": {
     "message": "D̂él̂ét̂é r̂éĉór̂d́îńĝ"
@@ -10622,14 +10625,23 @@
   "panels/recorder/RecorderController.ts | getExtensions": {
     "message": "Ĝét̂ éx̂t́êńŝíôńŝ…"
   },
+  "panels/recorder/RecorderController.ts | header": {
+    "message": "N̂ót̂h́îńĝ ŕêćôŕd̂éd̂ ýêt́"
+  },
   "panels/recorder/RecorderController.ts | importRecording": {
     "message": "Îḿp̂ór̂t́ r̂éĉór̂d́îńĝ"
+  },
+  "panels/recorder/RecorderController.ts | learnMore": {
+    "message": "L̂éâŕn̂ ḿôŕê"
   },
   "panels/recorder/RecorderController.ts | noRecordings": {
     "message": "N̂ó r̂éĉór̂d́îńĝś"
   },
   "panels/recorder/RecorderController.ts | numberOfRecordings": {
     "message": "r̂éĉór̂d́îńĝ(ś)"
+  },
+  "panels/recorder/RecorderController.ts | recordingDescription": {
+    "message": "Ûśê ŕêćôŕd̂ín̂ǵŝ t́ô ćr̂éât́ê áût́ôḿât́êd́ êńd̂-t́ô-én̂d́ t̂éŝt́ŝ ór̂ ṕêŕf̂ór̂ḿâńĉé t̂ŕâćêś."
   },
   "panels/recorder/RecorderController.ts | replayRecording": {
     "message": "R̂ép̂ĺâý r̂éĉór̂d́îńĝ"
@@ -11501,6 +11513,9 @@
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "T̂h́ê ćôńŝól̂é m̂éŝśâǵê, áŝśôćîát̂éd̂ śt̂áĉḱ t̂ŕâćê, ŕêĺât́êd́ ŝóûŕĉé ĉód̂é, âńd̂ t́ĥé âśŝóĉíât́êd́ n̂ét̂ẃôŕk̂ h́êád̂ér̂ś âŕê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ḿâý b̂é ŝéêń b̂ý ĥúm̂án̂ ŕêv́îéŵér̂ś t̂ó îḿp̂ŕôv́ê t́ĥíŝ f́êát̂úr̂é."
   },
+  "panels/settings/AISettingsTab.ts | consoleInsightsSendsDataNoLogging": {
+    "message": "T̂h́ê ćôńŝól̂é m̂éŝśâǵê, áŝśôćîát̂éd̂ śt̂áĉḱ t̂ŕâćê, ŕêĺât́êd́ ŝóûŕĉé ĉód̂é, âńd̂ t́ĥé âśŝóĉíât́êd́ n̂ét̂ẃôŕk̂ h́êád̂ér̂ś âŕê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ẃîĺl̂ ńôt́ b̂é ûśêd́ t̂ó îḿp̂ŕôv́ê Ǵôóĝĺê’ś ÂÍ m̂ód̂él̂ś."
+  },
   "panels/settings/AISettingsTab.ts | dataCollection": {
     "message": "D̂ép̂én̂d́îńĝ ón̂ ýôúr̂ ŕêǵîón̂, Ǵôóĝĺê ḿâý r̂éf̂ŕâín̂ f́r̂óm̂ d́ât́â ćôĺl̂éĉt́îón̂"
   },
@@ -11533,6 +11548,9 @@
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsData": {
     "message": "Âńŷ d́ât́â t́ĥé îńŝṕêćt̂éd̂ ṕâǵê ćâń âćĉéŝś v̂íâ Ẃêb́ ÂṔÎś, n̂ét̂ẃôŕk̂ ŕêq́ûéŝt́ŝ, f́îĺêś, âńd̂ ṕêŕf̂ór̂ḿâńĉé t̂ŕâćêś âŕê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ḿâý b̂é ŝéêń b̂ý ĥúm̂án̂ ŕêv́îéŵér̂ś t̂ó îḿp̂ŕôv́ê t́ĥíŝ f́êát̂úr̂é. D̂ón̂’t́ ûśê ón̂ ṕâǵêś ŵít̂h́ p̂ér̂śôńâĺ ôŕ ŝén̂śît́îv́ê ín̂f́ôŕm̂át̂íôń."
+  },
+  "panels/settings/AISettingsTab.ts | freestylerSendsDataNoLogging": {
+    "message": "Âńŷ d́ât́â t́ĥé îńŝṕêćt̂éd̂ ṕâǵê ćâń âćĉéŝś v̂íâ Ẃêb́ ÂṔÎś, n̂ét̂ẃôŕk̂ ŕêq́ûéŝt́ŝ, f́îĺêś, âńd̂ ṕêŕf̂ór̂ḿâńĉé t̂ŕâćêś âŕê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ẃîĺl̂ ńôt́ b̂é ûśêd́ t̂ó îḿp̂ŕôv́ê Ǵôóĝĺê’ś ÂÍ m̂ód̂él̂ś."
   },
   "panels/settings/AISettingsTab.ts | helpUnderstandConsole": {
     "message": "Ĥél̂ṕŝ ýôú ûńd̂ér̂śt̂án̂d́ âńd̂ f́îx́ ĉón̂śôĺê ẃâŕn̂ín̂ǵŝ án̂d́ êŕr̂ór̂ś"
@@ -13692,7 +13710,7 @@
     "message": "Êńĉód̂éd̂ d́ât́â"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | entity": {
-    "message": "3r̂d́ p̂ár̂t́ŷ én̂t́ît́ŷ"
+    "message": "T̂h́îŕd̂ ṕâŕt̂ý"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | fromCache": {
     "message": "F̂ŕôḿ ĉáĉh́ê"
@@ -13847,14 +13865,32 @@
   "panels/timeline/components/SidebarInsightsTab.ts | feedbackTooltip": {
     "message": "Îńŝíĝh́t̂ś îś âń êx́p̂ér̂ím̂én̂t́âĺ f̂éât́ûŕê. Ýôúr̂ f́êéd̂b́âćk̂ ẃîĺl̂ h́êĺp̂ úŝ ím̂ṕr̂óv̂é ît́."
   },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | dismissTitle": {
+    "message": "D̂íŝḿîśŝ"
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | fieldMismatchNotice": {
+    "message": "T̂h́êŕê ár̂é m̂án̂ý r̂éâśôńŝ ẃĥý l̂óĉál̂ án̂d́ f̂íêĺd̂ ḿêt́r̂íĉś [m̂áŷ ńôt́ m̂át̂ćĥ](https://web.dev/articles/lab-and-field-data-differences). Ád̂j́ûśt̂ [t́ĥŕôt́t̂ĺîńĝ śêt́t̂ín̂ǵŝ án̂d́ d̂év̂íĉé êḿûĺât́îón̂](https://developer.chrome.com/docs/devtools/device-mode) t́ô án̂ál̂ýẑé t̂ŕâćêś m̂ór̂é ŝím̂íl̂ár̂ t́ô t́ĥé âv́êŕâǵê úŝér̂'ś êńv̂ír̂ón̂ḿêńt̂."
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | fieldMismatchTitle": {
+    "message": "F̂íêĺd̂ & ĺôćâĺ m̂ét̂ŕîćŝ ḿîśm̂át̂ćĥ"
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | fieldScoreLabel": {
+    "message": "F̂íêĺd̂ ({PH1})"
+  },
   "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
     "message": "{PH1}: {PH2} {PH3} ŝćôŕê"
   },
   "panels/timeline/components/SidebarSingleInsightSet.ts | metricScoreUnavailable": {
     "message": "{PH1}: ûńâv́âíl̂áb̂ĺê"
   },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | originOption": {
+    "message": "Ôŕîǵîń"
+  },
   "panels/timeline/components/SidebarSingleInsightSet.ts | passedInsights": {
     "message": "P̂áŝśêd́ îńŝíĝh́t̂ś ({PH1})"
+  },
+  "panels/timeline/components/SidebarSingleInsightSet.ts | urlOption": {
+    "message": "ÛŔL̂"
   },
   "panels/timeline/components/TimelineSummary.ts | rangeSS": {
     "message": "R̂án̂ǵê:  {PH1} – {PH2}"
@@ -13946,6 +13982,12 @@
   "panels/timeline/overlays/OverlaysImpl.ts | fieldMetricMarkerLocal": {
     "message": "{PH1} - L̂óĉál̂"
   },
+  "panels/timeline/overlays/OverlaysImpl.ts | originOption": {
+    "message": "Ôŕîǵîń"
+  },
+  "panels/timeline/overlays/OverlaysImpl.ts | urlOption": {
+    "message": "ÛŔL̂"
+  },
   "panels/timeline/ServerTimingsTrackAppender.ts | serverSideTrack": {
     "message": "Ŝér̂v́êŕ T̂ím̂ín̂ǵŝ — {PH1}"
   },
@@ -13953,7 +13995,7 @@
     "message": "T̂h́îś t̂ŕâćk̂ ćôńt̂áîńŝ t́îḿîńĝś t̂ák̂én̂ f́r̂óm̂ Śêŕv̂ér̂-T́îḿîńĝ ńêt́ŵór̂ḱ r̂éŝṕôńŝé ĥéâd́êŕŝ. T́ĥéîŕ r̂éŝṕêćt̂ív̂é ŝt́âŕt̂ t́îḿêś âŕê ón̂ĺŷ éŝt́îḿât́êd́ âńd̂ ḿâý n̂ót̂ b́ê áĉćûŕât́ê."
   },
   "panels/timeline/ThirdPartyTreeView.ts | firstOrThirdPartyName": {
-    "message": "1ŝt́ / 3r̂d́ P̂ár̂t́ŷ"
+    "message": "1ŝt́ / 3r̂d́ p̂ár̂t́ŷ"
   },
   "panels/timeline/ThirdPartyTreeView.ts | selfTime": {
     "message": "Ŝél̂f́ t̂ím̂é"
@@ -14193,7 +14235,7 @@
     "message": "D̂éŝćr̂íp̂t́îón̂"
   },
   "panels/timeline/TimelinePanel.ts | dimThirdParties": {
-    "message": "D̂ím̂ 3ŕd̂ Ṕâŕt̂íêś"
+    "message": "D̂ím̂ 3ŕd̂ ṕâŕt̂íêś"
   },
   "panels/timeline/TimelinePanel.ts | disableJavascriptSamples": {
     "message": "D̂íŝáb̂ĺê J́âv́âŚĉŕîṕt̂ śâḿp̂ĺêś"
@@ -14323,6 +14365,9 @@
   },
   "panels/timeline/TimelinePanel.ts | stoppingTimeline": {
     "message": "Ŝt́ôṕp̂ín̂ǵ t̂ím̂él̂ín̂é…"
+  },
+  "panels/timeline/TimelinePanel.ts | thirdPartiesByThirdPartyWeb": {
+    "message": "3r̂d́ p̂ár̂t́îéŝ ćl̂áŝśîf́îéd̂ b́ŷ t́ĥír̂d́-p̂ár̂t́ŷ-ẃêb́"
   },
   "panels/timeline/TimelinePanel.ts | time": {
     "message": "T̂ím̂é"
@@ -14598,7 +14643,7 @@
     "message": "{PH1}"
   },
   "panels/timeline/TimelineUIUtils.ts | entity": {
-    "message": "3r̂d́ p̂ár̂t́ŷ én̂t́ît́ŷ"
+    "message": "T̂h́îŕd̂ ṕâŕt̂ý"
   },
   "panels/timeline/TimelineUIUtils.ts | entryIsHidden": {
     "message": "(êńt̂ŕŷ íŝ h́îd́d̂én̂)"
@@ -14776,6 +14821,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | stylesheetUrl": {
     "message": "Ŝt́ŷĺêśĥéêt́ ÛŔL̂"
+  },
+  "panels/timeline/TimelineUIUtils.ts | thirdPartyTable": {
+    "message": "1ŝt́ / 3r̂d́ p̂ár̂t́ŷ t́âb́l̂é"
   },
   "panels/timeline/TimelineUIUtils.ts | timeout": {
     "message": "T̂ím̂éôút̂"
@@ -15419,36 +15467,6 @@
   "panels/whats_new/whats_new-meta.ts | whatsNew": {
     "message": "Ŵh́ât́'ŝ ńêẃ"
   },
-  "ui/components/data_grid/DataGrid.ts | enterToSort": {
-    "message": "Ĉól̂úm̂ń ŝór̂t́ ŝt́ât́ê: {PH1}. Ṕr̂éŝś êńt̂ér̂ t́ô áp̂ṕl̂ý ŝór̂t́îńĝ f́îĺt̂ér̂"
-  },
-  "ui/components/data_grid/DataGrid.ts | headerOptions": {
-    "message": "Ĥéâd́êŕ Ôṕt̂íôńŝ"
-  },
-  "ui/components/data_grid/DataGrid.ts | resetColumns": {
-    "message": "R̂éŝét̂ Ćôĺûḿn̂ś"
-  },
-  "ui/components/data_grid/DataGrid.ts | sortAsc": {
-    "message": "âśĉén̂d́îńĝ"
-  },
-  "ui/components/data_grid/DataGrid.ts | sortBy": {
-    "message": "Ŝór̂t́ B̂ý"
-  },
-  "ui/components/data_grid/DataGrid.ts | sortDesc": {
-    "message": "d̂éŝćêńd̂ín̂ǵ"
-  },
-  "ui/components/data_grid/DataGrid.ts | sortNone": {
-    "message": "n̂ón̂é"
-  },
-  "ui/components/data_grid/DataGridController.ts | sortInAscendingOrder": {
-    "message": "{PH1} ŝór̂t́êd́ îń âśĉén̂d́îńĝ ór̂d́êŕ"
-  },
-  "ui/components/data_grid/DataGridController.ts | sortInDescendingOrder": {
-    "message": "{PH1} ŝór̂t́êd́ îń d̂éŝćêńd̂ín̂ǵ ôŕd̂ér̂"
-  },
-  "ui/components/data_grid/DataGridController.ts | sortingCanceled": {
-    "message": "{PH1} ŝór̂t́îńĝ ćâńĉél̂éd̂"
-  },
   "ui/components/dialogs/Dialog.ts | close": {
     "message": "Ĉĺôśê"
   },
@@ -15761,6 +15779,9 @@
   "ui/legacy/components/data_grid/DataGrid.ts | emptyRowCreated": {
     "message": "Âń êḿp̂t́ŷ t́âb́l̂é r̂óŵ h́âś b̂éêń ĉŕêát̂éd̂. Ýôú m̂áŷ d́ôúb̂ĺê ćl̂íĉḱ ôŕ ûśê ćôńt̂éx̂t́ m̂én̂ú t̂ó êd́ît́."
   },
+  "ui/legacy/components/data_grid/DataGrid.ts | enterToSort": {
+    "message": "Ĉól̂úm̂ń ŝór̂t́ ŝt́ât́ê: {PH1}. Ṕr̂éŝś êńt̂ér̂ t́ô áp̂ṕl̂ý ŝór̂t́îńĝ f́îĺt̂ér̂"
+  },
   "ui/legacy/components/data_grid/DataGrid.ts | expanded": {
     "message": "êx́p̂án̂d́êd́"
   },
@@ -15778,6 +15799,9 @@
   },
   "ui/legacy/components/data_grid/DataGrid.ts | rowsS": {
     "message": "R̂óŵś: {PH1}"
+  },
+  "ui/legacy/components/data_grid/DataGrid.ts | sortableColumn": {
+    "message": "Ŝór̂t́âb́l̂é ĉól̂úm̂ń. P̂ŕêśŝ én̂t́êŕ t̂ó âṕp̂ĺŷ śôŕt̂ín̂ǵ f̂íl̂t́êŕ"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sortByString": {
     "message": "Ŝór̂t́ B̂ý"
@@ -16129,6 +16153,9 @@
   },
   "ui/legacy/components/source_frame/JSONView.ts | find": {
     "message": "F̂ín̂d́"
+  },
+  "ui/legacy/components/source_frame/PreviewFactory.ts | failedToLoadData": {
+    "message": "F̂áîĺêd́ t̂ó l̂óâd́ d̂át̂á"
   },
   "ui/legacy/components/source_frame/PreviewFactory.ts | nothingToPreview": {
     "message": "N̂ót̂h́îńĝ t́ô ṕr̂év̂íêẃ"

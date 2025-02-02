@@ -8,6 +8,8 @@ import * as Timeline from './timeline.js';
 class MockViewDelegate {
     select(_selection) {
     }
+    set3PCheckboxDisabled(_disabled) {
+    }
     selectEntryAtTime(_events, _time) {
     }
     highlightEvent(_event) {

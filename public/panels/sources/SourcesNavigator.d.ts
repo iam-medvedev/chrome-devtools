@@ -4,7 +4,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type NavigatorUISourceCodeTreeNode, NavigatorView } from './NavigatorView.js';
 export declare class NetworkNavigatorView extends NavigatorView {
     private constructor();
-    wasShown(): void;
     static instance(opts?: {
         forceNew: boolean | null;
     }): NetworkNavigatorView;

@@ -80,6 +80,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
     excludedFolderEditor;
     constructor(fileSystemPath) {
         super(true);
+        this.registerRequiredCSS(editFileSystemViewStyles);
         this.fileSystemPath = fileSystemPath;
         this.excludedFolders = [];
         this.eventListeners = [
@@ -93,6 +94,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
         excludeSubFoldersText.textContent = i18nString(UIStrings.excludedFolders);
         this.excludedFoldersList = new UI.ListWidget.ListWidget(this);
         this.excludedFoldersList.element.classList.add('file-system-list');
+        this.excludedFoldersList.registerRequiredCSS(editFileSystemViewStyles);
         const excludedFoldersPlaceholder = document.createElement('div');
         excludedFoldersPlaceholder.classList.add('file-system-list-empty');
         excludedFoldersPlaceholder.textContent = i18nString(UIStrings.none);
@@ -180,11 +182,6 @@ export class EditFileSystemView extends UI.Widget.VBox {
             return '';
         }
         return prefix + (prefix[prefix.length - 1] === '/' ? '' : '/');
-    }
-    wasShown() {
-        super.wasShown();
-        this.excludedFoldersList.registerCSSFiles([editFileSystemViewStyles]);
-        this.registerCSSFiles([editFileSystemViewStyles]);
     }
 }
 //# sourceMappingURL=EditFileSystemView.js.map

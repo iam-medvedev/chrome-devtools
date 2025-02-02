@@ -1169,6 +1169,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         if (beforePseudoElement) {
             visibleChildren.push(beforePseudoElement);
         }
+        visibleChildren.push(...node.carouselPseudoElements());
         if (node.childNodeCount()) {
             // Children may be stale when the outline is not wired to receive DOMModel updates.
             let children = node.children() || [];

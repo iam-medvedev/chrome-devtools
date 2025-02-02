@@ -84,6 +84,7 @@ export class SearchableContainer extends UI.Widget.VBox {
     sourceFrame;
     constructor(resource, contentType) {
         super(true);
+        this.registerRequiredCSS(resourceSourceFrameStyles);
         const simpleContentType = Common.ResourceType.ResourceType.simplifyContentType(contentType);
         const sourceFrame = new ResourceSourceFrame(resource, simpleContentType);
         this.sourceFrame = sourceFrame;
@@ -99,10 +100,6 @@ export class SearchableContainer extends UI.Widget.VBox {
         void sourceFrame.toolbarItems().then(items => {
             items.map(item => toolbar.appendToolbarItem(item));
         });
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([resourceSourceFrameStyles]);
     }
     async revealPosition(position) {
         this.sourceFrame.revealPosition(position, true);

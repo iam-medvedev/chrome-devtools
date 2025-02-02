@@ -15,6 +15,7 @@ export declare class ThrottlingManager {
     private readonly cpuThrottlingOptions;
     private readonly customNetworkConditionsSetting;
     private readonly currentNetworkThrottlingConditionsSetting;
+    private readonly calibratedCpuThrottlingSetting;
     private lastNetworkThrottlingConditions;
     private readonly cpuThrottlingManager;
     get hardwareConcurrencyOverrideEnabled(): boolean;

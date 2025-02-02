@@ -12,14 +12,17 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as SuggestionInput from '../../../ui/components/suggestion_input/suggestion_input.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Controllers from '../controllers/controllers.js';
 import * as Models from '../models/models.js';
 import * as Util from '../util/util.js';
-import stepEditorStyles from './stepEditor.css.js';
+import stepEditorStylesRaw from './stepEditor.css.js';
 import { ArrayAssignments, assert, deepFreeze, immutableDeepAssign, InsertAssignment, } from './util.js';
-const { html, Decorators, Directives, LitElement } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const stepEditorStyles = new CSSStyleSheet();
+stepEditorStyles.replaceSync(stepEditorStylesRaw.cssContent);
+const { html, Decorators, Directives, LitElement } = Lit;
 const { customElement, property, state } = Decorators;
 const { live } = Directives;
 const typeConverters = Object.freeze({

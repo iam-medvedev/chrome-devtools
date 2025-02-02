@@ -32,5 +32,4 @@ export declare class PlayerListView extends UI.Widget.VBox implements TriggerDis
     onProperty(playerID: string, property: Protocol.Media.PlayerProperty): void;
     onError(_playerID: string, _error: Protocol.Media.PlayerError): void;
     onMessage(_playerID: string, _message: Protocol.Media.PlayerMessage): void;
-    wasShown(): void;
 }

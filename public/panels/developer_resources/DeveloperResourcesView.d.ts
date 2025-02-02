@@ -19,5 +19,4 @@ export declare class DeveloperResourcesView extends UI.ThrottledWidget.Throttled
     selectedItem(): Promise<SDK.PageResourceLoader.PageResource | null>;
     private updateStats;
     private onFilterChanged;
-    wasShown(): void;
 }

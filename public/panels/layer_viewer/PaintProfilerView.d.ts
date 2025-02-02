@@ -53,7 +53,6 @@ export declare class PaintProfilerView extends PaintProfilerView_base {
     } | null;
     private updateImage;
     private reset;
-    wasShown(): void;
 }
 export declare const enum Events {
     WINDOW_CHANGED = "WindowChanged"

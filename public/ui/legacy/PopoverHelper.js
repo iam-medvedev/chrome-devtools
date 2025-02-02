@@ -33,7 +33,7 @@ import popoverStyles from './popover.css.js';
 export class PopoverHelper {
     static createPopover = (jslogContext) => {
         const popover = new GlassPane(`${VisualLogging.popover(jslogContext).parent('mapped')}`);
-        popover.registerCSSFiles([popoverStyles]);
+        popover.registerRequiredCSS(popoverStyles);
         popover.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         popover.setMarginBehavior("Arrow" /* MarginBehavior.ARROW */);
         return popover;

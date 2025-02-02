@@ -43,8 +43,10 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     #scopeChainModel = null;
     constructor() {
         super(true);
+        this.registerRequiredCSS(scopeChainSidebarPaneStyles);
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.scope-chain')}`);
         this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
+        this.treeOutline.registerRequiredCSS(scopeChainSidebarPaneStyles);
         this.treeOutline.hideOverflow();
         this.treeOutline.setShowSelectionOnKeyboardFocus(/* show */ true);
         this.expandController =
@@ -149,11 +151,6 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         return section;
     }
     sidebarPaneUpdatedForTest() {
-    }
-    wasShown() {
-        super.wasShown();
-        this.treeOutline.registerCSSFiles([scopeChainSidebarPaneStyles]);
-        this.registerCSSFiles([scopeChainSidebarPaneStyles]);
     }
 }
 //# sourceMappingURL=ScopeChainSidebarPane.js.map

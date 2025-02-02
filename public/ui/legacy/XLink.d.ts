@@ -1,5 +1,4 @@
 import * as Platform from '../../core/platform/platform.js';
-import * as LitHtml from '../lit-html/lit-html.js';
 import type { ContextMenu, Provider } from './ContextMenu.js';
 import { XElement } from './XElement.js';
 export declare class XLink extends XElement {
@@ -17,4 +16,4 @@ export declare class XLink extends XElement {
 export declare class ContextMenuProvider implements Provider<Node> {
     appendApplicableItems(_event: Event, contextMenu: ContextMenu, target: Node): void;
 }
-export declare const sample: LitHtml.TemplateResult<1>;
+export declare const sample: import("../lit/lit.js").TemplateResult<1>;

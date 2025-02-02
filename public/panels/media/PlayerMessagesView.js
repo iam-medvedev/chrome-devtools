@@ -179,7 +179,7 @@ class MessageLevelSelector {
     }
     createElementForItem(item) {
         const element = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [playerMessagesViewStyles] });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: playerMessagesViewStyles });
         const container = shadowRoot.createChild('div', 'media-messages-level-dropdown-element');
         const checkBox = container.createChild('div', 'media-messages-level-dropdown-checkbox');
         const text = container.createChild('span', 'media-messages-level-dropdown-text');
@@ -206,6 +206,7 @@ export class PlayerMessagesView extends UI.Widget.VBox {
     messageLevelSelector;
     constructor() {
         super();
+        this.registerRequiredCSS(playerMessagesViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('messages')}`);
         this.headerPanel = this.contentElement.createChild('div', 'media-messages-header');
         this.bodyPanel = this.contentElement.createChild('div', 'media-messages-body');
@@ -325,10 +326,6 @@ export class PlayerMessagesView extends UI.Widget.VBox {
     addError(error) {
         const container = this.bodyPanel.createChild('div', 'media-messages-message-container media-message-error');
         container.appendChild(this.errorToDiv(error));
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([playerMessagesViewStyles]);
     }
 }
 //# sourceMappingURL=PlayerMessagesView.js.map

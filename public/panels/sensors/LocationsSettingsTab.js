@@ -100,6 +100,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super(true);
+        this.registerRequiredCSS(locationsSettingsTabStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('emulation-locations')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         settingsContent.classList.add('settings-card-container');
@@ -121,6 +122,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         settingsContent.appendChild(locationsCard);
         this.list = new UI.ListWidget.ListWidget(this, undefined, true);
         this.list.element.classList.add('locations-list');
+        this.list.registerRequiredCSS(locationsSettingsTabStyles);
         this.list.show(listContainer);
         this.customSetting =
             Common.Settings.Settings.instance().moduleSetting('emulation.locations');
@@ -149,8 +151,6 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([locationsSettingsTabStyles]);
-        this.list.registerCSSFiles([locationsSettingsTabStyles]);
         this.locationsUpdated();
     }
     locationsUpdated() {

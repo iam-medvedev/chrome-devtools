@@ -32,9 +32,9 @@ describeWithEnvironment('Handler Threads helper', function () {
         // Bit of extra setup required: we need to mimic what the panel does where
         // it takes the CDP Profile and wraps it in fake trace events, before then
         // passing that through to the new engine.
-        const rawEvents = await TraceLoader.rawCPUProfile(this, 'node-fibonacci-website.cpuprofile.gz');
-        const events = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(rawEvents, Trace.Types.Events.ThreadID(1));
-        const { parsedTrace } = await TraceLoader.executeTraceEngineOnFileContents(events);
+        const profile = await TraceLoader.rawCPUProfile(this, 'node-fibonacci-website.cpuprofile.gz');
+        const contents = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
+        const { parsedTrace } = await TraceLoader.executeTraceEngineOnFileContents(contents);
         // Check that we did indeed parse this properly as a CPU Profile.
         assert.strictEqual(parsedTrace.Renderer.processes.size, 0);
         assert.strictEqual(parsedTrace.Samples.profilesInProcess.size, 1);

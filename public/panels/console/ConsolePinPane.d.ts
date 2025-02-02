@@ -7,7 +7,6 @@ export declare class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
     private pins;
     private readonly pinsSetting;
     constructor(liveExpressionButton: UI.Toolbar.ToolbarButton, focusOut: () => void);
-    wasShown(): void;
     willHide(): void;
     savePins(): void;
     private contextMenuEventFired;

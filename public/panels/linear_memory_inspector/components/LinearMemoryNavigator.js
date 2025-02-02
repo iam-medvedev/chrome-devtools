@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import linearMemoryNavigatorStyles from './linearMemoryNavigator.css.js';
+import linearMemoryNavigatorStylesRaw from './linearMemoryNavigator.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linearMemoryNavigatorStyles = new CSSStyleSheet();
+linearMemoryNavigatorStyles.replaceSync(linearMemoryNavigatorStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over a valid memory address (e.g. 0x0) in the address line in the Linear memory inspector.
@@ -34,7 +37,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/components/LinearMemoryNavigator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html, Directives: { ifDefined } } = LitHtml;
+const { render, html, Directives: { ifDefined } } = Lit;
 export class AddressInputChangedEvent extends Event {
     static eventName = 'addressinputchanged';
     data;
@@ -128,7 +131,7 @@ export class LinearMemoryNavigator extends HTMLElement {
             invalid: !this.#valid,
         };
         return html `
-      <input class=${LitHtml.Directives.classMap(classMap)} data-input="true" .value=${this.#address}
+      <input class=${Lit.Directives.classMap(classMap)} data-input="true" .value=${this.#address}
         jslog=${VisualLogging.textField('linear-memory-inspector.address').track({
             change: true,
         })}

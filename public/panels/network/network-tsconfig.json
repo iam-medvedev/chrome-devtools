@@ -153,7 +153,7 @@
       "path": "../../ui/legacy/theme_support/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../settings/emulation/components/bundle-tsconfig.json"

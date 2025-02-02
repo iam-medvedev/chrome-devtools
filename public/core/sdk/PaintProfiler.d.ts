@@ -1,7 +1,7 @@
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class PaintProfilerModel extends SDKModel<void> {
     readonly layerTreeAgent: ProtocolProxyApi.LayerTreeApi;
     constructor(target: Target);

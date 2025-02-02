@@ -1,5 +1,5 @@
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-declare const LitElement: typeof LitHtml.LitElement;
+import * as Lit from '../../../ui/lit/lit.js';
+declare const LitElement: typeof Lit.LitElement;
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-suggestion-input': SuggestionInput;
@@ -33,8 +33,8 @@ declare class SuggestionBox extends LitElement {
     private cursor;
     constructor();
     connectedCallback(): void;
-    willUpdate(changedProperties: LitHtml.PropertyValues<this>): void;
-    protected render(): LitHtml.TemplateResult | undefined;
+    willUpdate(changedProperties: Lit.PropertyValues<this>): void;
+    protected render(): Lit.TemplateResult | undefined;
 }
 export declare class SuggestionInput extends LitElement {
     #private;
@@ -62,7 +62,7 @@ export declare class SuggestionInput extends LitElement {
     mimeType: string;
     jslogContext?: string;
     constructor();
-    protected willUpdate(properties: LitHtml.PropertyValues<this>): void;
-    protected render(): LitHtml.TemplateResult;
+    protected willUpdate(properties: Lit.PropertyValues<this>): void;
+    protected render(): Lit.TemplateResult;
 }
 export {};

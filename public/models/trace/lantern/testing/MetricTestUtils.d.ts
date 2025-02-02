@@ -11,4 +11,4 @@ declare function getComputationDataFromFixture({ trace, settings, url }: {
     graph: Trace.Lantern.Graph.Node<Trace.Types.Events.SyntheticNetworkRequest>;
     processedNavigation: Trace.Lantern.Types.Simulation.ProcessedNavigation;
 }>;
-export { toLanternTrace, runTrace, getComputationDataFromFixture, };
+export { getComputationDataFromFixture, runTrace, toLanternTrace, };

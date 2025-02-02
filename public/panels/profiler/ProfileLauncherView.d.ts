@@ -37,7 +37,6 @@ export declare class ProfileLauncherView extends ProfileLauncherView_base {
     restoreSelectedProfileType(): void;
     controlButtonClicked(): void;
     profileTypeChanged(profileType: ProfileType): void;
-    wasShown(): void;
 }
 export declare const enum Events {
     PROFILE_TYPE_SELECTED = "ProfileTypeSelected"

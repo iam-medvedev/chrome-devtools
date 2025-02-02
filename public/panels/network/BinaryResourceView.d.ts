@@ -15,7 +15,6 @@ export declare class BinaryResourceView extends UI.Widget.VBox {
     constructor(content: TextUtils.StreamingContentData.StreamingContentData, contentUrl: Platform.DevToolsPath.UrlString, resourceType: Common.ResourceType.ResourceType);
     private getCurrentViewObject;
     private copySelectedViewToClipboard;
-    wasShown(): void;
     private updateView;
     private binaryViewTypeChanged;
     addCopyToContextMenu(contextMenu: UI.ContextMenu.ContextMenu, submenuItemText: string): void;

@@ -3,7 +3,7 @@ import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 export declare class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
@@ -23,7 +23,7 @@ export interface CategoryData {
     title: Common.UIString.LocalizedString;
     headerCount?: number;
     checked?: boolean;
-    additionalContent?: LitHtml.LitTemplate;
+    additionalContent?: Lit.LitTemplate;
     forceOpen?: boolean;
     loggingContext: string;
 }

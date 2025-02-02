@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as TimelineTreeView from './TimelineTreeView.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Unattributed text for an unattributed entity.
@@ -14,7 +16,7 @@ const UIStrings = {
     /**
      *@description Title for the name of either 1st or 3rd Party entities.
      */
-    firstOrThirdPartyName: '1st / 3rd Party',
+    firstOrThirdPartyName: '1st / 3rd party',
     /**
      *@description Title referencing transfer size.
      */
@@ -36,6 +38,18 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         super();
         this.element.setAttribute('jslog', `${VisualLogging.pane('third-party-tree').track({ hover: true })}`);
         this.init();
+        this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
+        /**
+         * By default data grids always expand when arrowing.
+         * For 3P table, we don't use this feature.
+         */
+        this.dataGrid.expandNodesWhenArrowing = false;
+    }
+    wasShown() {
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange, this);
+    }
+    childWasDetached(_widget) {
+        this.dataGrid.removeEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange);
     }
     buildTree() {
         const parsedTrace = this.parsedTrace();
@@ -50,8 +64,20 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         this.#thirdPartySummaries =
             Trace.Extras.ThirdParties.getSummariesAndEntitiesWithMapping(parsedTrace, bounds, entityMapper.mappings());
         const events = this.#thirdPartySummaries?.entityByEvent.keys();
-        const relatedEvents = Array.from(events ?? []);
-        return new Trace.Extras.TraceTree.BottomUpRootNode(relatedEvents, this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction());
+        const relatedEvents = Array.from(events ?? []).sort(Trace.Helpers.Trace.eventTimeComparator);
+        // The filters for this view are slightly different; we want to use the set
+        // of visible event types, but also include network events, which by
+        // default are not in the set of visible entries (as they are not shown on
+        // the main flame chart).
+        const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Utils.EntryStyles.visibleTypes().concat(["SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */]));
+        const node = new Trace.Extras.TraceTree.BottomUpRootNode(relatedEvents, this.textFilter(), [filter], this.startTime, this.endTime, this.groupingFunction());
+        return node;
+    }
+    /**
+     * Third party tree view doesn't require the select feature, as this expands the node.
+     */
+    selectProfileNode() {
+        return;
     }
     groupingFunction() {
         return this.domainByEvent.bind(this);
@@ -120,6 +146,14 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
             this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
         }
     }
+    /**
+     * This event fires when the user selects a row in the grid, either by
+     * clicking or by using the arrow keys. We want to have the same effect as
+     * when the user hover overs a row.
+     */
+    #onDataGridSelectionChange(event) {
+        this.onHover(event.data.profileNode);
+    }
     onHover(node) {
         const entityMappings = this.entityMapper();
         if (!entityMappings || !node?.event) {
@@ -141,17 +175,17 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
     }
     extractThirdPartySummary(node) {
         if (!this.#thirdPartySummaries) {
-            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.Micro(0) };
+            return { transferSize: 0 };
         }
         const entity = this.#thirdPartySummaries.entityByEvent.get(node.event);
         if (!entity) {
-            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.Micro(0) };
+            return { transferSize: 0 };
         }
         const summary = this.#thirdPartySummaries.summaries.byEntity.get(entity);
         if (!summary) {
-            return { transferSize: 0, mainThreadTime: Trace.Types.Timing.Micro(0) };
+            return { transferSize: 0 };
         }
-        return { transferSize: summary.transferSize, mainThreadTime: summary.mainThreadTime };
+        return { transferSize: summary.transferSize };
     }
     nodeIsFirstParty(node) {
         const mapper = this.entityMapper();

@@ -1,6 +1,6 @@
 import './SettingDeprecationWarning.js';
 import type * as Common from '../../../core/common/common.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 export interface SettingCheckboxData {
     setting: Common.Settings.Setting<boolean>;
     textOverride?: string;
@@ -12,7 +12,7 @@ export declare class SettingCheckbox extends HTMLElement {
     #private;
     connectedCallback(): void;
     set data(data: SettingCheckboxData);
-    icon(): LitHtml.TemplateResult | undefined;
+    icon(): Lit.TemplateResult | undefined;
 }
 declare global {
     interface HTMLElementTagNameMap {

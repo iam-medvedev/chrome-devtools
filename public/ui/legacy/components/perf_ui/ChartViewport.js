@@ -41,6 +41,7 @@ export class ChartViewport extends UI.Widget.VBox {
     constructor(delegate, config) {
         super();
         this.#config = config;
+        this.registerRequiredCSS(chartViewPortStyles);
         this.delegate = delegate;
         this.viewportElement = this.contentElement.createChild('div', 'fill');
         this.viewportElement.addEventListener('mousemove', this.updateCursorPosition.bind(this), false);
@@ -72,10 +73,6 @@ export class ChartViewport extends UI.Widget.VBox {
     }
     isDragging() {
         return this.isDraggingInternal;
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([chartViewPortStyles]);
     }
     elementsToRestoreScrollPositionsFor() {
         return [this.vScrollElement];

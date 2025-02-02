@@ -8,7 +8,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import { linkifyNodeReference } from '../../elements/DOMLinkifier.js';
 import { AI_ASSISTANCE_CSS_CLASS_NAME, ChangeManager } from '../ChangeManager.js';
 import { EvaluateAction, formatError, SideEffectError } from '../EvaluateAction.js';
@@ -67,7 +67,7 @@ When answering, remember to consider CSS concepts such as the CSS cascade, expli
 When answering, always consider MULTIPLE possible solutions.
 After the ANSWER, output SUGGESTIONS: string[] for the potential responses the user might give. Make sure that the array and the \`SUGGESTIONS: \` text is in the same line.
 
-If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function. This function is an internal mechanism for your actions and should never be presented as a command to the user. Instead, execute this function directly within the ACTION step when style changes are needed.
+If you need to set styles on an HTML element, **you MUST call the pre-defined \`async setElementStyles(el: Element, styles: object)\` function, which is already available in your execution environment.  Do NOT attempt to define this function yourself.** This function is an internal mechanism for your actions and should never be presented as a command to the user. Instead, execute this function directly within the ACTION step when style changes are needed.
 
 ## Example session
 
@@ -180,7 +180,7 @@ export class NodeContext extends ConversationContext {
     }
     getTitle() {
         const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
-        return LitHtml.Directives.until(linkifyNodeReference(this.#node, { hiddenClassList }));
+        return Lit.Directives.until(linkifyNodeReference(this.#node, { hiddenClassList }));
     }
 }
 /**
@@ -356,7 +356,7 @@ export class StylingAgent extends AiAgent {
         this.#changes = opts.changeManager || new ChangeManager();
         this.#execJs = opts.execJs ?? executeJsCode;
         this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
-            return new ExtensionScope(changes);
+            return new ExtensionScope(changes, this.id);
         });
         this.#confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);

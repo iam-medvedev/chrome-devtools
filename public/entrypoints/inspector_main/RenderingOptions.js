@@ -196,6 +196,7 @@ const supportsPrefersContrast = () => {
 export class RenderingOptionsView extends UI.Widget.VBox {
     constructor() {
         super(true);
+        this.registerRequiredCSS(renderingOptionsStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('rendering').track({ resize: true })}`);
         this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().moduleSetting('show-paint-rects'));
         this.#appendCheckbox(i18nString(UIStrings.layoutShiftRegions), i18nString(UIStrings.highlightsAreasOfThePageBlueThat), Common.Settings.Settings.instance().moduleSetting('show-layout-shift-regions'));
@@ -239,10 +240,6 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         if (control) {
             this.contentElement.appendChild(control);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([renderingOptionsStyles]);
     }
 }
 export class ReloadActionDelegate {

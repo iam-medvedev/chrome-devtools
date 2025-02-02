@@ -5,9 +5,8 @@ import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import { html, render } from '../../lit/lit.js';
 import * as Buttons from '../buttons/buttons.js';
-const { html } = LitHtml;
 const UIStrings = {
     /**
      * @description The title of the button that leads to the feedback form.
@@ -34,7 +33,7 @@ export class FeedbackButton extends HTMLElement {
             throw new Error('FeedbackButton render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
+        render(html `
       <devtools-button
           @click=${this.#onFeedbackClick}
           .iconName=${'review'}

@@ -67,6 +67,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
     lastView;
     constructor(content, contentUrl, resourceType) {
         super();
+        this.registerRequiredCSS(binaryResourceViewStyles);
         this.binaryResourceViewFactory =
             new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(content, contentUrl, resourceType);
         this.toolbar = this.element.createChild('devtools-toolbar', 'binary-view-toolbar');
@@ -116,10 +117,6 @@ export class BinaryResourceView extends UI.Widget.VBox {
             this.addFadeoutSettimeoutId = null;
         }
         this.addFadeoutSettimeoutId = window.setTimeout(addFadeoutClass.bind(this), 2000);
-    }
-    wasShown() {
-        this.updateView();
-        this.registerCSSFiles([binaryResourceViewStyles]);
     }
     updateView() {
         const newViewObject = this.getCurrentViewObject();

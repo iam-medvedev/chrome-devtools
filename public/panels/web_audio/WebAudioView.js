@@ -28,6 +28,7 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
     summaryBarContainer;
     constructor() {
         super(true, 1000);
+        this.registerRequiredCSS(webAudioStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('web-audio').track({ resize: true })}`);
         this.element.classList.add('web-audio-drawer');
         // Creates the toolbar.
@@ -67,7 +68,6 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([webAudioStyles]);
         for (const model of SDK.TargetManager.TargetManager.instance().models(WebAudioModel)) {
             this.addEventListeners(model);
         }

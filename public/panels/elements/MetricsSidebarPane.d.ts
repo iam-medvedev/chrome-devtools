@@ -35,5 +35,4 @@ export declare class MetricsSidebarPane extends ElementsSidebarPane {
     }): void;
     private applyUserInput;
     private editingCommitted;
-    wasShown(): void;
 }

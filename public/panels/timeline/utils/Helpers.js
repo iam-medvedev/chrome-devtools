@@ -6,9 +6,9 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as Marked from '../../../third_party/marked/marked.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
-const { html } = LitHtml;
+const { html } = Lit;
 export function getThrottlingRecommendations() {
     let cpuOption = SDK.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption;
     if (cpuOption.rate() === 0) {

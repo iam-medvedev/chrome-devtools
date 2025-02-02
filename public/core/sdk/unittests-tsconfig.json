@@ -47,6 +47,7 @@
     "../../../../../../front_end/core/sdk/CSSModel.test.ts",
     "../../../../../../front_end/core/sdk/CSSProperty.test.ts",
     "../../../../../../front_end/core/sdk/CSSPropertyParser.test.ts",
+    "../../../../../../front_end/core/sdk/CSSPropertyParserMatchers.test.ts",
     "../../../../../../front_end/core/sdk/CSSStyleDeclaration.test.ts",
     "../../../../../../front_end/core/sdk/CSSStyleSheetHeader.test.ts",
     "../../../../../../front_end/core/sdk/ChildTargetManager.test.ts",

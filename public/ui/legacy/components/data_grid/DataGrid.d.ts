@@ -102,6 +102,13 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     dataGridNodeFromNode(target: Node): DataGridNode<T> | null;
     columnIdFromNode(target: Node): string | null;
     private clickInHeaderCell;
+    private keydownHeaderCell;
+    /**
+     * Sorts by column header cell.
+     * Additionally applies the aria-sort label to a column's th.
+     * Guidance on values of attribute taken from
+     * https://www.w3.org/TR/wai-aria-practices/examples/grid/dataGrids.html.
+     */
     private sortByColumnHeaderCell;
     markColumnAsSortedBy(columnId: string, sortOrder: Order): void;
     headerTableHeader(columnId: string): Element;

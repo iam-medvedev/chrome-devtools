@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../components/icon_button/icon_button.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
-import markdownImageStyles from './markdownImage.css.js';
+import * as Lit from '../../lit/lit.js';
+import markdownImageStylesRaw from './markdownImage.css.js';
 import { getMarkdownImage } from './MarkdownImagesMap.js';
-const { html, Directives: { ifDefined } } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const markdownImageStyles = new CSSStyleSheet();
+markdownImageStyles.replaceSync(markdownImageStylesRaw.cssContent);
+const { html, Directives: { ifDefined } } = Lit;
 /**
  * Component to render images from parsed markdown.
  * Parsed images from markdown are not directly rendered, instead they have to be added to the MarkdownImagesMap.ts.
@@ -49,7 +52,7 @@ export class MarkdownImage extends HTMLElement {
         }
         const { isIcon } = this.#imageData;
         const imageComponent = isIcon ? this.#getIconComponent() : this.#getImageComponent();
-        LitHtml.render(imageComponent, this.#shadow, { host: this });
+        Lit.render(imageComponent, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-markdown-image', MarkdownImage);

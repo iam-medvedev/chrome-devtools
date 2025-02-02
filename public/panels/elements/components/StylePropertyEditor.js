@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { findFlexContainerIcon, findGridContainerIcon } from './CSSPropertyIconResolver.js';
-import stylePropertyEditorStyles from './stylePropertyEditor.css.js';
+import stylePropertyEditorStylesRaw from './stylePropertyEditor.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const stylePropertyEditorStyles = new CSSStyleSheet();
+stylePropertyEditorStyles.replaceSync(stylePropertyEditorStylesRaw.cssContent);
 const UIStrings = {
     /**
      * @description Title of the button that selects a flex property.
@@ -23,7 +26,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/components/StylePropertyEditor.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html, Directives } = LitHtml;
+const { render, html, Directives } = Lit;
 export class PropertySelectedEvent extends Event {
     static eventName = 'propertyselected';
     data;

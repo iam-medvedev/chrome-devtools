@@ -1,6 +1,6 @@
 import '../../../ui/components/icon_button/icon_button.js';
 import type * as Protocol from '../../../generated/protocol.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import { StorageMetadataView } from './StorageMetadataView.js';
 interface SharedStorageMetadataGetter {
     getMetadata: () => Promise<Protocol.Storage.SharedStorageMetadata | null>;
@@ -11,7 +11,7 @@ export declare class SharedStorageMetadataView extends StorageMetadataView {
     constructor(sharedStorageMetadataGetter: SharedStorageMetadataGetter, owner: string);
     connectedCallback(): void;
     getTitle(): string;
-    renderReportContent(): Promise<LitHtml.LitTemplate>;
+    renderReportContent(): Promise<Lit.LitTemplate>;
 }
 declare global {
     interface HTMLElementTagNameMap {

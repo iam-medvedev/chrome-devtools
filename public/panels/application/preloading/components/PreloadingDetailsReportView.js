@@ -12,13 +12,16 @@ import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import * as PreloadingHelper from '../helper/helper.js';
-import preloadingDetailsReportViewStyles from './preloadingDetailsReportView.css.js';
+import preloadingDetailsReportViewStylesRaw from './preloadingDetailsReportView.css.js';
 import * as PreloadingString from './PreloadingString.js';
 import { prefetchFailureReason, prerenderFailureReason, ruleSetLocationShort } from './PreloadingString.js';
-const { html } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const preloadingDetailsReportViewStyles = new CSSStyleSheet();
+preloadingDetailsReportViewStyles.replaceSync(preloadingDetailsReportViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Text in PreloadingDetailsReportView of the Application panel
@@ -132,7 +135,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
             if (this.#data === null) {
                 // Disabled until https://crbug.com/1079231 is fixed.
                 // clang-format off
-                LitHtml.render(html `
+                Lit.render(html `
           <div class="preloading-noselected">
             <div>
               <p>${i18nString(UIStrings.selectAnElementForMoreDetails)}</p>
@@ -149,7 +152,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
                     pipeline.getPrefetch()?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */);
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
         <devtools-report
           .data=${{ reportTitle: 'Speculative Loading Attempt' }}
           jslog=${VisualLogging.section('preloading-details')}>
@@ -170,8 +173,10 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     #url() {
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
+        const prefetchStatus = this.#data.pipeline.getPrefetch()?.status;
         let value;
-        if (attempt.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */ && attempt.requestId !== undefined) {
+        if (attempt.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */ && attempt.requestId !== undefined &&
+            prefetchStatus !== "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */) {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             const { requestId, key: { url } } = attempt;
@@ -210,11 +215,11 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
         const action = PreloadingString.capitalizedAction(attempt.action);
-        let maybeFellback = LitHtml.nothing;
+        let maybeFellback = Lit.nothing;
         if (isFallbackToPrefetch) {
             maybeFellback = html `${i18nString(UIStrings.automaticallyFellBackToPrefetch)}`;
         }
-        let maybeInspectButton = LitHtml.nothing;
+        let maybeInspectButton = Lit.nothing;
         (() => {
             if (attempt.action !== "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) {
                 return;
@@ -277,11 +282,11 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
         if (attempt.action !== "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const failureDescription = prefetchFailureReason(attempt);
         if (failureDescription === null) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
         <devtools-report-key>${i18nString(UIStrings.detailsFailureReason)}</devtools-report-key>
@@ -294,11 +299,11 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
         if (attempt.action !== "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const failureReason = prerenderFailureReason(attempt);
         if (failureReason === null) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
         <devtools-report-key>${i18nString(UIStrings.detailsFailureReason)}</devtools-report-key>
@@ -321,7 +326,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           <button class="link" role="link"
             @click=${revealRuleSetView}
             title=${i18nString(UIStrings.buttonClickToRevealRuleSet)}
-            style=${LitHtml.Directives.styleMap({
+            style=${Lit.Directives.styleMap({
             color: 'var(--sys-color-primary)',
             'text-decoration': 'underline',
         })}

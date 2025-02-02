@@ -552,7 +552,8 @@ export function getBaseTraceParseModelData(overrides = {}) {
             },
         },
         Screenshots: {
-            all: [],
+            legacySyntheticScreenshots: [],
+            screenshots: [],
         },
         Samples: {
             entryToNode: new Map(),

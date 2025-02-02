@@ -9,7 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsPanel from '../elements/elements.js';
 import * as NetworkForward from '../network/forward/forward.js';
@@ -22,11 +22,11 @@ import { NetworkAgent, RequestContext, } from './agents/NetworkAgent.js';
 import { PatchAgent, ProjectContext } from './agents/PatchAgent.js';
 import { CallTreeContext, PerformanceAgent } from './agents/PerformanceAgent.js';
 import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
-import styles from './aiAssistancePanel.css.js';
+import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
 import { AiHistoryStorage, } from './AiHistoryStorage.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ChatView, } from './components/ChatView.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://goo.gle/devtools-ai-assistance';
 const UIStrings = {
@@ -95,14 +95,14 @@ function selectedElementFilter(maybeNode) {
 }
 function defaultView(input, output, target) {
     // clang-format off
-    LitHtml.render(html `
-    <devtools-ai-chat-view .props=${input} ${LitHtml.Directives.ref((el) => {
+    Lit.render(html `
+    <devtools-ai-chat-view .props=${input} ${Lit.Directives.ref((el) => {
         if (!el || !(el instanceof ChatView)) {
             return;
         }
         output.chatView = el;
     })}></devtools-ai-chat-view>
-  `, target, { host: input }); // eslint-disable-line rulesdir/lit-html-host-this
+  `, target, { host: input }); // eslint-disable-line rulesdir/lit-host-this
     // clang-format on
 }
 function createNodeContext(node) {
@@ -162,6 +162,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
+        this.registerRequiredCSS(aiAssistancePanelStyles);
         this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
         this.#createToolbar();
         this.#toggleSearchElementAction =
@@ -332,6 +333,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#currentAgent = agent;
             this.#viewProps.agentType = this.#currentAgent?.type;
             this.#viewProps.messages = [];
+            this.#viewProps.changeSummary = undefined;
             this.#viewProps.isLoading = false;
             this.#viewProps.isReadOnly = this.#currentAgent?.isHistoryEntry ?? false;
         }
@@ -339,7 +341,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         void this.doUpdate();
     }
     wasShown() {
-        this.registerCSSFiles([styles]);
+        super.wasShown();
         this.#viewOutput.chatView?.restoreScrollPosition();
         this.#viewOutput.chatView?.focusTextInput();
         this.#selectDefaultAgentIfNeeded();
@@ -777,6 +779,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         step.code = data.code;
                         step.output = data.output;
                         step.canceled = data.canceled;
+                        if (isAiAssistanceChangeSummariesEnabled() && this.#currentAgent && !this.#currentAgent.isHistoryEntry) {
+                            this.#viewProps.changeSummary = this.#changeManager.formatChanges(this.#currentAgent.id);
+                        }
                         commitStep();
                         break;
                     }
@@ -856,6 +861,17 @@ export class ActionDelegate {
         return false;
     }
 }
+function setAiAssistanceChangeSummariesEnabled(enabled) {
+    if (enabled) {
+        localStorage.setItem('aiAssistance_changeSummariesEnabled', 'true');
+    }
+    else {
+        localStorage.setItem('aiAssistance_changeSummariesEnabled', 'false');
+    }
+}
+function isAiAssistanceChangeSummariesEnabled() {
+    return localStorage.getItem('aiAssistance_changeSummariesEnabled') === 'true';
+}
 function setAiAssistanceServerSideLoggingEnabled(enabled) {
     if (enabled) {
         localStorage.setItem('aiAssistance_enableServerSideLogging', 'true');
@@ -873,4 +889,6 @@ function isAiAssistanceServerSideLoggingEnabled() {
 }
 // @ts-ignore
 globalThis.setAiAssistanceServerSideLoggingEnabled = setAiAssistanceServerSideLoggingEnabled;
+// @ts-ignore
+globalThis.setAiAssistanceChangeSummariesEnabled = setAiAssistanceChangeSummariesEnabled;
 //# sourceMappingURL=AiAssistancePanel.js.map

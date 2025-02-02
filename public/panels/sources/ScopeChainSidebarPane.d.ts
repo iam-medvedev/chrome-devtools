@@ -13,5 +13,4 @@ export declare class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.
     private buildScopeTreeOutline;
     private createScopeSectionTreeElement;
     private sidebarPaneUpdatedForTest;
-    wasShown(): void;
 }

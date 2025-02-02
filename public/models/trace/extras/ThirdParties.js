@@ -5,8 +5,26 @@ import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-function getSelfTimeByUrl(parsedTrace, bounds) {
-    const selfTimeByUrl = new Map();
+function getOrMakeSummary(thirdPartySummary, event, url) {
+    const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ??
+        Handlers.Helpers.makeUpEntity(thirdPartySummary.madeUpEntityCache, url);
+    if (!entity) {
+        return null;
+    }
+    const events = thirdPartySummary.eventsByEntity.get(entity) ?? [];
+    events.push(event);
+    thirdPartySummary.eventsByEntity.set(entity, events);
+    let summary = thirdPartySummary.byEntity.get(entity);
+    if (summary) {
+        thirdPartySummary.byEvent.set(event, summary);
+        return summary;
+    }
+    summary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
+    thirdPartySummary.byEntity.set(entity, summary);
+    thirdPartySummary.byEvent.set(event, summary);
+    return summary;
+}
+function collectMainThreadActivity(thirdPartySummary, parsedTrace, bounds) {
     for (const process of parsedTrace.Renderer.processes.values()) {
         if (!process.isOnMainFrame) {
             continue;
@@ -28,76 +46,47 @@ function getSelfTimeByUrl(parsedTrace, bounds) {
                     if (!url) {
                         continue;
                     }
-                    selfTimeByUrl.set(url, node.selfTime + (selfTimeByUrl.get(url) ?? 0));
+                    const summary = getOrMakeSummary(thirdPartySummary, event, url);
+                    if (summary) {
+                        summary.mainThreadTime = (summary.mainThreadTime + node.selfTime);
+                    }
                 }
             }
         }
     }
-    return selfTimeByUrl;
 }
-export function getEntitiesByRequest(requests) {
-    const entityByRequest = new Map();
-    const madeUpEntityCache = new Map();
+function collectNetworkActivity(thirdPartySummary, requests) {
     for (const request of requests) {
         const url = request.args.data.url;
-        const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? Handlers.Helpers.makeUpEntity(madeUpEntityCache, url);
-        if (entity) {
-            entityByRequest.set(request, entity);
+        const summary = getOrMakeSummary(thirdPartySummary, request, url);
+        if (summary) {
+            summary.transferSize += request.args.data.encodedDataLength;
         }
     }
-    return { entityByRequest, madeUpEntityCache };
 }
-function getSummaryMap(requests, entityByRequest, selfTimeByUrl) {
-    const byRequest = new Map();
-    const byEntity = new Map();
-    const defaultSummary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
-    for (const request of requests) {
-        const urlSummary = byRequest.get(request) || { ...defaultSummary };
-        urlSummary.transferSize += request.args.data.encodedDataLength;
-        urlSummary.mainThreadTime =
-            Types.Timing.Micro(urlSummary.mainThreadTime + (selfTimeByUrl.get(request.args.data.url) ?? 0));
-        byRequest.set(request, urlSummary);
-    }
-    // Map each request's stat to a particular entity.
-    const requestsByEntity = new Map();
-    for (const [request, requestSummary] of byRequest.entries()) {
-        const entity = entityByRequest.get(request);
-        if (!entity) {
-            byRequest.delete(request);
-            continue;
-        }
-        const entitySummary = byEntity.get(entity) || { ...defaultSummary };
-        entitySummary.transferSize += requestSummary.transferSize;
-        entitySummary.mainThreadTime = Types.Timing.Micro(entitySummary.mainThreadTime + requestSummary.mainThreadTime);
-        byEntity.set(entity, entitySummary);
-        const entityRequests = requestsByEntity.get(entity) || [];
-        entityRequests.push(request);
-        requestsByEntity.set(entity, entityRequests);
-    }
-    return { byEntity, byEvent: byRequest, eventsByEntity: requestsByEntity };
+/**
+ * @param networkRequests Won't be filtered by trace bounds, so callers should ensure it is filtered.
+ */
+export function summarizeThirdParties(parsedTrace, traceBounds, networkRequests) {
+    const thirdPartySummary = {
+        byEntity: new Map(),
+        byEvent: new Map(),
+        eventsByEntity: new Map(),
+        madeUpEntityCache: new Map(),
+    };
+    collectMainThreadActivity(thirdPartySummary, parsedTrace, traceBounds);
+    collectNetworkActivity(thirdPartySummary, networkRequests);
+    return thirdPartySummary;
 }
-export function getSummariesAndEntitiesForTraceBounds(parsedTrace, traceBounds, networkRequests) {
-    // Ensure we only handle requests that are within the given traceBounds.
-    const reqs = networkRequests.filter(event => {
-        return Helpers.Timing.eventIsInBounds(event, traceBounds);
-    });
-    const { entityByRequest, madeUpEntityCache } = getEntitiesByRequest(reqs);
-    const selfTimeByUrl = getSelfTimeByUrl(parsedTrace, traceBounds);
-    // TODO(crbug.com/352244718): re-work to still collect main thread activity if no request is present
-    const summaries = getSummaryMap(reqs, entityByRequest, selfTimeByUrl);
-    return { summaries, entityByRequest, madeUpEntityCache };
-}
-function getSummaryMapWithMapping(events, entityByEvent, selfTimeByUrl, eventsByEntity, parsedTrace) {
+function getSummaryMapWithMapping(events, entityByEvent, eventsByEntity) {
     const byEvent = new Map();
     const byEntity = new Map();
     const defaultSummary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
     for (const event of events) {
-        const url = Handlers.Helpers.getNonResolvedURL(event, parsedTrace) ?? '';
         const urlSummary = byEvent.get(event) || { ...defaultSummary };
         if (Types.Events.isSyntheticNetworkRequest(event)) {
             urlSummary.transferSize += event.args.data.encodedDataLength;
         }
-        urlSummary.mainThreadTime = Types.Timing.Micro(urlSummary.mainThreadTime + (selfTimeByUrl.get(url) ?? 0));
         byEvent.set(event, urlSummary);
     }
     // Map each request's stat to a particular entity.
@@ -109,11 +98,16 @@ function getSummaryMapWithMapping(events, entityByEvent, selfTimeByUrl, eventsBy
         }
         const entitySummary = byEntity.get(entity) || { ...defaultSummary };
         entitySummary.transferSize += requestSummary.transferSize;
-        entitySummary.mainThreadTime = Types.Timing.Micro(entitySummary.mainThreadTime + requestSummary.mainThreadTime);
         byEntity.set(entity, entitySummary);
     }
-    return { byEntity, byEvent, eventsByEntity };
+    return { byEntity, byEvent, eventsByEntity, madeUpEntityCache: new Map() };
 }
+// TODO(crbug.com/352244718): Remove or refactor to use summarizeThirdParties/collectMainThreadActivity/etc.
+/**
+ * Note: unlike summarizeThirdParties, this does not calculate mainThreadTime. The reason is that it is not
+ * needed for its one use case, and when dragging the trace bounds it takes a long time to calculate.
+ * If it is ever needed, we need to make getSelfTimeByUrl (see deleted code/blame) much faster (cache + bucket?).
+ */
 export function getSummariesAndEntitiesWithMapping(parsedTrace, traceBounds, entityMapping) {
     const entityByEvent = new Map(entityMapping.entityByEvent);
     const eventsByEntity = new Map(entityMapping.eventsByEntity);
@@ -133,9 +127,7 @@ export function getSummariesAndEntitiesWithMapping(parsedTrace, traceBounds, ent
     });
     const eventsByEntityFiltered = new Map(filtered);
     const allEvents = Array.from(entityByEvent.keys());
-    const selfTimeByUrl = getSelfTimeByUrl(parsedTrace, traceBounds);
-    // TODO(crbug.com/352244718): re-work to still collect main thread activity if no request is present
-    const summaries = getSummaryMapWithMapping(allEvents, entityByEventFiltered, selfTimeByUrl, eventsByEntityFiltered, parsedTrace);
+    const summaries = getSummaryMapWithMapping(allEvents, entityByEventFiltered, eventsByEntityFiltered);
     return { summaries, entityByEvent: entityByEventFiltered };
 }
 //# sourceMappingURL=ThirdParties.js.map

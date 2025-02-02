@@ -1,6 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as Protocol from '../../generated/protocol.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 export declare class InterestGroupStorageModel extends SDK.SDKModel.SDKModel<EventTypes> implements ProtocolProxyApi.StorageDispatcher {
     private readonly storageAgent;
     private enabled?;

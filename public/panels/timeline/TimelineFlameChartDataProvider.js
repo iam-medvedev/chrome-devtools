@@ -596,7 +596,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             if (Trace.Types.Events.isLegacyTimelineFrame(entry)) {
                 continue;
             }
-            if (Trace.Types.Events.isScreenshot(entry)) {
+            if (Trace.Types.Events.isLegacyScreenshot(entry)) {
                 // Screenshots are represented as trace events, but you can't search for them, so skip.
                 continue;
             }
@@ -713,7 +713,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return null;
         }
         const popoverElement = document.createElement('div');
-        const root = UI.UIUtils.createShadowRootWithCoreStyles(popoverElement, { cssFile: [timelineFlamechartPopoverStyles] });
+        const root = UI.UIUtils.createShadowRootWithCoreStyles(popoverElement, { cssFile: timelineFlamechartPopoverStyles });
         const popoverContents = root.createChild('div', 'timeline-flamechart-popover');
         popoverContents.createChild('span', timeElementClassName).textContent = time;
         popoverContents.createChild('span', 'popoverinfo-title').textContent = title;
@@ -728,7 +728,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     preparePopoverForCollapsedArrow(entryIndex) {
         const element = document.createElement('div');
-        const root = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [timelineFlamechartPopoverStyles] });
+        const root = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopoverStyles });
         const entry = this.entryData[entryIndex];
         const hiddenEntriesAmount = ModificationsManager.activeManager()?.getEntriesFilter().findHiddenDescendantsAmount(entry);
         if (!hiddenEntriesAmount) {

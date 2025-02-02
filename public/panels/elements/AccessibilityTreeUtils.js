@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import './components/components.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
-const { html } = LitHtml;
+import * as Lit from '../../ui/lit/lit.js';
+const { html } = Lit;
 function isLeafNode(node) {
     return node.numChildren() === 0 && node.role()?.value !== 'Iframe';
 }

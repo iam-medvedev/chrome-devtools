@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/components/report_view/report_view.js';
+import '../../../ui/legacy/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ChromeLink from '../../../ui/components/chrome_link/chrome_link.js';
-import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import bounceTrackingMitigationsViewStyles from './bounceTrackingMitigationsView.css.js';
-const { html } = LitHtml;
+import bounceTrackingMitigationsViewStylesRaw from './bounceTrackingMitigationsView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const bounceTrackingMitigationsViewStyles = new CSSStyleSheet();
+bounceTrackingMitigationsViewStyles.replaceSync(bounceTrackingMitigationsViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Title text in bounce tracking mitigations view of the Application panel.
@@ -67,7 +70,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
     }
     async #render() {
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <devtools-report .data=${{ reportTitle: i18nString(UIStrings.bounceTrackingMitigationsTitle) }}
                        jslog=${VisualLogging.pane('bounce-tracking-mitigations')}>
         ${await this.#renderMainFrameInformation()}
@@ -96,7 +99,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
       <devtools-report-section>
         ${this.#renderForceRunButton()}
       </devtools-report-section>
-        ${this.#renderDeletedSitesOrNoSitesMessage()}
+      ${this.#renderDeletedSitesOrNoSitesMessage()}
       <devtools-report-divider>
       </devtools-report-divider>
       <devtools-report-section>
@@ -143,28 +146,20 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
       `;
             // clang-format on
         }
-        const gridData = {
-            columns: [
-                {
-                    id: 'sites',
-                    title: i18nString(UIStrings.stateDeletedFor),
-                    widthWeighting: 10,
-                    hideable: false,
-                    visible: true,
-                    sortable: true,
-                },
-            ],
-            rows: this.#buildRowsFromDeletedSites(),
-            initialSort: {
-                columnId: 'sites',
-                direction: "ASC" /* DataGrid.DataGridUtils.SortDirection.ASC */,
-            },
-        };
         // clang-format off
         return html `
       <devtools-report-section>
-        <devtools-data-grid-controller .data=${gridData}>
-        </devtools-data-grid-controller>
+        <devtools-data-grid striped inline>
+          <table>
+            <tr>
+              <th id="sites" weight="10" sortable>
+                ${i18nString(UIStrings.stateDeletedFor)}
+              </th>
+            </tr>
+            ${this.#trackingSites.map(site => html `
+              <tr><td>${site}</td></tr>`)}
+          </table>
+        </devtools-data-grid>
       </devtools-report-section>
     `;
         // clang-format on
@@ -187,14 +182,6 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
     #renderMitigationsResult() {
         this.#screenStatus = "Result" /* ScreenStatusType.RESULT */;
         void this.#render();
-    }
-    #buildRowsFromDeletedSites() {
-        const trackingSites = this.#trackingSites;
-        return trackingSites.map(site => ({
-            cells: [
-                { columnId: 'sites', value: site },
-            ],
-        }));
     }
     async #checkFeatureState() {
         this.#checkedFeature = true;

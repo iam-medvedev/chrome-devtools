@@ -330,6 +330,61 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             ['Rule set', 'example.com/speculation-rules.json'],
         ]);
     });
+    it('renders non triggered prefetch details without request link icon', async () => {
+        const fakeRequestResolver = {
+            waitFor: (_requestId) => {
+                return Promise.reject();
+            },
+        };
+        const url = urlString `https://example.com/prefetch.html`;
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
+                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
+                    prefetchStatus: "PrefetchNotStarted" /* Protocol.Preload.PrefetchStatus.PrefetchNotStarted */,
+                    requestId: 'requestId:1',
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                }]),
+            ruleSets: [
+                {
+                    id: 'ruleSetId',
+                    loaderId: 'loaderId',
+                    sourceText: `
+{
+  "prefetch": [
+    {
+      "source": "list",
+      "urls": ["/subresource.js"]
+    }
+  ]
+}
+`,
+                },
+            ],
+            pageURL: urlString `https://example.com/`,
+            requestResolver: fakeRequestResolver,
+        };
+        const component = await renderPreloadingDetailsReportView(data);
+        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
+        const values = getCleanTextContentFromElements(report, 'devtools-report-value');
+        const requestLinkIcon = report.querySelector('devtools-request-link-icon');
+        assert.deepEqual(zip2(keys, values), [
+            ['URL', url],
+            ['Action', 'Prefetch'],
+            ['Status', 'Speculative load attempt is not yet triggered.'],
+            ['Rule set', 'example.com/'],
+        ]);
+        assert.isNull(requestLinkIcon);
+    });
     // TODO: Add test for pipeline
 });
 //# sourceMappingURL=PreloadingDetailsReportView.test.js.map

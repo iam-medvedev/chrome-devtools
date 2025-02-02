@@ -5,7 +5,7 @@ declare const profilesInProcess: Map<Types.Events.ProcessID, Map<Types.Events.Th
 declare const entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
-export declare function finalize(): Promise<void>;
+export declare function finalize(parseOptions?: Types.Configuration.ParseOptions): Promise<void>;
 export declare function data(): SamplesHandlerData;
 export interface SamplesHandlerData {
     profilesInProcess: typeof profilesInProcess;

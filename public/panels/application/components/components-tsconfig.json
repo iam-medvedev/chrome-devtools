@@ -88,9 +88,6 @@
       "path": "../../../ui/components/chrome_link/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/data_grid/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/expandable_list/bundle-tsconfig.json"
     },
     {

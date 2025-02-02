@@ -5,11 +5,14 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { flattenBreadcrumbs } from './Breadcrumbs.js';
-import breadcrumbsUIStyles from './breadcrumbsUI.css.js';
-const { render, html } = LitHtml;
+import breadcrumbsUIStylesRaw from './breadcrumbsUI.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const breadcrumbsUIStyles = new CSSStyleSheet();
+breadcrumbsUIStyles.replaceSync(breadcrumbsUIStylesRaw.cssContent);
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description A context menu item in the Minimap Breadcrumb context menu.
@@ -112,7 +115,7 @@ export class BreadcrumbsUI extends HTMLElement {
     #render() {
         // clang-format off
         const output = html `
-      ${this.#initialBreadcrumb === null ? LitHtml.nothing : html `<div class="breadcrumbs" jslog=${VisualLogging.section('breadcrumbs')}>
+      ${this.#initialBreadcrumb === null ? Lit.nothing : html `<div class="breadcrumbs" jslog=${VisualLogging.section('breadcrumbs')}>
         ${flattenBreadcrumbs(this.#initialBreadcrumb).map((breadcrumb, index) => this.#renderElement(breadcrumb, index))}
       </div>`}
     `;
