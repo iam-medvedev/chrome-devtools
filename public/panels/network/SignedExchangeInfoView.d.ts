@@ -5,7 +5,6 @@ export declare class SignedExchangeInfoView extends UI.Widget.VBox {
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     private formatHeader;
     private formatHeaderForHexData;
-    wasShown(): void;
 }
 export declare class Category extends UI.TreeOutline.TreeElement {
     toggleOnClick: boolean;

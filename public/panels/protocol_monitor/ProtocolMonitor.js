@@ -14,12 +14,11 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { JSONEditor } from './JSONEditor.js';
 import protocolMonitorStyles from './protocolMonitor.css.js';
 const { widgetConfig } = UI.Widget;
-const { render, html } = LitHtml;
 const UIStrings = {
     /**
      *@description Text for one or a group of functions
@@ -81,6 +80,10 @@ const UIStrings = {
      *@description Text in Protocol Monitor of the Protocol Monitor tab
      */
     noMessageSelected: 'No message selected',
+    /**
+     *@description Text in Protocol Monitor of the Protocol Monitor tab if no message is selected
+     */
+    selectAMessageToView: 'Select a message to see its details',
     /**
      *@description Text in Protocol Monitor for the save button
      */
@@ -181,7 +184,8 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
             settingName: 'protocol-monitor-panel-split',
             defaultSidebarWidth: 250
         }}>
-              <devtools-new-data-grid
+              <devtools-data-grid
+                  striped
                   slot="main"
                   @select=${input.onSelect}
                   @contextmenu=${input.onContextMenu}
@@ -226,7 +230,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                         <td>${message.sessionId || ''}</td>
                       </tr>`)}
                   </table>
-              </devtools-new-data-grid>
+              </devtools-data-grid>
               <devtools-widget .widgetConfig=${widgetConfig(InfoWidget, {
             request: input.selectedMessage?.params,
             response: input.selectedMessage?.result || input.selectedMessage?.error,
@@ -412,7 +416,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         if (this.started) {
             return;
         }
-        this.registerCSSFiles([protocolMonitorStyles]);
+        this.registerRequiredCSS(protocolMonitorStyles);
         this.started = true;
         this.startTime = Date.now();
         this.setRecording(true);
@@ -561,8 +565,8 @@ export class InfoWidget extends UI.Widget.VBox {
     }
     performUpdate() {
         if (!this.request && !this.response) {
-            this.tabbedPane.changeTabView('request', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), ''));
-            this.tabbedPane.changeTabView('response', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), ''));
+            this.tabbedPane.changeTabView('request', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), i18nString(UIStrings.selectAMessageToView)));
+            this.tabbedPane.changeTabView('response', new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), i18nString(UIStrings.selectAMessageToView)));
             return;
         }
         const requestEnabled = this.type && this.type === 'sent';

@@ -7,11 +7,11 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../network/forward/forward.js';
 import cookieReportViewStyles from './cookieReportView.css.js';
-const { render, html, Directives: { ref } } = LitHtml;
+const { render, html, Directives: { ref } } = Lit;
 const UIStrings = {
     /**
      *@description Title in the header for the third-party cookie report in the Security & Privacy Panel
@@ -185,6 +185,7 @@ export class CookieReportView extends UI.Widget.VBox {
     #view;
     dataGrid;
     gridData = [];
+    filterItems = [];
     constructor(element, view = (input, output, target) => {
         const dataGridOptions = {
             nodes: input.gridData,
@@ -200,44 +201,20 @@ export class CookieReportView extends UI.Widget.VBox {
             striped: true,
             rowContextMenuCallback: input.populateContextMenu.bind(input),
         };
-        const filterItems = [];
-        if (input.gridData.some(n => n.data['status'] === i18nString(UIStrings.blocked))) {
-            filterItems.push({
-                name: UIStrings.blocked,
-                label: () => i18nString(UIStrings.blocked),
-                title: UIStrings.blocked,
-                jslogContext: UIStrings.blocked,
-            });
-        }
-        if (input.gridData.some(n => n.data['status'] === i18nString(UIStrings.allowed))) {
-            filterItems.push({
-                name: UIStrings.allowed,
-                label: () => i18nString(UIStrings.allowed),
-                title: UIStrings.allowed,
-                jslogContext: UIStrings.allowed,
-            });
-        }
-        if (input.gridData.some(n => n.data['status'] === i18nString(UIStrings.allowedByException))) {
-            filterItems.push({
-                name: UIStrings.allowedByException,
-                label: () => i18nString(UIStrings.allowedByException),
-                title: UIStrings.allowedByException,
-                jslogContext: UIStrings.allowedByException,
-            });
-        }
         // clang-format off
         render(html `
         <div class="report overflow-auto">
             <div class="header">
-              <div class="title">${i18nString(UIStrings.title)}</div>
-              <div class="body">${i18nString(UIStrings.body)} <x-link class="x-link" href="https://developers.google.com/privacy-sandbox/cookies/prepare/audit-cookies" jslog=${VisualLogging.link('learn-more').track({ click: true })}>${i18nString(UIStrings.learnMoreLink)}</x-link></div>
+              <h1>${i18nString(UIStrings.title)}</h1>
+              <div class="body">${i18nString(UIStrings.body)} <x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/prepare/audit-cookies" jslog=${VisualLogging.link('learn-more').track({ click: true })}>${i18nString(UIStrings.learnMoreLink)}</x-link></div>
             </div>
             ${input.gridData.length > 0 ?
             html `
                 <devtools-named-bit-set-filter
                   class="filter"
+                  aria-label="Third-party cookie status filters"
                   @filterChanged=${input.onFilterChanged}
-                  .options=${{ items: filterItems }}
+                  .options=${{ items: input.filterItems }}
                   ${ref((el) => {
                 if (el instanceof UI.FilterBar.NamedBitSetFilterUIElement) {
                     output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
@@ -274,6 +251,7 @@ export class CookieReportView extends UI.Widget.VBox {
     }) {
         super(true, undefined, element);
         this.#view = view;
+        this.registerRequiredCSS(cookieReportViewStyles);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueEventReceived, this);
@@ -286,6 +264,7 @@ export class CookieReportView extends UI.Widget.VBox {
     }
     performUpdate() {
         this.gridData = this.#buildNodes();
+        this.filterItems = this.#buildFilterItems();
         this.#view(this, this, this.contentElement);
     }
     onFilterChanged() {
@@ -313,6 +292,35 @@ export class CookieReportView extends UI.Widget.VBox {
         if (info) {
             this.#cookieRows.set(issue.cookieId(), info);
         }
+    }
+    #buildFilterItems() {
+        const filterItems = [];
+        if (this.#cookieRows.values().some(n => n.status === 0 /* IssuesManager.CookieIssue.CookieStatus.BLOCKED */)) {
+            filterItems.push({
+                name: UIStrings.blocked,
+                label: () => i18nString(UIStrings.blocked),
+                title: UIStrings.blocked,
+                jslogContext: UIStrings.blocked,
+            });
+        }
+        if (this.#cookieRows.values().some(n => n.status === 1 /* IssuesManager.CookieIssue.CookieStatus.ALLOWED */)) {
+            filterItems.push({
+                name: UIStrings.allowed,
+                label: () => i18nString(UIStrings.allowed),
+                title: UIStrings.allowed,
+                jslogContext: UIStrings.allowed,
+            });
+        }
+        if (this.#cookieRows.values().some(n => n.status === 2 /* IssuesManager.CookieIssue.CookieStatus.ALLOWED_BY_GRACE_PERIOD */ ||
+            n.status === 3 /* IssuesManager.CookieIssue.CookieStatus.ALLOWED_BY_HEURISTICS */)) {
+            filterItems.push({
+                name: UIStrings.allowedByException,
+                label: () => i18nString(UIStrings.allowedByException),
+                title: UIStrings.allowedByException,
+                jslogContext: UIStrings.allowedByException,
+            });
+        }
+        return filterItems;
     }
     #buildNodes() {
         return [...this.#cookieRows.values()]
@@ -377,10 +385,6 @@ export class CookieReportView extends UI.Widget.VBox {
             ]);
             void Common.Revealer.reveal(requestFilter);
         }, { jslogContext: 'show-requests-with-this-cookie' });
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([cookieReportViewStyles]);
     }
     static getStatusString(status) {
         switch (status) {

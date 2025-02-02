@@ -5,6 +5,11 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 export const AI_ASSISTANCE_CSS_CLASS_NAME = 'ai-style-change';
+function formatStyles(styles) {
+    const kebabStyles = Platform.StringUtilities.toKebabCaseKeys(styles);
+    const lines = Object.entries(kebabStyles).map(([key, value]) => `  ${key}: ${value};`);
+    return lines.join('\n');
+}
 /**
  * Keeps track of changes done by the Styling agent. Currently, it is
  * primarily for stylesheet generation based on all changes.
@@ -67,6 +72,12 @@ export class ChangeManager {
         const existingChange = changes.find(c => c.className === change.className);
         if (existingChange) {
             Object.assign(existingChange.styles, change.styles);
+            // This combines all style changes for a given element,
+            // regardless of the conversation they originated from, into a single rule.
+            // While separating these changes by conversation would be ideal,
+            // it currently causes crashes in the Styles tab when duplicate selectors exist (crbug.com/393515428).
+            // This workaround avoids that crash.
+            existingChange.groupId = change.groupId;
         }
         else {
             changes.push(change);
@@ -74,17 +85,18 @@ export class ChangeManager {
         await cssModel.setStyleSheetText(stylesheetId, this.buildChanges(changes), true);
         this.#stylesheetChanges.set(stylesheetId, changes);
     }
+    formatChanges(groupId) {
+        return Array.from(this.#stylesheetChanges.values())
+            .flatMap(changesPerStylesheet => changesPerStylesheet.filter(change => change.groupId === groupId).map(change => `${change.selector} {
+${formatStyles(change.styles)}
+}`)).join('\n\n');
+    }
     buildChanges(changes) {
-        function formatStyles(styles) {
-            const kebabStyles = Platform.StringUtilities.toKebabCaseKeys(styles);
-            const lines = Object.entries(kebabStyles).map(([key, value]) => `${key}: ${value};`);
-            return lines.join('\n');
-        }
         return changes
             .map(change => {
             return `.${change.className} {
   ${change.selector}& {
-    ${formatStyles(change.styles)}
+  ${formatStyles(change.styles)}
   }
 }`;
         })

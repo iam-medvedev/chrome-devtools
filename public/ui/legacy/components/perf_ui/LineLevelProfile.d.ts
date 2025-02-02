@@ -1,5 +1,5 @@
-import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Platform from '../../../../core/platform/platform.js';
+import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../../generated/protocol.js';
 import type * as CPUProfile from '../../../../models/cpu_profile/cpu_profile.js';
 export declare class Performance {

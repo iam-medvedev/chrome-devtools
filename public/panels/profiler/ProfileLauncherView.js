@@ -76,6 +76,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
     isEnabled;
     constructor(profilesPanel) {
         super();
+        this.registerRequiredCSS(profileLauncherViewStyles);
         this.panel = profilesPanel;
         this.element.classList.add('profile-launcher-view');
         this.contentElementInternal = this.element.createChild('div', 'profile-launcher-view-content vbox');
@@ -196,10 +197,6 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.isEnabled = profileType.isEnabled();
         this.updateControls();
         this.selectedProfileTypeSetting.set(profileType.id);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([profileLauncherViewStyles]);
     }
 }
 //# sourceMappingURL=ProfileLauncherView.js.map

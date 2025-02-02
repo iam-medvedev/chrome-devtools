@@ -1,6 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
-import { type StringMatch, StringMatcher, type URLMatch, URLMatcher } from './PropertyMatchers.js';
 export interface MatchRenderer<MatchT extends SDK.CSSPropertyParser.Match> {
     matcher(): SDK.CSSPropertyParser.Matcher<MatchT>;
     render(match: MatchT, context: RenderingContext): Node[];
@@ -36,14 +35,14 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     static renderNameElement(name: string): HTMLElement;
     static renderValueElement(propertyName: string, propertyValue: string, renderers: MatchRenderer<SDK.CSSPropertyParser.Match>[]): HTMLElement;
 }
-export declare class URLRenderer implements MatchRenderer<URLMatch> {
+export declare class URLRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.URLMatch> {
     private readonly rule;
     private readonly node;
     constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null);
-    render(match: URLMatch): Node[];
-    matcher(): URLMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.URLMatch): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.URLMatcher;
 }
-export declare class StringRenderer implements MatchRenderer<StringMatch> {
-    render(match: StringMatch): Node[];
-    matcher(): StringMatcher;
+export declare class StringRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.StringMatch> {
+    render(match: SDK.CSSPropertyParserMatchers.StringMatch): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.StringMatcher;
 }

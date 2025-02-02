@@ -73,6 +73,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
         super(true, undefined, element);
         this.element.classList.add('split-widget');
+        this.registerRequiredCSS(splitWidgetStyles);
         this.contentElement.classList.add('shadow-split-widget');
         this.sidebarElementInternal =
             this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-sidebar vbox');
@@ -597,14 +598,11 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         return Math.max(0, totalSize - minMainSize);
     }
     wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([splitWidgetStyles]);
         this.forceUpdateLayout();
         ZoomManager.instance().addEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.onZoomChanged, this);
     }
     willHide() {
         ZoomManager.instance().removeEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.onZoomChanged, this);
-        super.willHide();
     }
     onResize() {
         this.updateLayout();

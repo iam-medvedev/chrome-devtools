@@ -95,6 +95,7 @@ export class ImageView extends UI.View.SimpleView {
     cachedContent;
     constructor(mimeType, contentProvider) {
         super(i18nString(UIStrings.image));
+        this.registerRequiredCSS(imageViewStyles);
         this.element.tabIndex = -1;
         this.element.classList.add('image-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('image-view')}`);
@@ -130,8 +131,6 @@ export class ImageView extends UI.View.SimpleView {
         ];
     }
     wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([imageViewStyles]);
         void this.updateContentIfNeeded();
     }
     disposeView() {

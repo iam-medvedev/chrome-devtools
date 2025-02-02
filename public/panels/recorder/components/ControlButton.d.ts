@@ -1,5 +1,5 @@
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-declare const LitElement: typeof LitHtml.LitElement;
+import * as Lit from '../../../ui/lit/lit.js';
+declare const LitElement: typeof Lit.LitElement;
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-control-button': ControlButton;

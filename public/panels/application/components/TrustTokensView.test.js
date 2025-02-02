@@ -19,7 +19,7 @@ async function renderTrustTokensView() {
     return component;
 }
 function getInternalDataGridShadowRoot(component) {
-    const dataGrid = component.shadowRoot.querySelector('devtools-new-data-grid');
+    const dataGrid = component.shadowRoot.querySelector('devtools-data-grid');
     assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }

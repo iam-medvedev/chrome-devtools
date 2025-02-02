@@ -1,4 +1,6 @@
 import '../../ui/components/switch/switch.js';
+import '../../ui/components/cards/cards.js';
+import '../../ui/components/chrome_link/chrome_link.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -11,12 +13,13 @@ export interface ViewInput {
 export interface ViewOutput {
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare function showInfobar(): void;
 export declare class CookieControlsView extends UI.Widget.VBox {
     #private;
     constructor(element?: HTMLElement, view?: View);
     performUpdate(): void;
     inputChanged(newValue: boolean, setting: Common.Settings.Setting<boolean>): void;
     openChromeCookieSettings(): void;
-    wasShown(): void;
     checkGracePeriodActive(event?: Common.EventTarget.EventTargetEvent<SDK.Resource.Resource>): Promise<void>;
+    getChromeFlagsLink(flag: string): Element;
 }

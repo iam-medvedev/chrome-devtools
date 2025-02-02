@@ -73,7 +73,7 @@ export declare function doubleRaf(): Promise<unknown>;
 export declare function raf(): Promise<unknown>;
 /**
  * It's useful to use innerHTML in the tests to have full confidence in the
- * renderer output, but LitHtml uses comment nodes to split dynamic from
+ * renderer output, but Lit uses comment nodes to split dynamic from
  * static parts of a template, and we don't want our tests full of noise
  * from those.
  */

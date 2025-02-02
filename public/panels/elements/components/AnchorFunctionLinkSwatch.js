@@ -4,9 +4,12 @@
 import '../../../ui/components/icon_button/icon_button.js';
 import '../../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import anchorFunctionLinkSwatchStyles from './anchorFunctionLinkSwatch.css.js';
+import anchorFunctionLinkSwatchStylesRaw from './anchorFunctionLinkSwatch.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const anchorFunctionLinkSwatchStyles = new CSSStyleSheet();
+anchorFunctionLinkSwatchStyles.replaceSync(anchorFunctionLinkSwatchStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Title in the styles tab for the icon button for jumping to the anchor node.
@@ -15,7 +18,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/components/AnchorFunctionLinkSwatch.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 // clang-format on
 export class AnchorFunctionLinkSwatch extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });

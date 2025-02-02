@@ -308,6 +308,7 @@ export class ConsoleView extends UI.Widget.VBox {
     constructor(viewportThrottlerTimeout) {
         super();
         this.setMinimumSize(0, 35);
+        this.registerRequiredCSS(consoleViewStyles, objectValueStyles, CodeHighlighter.Style.default);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
         this.searchableViewInternal.element.classList.add('console-searchable-view');
         this.searchableViewInternal.setPlaceholder(i18nString(UIStrings.findStringInLogs));
@@ -592,7 +593,6 @@ export class ConsoleView extends UI.Widget.VBox {
         this.#isDetached = false;
         this.updateIssuesToolbarItem();
         this.viewport.refresh();
-        this.registerCSSFiles([consoleViewStyles, objectValueStyles, CodeHighlighter.Style.default]);
     }
     focus() {
         if (this.viewport.hasVirtualSelection()) {

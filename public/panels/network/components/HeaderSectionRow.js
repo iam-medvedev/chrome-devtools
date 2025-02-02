@@ -9,10 +9,13 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as ClientVariations from '../../../third_party/chromium/client-variations/client-variations.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import headerSectionRowStyles from './HeaderSectionRow.css.js';
-const { render, html } = LitHtml;
+import headerSectionRowStylesRaw from './HeaderSectionRow.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const headerSectionRowStyles = new CSSStyleSheet();
+headerSectionRowStyles.replaceSync(headerSectionRowStylesRaw.cssContent);
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
@@ -115,18 +118,18 @@ export class HeaderSectionRow extends HTMLElement {
         if (!this.#header) {
             return;
         }
-        const rowClasses = LitHtml.Directives.classMap({
+        const rowClasses = Lit.Directives.classMap({
             row: true,
             'header-highlight': Boolean(this.#header.highlight),
             'header-overridden': Boolean(this.#header.isOverride) || this.#isHeaderValueEdited,
             'header-editable': this.#header.valueEditable === 1 /* EditingAllowedStatus.ENABLED */,
             'header-deleted': Boolean(this.#header.isDeleted),
         });
-        const headerNameClasses = LitHtml.Directives.classMap({
+        const headerNameClasses = Lit.Directives.classMap({
             'header-name': true,
             'pseudo-header': this.#header.name.startsWith(':'),
         });
-        const headerValueClasses = LitHtml.Directives.classMap({
+        const headerValueClasses = Lit.Directives.classMap({
             'header-value': true,
             'header-warning': Boolean(this.#header.headerValueIncorrect),
             'flex-columns': this.#header.name === 'x-client-data' && !this.#header.isResponseHeader,
@@ -148,7 +151,7 @@ export class HeaderSectionRow extends HTMLElement {
         <div class=${headerNameClasses}>
           ${this.#header.headerNotSet ?
             html `<div class="header-badge header-badge-text">${i18n.i18n.lockedString('not-set')}</div> ` :
-            LitHtml.nothing}
+            Lit.nothing}
           ${isHeaderNameEditable && !this.#isValidHeaderName ?
             html `<devtools-icon class="inline-icon disallowed-characters" title=${UIStrings.headerNamesOnlyLetters} .data=${{
                 iconName: 'cross-circle-filled',
@@ -156,7 +159,7 @@ export class HeaderSectionRow extends HTMLElement {
                 height: '16px',
                 color: 'var(--icon-error)',
             }}>
-            </devtools-icon>` : LitHtml.nothing}
+            </devtools-icon>` : Lit.nothing}
           ${isHeaderNameEditable && !this.#header.isDeleted ?
             html `<devtools-editable-span
               @focusout=${this.#onHeaderNameFocusOut}
@@ -180,7 +183,7 @@ export class HeaderSectionRow extends HTMLElement {
                 height: '16px',
                 color: 'var(--icon-default)',
             }}>
-          </devtools-icon>` : LitHtml.nothing}
+          </devtools-icon>` : Lit.nothing}
       </div>
       ${this.#maybeRenderBlockedDetails(this.#header.blockedDetails)}
     `, this.#shadow, { host: this });
@@ -191,7 +194,7 @@ export class HeaderSectionRow extends HTMLElement {
     }
     #renderHeaderValue() {
         if (!this.#header) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         if (this.#header.name === 'x-client-data' && !this.#header.isResponseHeader) {
             return this.#renderXClientDataHeader(this.#header);
@@ -215,7 +218,7 @@ export class HeaderSectionRow extends HTMLElement {
           jslog=${VisualLogging.action('enable-header-overrides').track({ click: true })}
           class="enable-editing inline-button"
         ></devtools-button>
-      ` : LitHtml.nothing}
+      ` : Lit.nothing}
     `;
         }
         return html `
@@ -272,11 +275,11 @@ export class HeaderSectionRow extends HTMLElement {
       `;
             // clang-format on
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #maybeRenderBlockedDetails(blockedDetails) {
         if (!blockedDetails) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
@@ -333,7 +336,7 @@ export class HeaderSectionRow extends HTMLElement {
       `;
             // clang-format on
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #onHeaderValueFocusOut(event) {
         const target = event.target;

@@ -4,13 +4,19 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Dialogs from '../dialogs/dialogs.js';
 import { MenuGroup, } from './Menu.js';
-import selectMenuStyles from './selectMenu.css.js';
-import selectMenuButtonStyles from './selectMenuButton.css.js';
-const { html } = LitHtml;
+import selectMenuStylesRaw from './selectMenu.css.js';
+import selectMenuButtonStylesRaw from './selectMenuButton.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const selectMenuStyles = new CSSStyleSheet();
+selectMenuStyles.replaceSync(selectMenuStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const selectMenuButtonStyles = new CSSStyleSheet();
+selectMenuButtonStyles.replaceSync(selectMenuButtonStylesRaw.cssContent);
+const { html } = Lit;
 const deployMenuArrow = new URL('../../../Images/triangle-down.svg', import.meta.url).toString();
 export class SelectMenu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -167,7 +173,7 @@ export class SelectMenu extends HTMLElement {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('SelectMenu render was not scheduled');
         }
-        LitHtml.render(html `
+        Lit.render(html `
       <devtools-menu
         @menucloserequest=${this.#onMenuClose}
         @menuitemselected=${this.#onItemSelected}
@@ -282,17 +288,17 @@ export class SelectMenuButton extends HTMLElement {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('SelectMenuItem render was not scheduled');
         }
-        const arrow = this.#props.showArrow ? html `<span id="arrow"></span>` : LitHtml.nothing;
+        const arrow = this.#props.showArrow ? html `<span id="arrow"></span>` : Lit.nothing;
         const classMap = { 'single-arrow': this.#props.singleArrow };
         // clang-format off
         const buttonTitle = html `
       <span id="button-label-wrapper">
-        <span id="label" ?witharrow=${this.showArrow} class=${LitHtml.Directives.classMap(classMap)}><slot></slot></span>
+        <span id="label" ?witharrow=${this.showArrow} class=${Lit.Directives.classMap(classMap)}><slot></slot></span>
         ${arrow}
       </span>
       `;
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <button aria-haspopup="true" aria-expanded="false" class="show" @keydown=${this.#handleButtonKeyDown} @click=${this.#handleClick} ?disabled=${this.disabled} jslog=${VisualLogging.dropDown(this.jslogContext)}>${buttonTitle}</button>
     `, this.#shadow, { host: this });
         // clang-format on

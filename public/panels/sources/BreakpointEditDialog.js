@@ -69,6 +69,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
     #editorHistory;
     constructor(editorLineNumber, oldCondition, isLogpoint, onFinish) {
         super(true);
+        this.registerRequiredCSS(breakpointEditDialogStyles);
         const editorConfig = [
             CodeMirror.javascript.javascriptLanguage,
             TextEditor.Config.baseConfiguration(oldCondition || ''),
@@ -211,10 +212,6 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
         this.#history.pushHistoryItem(condition);
         const isLogpoint = this.breakpointType === "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */;
         this.onFinish({ committed, condition: condition, isLogpoint });
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([breakpointEditDialogStyles]);
     }
     get editorForTest() {
         return this.editor;

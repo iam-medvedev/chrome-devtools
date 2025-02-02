@@ -482,6 +482,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     textFilterSetting;
     constructor(filterBar, progressBarContainer, networkLogLargeRowsSetting) {
         super();
+        this.registerRequiredCSS(networkLogViewStyles);
         this.setMinimumSize(50, 64);
         this.element.id = 'network-container';
         this.element.classList.add('no-node-selected');
@@ -1201,8 +1202,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
     }
     wasShown() {
+        super.wasShown();
         this.refreshIfNeeded();
-        this.registerCSSFiles([networkLogViewStyles]);
         this.columnsInternal.wasShown();
     }
     willHide() {

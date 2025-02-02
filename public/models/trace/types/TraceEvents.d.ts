@@ -26,9 +26,6 @@ export declare const enum Phase {
     MARK = "R",
     CLOCK_SYNC = "c"
 }
-export type NonEmptyString = string & {
-    _tag: 'NonEmptyString';
-};
 export declare function isNestableAsyncPhase(phase: Phase): boolean;
 export declare function isPhaseAsync(phase: Phase): boolean;
 export declare function isFlowPhase(phase: Phase): boolean;
@@ -310,7 +307,7 @@ export interface SyntheticNetworkRequest extends Complete, SyntheticBased<Phase.
         };
     };
     cat: 'loading';
-    name: 'SyntheticNetworkRequest';
+    name: Name.SYNTHETIC_NETWORK_REQUEST;
     ph: Phase.COMPLETE;
     dur: Micro;
     tdur: Micro;
@@ -391,7 +388,22 @@ export interface AuctionWorkletDoneWithProcess extends Event {
 }
 export declare function isAuctionWorkletRunningInProcess(event: Event): event is AuctionWorkletRunningInProcess;
 export declare function isAuctionWorkletDoneWithProcess(event: Event): event is AuctionWorkletDoneWithProcess;
-export interface Screenshot extends Event {
+/**
+ * In January 2025 when crrev.com/c/6197645 landed, it changed the format of screenshot events.
+ * That is why we two screenshot types:
+ * `LegacyScreenshot` and `LegacySyntheticScreenshot`: BEFORE the above CL.
+ * `Screenshot`: AFTER the above CL.
+ * Important things to note:
+ * 1. Both the "old" and "new" events share the name "Screenshot" but their format is very different.
+ * 2. The old events had both a raw event (LegacyScreenshot) and a synthetic
+ *    event (LegacySyntheticScreenshot). The new events only have a raw event, as
+ *    we do not need the additional complexity of a synthetic event.
+ * 3. Because we like to support "old" traces, DevTools will maintain its
+ *    support for both screenshot events for the foreseeable future. If you are
+ *    consuming screenshot events from the ScreenshotHandler, you must make sure
+ *    to have your code deal with the two different formats.
+ */
+export interface LegacyScreenshot extends Event {
     /**
      * @deprecated This value is incorrect. Use ScreenshotHandler.getPresentationTimestamp()
      */
@@ -405,9 +417,11 @@ export interface Screenshot extends Event {
     cat: 'disabled-by-default-devtools.screenshot';
     ph: Phase.OBJECT_SNAPSHOT;
 }
+export declare function isLegacyScreenshot(event: Event): event is LegacyScreenshot;
+export declare function isLegacySyntheticScreenshot(event: Event): event is LegacySyntheticScreenshot;
 export declare function isScreenshot(event: Event): event is Screenshot;
-export interface SyntheticScreenshot extends Event, SyntheticBased {
-    rawSourceEvent: Screenshot;
+export interface LegacySyntheticScreenshot extends Event, SyntheticBased {
+    rawSourceEvent: LegacyScreenshot;
     /** This is the correct presentation timestamp. */
     ts: Micro;
     args: Args & {
@@ -416,6 +430,14 @@ export interface SyntheticScreenshot extends Event, SyntheticBased {
     name: Name.SCREENSHOT;
     cat: 'disabled-by-default-devtools.screenshot';
     ph: Phase.OBJECT_SNAPSHOT;
+}
+export interface Screenshot extends Instant {
+    args: Args & {
+        snapshot: string;
+        source_id: number;
+        frame_sequence: number;
+        expected_display_time: number;
+    };
 }
 export interface Animation extends Event {
     args: Args & {
@@ -455,28 +477,29 @@ export interface ProcessName extends Metadata {
 export interface Mark extends Event {
     ph: Phase.MARK;
 }
-export interface NavigationStartUnreliable extends Mark {
+export interface NavigationStart extends Mark {
     name: 'navigationStart';
     args: Args & {
+        frame: string;
         data?: ArgsData & {
-            /** An empty documentLoaderURL means this navigationStart is unreliable noise and can be ignored. */
-            documentLoaderURL: never;
+            /** Must be non-empty to be valid. An empty documentLoaderURL means the event can be ignored. */
+            documentLoaderURL: string;
             isLoadingMainFrame: boolean;
-            isOutermostMainFrame?: boolean;
             navigationId: string;
+            /**
+             * `isOutermostMainFrame` was introduced in crrev.com/c/3625434 and exists because of Fenced Frames
+             * [github.com/WICG/fenced-frame/tree/master/explainer]. Fenced frames introduce a situation where
+             * `isLoadingMainFrame` could be true for a navigation, but that navigation be within an embedded "main frame", and
+             * therefore it wouldn't be on the top level main frame. In situations where we need to distinguish that, we can
+             * rely on `isOutermostMainFrame`, which will only be true for navigations on the top level main frame.
+             * This flag is optional as it was introduced in May 2022; so users reasonably may import traces from before that
+             * date that do not have this field present.
+             */
+            isOutermostMainFrame?: boolean;
             /**
              * @deprecated use documentLoaderURL for navigation events URLs
              */
             url?: string;
-        };
-        frame: string;
-    };
-}
-export interface NavigationStart extends NavigationStartUnreliable {
-    args: NavigationStartUnreliable['args'] & {
-        data: NavigationStartUnreliable['args']['data'] & {
-            /** This navigationStart is valid, as the documentLoaderURL isn't empty. */
-            documentLoaderURL: NonEmptyString;
         };
     };
 }
@@ -698,8 +721,8 @@ interface LayoutShiftSessionWindowData {
 export interface LayoutShiftParsedData {
     /** screenshot taken before and after this shift. Before *should* always exist, but after might not at the end of a trace. */
     screenshots: {
-        before: SyntheticScreenshot | null;
-        after: SyntheticScreenshot | null;
+        before: LegacySyntheticScreenshot | Screenshot | null;
+        after: LegacySyntheticScreenshot | Screenshot | null;
     };
     timeFromNavigation?: Micro;
     cumulativeWeightedScoreInWindow: number;
@@ -1095,7 +1118,7 @@ export interface ConsoleTimeStamp extends Event {
     name: Name.CONSOLE_TIME_STAMP;
     ph: Phase.COMPLETE;
     args: Args & {
-        data: ArgsData & {
+        data?: ArgsData & {
             name: string | number;
             start?: string | number;
             end?: string | number;
@@ -1532,8 +1555,6 @@ export declare function isProcessName(event: Event): event is ProcessName;
 export declare function isTracingStartedInBrowser(event: Event): event is TracingStartedInBrowser;
 export declare function isFrameCommittedInBrowser(event: Event): event is FrameCommittedInBrowser;
 export declare function isCommitLoad(event: Event): event is CommitLoad;
-/** @deprecated You probably want `isNavigationStart` instead. */
-export declare function isNavigationStartUnreliable(event: Event): event is NavigationStartUnreliable;
 export declare function isAnimation(event: Event): event is Animation;
 export declare function isSyntheticAnimation(event: Event): event is SyntheticAnimationPair;
 export declare function isLayoutShift(event: Event): event is LayoutShift;
@@ -2113,7 +2134,8 @@ export declare const enum Name {
     DOM_LOADING = "domLoading",
     BEGIN_REMOTE_FONT_LOAD = "BeginRemoteFontLoad",
     ANIMATION_FRAME = "AnimationFrame",
-    ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation"
+    ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation",
+    SYNTHETIC_NETWORK_REQUEST = "SyntheticNetworkRequest"
 }
 export declare const Categories: {
     readonly Console: "blink.console";

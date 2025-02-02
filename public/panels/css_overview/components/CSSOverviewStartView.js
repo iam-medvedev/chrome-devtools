@@ -5,8 +5,11 @@ import '../../../ui/components/panel_feedback/panel_feedback.js';
 import '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import cssOverviewStartViewStyles from './cssOverviewStartView.css.js';
+import { html, render } from '../../../ui/lit/lit.js';
+import cssOverviewStartViewStylesRaw from './cssOverviewStartView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssOverviewStartViewStyles = new CSSStyleSheet();
+cssOverviewStartViewStyles.replaceSync(cssOverviewStartViewStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Label for the capture button in the CSS overview panel
@@ -35,7 +38,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/css_overview/components/CSSOverviewStartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
 const FEEDBACK_LINK = 'https://g.co/devtools/css-overview-feedback';
 const DOC_LINK = 'https://developer.chrome.com/docs/devtools/css-overview';
 export class OverviewStartRequestedEvent extends Event {

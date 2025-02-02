@@ -121,6 +121,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     fontsList;
     constructor(propertyMap) {
         super(true);
+        this.registerRequiredCSS(fontEditorStyles);
         this.selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         this.propertyMap = propertyMap;
         this.contentElement.tabIndex = 0;
@@ -149,9 +150,6 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         /** hasUnits= */ false);
         new FontPropertyInputs('letter-spacing', i18nString(UIStrings.spacing), cssPropertySection, letterSpacingPropertyInfo, FontEditorUtils.LetterSpacingStaticParams, this.updatePropertyValue.bind(this), this.resizePopout.bind(this), 
         /** hasUnits= */ true);
-    }
-    wasShown() {
-        this.registerCSSFiles([fontEditorStyles]);
     }
     async createFontSelectorSection(propertyValue) {
         if (propertyValue) {

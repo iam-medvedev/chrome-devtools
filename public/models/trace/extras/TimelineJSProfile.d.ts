@@ -3,7 +3,7 @@ import * as Types from '../types/types.js';
 export declare class TimelineJSProfileProcessor {
     static isNativeRuntimeFrame(frame: Protocol.Runtime.CallFrame): boolean;
     static nativeGroup(nativeName: string): string | null;
-    static createFakeTraceFromCpuProfile(profile: Protocol.Profiler.Profile, tid: Types.Events.ThreadID): Types.Events.Event[];
+    static createFakeTraceFromCpuProfile(profile: Protocol.Profiler.Profile, tid: Types.Events.ThreadID): Types.File.TraceFile;
 }
 export declare namespace TimelineJSProfileProcessor {
     const enum NativeGroups {

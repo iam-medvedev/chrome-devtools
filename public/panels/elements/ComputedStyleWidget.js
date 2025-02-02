@@ -38,16 +38,15 @@ import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as ElementsComponents from './components/components.js';
 import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { PlatformFontsWidget } from './PlatformFontsWidget.js';
-import { ColorMatcher } from './PropertyMatchers.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
 import { Renderer, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text for a checkbox setting that controls whether the user-supplied filter text
@@ -175,7 +174,7 @@ class ColorRenderer {
         return [swatch];
     }
     matcher() {
-        return new ColorMatcher();
+        return new SDK.CSSPropertyParserMatchers.ColorMatcher();
     }
 }
 const navigateToSource = (cssProperty, event) => {
@@ -209,6 +208,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     #treeData;
     constructor(computedStyleModel) {
         super(true);
+        this.registerRequiredCSS(computedStyleSidebarPaneStyles);
         this.contentElement.classList.add('styles-sidebar-computed-style-widget');
         this.computedStyleModel = computedStyleModel;
         this.computedStyleModel.addEventListener("CSSModelChanged" /* Events.CSS_MODEL_CHANGED */, this.update, this);
@@ -250,7 +250,6 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     wasShown() {
         UI.Context.Context.instance().setFlavor(ComputedStyleWidget, this);
         super.wasShown();
-        this.registerCSSFiles([computedStyleSidebarPaneStyles]);
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(ComputedStyleWidget, null);

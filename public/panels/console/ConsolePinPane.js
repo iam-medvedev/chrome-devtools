@@ -60,6 +60,7 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
         super(true, 250);
         this.liveExpressionButton = liveExpressionButton;
         this.focusOut = focusOut;
+        this.registerRequiredCSS(consolePinPaneStyles, objectValueStyles);
         this.contentElement.classList.add('console-pins', 'monospace');
         this.contentElement.addEventListener('contextmenu', this.contextMenuEventFired.bind(this), false);
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('console-pins')}`);
@@ -69,11 +70,8 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
             this.addPin(expression);
         }
     }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([consolePinPaneStyles, objectValueStyles]);
-    }
     willHide() {
+        super.willHide();
         for (const pin of this.pins) {
             pin.setHovered(false);
         }

@@ -162,6 +162,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     clearButton;
     constructor() {
         super(true, 1000);
+        this.registerRequiredCSS(storageViewStyles);
         this.contentElement.classList.add('clear-storage-container');
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('clear-storage')}`);
         this.pieColors = new Map([
@@ -174,6 +175,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         ]);
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         this.reportView = new UI.ReportView.ReportView(i18nString(UIStrings.storageTitle));
+        this.reportView.registerRequiredCSS(storageViewStyles);
         this.reportView.element.classList.add('clear-storage-header');
         this.reportView.show(this.contentElement);
         this.target = null;
@@ -488,11 +490,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
             default:
                 return i18nString(UIStrings.other);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.reportView.registerCSSFiles([storageViewStyles]);
-        this.registerCSSFiles([storageViewStyles]);
     }
 }
 export const AllStorageTypes = [

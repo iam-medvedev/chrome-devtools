@@ -130,6 +130,7 @@ export class SearchView extends UI.Widget.VBox {
     constructor(settingKey, throttler) {
         super(true);
         this.setMinimumSize(0, 40);
+        this.registerRequiredCSS(searchViewStyles);
         this.focusOnShow = false;
         this.isIndexing = false;
         this.searchId = 1;
@@ -242,11 +243,11 @@ export class SearchView extends UI.Widget.VBox {
         this.searchScope = this.createScope();
     }
     wasShown() {
+        super.wasShown();
         if (this.focusOnShow) {
             this.focus();
             this.focusOnShow = false;
         }
-        this.registerCSSFiles([searchViewStyles]);
     }
     onIndexingFinished() {
         if (!this.progressIndicator) {

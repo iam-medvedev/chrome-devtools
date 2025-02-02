@@ -28,7 +28,6 @@ export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.Thro
     private focusAndAddExpressionToWatch;
     handleAction(_context: UI.Context.Context, _actionId: string): boolean;
     appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement | UISourceCodeFrame): void;
-    wasShown(): void;
 }
 export declare class WatchExpression extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;

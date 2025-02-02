@@ -10,6 +10,9 @@ import * as PreloadingComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 async function assertRenderResult(rowsInput, headerExpected, rowsExpected) {
     const component = new PreloadingComponents.RuleSetGrid.RuleSetGrid();
+    component.style.display = 'block';
+    component.style.width = '640px';
+    component.style.height = '480px';
     component.update(rowsInput);
     renderElementIntoDOM(component);
     await RenderCoordinator.done();

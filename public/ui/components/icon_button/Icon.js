@@ -14,7 +14,7 @@ import iconStyles from './icon.css.js';
  * const iconWithClassName = IconButton.Icon.create('bin', 'delete-icon');
  *
  * // Use within a template:
- * LitHtml.html`
+ * Lit.html`
  *   <devtools-icon name="bin">
  *   </devtools-icon>
  * `;
@@ -48,12 +48,11 @@ export class Icon extends HTMLElement {
     constructor() {
         super();
         this.role = 'presentation';
+        const style = document.createElement('style');
+        style.textContent = iconStyles.cssContent;
         this.#icon = document.createElement('span');
         this.#shadowRoot = this.attachShadow({ mode: 'open' });
-        this.#shadowRoot.appendChild(this.#icon);
-    }
-    connectedCallback() {
-        this.#shadowRoot.adoptedStyleSheets = [iconStyles];
+        this.#shadowRoot.append(style, this.#icon);
     }
     /**
      * @deprecated use `name` and CSS instead.

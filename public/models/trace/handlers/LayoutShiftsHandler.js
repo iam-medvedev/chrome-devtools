@@ -108,10 +108,19 @@ function updateTraceWindowMax(traceWindow, newMax) {
     traceWindow.range = Types.Timing.Micro(traceWindow.max - traceWindow.min);
 }
 function findScreenshots(timestamp) {
-    const screenshots = screenshotsHandlerData().all;
-    const before = Helpers.Trace.findPreviousEventBeforeTimestamp(screenshots, timestamp);
-    const after = before ? screenshots[screenshots.indexOf(before) + 1] : null;
-    return { before, after };
+    const data = screenshotsHandlerData();
+    if (data.screenshots) {
+        const before = Helpers.Trace.findPreviousEventBeforeTimestamp(data.screenshots, timestamp);
+        const after = before ? data.screenshots[data.screenshots.indexOf(before) + 1] : null;
+        return { before, after };
+    }
+    if (data.legacySyntheticScreenshots) {
+        const before = Helpers.Trace.findPreviousEventBeforeTimestamp(data.legacySyntheticScreenshots, timestamp);
+        const after = before ? data.legacySyntheticScreenshots[data.legacySyntheticScreenshots.indexOf(before) + 1] : null;
+        return { before, after };
+    }
+    // No screenshots
+    return { before: null, after: null };
 }
 function buildScoreRecords() {
     const { traceBounds } = metaHandlerData();

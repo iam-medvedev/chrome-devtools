@@ -162,7 +162,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             this.titleElement.tabIndex = -1;
         }
         objectPropertiesSectionMap.set(this.element, this);
-        this.registerCSSFiles([objectValueStyles, objectPropertiesSectionStyles]);
+        this.registerRequiredCSS(objectValueStyles, objectPropertiesSectionStyles);
         this.rootElement().childrenListElement.classList.add('source-code', 'object-properties-section');
     }
     static defaultObjectPresentation(object, linkifier, skipProto, readOnly) {
@@ -175,7 +175,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     static defaultObjectPropertiesSection(object, linkifier, skipProto, readOnly) {
         const titleElement = document.createElement('span');
         titleElement.classList.add('source-code');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(titleElement, { cssFile: [objectValueStyles] });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(titleElement, { cssFile: objectValueStyles });
         const propertyValue = ObjectPropertiesSection.createPropertyValue(object, /* wasThrown */ false, /* showPreview */ true);
         shadowRoot.appendChild(propertyValue.element);
         const objectPropertiesSection = new ObjectPropertiesSection(object, titleElement, linkifier);
@@ -542,7 +542,7 @@ export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutl
     editable;
     constructor(options) {
         super();
-        this.registerCSSFiles([objectValueStyles, objectPropertiesSectionStyles]);
+        this.registerRequiredCSS(objectValueStyles, objectPropertiesSectionStyles);
         this.editable = !(options && options.readOnly);
         this.contentElement.classList.add('source-code');
         this.contentElement.classList.add('object-properties-section');

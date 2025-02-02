@@ -12,7 +12,7 @@ export declare function getINP(insights: TraceInsightSets | null, key: string | 
 } | null;
 export declare function getCLS(insights: TraceInsightSets | null, key: string | null): {
     value: number;
-    worstShiftEvent: Types.Events.Event | null;
+    worstClusterEvent: Types.Events.Event | null;
 };
 export declare function evaluateLCPMetricScore(value: number): number;
 export declare function evaluateINPMetricScore(value: number): number;
@@ -31,7 +31,7 @@ export interface CrUXFieldMetricResults {
     inp: CrUXFieldMetricTimingResult | null;
     cls: CrUXFieldMetricNumberResult | null;
 }
-export declare function getFieldMetricsForInsightSet(insightSet: InsightSet, metadata: Types.File.MetaData | null): CrUXFieldMetricResults | null;
+export declare function getFieldMetricsForInsightSet(insightSet: InsightSet, metadata: Types.File.MetaData | null, scope?: CrUXManager.Scope | null): CrUXFieldMetricResults | null;
 export declare function calculateMetricWeightsForSorting(insightSet: InsightSet, metadata: Types.File.MetaData | null): {
     lcp: number;
     inp: number;

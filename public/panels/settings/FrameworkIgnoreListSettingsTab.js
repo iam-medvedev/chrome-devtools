@@ -90,6 +90,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super(true);
+        this.registerRequiredCSS(frameworkIgnoreListSettingsTabStyles, settingsScreenStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('blackbox')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         settingsContent.classList.add('settings-card-container', 'ignore-list-settings');
@@ -141,6 +142,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         settingsContent.appendChild(customExclusionGroupCard);
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.element.classList.add('ignore-list');
+        this.list.registerRequiredCSS(frameworkIgnoreListSettingsTabStyles);
         const placeholder = document.createElement('div');
         placeholder.classList.add('ignore-list-empty');
         this.list.setEmptyPlaceholder(placeholder);
@@ -165,8 +167,6 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.list.registerCSSFiles([frameworkIgnoreListSettingsTabStyles]);
-        this.registerCSSFiles([frameworkIgnoreListSettingsTabStyles, settingsScreenStyles]);
         this.settingUpdated();
     }
     settingUpdated() {

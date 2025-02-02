@@ -16,4 +16,4 @@ declare class DevToolsRecorder {
     startSelectorPicker(bindings: AccessibilityBindings, customAttribute?: string, debug?: boolean): void;
     stopSelectorPicker(): void;
 }
-export { type Step, type RecordingClient, type SelectorPicker, type DevToolsRecorder, };
+export { type DevToolsRecorder, type RecordingClient, type SelectorPicker, type Step, };

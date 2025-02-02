@@ -4,10 +4,10 @@
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { imageRef } from './EventRef.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text to tell the user how long after the earliest discovery time their LCP element loaded.
@@ -75,7 +75,7 @@ function getImageData(model) {
     return data;
 }
 export class LCPDiscovery extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-lcp-discovery`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-lcp-discovery`;
     internalName = 'lcp-discovery';
     #adviceIcon(didFail, label) {
         const icon = didFail ? 'clear' : 'check-circle';
@@ -136,7 +136,7 @@ export class LCPDiscovery extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const imageData = getImageData(this.model);
         if (!imageData) {

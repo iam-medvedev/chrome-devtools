@@ -20,7 +20,6 @@ export declare class KeybindsSettingsTab extends UI.Widget.VBox implements UI.Li
     onEscapeKeyPressed(event: Event): void;
     update(): void;
     willHide(): void;
-    wasShown(): void;
 }
 export declare class ShortcutListItem {
     private isEditing;

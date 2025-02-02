@@ -99,7 +99,7 @@ export declare function createIconLabel(options: {
  * the radio button accessible.
  *
  * The element is automatically styled correctly, as long as the core styles (in particular
- * `inspectorCommon.css` is injected into the current document / shadow root). The lit-html
+ * `inspectorCommon.css` is injected into the current document / shadow root). The lit
  * equivalent of calling this method is:
  *
  * ```js
@@ -122,7 +122,7 @@ export declare function createRadioButton(name: string, title: string, jslogCont
  * and a `step` of 1 (the default for the element).
  *
  * The element is automatically styled correctly, as long as the core styles (in particular
- * `inspectorCommon.css` is injected into the current document / shadow root). The lit-html
+ * `inspectorCommon.css` is injected into the current document / shadow root). The lit
  * equivalent of calling this method is:
  *
  * ```js
@@ -142,7 +142,6 @@ export declare class CheckboxLabel extends HTMLElement {
     checkboxElement: HTMLInputElement;
     textElement: HTMLElement;
     constructor();
-    connectedCallback(): void;
     static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
     /** Only to be used when the checkbox label is 'generated' (a regex, a className, etc). Most checkboxes should be create()'d with UIStrings */
     static createWithStringLiteral(title?: string, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
@@ -154,10 +153,8 @@ export declare class DevToolsIconLabel extends HTMLElement {
     set data(data: IconButton.Icon.IconData);
 }
 export declare class DevToolsSmallBubble extends HTMLElement {
-    #private;
     private textElement;
     constructor();
-    connectedCallback(): void;
     set type(type: string);
 }
 export declare class DevToolsCloseButton extends HTMLElement {
@@ -249,7 +246,11 @@ export declare function injectCoreStyles(elementOrShadowRoot: Element | ShadowRo
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
  */
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
-    cssFile?: CSSStyleSheet[];
+    cssFile?: ({
+        cssContent: string;
+    })[] | {
+        cssContent: string;
+    };
     delegatesFocus?: boolean;
 }): ShadowRoot;
 export declare function resetMeasuredScrollbarWidthForTest(): void;

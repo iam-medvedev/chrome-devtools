@@ -18,5 +18,4 @@ export declare class EditFileSystemView extends UI.Widget.VBox implements UI.Lis
     beginEdit(item: string): UI.ListWidget.Editor<string>;
     private createExcludedFolderEditor;
     private normalizePrefix;
-    wasShown(): void;
 }

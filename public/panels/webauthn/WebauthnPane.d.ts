@@ -25,6 +25,5 @@ export declare class WebauthnPaneImpl extends UI.Widget.VBox implements SDK.Targ
      * Removes both the authenticator and its respective UI element.
      */
     removeAuthenticator(authenticatorId: Protocol.WebAuthn.AuthenticatorId): void;
-    wasShown(): void;
 }
 export {};

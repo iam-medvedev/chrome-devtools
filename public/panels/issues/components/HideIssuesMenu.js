@@ -5,9 +5,11 @@ import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import hideIssuesMenuStyles from './hideIssuesMenu.css.js';
-const { html } = LitHtml;
+import { html, render } from '../../../ui/lit/lit.js';
+import hideIssuesMenuStylesRaw from './hideIssuesMenu.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const hideIssuesMenuStyles = new CSSStyleSheet();
+hideIssuesMenuStyles.replaceSync(hideIssuesMenuStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Title for the tooltip of the (3 dots) Hide Issues menu icon.
@@ -41,7 +43,7 @@ export class HideIssuesMenu extends HTMLElement {
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(html `
+        render(html `
     <devtools-button
       .data=${{ variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: 'dots-vertical', title: i18nString(UIStrings.tooltipTitle) }}
       .jslogContext=${'hide-issues'}

@@ -4,10 +4,10 @@
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Label to describe a network request (that happens to be render-blocking).
@@ -25,7 +25,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/RenderBlocking.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RenderBlocking extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-render-blocking-requests`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-render-blocking-requests`;
     internalName = 'render-blocking-requests';
     createOverlays() {
         if (!this.model) {
@@ -45,7 +45,7 @@ export class RenderBlocking extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const MAX_REQUESTS = 3;
         const topRequests = this.model.renderBlockingRequests.slice(0, MAX_REQUESTS);

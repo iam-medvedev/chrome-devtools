@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Trace from '../../../models/trace/trace.js';
 const imageCache = new WeakMap();
 export const emitter = new EventTarget();
 /**
@@ -11,8 +12,8 @@ export function getOrQueue(screenshot) {
     if (imageCache.has(screenshot)) {
         return imageCache.get(screenshot) ?? null;
     }
-    const data = screenshot.args.dataUri;
-    loadImage(data)
+    const uri = Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+    loadImage(uri)
         .then(imageOrNull => {
         imageCache.set(screenshot, imageOrNull);
         emitter.dispatchEvent(new CustomEvent('screenshot-loaded', { detail: { screenshot, image: imageOrNull } }));
@@ -35,7 +36,8 @@ export function preload(screenshots) {
         if (imageCache.has(screenshot)) {
             return;
         }
-        return loadImage(screenshot.args.dataUri).then(image => {
+        const uri = Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+        return loadImage(uri).then(image => {
             imageCache.set(screenshot, image);
             return;
         });

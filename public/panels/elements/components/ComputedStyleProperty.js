@@ -1,10 +1,12 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import computedStylePropertyStyles from './computedStyleProperty.css.js';
-const { render, html } = LitHtml;
+import computedStylePropertyStylesRaw from './computedStyleProperty.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const computedStylePropertyStyles = new CSSStyleSheet();
+computedStylePropertyStyles.replaceSync(computedStylePropertyStylesRaw.cssContent);
 export class NavigateToSourceEvent extends Event {
     static eventName = 'onnavigatetosource';
     constructor() {

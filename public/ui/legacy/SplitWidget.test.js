@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as UI from './legacy.js';
-const { render, html } = LitHtml;
 const widgetRef = UI.Widget.widgetRef;
 const SplitWidget = UI.SplitWidget.SplitWidget;
 describeWithEnvironment('SplitWidget', () => {

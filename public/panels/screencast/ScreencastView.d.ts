@@ -51,7 +51,6 @@ export declare class ScreencastView extends UI.Widget.VBox implements SDK.Overla
     private historyEntries?;
     constructor(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel);
     initialize(): void;
-    wasShown(): void;
     willHide(): void;
     private startCasting;
     private stopCasting;

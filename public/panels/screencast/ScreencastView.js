@@ -124,6 +124,7 @@ export class ScreencastView extends UI.Widget.VBox {
     historyEntries;
     constructor(screenCaptureModel) {
         super();
+        this.registerRequiredCSS(screencastViewStyles);
         this.screenCaptureModel = screenCaptureModel;
         this.domModel = screenCaptureModel.target().model(SDK.DOMModel.DOMModel);
         this.overlayModel = screenCaptureModel.target().model(SDK.OverlayModel.OverlayModel);
@@ -176,10 +177,6 @@ export class ScreencastView extends UI.Widget.VBox {
             this.focusNavigationBar.bind(this);
         SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
         this.updateGlasspane();
-    }
-    wasShown() {
-        this.startCasting();
-        this.registerCSSFiles([screencastViewStyles]);
     }
     willHide() {
         this.stopCasting();

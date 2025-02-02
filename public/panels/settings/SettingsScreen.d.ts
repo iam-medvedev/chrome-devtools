@@ -16,7 +16,6 @@ export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.Vi
     private tabInvoked;
     private reportSettingsPanelShown;
     private onEscapeKeyPressed;
-    wasShown(): void;
 }
 declare abstract class SettingsTab extends UI.Widget.VBox {
     containerElement: HTMLElement;

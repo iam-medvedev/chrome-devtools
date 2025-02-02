@@ -4,7 +4,7 @@
 import '../../../../ui/components/icon_button/icon_button.js';
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 const UIStrings = {
     /**
@@ -34,9 +34,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/DOMSize.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { html } = LitHtml;
+const { html } = Lit;
 export class DOMSize extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-dom-size`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-dom-size`;
     internalName = 'dom-size';
     createOverlays() {
         if (!this.model) {
@@ -60,7 +60,7 @@ export class DOMSize extends BaseInsightComponent {
             rows.push({ values: [i18nString(UIStrings.maxChildren), this.renderNode(nodeId, nodeName)] });
         }
         if (!rows.length) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `<div class="insight-section">
@@ -76,11 +76,11 @@ export class DOMSize extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const domStatsData = this.model.maxDOMStats?.args.data;
         if (!domStatsData) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `<div class="insight-section">

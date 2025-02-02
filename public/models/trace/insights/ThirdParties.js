@@ -23,13 +23,13 @@ export function deps() {
     return ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
 }
 function getRelatedEvents(summaries, firstPartyEntity) {
-    const events = [];
-    for (const [entity, requests] of summaries.eventsByEntity.entries()) {
+    const relatedEvents = [];
+    for (const [entity, events] of summaries.eventsByEntity.entries()) {
         if (entity !== firstPartyEntity) {
-            events.push(...requests);
+            relatedEvents.push(...events);
         }
     }
-    return events;
+    return relatedEvents;
 }
 function finalize(partialModel) {
     return {
@@ -50,16 +50,14 @@ export function generateInsight(parsedTrace, context) {
         }
         return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
-    const { entityByRequest, madeUpEntityCache, summaries } = Extras.ThirdParties.getSummariesAndEntitiesForTraceBounds(parsedTrace, context.bounds, networkRequests);
+    const thirdPartySummary = Extras.ThirdParties.summarizeThirdParties(parsedTrace, context.bounds, networkRequests);
     const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) ||
-        Handlers.Helpers.makeUpEntity(madeUpEntityCache, firstPartyUrl);
+        Handlers.Helpers.makeUpEntity(thirdPartySummary.madeUpEntityCache, firstPartyUrl);
     return finalize({
-        relatedEvents: getRelatedEvents(summaries, firstPartyEntity),
-        entityByRequest,
-        requestsByEntity: summaries.eventsByEntity,
-        summaryByEvent: summaries.byEvent,
-        summaryByEntity: summaries.byEntity,
+        relatedEvents: getRelatedEvents(thirdPartySummary, firstPartyEntity),
+        eventsByEntity: thirdPartySummary.eventsByEntity,
+        summaryByEntity: thirdPartySummary.byEntity,
         firstPartyEntity,
     });
 }

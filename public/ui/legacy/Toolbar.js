@@ -41,9 +41,12 @@ import { ContextMenu } from './ContextMenu.js';
 import { GlassPane } from './GlassPane.js';
 import { bindCheckbox } from './SettingsUI.js';
 import { TextPrompt } from './TextPrompt.js';
-import toolbarStyles from './toolbar.css.js';
+import toolbarStylesRaw from './toolbar.css.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, LongClickController } from './UIUtils.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const toolbarStyles = new CSSStyleSheet();
+toolbarStyles.replaceSync(toolbarStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.

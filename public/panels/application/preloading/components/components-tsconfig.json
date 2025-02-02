@@ -78,9 +78,6 @@
       "path": "../../../../ui/components/chrome_link/bundle-tsconfig.json"
     },
     {
-      "path": "../../../../ui/components/data_grid/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../../ui/components/dialogs/bundle-tsconfig.json"
     },
     {
@@ -109,6 +106,9 @@
     },
     {
       "path": "../../../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../ui/legacy/components/data_grid/bundle-tsconfig.json"
     },
     {
       "path": "../../../../ui/legacy/components/source_frame/bundle-tsconfig.json"

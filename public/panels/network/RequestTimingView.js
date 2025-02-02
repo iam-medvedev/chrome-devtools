@@ -239,6 +239,7 @@ export class RequestTimingView extends UI.Widget.VBox {
     tableElement;
     constructor(request, calculator) {
         super();
+        this.registerRequiredCSS(networkingTimingTableStyles);
         this.element.classList.add('resource-timing-view');
         this.request = request;
         this.calculator = calculator;
@@ -683,7 +684,6 @@ export class RequestTimingView extends UI.Widget.VBox {
         this.request.addEventListener(SDK.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
         this.request.addEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
         this.calculator.addEventListener("BoundariesChanged" /* Events.BOUNDARIES_CHANGED */, this.boundaryChanged, this);
-        this.registerCSSFiles([networkingTimingTableStyles]);
         this.refresh();
     }
     willHide() {

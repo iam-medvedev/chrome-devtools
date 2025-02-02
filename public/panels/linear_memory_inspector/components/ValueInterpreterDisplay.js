@@ -4,11 +4,17 @@
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import valueInterpreterDisplayStyles from './valueInterpreterDisplay.css.js';
+import valueInterpreterDisplayStylesRaw from './valueInterpreterDisplay.css.js';
 import { format, getDefaultValueTypeMapping, getPointerAddress, isNumber, isPointer, isValidMode, VALUE_TYPE_MODE_LIST, } from './ValueInterpreterDisplayUtils.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const inspectorCommonStyles = new CSSStyleSheet();
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const valueInterpreterDisplayStyles = new CSSStyleSheet();
+valueInterpreterDisplayStyles.replaceSync(valueInterpreterDisplayStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an unsigned interpretation of the memory under the Value Interpreter
@@ -34,7 +40,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 const SORTED_VALUE_TYPES = Array.from(getDefaultValueTypeMapping().keys());
 export class ValueTypeModeChangedEvent extends Event {
     static eventName = 'valuetypemodechanged';

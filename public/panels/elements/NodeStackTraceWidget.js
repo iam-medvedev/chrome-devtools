@@ -20,6 +20,7 @@ export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
     linkifier;
     constructor() {
         super(true /* isWebComponent */);
+        this.registerRequiredCSS(nodeStackTraceWidgetStyles);
         this.noStackTraceElement = this.contentElement.createChild('div', 'gray-info-message');
         this.noStackTraceElement.textContent = i18nString(UIStrings.noStackTraceAvailable);
         this.creationStackTraceElement = this.contentElement.createChild('div', 'stack-trace');
@@ -28,7 +29,6 @@ export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
-        this.registerCSSFiles([nodeStackTraceWidgetStyles]);
         this.update();
     }
     willHide() {

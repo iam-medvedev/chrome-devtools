@@ -134,7 +134,7 @@ export class ThreadAppender {
     #showAllEventsEnabled = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
     #url = '';
     #headerNestingLevel = null;
-    constructor(compatibilityBuilder, parsedTrace, processId, threadId, threadName, type) {
+    constructor(compatibilityBuilder, parsedTrace, processId, threadId, threadName, type, entries, tree) {
         this.#compatibilityBuilder = compatibilityBuilder;
         // TODO(crbug.com/1456706):
         // The values for this color generator have been taken from the old
@@ -149,14 +149,6 @@ export class ThreadAppender {
         this.#parsedTrace = parsedTrace;
         this.#processId = processId;
         this.#threadId = threadId;
-        // When loading a CPU profile, only CPU data will be available, thus
-        // we get the data from the SamplesHandler.
-        const entries = type === "CPU_PROFILE" /* Trace.Handlers.Threads.ThreadType.CPU_PROFILE */ ?
-            this.#parsedTrace.Samples?.profilesInProcess.get(processId)?.get(threadId)?.profileCalls :
-            this.#parsedTrace.Renderer?.processes.get(processId)?.threads?.get(threadId)?.entries;
-        const tree = type === "CPU_PROFILE" /* Trace.Handlers.Threads.ThreadType.CPU_PROFILE */ ?
-            this.#parsedTrace.Samples?.profilesInProcess.get(processId)?.get(threadId)?.profileTree :
-            this.#parsedTrace.Renderer?.processes.get(processId)?.threads?.get(threadId)?.tree;
         if (!entries || !tree) {
             throw new Error(`Could not find data for thread with id ${threadId} in process with id ${processId}`);
         }

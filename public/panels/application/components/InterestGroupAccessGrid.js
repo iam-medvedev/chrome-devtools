@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 import '../../../ui/legacy/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import interestGroupAccessGridStyles from './interestGroupAccessGrid.css.js';
-const { html } = LitHtml;
+import * as Lit from '../../../ui/lit/lit.js';
+import interestGroupAccessGridStylesRaw from './interestGroupAccessGrid.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const interestGroupAccessGridStyles = new CSSStyleSheet();
+interestGroupAccessGridStyles.replaceSync(interestGroupAccessGridStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Hover text for an info icon in the Interest Group Event panel
@@ -58,7 +61,7 @@ export class InterestGroupAccessGrid extends HTMLElement {
     }
     #render() {
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <div>
         <span class="heading">Interest Groups</span>
         <devtools-icon class="info-icon"
@@ -75,7 +78,7 @@ export class InterestGroupAccessGrid extends HTMLElement {
             return html `<div class="no-events-message">${i18nString(UIStrings.noEvents)}</div>`;
         }
         return html `
-      <devtools-new-data-grid @select=${this.#onSelect}>
+      <devtools-data-grid @select=${this.#onSelect} striped inline>
         <table>
           <tr>
             <th id="event-time" sortable weight="10">${i18nString(UIStrings.eventTime)}</td>
@@ -92,7 +95,7 @@ export class InterestGroupAccessGrid extends HTMLElement {
           </tr>
         `)}
         </table>
-      </devtools-new-data-grid>
+      </devtools-data-grid>
     `;
     }
     #onSelect(event) {

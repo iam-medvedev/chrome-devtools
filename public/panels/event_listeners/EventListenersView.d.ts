@@ -18,7 +18,6 @@ export declare class EventListenersView extends UI.Widget.VBox {
     addEmptyHolderIfNeeded(): void;
     reset(): void;
     private eventListenersArrivedForTest;
-    wasShown(): void;
 }
 export declare class EventListenersTreeElement extends UI.TreeOutline.TreeElement {
     toggleOnClick: boolean;

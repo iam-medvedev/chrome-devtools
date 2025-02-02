@@ -4,9 +4,9 @@
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /** Label for a table column that displays the name of a third-party provider. */
     columnThirdParty: 'Third party',
@@ -22,7 +22,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/ThirdParties.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ThirdParties extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-third-parties`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-third-parties`;
     internalName = 'third-parties';
     #overlaysForEntity = new Map();
     createOverlays() {
@@ -31,15 +31,15 @@ export class ThirdParties extends BaseInsightComponent {
             return [];
         }
         const overlays = [];
-        for (const [entity, requests] of this.model.requestsByEntity) {
+        for (const [entity, events] of this.model.eventsByEntity) {
             if (entity === this.model.firstPartyEntity) {
                 continue;
             }
             const overlaysForThisEntity = [];
-            for (const request of requests) {
+            for (const event of events) {
                 const overlay = {
                     type: 'ENTRY_OUTLINE',
-                    entry: request,
+                    entry: event,
                     outlineReason: 'INFO',
                 };
                 overlaysForThisEntity.push(overlay);
@@ -51,7 +51,7 @@ export class ThirdParties extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const entries = [...this.model.summaryByEntity.entries()].filter(kv => kv[0] !== this.model?.firstPartyEntity);
         if (!entries.length) {

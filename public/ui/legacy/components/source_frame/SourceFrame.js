@@ -916,7 +916,7 @@ export class SelfXssWarningDialog {
         dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
         dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: [selfXssDialogStyles] });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: selfXssDialogStyles });
         const content = shadowRoot.createChild('div', 'widget');
         const result = await new Promise(resolve => {
             const closeButton = content.createChild('dt-close-button', 'dialog-close-button');

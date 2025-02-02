@@ -112,14 +112,11 @@ let networkNavigatorViewInstance;
 export class NetworkNavigatorView extends NavigatorView {
     constructor() {
         super('navigator-network', true);
+        this.registerRequiredCSS(sourcesNavigatorStyles);
         SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
         // Record the sources tool load time after the file navigator has loaded.
         Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
-    }
-    wasShown() {
-        this.registerCSSFiles([sourcesNavigatorStyles]);
-        super.wasShown();
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;

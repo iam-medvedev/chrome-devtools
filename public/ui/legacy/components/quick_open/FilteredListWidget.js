@@ -55,6 +55,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
     queryChangedCallback;
     constructor(provider, promptHistory, queryChangedCallback) {
         super(true);
+        this.registerRequiredCSS(filteredListWidgetStyles);
         this.promptHistory = promptHistory || [];
         this.scoringTimer = 0;
         this.filterTimer = 0;
@@ -192,7 +193,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         return this.query.substring(this.prefix.length).trim();
     }
     wasShown() {
-        this.registerCSSFiles([filteredListWidgetStyles]);
+        super.wasShown();
         this.attachProvider();
     }
     willHide() {

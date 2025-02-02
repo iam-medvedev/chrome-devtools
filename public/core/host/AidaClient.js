@@ -148,6 +148,9 @@ export class AidaClient {
             else if (result.error) {
                 stream.fail(new Error(`Cannot send request: ${result.error} ${result.detail || ''}`));
             }
+            else if (result.netErrorName === 'net::ERR_TIMED_OUT') {
+                stream.fail(new Error('doAidaConversation timed out'));
+            }
             else if (result.statusCode !== 200) {
                 stream.fail(new Error(`Request failed: ${JSON.stringify(result)}`));
             }

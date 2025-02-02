@@ -39,6 +39,7 @@ export class SearchResultsPane extends UI.Widget.VBox {
         this.searchResults = [];
         this.treeElements = [];
         this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+        this.treeOutline.registerRequiredCSS(searchResultsPaneStyles);
         this.treeOutline.hideOverflow();
         this.contentElement.appendChild(this.treeOutline.element);
         this.matchesExpandedCount = 0;
@@ -70,10 +71,6 @@ export class SearchResultsPane extends UI.Widget.VBox {
         }
         this.matchesExpandedCount += searchResult.matchesCount();
         this.treeElements.push(treeElement);
-    }
-    wasShown() {
-        super.wasShown();
-        this.treeOutline.registerCSSFiles([searchResultsPaneStyles]);
     }
 }
 export const matchesExpandedByDefault = 200;

@@ -396,6 +396,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox {
     cpuThrottlingCard;
     constructor() {
         super(true);
+        this.registerRequiredCSS(throttlingSettingsTabStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('throttling-conditions')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         settingsContent.classList.add('settings-card-container', 'throttling-conditions-settings');
@@ -419,6 +420,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox {
         };
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.element.classList.add('conditions-list');
+        this.list.registerRequiredCSS(throttlingSettingsTabStyles);
         this.list.show(container);
         container.appendChild(addButton);
         this.customSetting = Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
@@ -427,8 +429,6 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox {
     wasShown() {
         super.wasShown();
         this.cpuThrottlingCard.wasShown();
-        this.list.registerCSSFiles([throttlingSettingsTabStyles]);
-        this.registerCSSFiles([throttlingSettingsTabStyles]);
         this.conditionsUpdated();
     }
     willHide() {

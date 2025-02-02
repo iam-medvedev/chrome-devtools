@@ -160,6 +160,7 @@ export class SearchableView extends VBox {
     valueChangedTimeoutId;
     constructor(searchable, replaceable, settingName) {
         super(true);
+        this.registerRequiredCSS(searchableViewStyles);
         searchableViewsByElement.set(this.element, this);
         this.searchProvider = searchable;
         this.replaceProvider = replaceable;
@@ -604,10 +605,6 @@ export class SearchableView extends VBox {
         }
         delete this.valueChangedTimeoutId;
         this.performSearch(false, true);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([searchableViewStyles]);
     }
 }
 const searchableViewsByElement = new WeakMap();

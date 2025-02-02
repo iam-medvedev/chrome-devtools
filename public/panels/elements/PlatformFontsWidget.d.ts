@@ -7,5 +7,4 @@ export declare class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWid
     constructor(sharedModel: ComputedStyleModel);
     doUpdate(): Promise<void>;
     private refreshUI;
-    wasShown(): void;
 }

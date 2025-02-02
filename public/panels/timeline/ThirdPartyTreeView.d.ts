@@ -1,12 +1,18 @@
 import * as Trace from '../../models/trace/trace.js';
-import type * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineTreeView from './TimelineTreeView.js';
 export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView {
     #private;
     protected autoSelectFirstChildOnRefresh: boolean;
     constructor();
+    wasShown(): void;
+    childWasDetached(_widget: UI.Widget.Widget): void;
     buildTree(): Trace.Extras.TraceTree.Node;
+    /**
+     * Third party tree view doesn't require the select feature, as this expands the node.
+     */
+    selectProfileNode(): void;
     protected groupingFunction(): ((arg0: Trace.Types.Events.Event) => string) | null;
     private domainByEvent;
     populateColumns(columns: DataGrid.DataGrid.ColumnDescriptor[]): void;
@@ -21,7 +27,6 @@ export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineT
     };
     extractThirdPartySummary(node: Trace.Extras.TraceTree.Node): {
         transferSize: number;
-        mainThreadTime: Trace.Types.Timing.Micro;
     };
     nodeIsFirstParty(node: Trace.Extras.TraceTree.Node): boolean;
     nodeIsExtension(node: Trace.Extras.TraceTree.Node): boolean;

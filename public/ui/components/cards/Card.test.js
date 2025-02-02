@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import * as Cards from './cards.js';
 const CONTENT_SLOT = 'content';
 const HEADING_SUFFIX_SLOT = 'heading-suffix';
-import * as Cards from './cards.js';
 function assertCardContent(card, slotName, expectedContent) {
     const slot = getElementWithinComponent(card, `slot[name="${slotName}"]`, HTMLSlotElement);
     const textContents = Array.from(slot.assignedElements()).map(child => child.textContent);

@@ -34,7 +34,7 @@ import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
-import overviewGridStyles from './overviewGrid.css.legacy.js';
+import overviewGridStyles from './overviewGrid.css.js';
 import { TimelineGrid } from './TimelineGrid.js';
 const UIStrings = {
     /**

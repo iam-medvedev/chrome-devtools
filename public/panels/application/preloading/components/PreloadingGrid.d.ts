@@ -1,4 +1,4 @@
-import '../../../../ui/components/data_grid/data_grid.js';
+import '../../../../ui/legacy/components/data_grid/data_grid.js';
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../../core/common/common.js';
 import type * as Platform from '../../../../core/platform/platform.js';

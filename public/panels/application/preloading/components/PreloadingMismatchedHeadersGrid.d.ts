@@ -1,4 +1,4 @@
-import '../../../../ui/components/data_grid/data_grid.js';
+import '../../../../ui/legacy/components/data_grid/data_grid.js';
 import type * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import type * as UI from '../../../../ui/legacy/legacy.js';

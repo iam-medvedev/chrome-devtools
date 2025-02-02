@@ -1,20 +1,23 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import '../../../../ui/components/data_grid/data_grid.js';
+import '../../../../ui/legacy/components/data_grid/data_grid.js';
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../../../network/forward/forward.js';
 import * as PreloadingHelper from '../helper/helper.js';
 import * as PreloadingString from './PreloadingString.js';
-import ruleSetGridStyles from './ruleSetGrid.css.js';
-const { html } = LitHtml;
+import ruleSetGridStylesRaw from './ruleSetGrid.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const ruleSetGridStyles = new CSSStyleSheet();
+ruleSetGridStyles.replaceSync(ruleSetGridStylesRaw.cssContent);
+const { html, Directives: { styleMap } } = Lit;
 const UIStrings = {
     /**
      *@description Column header: Short URL of rule set.
@@ -55,211 +58,131 @@ export class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent 
         this.#data = data;
         this.#render();
     }
+    async #revealSpeculationRules(ruleSet) {
+        if (ruleSet.backendNodeId !== undefined) {
+            await this.#revealSpeculationRulesInElements(ruleSet);
+        }
+        else if (ruleSet.url !== undefined && ruleSet.requestId) {
+            await this.#revealSpeculationRulesInNetwork(ruleSet);
+        }
+    }
+    async #revealSpeculationRulesInElements(ruleSet) {
+        assertNotNullOrUndefined(ruleSet.backendNodeId);
+        const target = SDK.TargetManager.TargetManager.instance().scopeTarget();
+        if (target === null) {
+            return;
+        }
+        await Common.Revealer.reveal(new SDK.DOMModel.DeferredDOMNode(target, ruleSet.backendNodeId));
+    }
+    async #revealSpeculationRulesInNetwork(ruleSet) {
+        assertNotNullOrUndefined(ruleSet.requestId);
+        const request = SDK.TargetManager.TargetManager.instance()
+            .scopeTarget()
+            ?.model(SDK.NetworkManager.NetworkManager)
+            ?.requestForId(ruleSet.requestId) ||
+            null;
+        if (request === null) {
+            return;
+        }
+        const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.PREVIEW */, { clearFilter: false });
+        await Common.Revealer.reveal(requestLocation);
+    }
+    async #revealAttemptViewWithFilter(ruleSet) {
+        await Common.Revealer.reveal(new PreloadingHelper.PreloadingForward.AttemptViewWithFilter(ruleSet.id));
+    }
     #render() {
         if (this.#data === null) {
             return;
         }
-        const reportsGridData = {
-            columns: [
-                {
-                    id: 'rule-set',
-                    title: i18nString(UIStrings.ruleSet),
-                    widthWeighting: 20,
-                    hideable: false,
-                    visible: true,
-                    sortable: true,
-                },
-                {
-                    id: 'status',
-                    title: i18nString(UIStrings.status),
-                    widthWeighting: 80,
-                    hideable: false,
-                    visible: true,
-                    sortable: true,
-                },
-            ],
-            rows: this.#buildReportRows(),
-            striped: true,
-        };
+        const { rows, pageURL } = this.#data;
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(html `
-      <div class="ruleset-container"
-      jslog=${VisualLogging.pane('preloading-rules')}>
-        <devtools-data-grid-controller .data=${reportsGridData}></devtools-data-grid-controller>
-      </div>
-    `, this.#shadow, { host: this });
+        Lit.render(html `
+        <div class="ruleset-container" jslog=${VisualLogging.pane('preloading-rules')}>
+          <devtools-data-grid striped @select=${this.#onRowSelected}>
+            <table>
+              <tr>
+                <th id="rule-set" weight="20" sortable>
+                  ${i18nString(UIStrings.ruleSet)}
+                </th>
+                <th id="status" weight="80" sortable>
+                  ${i18nString(UIStrings.status)}
+                </th>
+              </tr>
+              ${rows.map(({ ruleSet, preloadsStatusSummary }) => {
+            const location = PreloadingString.ruleSetLocationShort(ruleSet, pageURL);
+            const revealInElements = ruleSet.backendNodeId !== undefined;
+            const revealInNetwork = ruleSet.url !== undefined && ruleSet.requestId;
+            return html `
+                  <tr data-id=${ruleSet.id}>
+                    <td>
+                      ${revealInElements || revealInNetwork ? html `
+                        <button class="link" role="link"
+                            @click=${() => this.#revealSpeculationRules(ruleSet)}
+                            title=${revealInElements ? i18nString(UIStrings.clickToOpenInElementsPanel)
+                : i18nString(UIStrings.clickToOpenInNetworkPanel)}
+                            style=${styleMap({
+                border: 'none',
+                background: 'none',
+                color: 'var(--icon-link)',
+                cursor: 'pointer',
+                'text-decoration': 'underline',
+                'padding-inline-start': '0',
+                'padding-inline-end': '0',
+            })}
+                            jslog=${VisualLogging
+                .action(revealInElements ? 'reveal-in-elements' : 'reveal-in-network')
+                .track({ click: true })}
+                          >
+                            <devtools-icon name=${revealInElements ? 'code-circle' : 'arrow-up-down-circle'}
+                              style=${styleMap({
+                color: 'var(--icon-link)',
+                width: '16px',
+                height: '16px',
+                'vertical-align': 'sub',
+            })}
+                            ></devtools-icon>
+                            ${location}
+                          </button>`
+                : location}
+                  </td>
+                  <td>
+                    ${ruleSet.errorType !== undefined ? html `
+                      <span style=${styleMap({ color: 'var(--sys-color-error)' })}>
+                        ${i18nString(UIStrings.errors, { errorCount: 1 })}
+                      </span>` : ''}
+                    ${ruleSet.errorType !== "SourceIsNotJsonObject" /* Protocol.Preload.RuleSetErrorType.SourceIsNotJsonObject */ ? html `
+                      <button class="link" role="link"
+                        @click=${() => this.#revealAttemptViewWithFilter(ruleSet)}
+                        title=${i18nString(UIStrings.buttonRevealPreloadsAssociatedWithRuleSet)}
+                        style=${styleMap({
+                color: 'var(--sys-color-primary)',
+                'text-decoration': 'underline',
+                cursor: 'pointer',
+                border: 'none',
+                background: 'none',
+                'padding-inline-start': '0',
+                'padding-inline-end': '0',
+            })}
+                        jslog=${VisualLogging.action('reveal-preloads').track({ click: true })}>
+                        ${preloadsStatusSummary}
+                      </button>` : ''}
+                  </td>
+                </tr>
+              `;
+        })}
+            </table>
+          </devtools-data-grid>
+        </div>
+      `, this.#shadow, { host: this });
         // clang-format on
     }
-    #buildReportRows() {
-        assertNotNullOrUndefined(this.#data);
-        const pageURL = this.#data.pageURL;
-        return this.#data.rows.map(row => ({
-            cells: [
-                { columnId: 'id', value: row.ruleSet.id },
-                {
-                    columnId: 'rule-set',
-                    value: '',
-                    renderer: () => ruleSetRenderer(row.ruleSet, pageURL),
-                },
-                {
-                    columnId: 'status',
-                    value: row.preloadsStatusSummary,
-                    renderer: preloadsStatusSummary => statusRenderer(preloadsStatusSummary, row.ruleSet),
-                },
-            ],
-        }));
+    #onRowSelected(event) {
+        const ruleSetId = event.detail.dataset.id;
+        if (ruleSetId !== undefined) {
+            this.dispatchEvent(new CustomEvent('select', { detail: ruleSetId }));
+        }
     }
 }
 customElements.define('devtools-resources-ruleset-grid', RuleSetGrid);
-function ruleSetRenderer(ruleSet, pageURL) {
-    function ruleSetRendererInnerDocument(ruleSet, location) {
-        assertNotNullOrUndefined(ruleSet.backendNodeId);
-        const revealSpeculationRulesInElements = async () => {
-            assertNotNullOrUndefined(ruleSet.backendNodeId);
-            const target = SDK.TargetManager.TargetManager.instance().scopeTarget();
-            if (target === null) {
-                return;
-            }
-            await Common.Revealer.reveal(new SDK.DOMModel.DeferredDOMNode(target, ruleSet.backendNodeId));
-        };
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
-        return html `
-      <button class="link" role="link"
-        @click=${revealSpeculationRulesInElements}
-        title=${i18nString(UIStrings.clickToOpenInElementsPanel)}
-        style=${LitHtml.Directives.styleMap({
-            border: 'none',
-            background: 'none',
-            color: 'var(--icon-link)',
-            cursor: 'pointer',
-            'text-decoration': 'underline',
-            'padding-inline-start': '0',
-            'padding-inline-end': '0',
-        })}
-        jslog=${VisualLogging.action('reveal-in-elements').track({ click: true })}
-      >
-        <devtools-icon
-          .data=${{
-            iconName: 'code-circle',
-            color: 'var(--icon-link)',
-            width: '16px',
-            height: '16px',
-        }}
-          style=${LitHtml.Directives.styleMap({
-            'vertical-align': 'sub',
-        })}
-        >
-        </devtools-icon>
-        ${location}
-      </button>
-    `;
-        // clang-format on
-    }
-    function ruleSetRendererOutOfDocument(ruleSet, location) {
-        assertNotNullOrUndefined(ruleSet.url);
-        assertNotNullOrUndefined(ruleSet.requestId);
-        const revealSpeculationRulesInNetwork = async () => {
-            assertNotNullOrUndefined(ruleSet.requestId);
-            const request = SDK.TargetManager.TargetManager.instance()
-                .scopeTarget()
-                ?.model(SDK.NetworkManager.NetworkManager)
-                ?.requestForId(ruleSet.requestId) ||
-                null;
-            if (request === null) {
-                return;
-            }
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.PREVIEW */, { clearFilter: false });
-            await Common.Revealer.reveal(requestLocation);
-        };
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
-        return html `
-      <button class="link" role="link"
-        @click=${revealSpeculationRulesInNetwork}
-        title=${i18nString(UIStrings.clickToOpenInNetworkPanel)}
-        style=${LitHtml.Directives.styleMap({
-            border: 'none',
-            background: 'none',
-            color: 'var(--icon-link)',
-            cursor: 'pointer',
-            'text-decoration': 'underline',
-            'padding-inline-start': '0',
-            'padding-inline-end': '0',
-        })}
-      >
-        <devtools-icon
-         .data=${{
-            iconName: 'arrow-up-down-circle',
-            color: 'var(--icon-link)',
-            width: '16px',
-            height: '16px',
-        }}
-          style=${LitHtml.Directives.styleMap({
-            'vertical-align': 'sub',
-        })}
-        >
-        </devtools-icon>
-        ${location}
-      </button>
-    `;
-        // clang-format on
-    }
-    const location = PreloadingString.ruleSetLocationShort(ruleSet, pageURL);
-    if (ruleSet.backendNodeId !== undefined) {
-        return ruleSetRendererInnerDocument(ruleSet, location);
-    }
-    if (ruleSet.url !== undefined && ruleSet.requestId) {
-        return ruleSetRendererOutOfDocument(ruleSet, location);
-    }
-    return html `${location}`;
-}
-function statusRenderer(preloadsStatusSummary, ruleSet) {
-    function counts(preloadsStatusSummary, ruleSet) {
-        const revealAttemptViewWithFilter = async () => {
-            await Common.Revealer.reveal(new PreloadingHelper.PreloadingForward.AttemptViewWithFilter(ruleSet.id));
-        };
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
-        return html `
-      <button class="link" role="link"
-        @click=${revealAttemptViewWithFilter}
-        title=${i18nString(UIStrings.buttonRevealPreloadsAssociatedWithRuleSet)}
-        style=${LitHtml.Directives.styleMap({
-            color: 'var(--sys-color-primary)',
-            'text-decoration': 'underline',
-            cursor: 'pointer',
-            border: 'none',
-            background: 'none',
-            'padding-inline-start': '0',
-            'padding-inline-end': '0',
-        })}
-        jslog=${VisualLogging.action('reveal-preloads').track({ click: true })}>
-        ${preloadsStatusSummary}
-      </button>
-    `;
-        // clang-format on
-    }
-    function errors() {
-        const nErrors = i18nString(UIStrings.errors, { errorCount: 1 });
-        return html `
-      <span
-        style=${LitHtml.Directives.styleMap({
-            color: 'var(--sys-color-error)',
-        })}
-      >
-        ${nErrors}
-      </span>
-    `;
-    }
-    switch (ruleSet.errorType) {
-        case undefined:
-            return counts(preloadsStatusSummary, ruleSet);
-        case "SourceIsNotJsonObject" /* Protocol.Preload.RuleSetErrorType.SourceIsNotJsonObject */:
-            return errors();
-        case "InvalidRulesSkipped" /* Protocol.Preload.RuleSetErrorType.InvalidRulesSkipped */:
-            return html `${errors()} ${counts(preloadsStatusSummary, ruleSet)}`;
-    }
-}
 //# sourceMappingURL=RuleSetGrid.js.map

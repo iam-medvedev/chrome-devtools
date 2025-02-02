@@ -36,7 +36,6 @@
     "../../../../../../../front_end/panels/recorder/components/RecordingView.ts",
     "../../../../../../../front_end/panels/recorder/components/ReplaySection.ts",
     "../../../../../../../front_end/panels/recorder/components/SelectButton.ts",
-    "../../../../../../../front_end/panels/recorder/components/StartView.ts",
     "../../../../../../../front_end/panels/recorder/components/StepEditor.ts",
     "../../../../../../../front_end/panels/recorder/components/StepView.ts",
     "../../../../../../../front_end/panels/recorder/components/TimelineSection.ts",
@@ -108,7 +107,7 @@
       "path": "../../../ui/legacy/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/visual_logging/bundle-tsconfig.json"

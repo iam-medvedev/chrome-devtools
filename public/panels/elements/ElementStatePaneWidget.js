@@ -74,6 +74,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
     throttler;
     constructor() {
         super(true);
+        this.registerRequiredCSS(elementStatePaneWidgetStyles);
         this.contentElement.className = 'styles-element-state-pane';
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('element-states')}`);
         const inputs = [];
@@ -217,7 +218,6 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([elementStatePaneWidgetStyles]);
         this.update();
     }
     update() {

@@ -6,10 +6,13 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import networkRequestTooltipStyles from './networkRequestTooltip.css.js';
+import * as Lit from '../../../ui/lit/lit.js';
+import networkRequestTooltipStylesRaw from './networkRequestTooltip.css.js';
 import { colorForNetworkRequest, networkResourceCategory } from './Utils.js';
-const { html } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const networkRequestTooltipStyles = new CSSStyleSheet();
+networkRequestTooltipStyles.replaceSync(networkRequestTooltipStylesRaw.cssContent);
+const { html } = Lit;
 const MAX_URL_LENGTH = 60;
 const UIStrings = {
     /**
@@ -97,12 +100,12 @@ export class NetworkRequestTooltip extends HTMLElement {
         <span class="time">${i18n.TimeUtilities.formatMicroSecondsTime(queueing)}</span>
       </div>
       <div class="timings-row">
-        <span class="indicator" style=${LitHtml.Directives.styleMap(styleForWaiting)}></span>
+        <span class="indicator" style=${Lit.Directives.styleMap(styleForWaiting)}></span>
         ${i18nString(UIStrings.requestSentAndWaiting)}
         <span class="time">${i18n.TimeUtilities.formatMicroSecondsTime(requestPlusWaiting)}</span>
       </div>
       <div class="timings-row">
-        <span class="indicator" style=${LitHtml.Directives.styleMap(styleForDownloading)}></span>
+        <span class="indicator" style=${Lit.Directives.styleMap(styleForDownloading)}></span>
         ${i18nString(UIStrings.contentDownloading)}
         <span class="time">${i18n.TimeUtilities.formatMicroSecondsTime(download)}</span>
       </div>
@@ -128,17 +131,17 @@ export class NetworkRequestTooltip extends HTMLElement {
         <div class="url url--host">${url.origin.replace('https://', '')}</div>
 
         <div class="divider"></div>
-        <div class="network-category"><span class="network-category-chip" style=${LitHtml.Directives.styleMap(chipStyle)}></span>${networkResourceCategory(this.#networkRequest)}</div>
+        <div class="network-category"><span class="network-category-chip" style=${Lit.Directives.styleMap(chipStyle)}></span>${networkResourceCategory(this.#networkRequest)}</div>
         <div class="priority-row">${i18nString(UIStrings.priority)}: ${NetworkRequestTooltip.renderPriorityValue(this.#networkRequest)}</div>
         ${Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#networkRequest) ?
-            html `<div class="render-blocking"> ${i18nString(UIStrings.renderBlocking)} </div>` : LitHtml.nothing}
+            html `<div class="render-blocking"> ${i18nString(UIStrings.renderBlocking)} </div>` : Lit.nothing}
         <div class="divider"></div>
 
         ${NetworkRequestTooltip.renderTimings(this.#networkRequest)}
       </div>
     `;
         // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-performance-network-request-tooltip', NetworkRequestTooltip);

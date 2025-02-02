@@ -1,5 +1,5 @@
 import * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 export declare class EventReferenceClick extends Event {
     event: Trace.Types.Events.Event;
     static readonly eventName = "eventreferenceclick";
@@ -12,13 +12,13 @@ declare class EventRef extends HTMLElement {
     set event(event: Trace.Types.Events.Event);
 }
 type EventRefSupportedEvents = Trace.Types.Events.SyntheticNetworkRequest;
-export declare function eventRef(event: EventRefSupportedEvents): LitHtml.TemplateResult;
+export declare function eventRef(event: EventRefSupportedEvents): Lit.TemplateResult;
 declare class ImageRef extends HTMLElement {
     #private;
     connectedCallback(): void;
     set request(request: Trace.Types.Events.SyntheticNetworkRequest);
 }
-export declare function imageRef(request: Trace.Types.Events.SyntheticNetworkRequest): LitHtml.TemplateResult;
+export declare function imageRef(request: Trace.Types.Events.SyntheticNetworkRequest): Lit.TemplateResult;
 declare global {
     interface GlobalEventHandlersEventMap {
         [EventReferenceClick.eventName]: EventReferenceClick;

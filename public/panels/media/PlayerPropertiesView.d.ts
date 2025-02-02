@@ -114,6 +114,5 @@ export declare class PlayerPropertiesView extends UI.Widget.VBox {
     formatTime(seconds: string | number): string;
     formatFileSize(bytes: string): string;
     populateAttributesAndElements(): void;
-    wasShown(): void;
 }
 export {};

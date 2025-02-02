@@ -20,19 +20,15 @@ export class TargetCrashedScreen extends VBox {
     hideCallback;
     constructor(hideCallback) {
         super(true);
+        this.registerRequiredCSS(targetCrashedScreenStyles);
         this.contentElement.createChild('div', 'message').textContent =
             i18nString(UIStrings.devtoolsWasDisconnectedFromThe);
         this.contentElement.createChild('div', 'message').textContent =
             i18nString(UIStrings.oncePageIsReloadedDevtoolsWill);
         this.hideCallback = hideCallback;
     }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([targetCrashedScreenStyles]);
-    }
     willHide() {
         this.hideCallback.call(null);
-        super.willHide();
     }
 }
 //# sourceMappingURL=TargetCrashedScreen.js.map

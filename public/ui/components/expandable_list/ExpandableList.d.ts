@@ -1,6 +1,6 @@
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 export interface ExpandableListData {
-    rows: LitHtml.TemplateResult[];
+    rows: Lit.TemplateResult[];
     title?: string;
 }
 export declare class ExpandableList extends HTMLElement {

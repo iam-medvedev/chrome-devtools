@@ -1,11 +1,11 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* Some view input callbacks might be handled outside of LitHtml and we
+/* Some view input callbacks might be handled outside of Lit and we
    bind all of them upfront. We disable the lit_html_host_this since we
-   do not define any host for LitHtml.render and the rule is not happy
+   do not define any host for Lit.render and the rule is not happy
    about it. */
-/* eslint-disable rulesdir/lit-html-host-this */
+/* eslint-disable rulesdir/lit-host-this */
 import '../../../ui/components/icon_button/icon_button.js';
 import './StepEditor.js';
 import './TimelineSection.js';
@@ -14,11 +14,14 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import stepViewStyles from './stepView.css.js';
-const { html } = LitHtml;
+import stepViewStylesRaw from './stepView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const stepViewStyles = new CSSStyleSheet();
+stepViewStyles.replaceSync(stepViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Title for the step type that configures the viewport
@@ -310,14 +313,14 @@ function viewFunction(input, _output, target) {
     });
     const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview();
     // clang-format off
-    LitHtml.render(html `
+    Lit.render(html `
     <devtools-timeline-section .data=${{
         isFirstSection: input.isFirstSection,
         isLastSection: input.isLastSection,
         isStartOfGroup: input.isStartOfGroup,
         isEndOfGroup: input.isEndOfGroup,
         isSelected: input.isSelected,
-    }} @contextmenu=${input.onStepContextMenu} data-step-index=${input.stepIndex} data-section-index=${input.sectionIndex} class=${LitHtml.Directives.classMap(stepClasses)}>
+    }} @contextmenu=${input.onStepContextMenu} data-step-index=${input.stepIndex} data-section-index=${input.sectionIndex} class=${Lit.Directives.classMap(stepClasses)}>
       <svg slot="icon" width="24" height="24" height="100%" class="icon">
         <circle class="circle-icon"/>
         <g class="error-icon">

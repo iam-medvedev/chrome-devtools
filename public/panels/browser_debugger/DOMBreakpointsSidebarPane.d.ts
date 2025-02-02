@@ -18,7 +18,6 @@ export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     private checkboxClicked;
     flavorChanged(_object: Object | null): void;
     update(): void;
-    wasShown(): void;
 }
 export declare class ContextMenuProvider implements UI.ContextMenu.Provider<SDK.DOMModel.DOMNode> {
     appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;

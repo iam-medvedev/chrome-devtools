@@ -7,9 +7,9 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../../ui/legacy/components/utils/utils.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Title of a list to provide related stack trace data
@@ -27,7 +27,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/ForcedReflow.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ForcedReflow extends BaseInsightComponent {
-    static litTagName = LitHtml.StaticHtml.literal `devtools-performance-forced-reflow`;
+    static litTagName = Lit.StaticHtml.literal `devtools-performance-forced-reflow`;
     internalName = 'forced-reflow';
     #linkifyUrl(callFrame) {
         const linkifier = new LegacyComponents.Linkifier.Linkifier();
@@ -48,7 +48,7 @@ export class ForcedReflow extends BaseInsightComponent {
     }
     renderContent() {
         if (!this.model || !this.model.topLevelFunctionCallData) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const topLevelFunctionCallData = this.model.topLevelFunctionCallData.topLevelFunctionCall;
         const totalReflowTime = this.model.topLevelFunctionCallData.totalReflowTime;

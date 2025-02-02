@@ -7,11 +7,14 @@ import './ControlButton.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Input from '../../../ui/components/input/input.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import createRecordingViewStyles from './createRecordingView.css.js';
-const { html, Directives: { ifDefined } } = LitHtml;
+import createRecordingViewStylesRaw from './createRecordingView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const createRecordingViewStyles = new CSSStyleSheet();
+createRecordingViewStyles.replaceSync(createRecordingViewStylesRaw.cssContent);
+const { html, Directives: { ifDefined } } = Lit;
 const UIStrings = {
     /**
      * @description The label for the input where the user enters a name for the new recording.
@@ -200,7 +203,7 @@ export class CreateRecordingView extends HTMLElement {
             ],
         ]);
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
         <div class="wrapper">
           <div class="header-wrapper">
             <h1>${i18nString(UIStrings.createRecording)}</h1>

@@ -64,7 +64,6 @@ export declare class BackgroundServiceView extends UI.Widget.VBox {
      * Saves all currently displayed events in a file (JSON format).
      */
     private saveToFile;
-    wasShown(): void;
 }
 export declare class EventDataNode extends DataGrid.DataGrid.DataGridNode<EventData> {
     private readonly eventMetadata;

@@ -4,7 +4,6 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { type AnchorFunctionMatch, AnchorFunctionMatcher, AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type CSSWideKeywordMatch, type FlexGridMatch, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type PositionAnchorMatch, PositionAnchorMatcher, type PositionTryMatch, PositionTryMatcher, type ShadowMatch, ShadowMatcher, ShadowType } from './PropertyMatchers.js';
 import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
 import type { StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
@@ -19,17 +18,17 @@ interface StylePropertyTreeElementParams {
     overloaded: boolean;
     newProperty: boolean;
 }
-export declare class FlexGridRenderer implements MatchRenderer<FlexGridMatch> {
+export declare class FlexGridRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.FlexGridMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    matcher(): SDK.CSSPropertyParser.Matcher<FlexGridMatch>;
-    render(match: FlexGridMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.FlexGridMatch>;
+    render(match: SDK.CSSPropertyParserMatchers.FlexGridMatch, context: RenderingContext): Node[];
 }
-export declare class CSSWideKeywordRenderer implements MatchRenderer<CSSWideKeywordMatch> {
+export declare class CSSWideKeywordRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    matcher(): SDK.CSSPropertyParser.Matcher<CSSWideKeywordMatch>;
-    render(match: CSSWideKeywordMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch>;
+    render(match: SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch, context: RenderingContext): Node[];
 }
 export declare class VariableRenderer implements MatchRenderer<SDK.CSSPropertyParser.VariableMatch> {
     #private;
@@ -40,49 +39,49 @@ export declare class VariableRenderer implements MatchRenderer<SDK.CSSPropertyPa
     computedText(match: SDK.CSSPropertyParser.VariableMatch): string | null;
     render(match: SDK.CSSPropertyParser.VariableMatch, context: RenderingContext): Node[];
 }
-export declare class LinearGradientRenderer implements MatchRenderer<LinearGradientMatch> {
-    matcher(): SDK.CSSPropertyParser.Matcher<LinearGradientMatch>;
-    render(match: LinearGradientMatch, context: RenderingContext): Node[];
+export declare class LinearGradientRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LinearGradientMatch> {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LinearGradientMatch>;
+    render(match: SDK.CSSPropertyParserMatchers.LinearGradientMatch, context: RenderingContext): Node[];
 }
-export declare class ColorRenderer implements MatchRenderer<ColorMatch> {
+export declare class ColorRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.ColorMatch> {
     #private;
     private readonly treeElement;
     constructor(treeElement: StylePropertyTreeElement);
-    matcher(): ColorMatcher;
-    render(match: ColorMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.ColorMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.ColorMatch, context: RenderingContext): Node[];
     renderColorSwatch(color: Common.Color.Color | undefined, valueChild?: Node): InlineEditor.ColorSwatch.ColorSwatch;
 }
-export declare class LightDarkColorRenderer implements MatchRenderer<LightDarkColorMatch> {
+export declare class LightDarkColorRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LightDarkColorMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    matcher(): LightDarkColorMatcher;
-    render(match: LightDarkColorMatch, context: RenderingContext): Node[];
-    applyColorScheme(match: LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement, lightControls: SDK.CSSPropertyParser.CSSControlMap, darkControls: SDK.CSSPropertyParser.CSSControlMap): Promise<void>;
+    matcher(): SDK.CSSPropertyParserMatchers.LightDarkColorMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext): Node[];
+    applyColorScheme(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement, lightControls: SDK.CSSPropertyParser.CSSControlMap, darkControls: SDK.CSSPropertyParser.CSSControlMap): Promise<void>;
 }
-export declare class ColorMixRenderer implements MatchRenderer<ColorMixMatch> {
+export declare class ColorMixRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.ColorMixMatch> {
     #private;
     constructor(pane: StylesSidebarPane);
-    render(match: ColorMixMatch, context: RenderingContext): Node[];
-    matcher(): ColorMixMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.ColorMixMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.ColorMixMatcher;
 }
-export declare class AngleRenderer implements MatchRenderer<AngleMatch> {
+export declare class AngleRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.AngleMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    render(match: AngleMatch, context: RenderingContext): Node[];
-    matcher(): AngleMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.AngleMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.AngleMatcher;
 }
-export declare class LinkableNameRenderer implements MatchRenderer<LinkableNameMatch> {
+export declare class LinkableNameRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LinkableNameMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    render(match: LinkableNameMatch): Node[];
-    matcher(): LinkableNameMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.LinkableNameMatch): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.LinkableNameMatcher;
 }
-export declare class BezierRenderer implements MatchRenderer<BezierMatch> {
+export declare class BezierRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.BezierMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    render(match: BezierMatch): Node[];
-    renderSwatch(match: BezierMatch): Node;
-    matcher(): BezierMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.BezierMatch): Node[];
+    renderSwatch(match: SDK.CSSPropertyParserMatchers.BezierMatch): Node;
+    matcher(): SDK.CSSPropertyParserMatchers.BezierMatcher;
 }
 export declare const enum ShadowPropertyType {
     X = "x",
@@ -100,7 +99,7 @@ interface ShadowProperty {
 }
 export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShadowModel {
     #private;
-    constructor(shadowType: ShadowType, properties: ShadowProperty[], context: RenderingContext);
+    constructor(shadowType: SDK.CSSPropertyParserMatchers.ShadowType, properties: ShadowProperty[], context: RenderingContext);
     isBoxShadow(): boolean;
     inset(): boolean;
     offsetX(): InlineEditor.CSSShadowEditor.CSSLength;
@@ -114,42 +113,55 @@ export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShad
     setSpreadRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     renderContents(parent: HTMLElement): void;
 }
-export declare class ShadowRenderer implements MatchRenderer<ShadowMatch> {
+export declare class ShadowRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.ShadowMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    shadowModel(shadow: CodeMirror.SyntaxNode[], shadowType: ShadowType, context: RenderingContext): null | ShadowModel;
-    render(match: ShadowMatch, context: RenderingContext): Node[];
-    matcher(): ShadowMatcher;
+    shadowModel(shadow: CodeMirror.SyntaxNode[], shadowType: SDK.CSSPropertyParserMatchers.ShadowType, context: RenderingContext): null | ShadowModel;
+    render(match: SDK.CSSPropertyParserMatchers.ShadowMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.ShadowMatcher;
 }
-export declare class FontRenderer implements MatchRenderer<FontMatch> {
+export declare class FontRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.FontMatch> {
     readonly treeElement: StylePropertyTreeElement;
     constructor(treeElement: StylePropertyTreeElement);
-    render(match: FontMatch): Node[];
-    matcher(): FontMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.FontMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.FontMatcher;
 }
-export declare class GridTemplateRenderer implements MatchRenderer<GridTemplateMatch> {
-    render(match: GridTemplateMatch, context: RenderingContext): Node[];
-    matcher(): GridTemplateMatcher;
+export declare class GridTemplateRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.GridTemplateMatch> {
+    render(match: SDK.CSSPropertyParserMatchers.GridTemplateMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.GridTemplateMatcher;
 }
-export declare class AnchorFunctionRenderer implements MatchRenderer<AnchorFunctionMatch> {
+export declare class LengthRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LengthMatch> {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement);
+    render(match: SDK.CSSPropertyParserMatchers.LengthMatch, _context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.LengthMatcher;
+}
+export declare class SelectFunctionRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.SelectFunctionMatch> {
+    private readonly treeElement;
+    constructor(treeElement: StylePropertyTreeElement);
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.SelectFunctionMatch>;
+    render(match: SDK.CSSPropertyParserMatchers.SelectFunctionMatch, context: RenderingContext): Node[];
+    applySelectFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
+}
+export declare class AnchorFunctionRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     anchorDecoratedForTest(): void;
-    render(match: AnchorFunctionMatch, context: RenderingContext): Node[];
-    matcher(): AnchorFunctionMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.AnchorFunctionMatcher;
 }
-export declare class PositionAnchorRenderer implements MatchRenderer<PositionAnchorMatch> {
+export declare class PositionAnchorRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.PositionAnchorMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     anchorDecoratedForTest(): void;
-    render(match: PositionAnchorMatch): Node[];
-    matcher(): PositionAnchorMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.PositionAnchorMatch): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.PositionAnchorMatcher;
 }
-export declare class PositionTryRenderer implements MatchRenderer<PositionTryMatch> {
+export declare class PositionTryRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.PositionTryMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
-    render(match: PositionTryMatch, context: RenderingContext): Node[];
-    matcher(): PositionTryMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.PositionTryMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.PositionTryMatcher;
 }
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;

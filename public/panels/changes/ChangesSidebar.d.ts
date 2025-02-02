@@ -22,7 +22,6 @@ export declare class ChangesSidebar extends ChangesSidebar_base {
     private uiSourceCodeMofiedStatusChanged;
     private removeUISourceCode;
     private addUISourceCode;
-    wasShown(): void;
 }
 export declare const enum Events {
     SELECTED_UI_SOURCE_CODE_CHANGED = "SelectedUISourceCodeChanged"

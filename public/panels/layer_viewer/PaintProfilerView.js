@@ -89,6 +89,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
     updateImageTimer;
     constructor(showImageCallback) {
         super(true);
+        this.registerRequiredCSS(paintProfilerStyles);
         this.contentElement.classList.add('paint-profiler-overview');
         this.canvasContainer = this.contentElement.createChild('div', 'paint-profiler-canvas-container');
         this.progressBanner = this.contentElement.createChild('div', 'full-widget-dimmed-banner hidden');
@@ -363,10 +364,6 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         this.profiles = null;
         this.selectionWindowInternal.reset();
         this.selectionWindowInternal.setResizeEnabled(false);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([paintProfilerStyles]);
     }
 }
 export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {

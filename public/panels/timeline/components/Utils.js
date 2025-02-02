@@ -55,15 +55,16 @@ export function networkResourceCategory(request) {
             //     TextTrack, XHR, Fetch, Prefetch, EventSource, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
             // Traces before Feb 2024 don't have `resourceType`.
             // We'll keep mimeType logic for a couple years to avoid grey network requests for last year's traces.
-            return mimeType.endsWith('/css') ? NetworkCategory.CSS :
-                mimeType.endsWith('javascript') ? NetworkCategory.JS :
-                    mimeType.startsWith('image/') ? NetworkCategory.IMG :
-                        mimeType.startsWith('audio/') || mimeType.startsWith('video/') ? NetworkCategory.MEDIA :
-                            mimeType.startsWith('font/') || mimeType.includes('font-') ? NetworkCategory.FONT :
-                                mimeType === 'application/wasm' ? NetworkCategory.WASM :
-                                    mimeType.startsWith('text/') ? NetworkCategory.DOC :
-                                        // Ultimate fallback:
-                                        NetworkCategory.OTHER;
+            return mimeType === undefined ? NetworkCategory.OTHER :
+                mimeType.endsWith('/css') ? NetworkCategory.CSS :
+                    mimeType.endsWith('javascript') ? NetworkCategory.JS :
+                        mimeType.startsWith('image/') ? NetworkCategory.IMG :
+                            mimeType.startsWith('audio/') || mimeType.startsWith('video/') ? NetworkCategory.MEDIA :
+                                mimeType.startsWith('font/') || mimeType.includes('font-') ? NetworkCategory.FONT :
+                                    mimeType === 'application/wasm' ? NetworkCategory.WASM :
+                                        mimeType.startsWith('text/') ? NetworkCategory.DOC :
+                                            // Ultimate fallback:
+                                            NetworkCategory.OTHER;
     }
 }
 export function colorForNetworkCategory(category) {
@@ -221,4 +222,41 @@ export var NumberWithUnit;
     }
     NumberWithUnit.formatMicroSecondsAsMillisFixed = formatMicroSecondsAsMillisFixed;
 })(NumberWithUnit || (NumberWithUnit = {}));
+/**
+ * Returns if the local value is better/worse/similar compared to field.
+ */
+export function determineCompareRating(metric, localValue, fieldValue) {
+    let thresholds;
+    let compareThreshold;
+    switch (metric) {
+        case 'LCP':
+            thresholds = LCP_THRESHOLDS;
+            compareThreshold = 1000;
+            break;
+        case 'CLS':
+            thresholds = CLS_THRESHOLDS;
+            compareThreshold = 0.1;
+            break;
+        case 'INP':
+            thresholds = INP_THRESHOLDS;
+            compareThreshold = 200;
+            break;
+        default:
+            Platform.assertNever(metric, `Unknown metric: ${metric}`);
+    }
+    const localRating = rateMetric(localValue, thresholds);
+    const fieldRating = rateMetric(fieldValue, thresholds);
+    // It's not worth highlighting a significant difference when both #s
+    // are rated "good"
+    if (localRating === 'good' && fieldRating === 'good') {
+        return 'similar';
+    }
+    if (localValue - fieldValue > compareThreshold) {
+        return 'worse';
+    }
+    if (fieldValue - localValue > compareThreshold) {
+        return 'better';
+    }
+    return 'similar';
+}
 //# sourceMappingURL=Utils.js.map

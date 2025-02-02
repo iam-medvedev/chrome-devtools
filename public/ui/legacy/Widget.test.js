@@ -113,5 +113,20 @@ describe('Widget', () => {
             await widget.updateComplete;
         });
     });
+    describe('WidgetElement', () => {
+        it('renders WidgetElement into DOM without a root element', async () => {
+            const widget = new UI.Widget.WidgetElement();
+            class WidgetInstance extends UI.Widget.Widget {
+                constructor(element) {
+                    super(false, false, element);
+                }
+                performUpdate() {
+                    // no-op
+                }
+            }
+            widget.widgetConfig = UI.Widget.widgetConfig(WidgetInstance, {});
+            renderElementIntoDOM(widget);
+        });
+    });
 });
 //# sourceMappingURL=Widget.test.js.map

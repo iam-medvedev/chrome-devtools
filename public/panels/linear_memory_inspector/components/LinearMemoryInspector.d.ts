@@ -1,11 +1,11 @@
 import './LinearMemoryValueInterpreter.js';
 import './LinearMemoryHighlightChipList.js';
-import type { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 import './LinearMemoryViewer.js';
+import type { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 import type { HighlightInfo } from './LinearMemoryViewerUtils.js';
 import { Endianness, type ValueType, type ValueTypeMode } from './ValueInterpreterDisplayUtils.js';
 export interface LinearMemoryInspectorData {
-    memory: Uint8Array;
+    memory: Uint8Array<ArrayBuffer>;
     address: number;
     memoryOffset: number;
     outerMemoryLength: number;

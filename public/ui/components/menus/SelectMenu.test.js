@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line rulesdir/es-modules-import
 import { describeWithLocale, } from '../../../testing/EnvironmentHelpers.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import { html } from '../../lit/lit.js';
 import * as Dialogs from '../dialogs/dialogs.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Menus from './menus.js';
-const { html } = LitHtml;
 async function createMenu() {
     const menuItems = [
         {

@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
-import * as LitHtml from '../../../lit-html/lit-html.js';
+import * as Lit from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
-import linkSwatchStyles from './linkSwatch.css.js';
+import linkSwatchStylesRaw from './linkSwatch.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linkSwatchStyles = new CSSStyleSheet();
+linkSwatchStyles.replaceSync(linkSwatchStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Text displayed in a tooltip shown when hovering over a var() CSS function in the Styles pane when the custom property in this function does not exist. The parameter is the name of the property.
@@ -15,7 +18,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/inline_editor/LinkSwatch.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html, Directives: { ifDefined, classMap } } = LitHtml;
+const { render, html, Directives: { ifDefined, classMap } } = Lit;
 class BaseLinkSwatch extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     onLinkActivate = () => undefined;

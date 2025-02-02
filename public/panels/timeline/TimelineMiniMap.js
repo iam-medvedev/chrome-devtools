@@ -29,6 +29,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     constructor() {
         super();
+        this.registerRequiredCSS(miniMapStyles);
         this.element.classList.add('timeline-minimap');
         this.#breadcrumbsUI = new TimelineComponents.BreadcrumbsUI.BreadcrumbsUI();
         this.element.prepend(this.#breadcrumbsUI);
@@ -167,10 +168,6 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             initialBreadcrumb: this.breadcrumbs.initialBreadcrumb,
             activeBreadcrumb: breadcrumb,
         };
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([miniMapStyles]);
     }
     reset() {
         this.#data = null;

@@ -15,7 +15,6 @@ export declare abstract class CategorizedBreakpointsSidebarPane extends UI.Widge
     private categoryCheckboxClicked;
     protected toggleBreakpoint(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean): void;
     private breakpointCheckboxClicked;
-    wasShown(): void;
 }
 export interface Item {
     element: UI.TreeOutline.TreeElement;

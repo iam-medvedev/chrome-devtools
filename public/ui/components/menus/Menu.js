@@ -4,13 +4,22 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Dialogs from '../dialogs/dialogs.js';
-import menuStyles from './menu.css.js';
-import menuGroupStyles from './menuGroup.css.js';
-import menuItemStyles from './menuItem.css.js';
-const { html } = LitHtml;
+import menuStylesRaw from './menu.css.js';
+import menuGroupStylesRaw from './menuGroup.css.js';
+import menuItemStylesRaw from './menuItem.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const menuStyles = new CSSStyleSheet();
+menuStyles.replaceSync(menuStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const menuGroupStyles = new CSSStyleSheet();
+menuGroupStyles.replaceSync(menuGroupStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const menuItemStyles = new CSSStyleSheet();
+menuItemStyles.replaceSync(menuItemStylesRaw.cssContent);
+const { html } = Lit;
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -300,7 +309,7 @@ export class Menu extends HTMLElement {
             throw new Error('Menu render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
         @forceddialogclose=${this.#closeDialog}
@@ -369,8 +378,8 @@ export class MenuItem extends HTMLElement {
             throw new Error('MenuItem render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
-      <span class=${LitHtml.Directives.classMap({
+        Lit.render(html `
+      <span class=${Lit.Directives.classMap({
             'menu-item': true,
             'is-selected-item': this.selected,
             'is-disabled-item': this.disabled,
@@ -404,7 +413,7 @@ export class MenuGroup extends HTMLElement {
             throw new Error('MenuGroup render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <span class="menu-group">
         <span class="menu-group-label">${this.name}</span>
         <slot></slot>

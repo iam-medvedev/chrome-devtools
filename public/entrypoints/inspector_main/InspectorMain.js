@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as MobileThrottling from '../../panels/mobile_throttling/mobile_throttling.js';
+import * as Security from '../../panels/security/security.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import nodeIconStyles from './nodeIcon.css.js';
@@ -98,6 +99,36 @@ export class InspectorMainImpl {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ReloadInspectedPage, ({ data: hard }) => {
             SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(hard);
         });
+        // Skip possibly showing the cookie control reload banner if devtools UI is not enabled or if there is an enterprise policy blocking third party cookies
+        if (!Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled ||
+            Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls?.managedBlockThirdPartyCookies ===
+                true) {
+            return;
+        }
+        // Third party cookie control settings according to the browser
+        const browserCookieControls = Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls;
+        // Devtools cookie controls settings
+        const cookieControlOverrideSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', undefined);
+        const gracePeriodMitigationDisabledSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', undefined);
+        const heuristicMitigationDisabledSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', undefined);
+        // If there are saved cookie control settings, check to see if they differ from the browser config. If they do, prompt a page reload so the user will see the cookie controls behavior.
+        if (cookieControlOverrideSetting.get() !== undefined) {
+            if (browserCookieControls?.thirdPartyCookieRestrictionEnabled !== cookieControlOverrideSetting.get()) {
+                Security.CookieControlsView.showInfobar();
+                return;
+            }
+            // If the devtools third-party cookie control is active, we also need to check if there's a discrepancy in the mitigation behavior.
+            if (cookieControlOverrideSetting.get()) {
+                if (browserCookieControls?.thirdPartyCookieMetadataEnabled === gracePeriodMitigationDisabledSetting.get()) {
+                    Security.CookieControlsView.showInfobar();
+                    return;
+                }
+                if (browserCookieControls?.thirdPartyCookieHeuristicsEnabled === heuristicMitigationDisabledSetting.get()) {
+                    Security.CookieControlsView.showInfobar();
+                    return;
+                }
+            }
+        }
     }
 }
 Common.Runnable.registerEarlyInitializationRunnable(InspectorMainImpl.instance);
@@ -130,7 +161,7 @@ export class NodeIndicator {
     #button;
     constructor() {
         const element = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [nodeIconStyles] });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: nodeIconStyles });
         this.#element = shadowRoot.createChild('div', 'node-icon');
         element.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
         this.#button = new UI.Toolbar.ToolbarItem(element);

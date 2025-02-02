@@ -42,7 +42,7 @@ export class ProgressIndicator {
     constructor(options = { showStopButton: true }) {
         this.element = document.createElement('div');
         this.element.classList.add('progress-indicator');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: [progressIndicatorStyles] });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: progressIndicatorStyles });
         this.contentElement = this.shadowRoot.createChild('div', 'progress-indicator-shadow-container');
         this.labelElement = this.contentElement.createChild('div', 'title');
         this.progressElement = this.contentElement.createChild('progress');

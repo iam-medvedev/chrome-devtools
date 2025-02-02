@@ -1,6 +1,6 @@
 import * as Host from '../../../core/host/host.js';
 import type * as Workspace from '../../../models/workspace/workspace.js';
-import type * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import type * as Lit from '../../../ui/lit/lit.js';
 import { type AgentOptions as BaseAgentOptions, AgentType, AiAgent, type ContextResponse, ConversationContext, type ParsedResponse, type RequestOptions, type ResponseData } from './AiAgent.js';
 export declare class ProjectContext extends ConversationContext<Workspace.Workspace.Project> {
     #private;
@@ -8,7 +8,7 @@ export declare class ProjectContext extends ConversationContext<Workspace.Worksp
     getOrigin(): string;
     getItem(): Workspace.Workspace.Project;
     getIcon(): HTMLElement;
-    getTitle(): string | ReturnType<typeof LitHtml.Directives.until>;
+    getTitle(): string | ReturnType<typeof Lit.Directives.until>;
 }
 export declare class PatchAgent extends AiAgent<Workspace.Workspace.Project> {
     #private;

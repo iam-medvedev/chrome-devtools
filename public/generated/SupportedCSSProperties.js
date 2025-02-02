@@ -2555,6 +2555,13 @@ export const generatedProperties = [
         "name": "interactivity"
     },
     {
+        "longhands": [
+            "interest-target-show-delay",
+            "interest-target-hide-delay"
+        ],
+        "name": "interest-target-delay"
+    },
+    {
         "name": "interest-target-hide-delay"
     },
     {

@@ -1,8 +1,8 @@
 import type * as Common from '../../core/common/common.js';
-import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
-import type * as Protocol from '../../generated/protocol.js';
 import type * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 export declare class NodeMainImpl implements Common.Runnable.Runnable {
     static instance(opts?: {
         forceNew: boolean | null;

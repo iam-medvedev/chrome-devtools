@@ -1,11 +1,11 @@
 import * as Platform from '../../../core/platform/platform.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 export type TreeNodeId = string;
 interface BaseTreeNode<TreeNodeDataType> {
     treeNodeData: TreeNodeDataType;
     renderer?: (node: TreeNode<TreeNodeDataType>, state: {
         isExpanded: boolean;
-    }) => LitHtml.TemplateResult;
+    }) => Lit.TemplateResult;
     id: TreeNodeId;
     jslogContext?: string;
 }
@@ -18,16 +18,16 @@ interface LeafNode<TreeNodeDataType> extends BaseTreeNode<TreeNodeDataType> {
 export type TreeNode<TreeNodeDataType> = TreeNodeWithChildren<TreeNodeDataType> | LeafNode<TreeNodeDataType>;
 export declare function isExpandableNode<TreeNodeDataType>(node: TreeNode<TreeNodeDataType>): node is TreeNodeWithChildren<TreeNodeDataType>;
 /**
- * This is a custom lit-html directive that lets us track the DOM nodes that Lit
+ * This is a custom lit directive that lets us track the DOM nodes that Lit
  * creates and maps them to the tree node that was given to us. This means we
  * can navigate between real DOM node and structural tree node easily in code.
  */
-declare class TrackDOMNodeToTreeNode extends LitHtml.Directive.Directive {
-    constructor(partInfo: LitHtml.Directive.PartInfo);
-    update(part: LitHtml.Directive.ElementPart, [weakMap, treeNode]: LitHtml.Directive.DirectiveParameters<this>): void;
+declare class TrackDOMNodeToTreeNode extends Lit.Directive.Directive {
+    constructor(partInfo: Lit.Directive.PartInfo);
+    update(part: Lit.Directive.ElementPart, [weakMap, treeNode]: Lit.Directive.DirectiveParameters<this>): void;
     render(_weakmap: WeakMap<HTMLLIElement, TreeNode<any>>, _treeNode: TreeNode<any>): void;
 }
-export declare const trackDOMNodeToTreeNode: (_weakmap: WeakMap<HTMLLIElement, TreeNode<any>>, _treeNode: TreeNode<any>) => LitHtml.Directive.DirectiveResult<typeof TrackDOMNodeToTreeNode>;
+export declare const trackDOMNodeToTreeNode: (_weakmap: WeakMap<HTMLLIElement, TreeNode<any>>, _treeNode: TreeNode<any>) => Lit.Directive.DirectiveResult<typeof TrackDOMNodeToTreeNode>;
 export declare const getNodeChildren: <TreeNodeDataType>(node: TreeNode<TreeNodeDataType>) => Promise<TreeNode<TreeNodeDataType>[]>;
 /**
  * Searches the tree and returns a path to the given node.

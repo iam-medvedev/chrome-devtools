@@ -56,6 +56,7 @@ export class PlayerEventsView extends UI.Widget.VBox {
     firstEventTime;
     constructor() {
         super();
+        this.registerRequiredCSS(eventDisplayTableStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('events')}`);
         // Set up element styles.
         this.contentElement.classList.add('event-display-table-contents-table-container');
@@ -134,10 +135,6 @@ export class PlayerEventsView extends UI.Widget.VBox {
             weight: columnConfig.weight || 0,
             sort: DataGrid.DataGrid.Order.Ascending,
         };
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([eventDisplayTableStyles]);
     }
 }
 //# sourceMappingURL=EventDisplayTable.js.map

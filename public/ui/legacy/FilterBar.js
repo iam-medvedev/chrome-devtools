@@ -37,6 +37,7 @@ import * as ARIAUtils from './ARIAUtils.js';
 import filterStyles from './filter.css.js';
 import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { bindCheckbox } from './SettingsUI.js';
+import * as ThemeSupport from './theme_support/theme_support.js';
 import { ToolbarFilter, ToolbarSettingToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, createTextChild } from './UIUtils.js';
@@ -71,6 +72,7 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     showingWidget;
     constructor(name, visibleByDefault) {
         super();
+        this.registerRequiredCSS(filterStyles);
         this.enabled = true;
         this.element.classList.add('filter-bar');
         this.element.setAttribute('jslog', `${VisualLogging.toolbar('filter-bar')}`);
@@ -116,7 +118,6 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([filterStyles]);
         this.updateFilterBar();
     }
     updateFilterBar() {
@@ -218,7 +219,14 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #namedBitSetFilterUI;
     set options(options) {
+        // return if they are the same
+        if (this.#options.items.toString() === options.items.toString() && this.#options.setting === options.setting) {
+            return;
+        }
         this.#options = options;
+        // When options are updated, clear the UI so that a new one is created with the new options
+        this.#shadow.innerHTML = '';
+        this.#namedBitSetFilterUI = undefined;
     }
     getOrCreateNamedBitSetFilterUI() {
         if (this.#namedBitSetFilterUI) {
@@ -235,7 +243,7 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
         return this.#namedBitSetFilterUI;
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [filterStyles];
+        ThemeSupport.ThemeSupport.instance().appendStyle(this.#shadow, filterStyles);
     }
     #filterChanged() {
         const domEvent = new CustomEvent('filterChanged');

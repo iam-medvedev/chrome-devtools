@@ -29,6 +29,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     cachedQueryModels;
     constructor(getWidthCallback, setWidthCallback, mediaThrottler) {
         super(true);
+        this.registerRequiredCSS(mediaQueryInspectorStyles);
         this.contentElement.classList.add('media-inspector-view');
         this.contentElement.setAttribute('jslog', `${VisualLogging.mediaInspectorView().track({ click: true })}`);
         this.contentElement.addEventListener('click', this.onMediaQueryClicked.bind(this), false);
@@ -226,7 +227,6 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([mediaQueryInspectorStyles]);
         this.scheduleMediaQueriesUpdate();
     }
     createElementFromMediaQueryModel(model) {

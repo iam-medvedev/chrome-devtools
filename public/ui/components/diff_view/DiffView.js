@@ -4,10 +4,15 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Diff from '../../../third_party/diff/diff.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
-import diffViewStyles from './diffView.css.js';
-const { html } = LitHtml;
+import diffViewStylesRaw from './diffView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const diffViewStyles = new CSSStyleSheet();
+diffViewStyles.replaceSync(diffViewStylesRaw.cssContent);
+const CodeHighlighterStyles = new CSSStyleSheet();
+CodeHighlighterStyles.replaceSync(CodeHighlighter.Style.default.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Text prepended to a removed line in a diff in the Changes tool, viewable only by screen reader.
@@ -202,7 +207,7 @@ class DiffRenderer {
     static async render(diff, mimeType, parent) {
         const { originalLines, currentLines, rows } = buildDiffRows(diff);
         const renderer = new DiffRenderer(await CodeHighlighter.CodeHighlighter.create(originalLines.join('\n'), mimeType), documentMap(originalLines), await CodeHighlighter.CodeHighlighter.create(currentLines.join('\n'), mimeType), documentMap(currentLines));
-        LitHtml.render(renderer.#render(rows), parent, { host: this });
+        Lit.render(renderer.#render(rows), parent, { host: this });
     }
 }
 export class DiffView extends HTMLElement {
@@ -210,7 +215,7 @@ export class DiffView extends HTMLElement {
     loaded;
     constructor(data) {
         super();
-        this.#shadow.adoptedStyleSheets = [diffViewStyles, CodeHighlighter.Style.default];
+        this.#shadow.adoptedStyleSheets = [diffViewStyles, CodeHighlighterStyles];
         if (data) {
             this.loaded = DiffRenderer.render(data.diff, data.mimeType, this.#shadow);
         }

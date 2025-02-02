@@ -102,6 +102,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
     editingRow;
     constructor() {
         super(true);
+        this.registerRequiredCSS(keybindsSettingsTabStyles, settingsScreenStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('keybinds')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         settingsContent.classList.add('settings-card-container');
@@ -274,13 +275,10 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         }
     }
     willHide() {
+        super.willHide();
         if (this.editingItem) {
             this.stopEditing(this.editingItem);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([keybindsSettingsTabStyles, settingsScreenStyles]);
     }
 }
 export class ShortcutListItem {

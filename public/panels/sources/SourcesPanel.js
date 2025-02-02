@@ -200,6 +200,7 @@ export class SourcesPanel extends UI.Panel.Panel {
     #lastPausedTarget = null;
     constructor() {
         super('sources');
+        this.registerRequiredCSS(sourcesPanelStyles);
         new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.Folder], i18nString(UIStrings.dropWorkspaceFolderHere), this.handleDrop.bind(this));
         this.workspace = Workspace.Workspace.WorkspaceImpl.instance();
         this.togglePauseAction = UI.ActionRegistry.ActionRegistry.instance().getAction('debugger.toggle-pause');
@@ -341,7 +342,6 @@ export class SourcesPanel extends UI.Panel.Panel {
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(SourcesPanel, this);
-        this.registerCSSFiles([sourcesPanelStyles]);
         super.wasShown();
         if (UI.Context.Context.instance().flavor(QuickSourceView)) {
             UI.InspectorView.InspectorView.instance().setDrawerMinimized(true);
@@ -995,7 +995,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         vbox.element.appendChild(this.debugToolbarDrawer);
         vbox.setMinimumAndPreferredSizes(minToolbarWidth, 25, minToolbarWidth, 100);
         this.sidebarPaneStack = UI.ViewManager.ViewManager.instance().createStackLocation(this.revealDebuggerSidebar.bind(this), undefined, 'debug');
-        this.sidebarPaneStack.widget().element.classList.add('overflow-auto');
+        this.sidebarPaneStack.widget().element.classList.add('y-overflow-only');
         this.sidebarPaneStack.widget().show(vbox.element);
         this.sidebarPaneStack.widget().element.appendChild(this.debuggerPausedMessage.element());
         this.sidebarPaneStack.appendApplicableItems('sources.sidebar-top');

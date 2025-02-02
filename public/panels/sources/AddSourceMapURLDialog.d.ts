@@ -11,5 +11,4 @@ export declare class AddDebugInfoURLDialog extends UI.Widget.HBox {
     private done;
     private apply;
     private onKeyDown;
-    wasShown(): void;
 }

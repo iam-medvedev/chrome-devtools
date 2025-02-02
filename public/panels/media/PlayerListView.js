@@ -33,6 +33,7 @@ export class PlayerListView extends UI.Widget.VBox {
     currentlySelectedEntry;
     constructor(mainContainer) {
         super(true);
+        this.registerRequiredCSS(playerListViewStyles);
         this.playerEntryFragments = new Map();
         this.playerEntriesWithHostnameFrameTitle = new Set();
         // Container where new panels can be added based on clicks.
@@ -200,10 +201,6 @@ export class PlayerListView extends UI.Widget.VBox {
     }
     onMessage(_playerID, _message) {
         // TODO(tmathmeyer) show a message count number next to the player name.
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([playerListViewStyles]);
     }
 }
 //# sourceMappingURL=PlayerListView.js.map

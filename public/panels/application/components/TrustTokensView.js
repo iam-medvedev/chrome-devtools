@@ -8,9 +8,12 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import trustTokensViewStyles from './trustTokensView.css.js';
-const { html } = LitHtml;
+import * as Lit from '../../../ui/lit/lit.js';
+import trustTokensViewStylesRaw from './trustTokensView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const trustTokensViewStyles = new CSSStyleSheet();
+trustTokensViewStyles.replaceSync(trustTokensViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Text for the issuer of an item
@@ -64,7 +67,7 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         tokens.sort((a, b) => a.issuerOrigin.localeCompare(b.issuerOrigin));
         await RenderCoordinator.write('Render TrustTokensView', () => {
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
         <div>
           <span class="heading">${i18nString(UIStrings.trustTokens)}</span>
           <devtools-icon name="info" title=${i18nString(UIStrings.allStoredTrustTokensAvailableIn)}></devtools-icon>
@@ -83,7 +86,7 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         }
         // clang-format off
         return html `
-      <devtools-new-data-grid striped>
+      <devtools-data-grid striped inline>
         <table>
           <tr>
             <th id="issuer" weight="10" sortable>${i18nString(UIStrings.issuer)}</th>
@@ -106,7 +109,7 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
               </tr>
             `)}
         </table>
-      </devtools-new-data-grid>
+      </devtools-data-grid>
     `;
         // clang-format on
     }

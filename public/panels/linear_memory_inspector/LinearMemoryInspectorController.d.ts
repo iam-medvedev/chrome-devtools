@@ -5,14 +5,14 @@ import type * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.j
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LinearMemoryInspectorComponents from './components/components.js';
 export interface LazyUint8Array {
-    getRange(start: number, end: number): Promise<Uint8Array>;
+    getRange(start: number, end: number): Promise<Uint8Array<ArrayBuffer>>;
     length(): number;
 }
 export declare class RemoteArrayBufferWrapper implements LazyUint8Array {
     #private;
     constructor(arrayBuffer: SDK.RemoteObject.RemoteArrayBuffer);
     length(): number;
-    getRange(start: number, end: number): Promise<Uint8Array>;
+    getRange(start: number, end: number): Promise<Uint8Array<ArrayBuffer>>;
 }
 export declare function isDWARFMemoryObject(obj: SDK.RemoteObject.RemoteObject): boolean;
 export declare class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> implements Common.Revealer.Revealer<SDK.RemoteObject.LinearMemoryInspectable>, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement> {
@@ -20,10 +20,10 @@ export declare class LinearMemoryInspectorController extends SDK.TargetManager.S
     private constructor();
     static instance(): LinearMemoryInspectorController;
     static getMemoryForAddress(memoryWrapper: LazyUint8Array, address: number): Promise<{
-        memory: Uint8Array;
+        memory: Uint8Array<ArrayBuffer>;
         offset: number;
     }>;
-    static getMemoryRange(memoryWrapper: LazyUint8Array, start: number, end: number): Promise<Uint8Array>;
+    static getMemoryRange(memoryWrapper: LazyUint8Array, start: number, end: number): Promise<Uint8Array<ArrayBuffer>>;
     evaluateExpression(callFrame: SDK.DebuggerModel.CallFrame, expressionName: string): Promise<SDK.RemoteObject.RemoteObject | undefined>;
     saveSettings(data: LinearMemoryInspectorComponents.LinearMemoryInspector.Settings): void;
     loadSettings(): LinearMemoryInspectorComponents.LinearMemoryInspector.Settings;

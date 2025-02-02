@@ -1,16 +1,18 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../core/common/common.js';
-import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import linearMemoryInspectorStyles from './linearMemoryInspector.css.js';
-const { render, html } = LitHtml;
 import './LinearMemoryValueInterpreter.js';
 import './LinearMemoryHighlightChipList.js';
-import { formatAddress, parseAddress } from './LinearMemoryInspectorUtils.js';
 import './LinearMemoryViewer.js';
-import { VALUE_INTEPRETER_MAX_NUM_BYTES, getDefaultValueTypeMapping, } from './ValueInterpreterDisplayUtils.js';
+import * as Common from '../../../core/common/common.js';
+import * as i18n from '../../../core/i18n/i18n.js';
+import { html, nothing, render } from '../../../ui/lit/lit.js';
+import linearMemoryInspectorStylesRaw from './linearMemoryInspector.css.js';
+import { formatAddress, parseAddress } from './LinearMemoryInspectorUtils.js';
+import { getDefaultValueTypeMapping, VALUE_INTEPRETER_MAX_NUM_BYTES, } from './ValueInterpreterDisplayUtils.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linearMemoryInspectorStyles = new CSSStyleSheet();
+linearMemoryInspectorStyles.replaceSync(linearMemoryInspectorStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an invalid address in the address line in the Linear memory inspector
@@ -143,7 +145,7 @@ export class LinearMemoryInspector extends HTMLElement {
           @resize=${this.#resize}>
         </devtools-linear-memory-inspector-viewer>
       </div>
-      ${this.#hideValueInspector ? LitHtml.nothing : html `
+      ${this.#hideValueInspector ? nothing : html `
       <div class="value-interpreter">
         <devtools-linear-memory-inspector-interpreter
           .data=${{

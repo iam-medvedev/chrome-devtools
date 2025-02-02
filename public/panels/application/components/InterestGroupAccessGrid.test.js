@@ -16,7 +16,7 @@ async function renderInterestGroupAccessGrid(events) {
     return component;
 }
 function getInternalDataGridShadowRoot(component) {
-    const dataGrid = component.shadowRoot.querySelector('devtools-new-data-grid');
+    const dataGrid = component.shadowRoot.querySelector('devtools-data-grid');
     assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }
@@ -46,7 +46,7 @@ describeWithLocale('InterestGroupAccessGrid', () => {
     });
     it('hides interest group event table when there are no events', async () => {
         const component = await renderInterestGroupAccessGrid([]);
-        const nullGridElement = component.shadowRoot.querySelector('devtools-new-data-grid');
+        const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid');
         assert.isNull(nullGridElement);
         const noEventsElement = component.shadowRoot.querySelector('div.no-events-message');
         assert.instanceOf(noEventsElement, HTMLDivElement);

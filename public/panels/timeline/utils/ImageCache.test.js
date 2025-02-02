@@ -19,7 +19,8 @@ describe('ImageCache', () => {
     Trace.Handlers.ModelHandlers.Screenshots.reset();
     Trace.Handlers.ModelHandlers.Screenshots.handleEvent(rawSourceEvent);
     void Trace.Handlers.ModelHandlers.Screenshots.finalize();
-    const syntheticScreenshot1 = Trace.Handlers.ModelHandlers.Screenshots.data().all[0];
+    const syntheticScreenshot1 = Trace.Handlers.ModelHandlers.Screenshots.data().legacySyntheticScreenshots?.at(0);
+    assert.isOk(syntheticScreenshot1);
     const syntheticScreenshot2 = structuredClone(syntheticScreenshot1);
     syntheticScreenshot2.rawSourceEvent.id = '0x2';
     const badDataUriScreenshot = structuredClone(syntheticScreenshot1);

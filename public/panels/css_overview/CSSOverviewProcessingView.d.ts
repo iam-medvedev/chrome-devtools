@@ -4,5 +4,4 @@ export declare class CSSOverviewProcessingView extends UI.Widget.Widget {
     #private;
     fragment?: UI.Fragment.Fragment;
     constructor(controller: OverviewController);
-    wasShown(): void;
 }

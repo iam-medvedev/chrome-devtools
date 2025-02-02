@@ -1,6 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode<unknown> {
     searchMatchedSelfColumn: boolean;

@@ -28,6 +28,7 @@ export class LayersWidget extends UI.Widget.Widget {
     layerTreeComponent = new TreeOutline.TreeOutline.TreeOutline();
     constructor() {
         super(true);
+        this.registerRequiredCSS(layersWidgetStyles);
         this.contentElement.className = 'styles-layers-pane';
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('css-layers')}`);
         UI.UIUtils.createTextChild(this.contentElement.createChild('div'), i18nString(UIStrings.cssLayersTitle));
@@ -46,9 +47,8 @@ export class LayersWidget extends UI.Widget.Widget {
             this.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.update, this);
         }
     }
-    async wasShown() {
+    wasShown() {
         super.wasShown();
-        this.registerCSSFiles([layersWidgetStyles]);
         return this.update();
     }
     async update() {

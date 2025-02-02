@@ -69,9 +69,10 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
     constructor(element) {
         super(undefined, undefined, element);
         this.#securitySidebarLastItemSetting =
-            Common.Settings.Settings.instance().createSetting('security-last-selected-element-path', 'overview');
+            Common.Settings.Settings.instance().createSetting('security-last-selected-element-path', '');
         this.#mainOrigin = null;
         this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
+        this.sidebarTree.registerRequiredCSS(lockIconStyles, sidebarStyles);
         this.sidebarTree.element.classList.add('security-sidebar');
         this.contentElement.appendChild(this.sidebarTree.element);
         if (Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled) {
@@ -81,6 +82,10 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
             privacyTreeSection.appendChild(this.#cookieControlsTreeElement);
             this.#cookieReportTreeElement = new CookieReportTreeElement(i18nString(UIStrings.cookieReport), 'cookie-report');
             privacyTreeSection.appendChild(this.#cookieReportTreeElement);
+            // If this if the first time this setting is set, go to the controls tool
+            if (this.#securitySidebarLastItemSetting.get() === '') {
+                this.#securitySidebarLastItemSetting.set(this.#cookieControlsTreeElement.elemId);
+            }
         }
         const securitySectionTitle = i18nString(UIStrings.security);
         const securityTreeSection = this.#addSidebarSection(securitySectionTitle, 'security');
@@ -134,13 +139,16 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
     showLastSelectedElement() {
         if (this.#cookieControlsTreeElement &&
             this.#securitySidebarLastItemSetting.get() === this.#cookieControlsTreeElement.elemId) {
+            this.#cookieControlsTreeElement.select();
             this.#cookieControlsTreeElement.showElement();
         }
         else if (this.#cookieReportTreeElement &&
             this.#securitySidebarLastItemSetting.get() === this.#cookieReportTreeElement.elemId) {
+            this.#cookieReportTreeElement.select();
             this.#cookieReportTreeElement.showElement();
         }
         else {
+            this.securityOverviewElement.select();
             this.securityOverviewElement.showElement();
         }
     }
@@ -252,9 +260,8 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
         this.#clearOriginGroups();
         this.#elementsByOrigin.clear();
     }
-    wasShown() {
-        super.wasShown();
-        this.sidebarTree.registerCSSFiles([lockIconStyles, sidebarStyles]);
+    focus() {
+        this.sidebarTree.focus();
     }
     #renderTreeElement(element) {
         if (element instanceof OriginTreeElement) {

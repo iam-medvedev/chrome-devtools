@@ -3,7 +3,7 @@ import '../../ui/legacy/legacy.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as ApplicationComponents from './components/components.js';
 import type { Database, DatabaseId, Index, IndexedDBModel, ObjectStore } from './IndexedDBModel.js';
 export declare class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.StorageMetadataView {
@@ -11,7 +11,7 @@ export declare class IDBDatabaseView extends ApplicationComponents.StorageMetada
     private database;
     constructor(model: IndexedDBModel, database: Database | null);
     getTitle(): string | undefined;
-    renderReportContent(): Promise<LitHtml.LitTemplate>;
+    renderReportContent(): Promise<Lit.LitTemplate>;
     private refreshDatabaseButtonClicked;
     update(database: Database): void;
     private updatedForTests;
@@ -68,7 +68,6 @@ export declare class IDBDataView extends UI.View.SimpleView {
     clear(): void;
     private updateToolbarEnablement;
     private updateSelectionColor;
-    wasShown(): void;
 }
 export declare class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode<unknown> {
     selectable: boolean;

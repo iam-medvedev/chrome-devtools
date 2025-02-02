@@ -1,7 +1,7 @@
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as Models from '../models/models.js';
 import { type DeepImmutable } from './util.js';
-declare const LitElement: typeof LitHtml.LitElement;
+declare const LitElement: typeof Lit.LitElement;
 declare const defaultValuesByAttribute: DeepImmutable<{
     selectors: string[][];
     offsetX: number;
@@ -110,7 +110,7 @@ declare class RecorderSelectorPickerButton extends LitElement {
     disabled: boolean;
     constructor();
     disconnectedCallback(): void;
-    protected render(): LitHtml.TemplateResult | undefined;
+    protected render(): Lit.TemplateResult | undefined;
 }
 /**
  * @fires RequestSelectorAttributeEvent#requestselectorattribute
@@ -126,6 +126,6 @@ export declare class StepEditor extends LitElement {
     constructor();
     protected createRenderRoot(): HTMLElement | DocumentFragment;
     set step(step: DeepImmutable<Models.Schema.Step>);
-    protected render(): LitHtml.TemplateResult;
+    protected render(): Lit.TemplateResult;
 }
 export {};

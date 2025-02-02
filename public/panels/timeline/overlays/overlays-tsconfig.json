@@ -49,7 +49,7 @@
       "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../utils/bundle-tsconfig.json"

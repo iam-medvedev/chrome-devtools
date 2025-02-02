@@ -65,6 +65,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     showSettingsPaneSetting;
     constructor(controller) {
         super('lighthouse');
+        this.registerRequiredCSS(lighthousePanelStyles);
         this.controller = controller;
         this.startView = new StartView(this.controller, this);
         this.timespanView = new TimespanView(this);
@@ -291,10 +292,6 @@ export class LighthousePanel extends UI.Panel.Panel {
             els.push(lhContainerEl);
         }
         return els;
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([lighthousePanelStyles]);
     }
 }
 //# sourceMappingURL=LighthousePanel.js.map

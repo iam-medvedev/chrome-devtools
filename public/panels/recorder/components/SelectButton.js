@@ -6,11 +6,14 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import selectButtonStyles from './selectButton.css.js';
-const { html, Directives: { ifDefined, classMap } } = LitHtml;
+import selectButtonStylesRaw from './selectButton.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const selectButtonStyles = new CSSStyleSheet();
+selectButtonStyles.replaceSync(selectButtonStylesRaw.cssContent);
+const { html, Directives: { ifDefined, classMap } } = Lit;
 export class SelectButtonClickEvent extends Event {
     value;
     static eventName = 'selectbuttonclick';
@@ -123,7 +126,7 @@ export class SelectButton extends HTMLElement {
         const buttonVariant = this.#props.variant === "outlined" /* Variant.OUTLINED */ ? "outlined" /* Buttons.Button.Variant.OUTLINED */ : "primary" /* Buttons.Button.Variant.PRIMARY */;
         const menuLabel = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <div class="select-button" title=${ifDefined(this.#getTitle(menuLabel))}>
       <devtools-select-menu
           class=${classMap(classes)}

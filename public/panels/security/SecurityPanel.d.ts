@@ -1,8 +1,10 @@
+import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { CookieReportView } from './CookieReportView.js';
 import { type PageVisibleSecurityState, SecurityModel } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): IconButton.Icon.Icon;
@@ -82,7 +84,6 @@ export declare class SecurityMainView extends UI.Widget.VBox {
     refreshExplanations(): void;
     private addMixedContentExplanation;
     showNetworkFilter(filterKey: string, e: Event): void;
-    wasShown(): void;
 }
 export declare class SecurityOriginView extends UI.Widget.VBox {
     private readonly panel;
@@ -90,7 +91,6 @@ export declare class SecurityOriginView extends UI.Widget.VBox {
     constructor(panel: SecurityPanel, origin: Platform.DevToolsPath.UrlString, originState: OriginState);
     private createSanDiv;
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
-    wasShown(): void;
 }
 export declare class SecurityDetailsTable {
     private readonly elementInternal;
@@ -105,3 +105,6 @@ export interface OriginState {
     originView?: SecurityOriginView | null;
 }
 export type Origin = Platform.DevToolsPath.UrlString;
+export declare class SecurityRevealer implements Common.Revealer.Revealer<CookieReportView> {
+    reveal(cookieReportView: CookieReportView): Promise<void>;
+}

@@ -25,10 +25,12 @@
         "smallBubble.css.js",
         "softContextMenu.css.js",
         "softDropDown.css.js",
+        "softDropDownButton.css.js",
         "splitWidget.css.js",
         "suggestBox.css.js",
         "tabbedPane.css.js",
         "targetCrashedScreen.css.js",
+        "textPrompt.css.js",
         "toolbar.css.js",
         "treeoutline.css.js",
         "viewContainers.css.js"

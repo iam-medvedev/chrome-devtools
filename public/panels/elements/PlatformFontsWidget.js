@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as i18n from '../../core/i18n/i18n.js';
-import platformFontsWidgetStyles from './platformFontsWidget.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import platformFontsWidgetStyles from './platformFontsWidget.css.js';
 const UIStrings = {
     /**
      *@description Section title text content in Platform Fonts Widget of the Elements panel
@@ -68,6 +68,7 @@ export class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
     fontStatsSection;
     constructor(sharedModel) {
         super(true);
+        this.registerRequiredCSS(platformFontsWidgetStyles);
         this.sharedModel = sharedModel;
         this.sharedModel.addEventListener("CSSModelChanged" /* Events.CSS_MODEL_CHANGED */, this.update, this);
         this.sharedModel.addEventListener("ComputedStyleChanged" /* Events.COMPUTED_STYLE_CHANGED */, this.update, this);
@@ -112,10 +113,6 @@ export class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
             const usage = platformFont.glyphCount;
             fontUsageElement.textContent = i18nString(UIStrings.dGlyphs, { n: usage });
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([platformFontsWidgetStyles]);
     }
 }
 //# sourceMappingURL=PlatformFontsWidget.js.map

@@ -195,7 +195,7 @@ export declare const enum SettingStorageType {
 }
 export declare function moduleSetting(settingName: string): Setting<unknown>;
 export declare function settingForTest(settingName: string): Setting<unknown>;
-export { getLocalizedSettingsCategory, maybeRemoveSettingExtension, registerSettingExtension, RegExpSettingItem, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType, registerSettingsForTest, resetSettings, };
+export { getLocalizedSettingsCategory, maybeRemoveSettingExtension, RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType, };
 export interface Serializer<I, O> {
     stringify: (value: I) => string;
     parse: (value: string) => O;

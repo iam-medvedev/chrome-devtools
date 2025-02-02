@@ -151,6 +151,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     #hasSeenPrimaryPageChanged = false;
     #issuesById = new Map();
     #issuesByOutermostTarget = new Map();
+    #thirdPartyCookiePhaseoutIssueMessageSent = false;
     constructor(showThirdPartyIssuesSetting, hideIssueSetting) {
         super();
         this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
@@ -244,12 +245,21 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     #onIssueAddedEvent(event) {
         const { issuesModel, inspectorIssue } = event.data;
+        const isPrivacyUiEnabled = Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled;
         const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue);
         for (const issue of issues) {
             this.addIssue(issuesModel, issue);
             const message = issue.maybeCreateConsoleMessage();
-            if (message) {
+            if (!message) {
+                continue;
+            }
+            // Only show one message for third-party cookie phaseout issues if the new privacy ui is enabled
+            const is3rdPartyCookiePhaseoutIssue = CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.THIRD_PARTY_PHASEOUT_COOKIE */;
+            if (!is3rdPartyCookiePhaseoutIssue || !isPrivacyUiEnabled || !this.#thirdPartyCookiePhaseoutIssueMessageSent) {
                 issuesModel.target().model(SDK.ConsoleModel.ConsoleModel)?.addMessage(message);
+            }
+            if (is3rdPartyCookiePhaseoutIssue && isPrivacyUiEnabled) {
+                this.#thirdPartyCookiePhaseoutIssueMessageSent = true;
             }
         }
     }
@@ -344,6 +354,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#issueCounts.clear();
         this.#issuesById.clear();
         this.#hiddenIssueCount.clear();
+        this.#thirdPartyCookiePhaseoutIssueMessageSent = false;
         const values = this.hideIssueSetting?.get();
         for (const [key, issue] of this.#allIssues) {
             if (this.#issueFilter(issue)) {

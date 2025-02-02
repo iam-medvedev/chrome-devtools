@@ -62,7 +62,6 @@ export declare class AppManifestView extends AppManifestView_base implements SDK
         hasSquareSize: boolean;
     };
     private appendImageResourceToSection;
-    wasShown(): void;
     private appendWindowControlsToSection;
 }
 export declare const enum Events {

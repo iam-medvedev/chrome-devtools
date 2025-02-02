@@ -356,7 +356,7 @@ export async function finalize() {
                 },
             },
             cat: 'loading',
-            name: 'SyntheticNetworkRequest',
+            name: "SyntheticNetworkRequest" /* Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */,
             ph: "X" /* Types.Events.Phase.COMPLETE */,
             dur: Types.Timing.Micro(endTime - startTime),
             tdur: Types.Timing.Micro(endTime - startTime),

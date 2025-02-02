@@ -23,7 +23,7 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     static loadFromEvents(events: Trace.Types.Events.Event[], client: Client): TimelineLoader;
     static loadFromCpuProfile(profile: Protocol.Profiler.Profile, client: Client): TimelineLoader;
     static loadFromURL(url: Platform.DevToolsPath.UrlString, client: Client): Promise<TimelineLoader>;
-    addEvents(events: Trace.Types.Events.Event[]): Promise<void>;
+    addEvents(events: readonly Trace.Types.Events.Event[]): Promise<void>;
     cancel(): Promise<void>;
     /**
      * As TimelineLoader implements `Common.StringOutputStream.OutputStream`, `write()` is called when a

@@ -28,7 +28,7 @@ export type IconData = IconWithName | {
  * const iconWithClassName = IconButton.Icon.create('bin', 'delete-icon');
  *
  * // Use within a template:
- * LitHtml.html`
+ * Lit.html`
  *   <devtools-icon name="bin">
  *   </devtools-icon>
  * `;
@@ -59,7 +59,6 @@ export declare class Icon extends HTMLElement {
     #private;
     static readonly observedAttributes: string[];
     constructor();
-    connectedCallback(): void;
     /**
      * @deprecated use `name` and CSS instead.
      */

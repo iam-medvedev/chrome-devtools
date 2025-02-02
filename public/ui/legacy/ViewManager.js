@@ -343,6 +343,7 @@ class ExpandableContainerWidget extends VBox {
     constructor(view) {
         super(true);
         this.element.classList.add('flex-none');
+        this.registerRequiredCSS(viewContainersStyles);
         this.titleElement = document.createElement('div');
         this.titleElement.classList.add('expandable-view-title');
         this.titleElement.setAttribute('jslog', `${VisualLogging.sectionHeader().context(view.viewId()).track({
@@ -366,7 +367,6 @@ class ExpandableContainerWidget extends VBox {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([viewContainersStyles]);
         if (this.widget && this.materializePromise) {
             void this.materializePromise.then(() => {
                 if (this.titleElement.classList.contains('expanded') && this.widget) {
@@ -760,5 +760,5 @@ class StackLocation extends Location {
         }
     }
 }
-export { getRegisteredViewExtensions, maybeRemoveViewExtension, registerViewExtension, getRegisteredLocationResolvers, registerLocationResolver, getLocalizedViewLocationCategory, resetViewRegistration, };
+export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, };
 //# sourceMappingURL=ViewManager.js.map

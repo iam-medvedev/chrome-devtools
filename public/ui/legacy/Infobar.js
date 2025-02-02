@@ -49,7 +49,7 @@ export class Infobar {
             this.element.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Enter|Escape' })}`);
         }
         this.element.classList.add('flex-none');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: [infobarStyles] });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles });
         this.contentElement = this.shadowRoot.createChild('div', 'infobar infobar-' + type);
         this.mainRow = this.contentElement.createChild('div', 'infobar-main-row');
         this.detailsRows = this.contentElement.createChild('div', 'infobar-details-rows hidden');

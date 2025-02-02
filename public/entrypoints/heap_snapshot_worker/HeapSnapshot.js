@@ -571,7 +571,7 @@ export class HeapSnapshot {
     #aggregatesForDiffInternal;
     #aggregates;
     #aggregatesSortedFlags;
-    #profile;
+    profile;
     nodeTypeOffset;
     nodeNameOffset;
     nodeIdOffset;
@@ -647,7 +647,7 @@ export class HeapSnapshot {
         this.#snapshotDiffs = {};
         this.#aggregates = {};
         this.#aggregatesSortedFlags = {};
-        this.#profile = profile;
+        this.profile = profile;
         this.#ignoredNodesInRetainersView = new Set();
         this.#ignoredEdgesInRetainersView = new Set();
         this.#edgeNamesThatAreNotWeakMaps = Platform.TypedArrayUtilities.createBitVector(this.strings.length);
@@ -730,7 +730,7 @@ export class HeapSnapshot {
         this.#progress.updateStatus('Building locations…');
         this.buildLocationMap();
         this.#progress.updateStatus('Finished processing.');
-        if (this.#profile.snapshot.trace_function_count) {
+        if (this.profile.snapshot.trace_function_count) {
             this.#progress.updateStatus('Building allocation statistics…');
             const nodes = this.nodes;
             const nodesLength = nodes.length;
@@ -748,7 +748,7 @@ export class HeapSnapshot {
                 stats.size += node.selfSize();
                 stats.ids.push(node.id());
             }
-            this.#allocationProfile = new AllocationProfile(this.#profile, liveObjects);
+            this.#allocationProfile = new AllocationProfile(this.profile, liveObjects);
             this.#progress.updateStatus('done');
         }
     }
@@ -818,7 +818,7 @@ export class HeapSnapshot {
         return this.rootNodeIndexInternal;
     }
     get totalSize() {
-        return this.rootNode().retainedSize();
+        return this.rootNode().retainedSize() + (this.profile.snapshot.extra_native_bytes ?? 0);
     }
     getDominatedIndex(nodeIndex) {
         if (nodeIndex % this.nodeFieldCount) {
@@ -878,6 +878,11 @@ export class HeapSnapshot {
         for (let nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
             node.nodeIndex = nodeIndex;
             if (filter && !filter(node)) {
+                continue;
+            }
+            if (node.selfSize() === 0) {
+                // Nodes with size zero are omitted in the data grid, so avoid returning
+                // search results that can't be navigated to.
                 continue;
             }
             const name = node.name();
@@ -2843,7 +2848,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
         const nodeSlicedStringType = this.nodeSlicedStringType;
         const nodeHiddenType = this.nodeHiddenType;
         const nodeStringType = this.nodeStringType;
-        let sizeNative = 0;
+        let sizeNative = this.profile.snapshot.extra_native_bytes ?? 0;
         let sizeTypedArrays = 0;
         let sizeCode = 0;
         let sizeStrings = 0;

@@ -13,14 +13,16 @@ export const FREESTYLER_BINDING_NAME = '__freestyler';
 export class ExtensionScope {
     #listeners = [];
     #changeManager;
+    #agentId;
     #frameId;
     #target;
     #bindingMutex = new Common.Mutex.Mutex();
-    constructor(changes) {
+    constructor(changes, agentId) {
         this.#changeManager = changes;
         const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         const frameId = selectedNode?.frameId();
         const target = selectedNode?.domModel().target();
+        this.#agentId = agentId;
         this.#target = target;
         this.#frameId = frameId;
     }
@@ -113,6 +115,7 @@ export class ExtensionScope {
                 throw new Error('CSSModel is not found');
             }
             await this.#changeManager.addChange(cssModel, this.frameId, {
+                groupId: this.#agentId,
                 selector,
                 className,
                 styles: arg.styles,

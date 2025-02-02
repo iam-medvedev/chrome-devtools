@@ -43,7 +43,7 @@ describeWithMockConnection('NetworkRequestDetails', () => {
                 value: 'Render blocking',
             },
             { title: 'From cache', value: 'Yes' },
-            { title: '3rd party entity', value: 'GitHub' },
+            { title: 'Third party', value: 'GitHub' },
             { title: undefined, value: durationInnerText },
             {
                 title: 'Initiated by',

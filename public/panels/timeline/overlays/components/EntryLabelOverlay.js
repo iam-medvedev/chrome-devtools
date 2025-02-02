@@ -5,10 +5,12 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import { html, render } from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
-import styles from './entryLabelOverlay.css.js';
-const { html } = LitHtml;
+import stylesRaw from './entryLabelOverlay.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const styles = new CSSStyleSheet();
+styles.replaceSync(stylesRaw.cssContent);
 const UIStrings = {
     /**
      * @description Accessible label used to explain to a user that they are viewing an entry label.
@@ -288,7 +290,7 @@ export class EntryLabelOverlay extends HTMLElement {
     }
     #render() {
         // clang-format off
-        LitHtml.render(html `
+        render(html `
         <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}>
           <span
             class="input-field"

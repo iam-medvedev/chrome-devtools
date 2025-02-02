@@ -82,9 +82,6 @@
       "path": "../../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/data_grid/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/helpers/bundle-tsconfig.json"
     },
     {
@@ -106,7 +103,7 @@
       "path": "../../../ui/legacy/components/data_grid/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/lit-html/bundle-tsconfig.json"
+      "path": "../../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../forward/bundle-tsconfig.json"

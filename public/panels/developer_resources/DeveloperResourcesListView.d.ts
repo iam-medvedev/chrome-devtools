@@ -26,6 +26,5 @@ export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     reset(): void;
     updateFilterAndHighlight(filters: TextUtils.TextUtils.ParsedFilter[]): void;
     getNumberOfVisibleItems(): number;
-    wasShown(): void;
     performUpdate(): void;
 }

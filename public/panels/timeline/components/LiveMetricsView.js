@@ -17,14 +17,20 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 import { getThrottlingRecommendations, md } from '../utils/Helpers.js';
-import liveMetricsViewStyles from './liveMetricsView.css.js';
-import metricValueStyles from './metricValueStyles.css.js';
+import liveMetricsViewStylesRaw from './liveMetricsView.css.js';
+import metricValueStylesRaw from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
-const { html, nothing } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const liveMetricsViewStyles = new CSSStyleSheet();
+liveMetricsViewStyles.replaceSync(liveMetricsViewStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const metricValueStyles = new CSSStyleSheet();
+metricValueStyles.replaceSync(metricValueStylesRaw.cssContent);
+const { html, nothing } = Lit;
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
 const RTT_MINIMUM = 60;
 const UIStrings = {
@@ -571,7 +577,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderPageScopeSetting() {
         if (!this.#cruxManager.getConfigSetting().get().enabled) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const urlLabel = this.#getPageScopeLabel('url');
         const originLabel = this.#getPageScopeLabel('origin');
@@ -644,7 +650,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderDeviceScopeSetting() {
         if (!this.#cruxManager.getConfigSetting().get().enabled) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // If there is no data at all we should force users to try adjusting the page scope
         // before coming back to this option.
@@ -769,7 +775,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderInteractionsLog() {
         if (!this.#interactions.size) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `
@@ -865,7 +871,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderLayoutShiftsLog() {
         if (!this.#layoutShifts.length) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // clang-format off
         return html `
@@ -908,7 +914,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #render = () => {
         if (this.#isNode) {
-            LitHtml.render(this.#renderNodeView(), this.#shadow, { host: this });
+            Lit.render(this.#renderNodeView(), this.#shadow, { host: this });
             return;
         }
         const fieldEnabled = this.#cruxManager.getConfigSetting().get().enabled;
@@ -966,7 +972,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         </div>
       </div>
     `;
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     };
 }
 class LiveMetricsLogs extends UI.Widget.WidgetElement {

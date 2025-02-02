@@ -7,12 +7,15 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import { md } from '../../utils/Helpers.js';
-import baseInsightComponentStyles from './baseInsightComponent.css.js';
+import baseInsightComponentStylesRaw from './baseInsightComponent.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
-const { html } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const baseInsightComponentStyles = new CSSStyleSheet();
+baseInsightComponentStyles.replaceSync(baseInsightComponentStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text to tell the user the estimated time or size savings for this insight. "&" means "and" - space is limited to prefer abbreviated terms if possible. Text will still fit if not short, it just won't look very good, so using no abbreviations is fine if necessary.
@@ -37,7 +40,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class BaseInsightComponent extends HTMLElement {
     // So we can use the TypeScript BaseInsight class without getting warnings
     // about litTagName. Every child should overrwrite this.
-    static litTagName = LitHtml.StaticHtml.literal ``;
+    static litTagName = Lit.StaticHtml.literal ``;
     #shadowRoot = this.attachShadow({ mode: 'open' });
     #selected = false;
     #model = null;
@@ -108,7 +111,7 @@ export class BaseInsightComponent extends HTMLElement {
     }
     #renderHoverIcon(insightIsActive) {
         // clang-format off
-        const containerClasses = LitHtml.Directives.classMap({
+        const containerClasses = Lit.Directives.classMap({
             'insight-hover-icon': true,
             active: insightIsActive,
         });
@@ -200,7 +203,7 @@ export class BaseInsightComponent extends HTMLElement {
         return null;
     }
     renderNode(backendNodeId, fallbackText) {
-        const fallback = fallbackText ?? LitHtml.nothing;
+        const fallback = fallbackText ?? Lit.nothing;
         if (!this.#parsedTrace) {
             return html `${fallback}`;
         }
@@ -210,14 +213,14 @@ export class BaseInsightComponent extends HTMLElement {
             }
             return Common.Linkifier.Linkifier.linkify(node);
         });
-        return html `${LitHtml.Directives.until(domNodePromise, fallback)}`;
+        return html `${Lit.Directives.until(domNodePromise, fallback)}`;
     }
     #renderWithContent(content) {
         if (!this.#model) {
-            LitHtml.render(LitHtml.nothing, this.#shadowRoot, { host: this });
+            Lit.render(Lit.nothing, this.#shadowRoot, { host: this });
             return;
         }
-        const containerClasses = LitHtml.Directives.classMap({
+        const containerClasses = Lit.Directives.classMap({
             insight: true,
             closed: !this.#selected,
         });
@@ -241,18 +244,18 @@ export class BaseInsightComponent extends HTMLElement {
               ${estimatedSavingsString}
             </slot>
           </div>`
-            : LitHtml.nothing}
+            : Lit.nothing}
         </header>
         ${this.#selected ? html `
           <div class="insight-body">
             <div class="insight-description">${md(this.#model.description)}</div>
             <div class="insight-content">${content}</div>
           </div>`
-            : LitHtml.nothing}
+            : Lit.nothing}
       </div>
     `;
         // clang-format on
-        LitHtml.render(output, this.#shadowRoot, { host: this });
+        Lit.render(output, this.#shadowRoot, { host: this });
         if (this.#selected) {
             requestAnimationFrame(() => requestAnimationFrame(() => this.scrollIntoViewIfNeeded()));
         }

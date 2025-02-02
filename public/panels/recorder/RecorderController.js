@@ -19,22 +19,31 @@ import * as Timeline from '../../panels/timeline/timeline.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
+// inspectorCommonStyles is imported for the empty state styling that is used for the start view
+// eslint-disable-next-line rulesdir/es-modules-import
+import inspectorCommonStylesRaw from '../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 import * as Converters from './converters/converters.js';
 import * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
-import recorderControllerStyles from './recorderController.css.js';
+import recorderControllerStylesRaw from './recorderController.css.js';
 import * as Events from './RecorderEvents.js';
-const { html, Decorators, LitElement } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const inspectorCommonStyles = new CSSStyleSheet();
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const recorderControllerStyles = new CSSStyleSheet();
+recorderControllerStyles.replaceSync(recorderControllerStylesRaw.cssContent);
+const { html, Decorators, LitElement } = Lit;
 const { customElement, state } = Decorators;
 const UIStrings = {
     /**
      * @description The title of the button that leads to a page for creating a new recording.
      */
-    createRecording: 'Create a new recording',
+    createRecording: 'Create recording',
     /**
      * @description The title of the button that allows importing a recording.
      */
@@ -100,11 +109,25 @@ const UIStrings = {
      * @description The button label that leads to the feedback form for Recorder.
      */
     sendFeedback: 'Send feedback',
+    /**
+     * @description The header of the start page in the Recorder panel.
+     */
+    header: 'Nothing recorded yet',
+    /**
+     * @description Text to explain the usage of the recorder panel.
+     */
+    recordingDescription: 'Use recordings to create automated end-to-end tests or performance traces.',
+    /**
+     * @description Link text to forward to a documentation page on the recorder.
+     */
+    learnMore: 'Learn more'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/RecorderController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const GET_EXTENSIONS_MENU_ITEM = 'get-extensions-link';
 const GET_EXTENSIONS_URL = 'https://goo.gle/recorder-extension-list';
+const RECORDER_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/recorder';
+const FEEDBACK_URL = 'https://goo.gle/recorder-feedback';
 const CONVERTER_ID_TO_METRIC = {
     ["json" /* Models.ConverterIds.ConverterIds.JSON */]: 2 /* Host.UserMetrics.RecordingExported.TO_JSON */,
     ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */]: 3 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER_REPLAY */,
@@ -113,7 +136,7 @@ const CONVERTER_ID_TO_METRIC = {
     ["lighthouse" /* Models.ConverterIds.ConverterIds.LIGHTHOUSE */]: 5 /* Host.UserMetrics.RecordingExported.TO_LIGHTHOUSE */,
 };
 let RecorderController = class RecorderController extends LitElement {
-    static styles = [recorderControllerStyles];
+    static styles = [recorderControllerStyles, inspectorCommonStyles];
     #storage = Models.RecordingStorage.RecordingStorage.instance();
     #screenshotStorage = Models.ScreenshotStorage.ScreenshotStorage.instance();
     // TODO: we keep the functionality to allow/disallow replay but right now it's not used.
@@ -905,9 +928,14 @@ let RecorderController = class RecorderController extends LitElement {
     #renderStartPage() {
         // clang-format off
         return html `
-      <devtools-start-view
-        @createrecording=${this.#onCreateNewRecording}
-      ></devtools-start-view>
+      <div class="empty-state" jslog=${VisualLogging.section().context('start-view')}>
+        <div class="empty-state-header">${i18nString(UIStrings.header)}</div>
+        <div class="empty-state-description">
+          <span>${i18nString(UIStrings.recordingDescription)}</span>
+          ${UI.XLink.XLink.create(RECORDER_EXPLANATION_URL, i18nString(UIStrings.learnMore), 'x-link', undefined, 'learn-more')}
+        </div>
+        <devtools-button jslogContext=${"chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */} @click=${this.#onCreateNewRecording}>${i18nString(UIStrings.createRecording)}</devtools-button>
+      </div>
     `;
         // clang-format on
     }
@@ -1027,7 +1055,7 @@ let RecorderController = class RecorderController extends LitElement {
               @change=${this.#onRecordingSelected}
               jslog=${VisualLogging.dropDown('recordings').track({ change: true })}
             >
-              ${LitHtml.Directives.repeat(values, item => item.value, item => {
+              ${Lit.Directives.repeat(values, item => item.value, item => {
             return html `<option .selected=${item.selected} value=${item.value}>${item.name}</option>`;
         })}
             </select>
@@ -1064,7 +1092,7 @@ let RecorderController = class RecorderController extends LitElement {
               .open=${this.exportMenuExpanded}
             >
               <devtools-menu-group .name=${i18nString(UIStrings.export)}>
-                ${LitHtml.Directives.repeat(this.#builtInConverters, converter => {
+                ${Lit.Directives.repeat(this.#builtInConverters, converter => {
             return html `
                     <devtools-menu-item
                       .value=${converter.getId()}
@@ -1075,7 +1103,7 @@ let RecorderController = class RecorderController extends LitElement {
         })}
               </devtools-menu-group>
               <devtools-menu-group .name=${i18nString(UIStrings.exportViaExtensions)}>
-                ${LitHtml.Directives.repeat(this.extensionConverters, converter => {
+                ${Lit.Directives.repeat(this.extensionConverters, converter => {
             return html `
                     <devtools-menu-item
                      .value=${converter.getId()}
@@ -1126,7 +1154,7 @@ let RecorderController = class RecorderController extends LitElement {
         }}
             ></devtools-button>
             <div class="feedback">
-              <x-link class="x-link" href=${Components.StartView.FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+              <x-link class="x-link" href=${FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
             </div>
             <div class="separator"></div>
             <devtools-shortcut-dialog

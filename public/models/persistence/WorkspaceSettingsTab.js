@@ -41,6 +41,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     mappingViewByPath;
     constructor() {
         super();
+        this.registerRequiredCSS(workspaceSettingsTabStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('workspace')}`);
         this.containerElement =
             this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
@@ -68,10 +69,6 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
         const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addFolder), this.addFileSystemClicked.bind(this), { jslogContext: 'sources.add-folder-to-workspace' });
         addButton.classList.add('add-folder');
         this.#addButtonContainer.appendChild(addButton);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([workspaceSettingsTabStyles]);
     }
     createFolderExcludePatternInput() {
         const excludePatternElement = document.createElement('div');

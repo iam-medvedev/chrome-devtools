@@ -52,6 +52,13 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private primaryPageTargetPromiseCallback;
     private primaryPageTargetPromise;
     constructor(traceModel?: Trace.TraceModel.Model);
+    /**
+     * This "disables" the 3P checkbox in the toolbar.
+     * Disabling here does a couple of things:
+     * 1) makes the checkbox dimmed and unclickable
+     * 2) gives the checkbox UI an indeterminate state
+     */
+    set3PCheckboxDisabled(disabled: boolean): void;
     static instance(opts?: {
         forceNew: boolean | null;
         isNode: boolean;
@@ -151,6 +158,7 @@ export declare const headerHeight = 20;
 export interface TimelineModeViewDelegate {
     select(selection: TimelineSelection | null): void;
     element: Element;
+    set3PCheckboxDisabled(disabled: boolean): void;
     selectEntryAtTime(events: Trace.Types.Events.Event[] | null, time: number): void;
     highlightEvent(event: Trace.Types.Events.Event | null): void;
 }

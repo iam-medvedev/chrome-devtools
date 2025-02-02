@@ -60,8 +60,6 @@ export declare class Button extends HTMLElement {
     #private;
     static formAssociated: boolean;
     constructor();
-    addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
     cloneNode(deep?: boolean): Node;
     /**
      * Perfer using the .data= setter instead of setting the individual properties

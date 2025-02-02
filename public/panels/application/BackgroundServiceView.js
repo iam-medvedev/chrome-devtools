@@ -162,6 +162,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
     }
     constructor(serviceName, model) {
         super(true);
+        this.registerRequiredCSS(emptyWidgetStyles, backgroundServiceViewStyles);
         this.serviceName = serviceName;
         const kebabName = Platform.StringUtilities.toKebabCase(serviceName);
         this.element.setAttribute('jslog', `${VisualLogging.pane().context(kebabName)}`);
@@ -435,10 +436,6 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         const events = this.model.getEvents(this.serviceName).filter(event => this.acceptEvent(event));
         await stream.write(JSON.stringify(events, undefined, 2));
         void stream.close();
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([emptyWidgetStyles, backgroundServiceViewStyles]);
     }
 }
 export class EventDataNode extends DataGrid.DataGrid.DataGridNode {

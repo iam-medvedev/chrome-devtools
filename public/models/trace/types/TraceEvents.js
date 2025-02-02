@@ -28,8 +28,14 @@ export function isAuctionWorkletRunningInProcess(event) {
 export function isAuctionWorkletDoneWithProcess(event) {
     return event.name === 'AuctionWorkletDoneWithProcess';
 }
+export function isLegacyScreenshot(event) {
+    return event.name === "Screenshot" /* Name.SCREENSHOT */ && 'id' in event;
+}
+export function isLegacySyntheticScreenshot(event) {
+    return event.name === "Screenshot" /* Name.SCREENSHOT */ && 'dataUri' in (event.args ?? {});
+}
 export function isScreenshot(event) {
-    return event.name === "Screenshot" /* Name.SCREENSHOT */;
+    return event.name === "Screenshot" /* Name.SCREENSHOT */ && 'source_id' in (event.args ?? {});
 }
 const markerTypeGuards = [
     isMarkDOMContent,
@@ -264,10 +270,6 @@ export function isFrameCommittedInBrowser(event) {
 export function isCommitLoad(event) {
     return event.name === 'CommitLoad';
 }
-/** @deprecated You probably want `isNavigationStart` instead. */
-export function isNavigationStartUnreliable(event) {
-    return event.name === 'navigationStart';
-}
 export function isAnimation(event) {
     // We've found some rare traces with an Animtation trace event from a different category: https://crbug.com/1472375#comment7
     return event.name === 'Animation' && event.cat.includes('devtools.timeline');
@@ -355,7 +357,7 @@ export function isResourceReceivedData(event) {
     return event.name === 'ResourceReceivedData';
 }
 export function isSyntheticNetworkRequest(event) {
-    return event.name === 'SyntheticNetworkRequest';
+    return event.name === "SyntheticNetworkRequest" /* Name.SYNTHETIC_NETWORK_REQUEST */;
 }
 export function isSyntheticWebSocketConnection(event) {
     return event.name === 'SyntheticWebSocketConnection';
@@ -368,7 +370,7 @@ export function isPrePaint(event) {
 }
 /** A VALID navigation start (as it has a populated documentLoaderURL) */
 export function isNavigationStart(event) {
-    return Boolean(isNavigationStartUnreliable(event) && event.args.data && event.args.data.documentLoaderURL !== '');
+    return event.name === 'navigationStart' && event.args?.data?.documentLoaderURL !== '';
 }
 export function isMainFrameViewport(event) {
     return event.name === 'PaintTimingVisualizer::Viewport';

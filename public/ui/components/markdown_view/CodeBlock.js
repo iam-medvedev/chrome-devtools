@@ -7,10 +7,13 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import styles from './codeBlock.css.js';
-const { html } = LitHtml;
+import stylesRaw from './codeBlock.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const styles = new CSSStyleSheet();
+styles.replaceSync(stylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description The header text if not present and language is not set.
@@ -122,7 +125,7 @@ export class CodeBlock extends HTMLElement {
         }}
           @click=${this.#onCopy}
         ></devtools-button>
-        ${this.#copied ? html `<span>${i18nString(UIStrings.copied)}</span>` : LitHtml.nothing}
+        ${this.#copied ? html `<span>${i18nString(UIStrings.copied)}</span>` : Lit.nothing}
       </div>`;
         // clang-format on
     }
@@ -141,15 +144,15 @@ export class CodeBlock extends HTMLElement {
     #render() {
         const header = (this.#header ?? this.#codeLang) || i18nString(UIStrings.code);
         // clang-format off
-        LitHtml.render(html `<div class='codeblock' jslog=${VisualLogging.section('code')}>
+        Lit.render(html `<div class='codeblock' jslog=${VisualLogging.section('code')}>
       <div class="editor-wrapper">
         <div class="heading">
           <h4 class="heading-text">${header}</h4>
-          ${this.#showCopyButton ? this.#renderCopyButton() : LitHtml.nothing}
+          ${this.#showCopyButton ? this.#renderCopyButton() : Lit.nothing}
         </div>
         ${this.#renderTextEditor()}
       </div>
-      ${this.#displayNotice ? this.#renderNotice() : LitHtml.nothing}
+      ${this.#displayNotice ? this.#renderNotice() : Lit.nothing}
     </div>`, this.#shadow, {
             host: this,
         });

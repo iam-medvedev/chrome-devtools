@@ -5,7 +5,6 @@ export declare class WorkspaceSettingsTab extends UI.Widget.VBox {
     private readonly elementByPath;
     private readonly mappingViewByPath;
     constructor();
-    wasShown(): void;
     private createFolderExcludePatternInput;
     private addItem;
     private getFilename;

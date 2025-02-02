@@ -44,6 +44,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
     isEditingMetrics;
     constructor(computedStyleModel) {
         super(computedStyleModel);
+        this.registerRequiredCSS(metricsSidebarPaneStyles);
         this.originalPropertyData = null;
         this.previousPropertyDataCandidate = null;
         this.inlineStyle = null;
@@ -415,10 +416,6 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
     editingCommitted(element, userInput, previousContent, context) {
         this.editingEnded(element, context);
         this.applyUserInput(element, userInput, previousContent, context, true);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([metricsSidebarPaneStyles]);
     }
 }
 //# sourceMappingURL=MetricsSidebarPane.js.map

@@ -16,5 +16,5 @@ export declare class SecurityPanelSidebar extends UI.Widget.VBox {
     get originGroups(): Map<OriginGroup, UI.TreeOutline.TreeElement>;
     updateOrigin(origin: string, securityState: Protocol.Security.SecurityState): void;
     clearOrigins(): void;
-    wasShown(): void;
+    focus(): void;
 }

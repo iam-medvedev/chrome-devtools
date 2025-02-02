@@ -7,9 +7,9 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import originMapStyles from './originMap.css.js';
-const { html } = LitHtml;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Title for a column in a data table representing a site origin used for development
@@ -49,7 +49,7 @@ export class OriginMap extends UI.Widget.WidgetElement {
     }
     createWidget() {
         const containerWidget = new UI.Widget.Widget(false, false, this);
-        this.#list.registerCSSFiles([originMapStyles]);
+        this.#list.registerRequiredCSS(originMapStyles);
         this.#list.show(containerWidget.contentElement);
         return containerWidget;
     }
@@ -85,7 +85,7 @@ export class OriginMap extends UI.Widget.WidgetElement {
     #renderOriginWarning(url) {
         return RenderCoordinator.write(async () => {
             if (!CrUXManager.CrUXManager.instance().isEnabled()) {
-                return LitHtml.nothing;
+                return Lit.nothing;
             }
             const cruxManager = CrUXManager.CrUXManager.instance();
             const result = await cruxManager.getFieldDataForPage(url);
@@ -96,7 +96,7 @@ export class OriginMap extends UI.Widget.WidgetElement {
                 return Boolean(value);
             });
             if (hasFieldData) {
-                return LitHtml.nothing;
+                return Lit.nothing;
             }
             return html `
         <devtools-icon
@@ -125,14 +125,14 @@ export class OriginMap extends UI.Widget.WidgetElement {
         if (originMapping.isTitleRow) {
             element.classList.add('header');
             cellRole = 'columnheader';
-            warningIcon = LitHtml.nothing;
+            warningIcon = Lit.nothing;
         }
         else {
             cellRole = 'cell';
-            warningIcon = LitHtml.Directives.until(this.#renderOriginWarning(originMapping.productionOrigin));
+            warningIcon = Lit.Directives.until(this.#renderOriginWarning(originMapping.productionOrigin));
         }
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <div class="origin-mapping-cell development-origin" role=${cellRole}>
         <div class="origin" title=${originMapping.developmentOrigin}>${originMapping.developmentOrigin}</div>
       </div>
@@ -200,7 +200,7 @@ export class OriginMap extends UI.Widget.WidgetElement {
         const devInput = editor.createInput(DEV_ORIGIN_CONTROL, 'text', i18nString(UIStrings.developmentOrigin), this.#developmentValidator.bind(this));
         const prodInput = editor.createInput(PROD_ORIGIN_CONTROL, 'text', i18nString(UIStrings.productionOrigin), this.#productionValidator.bind(this));
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <label class="development-origin-input">
         ${i18nString(UIStrings.developmentOrigin)}
         ${devInput}

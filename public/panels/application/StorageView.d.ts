@@ -37,7 +37,6 @@ export declare class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     doUpdate(): Promise<void>;
     private populatePieChart;
     private getStorageTypeName;
-    wasShown(): void;
 }
 export declare const AllStorageTypes: Protocol.Storage.StorageType[];
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {

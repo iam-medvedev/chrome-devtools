@@ -18,7 +18,6 @@ export declare class IconButton extends HTMLElement {
     #private;
     set data(data: IconButtonData);
     get data(): IconButtonData;
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

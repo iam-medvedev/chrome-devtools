@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import timelineSummaryStyles from './timelineSummary.css.js';
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description Text for total
@@ -21,7 +21,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/TimelineSummary.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineSummary extends HTMLElement {
-    #shadow = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: [timelineSummaryStyles], delegatesFocus: undefined });
+    #shadow = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummaryStyles, delegatesFocus: undefined });
     #rangeStart = 0;
     #rangeEnd = 0;
     #total = 0;

@@ -14,5 +14,4 @@ export declare class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget
     private setNode;
     doUpdate(): Promise<void>;
     private onNodeChange;
-    wasShown(): void;
 }

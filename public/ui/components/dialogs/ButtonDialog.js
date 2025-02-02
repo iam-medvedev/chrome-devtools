@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import buttonDialogStyles from './buttonDialog.css.js';
-const { html } = LitHtml;
+import { html, render } from '../../../ui/lit/lit.js';
+import buttonDialogStylesRaw from './buttonDialog.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const buttonDialogStyles = new CSSStyleSheet();
+buttonDialogStyles.replaceSync(buttonDialogStylesRaw.cssContent);
 export class ButtonDialog extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
@@ -43,7 +45,7 @@ export class ButtonDialog extends HTMLElement {
             throw new Error('Button dialog render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
+        render(html `
       <devtools-button
         @click=${this.#showDialog}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {

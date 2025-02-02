@@ -891,6 +891,8 @@ export class PageDispatcher {
     }
     frameClearedScheduledNavigation({}) {
     }
+    frameStartedNavigating({}) {
+    }
     navigatedWithinDocument({}) {
     }
     frameResized() {

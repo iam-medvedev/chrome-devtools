@@ -1469,7 +1469,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
     buildPseudoElementDOM(parentElement, pseudoElementName) {
         const pseudoElement = parentElement.createChild('span', 'webkit-html-pseudo-element');
-        pseudoElement.textContent = '::' + pseudoElementName;
+        pseudoElement.textContent = pseudoElementName;
         UI.UIUtils.createTextChild(parentElement, '\u200B');
     }
     buildTagDOM(parentElement, tagName, isClosingTag, isDistinctTreeElement, updateRecord) {
@@ -1539,8 +1539,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 this.buildAttributeDOM(titleDOM, node.name, node.value, updateRecord, true);
                 break;
             case Node.ELEMENT_NODE: {
-                let pseudoElementName = node.pseudoType();
-                if (pseudoElementName) {
+                if (node.pseudoType()) {
+                    let pseudoElementName = node.nodeName();
                     const pseudoIdentifier = node.pseudoIdentifier();
                     if (pseudoIdentifier) {
                         pseudoElementName += `(${pseudoIdentifier})`;

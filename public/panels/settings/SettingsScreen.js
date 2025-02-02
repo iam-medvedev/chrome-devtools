@@ -105,17 +105,18 @@ export class SettingsScreen extends UI.Widget.VBox {
     reportTabOnReveal;
     constructor() {
         super(true);
+        this.registerRequiredCSS(settingsScreenStyles);
         this.contentElement.classList.add('settings-window-main');
         this.contentElement.classList.add('vbox');
         const settingsLabelElement = document.createElement('div');
         settingsLabelElement.classList.add('settings-window-label-element');
-        const settingsTitleElement = UI.UIUtils.createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: [settingsScreenStyles] })
+        const settingsTitleElement = UI.UIUtils.createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: settingsScreenStyles })
             .createChild('div', 'settings-window-title');
         UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
         settingsTitleElement.textContent = i18nString(UIStrings.settings);
         this.tabbedLocation = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => SettingsScreen.revealSettingsScreen(), 'settings-view');
         const tabbedPane = this.tabbedLocation.tabbedPane();
-        tabbedPane.registerCSSFiles([settingsScreenStyles]);
+        tabbedPane.registerRequiredCSS(settingsScreenStyles);
         tabbedPane.headerElement().prepend(settingsLabelElement);
         tabbedPane.setShrinkableTabs(false);
         tabbedPane.makeVerticalTabLayout();
@@ -203,10 +204,6 @@ export class SettingsScreen extends UI.Widget.VBox {
         if (this.tabbedLocation.tabbedPane().selectedTabId === 'keybinds' && this.keybindsTab) {
             this.keybindsTab.onEscapeKeyPressed(event);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([settingsScreenStyles]);
     }
 }
 class SettingsTab extends UI.Widget.VBox {

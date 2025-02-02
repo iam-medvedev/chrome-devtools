@@ -19,7 +19,6 @@ export declare class CoverageListView extends UI.Widget.VBox {
     private onOpenedNode;
     private revealSourceForSelectedNode;
     private sortingChanged;
-    wasShown(): void;
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
     coverageInfo: URLCoverageInfo;

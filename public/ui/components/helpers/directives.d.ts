@@ -1,16 +1,16 @@
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 /**
- * Provides a hook to get a callback when a LitHtml node is rendered into the DOM:
+ * Provides a hook to get a callback when a Lit node is rendered into the DOM:
  * @example
  *
  * ```
  * <p on-render=${nodeRenderedCallback(node => ...)}>
  * ```
  */
-declare class NodeRenderedCallback extends LitHtml.Directive.Directive {
-    constructor(partInfo: LitHtml.Directive.PartInfo);
-    update(part: LitHtml.Directive.ElementPart, [callback]: LitHtml.Directive.DirectiveParameters<this>): void;
+declare class NodeRenderedCallback extends Lit.Directive.Directive {
+    constructor(partInfo: Lit.Directive.PartInfo);
+    update(part: Lit.Directive.ElementPart, [callback]: Lit.Directive.DirectiveParameters<this>): void;
     render(_callback: (domNode: Element) => void): void;
 }
-export declare const nodeRenderedCallback: (_callback: (domNode: Element) => void) => LitHtml.Directive.DirectiveResult<typeof NodeRenderedCallback>;
+export declare const nodeRenderedCallback: (_callback: (domNode: Element) => void) => Lit.Directive.DirectiveResult<typeof NodeRenderedCallback>;
 export {};

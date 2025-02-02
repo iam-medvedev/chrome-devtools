@@ -1,13 +1,14 @@
 import type * as Platform from '../../../core/platform/platform.js';
 export interface AdornerData {
     name: string;
-    content: HTMLElement;
+    content?: HTMLElement;
     jslogContext?: string;
 }
 export declare class Adorner extends HTMLElement {
     #private;
     name: string;
     set data(data: AdornerData);
+    cloneNode(deep?: boolean): Node;
     connectedCallback(): void;
     isActive(): boolean;
     /**

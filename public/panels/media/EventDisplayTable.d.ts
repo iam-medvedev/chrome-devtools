@@ -25,5 +25,4 @@ export declare class PlayerEventsView extends UI.Widget.VBox {
     onEvent(event: PlayerEvent): void;
     private subtractFirstEventTime;
     private static convertToGridDescriptor;
-    wasShown(): void;
 }

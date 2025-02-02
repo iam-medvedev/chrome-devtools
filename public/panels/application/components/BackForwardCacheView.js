@@ -12,11 +12,14 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { NotRestoredReasonDescription } from './BackForwardCacheStrings.js';
-import backForwardCacheViewStyles from './backForwardCacheView.css.js';
-const { html } = LitHtml;
+import backForwardCacheViewStylesRaw from './backForwardCacheView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const backForwardCacheViewStyles = new CSSStyleSheet();
+backForwardCacheViewStyles.replaceSync(backForwardCacheViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Title text in back/forward cache view of the Application panel
@@ -157,7 +160,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         await RenderCoordinator.write('BackForwardCacheView render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
         <devtools-report .data=${{ reportTitle: i18nString(UIStrings.backForwardCacheTitle) }} jslog=${VisualLogging.pane('back-forward-cache')}>
 
           ${this.#renderMainFrameInformation()}
@@ -270,7 +273,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
     }
     #maybeRenderFrameTree(explanationTree) {
         if (!explanationTree || (explanationTree.explanations.length === 0 && explanationTree.children.length === 0)) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         function treeNodeRenderer(node) {
             // clang-format off
@@ -284,7 +287,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
                 height: '20px',
             }}>
             </devtools-icon>
-          ` : LitHtml.nothing}
+          ` : Lit.nothing}
           ${node.treeNodeData.text}
         </div>
       `;
@@ -442,7 +445,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
     }
     #maybeRenderExplanations(explanations, explanationTree) {
         if (explanations.length === 0) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const pageSupportNeeded = explanations.filter(explanation => explanation.type === "PageSupportNeeded" /* Protocol.Page.BackForwardCacheNotRestoredReasonType.PageSupportNeeded */);
         const supportPending = explanations.filter(explanation => explanation.type === "SupportPending" /* Protocol.Page.BackForwardCacheNotRestoredReasonType.SupportPending */);
@@ -478,7 +481,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
           </div>
         </devtools-report-section-header>
         ${explanations.map(explanation => this.#renderReason(explanation, reasonToFramesMap.get(explanation.reason)))}
-      ` : LitHtml.nothing}
+      ` : Lit.nothing}
     `;
         // clang-format on
     }
@@ -492,11 +495,11 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
       <devtools-chrome-link .href=${link}>${explanation.context}</devtools-chrome-link>`;
             // clang-format on
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #renderFramesPerReason(frames) {
         if (frames === undefined || frames.length === 0) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const rows = [html `<div>${i18nString(UIStrings.framesPerIssue, { n: frames.length })}</div>`];
         rows.push(...frames.map(url => html `<div class="text-ellipsis" title=${url}
@@ -523,11 +526,11 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
           ${i18nString(UIStrings.neverUseUnload)}
         </x-link>`;
         }
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     #maybeRenderJavaScriptDetails(details) {
         if (details === undefined || details.length === 0) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const maxLengthForDisplayedURLs = 50;
         const linkifier = new Components.Linkifier.Linkifier(maxLengthForDisplayedURLs);
@@ -563,7 +566,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
               ${this.#maybeRenderDeepLinkToUnload(explanation)}
               ${this.#maybeRenderReasonContext(explanation)}
            </div>` :
-            LitHtml.nothing}
+            Lit.nothing}
       </devtools-report-section>
       <div class="gray-text">
         ${explanation.reason}

@@ -1,7 +1,7 @@
 import * as Protocol from '../../generated/protocol.js';
 import { OverlayModel } from './OverlayModel.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class EmulationModel extends SDKModel<void> {
     #private;
     constructor(target: Target);

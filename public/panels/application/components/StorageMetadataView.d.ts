@@ -2,7 +2,7 @@ import '../../../ui/components/report_view/report_view.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 export declare class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
     getShadow(): ShadowRoot;
@@ -11,9 +11,9 @@ export declare class StorageMetadataView extends LegacyWrapper.LegacyWrapper.Wra
     enableStorageBucketControls(model: SDK.StorageBucketsModel.StorageBucketsModel): void;
     render(): Promise<void>;
     getTitle(): string | undefined;
-    key(content: string | LitHtml.TemplateResult): LitHtml.TemplateResult;
-    value(content: string | LitHtml.TemplateResult): LitHtml.TemplateResult;
-    renderReportContent(): Promise<LitHtml.LitTemplate>;
+    key(content: string | Lit.TemplateResult): Lit.TemplateResult;
+    value(content: string | Lit.TemplateResult): Lit.TemplateResult;
+    renderReportContent(): Promise<Lit.LitTemplate>;
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -1,8 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { StepType, } from './Schema.js';
 import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+import { StepType, } from './Schema.js';
 export function createViewportStep(viewport) {
     return {
         type: StepType.SetViewport,

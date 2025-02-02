@@ -40,6 +40,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     constructor(calculator) {
         // TODO(allada) Make this a shadowDOM when the NetworkWaterfallColumn gets moved into NetworkLogViewColumns.
         super(false);
+        this.registerRequiredCSS(networkWaterfallColumnStyles);
         this.canvas = this.contentElement.createChild('canvas');
         this.canvas.tabIndex = -1;
         this.setDefaultFocusedElement(this.canvas);
@@ -167,10 +168,11 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     willHide() {
         this.popoverHelper.hidePopover();
+        super.willHide();
     }
     wasShown() {
+        super.wasShown();
         this.update();
-        this.registerCSSFiles([networkWaterfallColumnStyles]);
     }
     onMouseMove(event) {
         this.setHoveredNode(this.getNodeFromPoint(event.offsetX, event.offsetY), event.shiftKey);
@@ -228,7 +230,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
             box: anchorBox,
             show: (popover) => {
                 const content = RequestTimingView.createTimingTable(request, this.calculator);
-                popover.registerCSSFiles([networkingTimingTableStyles]);
+                popover.registerRequiredCSS(networkingTimingTableStyles);
                 popover.contentElement.appendChild(content);
                 return Promise.resolve(true);
             },

@@ -10,10 +10,13 @@ import * as IconButton from '../../../../ui/components/icon_button/icon_button.j
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
-import preloadingDisabledInfobarStyles from './preloadingDisabledInfobar.css.js';
-const { html } = LitHtml;
+import preloadingDisabledInfobarStylesRaw from './preloadingDisabledInfobar.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const preloadingDisabledInfobarStyles = new CSSStyleSheet();
+preloadingDisabledInfobarStyles.replaceSync(preloadingDisabledInfobarStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Infobar text for disabled case
@@ -103,7 +106,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
     }
     async #render() {
         await RenderCoordinator.write('PreloadingDisabledInfobar render', () => {
-            LitHtml.render(this.#renderInternal(), this.#shadow, { host: this });
+            Lit.render(this.#renderInternal(), this.#shadow, { host: this });
         });
     }
     #renderInternal() {
@@ -117,7 +120,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
             header = i18nString(UIStrings.infobarPreloadingIsForceEnabled);
         }
         else {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
@@ -174,7 +177,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
     }
     #maybeKeyValue(shouldShow, header, description) {
         if (!shouldShow) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <div class='key'>

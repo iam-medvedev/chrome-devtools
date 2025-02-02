@@ -33,6 +33,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RemoteDebuggingTerminatedScreen extends VBox {
     constructor(reason) {
         super(true);
+        this.registerRequiredCSS(remoteDebuggingTerminatedScreenStyles);
         const message = this.contentElement.createChild('div', 'message');
         const span = message.createChild('span');
         span.append(i18nString(UIStrings.debuggingConnectionWasClosed));
@@ -49,10 +50,6 @@ export class RemoteDebuggingTerminatedScreen extends VBox {
         dialog.setDimmed(true);
         new RemoteDebuggingTerminatedScreen(reason).show(dialog.contentElement);
         dialog.show();
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([remoteDebuggingTerminatedScreenStyles]);
     }
 }
 //# sourceMappingURL=RemoteDebuggingTerminatedScreen.js.map

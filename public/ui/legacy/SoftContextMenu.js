@@ -98,7 +98,7 @@ export class SoftContextMenu {
         this.document = document;
         this.glassPane = new GlassPane();
         this.glassPane.setPointerEventsBehavior(this.parentMenu ? "PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */ : "BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
-        this.glassPane.registerCSSFiles([softContextMenuStyles]);
+        this.glassPane.registerRequiredCSS(softContextMenuStyles);
         this.glassPane.setContentAnchorBox(anchorBox);
         this.glassPane.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NO_MARGIN */);

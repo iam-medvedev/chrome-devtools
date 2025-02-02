@@ -5,9 +5,12 @@ import '../../../ui/components/chrome_link/chrome_link.js';
 import '../../../ui/components/settings/settings.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import syncSectionStyles from './syncSection.css.js';
-const { html } = LitHtml;
+import * as Lit from '../../../ui/lit/lit.js';
+import syncSectionStylesRaw from './syncSection.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const syncSectionStyles = new CSSStyleSheet();
+syncSectionStyles.replaceSync(syncSectionStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text shown to the user in the Settings UI. 'This setting' refers
@@ -55,7 +58,7 @@ export class SyncSection extends HTMLElement {
         this.#syncSetting?.setDisabled(checkboxDisabled);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <fieldset>
         ${renderAccountInfoOrWarning(this.#syncInfo)}
         <setting-checkbox .data=${{ setting: this.#syncSetting }}>

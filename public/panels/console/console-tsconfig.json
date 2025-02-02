@@ -111,6 +111,9 @@
     },
     {
       "path": "../console_counters/bundle-tsconfig.json"
+    },
+    {
+      "path": "../security/bundle-tsconfig.json"
     }
   ]
 }

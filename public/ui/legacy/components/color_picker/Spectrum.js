@@ -248,6 +248,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     colorStringInternal;
     constructor(contrastInfo) {
         super(true);
+        this.registerRequiredCSS(spectrumStyles);
         this.contentElement.tabIndex = 0;
         this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('colorPicker').parent('mapped').track({ keydown: 'Enter|Escape' })}`);
         this.colorElement = this.contentElement.createChild('div', 'spectrum-color');
@@ -1173,7 +1174,6 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.innerSetColor(color, undefined, undefined /* colorName */, colorFormat, ChangeSource.Input);
     }
     wasShown() {
-        this.registerCSSFiles([spectrumStyles]);
         this.hueAlphaWidth = this.hueElement.offsetWidth;
         this.slideHelperWidth = this.hueSlider.offsetWidth / 2;
         this.dragWidth = this.colorElement.offsetWidth;

@@ -24,6 +24,7 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     debouncedStartPreviewAnimation;
     constructor(model) {
         super(true);
+        this.registerRequiredCSS(bezierEditorStyles);
         this.model = model;
         this.contentElement.tabIndex = 0;
         this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('bezierEditor').parent('mapped').track({ keydown: 'Enter|Escape' })}`);
@@ -80,7 +81,6 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.updateUI();
     }
     wasShown() {
-        this.registerCSSFiles([bezierEditorStyles]);
         this.unselectPresets();
         // Check if bezier matches a preset
         for (const category of this.presetCategories) {

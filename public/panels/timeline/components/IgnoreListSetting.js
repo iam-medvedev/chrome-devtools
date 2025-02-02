@@ -10,9 +10,12 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import ignoreListSettingStyles from './ignoreListSetting.css.js';
-const { html } = LitHtml;
+import * as Lit from '../../../ui/lit/lit.js';
+import ignoreListSettingStylesRaw from './ignoreListSetting.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const ignoreListSettingStyles = new CSSStyleSheet();
+ignoreListSettingStyles.replaceSync(ignoreListSettingStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text title for the button to open the ignore list setting.
@@ -206,14 +209,14 @@ export class IgnoreListSetting extends HTMLElement {
         this.#newRegexInput.addEventListener('focus', this.#startEditing.bind(this), false);
     }
     #renderNewRegexRow() {
-        const classes = LitHtml.Directives.classMap({
+        const classes = Lit.Directives.classMap({
             'input-validation': true,
             'input-validation-error': !this.#newRegexIsValid,
         });
         return html `
       <div class='new-regex-row'>${this.#newRegexCheckbox}${this.#newRegexInput}</div>
       ${this.#newRegexValidationMessage ? html `<div class=${classes}>${this.#newRegexValidationMessage}</div>` :
-            LitHtml.nothing}
+            Lit.nothing}
     `;
     }
     #onRegexEnableToggled(regex, checkbox) {
@@ -281,7 +284,7 @@ export class IgnoreListSetting extends HTMLElement {
       </devtools-button-dialog>
     `;
         // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-perf-ignore-list-setting', IgnoreListSetting);

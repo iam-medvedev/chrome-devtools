@@ -200,6 +200,7 @@ export class SensorsView extends UI.Widget.VBox {
     originalBoxMatrix;
     constructor() {
         super(true);
+        this.registerRequiredCSS(sensorsStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('sensors').track({ resize: true })}`);
         this.contentElement.classList.add('sensors-view');
         this.#locationSetting = Common.Settings.Settings.instance().createSetting('emulation.location-override', '');
@@ -221,10 +222,6 @@ export class SensorsView extends UI.Widget.VBox {
         this.createPanelSeparator();
         this.createPressureSection();
         this.createPanelSeparator();
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([sensorsStyles]);
     }
     createPanelSeparator() {
         this.contentElement.createChild('div').classList.add('panel-section-separator');

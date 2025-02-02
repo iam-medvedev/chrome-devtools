@@ -5,9 +5,11 @@ import './ButtonDialog.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import shortcutDialogStyles from './shortcutDialog.css.js';
-const { html } = LitHtml;
+import { html, nothing, render } from '../../../ui/lit/lit.js';
+import shortcutDialogStylesRaw from './shortcutDialog.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const shortcutDialogStyles = new CSSStyleSheet();
+shortcutDialogStyles.replaceSync(shortcutDialogStylesRaw.cssContent);
 const UIStrings = {
     /**
      * @description Title of question mark button for the shortcuts dialog.
@@ -44,7 +46,7 @@ export class ShortcutDialog extends HTMLElement {
             throw new Error('Shortcut dialog render was not scheduled');
         }
         // clang-format off
-        LitHtml.render(html `
+        render(html `
       <devtools-button-dialog .data=${{
             openOnRender: this.#openOnRender,
             closeButton: true,
@@ -54,7 +56,7 @@ export class ShortcutDialog extends HTMLElement {
             iconTitle: i18nString(UIStrings.showShortcutTitle),
         }}>
         <ul class="keybinds-list">
-          ${(this.#prependedElement) ? html `${this.#prependedElement}` : LitHtml.nothing}
+          ${(this.#prependedElement) ? html `${this.#prependedElement}` : nothing}
           ${this.#shortcuts.map(shortcut => html `
               <li class="keybinds-list-item">
                 <div class="keybinds-list-title">${shortcut.title}</div>

@@ -7,10 +7,12 @@ import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import { PanelUtils } from '../../../panels/utils/utils.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import webBundleInfoViewStyles from './WebBundleInfoView.css.js';
-const { render, html } = LitHtml;
+import webBundleInfoViewStylesRaw from './WebBundleInfoView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const webBundleInfoViewStyles = new CSSStyleSheet();
+webBundleInfoViewStyles.replaceSync(webBundleInfoViewStylesRaw.cssContent);
 const { mimeFromURL, fromMimeTypeOverride, fromMimeType } = Common.ResourceType.ResourceType;
 const { iconDataForResourceType } = PanelUtils;
 const UIStrings = {
@@ -55,7 +57,7 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
           </devtools-icon>
         </x-link>
       </div>
-      <devtools-new-data-grid>
+      <devtools-data-grid striped>
         <table>
           <tr><th id="url">${i18nString(UIStrings.bundledResource)}</th></tr>
           ${this.#webBundleInfo.resourceUrls?.map(url => {
@@ -70,7 +72,7 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
                 </div></td></tr>`;
         })}
         </table>
-      </devtools-new-data-grid>`, this.#shadow, { host: this });
+      </devtools-data-grid>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

@@ -16,11 +16,14 @@ import * as Input from '../../../ui/components/input/input.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import breakpointsViewStyles from './breakpointsView.css.js';
+import breakpointsViewStylesRaw from './breakpointsView.css.js';
 import { findNextNodeForKeyboardNavigation, getDifferentiatingPathMap } from './BreakpointsViewUtils.js';
-const { html, Directives: { ifDefined, repeat, classMap, live } } = LitHtml;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const breakpointsViewStyles = new CSSStyleSheet();
+breakpointsViewStyles.replaceSync(breakpointsViewStylesRaw.cssContent);
+const { html, Directives: { ifDefined, repeat, classMap, live } } = Lit;
 const UIStrings = {
     /**
      *@description Label for a checkbox to toggle pausing on uncaught exceptions in the breakpoint sidebar of the Sources panel. When the checkbox is checked, DevTools will pause if an uncaught exception is thrown at runtime.
@@ -490,7 +493,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
           ${repeat(this.#breakpointGroups, group => group.url, (group, groupIndex) => html `${this.#renderBreakpointGroup(group, groupIndex)}`)}
         </div>`;
             // clang-format on
-            LitHtml.render(out, this.#shadow, { host: this });
+            Lit.render(out, this.#shadow, { host: this });
         });
         // If no element is tabbable, set the pause-on-exceptions to be tabbable. This can happen
         // if the previously focused element was removed.
@@ -783,7 +786,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
       </label>
       <span class='code-snippet' @click=${codeSnippetClickHandler} title=${ifDefined(codeSnippetTooltip)} jslog=${VisualLogging.action('sources.jump-to-breakpoint').track({ click: true })}>${codeSnippet}</span>
       <span class='breakpoint-item-location-or-actions'>
-        ${editable ? this.#renderEditBreakpointButton(breakpointItem) : LitHtml.nothing}
+        ${editable ? this.#renderEditBreakpointButton(breakpointItem) : Lit.nothing}
         ${this.#renderRemoveBreakpointButton([breakpointItem], i18nString(UIStrings.removeBreakpoint), Host.UserMetrics.Action.BreakpointRemovedFromRemoveButton)}
         <span class='location'>${breakpointItem.location}</span>
       </span>

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
-import textPromptStyles from './textPrompt.css.js';
-const { html } = LitHtml;
+import { html, render } from '../../lit/lit.js';
+import textPromptStylesRaw from './textPrompt.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const textPromptStyles = new CSSStyleSheet();
+textPromptStyles.replaceSync(textPromptStylesRaw.cssContent);
 export class PromptInputEvent extends Event {
     static eventName = 'promptinputchanged';
     data;
@@ -100,7 +102,7 @@ export class TextPrompt extends HTMLElement {
         const output = html `
       <span class="prefix">${this.#prefixText} </span>
       <span class="text-prompt-input"><input class="input" aria-label=${this.#ariaLabelText} spellcheck="false" @input=${this.onInput} @keydown=${this.onKeyDown}/><input class="suggestion" aria-label=${this.#ariaLabelText + ' Suggestion'}></span>`;
-        LitHtml.render(output, this.#shadow, { host: this });
+        render(output, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-text-prompt', TextPrompt);

@@ -53,6 +53,7 @@ core/sdk/CSSMatchedStyles.test.js
 core/sdk/CSSModel.test.js
 core/sdk/CSSProperty.test.js
 core/sdk/CSSPropertyParser.test.js
+core/sdk/CSSPropertyParserMatchers.test.js
 core/sdk/CSSStyleDeclaration.test.js
 core/sdk/CSSStyleSheetHeader.test.js
 core/sdk/ChildTargetManager.test.js
@@ -348,7 +349,6 @@ panels/elements/ElementsTreeOutline.test.js
 panels/elements/InspectElementModeController.test.js
 panels/elements/PlatformFontsWidget.test.js
 panels/elements/PropertiesWidget.test.js
-panels/elements/PropertyMatchers.test.js
 panels/elements/PropertyRenderer.test.js
 panels/elements/StylePropertiesSection.test.js
 panels/elements/StylePropertyHighlighter.test.js
@@ -529,8 +529,6 @@ ui/components/buttons/Button.test.js
 ui/components/cards/Card.test.js
 ui/components/chrome_link/ChromeLink.test.js
 ui/components/code_highlighter/CodeHighlighter.test.js
-ui/components/data_grid/DataGrid.test.js
-ui/components/data_grid/DataGridController.test.js
 ui/components/dialogs/ButtonDialog.test.js
 ui/components/dialogs/Dialog.test.js
 ui/components/dialogs/ShortcutDialog.test.js
@@ -622,7 +620,7 @@ ui/legacy/components/source_frame/StreamingContentHexView.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js
 ui/legacy/components/utils/Linkifier.test.js
 ui/legacy/theme_support/ThemeSupport.test.js
-ui/lit-html/i18n-template.test.js
+ui/lit/i18n-template.test.js
 ui/visual_logging/Debugging.test.js
 ui/visual_logging/DomState.test.js
 ui/visual_logging/LoggingConfig.test.js

@@ -11,11 +11,11 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as SuggestionInput from '../../ui/components/suggestion_input/suggestion_input.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsComponents from '../elements/components/components.js';
 import editorWidgetStyles from './JSONEditor.css.js';
-const { html, render, Directives, nothing } = LitHtml;
+const { html, render, Directives, nothing } = Lit;
 const { live, classMap, repeat } = Directives;
 const UIStrings = {
     /**
@@ -82,6 +82,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #hintPopoverHelper;
     constructor(metadataByCommand, typesByName, enumsByName) {
         super(/* useShadowDom=*/ true);
+        this.registerRequiredCSS(editorWidgetStyles);
         this.#metadataByCommand = metadataByCommand;
         this.#typesByName = typesByName;
         this.#enumsByName = enumsByName;
@@ -147,7 +148,6 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([editorWidgetStyles]);
         this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.contentElement, event => this.#handlePopoverDescriptions(event), 'protocol-monitor.hint');
         this.#hintPopoverHelper.setDisableOnClick(true);
         this.#hintPopoverHelper.setTimeout(300);

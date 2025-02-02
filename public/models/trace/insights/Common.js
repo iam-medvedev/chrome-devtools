@@ -38,7 +38,7 @@ export function getCLS(insights, key) {
     const insight = getInsight('CLSCulprits', insights, key);
     if (!insight) {
         // Unlike the other metrics, there is always a value for CLS even with no data.
-        return { value: 0, worstShiftEvent: null };
+        return { value: 0, worstClusterEvent: null };
     }
     // TODO(cjamcl): the CLS insight should be doing this for us.
     let maxScore = 0;
@@ -49,7 +49,7 @@ export function getCLS(insights, key) {
             worstCluster = cluster;
         }
     }
-    return { value: maxScore, worstShiftEvent: worstCluster?.worstShiftEvent ?? null };
+    return { value: maxScore, worstClusterEvent: worstCluster ?? null };
 }
 export function evaluateLCPMetricScore(value) {
     return getLogNormalScore({ p10: 2500, median: 4000 }, value);
@@ -60,51 +60,56 @@ export function evaluateINPMetricScore(value) {
 export function evaluateCLSMetricScore(value) {
     return getLogNormalScore({ p10: 0.1, median: 0.25 }, value);
 }
-function getPageResult(cruxFieldData, url, origin) {
+function getPageResult(cruxFieldData, url, origin, scope = null) {
     return cruxFieldData.find(result => {
-        const key = (result['url-ALL'] || result['origin-ALL'])?.record.key;
+        const key = scope ? result[`${scope.pageScope}-${scope.deviceScope}`]?.record.key :
+            (result['url-ALL'] || result['origin-ALL'])?.record.key;
         return (key?.url && key.url === url) || (key?.origin && key.origin === origin);
     });
 }
-function getMetricResult(pageResult, name) {
-    let value = pageResult['url-ALL']?.record.metrics[name]?.percentiles?.p75;
-    if (typeof value === 'string') {
-        value = Number(value);
+function getMetricResult(pageResult, name, scope = null) {
+    const scopes = [];
+    if (scope) {
+        scopes.push(scope);
     }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-        return { value, pageScope: 'url' };
+    else {
+        scopes.push({ pageScope: 'url', deviceScope: 'ALL' });
+        scopes.push({ pageScope: 'origin', deviceScope: 'ALL' });
     }
-    value = pageResult['origin-ALL']?.record.metrics[name]?.percentiles?.p75;
-    if (typeof value === 'string') {
-        value = Number(value);
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-        return { value, pageScope: 'origin' };
+    for (const scope of scopes) {
+        const key = `${scope.pageScope}-${scope.deviceScope}`;
+        let value = pageResult[key]?.record.metrics[name]?.percentiles?.p75;
+        if (typeof value === 'string') {
+            value = Number(value);
+        }
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return { value, pageScope: scope.pageScope };
+        }
     }
     return null;
 }
-function getMetricTimingResult(pageResult, name) {
-    const result = getMetricResult(pageResult, name);
+function getMetricTimingResult(pageResult, name, scope = null) {
+    const result = getMetricResult(pageResult, name, scope);
     if (result) {
         const valueMs = result.value;
         return { value: Helpers.Timing.milliToMicro(valueMs), pageScope: result.pageScope };
     }
     return null;
 }
-export function getFieldMetricsForInsightSet(insightSet, metadata) {
+export function getFieldMetricsForInsightSet(insightSet, metadata, scope = null) {
     const cruxFieldData = metadata?.cruxFieldData;
     if (!cruxFieldData) {
         return null;
     }
-    const pageResult = getPageResult(cruxFieldData, insightSet.url.href, insightSet.url.origin);
+    const pageResult = getPageResult(cruxFieldData, insightSet.url.href, insightSet.url.origin, scope);
     if (!pageResult) {
         return null;
     }
     return {
-        fcp: getMetricTimingResult(pageResult, 'first_contentful_paint'),
-        lcp: getMetricTimingResult(pageResult, 'largest_contentful_paint'),
-        inp: getMetricTimingResult(pageResult, 'interaction_to_next_paint'),
-        cls: getMetricResult(pageResult, 'cumulative_layout_shift'),
+        fcp: getMetricTimingResult(pageResult, 'first_contentful_paint', scope),
+        lcp: getMetricTimingResult(pageResult, 'largest_contentful_paint', scope),
+        inp: getMetricTimingResult(pageResult, 'interaction_to_next_paint', scope),
+        cls: getMetricResult(pageResult, 'cumulative_layout_shift', scope),
     };
 }
 export function calculateMetricWeightsForSorting(insightSet, metadata) {

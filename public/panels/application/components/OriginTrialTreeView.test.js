@@ -148,7 +148,7 @@ function visibleNodesToTree(shadowRoot) {
 }
 /**
  * Wait until a certain number of children are rendered. We need this as the
- * component uses LitHtml's until directive, which is async and not within the
+ * component uses Lit's until directive, which is async and not within the
  * render coordinator's control.
  */
 async function waitForRenderedTreeNodeCount(shadowRoot, expectedNodeCount) {

@@ -45,7 +45,6 @@ export declare class CallStackSidebarPane extends UI.View.SimpleView implements 
     selectNextCallFrameOnStack(): void;
     selectPreviousCallFrameOnStack(): void;
     private copyStackTrace;
-    wasShown(): void;
 }
 export declare const elementSymbol: unique symbol;
 export declare const defaultMaxAsyncStackChainDepth = 32;

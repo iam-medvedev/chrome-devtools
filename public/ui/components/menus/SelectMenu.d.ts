@@ -1,4 +1,4 @@
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as Dialogs from '../dialogs/dialogs.js';
 import { MenuGroup, type MenuItemValue } from './Menu.js';
 export interface SelectMenuData {
@@ -16,7 +16,7 @@ export interface SelectMenuData {
     horizontalAlignment: Dialogs.Dialog.DialogHorizontalAlignment;
     /**
      * The title of the menu button. Can be either a string or a function
-     * that returns a LitHTML template.
+     * that returns a Lit template.
      * If not set, the title of the button will default to the selected
      * item's text.
      */
@@ -55,7 +55,7 @@ export interface SelectMenuData {
      */
     jslogContext: string;
 }
-type TitleCallback = () => LitHtml.TemplateResult;
+type TitleCallback = () => Lit.TemplateResult;
 export declare class SelectMenu extends HTMLElement {
     #private;
     get buttonTitle(): string | TitleCallback;

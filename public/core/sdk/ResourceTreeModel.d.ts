@@ -217,6 +217,7 @@ export declare class PageDispatcher implements ProtocolProxyApi.PageDispatcher {
     frameRequestedNavigation({}: Protocol.Page.FrameRequestedNavigationEvent): void;
     frameScheduledNavigation({}: Protocol.Page.FrameScheduledNavigationEvent): void;
     frameClearedScheduledNavigation({}: Protocol.Page.FrameClearedScheduledNavigationEvent): void;
+    frameStartedNavigating({}: Protocol.Page.FrameStartedNavigatingEvent): void;
     navigatedWithinDocument({}: Protocol.Page.NavigatedWithinDocumentEvent): void;
     frameResized(): void;
     javascriptDialogOpening(event: Protocol.Page.JavascriptDialogOpeningEvent): void;

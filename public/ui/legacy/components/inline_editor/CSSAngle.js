@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 import './CSSAngleEditor.js';
 import './CSSAngleSwatch.js';
-import * as LitHtml from '../../../lit-html/lit-html.js';
-import cssAngleStyles from './cssAngle.css.js';
+import * as Lit from '../../../lit/lit.js';
+import cssAngleStylesRaw from './cssAngle.css.js';
 import { convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit, } from './CSSAngleUtils.js';
 import { ValueChangedEvent } from './InlineEditorUtils.js';
-const { render, html } = LitHtml;
-const styleMap = LitHtml.Directives.styleMap;
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssAngleStyles = new CSSStyleSheet();
+cssAngleStyles.replaceSync(cssAngleStylesRaw.cssContent);
+const { render, html } = Lit;
+const styleMap = Lit.Directives.styleMap;
 export class PopoverToggledEvent extends Event {
     static eventName = 'popovertoggled';
     data;

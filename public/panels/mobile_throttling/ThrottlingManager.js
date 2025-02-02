@@ -70,6 +70,14 @@ const UIStrings = {
      * @example {4x slowdown} PH1
      */
     recommendedThrottling: '{PH1} – recommended',
+    /**
+     * @description Text to prompt the user to run the CPU calibration process.
+     */
+    calibrate: 'Calibrate…',
+    /**
+     * @description Text to prompt the user to re-run the CPU calibration process.
+     */
+    recalibrate: 'Recalibrate…',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/mobile_throttling/ThrottlingManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -79,6 +87,7 @@ export class ThrottlingManager {
     cpuThrottlingOptions;
     customNetworkConditionsSetting;
     currentNetworkThrottlingConditionsSetting;
+    calibratedCpuThrottlingSetting;
     lastNetworkThrottlingConditions;
     cpuThrottlingManager;
     #hardwareConcurrencyOverrideEnabled = false;
@@ -93,6 +102,8 @@ export class ThrottlingManager {
         this.customNetworkConditionsSetting =
             Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
         this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferred-network-condition', SDK.NetworkManager.NoThrottlingConditions);
+        this.calibratedCpuThrottlingSetting =
+            Common.Settings.Settings.instance().createSetting('calibrated-cpu-throttling', {}, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
         this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK.NetworkManager.ConditionsSerializer());
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, () => {
             this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
@@ -265,7 +276,22 @@ export class ThrottlingManager {
         };
     }
     createCPUThrottlingSelector() {
-        const control = new UI.Toolbar.ToolbarComboBox(event => this.setCPUThrottlingOption(this.cpuThrottlingOptions[event.target.selectedIndex]), i18nString(UIStrings.cpuThrottling), '', 'cpu-throttling');
+        const getCalibrationString = () => {
+            const value = this.calibratedCpuThrottlingSetting.get();
+            const hasCalibrated = value.low || value.mid;
+            return hasCalibrated ? i18nString(UIStrings.recalibrate) : i18nString(UIStrings.calibrate);
+        };
+        const optionSelected = () => {
+            if (control.selectedIndex() === control.options().length - 1) {
+                const index = this.cpuThrottlingOptions.indexOf(this.cpuThrottlingManager.cpuThrottlingOption());
+                control.setSelectedIndex(index);
+                void Common.Revealer.reveal(this.calibratedCpuThrottlingSetting);
+            }
+            else {
+                this.setCPUThrottlingOption(this.cpuThrottlingOptions[control.selectedIndex()]);
+            }
+        };
+        const control = new UI.Toolbar.ToolbarComboBox(optionSelected, i18nString(UIStrings.cpuThrottling), '', 'cpu-throttling');
         this.cpuThrottlingControls.add(control);
         const currentOption = this.cpuThrottlingManager.cpuThrottlingOption();
         const optionEls = [];
@@ -281,16 +307,20 @@ export class ThrottlingManager {
             }
             optionEls.push(optionEl);
         }
+        const optionEl = control.createOption(getCalibrationString(), '');
+        control.addOption(optionEl);
+        optionEls.push(optionEl);
         return {
             control,
             updateRecommendedOption(recommendedOption) {
-                for (let i = 0; i < optionEls.length; i++) {
+                for (let i = 0; i < optionEls.length - 1; i++) {
                     const option = options[i];
                     optionEls[i].text = option === recommendedOption ?
                         i18nString(UIStrings.recommendedThrottling, { PH1: option.title() }) :
                         option.title();
                     optionEls[i].disabled = option.rate() === 0;
                 }
+                optionEls[optionEls.length - 1].textContent = getCalibrationString();
             },
         };
     }

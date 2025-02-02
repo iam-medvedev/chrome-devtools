@@ -36,7 +36,6 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.OverviewPaneBreadcrumbAddedEvent): void;
     highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicro, withBracket?: boolean): void;
     clearBoundsHighlight(): void;
-    wasShown(): void;
     reset(): void;
     getControls(): TimelineEventOverview[];
     setData(data: OverviewData): void;

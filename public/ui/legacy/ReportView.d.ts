@@ -14,7 +14,6 @@ export declare class ReportView extends VBox {
     private subtitleElement?;
     private urlElement?;
     constructor(title?: string);
-    wasShown(): void;
     getHeaderElement(): Element;
     setTitle(title: string): void;
     setSubtitle(subtitle: string): void;

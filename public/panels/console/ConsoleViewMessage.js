@@ -10,6 +10,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
@@ -21,6 +22,7 @@ import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as Security from '../security/security.js';
 import { format, updateStyle } from './ConsoleFormat.js';
 import consoleViewStyles from './consoleView.css.js';
 import { augmentErrorStackWithScriptIds, parseSourcePositionsFromErrorStack } from './ErrorStackParser.js';
@@ -175,6 +177,10 @@ const UIStrings = {
      *@description Message to offer insights for a console message
      */
     explainThisMessageWithAI: 'Understand this message. Powered by AI',
+    /**
+     *@description Tooltip shown when user hovers over the cookie icon to explain that the button will bring the user to the cookie report
+     */
+    SeeIssueInCookieReport: 'Click to open privacy and security panel and show third-party cookie report',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/console/ConsoleViewMessage.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -471,6 +477,20 @@ export class ConsoleViewMessage {
         }
         return elements;
     }
+    #appendCookieReportButtonToElem(elem) {
+        const button = new Buttons.Button.Button();
+        button.data = {
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            iconName: 'cookie',
+            jslogContext: 'privacy',
+            title: i18nString(UIStrings.SeeIssueInCookieReport)
+        };
+        button.addEventListener('click', () => {
+            void Common.Revealer.reveal(new Security.CookieReportView.CookieReportView());
+        });
+        elem.appendChild(button);
+    }
     #getLinkifierMetric() {
         const request = Logs.NetworkLog.NetworkLog.requestForConsoleMessage(this.message);
         if (request?.resourceType().isStyleSheet()) {
@@ -503,6 +523,14 @@ export class ConsoleViewMessage {
             }
             return null;
         };
+        if (this.message.isCookieReportIssue &&
+            Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled) {
+            const anchorWrapperElement = document.createElement('span');
+            anchorWrapperElement.classList.add('console-message-anchor', 'cookie-report-anchor');
+            this.#appendCookieReportButtonToElem(anchorWrapperElement);
+            UI.UIUtils.createTextChild(anchorWrapperElement, ' ');
+            return anchorWrapperElement;
+        }
         const anchorElement = linkify(this.message);
         // Append a space to prevent the anchor text from being glued to the console message when the user selects and copies the console messages.
         if (anchorElement) {
@@ -1931,7 +1959,7 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
                 const dataGridWidget = this.dataGrid.asWidget();
                 dataGridWidget.markAsRoot();
                 dataGridWidget.show(shadowRoot);
-                dataGridWidget.registerCSSFiles([consoleViewStyles, objectValueStyles]);
+                dataGridWidget.registerRequiredCSS(consoleViewStyles, objectValueStyles);
                 formattedMessage.appendChild(formattedResult);
                 this.dataGrid.renderInline();
             }

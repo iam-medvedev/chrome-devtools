@@ -454,7 +454,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)', width: '14px', height: '14px' };
         UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.unableToLoadThisContent));
         if (this.tabbedPane.tabView(tabId)) {
-            this.tabbedPane.setTabIcon(tabId, icon);
+            this.tabbedPane.setTrailingTabIcon(tabId, icon);
         }
     }
     restoreEditorProperties(editorView, selection, firstLineNumber) {
@@ -529,7 +529,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             else {
                 icon = Persistence.PersistenceUtils.PersistenceUtils.iconForUISourceCode(uiSourceCode);
             }
-            this.tabbedPane.setTabIcon(tabId, icon);
+            this.tabbedPane.setTrailingTabIcon(tabId, icon);
         }
     }
     uiSourceCodeTitleChanged(event) {

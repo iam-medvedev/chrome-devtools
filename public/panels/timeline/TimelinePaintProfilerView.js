@@ -174,6 +174,7 @@ export class TimelinePaintImageView extends UI.Widget.Widget {
     maskRectangle;
     constructor() {
         super(true);
+        this.registerRequiredCSS(timelinePaintProfilerStyles);
         this.contentElement.classList.add('fill', 'paint-profiler-image-view');
         this.imageContainer = this.contentElement.createChild('div', 'paint-profiler-image-container');
         this.imageElement = this.imageContainer.createChild('img');
@@ -230,10 +231,6 @@ export class TimelinePaintImageView extends UI.Widget.Widget {
     setMask(maskRectangle) {
         this.maskRectangle = maskRectangle;
         this.maskElement.classList.toggle('hidden', !maskRectangle);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([timelinePaintProfilerStyles]);
     }
 }
 //# sourceMappingURL=TimelinePaintProfilerView.js.map

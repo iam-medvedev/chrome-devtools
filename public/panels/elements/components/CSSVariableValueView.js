@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import cssVariableValueViewStyles from './cssVariableValueView.css.js';
+import * as Lit from '../../../ui/lit/lit.js';
+import cssVariableValueViewStylesRaw from './cssVariableValueView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssVariableValueViewStyles = new CSSStyleSheet();
+cssVariableValueViewStyles.replaceSync(cssVariableValueViewStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Text for a link from custom property to its defining registration
@@ -24,8 +27,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/components/CSSVariableValueView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const i18nTemplate = LitHtml.i18nTemplate.bind(undefined, str_);
-const { render, html } = LitHtml;
+const i18nTemplate = Lit.i18nTemplate.bind(undefined, str_);
+const { render, html } = Lit;
 function getLinkSection(details) {
     return html `<div class="registered-property-links">
             <span role="button" @click=${details?.goToDefinition} class="clickable underlined unbreakable-text">

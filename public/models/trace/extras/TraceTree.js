@@ -522,8 +522,11 @@ export function generateEventID(event) {
         const location = event.callFrame.scriptId || event.callFrame.url || '';
         return `f:${name}@${location}`;
     }
-    if (Types.Events.isConsoleTimeStamp(event)) {
+    if (Types.Events.isConsoleTimeStamp(event) && event.args.data) {
         return `${event.name}:${event.args.data.name}`;
+    }
+    if (Types.Events.isSyntheticNetworkRequest(event)) {
+        return `${event.name}:${event.args.data.url}`;
     }
     return event.name;
 }

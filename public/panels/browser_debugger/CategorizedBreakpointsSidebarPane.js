@@ -130,6 +130,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     constructor(breakpoints, viewId, detailsPausedReason) {
         super(true);
         this.#categoriesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+        this.#categoriesTreeOutline.registerRequiredCSS(categorizedBreakpointsSidebarPaneStyles);
         this.#categoriesTreeOutline.setShowSelectionOnKeyboardFocus(/* show */ true);
         this.contentElement.appendChild(this.#categoriesTreeOutline.element);
         this.#viewId = viewId;
@@ -298,10 +299,6 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
         else {
             UI.ARIAUtils.setChecked(category.element.listItemElement, hasEnabled);
         }
-    }
-    wasShown() {
-        super.wasShown();
-        this.#categoriesTreeOutline.registerCSSFiles([categorizedBreakpointsSidebarPaneStyles]);
     }
 }
 const LOCALIZED_CATEGORIES = {

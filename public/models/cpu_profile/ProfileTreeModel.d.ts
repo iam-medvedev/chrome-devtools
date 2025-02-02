@@ -1,5 +1,5 @@
-import type * as Protocol from '../../generated/protocol.js';
 import type * as Platform from '../../core/platform/platform.js';
+import type * as Protocol from '../../generated/protocol.js';
 export declare class ProfileNode {
     callFrame: Protocol.Runtime.CallFrame;
     callUID: string;

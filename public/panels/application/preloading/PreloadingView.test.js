@@ -6,7 +6,6 @@ import { assertGridContents } from '../../../testing/DataGridHelpers.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../../testing/MockConnection.js';
-import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -202,6 +201,9 @@ function createRuleSetView(target) {
     const view = new Resources.PreloadingView.PreloadingRuleSetView(model);
     const container = new UI.Widget.VBox();
     const div = document.createElement('div');
+    view.contentElement.style.display = 'block';
+    view.contentElement.style.width = '640px';
+    view.contentElement.style.height = '480px';
     renderElementIntoDOM(div);
     container.markAsRoot();
     container.show(div);
@@ -216,6 +218,8 @@ function createAttemptView(target) {
     const view = new Resources.PreloadingView.PreloadingAttemptView(model);
     const container = new UI.Widget.VBox();
     const div = document.createElement('div');
+    view.contentElement.style.width = '640px';
+    view.contentElement.style.height = '480px';
     renderElementIntoDOM(div);
     container.markAsRoot();
     container.show(div);
@@ -297,11 +301,7 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
         assertGridContents(ruleSetGridComponent, ['Rule set', 'Status'], [
             ['example.com/', '1 error'],
         ]);
-        const cells = [
-            { columnId: 'id', value: 'ruleSetId:0.2' },
-            { columnId: 'Validity', value: 'Invalid' },
-        ];
-        ruleSetGridComponent.dispatchEvent(new DataGrid.DataGridEvents.BodyCellFocusedEvent({ columnId: 'Validity', value: 'Invalid' }, { cells }));
+        ruleSetGridComponent.dispatchEvent(new CustomEvent('select', { detail: 'ruleSetId:0.2' }));
         await RenderCoordinator.done();
         assert.deepEqual(ruleSetDetailsComponent.shadowRoot?.getElementById('ruleset-url')?.textContent, 'https://example.com/');
         assert.deepEqual(ruleSetDetailsComponent.shadowRoot?.getElementById('error-message-text')?.textContent, 'fake error message');
@@ -601,11 +601,7 @@ describeWithMockConnection('PreloadingAttemptView', () => {
                 'Running',
             ],
         ]);
-        const cells = [
-            { columnId: 'id', value: 'loaderId:1:Prerender:https://example.com/prerendered.html:undefined' },
-            // Omit other columns.
-        ];
-        preloadingGridComponent.dispatchEvent(new DataGrid.DataGridEvents.BodyCellFocusedEvent({ columnId: 'URL', value: '/prerendered.html' }, { cells }));
+        preloadingGridComponent.dispatchEvent(new CustomEvent('select', { detail: 'loaderId:1:Prerender:https://example.com/prerendered.html:undefined' }));
         await RenderCoordinator.done();
         const report = getElementWithinComponent(preloadingDetailsComponent, 'devtools-report', ReportView.ReportView.Report);
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
@@ -655,11 +651,7 @@ describeWithMockConnection('PreloadingAttemptView', () => {
                 'Ready',
             ],
         ]);
-        const cells = [
-            { columnId: 'id', value: 'loaderId:1:Prerender:https://example.com/prerendered.html:undefined' },
-            // Omit other columns.
-        ];
-        preloadingGridComponent.dispatchEvent(new DataGrid.DataGridEvents.BodyCellFocusedEvent({ columnId: 'URL', value: '/prerendered.html' }, { cells }));
+        preloadingGridComponent.dispatchEvent(new CustomEvent('select', { detail: 'loaderId:1:Prerender:https://example.com/prerendered.html:undefined' }));
         await RenderCoordinator.done();
         const report = getElementWithinComponent(preloadingDetailsComponent, 'devtools-report', ReportView.ReportView.Report);
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
@@ -716,11 +708,7 @@ describeWithMockConnection('PreloadingAttemptView', () => {
                 'Failure - The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: device.mojom.GamepadMonitor)',
             ],
         ]);
-        const cells = [
-            { columnId: 'id', value: 'loaderId:1:Prerender:https://example.com/prerendered.html:undefined' },
-            // Omit other columns.
-        ];
-        preloadingGridComponent.dispatchEvent(new DataGrid.DataGridEvents.BodyCellFocusedEvent({ columnId: 'URL', value: '/prerendered.html' }, { cells }));
+        preloadingGridComponent.dispatchEvent(new CustomEvent('select', { detail: 'loaderId:1:Prerender:https://example.com/prerendered.html:undefined' }));
         await RenderCoordinator.done();
         const report = getElementWithinComponent(preloadingDetailsComponent, 'devtools-report', ReportView.ReportView.Report);
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');

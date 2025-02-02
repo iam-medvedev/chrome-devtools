@@ -115,6 +115,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     automaticReorder;
     constructor() {
         super(true);
+        this.registerRequiredCSS(tabbedPaneStyles);
         this.element.classList.add('tabbed-pane');
         this.contentElement.classList.add('tabbed-pane-shadow');
         this.contentElement.tabIndex = -1;
@@ -374,6 +375,13 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         tab.setIcon(icon);
         this.updateTabElements();
     }
+    setTrailingTabIcon(id, icon) {
+        const tab = this.tabsById.get(id);
+        if (!tab) {
+            return;
+        }
+        tab.setSuffixElement(icon);
+    }
     setSuffixElement(id, suffixElement) {
         const tab = this.tabsById.get(id);
         if (!tab) {
@@ -381,6 +389,12 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
         tab.setSuffixElement(suffixElement);
         this.updateTabElements();
+    }
+    setBadge(id, content, className) {
+        const badge = document.createElement('span');
+        badge.textContent = content;
+        badge.classList.add('badge', className ?? '');
+        this.setSuffixElement(id, content ? badge : null);
     }
     setTabEnabled(id, enabled) {
         const tab = this.tabsById.get(id);
@@ -456,8 +470,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.updateTabElements();
     }
     wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([tabbedPaneStyles]);
         const effectiveTab = this.currentTab || this.tabsHistory[0];
         if (effectiveTab && this.autoSelectFirstItemOnShow) {
             this.selectTab(effectiveTab.id);
@@ -1092,7 +1104,7 @@ export class TabbedPaneTab {
         const closeButton = new Buttons.Button.Button();
         closeButton.data = {
             variant: "icon" /* Buttons.Button.Variant.ICON */,
-            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            size: "MICRO" /* Buttons.Button.Size.MICRO */,
             iconName: 'cross',
             title: i18nString(UIStrings.closeS, { PH1: this.title }),
         };
@@ -1108,7 +1120,8 @@ export class TabbedPaneTab {
         closeIcon.data = {
             iconName: 'experiment',
             color: 'var(--override-tabbed-pane-preview-icon-color)',
-            width: '16px',
+            height: '14px',
+            width: '14px',
         };
         previewIcon.appendChild(closeIcon);
         previewIcon.setAttribute('title', i18nString(UIStrings.previewFeature));

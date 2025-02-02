@@ -1,8 +1,4 @@
 import '../../../ui/legacy/legacy.js';
-export interface Heading {
-    showCopyButton: boolean;
-    text: string;
-}
 export declare class CodeBlock extends HTMLElement {
     #private;
     connectedCallback(): void;

@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 import { EventReferenceClick } from './EventRef.js';
-import tableStyles from './table.css.js';
-const { html } = LitHtml;
+import tableStylesRaw from './table.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const tableStyles = new CSSStyleSheet();
+tableStyles.replaceSync(tableStylesRaw.cssContent);
+const { html } = Lit;
 export class Table extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
@@ -103,8 +106,8 @@ export class Table extends HTMLElement {
         if (!this.#headers || !this.#rows) {
             return;
         }
-        LitHtml.render(html `<table
-          class=${LitHtml.Directives.classMap({
+        Lit.render(html `<table
+          class=${Lit.Directives.classMap({
             interactive: this.#interactive,
         })}
           @mouseleave=${this.#interactive ? this.#onMouseLeave : null}>

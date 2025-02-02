@@ -125,6 +125,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
     requestPayloadCategory;
     constructor(request) {
         super();
+        this.registerRequiredCSS(requestPayloadViewStyles);
         this.element.classList.add('request-payload-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('payload').track({ resize: true })}`);
         this.request = request;
@@ -134,7 +135,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
             this.decodeRequestParameters = Boolean(contentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i));
         }
         const root = new UI.TreeOutline.TreeOutlineInShadow();
-        root.registerCSSFiles([objectValueStyles, objectPropertiesSectionStyles, requestPayloadTreeStyles]);
+        root.registerRequiredCSS(objectValueStyles, objectPropertiesSectionStyles, requestPayloadTreeStyles);
         root.element.classList.add('request-payload-tree');
         root.makeDense();
         this.element.appendChild(root.element);
@@ -143,7 +144,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
         this.requestPayloadCategory = new Category(root, 'request-payload', i18nString(UIStrings.requestPayload));
     }
     wasShown() {
-        this.registerCSSFiles([requestPayloadViewStyles]);
+        super.wasShown();
         this.request.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshFormData, this);
         this.refreshQueryString();
         void this.refreshFormData();

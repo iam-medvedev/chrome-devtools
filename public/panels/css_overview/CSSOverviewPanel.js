@@ -27,6 +27,7 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     #textColorContrastIssues;
     constructor(controller) {
         super('css-overview');
+        this.registerRequiredCSS(cssOverviewStyles);
         this.element.classList.add('css-overview-panel');
         this.#controller = controller;
         this.#startView = new CSSOverviewComponents.CSSOverviewStartView.CSSOverviewStartView();
@@ -159,10 +160,6 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     }
     #overviewCompleted() {
         this.#renderOverviewCompletedView();
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([cssOverviewStyles]);
     }
 }
 //# sourceMappingURL=CSSOverviewPanel.js.map

@@ -121,6 +121,7 @@ export class CoverageListView extends UI.Widget.VBox {
     dataGrid;
     constructor(isVisibleFilter) {
         super(true);
+        this.registerRequiredCSS(coverageListViewStyles);
         this.nodeForCoverageInfo = new Map();
         this.isVisibleFilter = isVisibleFilter;
         this.highlightRegExp = null;
@@ -304,10 +305,6 @@ export class CoverageListView extends UI.Widget.VBox {
             return;
         }
         this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([coverageListViewStyles]);
     }
 }
 let percentageFormatter = null;

@@ -16,13 +16,16 @@ import * as Input from '../../../ui/components/input/input.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Sources from '../../sources/sources.js';
-import requestHeadersViewStyles from './RequestHeadersView.css.js';
+import requestHeadersViewStylesRaw from './RequestHeadersView.css.js';
 import { RESPONSE_HEADER_SECTION_DATA_KEY, } from './ResponseHeaderSection.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const requestHeadersViewStyles = new CSSStyleSheet();
+requestHeadersViewStyles.replaceSync(requestHeadersViewStylesRaw.cssContent);
 const RAW_HEADER_CUTOFF = 3000;
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description Text in Request Headers View of the Network panel
@@ -180,7 +183,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     #renderEarlyHintsHeaders() {
         if (!this.#request || !this.#request.earlyHintsHeaders || this.#request.earlyHintsHeaders.length === 0) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const toggleShowRaw = () => {
             this.#showResponseHeadersText = !this.#showResponseHeadersText;
@@ -215,7 +218,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     #renderResponseHeaders() {
         if (!this.#request) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const toggleShowRaw = () => {
             this.#showResponseHeadersText = !this.#showResponseHeadersText;
@@ -250,7 +253,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     #renderHeaderOverridesLink() {
         if (!this.#workspace.uiSourceCodeForURL(this.#getHeaderOverridesFileUrl())) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const overridesSetting = Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled');
         // Disabled until https://crbug.com/1079231 is fixed.
@@ -307,7 +310,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     #renderRequestHeaders() {
         if (!this.#request) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const requestHeadersText = this.#request.requestHeadersText();
         const toggleShowRaw = () => {
@@ -379,14 +382,14 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             @click=${showMore}
             jslog=${VisualLogging.action('raw-headers-show-more').track({ click: true })}
           >${i18nString(UIStrings.showMore)}</devtools-button>
-        ` : LitHtml.nothing}
+        ` : Lit.nothing}
       </div>
     `;
         // clang-format on
     }
     #renderGeneralSection() {
         if (!this.#request) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         const statusClasses = ['status'];
         if (this.#request.statusCode < 300 || this.#request.statusCode === 304) {
@@ -438,10 +441,10 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
       >
       <div jslog=${VisualLogging.section('general')}>
         ${this.#renderGeneralRow(i18nString(UIStrings.requestUrl), this.#request.url())}
-        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString(UIStrings.requestMethod), this.#request.requestMethod) : LitHtml.nothing}
-        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString(UIStrings.statusCode), statusText, statusClasses) : LitHtml.nothing}
-        ${this.#request.remoteAddress() ? this.#renderGeneralRow(i18nString(UIStrings.remoteAddress), this.#request.remoteAddress()) : LitHtml.nothing}
-        ${this.#request.referrerPolicy() ? this.#renderGeneralRow(i18nString(UIStrings.referrerPolicy), String(this.#request.referrerPolicy())) : LitHtml.nothing}
+        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString(UIStrings.requestMethod), this.#request.requestMethod) : Lit.nothing}
+        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString(UIStrings.statusCode), statusText, statusClasses) : Lit.nothing}
+        ${this.#request.remoteAddress() ? this.#renderGeneralRow(i18nString(UIStrings.remoteAddress), this.#request.remoteAddress()) : Lit.nothing}
+        ${this.#request.referrerPolicy() ? this.#renderGeneralRow(i18nString(UIStrings.referrerPolicy), String(this.#request.referrerPolicy())) : Lit.nothing}
       </div>
       </devtools-request-headers-category>
     `;
@@ -508,7 +511,7 @@ export class Category extends HTMLElement {
             <div>
               ${this.#title}${this.#headerCount !== undefined ?
             html `<span class="header-count"> (${this.#headerCount})</span>` :
-            LitHtml.nothing}
+            Lit.nothing}
             </div>
             <div class="hide-when-closed">
               ${this.#checked !== undefined ? html `
@@ -518,7 +521,7 @@ export class Category extends HTMLElement {
                     @change=${this.#onCheckboxToggle}
                     jslog=${VisualLogging.toggle('raw-headers').track({ change: true })}
                 />${i18nString(UIStrings.raw)}</label>
-              ` : LitHtml.nothing}
+              ` : Lit.nothing}
             </div>
             <div class="hide-when-closed">${this.#additionalContent}</div>
           </div>

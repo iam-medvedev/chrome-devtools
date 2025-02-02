@@ -1,11 +1,11 @@
 import type * as Trace from '../../../../models/trace/trace.js';
-import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../../ui/lit/lit.js';
 /**
  * An EntryBreakdown, or section, that makes up a TimespanBreakdown.
  */
 export interface EntryBreakdown {
     bounds: Trace.Types.Timing.TraceWindowMicro;
-    label: string | LitHtml.LitTemplate;
+    label: string | Lit.LitTemplate;
     showDuration: boolean;
 }
 export declare class TimespanBreakdownOverlay extends HTMLElement {

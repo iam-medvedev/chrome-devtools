@@ -6,10 +6,13 @@ import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import requestTrustTokensViewStyles from './RequestTrustTokensView.css.js';
-const { html } = LitHtml;
+import requestTrustTokensViewStylesRaw from './RequestTrustTokensView.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const requestTrustTokensViewStyles = new CSSStyleSheet();
+requestTrustTokensViewStyles.replaceSync(requestTrustTokensViewStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Section heading in the Trust Token tab
@@ -114,7 +117,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        LitHtml.render(html `<devtools-report>
+        Lit.render(html `<devtools-report>
         ${this.#renderParameterSection()}
         ${this.#renderResultSection()}
       </devtools-report>
@@ -124,7 +127,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
     #renderParameterSection() {
         const trustTokenParams = this.#request.trustTokenParams();
         if (!trustTokenParams) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-section-header jslog=${VisualLogging.pane('trust-tokens').track({
@@ -139,13 +142,13 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #renderRefreshPolicy(params) {
         if (params.operation !== "Redemption" /* Protocol.Network.TrustTokenOperationType.Redemption */) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return renderRowWithCodeValue(i18nString(UIStrings.refreshPolicy), params.refreshPolicy.toString());
     }
     #renderIssuers(params) {
         if (!params.issuers || params.issuers.length === 0) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-key>${i18nString(UIStrings.issuers)}</devtools-report-key>
@@ -162,7 +165,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
     #renderIssuerAndTopLevelOriginFromResult() {
         const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
         if (!trustTokenResult) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       ${renderSimpleRowIfValuePresent(i18nString(UIStrings.topLevelOrigin), trustTokenResult.topLevelOrigin)}
@@ -171,7 +174,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
     #renderResultSection() {
         const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
         if (!trustTokenResult) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return html `
       <devtools-report-section-header>${i18nString(UIStrings.result)}</devtools-report-section-header>
@@ -191,7 +194,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     #renderIssuedTokenCount(result) {
         if (result.type !== "Issuance" /* Protocol.Network.TrustTokenOperationType.Issuance */) {
-            return LitHtml.nothing;
+            return Lit.nothing;
         }
         return renderSimpleRowIfValuePresent(i18nString(UIStrings.numberOfIssuedTokens), result.issuedTokenCount);
     }
@@ -247,7 +250,7 @@ function getDetailedTextForStatusCode(status) {
 }
 function renderSimpleRowIfValuePresent(key, value) {
     if (value === undefined) {
-        return LitHtml.nothing;
+        return Lit.nothing;
     }
     return html `
     <devtools-report-key>${key}</devtools-report-key>

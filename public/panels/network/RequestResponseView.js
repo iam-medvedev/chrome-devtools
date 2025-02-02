@@ -37,9 +37,13 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { BinaryResourceView } from './BinaryResourceView.js';
 const UIStrings = {
     /**
+     *@description Text in Request Response View of the Network panel if no preview can be shown
+     */
+    noPreview: 'Nothing to preview',
+    /**
      *@description Text in Request Response View of the Network panel
      */
-    thisRequestHasNoResponseData: 'This request has no response data available.',
+    thisRequestHasNoResponseData: 'This request has no response data available',
     /**
      *@description Text in Request Preview View of the Network panel
      */
@@ -106,7 +110,7 @@ export class RequestResponseView extends UI.Widget.VBox {
         }
         const sourceView = RequestResponseView.#sourceViewForRequest(this.request, contentData);
         if (!sourceView || this.request.statusCode === 204) {
-            return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoResponseData), '');
+            return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noPreview), i18nString(UIStrings.thisRequestHasNoResponseData));
         }
         return sourceView;
     }

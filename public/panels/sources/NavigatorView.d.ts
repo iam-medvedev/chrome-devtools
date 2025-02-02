@@ -100,7 +100,6 @@ export declare class NavigatorView extends UI.Widget.VBox implements SDK.TargetM
     targetAdded(_target: SDK.Target.Target): void;
     targetRemoved(target: SDK.Target.Target): void;
     private targetNameChanged;
-    wasShown(): void;
 }
 export declare class NavigatorFolderTreeElement extends UI.TreeOutline.TreeElement {
     #private;

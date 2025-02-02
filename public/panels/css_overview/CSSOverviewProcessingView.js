@@ -18,6 +18,7 @@ export class CSSOverviewProcessingView extends UI.Widget.Widget {
     fragment;
     constructor(controller) {
         super();
+        this.registerRequiredCSS(cssOverviewProcessingViewStyles);
         this.#controller = controller;
         this.#render();
     }
@@ -32,10 +33,6 @@ export class CSSOverviewProcessingView extends UI.Widget.Widget {
     `;
         this.contentElement.appendChild(this.fragment.element());
         this.contentElement.style.overflow = 'auto';
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([cssOverviewProcessingViewStyles]);
     }
 }
 //# sourceMappingURL=CSSOverviewProcessingView.js.map

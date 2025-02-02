@@ -6,7 +6,7 @@ export interface Data {
     frames: readonly Frame[];
 }
 export interface Frame {
-    screenshotEvent: Types.Events.SyntheticScreenshot;
+    screenshotEvent: Types.Events.LegacySyntheticScreenshot | Types.Events.Screenshot;
     index: number;
 }
 export type HandlersWithFilmStrip = Handlers.Types.HandlersWithMeta<{

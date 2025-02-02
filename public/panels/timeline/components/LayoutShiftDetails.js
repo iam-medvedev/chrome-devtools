@@ -7,11 +7,14 @@ import * as Helpers from '../../../models/trace/helpers/helpers.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as Utils from '../utils/utils.js';
 import * as Insights from './insights/insights.js';
-import layoutShiftDetailsStyles from './layoutShiftDetails.css.js';
-const { html } = LitHtml;
+import layoutShiftDetailsStylesRaw from './layoutShiftDetails.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const layoutShiftDetailsStyles = new CSSStyleSheet();
+layoutShiftDetailsStyles.replaceSync(layoutShiftDetailsStylesRaw.cssContent);
+const { html } = Lit;
 const MAX_URL_LENGTH = 20;
 const UIStrings = {
     /**
@@ -118,7 +121,7 @@ export class LayoutShiftDetails extends HTMLElement {
                 }}>
             </devtools-performance-node-link>`;
             }
-            return LitHtml.nothing;
+            return Lit.nothing;
         })}`;
         // clang-format on
     }
@@ -220,11 +223,11 @@ export class LayoutShiftDetails extends HTMLElement {
             <div class="elements-shifted">
               ${this.#renderShiftedElements(shift, elementsShifted)}
             </div>
-          </td>` : LitHtml.nothing}
+          </td>` : Lit.nothing}
         ${hasCulprits && this.#isFreshRecording ? html `
           <td class="culprits">
             ${this.#renderRootCauseValues(shift.args.frame, rootCauses)}
-          </td>` : LitHtml.nothing}
+          </td>` : Lit.nothing}
       </tr>`;
         // clang-format on
     }
@@ -274,9 +277,9 @@ export class LayoutShiftDetails extends HTMLElement {
             <th>${i18nString(UIStrings.startTime)}</th>
             <th>${i18nString(UIStrings.shiftScore)}</th>
             ${hasShiftedElements && this.#isFreshRecording ? html `
-              <th>${i18nString(UIStrings.elementsShifted)}</th>` : LitHtml.nothing}
+              <th>${i18nString(UIStrings.elementsShifted)}</th>` : Lit.nothing}
             ${hasCulprits && this.#isFreshRecording ? html `
-              <th>${i18nString(UIStrings.culprit)}</th> ` : LitHtml.nothing}
+              <th>${i18nString(UIStrings.culprit)}</th> ` : Lit.nothing}
           </tr>
         </thead>
         <tbody>
@@ -311,9 +314,9 @@ export class LayoutShiftDetails extends HTMLElement {
                 <th>${i18nString(UIStrings.startTime)}</th>
                 <th>${i18nString(UIStrings.shiftScore)}</th>
                 ${this.#isFreshRecording ? html `
-                  <th>${i18nString(UIStrings.elementsShifted)}</th>` : LitHtml.nothing}
+                  <th>${i18nString(UIStrings.elementsShifted)}</th>` : Lit.nothing}
                 ${hasCulprits && this.#isFreshRecording ? html `
-                  <th>${i18nString(UIStrings.culprit)}</th> ` : LitHtml.nothing}
+                  <th>${i18nString(UIStrings.culprit)}</th> ` : Lit.nothing}
               </tr>
             </thead>
             <tbody>
@@ -348,7 +351,7 @@ export class LayoutShiftDetails extends HTMLElement {
       </div>
     `;
         // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
+        Lit.render(output, this.#shadow, { host: this });
     }
     #togglePopover(e) {
         const show = e.type === 'mouseover';

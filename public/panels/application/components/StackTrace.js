@@ -5,11 +5,16 @@ import '../../../ui/components/expandable_list/expandable_list.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import stackTraceLinkButtonStyles from './stackTraceLinkButton.css.js';
-import stackTraceRowStyles from './stackTraceRow.css.js';
-const { html } = LitHtml;
+import stackTraceLinkButtonStylesRaw from './stackTraceLinkButton.css.js';
+import stackTraceRowStylesRaw from './stackTraceRow.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const stackTraceLinkButtonStyles = new CSSStyleSheet();
+stackTraceLinkButtonStyles.replaceSync(stackTraceLinkButtonStylesRaw.cssContent);
+const stackTraceRowStyles = new CSSStyleSheet();
+stackTraceRowStyles.replaceSync(stackTraceRowStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      *@description Error message stating that something went wrong when tring to render stack trace
@@ -45,7 +50,7 @@ export class StackTraceRow extends HTMLElement {
         if (!this.#stackTraceRowItem) {
             return;
         }
-        LitHtml.render(html `
+        Lit.render(html `
       <div class="stack-trace-row">
               <div class="stack-trace-function-name text-ellipsis" title=${this.#stackTraceRowItem.functionName}>
                 ${this.#stackTraceRowItem.functionName}
@@ -53,7 +58,7 @@ export class StackTraceRow extends HTMLElement {
               <div class="stack-trace-source-location">
                 ${this.#stackTraceRowItem.link ?
             html `<div class="text-ellipsis">\xA0@\xA0${this.#stackTraceRowItem.link}</div>` :
-            LitHtml.nothing}
+            Lit.nothing}
               </div>
             </div>
     `, this.#shadow, { host: this });
@@ -79,7 +84,7 @@ export class StackTraceLinkButton extends HTMLElement {
         }
         const linkText = this.#expandedView ? i18nString(UIStrings.showLess) :
             i18nString(UIStrings.showSMoreFrames, { n: this.#hiddenCallFramesCount });
-        LitHtml.render(html `
+        Lit.render(html `
       <div class="stack-trace-row">
           <button class="link" @click=${() => this.#onShowAllClick()}>
             ${linkText}
@@ -156,13 +161,13 @@ export class StackTrace extends HTMLElement {
         if (!this.#stackTraceRows.length) {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
-            LitHtml.render(html `
+            Lit.render(html `
           <span>${i18nString(UIStrings.cannotRenderStackTrace)}</span>
         `, this.#shadow, { host: this });
             return;
         }
         const expandableRows = this.createRowTemplates();
-        LitHtml.render(html `
+        Lit.render(html `
         <devtools-expandable-list .data=${{ rows: expandableRows, title: i18nString(UIStrings.creationStackTrace) }}
                                   jslog=${VisualLogging.tree()}>
         </devtools-expandable-list>

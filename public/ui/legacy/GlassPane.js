@@ -33,7 +33,7 @@ export class GlassPane {
         if (this.element.shadowRoot) {
             this.element.shadowRoot.appendChild(this.arrowElement);
         }
-        this.registerCSSFiles([glassPaneStyles]);
+        this.registerRequiredCSS(glassPaneStyles);
         this.setPointerEventsBehavior("PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */);
         this.onMouseDownBound = this.onMouseDown.bind(this);
         this.onClickOutsideCallback = null;
@@ -51,8 +51,8 @@ export class GlassPane {
     isShowing() {
         return this.widgetInternal.isShowing();
     }
-    registerCSSFiles(cssFiles) {
-        this.widgetInternal.registerCSSFiles(cssFiles);
+    registerRequiredCSS(...cssFiles) {
+        this.widgetInternal.registerRequiredCSS(...cssFiles);
     }
     setDefaultFocusedElement(element) {
         this.widgetInternal.setDefaultFocusedElement(element);

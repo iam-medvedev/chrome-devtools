@@ -86,6 +86,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     changedElement;
     constructor() {
         super(true);
+        this.registerRequiredCSS(cssShadowEditorStyles);
         this.contentElement.tabIndex = 0;
         this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('cssShadowEditor').parent('mapped').track({ keydown: 'Enter|Escape' })}`);
         this.setDefaultFocusedElement(this.contentElement);
@@ -144,7 +145,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         return slider;
     }
     wasShown() {
-        this.registerCSSFiles([cssShadowEditorStyles]);
+        super.wasShown();
         this.updateUI();
     }
     setModel(model) {

@@ -4,12 +4,15 @@
 import './SettingDeprecationWarning.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
+import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as Buttons from '../buttons/buttons.js';
 import * as Input from '../input/input.js';
-import settingCheckboxStyles from './settingCheckbox.css.js';
-const { html, Directives: { ifDefined } } = LitHtml;
+import settingCheckboxStylesRaw from './settingCheckbox.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const settingCheckboxStyles = new CSSStyleSheet();
+settingCheckboxStyles.replaceSync(settingCheckboxStylesRaw.cssContent);
+const { html, Directives: { ifDefined } } = Lit;
 const UIStrings = {
     /**
      *@description Text that is usually a hyperlink to more documentation
@@ -79,8 +82,8 @@ export class SettingCheckbox extends HTMLElement {
             html `
       <devtools-button class="disabled-reason" .iconName=${'info'} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} title=${ifDefined(disabledReasons.join('\n'))} @click=${onclick}></devtools-button>
     ` :
-            LitHtml.nothing;
-        LitHtml.render(html `
+            Lit.nothing;
+        Lit.render(html `
       <p>
         <label title=${title}>
           <input

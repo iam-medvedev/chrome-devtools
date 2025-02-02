@@ -1,5 +1,3 @@
-export declare const FontPropertiesRegex: RegExp;
-export declare const FontFamilyRegex: RegExp;
 export declare const GlobalValues: string[];
 export declare const FontSizeStaticParams: {
     regex: RegExp;

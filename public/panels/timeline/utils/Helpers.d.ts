@@ -1,7 +1,7 @@
 import '../../../ui/components/markdown_view/markdown_view.js';
 import type * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 export declare function getThrottlingRecommendations(): {
     cpuOption: SDK.CPUThrottlingManager.CPUThrottlingOption | null;
     networkConditions: SDK.NetworkManager.Conditions | null;
@@ -31,4 +31,4 @@ export declare function shortenUrl(url: URL, maxChars?: number): string;
  * This should only be used for markdown that is guaranteed to be valid,
  * and not contain any user-generated content.
  */
-export declare function md(markdown: Common.UIString.LocalizedString): LitHtml.TemplateResult;
+export declare function md(markdown: Common.UIString.LocalizedString): Lit.TemplateResult;

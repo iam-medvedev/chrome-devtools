@@ -6,11 +6,14 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Buttons from '../buttons/buttons.js';
-import dialogStyles from './dialog.css.js';
-const { html } = LitHtml;
+import dialogStylesRaw from './dialog.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const dialogStyles = new CSSStyleSheet();
+dialogStyles.replaceSync(dialogStylesRaw.cssContent);
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Title of close button for the shortcuts dialog.
@@ -492,7 +495,7 @@ export class Dialog extends HTMLElement {
         }}
             jslog=${VisualLogging.close().track({ click: true })}
           ></devtools-button>
-        ` : LitHtml.nothing}
+        ` : Lit.nothing}
     `;
         // clang-format on
     }
@@ -503,7 +506,7 @@ export class Dialog extends HTMLElement {
         if (!IS_DIALOG_SUPPORTED) {
             // To make sure that light dom content passed into this component doesn't show up,
             // we have to explicitly render a slot and hide it with CSS.
-            LitHtml.render(
+            Lit.render(
             // clang-format off
             html `
         <slot></slot>
@@ -512,7 +515,7 @@ export class Dialog extends HTMLElement {
             return;
         }
         // clang-format off
-        LitHtml.render(html `
+        Lit.render(html `
       <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel}
               jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: 'Escape' }).parent('mapped')}>
         <div id="content">

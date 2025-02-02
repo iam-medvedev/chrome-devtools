@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as IconButton from '../../../components/icon_button/icon_button.js';
-import * as LitHtml from '../../../lit-html/lit-html.js';
+import { html, render } from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import bezierSwatchStyles from './bezierSwatch.css.js';
-import cssShadowSwatchStyles from './cssShadowSwatch.css.js';
-const { html } = LitHtml;
+import cssShadowSwatchStylesRaw from './cssShadowSwatch.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const cssShadowSwatchStyles = new CSSStyleSheet();
+cssShadowSwatchStyles.replaceSync(cssShadowSwatchStylesRaw.cssContent);
 export class BezierSwatch extends HTMLElement {
     #icon;
     #text;
     constructor() {
         super();
-        const root = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: [bezierSwatchStyles] });
+        const root = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: bezierSwatchStyles });
         this.#icon = IconButton.Icon.create('bezier-curve-filled', 'bezier-swatch-icon');
         this.#icon.setAttribute('jslog', `${VisualLogging.showStyleEditor('bezier')}`);
         root.appendChild(this.#icon);
@@ -50,7 +52,7 @@ export class CSSShadowSwatch extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [
             cssShadowSwatchStyles,
         ];
-        LitHtml.render(html `<devtools-icon name="shadow" class="shadow-swatch-icon"></devtools-icon><slot></slot>`, this.#shadow, { host: this });
+        render(html `<devtools-icon name="shadow" class="shadow-swatch-icon"></devtools-icon><slot></slot>`, this.#shadow, { host: this });
         this.#icon = this.#shadow.querySelector('devtools-icon');
     }
     model() {

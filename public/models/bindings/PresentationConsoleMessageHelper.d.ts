@@ -1,7 +1,7 @@
-import * as SDK from '../../core/sdk/sdk.js';
-import * as Workspace from '../workspace/workspace.js';
-import * as Protocol from '../../generated/protocol.js';
 import type * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
+import * as Workspace from '../workspace/workspace.js';
 import { LiveLocationPool } from './LiveLocation.js';
 export interface MessageSource {
     url?: Platform.DevToolsPath.UrlString;

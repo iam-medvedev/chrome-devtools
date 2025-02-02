@@ -129,6 +129,9 @@ export interface HostConfigAiAssistanceFileAgent {
     enabled: boolean;
     userTier: string;
 }
+export interface HostConfigImprovedWorkspaces {
+    enabled: boolean;
+}
 export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
@@ -156,6 +159,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
+    devToolsImprovedWorkspaces: HostConfigImprovedWorkspaces;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsPrivacyUI: HostConfigPrivacyUI;
     /**

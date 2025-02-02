@@ -6,9 +6,12 @@ import './ValueInterpreterDisplay.js';
 import './ValueInterpreterSettings.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import linearMemoryValueInterpreterStyles from './linearMemoryValueInterpreter.css.js';
+import linearMemoryValueInterpreterStylesRaw from './linearMemoryValueInterpreter.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const linearMemoryValueInterpreterStyles = new CSSStyleSheet();
+linearMemoryValueInterpreterStyles.replaceSync(linearMemoryValueInterpreterStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear memory inspector. These settings
@@ -22,7 +25,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { render, html } = LitHtml;
+const { render, html } = Lit;
 export class EndiannessChangedEvent extends Event {
     static eventName = 'endiannesschanged';
     data;

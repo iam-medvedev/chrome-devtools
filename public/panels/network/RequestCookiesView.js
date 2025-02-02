@@ -102,6 +102,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
     malformedResponseCookiesList;
     constructor(request) {
         super();
+        this.registerRequiredCSS(requestCookiesViewStyles);
         this.element.classList.add('request-cookies-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('cookies').track({ resize: true })}`);
         this.request = request;
@@ -277,7 +278,6 @@ export class RequestCookiesView extends UI.Widget.Widget {
     }
     wasShown() {
         super.wasShown();
-        this.registerCSSFiles([requestCookiesViewStyles]);
         this.request.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
         this.request.addEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
         this.refreshRequestCookiesView();

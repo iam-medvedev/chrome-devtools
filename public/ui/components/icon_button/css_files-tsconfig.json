@@ -5,6 +5,7 @@
     },
     "files": [
         "fileSourceIcon.css.js",
+        "icon.css.js",
         "iconButton.css.js"
     ]
 }

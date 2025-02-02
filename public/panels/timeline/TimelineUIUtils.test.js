@@ -902,11 +902,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
         const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, jsCall, new Components.Linkifier.Linkifier(), true, entityMapper);
         const rowData = getRowDataForDetailsElement(details)[2];
         assert.deepEqual(rowData, {
-            title: '3rd party entity',
+            title: 'Third party',
             value: 'Google Analytics',
         });
     });
-    it('can generate details for a frame', async function () {
+    it('can generate details for a frame with the old screenshots format', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const frame = parsedTrace.Frames.frames.at(0);
         if (!frame) {
@@ -920,7 +920,10 @@ describeWithMockConnection('TimelineUIUtils', function () {
         // Give the image element time to render and load.
         await doubleRaf();
         const img = container.querySelector('.timeline-filmstrip-preview img');
-        assert.isTrue(img?.currentSrc.includes(filmStrip.frames[0].screenshotEvent.args.dataUri));
+        assert.isOk(img);
+        const filmStripFrame = filmStrip.frames[0];
+        assert.isTrue(Trace.Types.Events.isLegacySyntheticScreenshot(filmStripFrame.screenshotEvent) &&
+            img.currentSrc.includes(filmStripFrame.screenshotEvent.args.dataUri));
         const durationRow = container.querySelector('[data-row-title="Duration"]');
         const durationValue = durationRow?.querySelector('.timeline-details-view-row-value span');
         if (!durationValue) {
@@ -930,6 +933,34 @@ describeWithMockConnection('TimelineUIUtils', function () {
         // assertions.
         const value = (durationValue.innerText.replaceAll(/\s/g, ' '));
         assert.strictEqual(value, '37.85 ms (at 109.82 ms)');
+    });
+    it('can generate details for a frame with the new screenshots format', async function () {
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-screenshot-source-ids.json.gz');
+        const frame = parsedTrace.Frames.frames.at(0);
+        if (!frame) {
+            throw new Error('Could not find expected frame');
+        }
+        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace);
+        const details = Timeline.TimelineUIUtils.TimelineUIUtils.generateDetailsContentForFrame(frame, filmStrip, filmStrip.frames[0]);
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        container.appendChild(details);
+        // Give the image element time to render and load.
+        await doubleRaf();
+        const img = container.querySelector('.timeline-filmstrip-preview img');
+        assert.isOk(img);
+        const filmStripFrame = filmStrip.frames[0];
+        assert.isTrue(Trace.Types.Events.isScreenshot(filmStripFrame.screenshotEvent) &&
+            img.currentSrc.includes(Trace.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(filmStripFrame.screenshotEvent)));
+        const durationRow = container.querySelector('[data-row-title="Duration"]');
+        const durationValue = durationRow?.querySelector('.timeline-details-view-row-value span');
+        if (!durationValue) {
+            throw new Error('Could not find duration');
+        }
+        // Strip the unicode spaces out and replace with simple spaces for easy
+        // assertions.
+        const value = (durationValue.innerText.replaceAll(/\s/g, ' '));
+        assert.strictEqual(value, '208.33 ms (at 1.53 s)');
     });
     describe('eventTitle', function () {
         it('renders the correct title for an EventTiming interaction event', async function () {

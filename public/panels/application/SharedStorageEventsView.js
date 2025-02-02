@@ -35,7 +35,7 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
         this.#noDisplayView.setMinimumSize(0, 40);
         this.setSidebarWidget(this.#noDisplayView);
         topPanel.contentElement.appendChild(this.#sharedStorageEventGrid);
-        this.#sharedStorageEventGrid.addEventListener('cellfocused', this.#onFocus.bind(this));
+        this.#sharedStorageEventGrid.addEventListener('select', this.#onFocus.bind(this));
         this.#sharedStorageEventGrid.setAttribute('jslog', `${VisualLogging.section('events-table')}`);
         this.#getMainFrameResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.clearEvents, this);
         this.#noDisplayView.contentElement.classList.add('placeholder');
@@ -56,7 +56,7 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
         super.wasShown();
         const sidebar = this.sidebarWidget();
         if (sidebar) {
-            sidebar.registerCSSFiles([sharedStorageEventsViewStyles]);
+            sidebar.registerRequiredCSS(sharedStorageEventsViewStyles);
         }
     }
     addEvent(event) {
@@ -78,17 +78,11 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
     }
     async #onFocus(event) {
         const focusedEvent = event;
-        const row = focusedEvent.data.row;
-        if (!row) {
+        const datastore = focusedEvent.detail;
+        if (!datastore) {
             return;
         }
-        const wrappedEvent = {
-            accessTime: row.cells.find(cell => cell.columnId === 'event-time')?.value,
-            accessType: row.cells.find(cell => cell.columnId === 'event-type')?.value,
-            ownerOrigin: row.cells.find(cell => cell.columnId === 'event-owner-origin')?.value,
-            eventParams: JSON.parse(row.cells.find(cell => cell.columnId === 'event-params')?.value),
-        };
-        const jsonView = SourceFrame.JSONView.JSONView.createViewSync(wrappedEvent);
+        const jsonView = SourceFrame.JSONView.JSONView.createViewSync(datastore);
         jsonView.setMinimumSize(0, 40);
         this.setSidebarWidget(jsonView);
     }

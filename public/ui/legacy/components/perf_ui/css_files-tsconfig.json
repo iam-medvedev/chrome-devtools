@@ -7,7 +7,9 @@
         "chartViewport.css.js",
         "filmStripView.css.js",
         "flameChart.css.js",
+        "overviewGrid.css.js",
         "pieChart.css.js",
+        "timelineGrid.css.js",
         "timelineOverviewInfo.css.js"
     ]
 }

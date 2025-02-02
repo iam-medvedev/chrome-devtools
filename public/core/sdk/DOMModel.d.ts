@@ -69,6 +69,7 @@ export declare class DOMNode {
     markerPseudoElement(): DOMNode | undefined;
     backdropPseudoElement(): DOMNode | undefined;
     viewTransitionPseudoElements(): DOMNode[];
+    carouselPseudoElements(): DOMNode[];
     hasAssignedSlot(): boolean;
     isInsertionPoint(): boolean;
     distributedNodes(): DOMNodeShortcut[];

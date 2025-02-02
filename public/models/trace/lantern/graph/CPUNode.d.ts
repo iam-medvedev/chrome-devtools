@@ -1,5 +1,5 @@
-import { BaseNode } from './BaseNode.js';
 import type * as Lantern from '../types/types.js';
+import { BaseNode } from './BaseNode.js';
 declare class CPUNode<T = Lantern.AnyNetworkObject> extends BaseNode<T> {
     _event: Lantern.TraceEvent;
     _childEvents: Lantern.TraceEvent[];

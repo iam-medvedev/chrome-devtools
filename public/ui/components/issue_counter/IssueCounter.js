@@ -5,9 +5,11 @@ import '../icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
-import issueCounterStyles from './issueCounter.css.js';
-const { html } = LitHtml;
+import { html, render } from '../../lit/lit.js';
+import issueCounterStylesRaw from './issueCounter.css.js';
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const issueCounterStyles = new CSSStyleSheet();
+issueCounterStyles.replaceSync(issueCounterStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Label for link to Issues tab, specifying how many issues there are.
@@ -169,7 +171,7 @@ export class IssueCounter extends HTMLElement {
             accessibleName: this.#accessibleName,
             compact: this.#compact,
         };
-        LitHtml.render(html `
+        render(html `
         <icon-button .data=${data} .accessibleName=${this.#accessibleName}></icon-button>
         `, this.#shadow, { host: this });
         this.#tooltipCallback?.();

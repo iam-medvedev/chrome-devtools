@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import signedExchangeInfoTreeStyles from './signedExchangeInfoTree.css.js';
-import signedExchangeInfoViewStyles from './signedExchangeInfoView.css.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import signedExchangeInfoTreeStyles from './signedExchangeInfoTree.css.js';
+import signedExchangeInfoViewStyles from './signedExchangeInfoView.css.js';
 const UIStrings = {
     /**
      *@description Text for errors
@@ -100,11 +100,12 @@ export class SignedExchangeInfoView extends UI.Widget.VBox {
     responseHeadersItem;
     constructor(request) {
         super();
+        this.registerRequiredCSS(signedExchangeInfoViewStyles);
         console.assert(request.signedExchangeInfo() !== null);
         const signedExchangeInfo = request.signedExchangeInfo();
         this.element.classList.add('signed-exchange-info-view');
         const root = new UI.TreeOutline.TreeOutlineInShadow();
-        root.registerCSSFiles([signedExchangeInfoTreeStyles]);
+        root.registerRequiredCSS(signedExchangeInfoTreeStyles);
         root.element.classList.add('signed-exchange-info-tree');
         root.setFocusable(false);
         root.makeDense();
@@ -215,10 +216,6 @@ export class SignedExchangeInfoView extends UI.Widget.VBox {
             valueElement.classList.add('error-field');
         }
         return fragment;
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerCSSFiles([signedExchangeInfoViewStyles]);
     }
 }
 export class Category extends UI.TreeOutline.TreeElement {
