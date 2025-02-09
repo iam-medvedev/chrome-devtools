@@ -76,6 +76,6 @@ export default {
   text-overflow: ellipsis;
 }
 
-/*# sourceURL=openedWindowDetailsView.css */
+/*# sourceURL=${import.meta.resolve('./openedWindowDetailsView.css')} */
 `
 };

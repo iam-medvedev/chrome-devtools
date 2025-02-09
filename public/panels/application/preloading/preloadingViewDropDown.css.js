@@ -22,6 +22,6 @@ export default {
   padding-left: 8px;
 }
 
-/*# sourceURL=preloading/preloadingViewDropDown.css */
+/*# sourceURL=${import.meta.resolve('./preloading/preloadingViewDropDown.css')} */
 `
 };

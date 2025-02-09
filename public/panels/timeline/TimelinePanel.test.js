@@ -1,6 +1,8 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
@@ -15,6 +17,7 @@ describeWithEnvironment('TimelinePanel', function () {
     beforeEach(() => {
         registerNoopActions(['timeline.toggle-recording', 'timeline.record-reload', 'timeline.show-history', 'components.collect-garbage']);
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), Workspace.Workspace.WorkspaceImpl.instance());
+        Root.Runtime.experiments.enableForTest("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */);
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
@@ -85,6 +88,21 @@ describeWithEnvironment('TimelinePanel', function () {
         customTracksSetting.set(true);
         const overlaysAfterEnablingSetting = timeline.getFlameChart().overlays().allOverlays();
         assert.deepEqual(overlaysBeforeDisablingSetting, overlaysAfterEnablingSetting);
+    });
+    it('keeps entries set to be dimmed as so after toggling the custom tracks setting', async function () {
+        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+        await timeline.loadingComplete(events, null, null);
+        const thirdPartyDimSetting = Common.Settings.Settings.instance().createSetting('timeline-dim-third-parties', false);
+        // Dim 3P entries.
+        thirdPartyDimSetting.set(true);
+        const dimIndicesBeforeToggle = timeline.getFlameChart().getMainFlameChart().getDimIndices();
+        assert.exists(dimIndicesBeforeToggle);
+        assert.isAbove(dimIndicesBeforeToggle.length, 0);
+        // Toggle the custom track setting and verify 3P entries remain dimmed.
+        Timeline.TimelinePanel.TimelinePanel.extensionDataVisibilitySetting().set(true);
+        const dimIndicesAfterToggle = timeline.getFlameChart().getMainFlameChart().getDimIndices();
+        assert.exists(dimIndicesAfterToggle);
+        assert.isAbove(dimIndicesAfterToggle.length, 0);
     });
 });
 //# sourceMappingURL=TimelinePanel.test.js.map

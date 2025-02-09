@@ -1322,6 +1322,21 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.deepEqual(Array.from(args.values()).map(arg => arg.style.textDecoration), ['line-through', '', 'line-through']);
         });
     });
+    describe('AutoBaseRenderer', () => {
+        it('strikes out non-selected values', async () => {
+            await setUpCSSModel();
+            const stylePropertyTreeElement = getTreeElement('display', '-internal-auto-base(inline, block)');
+            stylePropertyTreeElement.updateTitle();
+            let args = stylePropertyTreeElement.valueElement?.querySelectorAll('span');
+            assert.lengthOf(args, 3);
+            assert.deepEqual(Array.from(args.values()).map(arg => arg.style.textDecoration), ['', '', 'line-through']);
+            stylePropertyTreeElement.setComputedStyles(new Map([['appearance', 'base-select']]));
+            stylePropertyTreeElement.updateTitle();
+            args = stylePropertyTreeElement.valueElement?.querySelectorAll('span');
+            assert.lengthOf(args, 3);
+            assert.deepEqual(Array.from(args.values()).map(arg => arg.style.textDecoration), ['', 'line-through', '']);
+        });
+    });
     describe('Autocompletion', function () {
         let promptStub;
         beforeEach(async () => {

@@ -21,10 +21,10 @@ function renderNetworkItemView(request) {
     networkItemView.show(div);
     return networkItemView;
 }
-function getIconDataInTab(tabs, tabId) {
-    const icon = tabs.find(tab => tab.id === tabId)?.['icon'];
-    const iconData = icon?.data;
-    return iconData;
+function getOverrideIndicator(tabs, tabId) {
+    const tab = tabs.find(tab => tab.id === tabId)?.tabElement;
+    const statusDot = tab?.querySelector('.status-dot');
+    return statusDot ? statusDot : null;
 }
 describeWithMockConnection('NetworkItemView', () => {
     beforeEach(() => {
@@ -45,7 +45,6 @@ describeWithMockConnection('NetworkItemView', () => {
 });
 describeWithEnvironment('NetworkItemView', () => {
     let request;
-    const OVERRIDEN_ICON_NAME = 'small-status-dot';
     beforeEach(async () => {
         request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
         request.statusCode = 200;
@@ -56,40 +55,40 @@ describeWithEnvironment('NetworkItemView', () => {
         request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
         request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkItemView = renderNetworkItemView(request);
-        const headersIcon = getIconDataInTab(networkItemView['tabs'], 'headers-component');
-        const responseIcon = getIconDataInTab(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
         networkItemView.detach();
-        assert.strictEqual(headersIcon.iconName, OVERRIDEN_ICON_NAME);
-        assert.strictEqual(responseIcon.iconName, OVERRIDEN_ICON_NAME);
+        assert.isNotNull(headersIndicator);
+        assert.isNotNull(responseIndicator);
     });
     it('shows indicator for overriden headers', () => {
         request.setWasIntercepted(true);
         request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
         request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkItemView = renderNetworkItemView(request);
-        const headersIcon = getIconDataInTab(networkItemView['tabs'], 'headers-component');
-        const responseIcon = getIconDataInTab(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
         networkItemView.detach();
-        assert.strictEqual(headersIcon.iconName, OVERRIDEN_ICON_NAME);
-        assert.isUndefined(responseIcon);
+        assert.isNotNull(headersIndicator);
+        assert.isNull(responseIndicator);
     });
     it('shows indicator for overriden content', () => {
         request.setWasIntercepted(true);
         request.hasOverriddenContent = true;
         const networkItemView = renderNetworkItemView(request);
-        const headersIcon = getIconDataInTab(networkItemView['tabs'], 'headers-component');
-        const responseIcon = getIconDataInTab(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
         networkItemView.detach();
-        assert.isUndefined(headersIcon);
-        assert.strictEqual(responseIcon.iconName, OVERRIDEN_ICON_NAME);
+        assert.isNull(headersIndicator);
+        assert.isNotNull(responseIndicator);
     });
     it('does not show indicator for unoverriden request', () => {
         const networkItemView = renderNetworkItemView(request);
-        const headersIcon = getIconDataInTab(networkItemView['tabs'], 'headers-component');
-        const responseIcon = getIconDataInTab(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
         networkItemView.detach();
-        assert.isUndefined(headersIcon);
-        assert.isUndefined(responseIcon);
+        assert.isNull(headersIndicator);
+        assert.isNull(responseIndicator);
     });
     it('shows the Response and EventSource tab for text/event-stream requests', () => {
         request.mimeType = 'text/event-stream';

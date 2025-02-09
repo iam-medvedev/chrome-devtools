@@ -15,6 +15,6 @@ export default {
   display: inline-block;
 }
 
-/*# sourceURL=issueCounter.css */
+/*# sourceURL=${import.meta.resolve('./issueCounter.css')} */
 `
 };

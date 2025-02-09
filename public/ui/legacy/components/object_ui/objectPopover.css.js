@@ -47,6 +47,6 @@ export default {
   margin-top: 8px;
 }
 
-/*# sourceURL=objectPopover.css */
+/*# sourceURL=${import.meta.resolve('./objectPopover.css')} */
 `
 };

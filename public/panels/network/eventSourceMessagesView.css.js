@@ -15,6 +15,6 @@ export default {
   border: none;
 }
 
-/*# sourceURL=eventSourceMessagesView.css */
+/*# sourceURL=${import.meta.resolve('./eventSourceMessagesView.css')} */
 `
 };

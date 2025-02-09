@@ -19,7 +19,9 @@ describeWithMockConnection('AccessibilityTreeView', () => {
     });
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
-        new Elements.AccessibilityTreeView.AccessibilityTreeView(toggleButoon, treeComponent);
+        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(toggleButoon, treeComponent);
+        view.markAsRoot();
+        view.show(document.body);
         const model = target.model(SDK.AccessibilityModel.AccessibilityModel);
         const treeComponentDataSet = sinon.spy(treeComponent, 'data', ['set']);
         sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getOutermostFrame').returns({

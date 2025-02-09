@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory, InsightWarning, } from './types.js';
-const UIStrings = {
+export const UIStrings = {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
     title: 'Optimize viewport for mobile',
     /**
@@ -13,12 +13,13 @@ const UIStrings = {
     description: 'Tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile.',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/Viewport.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function deps() {
     return ['Meta', 'UserInteractions'];
 }
 function finalize(partialModel) {
     return {
+        strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.INP,

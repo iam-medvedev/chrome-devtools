@@ -390,10 +390,10 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         tab.setSuffixElement(suffixElement);
         this.updateTabElements();
     }
-    setBadge(id, content, className) {
+    setBadge(id, content) {
         const badge = document.createElement('span');
         badge.textContent = content;
-        badge.classList.add('badge', className ?? '');
+        badge.classList.add('badge');
         this.setSuffixElement(id, content ? badge : null);
     }
     setTabEnabled(id, enabled) {

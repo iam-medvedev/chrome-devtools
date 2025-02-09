@@ -28,6 +28,6 @@ devtools-icon.shadow-swatch-icon {
   }
 }
 
-/*# sourceURL=cssShadowSwatch.css */
+/*# sourceURL=${import.meta.resolve('./cssShadowSwatch.css')} */
 `
 };

@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
+import { Renderer, rendererBase, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, } from './StylesSidebarPane.js';
@@ -96,9 +96,12 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const parentMap = new WeakMap();
-export class FlexGridRenderer {
+// clang-format off
+export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FlexGridMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     matcher() {
@@ -119,9 +122,12 @@ export class FlexGridRenderer {
         return [...Renderer.render(ASTUtils.siblings(ASTUtils.declValue(match.node)), context).nodes, button];
     }
 }
-export class CSSWideKeywordRenderer {
+// clang-format off
+export class CSSWideKeywordRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     matcher() {
@@ -150,10 +156,13 @@ export class CSSWideKeywordRenderer {
         return [swatch];
     }
 }
-export class VariableRenderer {
+// clang-format off
+export class VariableRenderer extends rendererBase(SDK.CSSPropertyParser.VariableMatch) {
+    // clang-format on
     #treeElement;
     #style;
     constructor(treeElement, style) {
+        super();
         this.#treeElement = treeElement;
         this.#style = style;
     }
@@ -170,11 +179,9 @@ export class VariableRenderer {
         }
         return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
     }
-    // clang-format off
     computedText(match) {
         return this.resolveVariable(match)?.value ?? this.fallbackValue(match);
     }
-    // clang-format on
     render(match, context) {
         const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
         const { declaration, value: variableValue } = this.resolveVariable(match) ?? {};
@@ -241,7 +248,9 @@ export class VariableRenderer {
         }
     }
 }
-export class LinearGradientRenderer {
+// clang-format off
+export class LinearGradientRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.LinearGradientMatch) {
+    // clang-format on
     matcher() {
         return new SDK.CSSPropertyParserMatchers.LinearGradientMatcher();
     }
@@ -264,9 +273,12 @@ export class LinearGradientRenderer {
         return nodes;
     }
 }
-export class ColorRenderer {
+// clang-format off
+export class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMatch) {
     treeElement;
+    // clang-format on
     constructor(treeElement) {
+        super();
         this.treeElement = treeElement;
     }
     matcher() {
@@ -366,9 +378,12 @@ export class ColorRenderer {
         swatchIcon.setContrastInfo(contrastInfo);
     }
 }
-export class LightDarkColorRenderer {
+// clang-format off
+export class LightDarkColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.LightDarkColorMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     matcher() {
@@ -438,9 +453,12 @@ export class LightDarkColorRenderer {
         }
     }
 }
-export class ColorMixRenderer {
+// clang-format off
+export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMixMatch) {
+    // clang-format on
     #pane;
     constructor(pane) {
+        super();
         this.#pane = pane;
     }
     render(match, context) {
@@ -511,9 +529,12 @@ export class ColorMixRenderer {
         return new SDK.CSSPropertyParserMatchers.ColorMixMatcher();
     }
 }
-export class AngleRenderer {
+// clang-format off
+export class AngleRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.AngleMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     render(match, context) {
@@ -561,9 +582,12 @@ export class AngleRenderer {
         return new SDK.CSSPropertyParserMatchers.AngleMatcher();
     }
 }
-export class LinkableNameRenderer {
+// clang-format off
+export class LinkableNameRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.LinkableNameMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     #getLinkData(match) {
@@ -636,9 +660,12 @@ export class LinkableNameRenderer {
         return new SDK.CSSPropertyParserMatchers.LinkableNameMatcher();
     }
 }
-export class BezierRenderer {
+// clang-format off
+export class BezierRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.BezierMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     render(match) {
@@ -659,6 +686,36 @@ export class BezierRenderer {
     }
     matcher() {
         return new SDK.CSSPropertyParserMatchers.BezierMatcher();
+    }
+}
+// clang-format off
+export class AutoBaseRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.AutoBaseMatch) {
+    // clang-format on
+    #treeElement;
+    constructor(treeElement) {
+        super();
+        this.#treeElement = treeElement;
+    }
+    matcher() {
+        return new SDK.CSSPropertyParserMatchers.AutoBaseMatcher();
+    }
+    render(match, context) {
+        const content = document.createElement('span');
+        content.appendChild(document.createTextNode('-internal-auto-base('));
+        const auto = content.appendChild(document.createElement('span'));
+        content.appendChild(document.createTextNode(', '));
+        const base = content.appendChild(document.createElement('span'));
+        content.appendChild(document.createTextNode(')'));
+        Renderer.renderInto(match.auto, context, auto);
+        Renderer.renderInto(match.base, context, base);
+        const activeAppearance = this.#treeElement.getComputedStyle('appearance');
+        if (activeAppearance?.startsWith('base')) {
+            auto.style.textDecoration = 'line-through';
+        }
+        else {
+            base.style.textDecoration = 'line-through';
+        }
+        return [content];
     }
 }
 // The shadow model is an abstraction over the various shadow properties on the one hand and the order they were defined
@@ -793,9 +850,12 @@ export class ShadowModel {
         }
     }
 }
-export class ShadowRenderer {
+// clang-format off
+export class ShadowRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ShadowMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     shadowModel(shadow, shadowType, context) {
@@ -909,9 +969,12 @@ export class ShadowRenderer {
         return new SDK.CSSPropertyParserMatchers.ShadowMatcher();
     }
 }
-export class FontRenderer {
+// clang-format off
+export class FontRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FontMatch) {
     treeElement;
+    // clang-format on
     constructor(treeElement) {
+        super();
         this.treeElement = treeElement;
     }
     render(match, context) {
@@ -923,7 +986,9 @@ export class FontRenderer {
         return new SDK.CSSPropertyParserMatchers.FontMatcher();
     }
 }
-export class GridTemplateRenderer {
+// clang-format off
+export class GridTemplateRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.GridTemplateMatch) {
+    // clang-format on
     render(match, context) {
         if (match.lines.length <= 1) {
             return Renderer.render(ASTUtils.siblings(ASTUtils.declValue(match.node)), context).nodes;
@@ -941,9 +1006,12 @@ export class GridTemplateRenderer {
         return new SDK.CSSPropertyParserMatchers.GridTemplateMatcher();
     }
 }
-export class LengthRenderer {
+// clang-format off
+export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.LengthMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     render(match, _context) {
@@ -987,9 +1055,12 @@ export class LengthRenderer {
         return new SDK.CSSPropertyParserMatchers.LengthMatcher();
     }
 }
-export class SelectFunctionRenderer {
+// clang-format off
+export class SelectFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.SelectFunctionMatch) {
     treeElement;
+    // clang-format on
     constructor(treeElement) {
+        super();
         this.treeElement = treeElement;
     }
     matcher() {
@@ -1056,9 +1127,12 @@ async function decorateAnchorForAnchorLink(container, treeElement, options) {
     container.removeChildren();
     container.appendChild(link);
 }
-export class AnchorFunctionRenderer {
+// clang-format off
+export class AnchorFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.AnchorFunctionMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     anchorDecoratedForTest() {
@@ -1095,9 +1169,12 @@ export class AnchorFunctionRenderer {
         return new SDK.CSSPropertyParserMatchers.AnchorFunctionMatcher();
     }
 }
-export class PositionAnchorRenderer {
+// clang-format off
+export class PositionAnchorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.PositionAnchorMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     anchorDecoratedForTest() {
@@ -1115,9 +1192,12 @@ export class PositionAnchorRenderer {
         return new SDK.CSSPropertyParserMatchers.PositionAnchorMatcher();
     }
 }
-export class PositionTryRenderer {
+// clang-format off
+export class PositionTryRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.PositionTryMatch) {
+    // clang-format on
     #treeElement;
     constructor(treeElement) {
+        super();
         this.#treeElement = treeElement;
     }
     render(match, context) {
@@ -1538,6 +1618,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 new PositionTryRenderer(this),
                 new LengthRenderer(this),
                 new SelectFunctionRenderer(this),
+                new AutoBaseRenderer(this),
             ] :
             [];
         if (Root.Runtime.experiments.isEnabled('font-editor') && this.property.parsedOk) {

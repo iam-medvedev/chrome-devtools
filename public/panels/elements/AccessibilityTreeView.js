@@ -124,6 +124,9 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
         }
     }
     treeUpdated({ data }) {
+        if (!this.isShowing()) {
+            return;
+        }
         if (!data.root) {
             void this.renderTree();
             return;

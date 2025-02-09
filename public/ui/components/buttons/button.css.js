@@ -320,6 +320,6 @@ button {
   }
 }
 
-/*# sourceURL=button.css */
+/*# sourceURL=${import.meta.resolve('./button.css')} */
 `
 };

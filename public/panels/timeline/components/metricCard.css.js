@@ -202,6 +202,6 @@ details.environment-recs[open] > summary::before {
   font-weight: var(--ref-typeface-weight-medium);
 }
 
-/*# sourceURL=metricCard.css */
+/*# sourceURL=${import.meta.resolve('./metricCard.css')} */
 `
 };

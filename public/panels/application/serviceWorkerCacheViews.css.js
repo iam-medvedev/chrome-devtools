@@ -70,6 +70,6 @@ export default {
   overflow: hidden;
 }
 
-/*# sourceURL=serviceWorkerCacheViews.css */
+/*# sourceURL=${import.meta.resolve('./serviceWorkerCacheViews.css')} */
 `
 };

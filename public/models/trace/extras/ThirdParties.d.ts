@@ -8,7 +8,8 @@ export interface Summary {
 }
 export interface ThirdPartySummary {
     byEntity: Map<Entity, Summary>;
-    byEvent: Map<Types.Events.Event, Summary>;
+    byUrl: Map<string, Summary>;
+    urlsByEntity: Map<Entity, Set<string>>;
     eventsByEntity: Map<Entity, Types.Events.Event[]>;
     madeUpEntityCache: Map<string, Entity>;
 }

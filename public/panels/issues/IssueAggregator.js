@@ -28,6 +28,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #quirksModeIssues = new Set();
     #attributionReportingIssues = new Set();
     #genericIssues = new Set();
+    #selectElementAccessibilityIssues = new Set();
     #representative;
     #aggregatedIssuesCount = 0;
     #key;
@@ -94,6 +95,9 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     }
     getGenericIssues() {
         return this.#genericIssues;
+    }
+    getSelectElementAccessibilityIssues() {
+        return this.#selectElementAccessibilityIssues;
     }
     getDescription() {
         if (this.#representative) {
@@ -194,6 +198,9 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
         }
         if (issue instanceof IssuesManager.GenericIssue.GenericIssue) {
             this.#genericIssues.add(issue);
+        }
+        if (issue instanceof IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue) {
+            this.#selectElementAccessibilityIssues.add(issue);
         }
     }
     getKind() {

@@ -169,6 +169,6 @@ button.text-button {
   margin-top: 10px;
 }
 
-/*# sourceURL=keybindsSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./keybindsSettingsTab.css')} */
 `
 };

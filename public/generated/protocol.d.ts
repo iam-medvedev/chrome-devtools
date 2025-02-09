@@ -1404,6 +1404,12 @@ export declare namespace Extensions {
          */
         id: string;
     }
+    interface UninstallRequest {
+        /**
+         * Extension id.
+         */
+        id: string;
+    }
     interface GetStorageItemsRequest {
         /**
          * ID of extension.

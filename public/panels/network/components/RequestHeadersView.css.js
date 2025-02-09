@@ -183,6 +183,6 @@ summary label input[type="checkbox"] {
   margin-top: 1px;
 }
 
-/*# sourceURL=RequestHeadersView.css */
+/*# sourceURL=${import.meta.resolve('./RequestHeadersView.css')} */
 `
 };

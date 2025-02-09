@@ -80,6 +80,6 @@ export default {
   box-shadow: 0 0 0 1px var(--ref-palette-pink55);
 }
 
-/*# sourceURL=timeRangeOverlay.css */
+/*# sourceURL=${import.meta.resolve('./timeRangeOverlay.css')} */
 `
 };

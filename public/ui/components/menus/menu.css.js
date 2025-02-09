@@ -46,6 +46,6 @@ export default {
   }
 }
 
-/*# sourceURL=menu.css */
+/*# sourceURL=${import.meta.resolve('./menu.css')} */
 `
 };

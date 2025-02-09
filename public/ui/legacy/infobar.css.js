@@ -139,6 +139,6 @@ export default {
   box-shadow: none;
 }
 
-/*# sourceURL=infobar.css */
+/*# sourceURL=${import.meta.resolve('./infobar.css')} */
 `
 };

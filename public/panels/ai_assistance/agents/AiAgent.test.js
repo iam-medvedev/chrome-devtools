@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { AiAgent, ResponseType, ConversationContext, ErrorType } = AiAssistance;
-function mockAidaClient(fetch) {
-    return {
-        fetch,
-        registerClientEvent: () => Promise.resolve({}),
-    };
-}
 function mockConversationContext() {
     return new (class extends ConversationContext {
         getOrigin() {
@@ -51,116 +46,103 @@ describeWithEnvironment('AiAgent', () => {
         });
         it('builds a request with a temperature', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.temperature, 1);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
         });
         it('builds a request with a temperature -1', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
             });
             agent.options.temperature = -1;
-            assert.isUndefined(agent.buildRequest({ text: 'test input' }).options?.temperature);
+            assert.isUndefined(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature);
         });
         it('builds a request with a model id', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.model_id, 'test model');
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with logging', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
                 serverSideLoggingEnabled: true,
             });
-            assert.isFalse(agent.buildRequest({ text: 'test input' }).metadata?.disable_user_content_logging);
+            assert.isFalse(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).metadata?.disable_user_content_logging);
         });
         it('builds a request without logging', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
                 serverSideLoggingEnabled: false,
             });
             assert.isTrue(agent
                 .buildRequest({
                 text: 'test input',
-            })
+            }, Host.AidaClient.Role.USER)
                 .metadata?.disable_user_content_logging);
         });
         it('builds a request with input', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
                 serverSideLoggingEnabled: false,
             });
-            const request = agent.buildRequest({ text: 'test input' });
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.isUndefined(request.historical_contexts);
         });
         it('builds a request with a sessionId', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
             });
-            const request = agent.buildRequest({ text: 'test input' });
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.strictEqual(request.metadata?.string_session_id, 'sessionId');
         });
         it('builds a request with preamble', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
             });
-            const request = agent.buildRequest({ text: 'test input' });
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.strictEqual(request.preamble, 'preamble');
             assert.isUndefined(request.historical_contexts);
         });
+        it('builds a request without preamble', async () => {
+            class AiAgentMockWithoutPreamble extends AiAgent {
+                type = "freestyler" /* AiAssistance.AgentType.STYLING */;
+                preamble = undefined;
+                // eslint-disable-next-line require-yield
+                async *handleContextDetails() {
+                    return;
+                }
+                clientFeature = 0;
+                userTier;
+                options = {
+                    temperature: 1,
+                    modelId: 'test model',
+                };
+            }
+            const agent = new AiAgentMockWithoutPreamble({
+                aidaClient: mockAidaClient(),
+            });
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
+            assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
+            assert.isUndefined(request.preamble);
+            assert.isUndefined(request.historical_contexts);
+        });
         it('builds a request with chat history', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient([[{
+                            explanation: 'answer',
+                        }]]),
+                serverSideLoggingEnabled: true,
             });
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'test',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'test',
-                },
-                {
-                    type: "thought" /* ResponseType.THOUGHT */,
-                    thought: 'thought',
-                },
-                {
-                    type: "title" /* ResponseType.TITLE */,
-                    title: 'title',
-                },
-                {
-                    type: "action" /* ResponseType.ACTION */,
-                    code: 'action',
-                    output: 'result',
-                    canceled: false,
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'OBSERVATION: result',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'answer',
-                },
-            ];
-            const request = agent.buildRequest({ text: 'test input' });
+            await Array.fromAsync(agent.run('question', { selected: null }));
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.deepEqual(request.historical_contexts, [
                 {
-                    parts: [{ text: 'test' }],
+                    parts: [{ text: 'question' }],
                     role: 1,
-                },
-                {
-                    role: 2,
-                    parts: [{ text: 'THOUGHT: thought\nTITLE: title\nACTION\naction\nSTOP' }],
-                },
-                {
-                    role: 1,
-                    parts: [{ text: 'OBSERVATION: result' }],
                 },
                 {
                     role: 2,
@@ -170,129 +152,31 @@ describeWithEnvironment('AiAgent', () => {
         });
         it('builds a request with aborted query in history', async () => {
             const agent = new AiAgentMock({
-                aidaClient: {},
+                aidaClient: mockAidaClient([[{
+                            explanation: 'answer',
+                        }]]),
+                serverSideLoggingEnabled: true,
             });
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'test',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'test',
-                },
-                {
-                    type: "thought" /* ResponseType.THOUGHT */,
-                    thought: 'thought',
-                },
-                {
-                    type: "title" /* ResponseType.TITLE */,
-                    title: 'title',
-                },
-                {
-                    type: "error" /* ResponseType.ERROR */,
-                    error: "abort" /* ErrorType.ABORT */,
-                },
-            ];
-            const request = agent.buildRequest({ text: 'test input' });
+            const controller = new AbortController();
+            controller.abort();
+            await Array.fromAsync(agent.run('question', { selected: null, signal: controller.signal }));
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.isUndefined(request.historical_contexts);
-        });
-        it('builds a request with aborted query in history before a real request', async () => {
-            const agent = new AiAgentMock({
-                aidaClient: {},
-            });
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'test',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'test',
-                },
-                {
-                    type: "thought" /* ResponseType.THOUGHT */,
-                    thought: 'thought',
-                },
-                {
-                    type: "title" /* ResponseType.TITLE */,
-                    title: 'title',
-                },
-                {
-                    type: "error" /* ResponseType.ERROR */,
-                    error: "abort" /* ErrorType.ABORT */,
-                },
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'test2',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'test2',
-                },
-                {
-                    type: "thought" /* ResponseType.THOUGHT */,
-                    thought: 'thought2',
-                },
-                {
-                    type: "title" /* ResponseType.TITLE */,
-                    title: 'title2',
-                },
-                {
-                    type: "action" /* ResponseType.ACTION */,
-                    code: 'action2',
-                    output: 'result2',
-                    canceled: false,
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'OBSERVATION: result2',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'answer2',
-                },
-            ];
-            const request = agent.buildRequest({ text: 'test input' });
-            assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
-            assert.deepEqual(request.historical_contexts, [
-                {
-                    parts: [{ text: 'test2' }],
-                    role: 1,
-                },
-                {
-                    role: 2,
-                    parts: [{ text: 'THOUGHT: thought2\nTITLE: title2\nACTION\naction2\nSTOP' }],
-                },
-                {
-                    role: 1,
-                    parts: [{ text: 'OBSERVATION: result2' }],
-                },
-                {
-                    role: 2,
-                    parts: [{ text: 'answer2' }],
-                },
-            ]);
         });
     });
     describe('run', () => {
         describe('partial yielding for answers', () => {
             it('should yield partial answer with final answer at the end', async () => {
-                async function* generateAnswerAfterPartial() {
-                    yield {
-                        explanation: 'Partial ans',
-                        metadata: {},
-                        completed: false,
-                    };
-                    yield {
-                        explanation: 'Partial answer is now completed',
-                        metadata: {},
-                        completed: true,
-                    };
-                }
                 const agent = new AiAgentMock({
-                    aidaClient: mockAidaClient(generateAnswerAfterPartial),
+                    aidaClient: mockAidaClient([[
+                            {
+                                explanation: 'Partial ans',
+                            },
+                            {
+                                explanation: 'Partial answer is now completed',
+                            }
+                        ]]),
                 });
                 const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
                 assert.deepEqual(responses, [
@@ -302,7 +186,6 @@ describeWithEnvironment('AiAgent', () => {
                     },
                     {
                         type: "querying" /* ResponseType.QUERYING */,
-                        query: 'query',
                     },
                     {
                         type: "answer" /* ResponseType.ANSWER */,
@@ -317,23 +200,18 @@ describeWithEnvironment('AiAgent', () => {
                 ]);
             });
             it('should not add partial answers to history', async () => {
-                async function* generateAnswerAfterPartial() {
-                    yield {
-                        explanation: 'Partial ans',
-                        metadata: {},
-                        completed: false,
-                    };
-                    yield {
-                        explanation: 'Partial answer is now completed',
-                        metadata: {},
-                        completed: true,
-                    };
-                }
                 const agent = new AiAgentMock({
-                    aidaClient: mockAidaClient(generateAnswerAfterPartial),
+                    aidaClient: mockAidaClient([[
+                            {
+                                explanation: 'Partial ans',
+                            },
+                            {
+                                explanation: 'Partial answer is now completed',
+                            }
+                        ]]),
                 });
                 await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
-                assert.deepEqual(agent.chatHistoryForTesting, [
+                assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
                     {
                         role: Host.AidaClient.Role.USER,
                         parts: [{ text: 'query' }],
@@ -346,10 +224,8 @@ describeWithEnvironment('AiAgent', () => {
             });
         });
         it('should yield unknown error when aidaFetch does not return anything', async () => {
-            async function* generateNothing() {
-            }
             const agent = new AiAgentMock({
-                aidaClient: mockAidaClient(generateNothing),
+                aidaClient: mockAidaClient([]),
             });
             const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
             assert.deepEqual(responses, [
@@ -359,71 +235,10 @@ describeWithEnvironment('AiAgent', () => {
                 },
                 {
                     type: "querying" /* ResponseType.QUERYING */,
-                    query: 'query',
                 },
                 {
                     type: "error" /* ResponseType.ERROR */,
                     error: "unknown" /* ErrorType.UNKNOWN */,
-                },
-            ]);
-        });
-    });
-    describe('runFromHistory', () => {
-        it('should run', async () => {
-            const agent = new AiAgentMock({
-                aidaClient: {},
-            });
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'first question',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'first enhancements',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'first answer',
-                },
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'second question',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'second enhancements',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'second answer',
-                },
-            ];
-            const responses = await Array.fromAsync(agent.runFromHistory());
-            assert.deepEqual(responses, [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'first question',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'first enhancements',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'first answer',
-                },
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'second question',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'second enhancements',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'second answer',
                 },
             ]);
         });
@@ -499,7 +314,9 @@ describeWithEnvironment('AiAgent', () => {
             }
             async #test(args) {
                 this.called++;
-                return args;
+                return {
+                    result: args,
+                };
             }
             // eslint-disable-next-line require-yield
             async *handleContextDetails() {
@@ -514,10 +331,10 @@ describeWithEnvironment('AiAgent', () => {
         }
         it('should build a request with functions', () => {
             const agent = new AgentWithFunction({
-                aidaClient: {},
+                aidaClient: mockAidaClient(),
             });
             agent.options.temperature = -1;
-            assert.deepEqual(agent.buildRequest({ text: 'test input' }).function_declarations, [{
+            assert.deepEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).function_declarations, [{
                     description: 'test fn description',
                     name: 'testFn',
                     parameters: {

@@ -118,6 +118,6 @@ export default {
   }
 }
 
-/*# sourceURL=cssShadowEditor.css */
+/*# sourceURL=${import.meta.resolve('./cssShadowEditor.css')} */
 `
 };

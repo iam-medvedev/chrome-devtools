@@ -23,7 +23,6 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../i18n/i18n.js';
-import { UserVisibleError } from '../platform/platform.js';
 import * as EnhancedTraces from './EnhancedTracesParser.js';
 import { TraceObject } from './TraceObject.js';
 const UIStrings = {
@@ -48,17 +47,19 @@ export class RehydratingConnection {
     onMessage = null;
     traceEvents = [];
     sessions = new Map();
+    #onConnectionLost;
     #rehydratingWindow;
     #onReceiveHostWindowPayloadBound = this.#onReceiveHostWindowPayload.bind(this);
-    constructor() {
+    constructor(onConnectionLost) {
         // If we're invoking this class, we're in the rehydrating pop-up window. Rename window for clarity.
+        this.#onConnectionLost = onConnectionLost;
         this.#rehydratingWindow = window;
         this.#setupMessagePassing();
     }
     #setupMessagePassing() {
         this.#rehydratingWindow.addEventListener('message', this.#onReceiveHostWindowPayloadBound);
         if (!this.#rehydratingWindow.opener) {
-            throw new UserVisibleError.UserVisibleError(i18nString(UIStrings.noHostWindow));
+            this.#onConnectionLost(i18nString(UIStrings.noHostWindow));
         }
         this.#rehydratingWindow.opener.postMessage({ type: 'REHYDRATING_WINDOW_READY' });
     }
@@ -74,7 +75,7 @@ export class RehydratingConnection {
                 await this.startHydration(reader.result);
             };
             reader.onerror = () => {
-                throw new UserVisibleError.UserVisibleError(i18nString(UIStrings.errorLoadingLog));
+                this.#onConnectionLost(i18nString(UIStrings.errorLoadingLog));
             };
             reader.readAsText(traceFile);
         }

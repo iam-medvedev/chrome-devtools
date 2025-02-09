@@ -115,6 +115,6 @@ export default {
   margin-right: 6px;
 }
 
-/*# sourceURL=webAudio.css */
+/*# sourceURL=${import.meta.resolve('./webAudio.css')} */
 `
 };

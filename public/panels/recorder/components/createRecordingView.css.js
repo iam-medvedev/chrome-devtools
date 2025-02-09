@@ -100,6 +100,6 @@ devtools-icon[name="help"] {
   height: 16px;
 }
 
-/*# sourceURL=createRecordingView.css */
+/*# sourceURL=${import.meta.resolve('./createRecordingView.css')} */
 `
 };

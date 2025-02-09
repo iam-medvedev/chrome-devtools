@@ -112,6 +112,12 @@ export interface ProfileChunk extends Sample {
 export interface PartialProfile {
     nodes?: PartialNode[];
     samples: CallFrameID[];
+    /**
+     * Contains trace ids assigned to samples, if any. Trace ids are
+     * keyed by the sample index in the profile (the keys of the object
+     * are strings containing the numeric index).
+     */
+    trace_ids?: Record<string, number>;
 }
 export interface PartialNode {
     callFrame: CallFrame;
@@ -1125,6 +1131,7 @@ export interface ConsoleTimeStamp extends Event {
             track?: string | number;
             trackGroup?: string | number;
             color?: string | number;
+            sampleTraceId?: number;
         };
     };
 }
@@ -1144,7 +1151,7 @@ interface ChromeFrameReporter {
     /**  Identifies a BeginFrameArgs (along with the source_id).
          See comments in components/viz/common/frame_sinks/begin_frame_args.h. */
     frame_sequence: number;
-    /**  If this is a droped frame (i.e. if |state| is set to |STATE_DROPPED| or
+    /**  If this is a dropped frame (i.e. if |state| is set to |STATE_DROPPED| or
          |STATE_PRESENTED_PARTIAL|), then indicates whether this frame impacts smoothness. */
     affects_smoothness: boolean;
     /** The type of active scroll. */
@@ -1265,7 +1272,7 @@ export interface SyntheticInteractionPair extends SyntheticEventPair<EventTiming
  * trace event.
  *
  * We store the sampleIndex, profileId and nodeId so that we can easily link
- * back a Synthetic Trace Entry to an indivdual Sample trace event within a
+ * back a Synthetic Trace Entry to an individual Sample trace event within a
  * Profile.
  *
  * Because a sample contains a set of call frames representing the stack at the
@@ -1304,6 +1311,7 @@ export interface SyntheticJSSample extends Event {
     name: Name.JS_SAMPLE;
     args: Args & {
         data: ArgsData & {
+            traceId?: number;
             stackTrace: Protocol.Runtime.CallFrame[];
         };
     };
@@ -1318,15 +1326,6 @@ export interface DrawFrame extends Instant {
     };
 }
 export declare function isDrawFrame(event: Event): event is DrawFrame;
-export interface LegacyDrawFrameBegin extends Async {
-    name: Name.DRAW_FRAME;
-    ph: Phase.ASYNC_NESTABLE_START;
-    args: Args & {
-        layerTreeId: number;
-        frameSeqId: number;
-    };
-}
-export declare function isLegacyTraceEventDrawFrameBegin(event: Event): event is LegacyDrawFrameBegin;
 export interface BeginFrame extends Instant {
     name: Name.BEGIN_FRAME;
     args: Args & {
@@ -1955,6 +1954,11 @@ export declare function isAbortPostTaskCallback(event: Event): event is RunPostT
  */
 export declare function isJSInvocationEvent(event: Event): boolean;
 export interface ConsoleRunTask extends Event {
+    args: Args & {
+        data: ArgsData & {
+            sampleTraceId?: number;
+        };
+    };
     name: Name.V8_CONSOLE_RUN_TASK;
 }
 export declare function isConsoleRunTask(event: Event): event is ConsoleRunTask;

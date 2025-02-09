@@ -125,6 +125,6 @@ export default {
   }
 }
 
-/*# sourceURL=sidebarSingleInsightSet.css */
+/*# sourceURL=${import.meta.resolve('./sidebarSingleInsightSet.css')} */
 `
 };

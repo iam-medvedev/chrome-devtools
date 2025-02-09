@@ -19,6 +19,6 @@ devtools-toolbar {
   border-top: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=resourceSourceFrame.css */
+/*# sourceURL=${import.meta.resolve('./resourceSourceFrame.css')} */
 `
 };

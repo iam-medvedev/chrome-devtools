@@ -10,24 +10,12 @@ export default {
  * found in the LICENSE file.
  */
 
-.keybinds-category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--sys-size-6) var(--sys-size-5) var(--sys-size-8);
-}
-
-.keybinds-category-header-text {
-  font-size: var(--sys-typescale-body3-size);
-  font-weight: var(--ref-typeface-weight-medium);
-}
-
 .keybinds-list {
   display: flex;
   flex-direction: column;
   /* overwrite default\\'margin\\' and \\'padding\\' for the <ul> element */
   margin: 0;
-  padding: 0 var(--sys-size-8);
+  padding: 0;
 }
 
 .keybinds-list-item {
@@ -50,15 +38,6 @@ export default {
   .shortcuts-for-actions {
     grid-area: auto / 3 / auto / span 1;
   }
-}
-
-.keybinds-list-text {
-  font-size: var(--sys-typescale-body4-size);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  user-select: none;
-  color: var(--sys-color-on-surface);
 }
 
 .keys-container {
@@ -100,6 +79,6 @@ export default {
   background: var(--sys-color-tonal-container);
 }
 
-/*# sourceURL=shortcutDialog.css */
+/*# sourceURL=${import.meta.resolve('./shortcutDialog.css')} */
 `
 };

@@ -59,6 +59,6 @@ export default {
   }
 }
 
-/*# sourceURL=entryLabelOverlay.css */
+/*# sourceURL=${import.meta.resolve('./entryLabelOverlay.css')} */
 `
 };

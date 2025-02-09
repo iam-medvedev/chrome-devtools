@@ -171,6 +171,6 @@ export default {
   flex-wrap: wrap;
 }
 
-/*# sourceURL=searchableView.css */
+/*# sourceURL=${import.meta.resolve('./searchableView.css')} */
 `
 };

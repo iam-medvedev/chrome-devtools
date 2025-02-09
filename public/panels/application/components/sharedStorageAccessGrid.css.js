@@ -30,6 +30,6 @@ devtools-data-grid {
   margin-top: 20px;
 }
 
-/*# sourceURL=sharedStorageAccessGrid.css */
+/*# sourceURL=${import.meta.resolve('./sharedStorageAccessGrid.css')} */
 `
 };

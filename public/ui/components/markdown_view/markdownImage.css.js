@@ -14,6 +14,6 @@ export default {
   display: block;
 }
 
-/*# sourceURL=markdownImage.css */
+/*# sourceURL=${import.meta.resolve('./markdownImage.css')} */
 `
 };

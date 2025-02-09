@@ -9,23 +9,8 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
+const { UIStrings, i18nString } = Trace.Insights.Models.ForcedReflow;
 const { html } = Lit;
-const UIStrings = {
-    /**
-     *@description Title of a list to provide related stack trace data
-     */
-    relatedStackTrace: 'Stack trace',
-    /**
-     *@description Text to describe the top time-consuming function call
-     */
-    topTimeConsumingFunctionCall: 'Top function call',
-    /**
-     * @description Text to describe the total reflow time
-     */
-    totalReflowTime: 'Total reflow time',
-};
-const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/ForcedReflow.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ForcedReflow extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-forced-reflow`;
     internalName = 'forced-reflow';
@@ -57,17 +42,17 @@ export class ForcedReflow extends BaseInsightComponent {
         // clang-format off
         return html `
       <div class="insight-section">
-        ${html `<devtools-performance-table
+        <devtools-performance-table
           .data=${{
             insight: this,
             headers: [i18nString(UIStrings.topTimeConsumingFunctionCall), i18nString(UIStrings.totalReflowTime)],
             rows: [{ values: [this.#linkifyUrl(topLevelFunctionCallData), time(Trace.Types.Timing.Micro(totalReflowTime))] }],
         }}>
-        </devtools-performance-table>`}
+        </devtools-performance-table>
       </div>
       <div class="insight-section">
-        ${html `<devtools-performance-table
-        .data=${{
+        <devtools-performance-table
+          .data=${{
             insight: this,
             headers: [i18nString(UIStrings.relatedStackTrace)],
             rows: bottomUpCallStackData.map(data => ({
@@ -75,7 +60,7 @@ export class ForcedReflow extends BaseInsightComponent {
                 overlays: this.#createOverlayForEvents(data.relatedEvents),
             })),
         }}>
-        </devtools-performance-table>`}
+        </devtools-performance-table>
       </div>`;
         // clang-format on
     }

@@ -272,6 +272,9 @@ export const generatedPropertyValues: {
     "column-gap": {
         values: string[];
     };
+    "column-rule-break": {
+        values: string[];
+    };
     "column-rule-color": {
         values: string[];
     };
@@ -678,6 +681,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "row-gap": {
+        values: string[];
+    };
+    "row-rule-break": {
         values: string[];
     };
     "ruby-align": {

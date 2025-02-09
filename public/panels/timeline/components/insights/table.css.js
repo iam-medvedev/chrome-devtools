@@ -51,6 +51,6 @@ table th[scope="row"] {
   word-break: break-word;
 }
 
-/*# sourceURL=table.css */
+/*# sourceURL=${import.meta.resolve('./table.css')} */
 `
 };

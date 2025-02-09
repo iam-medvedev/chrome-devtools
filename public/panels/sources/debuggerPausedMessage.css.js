@@ -48,6 +48,6 @@ devtools-icon {
   top: -1px;
 }
 
-/*# sourceURL=debuggerPausedMessage.css */
+/*# sourceURL=${import.meta.resolve('./debuggerPausedMessage.css')} */
 `
 };

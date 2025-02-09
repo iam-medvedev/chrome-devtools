@@ -5,6 +5,7 @@
     },
     "files": [
         "baseInsightComponent.css.js",
+        "checklist.css.js",
         "table.css.js"
     ]
 }

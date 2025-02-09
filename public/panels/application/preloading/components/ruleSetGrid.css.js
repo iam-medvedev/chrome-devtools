@@ -29,6 +29,6 @@ devtools-data-grid {
   vertical-align: text-bottom;
 }
 
-/*# sourceURL=ruleSetGrid.css */
+/*# sourceURL=${import.meta.resolve('./ruleSetGrid.css')} */
 `
 };

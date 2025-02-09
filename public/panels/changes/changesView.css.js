@@ -34,6 +34,6 @@ export default {
   border-top: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=changesView.css */
+/*# sourceURL=${import.meta.resolve('./changesView.css')} */
 `
 };

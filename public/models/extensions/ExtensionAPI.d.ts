@@ -48,6 +48,7 @@ export declare namespace PrivateAPI {
         ShowPanel = "showPanel",
         Unsubscribe = "unsubscribe",
         UpdateButton = "updateButton",
+        AttachSourceMapToResource = "attachSourceMapToResource",
         RegisterLanguageExtensionPlugin = "registerLanguageExtensionPlugin",
         GetWasmLinearMemory = "getWasmLinearMemory",
         GetWasmLocal = "getWasmLocal",
@@ -57,7 +58,8 @@ export declare namespace PrivateAPI {
         CreateRecorderView = "createRecorderView",
         ShowRecorderView = "showRecorderView",
         ShowNetworkPanel = "showNetworkPanel",
-        ReportResourceLoad = "reportResourceLoad"
+        ReportResourceLoad = "reportResourceLoad",
+        SetFunctionRangesForScript = "setFunctionRangesForScript"
     }
     export const enum LanguageExtensionPluginCommands {
         AddRawModule = "addRawModule",
@@ -216,11 +218,21 @@ export declare namespace PrivateAPI {
         command: Commands.GetResourceContent;
         url: string;
     }
+    interface AttachSourceMapToResourceRequest {
+        command: Commands.AttachSourceMapToResource;
+        contentUrl: string;
+        sourceMapURL: string;
+    }
     interface SetResourceContentRequest {
         command: Commands.SetResourceContent;
         url: string;
         content: string;
         commit: boolean;
+    }
+    interface SetFunctionRangesForScriptRequest {
+        command: Commands.SetFunctionRangesForScript;
+        scriptUrl: string;
+        ranges: PublicAPI.Chrome.DevTools.NamedFunctionRange[];
     }
     interface ForwardKeyboardEventRequest {
         command: Commands.ForwardKeyboardEvent;
@@ -269,7 +281,7 @@ export declare namespace PrivateAPI {
             size?: number;
         };
     }
-    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest | ShowNetworkPanelRequest | ReportResourceLoadRequest;
+    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | SetFunctionRangesForScriptRequest | AttachSourceMapToResourceRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest | ShowNetworkPanelRequest | ReportResourceLoadRequest;
     export type ExtensionServerRequestMessage = PrivateAPI.ServerRequests & {
         requestId?: number;
     };

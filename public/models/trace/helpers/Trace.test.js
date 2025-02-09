@@ -399,7 +399,7 @@ describeWithEnvironment('Trace helpers', function () {
                         { compositeFailed: 8224, unsupportedProperties: ['font-size'] },
                     ],
                 ]);
-                // Ensure we have the correct numner of synthetic events created.
+                // Ensure we have the correct number of synthetic events created.
                 assert.deepEqual(wantPairs.size, animationSynthEvents.length);
                 animationSynthEvents.forEach(event => {
                     const id = event.id;

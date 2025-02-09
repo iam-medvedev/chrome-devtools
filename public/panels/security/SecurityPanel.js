@@ -511,11 +511,6 @@ export class SecurityPanel extends UI.Panel.Panel {
     .options=${{ vertical: true, settingName: 'security' }}
     ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, e => { output.splitWidget = e; })}>
         <devtools-widget
-          slot="main"
-          .widgetConfig=${widgetConfig(SecurityMainView, { panel: input.panel })}
-          ${UI.Widget.widgetRef(SecurityMainView, e => { output.mainView = e; })}>
-        </devtools-widget>
-        <devtools-widget
           slot="sidebar"
           .widgetConfig=${widgetConfig(SecurityPanelSidebar)}
           @showCookieReport=${() => output.setVisibleView(new CookieReportView())}
@@ -531,6 +526,8 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.sidebar.setMinimumSize(100, 25);
         this.sidebar.element.classList.add('panel-sidebar');
         this.sidebar.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
+        this.mainView = new SecurityMainView();
+        this.mainView.panel = this;
         this.element.addEventListener(ShowOriginEvent.eventName, (event) => {
             if (event.origin) {
                 this.showOrigin(event.origin);
@@ -1363,16 +1360,16 @@ export class SecurityDetailsTable {
     }
 }
 export class SecurityRevealer {
-    async reveal(cookieReportView) {
+    async reveal() {
         await UI.ViewManager.ViewManager.instance().showView('security');
         const view = UI.ViewManager.ViewManager.instance().view('security');
         if (view) {
             const securityPanel = await view.widget();
-            if (securityPanel instanceof SecurityPanel) {
-                securityPanel.setVisibleView(cookieReportView);
+            if (securityPanel instanceof SecurityPanel && securityPanel.sidebar.cookieReportTreeElement) {
+                securityPanel.sidebar.cookieReportTreeElement.select(/* omitFocus=*/ false, /* selectedByUser=*/ true);
             }
             else {
-                throw new Error('Expected securityPanel to be an instance of SecurityPanel');
+                throw new Error('Expected securityPanel to be an instance of SecurityPanel with a cookieReportTreeElement in the sidebar');
             }
         }
     }

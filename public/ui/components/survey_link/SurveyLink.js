@@ -5,10 +5,7 @@ import '../icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import { html, render } from '../../lit/lit.js';
-import surveyLinkStylesRaw from './surveyLink.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const surveyLinkStyles = new CSSStyleSheet();
-surveyLinkStyles.replaceSync(surveyLinkStylesRaw.cssContent);
+import surveyLinkStyles from './surveyLink.css.js';
 const UIStrings = {
     /**
      *@description Text shown when the link to open a survey is clicked but the survey has not yet appeared
@@ -34,9 +31,6 @@ export class SurveyLink extends HTMLElement {
     #canShowSurvey = () => { };
     #showSurvey = () => { };
     #state = "Checking" /* State.CHECKING */;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [surveyLinkStyles];
-    }
     // Re-setting data will cause the state to go back to 'Checking' which hides the link.
     set data(data) {
         this.#trigger = data.trigger;
@@ -94,6 +88,7 @@ export class SurveyLink extends HTMLElement {
         const ariaDisabled = this.#state !== "ShowLink" /* State.SHOW_LINK */;
         // clang-format off
         const output = html `
+      <style>${surveyLinkStyles.cssContent}</style>
       <button class="link ${linkState}" tabindex=${ariaDisabled ? '-1' : '0'} .disabled=${ariaDisabled} aria-disabled=${ariaDisabled} @click=${this.#sendSurvey}>
         <devtools-icon class="link-icon" .data=${{ iconName: 'review', color: 'var(--sys-color-primary)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)' }}></devtools-icon><!--
       -->${linkText}

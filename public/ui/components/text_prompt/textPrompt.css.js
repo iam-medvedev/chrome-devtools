@@ -53,6 +53,6 @@ input {
   z-index: 1;
 }
 
-/*# sourceURL=textPrompt.css */
+/*# sourceURL=${import.meta.resolve('./textPrompt.css')} */
 `
 };

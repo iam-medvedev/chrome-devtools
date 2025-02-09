@@ -12,7 +12,7 @@ function getFakeToken(token) {
 }
 function renderTemplateResult(templateResult) {
     const container = document.createElement('container');
-    Lit.render(templateResult, container); // eslint-disable-line rulesdir/lit-host-this
+    Lit.render(templateResult, container);
     return container;
 }
 describeWithEnvironment('MarkdownView', () => {

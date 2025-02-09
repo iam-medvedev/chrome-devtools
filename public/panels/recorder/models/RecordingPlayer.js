@@ -166,13 +166,10 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
                 this.#speed = speed;
             }
             async beforeEachStep(step, flow) {
-                let resolver = () => { };
-                const promise = new Promise(r => {
-                    resolver = r;
-                });
+                const { resolve, promise } = Promise.withResolvers();
                 player.dispatchEventToListeners("Step" /* Events.STEP */, {
                     step,
-                    resolve: resolver,
+                    resolve,
                 });
                 await promise;
                 const currentStepIndex = flow.steps.indexOf(step);

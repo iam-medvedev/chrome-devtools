@@ -40,6 +40,6 @@ span.ax-internal-role {
   margin: 2px 2px 2px 5px;
 }
 
-/*# sourceURL=accessibilityProperties.css */
+/*# sourceURL=${import.meta.resolve('./accessibilityProperties.css')} */
 `
 };

@@ -106,5 +106,5 @@ export interface OriginState {
 }
 export type Origin = Platform.DevToolsPath.UrlString;
 export declare class SecurityRevealer implements Common.Revealer.Revealer<CookieReportView> {
-    reveal(cookieReportView: CookieReportView): Promise<void>;
+    reveal(): Promise<void>;
 }

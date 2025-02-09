@@ -31,6 +31,6 @@ export default {
   }
 }
 
-/*# sourceURL=requestInitiatorViewTree.css */
+/*# sourceURL=${import.meta.resolve('./requestInitiatorViewTree.css')} */
 `
 };

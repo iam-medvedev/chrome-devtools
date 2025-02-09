@@ -238,10 +238,11 @@ export default {
 
   & ::selection {
     background-color: var(--sys-color-state-focus-select);
+    color: currentcolor;
   }
 }
 
-.data-grid tbody tr.revealed:focus-within {
+.data-grid:focus-within tbody tr.revealed.selected {
   background-color: var(--sys-color-tonal-container);
 }
 
@@ -379,6 +380,6 @@ export default {
   }
 }
 
-/*# sourceURL=dataGrid.css */
+/*# sourceURL=${import.meta.resolve('./dataGrid.css')} */
 `
 };

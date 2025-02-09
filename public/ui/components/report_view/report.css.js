@@ -33,6 +33,6 @@ export default {
   grid-column-start: span 2;
 }
 
-/*# sourceURL=report.css */
+/*# sourceURL=${import.meta.resolve('./report.css')} */
 `
 };

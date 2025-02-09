@@ -100,6 +100,6 @@ export default {
   }
 }
 
-/*# sourceURL=eventListenersView.css */
+/*# sourceURL=${import.meta.resolve('./eventListenersView.css')} */
 `
 };

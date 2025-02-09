@@ -385,9 +385,14 @@ export function expectConsoleLogs(expectedLogs) {
         }
     });
 }
+// This is needed as trying to stub a stub throws
+let hostConfigStub;
 export function getGetHostConfigStub(config) {
     const settings = Common.Settings.Settings.instance();
-    return sinon.stub(settings, 'getHostConfig').returns({
+    if (settings.getHostConfig !== hostConfigStub) {
+        hostConfigStub = sinon.stub(settings, 'getHostConfig');
+    }
+    return hostConfigStub.returns({
         aidaAvailability: {
             disallowLogging: false,
             enterprisePolicyValue: 0,
@@ -421,6 +426,7 @@ export function getGetHostConfigStub(config) {
             modelId: '',
             temperature: -1,
             enabled: false,
+            insightsEnabled: false,
             ...config.devToolsAiAssistancePerformanceAgent,
         },
         devToolsImprovedWorkspaces: {

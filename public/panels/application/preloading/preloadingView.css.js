@@ -15,6 +15,6 @@ export default {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=preloading/preloadingView.css */
+/*# sourceURL=${import.meta.resolve('./preloading/preloadingView.css')} */
 `
 };

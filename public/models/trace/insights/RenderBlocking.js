@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory, InsightWarning, } from './types.js';
-const UIStrings = {
+export const UIStrings = {
     /**
      * @description Title of an insight that provides the user with the list of network requests that blocked and therefore slowed down the page rendering and becoming visible to the user.
      */
@@ -16,9 +16,21 @@ const UIStrings = {
     description: 'Requests are blocking the page\'s initial render, which may delay LCP. ' +
         '[Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) ' +
         'can move these network requests out of the critical path.',
+    /**
+     * @description Label to describe a network request (that happens to be render-blocking).
+     */
+    renderBlockingRequest: 'Request',
+    /**
+     *@description Label used for a time duration.
+     */
+    duration: 'Duration',
+    /**
+     * @description Text status indicating that no requests blocked the initial render of a navigation
+     */
+    noRenderBlocking: 'No render blocking requests for this navigation',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/RenderBlocking.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // Because of the way we detect blocking stylesheets, asynchronously loaded
 // CSS with link[rel=preload] and an onload handler (see https://github.com/filamentgroup/loadCSS)
 // can be falsely flagged as blocking. Therefore, ignore stylesheets that loaded fast enough
@@ -101,6 +113,7 @@ function computeSavings(parsedTrace, context, renderBlockingRequests) {
 }
 function finalize(partialModel) {
     return {
+        strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,

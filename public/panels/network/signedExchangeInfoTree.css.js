@@ -99,6 +99,6 @@ export default {
   margin-top: 2px;
 }
 
-/*# sourceURL=signedExchangeInfoTree.css */
+/*# sourceURL=${import.meta.resolve('./signedExchangeInfoTree.css')} */
 `
 };

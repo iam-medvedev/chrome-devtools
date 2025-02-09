@@ -42,7 +42,7 @@ declare class Simulator<T = Lantern.AnyNetworkObject> {
      */
     updateNetworkCapacity(): void;
     /**
-     * Estimates the number of milliseconds remaining given current condidtions before the node is complete.
+     * Estimates the number of milliseconds remaining given current conditions before the node is complete.
      */
     estimateTimeRemaining(node: Graph.Node): number;
     estimateCPUTimeRemaining(cpuNode: Graph.CPUNode): number;
@@ -52,7 +52,7 @@ declare class Simulator<T = Lantern.AnyNetworkObject> {
      */
     findNextNodeCompletionTime(): number;
     /**
-     * Given a time period, computes the progress toward completion that the node made durin that time.
+     * Given a time period, computes the progress toward completion that the node made during that time.
      */
     updateProgressMadeInTimePeriod(node: Graph.Node, timePeriodLength: number, totalElapsedTime: number): void;
     computeFinalNodeTimings(): {

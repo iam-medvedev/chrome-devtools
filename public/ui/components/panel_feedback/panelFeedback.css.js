@@ -87,6 +87,6 @@ x-link.quick-start-link { /* stylelint-disable-line selector-type-no-unknown */
   }
 }
 
-/*# sourceURL=panelFeedback.css */
+/*# sourceURL=${import.meta.resolve('./panelFeedback.css')} */
 `
 };

@@ -109,6 +109,6 @@ export default {
   }
 }
 
-/*# sourceURL=objectValue.css */
+/*# sourceURL=${import.meta.resolve('./objectValue.css')} */
 `
 };

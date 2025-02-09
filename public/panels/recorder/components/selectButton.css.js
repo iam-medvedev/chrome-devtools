@@ -30,6 +30,6 @@ export default {
   align-items: center;
 }
 
-/*# sourceURL=selectButton.css */
+/*# sourceURL=${import.meta.resolve('./selectButton.css')} */
 `
 };

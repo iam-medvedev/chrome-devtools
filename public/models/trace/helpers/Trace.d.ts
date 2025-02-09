@@ -138,14 +138,14 @@ export interface ForEachEventConfig {
  * 9. End A
  *
  * By default, async events are skipped. This behaviour can be
- * overriden making use of the config.ignoreAsyncEvents parameter.
+ * overridden making use of the config.ignoreAsyncEvents parameter.
  */
 export declare function forEachEvent(events: Types.Events.Event[], config: ForEachEventConfig): void;
 export declare function eventHasCategory(event: Types.Events.Event, category: string): boolean;
-export declare function nodeIdForInvalidationEvent(event: Types.Events.InvalidationTrackingEvent): Protocol.DOM.BackendNodeId | null;
 /**
  * This compares Types.Events.CallFrame with Protocol.Runtime.CallFrame and checks for equality.
  */
 export declare function isMatchingCallFrame(eventFrame: Types.Events.CallFrame, nodeFrame: Protocol.Runtime.CallFrame): boolean;
 export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.Micro): boolean;
+export declare function extractSampleTraceId(event: Types.Events.Event): number | null;
 export {};

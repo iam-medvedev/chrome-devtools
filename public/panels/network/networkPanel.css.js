@@ -182,6 +182,6 @@ devtools-request-headers {
   min-width: 360px;
 }
 
-/*# sourceURL=networkPanel.css */
+/*# sourceURL=${import.meta.resolve('./networkPanel.css')} */
 `
 };

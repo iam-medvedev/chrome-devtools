@@ -68,6 +68,6 @@ export default {
   }
 }
 
-/*# sourceURL=floatingButton.css */
+/*# sourceURL=${import.meta.resolve('./floatingButton.css')} */
 `
 };

@@ -53,6 +53,6 @@ devtools-icon {
   }
 }
 
-/*# sourceURL=changesSidebar.css */
+/*# sourceURL=${import.meta.resolve('./changesSidebar.css')} */
 `
 };

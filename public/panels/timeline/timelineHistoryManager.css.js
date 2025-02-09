@@ -87,6 +87,6 @@ export default {
   gap: var(--sys-size-5);
 }
 
-/*# sourceURL=timelineHistoryManager.css */
+/*# sourceURL=${import.meta.resolve('./timelineHistoryManager.css')} */
 `
 };

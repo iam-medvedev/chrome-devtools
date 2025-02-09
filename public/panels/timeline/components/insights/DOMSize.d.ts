@@ -1,5 +1,6 @@
 import '../../../../ui/components/icon_button/icon_button.js';
 import './Table.js';
+import './NodeLink.js';
 import type { DOMSizeInsightModel } from '../../../../models/trace/insights/DOMSize.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';

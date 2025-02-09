@@ -97,6 +97,7 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
 
   & ::selection {
     background-color: var(--sys-color-state-focus-select);
+    color: currentcolor;
   }
 
   & *:not(devtools-icon) {
@@ -307,6 +308,6 @@ ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.sel
   }
 }
 
-/*# sourceURL=treeoutline.css */
+/*# sourceURL=${import.meta.resolve('./treeoutline.css')} */
 `
 };

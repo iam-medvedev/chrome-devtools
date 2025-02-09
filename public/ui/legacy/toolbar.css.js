@@ -45,6 +45,6 @@ slot {
   height: var(--toolbar-height);
 }
 
-/*# sourceURL=toolbar.css */
+/*# sourceURL=${import.meta.resolve('./toolbar.css')} */
 `
 };

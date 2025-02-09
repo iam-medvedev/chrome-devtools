@@ -18,6 +18,6 @@ export default {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=reportSectionDivider.css */
+/*# sourceURL=${import.meta.resolve('./reportSectionDivider.css')} */
 `
 };

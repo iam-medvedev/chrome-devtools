@@ -46,6 +46,6 @@ export default {
   align-items: center;
 }
 
-/*# sourceURL=cssPropertyDocsView.css */
+/*# sourceURL=${import.meta.resolve('./cssPropertyDocsView.css')} */
 `
 };

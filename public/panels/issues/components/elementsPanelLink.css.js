@@ -18,6 +18,6 @@ export default {
   background-color: var(--icon-default);
 }
 
-/*# sourceURL=./elementsPanelLink.css */
+/*# sourceURL=${import.meta.resolve('././elementsPanelLink.css')} */
 `
 };

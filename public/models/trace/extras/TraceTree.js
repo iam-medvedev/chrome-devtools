@@ -226,7 +226,7 @@ export class TopDownRootNode extends TopDownNode {
     includeInstantEvents;
     totalTime;
     selfTime;
-    constructor(events, filters, startTime, endTime, doNotAggregate, eventGroupIdCallback, includeInstantEvents) {
+    constructor(events, { filters, startTime, endTime, doNotAggregate, eventGroupIdCallback, includeInstantEvents }) {
         super('', events[0], null);
         this.event = events[0];
         this.root = this;
@@ -279,7 +279,7 @@ export class BottomUpRootNode extends Node {
     endTime;
     eventGroupIdCallback;
     totalTime;
-    constructor(events, textFilter, filters, startTime, endTime, eventGroupIdCallback) {
+    constructor(events, { textFilter, filters, startTime, endTime, eventGroupIdCallback }) {
         super('', events[0]);
         this.childrenInternal = null;
         this.events = events;

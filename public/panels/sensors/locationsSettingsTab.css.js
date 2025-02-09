@@ -92,6 +92,6 @@ export default {
   gap: var(--sys-size-9);
 }
 
-/*# sourceURL=locationsSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./locationsSettingsTab.css')} */
 `
 };

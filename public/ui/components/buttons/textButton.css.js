@@ -137,6 +137,6 @@ export default {
   }
 }
 
-/*# sourceURL=textButton.css */
+/*# sourceURL=${import.meta.resolve('./textButton.css')} */
 `
 };

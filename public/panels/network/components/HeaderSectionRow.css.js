@@ -196,6 +196,6 @@ x-link .inline-icon { /* stylelint-disable-line selector-type-no-unknown */
   flex-direction: column;
 }
 
-/*# sourceURL=HeaderSectionRow.css */
+/*# sourceURL=${import.meta.resolve('./HeaderSectionRow.css')} */
 `
 };

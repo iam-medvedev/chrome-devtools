@@ -377,6 +377,6 @@ devtools-toolbar.device-mode-toolbar-options {
   transform: rotate(270deg);
 }
 
-/*# sourceURL=deviceModeView.css */
+/*# sourceURL=${import.meta.resolve('./deviceModeView.css')} */
 `
 };

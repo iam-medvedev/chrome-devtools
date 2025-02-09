@@ -1461,7 +1461,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         if (request) {
             if (UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.network-panel-context')) {
                 UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, request);
-                contextMenu.headerSection().appendAction('drjones.network-panel-context');
+                contextMenu.footerSection().appendAction('drjones.network-panel-context');
             }
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyURL), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: 'copy-url' });
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedURLs) : i18nString(UIStrings.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: 'copy-all-urls' });

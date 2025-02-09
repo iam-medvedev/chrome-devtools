@@ -53,6 +53,6 @@ export default {
   }
 }
 
-/*# sourceURL=domBreakpointsSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./domBreakpointsSidebarPane.css')} */
 `
 };

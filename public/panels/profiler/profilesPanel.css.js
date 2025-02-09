@@ -164,6 +164,6 @@ export default {
   }
 }
 
-/*# sourceURL=profilesPanel.css */
+/*# sourceURL=${import.meta.resolve('./profilesPanel.css')} */
 `
 };

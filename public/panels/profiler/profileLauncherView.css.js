@@ -162,6 +162,6 @@ export default {
   }
 }
 
-/*# sourceURL=profileLauncherView.css */
+/*# sourceURL=${import.meta.resolve('./profileLauncherView.css')} */
 `
 };

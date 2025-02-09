@@ -1,7 +1,7 @@
 import type * as Trace from '../../../models/trace/trace.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 export interface ActiveInsight {
-    model: Trace.Insights.Types.InsightModel<{}>;
+    model: Trace.Insights.Types.InsightModel<{}, {}>;
     insightSetKey: string;
 }
 export declare class RemoveAnnotation extends Event {

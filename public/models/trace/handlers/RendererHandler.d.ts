@@ -33,7 +33,7 @@ export declare function assignThreadName(processes: Map<Types.Events.ProcessID, 
 /**
  * Removes unneeded trace data opportunistically stored while handling events.
  * This currently does the following:
- *  - Deletes processes with an unkonwn origin.
+ *  - Deletes processes with an unknown origin.
  */
 export declare function sanitizeProcesses(processes: Map<Types.Events.ProcessID, RendererProcess>): void;
 /**

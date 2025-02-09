@@ -134,10 +134,6 @@ export class TimelineGrid {
     get dividersLabelBarElement() {
         return this.dividersLabelBarElementInternal;
     }
-    removeDividers() {
-        this.dividersElementInternal.removeChildren();
-        this.dividersLabelBarElementInternal.removeChildren();
-    }
     updateDividers(calculator, freeZoneAtLeft) {
         const dividersData = TimelineGrid.calculateGridOffsets(calculator, freeZoneAtLeft);
         const dividerOffsets = dividersData.offsets;
@@ -218,12 +214,6 @@ export class TimelineGrid {
     }
     showEventDividers() {
         this.eventDividersElement.classList.remove('hidden');
-    }
-    hideDividers() {
-        this.dividersElementInternal.classList.add('hidden');
-    }
-    showDividers() {
-        this.dividersElementInternal.classList.remove('hidden');
     }
     setScrollTop(scrollTop) {
         this.dividersLabelBarElementInternal.style.top = scrollTop + 'px';

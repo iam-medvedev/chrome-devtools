@@ -182,6 +182,6 @@ export default {
   color: var(--sys-color-green);
 }
 
-/*# sourceURL=timelineFlameChartView.css */
+/*# sourceURL=${import.meta.resolve('./timelineFlameChartView.css')} */
 `
 };

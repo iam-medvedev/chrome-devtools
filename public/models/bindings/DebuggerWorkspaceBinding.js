@@ -29,6 +29,11 @@ export class DebuggerWorkspaceBinding {
         this.#liveLocationPromises = new Set();
         this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this);
     }
+    setFunctionRanges(uiSourceCode, ranges) {
+        for (const modelData of this.#debuggerModelToData.values()) {
+            modelData.compilerMapping.setFunctionRanges(uiSourceCode, ranges);
+        }
+    }
     static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null }) {
         const { forceNew, resourceMapping, targetManager } = opts;
         if (!debuggerWorkspaceBindingInstance || forceNew) {

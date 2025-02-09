@@ -420,7 +420,9 @@ export const generatedProperties = [
             "column-count",
             "column-fill",
             "column-gap",
+            "column-rule-break",
             "column-rule-color",
+            "column-rule-outset",
             "column-rule-style",
             "column-rule-width",
             "column-span",
@@ -434,6 +436,14 @@ export const generatedProperties = [
             "container-type",
             "content",
             "content-visibility",
+            "corner-bottom-left-shape",
+            "corner-bottom-right-shape",
+            "corner-end-end-shape",
+            "corner-end-start-shape",
+            "corner-start-end-shape",
+            "corner-start-start-shape",
+            "corner-top-left-shape",
+            "corner-top-right-shape",
             "counter-increment",
             "counter-reset",
             "counter-set",
@@ -620,11 +630,14 @@ export const generatedProperties = [
             "r",
             "range",
             "reading-flow",
+            "reading-order",
             "resize",
             "result",
             "right",
             "rotate",
             "row-gap",
+            "row-rule-break",
+            "row-rule-outset",
             "ruby-align",
             "ruby-position",
             "rx",
@@ -868,6 +881,17 @@ export const generatedProperties = [
             "step-end"
         ],
         "name": "animation-timing-function"
+    },
+    {
+        "longhands": [
+            "animation-trigger-timeline",
+            "animation-trigger-type",
+            "animation-trigger-range-start",
+            "animation-trigger-range-end",
+            "animation-trigger-exit-range-start",
+            "animation-trigger-exit-range-end"
+        ],
+        "name": "animation-trigger"
     },
     {
         "longhands": [
@@ -1685,10 +1709,23 @@ export const generatedProperties = [
         "name": "column-rule"
     },
     {
+        "inherited": false,
+        "keywords": [
+            "none",
+            "spanning-item",
+            "intersection"
+        ],
+        "name": "column-rule-break"
+    },
+    {
         "keywords": [
             "currentcolor"
         ],
         "name": "column-rule-color"
+    },
+    {
+        "inherited": false,
+        "name": "column-rule-outset"
     },
     {
         "keywords": [
@@ -1804,6 +1841,30 @@ export const generatedProperties = [
             "hidden"
         ],
         "name": "content-visibility"
+    },
+    {
+        "name": "corner-bottom-left-shape"
+    },
+    {
+        "name": "corner-bottom-right-shape"
+    },
+    {
+        "name": "corner-end-end-shape"
+    },
+    {
+        "name": "corner-end-start-shape"
+    },
+    {
+        "name": "corner-start-end-shape"
+    },
+    {
+        "name": "corner-start-start-shape"
+    },
+    {
+        "name": "corner-top-left-shape"
+    },
+    {
+        "name": "corner-top-right-shape"
     },
     {
         "keywords": [
@@ -3416,6 +3477,9 @@ export const generatedProperties = [
         "name": "reading-flow"
     },
     {
+        "name": "reading-order"
+    },
+    {
         "keywords": [
             "none",
             "both",
@@ -3443,6 +3507,19 @@ export const generatedProperties = [
             "normal"
         ],
         "name": "row-gap"
+    },
+    {
+        "inherited": false,
+        "keywords": [
+            "none",
+            "spanning-item",
+            "intersection"
+        ],
+        "name": "row-rule-break"
+    },
+    {
+        "inherited": false,
+        "name": "row-rule-outset"
     },
     {
         "inherited": true,
@@ -4961,6 +5038,13 @@ export const generatedPropertyValues = {
             "normal"
         ]
     },
+    "column-rule-break": {
+        "values": [
+            "none",
+            "spanning-item",
+            "intersection"
+        ]
+    },
     "column-rule-color": {
         "values": [
             "currentcolor"
@@ -5979,6 +6063,13 @@ export const generatedPropertyValues = {
     "row-gap": {
         "values": [
             "normal"
+        ]
+    },
+    "row-rule-break": {
+        "values": [
+            "none",
+            "spanning-item",
+            "intersection"
         ]
     },
     "ruby-align": {

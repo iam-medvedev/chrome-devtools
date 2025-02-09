@@ -47,6 +47,6 @@ export default {
   color: var(--sys-color-token-attribute);
 }
 
-/*# sourceURL=domLinkifier.css */
+/*# sourceURL=${import.meta.resolve('./domLinkifier.css')} */
 `
 };

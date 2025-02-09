@@ -20,6 +20,6 @@ export default {
   }
 }
 
-/*# sourceURL=anchorFunctionLinkSwatch.css */
+/*# sourceURL=${import.meta.resolve('./anchorFunctionLinkSwatch.css')} */
 `
 };

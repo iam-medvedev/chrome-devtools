@@ -16,6 +16,6 @@ export default {
   text-decoration: underline;
 }
 
-/*# sourceURL=markdownLink.css */
+/*# sourceURL=${import.meta.resolve('./markdownLink.css')} */
 `
 };

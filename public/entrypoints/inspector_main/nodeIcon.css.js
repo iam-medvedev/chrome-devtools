@@ -30,6 +30,6 @@ export default {
   filter: grayscale(100%);
 }
 
-/*# sourceURL=nodeIcon.css */
+/*# sourceURL=${import.meta.resolve('./nodeIcon.css')} */
 `
 };

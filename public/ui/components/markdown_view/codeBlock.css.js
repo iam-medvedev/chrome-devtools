@@ -99,6 +99,6 @@ export default {
   }
 }
 
-/*# sourceURL=codeBlock.css */
+/*# sourceURL=${import.meta.resolve('./codeBlock.css')} */
 `
 };

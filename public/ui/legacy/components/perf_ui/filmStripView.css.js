@@ -68,6 +68,6 @@ export default {
   box-shadow: none;
 }
 
-/*# sourceURL=filmStripView.css */
+/*# sourceURL=${import.meta.resolve('./filmStripView.css')} */
 `
 };

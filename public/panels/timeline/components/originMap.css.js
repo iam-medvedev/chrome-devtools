@@ -76,6 +76,6 @@ export default {
   width: 100%;
 }
 
-/*# sourceURL=originMap.css */
+/*# sourceURL=${import.meta.resolve('./originMap.css')} */
 `
 };

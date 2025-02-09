@@ -222,6 +222,7 @@ export class FieldSettingsDialog extends HTMLElement {
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             title: i18nString(UIStrings.ok),
         }}
+        class="enable"
         jslog=${VisualLogging.action('timeline.field-data.enable').track({ click: true })}
         data-field-data-enable
       >${i18nString(UIStrings.ok)}</devtools-button>

@@ -30,7 +30,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 6px;
+  padding: 0 var(--sys-size-4);
 
   .delete-button {
     visibility: hidden;
@@ -109,6 +109,6 @@ export default {
   margin: 5px 0;
 }
 
-/*# sourceURL=sidebarAnnotationsTab.css */
+/*# sourceURL=${import.meta.resolve('./sidebarAnnotationsTab.css')} */
 `
 };

@@ -24,7 +24,7 @@ import * as Types from '../types/types.js';
  * the duration of the calls in the tracking stack.
  *
  * note: Although this approach has been implemented since long ago, and
- * is relatively efficent (adds a complexity over the trace parsing of
+ * is relatively efficient (adds a complexity over the trace parsing of
  * O(n) where n is the number of samples) it has proven to be faulty.
  * It might be worthwhile experimenting with improvements or with a
  * completely different approach. Improving the approach is tracked in

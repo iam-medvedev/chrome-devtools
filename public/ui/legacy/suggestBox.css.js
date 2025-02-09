@@ -119,6 +119,6 @@ export default {
   }
 }
 
-/*# sourceURL=suggestBox.css */
+/*# sourceURL=${import.meta.resolve('./suggestBox.css')} */
 `
 };

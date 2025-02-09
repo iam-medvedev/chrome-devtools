@@ -19,6 +19,7 @@ import { LowTextContrastIssue } from './LowTextContrastIssue.js';
 import { MixedContentIssue } from './MixedContentIssue.js';
 import { PropertyRuleIssue } from './PropertyRuleIssue.js';
 import { QuirksModeIssue } from './QuirksModeIssue.js';
+import { SelectElementAccessibilityIssue } from './SelectElementAccessibilityIssue.js';
 import { SharedArrayBufferIssue } from './SharedArrayBufferIssue.js';
 import { SharedDictionaryIssue } from './SharedDictionaryIssue.js';
 import { SourceFrameIssuesManager } from './SourceFrameIssuesManager.js';
@@ -108,6 +109,10 @@ const issueCodeHandlers = new Map([
     [
         "CookieDeprecationMetadataIssue" /* Protocol.Audits.InspectorIssueCode.CookieDeprecationMetadataIssue */,
         CookieDeprecationMetadataIssue.fromInspectorIssue,
+    ],
+    [
+        "SelectElementAccessibilityIssue" /* Protocol.Audits.InspectorIssueCode.SelectElementAccessibilityIssue */,
+        SelectElementAccessibilityIssue.fromInspectorIssue,
     ],
 ]);
 /**

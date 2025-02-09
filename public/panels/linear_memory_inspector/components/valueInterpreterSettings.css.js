@@ -50,6 +50,6 @@ export default {
   margin-top: 6px;
 }
 
-/*# sourceURL=valueInterpreterSettings.css */
+/*# sourceURL=${import.meta.resolve('./valueInterpreterSettings.css')} */
 `
 };

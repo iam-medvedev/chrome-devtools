@@ -29,6 +29,6 @@ export default {
   padding: 6px;
 }
 
-/*# sourceURL=popover.css */
+/*# sourceURL=${import.meta.resolve('./popover.css')} */
 `
 };

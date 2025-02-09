@@ -25,6 +25,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             const component = new TestInsightComponent();
             component.selected = false;
             component.model = {
+                strings: {},
                 title: 'LCP by Phase',
                 description: 'some description',
                 category: Trace.Insights.Types.InsightCategory.ALL,
@@ -45,6 +46,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             const component = new TestInsightComponent();
             component.selected = true;
             component.model = {
+                strings: {},
                 title: 'LCP by Phase',
                 description: 'some description',
                 category: Trace.Insights.Types.InsightCategory.ALL,

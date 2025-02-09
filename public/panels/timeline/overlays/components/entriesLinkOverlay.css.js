@@ -53,6 +53,6 @@ export default {
   position: absolute;
 }
 
-/*# sourceURL=entriesLinkOverlay.css */
+/*# sourceURL=${import.meta.resolve('./entriesLinkOverlay.css')} */
 `
 };

@@ -4,7 +4,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
+import { RenderingContext } from './PropertyRenderer.js';
 import type { StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -18,19 +18,34 @@ interface StylePropertyTreeElementParams {
     overloaded: boolean;
     newProperty: boolean;
 }
-export declare class FlexGridRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.FlexGridMatch> {
+declare const FlexGridRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.FlexGridMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.FlexGridMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.FlexGridMatch, _context: RenderingContext): Node[];
+};
+export declare class FlexGridRenderer extends FlexGridRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.FlexGridMatch>;
     render(match: SDK.CSSPropertyParserMatchers.FlexGridMatch, context: RenderingContext): Node[];
 }
-export declare class CSSWideKeywordRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch> {
+declare const CSSWideKeywordRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch, _context: RenderingContext): Node[];
+};
+export declare class CSSWideKeywordRenderer extends CSSWideKeywordRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch>;
     render(match: SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch, context: RenderingContext): Node[];
 }
-export declare class VariableRenderer implements MatchRenderer<SDK.CSSPropertyParser.VariableMatch> {
+declare const VariableRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParser.VariableMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParser.VariableMatch>;
+    render(_match: SDK.CSSPropertyParser.VariableMatch, _context: RenderingContext): Node[];
+};
+export declare class VariableRenderer extends VariableRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration);
     matcher(): SDK.CSSPropertyParser.VariableMatcher;
@@ -39,11 +54,21 @@ export declare class VariableRenderer implements MatchRenderer<SDK.CSSPropertyPa
     computedText(match: SDK.CSSPropertyParser.VariableMatch): string | null;
     render(match: SDK.CSSPropertyParser.VariableMatch, context: RenderingContext): Node[];
 }
-export declare class LinearGradientRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LinearGradientMatch> {
+declare const LinearGradientRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LinearGradientMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.LinearGradientMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.LinearGradientMatch, _context: RenderingContext): Node[];
+};
+export declare class LinearGradientRenderer extends LinearGradientRenderer_base {
     matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LinearGradientMatch>;
     render(match: SDK.CSSPropertyParserMatchers.LinearGradientMatch, context: RenderingContext): Node[];
 }
-export declare class ColorRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.ColorMatch> {
+declare const ColorRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.ColorMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.ColorMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.ColorMatch, _context: RenderingContext): Node[];
+};
+export declare class ColorRenderer extends ColorRenderer_base {
     #private;
     private readonly treeElement;
     constructor(treeElement: StylePropertyTreeElement);
@@ -51,37 +76,73 @@ export declare class ColorRenderer implements MatchRenderer<SDK.CSSPropertyParse
     render(match: SDK.CSSPropertyParserMatchers.ColorMatch, context: RenderingContext): Node[];
     renderColorSwatch(color: Common.Color.Color | undefined, valueChild?: Node): InlineEditor.ColorSwatch.ColorSwatch;
 }
-export declare class LightDarkColorRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LightDarkColorMatch> {
+declare const LightDarkColorRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LightDarkColorMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.LightDarkColorMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, _context: RenderingContext): Node[];
+};
+export declare class LightDarkColorRenderer extends LightDarkColorRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     matcher(): SDK.CSSPropertyParserMatchers.LightDarkColorMatcher;
     render(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext): Node[];
     applyColorScheme(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement, lightControls: SDK.CSSPropertyParser.CSSControlMap, darkControls: SDK.CSSPropertyParser.CSSControlMap): Promise<void>;
 }
-export declare class ColorMixRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.ColorMixMatch> {
+declare const ColorMixRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.ColorMixMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.ColorMixMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.ColorMixMatch, _context: RenderingContext): Node[];
+};
+export declare class ColorMixRenderer extends ColorMixRenderer_base {
     #private;
     constructor(pane: StylesSidebarPane);
     render(match: SDK.CSSPropertyParserMatchers.ColorMixMatch, context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.ColorMixMatcher;
 }
-export declare class AngleRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.AngleMatch> {
+declare const AngleRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.AngleMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.AngleMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.AngleMatch, _context: RenderingContext): Node[];
+};
+export declare class AngleRenderer extends AngleRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     render(match: SDK.CSSPropertyParserMatchers.AngleMatch, context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.AngleMatcher;
 }
-export declare class LinkableNameRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LinkableNameMatch> {
+declare const LinkableNameRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LinkableNameMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.LinkableNameMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.LinkableNameMatch, _context: RenderingContext): Node[];
+};
+export declare class LinkableNameRenderer extends LinkableNameRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     render(match: SDK.CSSPropertyParserMatchers.LinkableNameMatch): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.LinkableNameMatcher;
 }
-export declare class BezierRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.BezierMatch> {
+declare const BezierRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.BezierMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.BezierMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.BezierMatch, _context: RenderingContext): Node[];
+};
+export declare class BezierRenderer extends BezierRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     render(match: SDK.CSSPropertyParserMatchers.BezierMatch): Node[];
     renderSwatch(match: SDK.CSSPropertyParserMatchers.BezierMatch): Node;
     matcher(): SDK.CSSPropertyParserMatchers.BezierMatcher;
+}
+declare const AutoBaseRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.AutoBaseMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.AutoBaseMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.AutoBaseMatch, _context: RenderingContext): Node[];
+};
+export declare class AutoBaseRenderer extends AutoBaseRenderer_base {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement);
+    matcher(): SDK.CSSPropertyParserMatchers.AutoBaseMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.AutoBaseMatch, context: RenderingContext): Node[];
 }
 export declare const enum ShadowPropertyType {
     X = "x",
@@ -113,51 +174,91 @@ export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShad
     setSpreadRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     renderContents(parent: HTMLElement): void;
 }
-export declare class ShadowRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.ShadowMatch> {
+declare const ShadowRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.ShadowMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.ShadowMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.ShadowMatch, _context: RenderingContext): Node[];
+};
+export declare class ShadowRenderer extends ShadowRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     shadowModel(shadow: CodeMirror.SyntaxNode[], shadowType: SDK.CSSPropertyParserMatchers.ShadowType, context: RenderingContext): null | ShadowModel;
     render(match: SDK.CSSPropertyParserMatchers.ShadowMatch, context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.ShadowMatcher;
 }
-export declare class FontRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.FontMatch> {
+declare const FontRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.FontMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.FontMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.FontMatch, _context: RenderingContext): Node[];
+};
+export declare class FontRenderer extends FontRenderer_base {
     readonly treeElement: StylePropertyTreeElement;
     constructor(treeElement: StylePropertyTreeElement);
     render(match: SDK.CSSPropertyParserMatchers.FontMatch, context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.FontMatcher;
 }
-export declare class GridTemplateRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.GridTemplateMatch> {
+declare const GridTemplateRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.GridTemplateMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.GridTemplateMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.GridTemplateMatch, _context: RenderingContext): Node[];
+};
+export declare class GridTemplateRenderer extends GridTemplateRenderer_base {
     render(match: SDK.CSSPropertyParserMatchers.GridTemplateMatch, context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.GridTemplateMatcher;
 }
-export declare class LengthRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.LengthMatch> {
+declare const LengthRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LengthMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.LengthMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.LengthMatch, _context: RenderingContext): Node[];
+};
+export declare class LengthRenderer extends LengthRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     render(match: SDK.CSSPropertyParserMatchers.LengthMatch, _context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.LengthMatcher;
 }
-export declare class SelectFunctionRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.SelectFunctionMatch> {
+declare const SelectFunctionRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.SelectFunctionMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.SelectFunctionMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.SelectFunctionMatch, _context: RenderingContext): Node[];
+};
+export declare class SelectFunctionRenderer extends SelectFunctionRenderer_base {
     private readonly treeElement;
     constructor(treeElement: StylePropertyTreeElement);
     matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.SelectFunctionMatch>;
     render(match: SDK.CSSPropertyParserMatchers.SelectFunctionMatch, context: RenderingContext): Node[];
     applySelectFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
 }
-export declare class AnchorFunctionRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch> {
+declare const AnchorFunctionRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, _context: RenderingContext): Node[];
+};
+export declare class AnchorFunctionRenderer extends AnchorFunctionRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     anchorDecoratedForTest(): void;
     render(match: SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, context: RenderingContext): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.AnchorFunctionMatcher;
 }
-export declare class PositionAnchorRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.PositionAnchorMatch> {
+declare const PositionAnchorRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.PositionAnchorMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.PositionAnchorMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.PositionAnchorMatch, _context: RenderingContext): Node[];
+};
+export declare class PositionAnchorRenderer extends PositionAnchorRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     anchorDecoratedForTest(): void;
     render(match: SDK.CSSPropertyParserMatchers.PositionAnchorMatch): Node[];
     matcher(): SDK.CSSPropertyParserMatchers.PositionAnchorMatcher;
 }
-export declare class PositionTryRenderer implements MatchRenderer<SDK.CSSPropertyParserMatchers.PositionTryMatch> {
+declare const PositionTryRenderer_base: abstract new () => {
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.PositionTryMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.PositionTryMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.PositionTryMatch, _context: RenderingContext): Node[];
+};
+export declare class PositionTryRenderer extends PositionTryRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     render(match: SDK.CSSPropertyParserMatchers.PositionTryMatch, context: RenderingContext): Node[];

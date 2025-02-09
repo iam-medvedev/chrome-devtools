@@ -221,7 +221,7 @@ export declare class Overlays extends EventTarget {
      */
     remove(overlay: TimelineOverlay): void;
     /**
-     * Update the dimenions of a chart.
+     * Update the dimensions of a chart.
      * IMPORTANT: this does not trigger a re-draw. You must call the render() method manually.
      */
     updateChartDimensions(chart: EntryChartLocation, dimensions: FlameChartDimensions): void;
@@ -233,7 +233,7 @@ export declare class Overlays extends EventTarget {
     /**
      * Clears all overlays and all data. Call this when the trace is changing
      * (e.g. the user has imported/recorded a new trace) and we need to start from
-     * scratch and remove all overlays relating to the preivous trace.
+     * scratch and remove all overlays relating to the previous trace.
      */
     reset(): void;
     /**

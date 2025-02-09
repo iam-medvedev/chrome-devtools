@@ -19,6 +19,6 @@ export default {
   display: block;
 }
 
-/*# sourceURL=menuGroup.css */
+/*# sourceURL=${import.meta.resolve('./menuGroup.css')} */
 `
 };

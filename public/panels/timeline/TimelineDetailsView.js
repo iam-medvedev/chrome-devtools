@@ -54,7 +54,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     detailsLinkifier;
     tabbedPane;
     defaultDetailsWidget;
@@ -209,7 +209,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.lazyLayersView = null;
         await this.setSelection(null);
     }
-    setContent(node) {
+    setSummaryContent(node) {
         const allTabs = this.tabbedPane.otherTabs(Tab.Details);
         for (let i = 0; i < allTabs.length; ++i) {
             if (!this.rangeDetailViews.has(allTabs[i])) {
@@ -218,7 +218,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         }
         this.defaultDetailsContentWidget.detach();
         this.defaultDetailsContentWidget = this.#createContentWidget();
-        this.defaultDetailsContentWidget.contentElement.appendChild(node);
+        this.defaultDetailsContentWidget.contentElement.append(node);
         if (this.#relatedInsightChips) {
             this.defaultDetailsContentWidget.contentElement.appendChild(this.#relatedInsightChips);
         }
@@ -262,7 +262,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
      */
     scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
         if (!this.#parsedTrace) {
-            this.setContent(UI.Fragment.html `<div/>`);
+            this.setSummaryContent(UI.Fragment.html `<div/>`);
             return;
         }
         if (forceImmediateUpdate) {
@@ -301,7 +301,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
     }
     #setSelectionForTimelineFrame(frame) {
         const matchedFilmStripFrame = this.#getFilmStripFrame(frame);
-        this.setContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
+        this.setSummaryContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
         const target = SDK.TargetManager.TargetManager.instance().rootTarget();
         if (frame.layerTree && target) {
             const layerTreeForFrame = new TimelineModel.TracingLayerTree.TracingFrameLayerTree(target, frame.layerTree);
@@ -322,7 +322,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (this.#eventToRelatedInsightsMap) {
             this.#relatedInsightChips.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
         }
-        this.setContent(this.#networkRequestDetails);
+        this.setSummaryContent(this.#networkRequestDetails);
     }
     async #setSelectionForTraceEvent(event) {
         if (!this.#parsedTrace) {
@@ -337,7 +337,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (Trace.Types.Events.isSyntheticLayoutShift(event) || Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
             const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
             this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
-            this.setContent(this.#layoutShiftDetails);
+            this.setSummaryContent(this.#layoutShiftDetails);
             return;
         }
         // Otherwise, build the generic trace event details UI.
@@ -421,7 +421,7 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         }
     }
     appendDetailsTabsForTraceEventAndShowDetails(event, content) {
-        this.setContent(content);
+        this.setSummaryContent(content);
         if (Trace.Types.Events.isPaint(event) || Trace.Types.Events.isRasterTask(event)) {
             this.showEventInPaintProfiler(event);
         }
@@ -455,8 +455,8 @@ export class TimelineDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widg
         const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
         const startOffset = startTime - minBoundsMilli;
         const endOffset = endTime - minBoundsMilli;
-        const summaryDetails = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
-        this.setContent(summaryDetails);
+        const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
+        this.setSummaryContent(summaryDetailElem);
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();
         if (this.#selectedEvents && isSelectorStatsEnabled) {

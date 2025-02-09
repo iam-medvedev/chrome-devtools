@@ -1579,10 +1579,7 @@ function focusChanged(event) {
 }
 export function injectCoreStyles(elementOrShadowRoot) {
     ThemeSupport.ThemeSupport.instance().appendStyle(elementOrShadowRoot, inspectorCommonStyles);
-    const shadowRootOrDocument = (elementOrShadowRoot instanceof ShadowRoot) ?
-        elementOrShadowRoot :
-        (elementOrShadowRoot.shadowRoot ?? elementOrShadowRoot.ownerDocument);
-    shadowRootOrDocument.adoptedStyleSheets.push(Buttons.textButtonStyles);
+    ThemeSupport.ThemeSupport.instance().appendStyle(elementOrShadowRoot, Buttons.textButtonStyles);
 }
 /**
  * Creates a new shadow DOM tree with the core styles and an optional list of

@@ -156,6 +156,6 @@ export default {
   }
 }
 
-/*# sourceURL=navigatorTree.css */
+/*# sourceURL=${import.meta.resolve('./navigatorTree.css')} */
 `
 };

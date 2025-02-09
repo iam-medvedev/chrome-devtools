@@ -60,6 +60,6 @@ export default {
   margin: 0;
 }
 
-/*# sourceURL=confirmDialog.css */
+/*# sourceURL=${import.meta.resolve('./confirmDialog.css')} */
 `
 };

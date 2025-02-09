@@ -2,7 +2,6 @@ import type { Args, ConsoleTimeStamp, Event, PerformanceMark, PerformanceMeasure
 export type ExtensionEntryType = 'track-entry' | 'marker';
 export declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error", "warning"];
 export type ExtensionColorFromPalette = typeof extensionPalette[number];
-export declare function colorIsValid(color: string): boolean;
 export interface ExtensionDataPayloadBase {
     color?: ExtensionColorFromPalette;
     properties?: [string, string][];

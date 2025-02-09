@@ -688,6 +688,10 @@ function renderMessage(message, count) {
     return element;
 }
 const rowMessageTheme = CodeMirror.EditorView.baseTheme({
+    '.cm-line::selection': {
+        backgroundColor: 'transparent',
+        color: 'currentColor',
+    },
     '.cm-tooltip-message': {
         padding: '4px',
     },

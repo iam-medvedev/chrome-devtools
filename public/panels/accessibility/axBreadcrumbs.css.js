@@ -160,6 +160,6 @@ export default {
   }
 }
 
-/*# sourceURL=axBreadcrumbs.css */
+/*# sourceURL=${import.meta.resolve('./axBreadcrumbs.css')} */
 `
 };

@@ -67,6 +67,6 @@ export default {
   left: 0;
 }
 
-/*# sourceURL=timelineFlamechartPopover.css */
+/*# sourceURL=${import.meta.resolve('./timelineFlamechartPopover.css')} */
 `
 };

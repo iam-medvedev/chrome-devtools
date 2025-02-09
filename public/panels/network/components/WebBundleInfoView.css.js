@@ -32,6 +32,6 @@ devtools-data-grid {
   height: 100%;
 }
 
-/*# sourceURL=WebBundleInfoView.css */
+/*# sourceURL=${import.meta.resolve('./WebBundleInfoView.css')} */
 `
 };

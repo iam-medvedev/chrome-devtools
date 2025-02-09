@@ -68,6 +68,7 @@ export declare class SubMenu extends Item {
     defaultSection(): Section;
     overrideSection(): Section;
     saveSection(): Section;
+    annotationSection(): Section;
     footerSection(): Section;
     buildDescriptor(): SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor;
     appendItemsAtLocation(location: string): void;

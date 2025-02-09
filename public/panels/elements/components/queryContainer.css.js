@@ -38,6 +38,6 @@ export default {
   transform: rotate(90deg);
 }
 
-/*# sourceURL=queryContainer.css */
+/*# sourceURL=${import.meta.resolve('./queryContainer.css')} */
 `
 };

@@ -148,6 +148,6 @@ devtools-recording-list-view {
   outline: -webkit-focus-ring-color auto 1px;
 }
 
-/*# sourceURL=recorderController.css */
+/*# sourceURL=${import.meta.resolve('./recorderController.css')} */
 `
 };

@@ -145,6 +145,7 @@ models/issues_manager/LowTextContrastIssue.test.js
 models/issues_manager/MarkdownIssueDescription.test.js
 models/issues_manager/PropertyRuleIssue.test.js
 models/issues_manager/RelatedIssue.test.js
+models/issues_manager/SelectElementAccessibilityIssue.test.js
 models/issues_manager/SharedDictionaryIssue.test.js
 models/issues_manager/StylesheetLoadingIssue.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
@@ -259,6 +260,8 @@ panels/ai_assistance/agents/PerformanceAgent.test.js
 panels/ai_assistance/agents/StylingAgent.test.js
 panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/UserActionRow.test.js
+panels/ai_assistance/data_formatters/FileFormatter.test.js
+panels/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
@@ -270,6 +273,7 @@ panels/application/IndexedDBModel.test.js
 panels/application/IndexedDBViews.test.js
 panels/application/InterestGroupStorageView.test.js
 panels/application/InterestGroupTreeElement.test.js
+panels/application/KeyValueStorageItemsView.test.js
 panels/application/PreloadingTreeElement.test.js
 panels/application/ReportingApiReportsView.test.js
 panels/application/ReportingApiView.test.js
@@ -565,6 +569,7 @@ ui/components/text_editor/TextEditor.test.js
 ui/components/text_editor/TextEditorHistory.test.js
 ui/components/text_editor/javascript.test.js
 ui/components/text_prompt/TextPrompt.test.js
+ui/components/tooltip/Tooltip.test.js
 ui/components/tree_outline/TreeOutline.test.js
 ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js
@@ -592,7 +597,6 @@ ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
 ui/legacy/components/data_grid/DataGrid.test.js
 ui/legacy/components/data_grid/DataGridElement.test.js
-ui/legacy/components/data_grid/DataGridWithPreview.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js
 ui/legacy/components/inline_editor/BezierUI.test.js

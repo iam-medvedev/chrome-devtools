@@ -436,7 +436,7 @@ describeWithEnvironment('Overlays', () => {
             inputField.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
             // Ensure the label content is editable
             assert.isTrue(inputField.isContentEditable);
-            // Press `Enter` to make the lable not editable
+            // Press `Enter` to make the label not editable
             inputField.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
             // Ensure the label content is not editable
             assert.isFalse(inputField.isContentEditable);

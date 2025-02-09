@@ -70,6 +70,6 @@ export default {
   background-color: var(--sys-color-surface5);
 }
 
-/*# sourceURL=diffView.css */
+/*# sourceURL=${import.meta.resolve('./diffView.css')} */
 `
 };

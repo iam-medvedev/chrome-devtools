@@ -17,6 +17,6 @@ export default {
   outline-offset: 2px;
 }
 
-/*# sourceURL=chromeLink.css */
+/*# sourceURL=${import.meta.resolve('./chromeLink.css')} */
 `
 };

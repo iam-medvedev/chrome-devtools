@@ -88,6 +88,6 @@ devtools-tree-outline {
   box-shadow: var(--sys-elevation-level1);
 }
 
-/*# sourceURL=elementsPanel.css */
+/*# sourceURL=${import.meta.resolve('./elementsPanel.css')} */
 `
 };

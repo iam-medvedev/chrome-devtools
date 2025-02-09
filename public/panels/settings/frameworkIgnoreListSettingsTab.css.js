@@ -106,6 +106,6 @@ export default {
   margin-left: 6px;
 }
 
-/*# sourceURL=frameworkIgnoreListSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./frameworkIgnoreListSettingsTab.css')} */
 `
 };

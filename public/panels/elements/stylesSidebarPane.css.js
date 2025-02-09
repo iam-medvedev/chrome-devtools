@@ -304,6 +304,6 @@ export default {
   margin-bottom: -4px;
 }
 
-/*# sourceURL=stylesSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./stylesSidebarPane.css')} */
 `
 };

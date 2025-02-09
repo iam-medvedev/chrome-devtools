@@ -15,6 +15,6 @@ export default {
   font-family: Menlo, monospace;
 }
 
-/*# sourceURL=nodeStackTraceWidget.css */
+/*# sourceURL=${import.meta.resolve('./nodeStackTraceWidget.css')} */
 `
 };

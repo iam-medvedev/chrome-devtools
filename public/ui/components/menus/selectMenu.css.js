@@ -55,6 +55,6 @@ button:disabled {
   }
 }
 
-/*# sourceURL=selectMenu.css */
+/*# sourceURL=${import.meta.resolve('./selectMenu.css')} */
 `
 };

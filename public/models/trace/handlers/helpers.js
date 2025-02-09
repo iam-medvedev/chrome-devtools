@@ -3,19 +3,15 @@
 // found in the LICENSE file.
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
 import * as Types from '../types/types.js';
-export function getEntityForEvent(event, entityByUrlCache) {
+export function getEntityForEvent(event, entityCache) {
     const url = getNonResolvedURL(event);
     if (!url) {
         return;
     }
-    return getEntityForUrl(url, entityByUrlCache);
+    return getEntityForUrl(url, entityCache);
 }
-export function getEntityForUrl(url, entityByUrlCache) {
-    if (entityByUrlCache.has(url)) {
-        return entityByUrlCache.get(url);
-    }
-    const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(entityByUrlCache, url);
-    return entity;
+export function getEntityForUrl(url, entityCache) {
+    return ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(entityCache, url);
 }
 export function getNonResolvedURL(entry, parsedTrace) {
     if (Types.Events.isProfileCall(entry)) {
@@ -107,17 +103,18 @@ function makeUpChromeExtensionEntity(entityCache, url, extensionName) {
     entityCache.set(origin, chromeExtensionEntity);
     return chromeExtensionEntity;
 }
-export function updateEventForEntities(entry, entityMappings) {
-    const entity = getEntityForEvent(entry, entityMappings.createdEntityCache);
-    if (entity) {
-        if (entityMappings.eventsByEntity.has(entity)) {
-            const events = entityMappings.eventsByEntity.get(entity) ?? [];
-            events?.push(entry);
-        }
-        else {
-            entityMappings.eventsByEntity.set(entity, [entry]);
-        }
-        entityMappings.entityByEvent.set(entry, entity);
+export function addEventToEntityMapping(event, entityMappings) {
+    const entity = getEntityForEvent(event, entityMappings.createdEntityCache);
+    if (!entity) {
+        return;
     }
+    const events = entityMappings.eventsByEntity.get(entity);
+    if (events) {
+        events.push(event);
+    }
+    else {
+        entityMappings.eventsByEntity.set(entity, [event]);
+    }
+    entityMappings.entityByEvent.set(event, entity);
 }
 //# sourceMappingURL=helpers.js.map

@@ -140,6 +140,6 @@ export default {
   }
 }
 
-/*# sourceURL=callStackSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./callStackSidebarPane.css')} */
 `
 };

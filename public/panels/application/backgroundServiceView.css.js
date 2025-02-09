@@ -83,6 +83,6 @@ export default {
   margin-bottom: 6px;
 }
 
-/*# sourceURL=backgroundServiceView.css */
+/*# sourceURL=${import.meta.resolve('./backgroundServiceView.css')} */
 `
 };

@@ -21,6 +21,6 @@ export default {
   margin: 0;
 }
 
-/*# sourceURL=signedExchangeInfoView.css */
+/*# sourceURL=${import.meta.resolve('./signedExchangeInfoView.css')} */
 `
 };

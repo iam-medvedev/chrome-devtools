@@ -20,7 +20,7 @@ import { ModificationsManager } from './ModificationsManager.js';
 import * as OverlayComponents from './overlays/components/components.js';
 import * as Overlays from './overlays/overlays.js';
 import { targetForEvent } from './TargetForEvent.js';
-import { TimelineDetailsView } from './TimelineDetailsView.js';
+import { TimelineDetailsPane } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
@@ -272,7 +272,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         // Create top level properties splitter.
         this.detailsSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'timeline-panel-details-split-view-state');
         this.detailsSplitWidget.element.classList.add('timeline-details-split');
-        this.detailsView = new TimelineDetailsView(delegate);
+        this.detailsView = new TimelineDetailsPane(delegate);
         this.detailsSplitWidget.installResizer(this.detailsView.headerElement());
         this.detailsSplitWidget.setMainWidget(this.chartSplitWidget);
         this.detailsSplitWidget.setSidebarWidget(this.detailsView);
@@ -340,8 +340,19 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     containingElement() {
         return this.element;
     }
-    setActiveThirdPartyDimmingSetting(thirdPartyEvents) {
-        this.#updateFlameChartDimmerWithEvents(this.#thirdPartyCheckboxDimmer, thirdPartyEvents);
+    // Activates or disables dimming when setting is toggled.
+    dimThirdPartiesIfRequired() {
+        if (!this.#parsedTrace) {
+            return;
+        }
+        const dim = Common.Settings.Settings.instance().createSetting('timeline-dim-third-parties', false).get();
+        const thirdPartyEvents = this.#entityMapper?.thirdPartyEvents() ?? [];
+        if (dim && thirdPartyEvents.length) {
+            this.#updateFlameChartDimmerWithEvents(this.#thirdPartyCheckboxDimmer, thirdPartyEvents);
+        }
+        else {
+            this.#updateFlameChartDimmerWithEvents(this.#thirdPartyCheckboxDimmer, null);
+        }
     }
     #registerFlameChartDimmer(opts) {
         const dimmer = {
@@ -935,6 +946,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#updateFlameCharts();
         this.resizeToPreferredHeights();
         this.setMarkers(this.#parsedTrace);
+        this.dimThirdPartiesIfRequired();
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {

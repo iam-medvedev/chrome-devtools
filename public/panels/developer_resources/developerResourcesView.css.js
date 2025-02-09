@@ -47,6 +47,6 @@ export default {
   flex: auto;
 }
 
-/*# sourceURL=developerResourcesView.css */
+/*# sourceURL=${import.meta.resolve('./developerResourcesView.css')} */
 `
 };

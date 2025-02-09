@@ -39,6 +39,7 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         this.element.setAttribute('jslog', `${VisualLogging.pane('third-party-tree').track({ hover: true })}`);
         this.init();
         this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
+        this.dataGrid.setResizeMethod("nearest" /* DataGrid.DataGrid.ResizeMethod.NEAREST */);
         /**
          * By default data grids always expand when arrowing.
          * For 3P table, we don't use this feature.
@@ -55,7 +56,13 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         const parsedTrace = this.parsedTrace();
         const entityMapper = this.entityMapper();
         if (!parsedTrace || !entityMapper) {
-            return new Trace.Extras.TraceTree.BottomUpRootNode([], this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction());
+            return new Trace.Extras.TraceTree.BottomUpRootNode([], {
+                textFilter: this.textFilter(),
+                filters: this.filtersWithoutTextFilter(),
+                startTime: this.startTime,
+                endTime: this.endTime,
+                eventGroupIdCallback: this.groupingFunction(),
+            });
         }
         // Update summaries.
         const min = Trace.Helpers.Timing.milliToMicro(this.startTime);
@@ -70,7 +77,13 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         // default are not in the set of visible entries (as they are not shown on
         // the main flame chart).
         const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Utils.EntryStyles.visibleTypes().concat(["SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */]));
-        const node = new Trace.Extras.TraceTree.BottomUpRootNode(relatedEvents, this.textFilter(), [filter], this.startTime, this.endTime, this.groupingFunction());
+        const node = new Trace.Extras.TraceTree.BottomUpRootNode(relatedEvents, {
+            textFilter: this.textFilter(),
+            filters: [filter],
+            startTime: this.startTime,
+            endTime: this.endTime,
+            eventGroupIdCallback: this.groupingFunction(),
+        });
         return node;
     }
     /**
@@ -101,19 +114,21 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         columns.push({
             id: 'site',
             title: i18nString(UIStrings.firstOrThirdPartyName),
-            width: '100px',
-            fixedWidth: true,
+            // It's important that this width is the `.widget.vbox.timeline-tree-view` max-width (550)
+            // minus the two fixed sizes below. (550-100-105) == 345
+            width: '345px',
+            // And with this column not-fixed-width and resizingMethod NEAREST, the name-column will appropriately flex.
             sortable: true,
         }, {
             id: 'transfer-size',
             title: i18nString(UIStrings.transferSize),
-            width: '80px',
+            width: '100px', // Mostly so there's room for the header plus sorting triangle
             fixedWidth: true,
             sortable: true,
         }, {
             id: 'self',
             title: i18nString(UIStrings.selfTime),
-            width: '80px',
+            width: '105px', // Mostly to fit large self-time plus devtools-button
             fixedWidth: true,
             sortable: true,
         });
@@ -204,7 +219,7 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         return Boolean(entity) && entity?.category === 'Chrome Extension';
     }
 }
-export class ThirdPartyTreeView extends UI.Widget.WidgetElement {
+export class ThirdPartyTreeElement extends UI.Widget.WidgetElement {
     #treeView;
     set treeView(treeView) {
         this.#treeView = treeView;
@@ -222,5 +237,5 @@ export class ThirdPartyTreeView extends UI.Widget.WidgetElement {
         return containerWidget;
     }
 }
-customElements.define('devtools-performance-third-party-tree-view', ThirdPartyTreeView);
+customElements.define('devtools-performance-third-party-tree-view', ThirdPartyTreeElement);
 //# sourceMappingURL=ThirdPartyTreeView.js.map

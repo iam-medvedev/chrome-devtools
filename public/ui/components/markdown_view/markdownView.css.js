@@ -100,6 +100,6 @@ h1.insight, h2.insight, h3.insight, h4.insight, h5.insight, h6.insight {
   margin: var(--sys-size-1) 0 10px;
 }
 
-/*# sourceURL=markdownView.css */
+/*# sourceURL=${import.meta.resolve('./markdownView.css')} */
 `
 };

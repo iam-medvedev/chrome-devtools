@@ -494,7 +494,7 @@ export function findPreviousEventBeforeTimestamp(candidates, ts) {
  * 9. End A
  *
  * By default, async events are skipped. This behaviour can be
- * overriden making use of the config.ignoreAsyncEvents parameter.
+ * overridden making use of the config.ignoreAsyncEvents parameter.
  */
 export function forEachEvent(events, config) {
     const globalStartTime = config.startTime ?? Types.Timing.Micro(0);
@@ -558,9 +558,6 @@ export function eventHasCategory(event, category) {
     }
     return parsedCategoriesForEvent.has(category);
 }
-export function nodeIdForInvalidationEvent(event) {
-    return event.args.data.nodeId ?? null;
-}
 /**
  * This compares Types.Events.CallFrame with Protocol.Runtime.CallFrame and checks for equality.
  */
@@ -571,5 +568,11 @@ export function isMatchingCallFrame(eventFrame, nodeFrame) {
 }
 export function eventContainsTimestamp(event, ts) {
     return event.ts <= ts && event.ts + (event.dur || 0) >= ts;
+}
+export function extractSampleTraceId(event) {
+    if (Types.Events.isConsoleRunTask(event) || Types.Events.isConsoleTimeStamp(event)) {
+        return event.args?.data?.sampleTraceId || null;
+    }
+    return null;
 }
 //# sourceMappingURL=Trace.js.map

@@ -56,6 +56,6 @@ devtools-icon[name="open-externally"] {
   color: var(--sys-color-on-surface-subtle);
 }
 
-/*# sourceURL=./components/consoleInsightSourcesList.css */
+/*# sourceURL=${import.meta.resolve('././components/consoleInsightSourcesList.css')} */
 `
 };

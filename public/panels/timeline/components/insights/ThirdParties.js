@@ -4,23 +4,11 @@
 import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
+const { UIStrings, i18nString } = Trace.Insights.Models.ThirdParties;
 const { html } = Lit;
-const UIStrings = {
-    /** Label for a table column that displays the name of a third-party provider. */
-    columnThirdParty: 'Third party',
-    /** Label for a column in a data table; entries will be the download size of a web resource in kilobytes. */
-    columnTransferSize: 'Transfer size',
-    /** Label for a table column that displays how much time each row spent blocking other work on the main thread, entries will be the number of milliseconds spent. */
-    columnBlockingTime: 'Blocking time',
-    /**
-     * @description Text block indicating that no third party content was detected on the page
-     */
-    noThirdParties: 'No third parties found',
-};
-const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/ThirdParties.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ThirdParties extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-third-parties`;
     internalName = 'third-parties';
@@ -88,7 +76,7 @@ export class ThirdParties extends BaseInsightComponent {
           <devtools-performance-table
             .data=${{
                 insight: this,
-                headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnBlockingTime)],
+                headers: [i18nString(UIStrings.columnThirdParty), i18nString(UIStrings.columnMainThreadTime)],
                 rows: topMainThreadTimeEntries.map(([entity, summary]) => ({
                     values: [
                         entity.name,

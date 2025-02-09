@@ -6,7 +6,7 @@ import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
 import * as Utils from './utils/utils.js';
-declare const TimelineDetailsView_base: (new (...args: any[]) => {
+declare const TimelineDetailsPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
     addEventListener<T extends keyof TimelineTreeView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
     once<T extends keyof TimelineTreeView.EventTypes>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
@@ -14,7 +14,7 @@ declare const TimelineDetailsView_base: (new (...args: any[]) => {
     hasEventListeners(eventType: keyof TimelineTreeView.EventTypes): boolean;
     dispatchEventToListeners<T extends keyof TimelineTreeView.EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
-export declare class TimelineDetailsView extends TimelineDetailsView_base {
+export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     #private;
     private readonly detailsLinkifier;
     private tabbedPane;
@@ -38,7 +38,7 @@ export declare class TimelineDetailsView extends TimelineDetailsView_base {
         eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap | null;
         entityMapper: Utils.EntityMapper.EntityMapper | null;
     }): Promise<void>;
-    private setContent;
+    private setSummaryContent;
     private updateContents;
     private appendTab;
     headerElement(): Element;

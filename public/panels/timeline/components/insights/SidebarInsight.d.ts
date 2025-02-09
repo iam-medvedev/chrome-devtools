@@ -10,10 +10,10 @@ export interface InsightDetails {
     estimatedSavingsBytes?: number;
 }
 export declare class InsightActivated extends Event {
-    model: InsightModel<any>;
+    model: InsightModel<any, any>;
     insightSetKey: string;
     static readonly eventName = "insightactivated";
-    constructor(model: InsightModel<any>, insightSetKey: string);
+    constructor(model: InsightModel<any, any>, insightSetKey: string);
 }
 export declare class InsightDeactivated extends Event {
     static readonly eventName = "insightdeactivated";

@@ -164,6 +164,6 @@ that uses the dimensions to draw an outline around the element. */
   border-radius: 5px;
 }
 
-/*# sourceURL=layoutPane.css */
+/*# sourceURL=${import.meta.resolve('./layoutPane.css')} */
 `
 };

@@ -33,7 +33,6 @@ export declare class ResourceTreeModel extends SDKModel<EventTypes> {
     frameForId(frameId: Protocol.Page.FrameId): ResourceTreeFrame | null;
     forAllResources(callback: (arg0: Resource) => boolean): boolean;
     frames(): ResourceTreeFrame[];
-    resourceForURL(url: Platform.DevToolsPath.UrlString): Resource | null;
     private addFramesRecursively;
     private createResourceFromFramePayload;
     suspendReload(): void;

@@ -44,7 +44,9 @@ export default {
 }
 
 .text-filter {
-  width: 200px;
+  flex-grow: 1;
+  min-width: var(--sys-size-25);
+  max-width: var(--sys-size-36);
 }
 
 .filter-bitset-filter {
@@ -196,6 +198,6 @@ export default {
   }
 }
 
-/*# sourceURL=filter.css */
+/*# sourceURL=${import.meta.resolve('./filter.css')} */
 `
 };

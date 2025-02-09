@@ -58,6 +58,6 @@ div.error {
   background-color: var(--sys-color-error-bright);
 }
 
-/*# sourceURL=smallBubble.css */
+/*# sourceURL=${import.meta.resolve('./smallBubble.css')} */
 `
 };

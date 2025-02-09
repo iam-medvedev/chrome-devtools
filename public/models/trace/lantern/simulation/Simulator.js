@@ -223,7 +223,7 @@ class Simulator {
         }
     }
     /**
-     * Estimates the number of milliseconds remaining given current condidtions before the node is complete.
+     * Estimates the number of milliseconds remaining given current conditions before the node is complete.
      */
     estimateTimeRemaining(node) {
         if (node.type === Graph.BaseNode.types.CPU) {
@@ -285,7 +285,7 @@ class Simulator {
         return minimumTime;
     }
     /**
-     * Given a time period, computes the progress toward completion that the node made durin that time.
+     * Given a time period, computes the progress toward completion that the node made during that time.
      */
     updateProgressMadeInTimePeriod(node, timePeriodLength, totalElapsedTime) {
         const timingData = this.nodeTimings.getInProgress(node);
@@ -394,7 +394,7 @@ class Simulator {
                 // have to give up.
                 throw new Core.LanternError('Failed to start a node');
             }
-            // set the available throughput for all connections based on # inflight
+            // set the available throughput for all connections based on # in-flight
             this.updateNetworkCapacity();
             // find the time that the next node will finish
             const minimumTime = this.findNextNodeCompletionTime();
@@ -431,6 +431,7 @@ class Simulator {
         // This is an estimate of wasted time, so we won't be more precise than 10ms.
         return Math.round(wastedMs / 10) * 10;
     }
+    // Used by Lighthouse asset-saver
     static get allNodeTimings() {
         return ALL_SIMULATION_NODE_TIMINGS;
     }

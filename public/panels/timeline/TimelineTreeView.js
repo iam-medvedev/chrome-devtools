@@ -390,8 +390,14 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     buildTree() {
         throw new Error('Not Implemented');
     }
-    buildTopDownTree(doNotAggregate, groupIdCallback) {
-        return new Trace.Extras.TraceTree.TopDownRootNode(this.selectedEvents(), this.filters(), this.startTime, this.endTime, doNotAggregate, groupIdCallback);
+    buildTopDownTree(doNotAggregate, eventGroupIdCallback) {
+        return new Trace.Extras.TraceTree.TopDownRootNode(this.selectedEvents(), {
+            filters: this.filters(),
+            startTime: this.startTime,
+            endTime: this.endTime,
+            doNotAggregate,
+            eventGroupIdCallback,
+        });
     }
     populateColumns(columns) {
         columns.push({ id: 'self', title: i18nString(UIStrings.selfTime), width: '120px', fixedWidth: true, sortable: true });
@@ -620,8 +626,8 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 }
                 if (badgeText) {
                     const badge = container.createChild('div', 'entity-badge');
+                    badge.textContent = badgeText;
                     UI.ARIAUtils.setLabel(badge, badgeText);
-                    badge.createChild('div', 'entity-badge-name').textContent = badgeText;
                 }
             }
         }
@@ -703,21 +709,18 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 i18nString(UIStrings.percentPlaceholder, { PH1: (value / this.grandTotalTime * 100).toFixed(1) });
         }
         if (maxTime) {
-            textDiv.classList.add('background-percent-bar');
+            textDiv.classList.add('background-bar-text');
             cell.createChild('div', 'background-bar-container').createChild('div', 'background-bar').style.width =
                 (value * 100 / maxTime).toFixed(1) + '%';
         }
         // Generate button on hover for 3P self time cell.
         if (showBottomUpButton) {
-            this.generateBottomUpButton(cell);
+            this.generateBottomUpButton(textDiv);
         }
         return cell;
     }
     // Generates bottom up tree hover button and appends it to the provided cell element.
-    generateBottomUpButton(cell) {
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'button-container';
-        cell.classList.add('hover-bottom-up-button');
+    generateBottomUpButton(textDiv) {
         const button = new Buttons.Button.Button();
         button.data = {
             variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -727,12 +730,14 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         };
         UI.ARIAUtils.setLabel(button, i18nString(UIStrings.viewBottomUp));
         button.addEventListener('click', () => this.#bottomUpButtonClicked());
-        buttonContainer.appendChild(button);
         UI.Tooltip.Tooltip.install(button, i18nString(UIStrings.bottomUp));
         // Append the button to the last column
-        cell.appendChild(buttonContainer);
+        textDiv.appendChild(button);
     }
     #bottomUpButtonClicked() {
+        // We should also trigger an event to "unhover" the 3P tree row. Since this isn't
+        // triggered when clicking the bottom up button.
+        this.treeView.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, null);
         this.treeView.dispatchEventToListeners("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, this.profileNode);
     }
 }
@@ -998,7 +1003,13 @@ export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
         this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
     }
     buildTree() {
-        return new Trace.Extras.TraceTree.BottomUpRootNode(this.selectedEvents(), this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction(this.groupBySetting.get()));
+        return new Trace.Extras.TraceTree.BottomUpRootNode(this.selectedEvents(), {
+            textFilter: this.textFilter(),
+            filters: this.filtersWithoutTextFilter(),
+            startTime: this.startTime,
+            endTime: this.endTime,
+            eventGroupIdCallback: this.groupingFunction(this.groupBySetting.get()),
+        });
     }
 }
 export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {

@@ -90,6 +90,6 @@ devtools-feedback-button {
   color: var(--sys-color-primary);
 }
 
-/*# sourceURL=cssOverviewStartView.css */
+/*# sourceURL=${import.meta.resolve('./cssOverviewStartView.css')} */
 `
 };

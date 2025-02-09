@@ -180,7 +180,4 @@ export class ModelUpdateEvent extends Event {
 export function isModelUpdateDataComplete(eventData) {
     return eventData.type === "COMPLETE" /* ModelUpdateType.COMPLETE */;
 }
-export function isModelUpdateDataProgress(eventData) {
-    return eventData.type === "PROGRESS_UPDATE" /* ModelUpdateType.PROGRESS_UPDATE */;
-}
 //# sourceMappingURL=ModelImpl.js.map

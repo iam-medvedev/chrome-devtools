@@ -31,7 +31,7 @@ export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineT
     nodeIsFirstParty(node: Trace.Extras.TraceTree.Node): boolean;
     nodeIsExtension(node: Trace.Extras.TraceTree.Node): boolean;
 }
-export declare class ThirdPartyTreeView extends UI.Widget.WidgetElement<UI.Widget.Widget> {
+export declare class ThirdPartyTreeElement extends UI.Widget.WidgetElement<UI.Widget.Widget> {
     #private;
     set treeView(treeView: ThirdPartyTreeViewWidget);
     constructor();
@@ -39,6 +39,6 @@ export declare class ThirdPartyTreeView extends UI.Widget.WidgetElement<UI.Widge
 }
 declare global {
     interface HTMLElementTagNameMap {
-        'devtools-performance-third-party-tree-view': ThirdPartyTreeView;
+        'devtools-performance-third-party-tree-view': ThirdPartyTreeElement;
     }
 }

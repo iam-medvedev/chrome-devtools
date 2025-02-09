@@ -29,6 +29,6 @@ export default {
   padding-left: 12px;
 }
 
-/*# sourceURL=customPreviewComponent.css */
+/*# sourceURL=${import.meta.resolve('./customPreviewComponent.css')} */
 `
 };

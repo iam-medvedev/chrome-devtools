@@ -94,6 +94,6 @@ export default {
   }
 }
 
-/*# sourceURL=computedStyleTrace.css */
+/*# sourceURL=${import.meta.resolve('./computedStyleTrace.css')} */
 `
 };

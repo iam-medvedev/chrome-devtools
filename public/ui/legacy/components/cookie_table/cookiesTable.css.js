@@ -26,6 +26,6 @@ export default {
   background-color: var(--sys-color-surface-yellow);
 }
 
-/*# sourceURL=cookiesTable.css */
+/*# sourceURL=${import.meta.resolve('./cookiesTable.css')} */
 `
 };

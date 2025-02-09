@@ -14,9 +14,6 @@ export const extensionPalette = [
     'error',
     'warning',
 ];
-export function colorIsValid(color) {
-    return extensionPalette.includes(color);
-}
 export function isExtensionPayloadMarker(payload) {
     return payload.dataType === 'marker';
 }

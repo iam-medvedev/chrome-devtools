@@ -248,6 +248,6 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
   }
 }
 
-/*# sourceURL=networkTimingTable.css */
+/*# sourceURL=${import.meta.resolve('./networkTimingTable.css')} */
 `
 };

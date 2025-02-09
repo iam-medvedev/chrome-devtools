@@ -27,6 +27,6 @@ export default {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-/*# sourceURL=inlineButton.css */
+/*# sourceURL=${import.meta.resolve('./inlineButton.css')} */
 `
 };

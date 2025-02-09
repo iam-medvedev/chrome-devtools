@@ -71,8 +71,9 @@ export default {
 
 .selectable-text::selection {
   background-color: var(--sys-color-tonal-container);
+  color: currentcolor;
 }
 
-/*# sourceURL=valueInterpreterDisplay.css */
+/*# sourceURL=${import.meta.resolve('./valueInterpreterDisplay.css')} */
 `
 };

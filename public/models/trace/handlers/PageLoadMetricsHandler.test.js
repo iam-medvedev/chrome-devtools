@@ -44,7 +44,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             if (!pageLoadEventsForMainFrame) {
                 assert.fail('Page load events for main frame were unexpectedly null.');
             }
-            // Single FCP event that occured after the refresh.
+            // Single FCP event that occurred after the refresh.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 1);
             const scoresByMetricName = [...pageLoadEventsForMainFrame.values()];
             const fcpCount = countMetricOcurrences(scoresByMetricName, "FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
@@ -68,7 +68,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             if (!pageLoadEventsForMainFrame) {
                 assert.fail('Page load events for main frame were unexpectedly null.');
             }
-            // Single FCP event that occured after the refresh.
+            // Single FCP event that occurred after the refresh.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 1);
             const events = pageLoadEventsForMainFrame.get(navigationId);
             const allFoundMetricScoresForMainFrame = events ? Array.from(events.values()) : [];

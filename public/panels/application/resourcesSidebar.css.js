@@ -67,6 +67,6 @@ devtools-icon.navigator-font-tree-item {
   text-decoration: line-through;
 }
 
-/*# sourceURL=resourcesSidebar.css */
+/*# sourceURL=${import.meta.resolve('./resourcesSidebar.css')} */
 `
 };

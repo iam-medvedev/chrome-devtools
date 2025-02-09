@@ -75,6 +75,11 @@ export class CompilerScriptMapping {
             this.#sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this),
         ];
     }
+    setFunctionRanges(uiSourceCode, ranges) {
+        for (const sourceMap of this.#uiSourceCodeToSourceMaps.get(uiSourceCode)) {
+            sourceMap.augmentWithScopes(uiSourceCode.url(), ranges);
+        }
+    }
     addStubUISourceCode(script) {
         const stubUISourceCode = this.#stubProject.addContentProvider(Common.ParsedURL.ParsedURL.concatenate(script.sourceURL, ':sourcemap'), TextUtils.StaticContentProvider.StaticContentProvider.fromString(script.sourceURL, Common.ResourceType.resourceTypes.Script, '\n\n\n\n\n// Please wait a bit.\n// Compiled script is not shown while source map is being loaded!'), 'text/javascript');
         this.#stubUISourceCodes.set(script, stubUISourceCode);

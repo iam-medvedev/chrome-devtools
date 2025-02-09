@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/components/spinners/spinners.js';
-import './UserActionRow.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -14,6 +13,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import stylesRaw from './chatView.css.js';
+import { UserActionRow } from './UserActionRow.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const styles = new CSSStyleSheet();
 styles.replaceSync(stylesRaw.cssContent);
@@ -447,24 +447,6 @@ export class ChatView extends HTMLElement {
         this.focusTextInput();
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceDynamicSuggestionClicked);
     };
-    #renderUserActionRow(rpcId, suggestions) {
-        // clang-format off
-        return html `<devtools-user-action-row
-      .props=${{
-            showRateButtons: rpcId !== undefined,
-            onFeedbackSubmit: (rating, feedback) => {
-                if (!rpcId) {
-                    return;
-                }
-                this.#props.onFeedbackSubmit(rpcId, rating, feedback);
-            },
-            suggestions,
-            handleSuggestionClick: this.#handleSuggestionClick,
-            canShowFeedbackForm: this.#props.canShowFeedbackForm,
-        }}
-      ></devtools-user-action-row>`;
-        // clang-format on
-    }
     #renderChangeSummary() {
         if (!this.#props.changeSummary) {
             return Lit.nothing;
@@ -725,11 +707,20 @@ export class ChatView extends HTMLElement {
             ? html `<p>${this.#renderTextAsMarkdown(message.answer, { animate: !this.#props.isReadOnly, ref: this.#handleLastAnswerMarkdownViewRef })}</p>`
             : Lit.nothing}
         ${this.#renderError(message)}
-        <div class="actions">
-          ${isLast && this.#props.isLoading
+        ${isLast && this.#props.isLoading
             ? Lit.nothing
-            : this.#renderUserActionRow(message.rpcId, isLast ? message.suggestions : undefined)}
-        </div>
+            : html `<devtools-widget class="actions" .widgetConfig=${UI.Widget.widgetConfig(UserActionRow, {
+                showRateButtons: message.rpcId !== undefined,
+                onFeedbackSubmit: (rating, feedback) => {
+                    if (!message.rpcId) {
+                        return;
+                    }
+                    this.#props.onFeedbackSubmit(message.rpcId, rating, feedback);
+                },
+                suggestions: isLast ? message.suggestions : undefined,
+                onSuggestionClick: this.#handleSuggestionClick,
+                canShowFeedbackForm: this.#props.canShowFeedbackForm,
+            })}></devtools-widget>`}
       </section>
     `;
         // clang-format on
@@ -1006,6 +997,7 @@ export class ChatView extends HTMLElement {
         <textarea class=${cls}
           .disabled=${this.#isTextInputDisabled()}
           wrap="hard"
+          maxlength="10000"
           @keydown=${this.#handleTextAreaKeyDown}
           placeholder=${this.#getInputPlaceholderString()}
           jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}

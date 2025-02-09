@@ -201,6 +201,10 @@ function coverageGutter(url) {
 }
 const coverageCompartment = new CodeMirror.Compartment();
 const theme = CodeMirror.EditorView.baseTheme({
+    '.cm-line::selection': {
+        backgroundColor: 'transparent',
+        color: 'currentColor',
+    },
     '.cm-coverageGutter': {
         width: '5px',
         marginLeft: '3px',

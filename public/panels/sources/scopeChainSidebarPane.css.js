@@ -38,6 +38,6 @@ export default {
   flex: none;
 }
 
-/*# sourceURL=scopeChainSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./scopeChainSidebarPane.css')} */
 `
 };

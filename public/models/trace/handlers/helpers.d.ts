@@ -12,8 +12,8 @@ export interface EntityMappings {
      */
     eventsByEntity: Map<Entity, Types.Events.Event[]>;
 }
-export declare function getEntityForEvent(event: Types.Events.Event, entityByUrlCache: Map<string, Entity>): Entity | undefined;
-export declare function getEntityForUrl(url: string, entityByUrlCache: Map<string, Entity>): Entity | undefined;
+export declare function getEntityForEvent(event: Types.Events.Event, entityCache: Map<string, Entity>): Entity | undefined;
+export declare function getEntityForUrl(url: string, entityCache: Map<string, Entity>): Entity | undefined;
 export declare function getNonResolvedURL(entry: Types.Events.Event, parsedTrace?: ParsedTrace): Platform.DevToolsPath.UrlString | null;
 export declare function makeUpEntity(entityCache: Map<string, Entity>, url: string): Entity | undefined;
-export declare function updateEventForEntities(entry: Types.Events.Event, entityMappings: EntityMappings): void;
+export declare function addEventToEntityMapping(event: Types.Events.Event, entityMappings: EntityMappings): void;

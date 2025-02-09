@@ -22,6 +22,6 @@ export default {
   vertical-align: sub;
 }
 
-/*# sourceURL=RuleSetDetailsView.css */
+/*# sourceURL=${import.meta.resolve('./RuleSetDetailsView.css')} */
 `
 };

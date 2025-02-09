@@ -97,6 +97,6 @@ export default {
   pointer-events: none;
 }
 
-/*# sourceURL=splitWidget.css */
+/*# sourceURL=${import.meta.resolve('./splitWidget.css')} */
 `
 };

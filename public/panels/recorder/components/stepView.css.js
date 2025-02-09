@@ -253,6 +253,6 @@ devtools-recorder-step-editor.is-selected {
   opacity: 50%;
 }
 
-/*# sourceURL=stepView.css */
+/*# sourceURL=${import.meta.resolve('./stepView.css')} */
 `
 };

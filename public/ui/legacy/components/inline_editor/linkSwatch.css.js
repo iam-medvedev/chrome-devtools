@@ -33,6 +33,6 @@ export default {
   color: var(--text-disabled);
 }
 
-/*# sourceURL=linkSwatch.css */
+/*# sourceURL=${import.meta.resolve('./linkSwatch.css')} */
 `
 };

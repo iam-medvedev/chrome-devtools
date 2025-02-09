@@ -122,6 +122,6 @@ export default {
   color: var(--sys-color-error);
 }
 
-/*# sourceURL=requestPayloadTree.css */
+/*# sourceURL=${import.meta.resolve('./requestPayloadTree.css')} */
 `
 };

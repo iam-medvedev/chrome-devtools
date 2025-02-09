@@ -114,13 +114,13 @@ export class ExtensionScope {
             if (!cssModel) {
                 throw new Error('CSSModel is not found');
             }
-            await this.#changeManager.addChange(cssModel, this.frameId, {
+            const styleChanges = await this.#changeManager.addChange(cssModel, this.frameId, {
                 groupId: this.#agentId,
                 selector,
                 className,
                 styles: arg.styles,
             });
-            await this.#simpleEval(executionContext, `freestyler.respond(${id})`);
+            await this.#simpleEval(executionContext, `freestyler.respond(${id}, ${JSON.stringify(styleChanges)})`);
         });
     }
 }
@@ -147,8 +147,8 @@ const freestylerBinding = `if (!globalThis.freestyler) {
   freestyler.getArgs = (callbackId) => {
     return freestyler.callbacks.get(callbackId).args;
   }
-  freestyler.respond = (callbackId) => {
-    freestyler.callbacks.get(callbackId).resolver();
+  freestyler.respond = (callbackId, styleChanges) => {
+    freestyler.callbacks.get(callbackId).resolver(styleChanges);
     freestyler.callbacks.delete(callbackId);
   }
 }`;
@@ -183,11 +183,32 @@ const functions = `async function setElementStyles(el, styles) {
     el.style[key] = '';
   }
 
-  await freestyler({
+  const result = await freestyler({
     method: 'setElementStyles',
     selector: selector,
     className,
     styles
   });
+
+  let rootNode = el.getRootNode();
+  if (rootNode instanceof ShadowRoot) {
+    let stylesheets = rootNode.adoptedStyleSheets;
+    let hasAiStyleChange = false;
+    let stylesheet = new CSSStyleSheet();
+    for (let i = 0; i < stylesheets.length; i++) {
+      const sheet = stylesheets[i];
+      for (let j = 0; j < sheet.cssRules.length; j++) {
+        hasAiStyleChange = sheet.cssRules[j].selectorText.startsWith('.${AI_ASSISTANCE_CSS_CLASS_NAME}');
+        if (hasAiStyleChange) {
+          stylesheet = sheet;
+          break;
+        }
+      }
+    }
+    stylesheet.replaceSync(result);
+    if (!hasAiStyleChange) {
+      rootNode.adoptedStyleSheets = [...stylesheets, stylesheet];
+    }
+  }
 }`;
 //# sourceMappingURL=ExtensionScope.js.map

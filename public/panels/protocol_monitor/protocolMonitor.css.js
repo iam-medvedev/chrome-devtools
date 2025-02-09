@@ -18,6 +18,6 @@ export default {
   border-top: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=protocolMonitor.css */
+/*# sourceURL=${import.meta.resolve('./protocolMonitor.css')} */
 `
 };

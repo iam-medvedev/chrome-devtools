@@ -152,6 +152,6 @@ li.watch-expression-editing::before {
   }
 }
 
-/*# sourceURL=watchExpressionsSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./watchExpressionsSidebarPane.css')} */
 `
 };

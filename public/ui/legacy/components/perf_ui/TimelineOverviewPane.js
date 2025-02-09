@@ -183,9 +183,6 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     setMarkers(markers) {
         this.markers = markers;
     }
-    getMarkers() {
-        return this.markers;
-    }
     /**
      * Dim the time marker outside the highlight time bounds.
      *

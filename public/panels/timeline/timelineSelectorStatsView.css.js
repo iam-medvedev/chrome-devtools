@@ -13,6 +13,6 @@ export default {
 devtools-data-grid {
   flex: auto;
 }
-/*# sourceURL=timelineSelectorStatsView.css */
+/*# sourceURL=${import.meta.resolve('./timelineSelectorStatsView.css')} */
 `
 };

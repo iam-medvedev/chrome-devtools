@@ -1,6 +1,6 @@
 import type * as CrUXManager from '../../crux-manager/crux-manager.js';
-import type * as Types from '../types/types.js';
-import type { InsightModels, InsightSet, TraceInsightSets } from './types.js';
+import * as Types from '../types/types.js';
+import type { InsightModels, InsightSet, InsightSetContext, MetricSavings, TraceInsightSets } from './types.js';
 export declare function getInsight<InsightName extends keyof InsightModels>(insightName: InsightName, insights: TraceInsightSets | null, key: string | null): InsightModels[InsightName] | null;
 export declare function getLCP(insights: TraceInsightSets | null, key: string | null): {
     value: Types.Timing.Micro;
@@ -37,3 +37,7 @@ export declare function calculateMetricWeightsForSorting(insightSet: InsightSet,
     inp: number;
     cls: number;
 };
+/**
+ * Estimates the FCP & LCP savings for wasted bytes in `wastedBytesByRequestId`.
+ */
+export declare function metricSavingsForWastedBytes(wastedBytesByRequestId: Map<string, number>, context: InsightSetContext): MetricSavings | undefined;

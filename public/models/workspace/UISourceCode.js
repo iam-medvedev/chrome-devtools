@@ -142,17 +142,14 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return this.projectInternal.canRename();
     }
     rename(newName) {
-        let fulfill;
-        const promise = new Promise(x => {
-            fulfill = x;
-        });
+        const { resolve, promise } = Promise.withResolvers();
         this.projectInternal.rename(this, newName, innerCallback.bind(this));
         return promise;
         function innerCallback(success, newName, newURL, newContentType) {
             if (success) {
                 this.updateName(newName, newURL, newContentType);
             }
-            fulfill(success);
+            resolve(success);
         }
     }
     remove() {

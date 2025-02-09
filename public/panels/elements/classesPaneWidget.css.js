@@ -47,6 +47,6 @@ export default {
   }
 }
 
-/*# sourceURL=classesPaneWidget.css */
+/*# sourceURL=${import.meta.resolve('./classesPaneWidget.css')} */
 `
 };

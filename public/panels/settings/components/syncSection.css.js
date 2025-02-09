@@ -53,6 +53,6 @@ img {
   margin-left: 8px;
 }
 
-/*# sourceURL=syncSection.css */
+/*# sourceURL=${import.meta.resolve('./syncSection.css')} */
 `
 };

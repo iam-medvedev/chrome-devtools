@@ -70,6 +70,6 @@ export default {
   }
 }
 
-/*# sourceURL=sidebar.css */
+/*# sourceURL=${import.meta.resolve('./sidebar.css')} */
 `
 };

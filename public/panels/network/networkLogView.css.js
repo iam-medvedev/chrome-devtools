@@ -485,6 +485,6 @@ export default {
   }
 }
 
-/*# sourceURL=networkLogView.css */
+/*# sourceURL=${import.meta.resolve('./networkLogView.css')} */
 `
 };

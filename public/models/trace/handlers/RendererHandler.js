@@ -208,7 +208,7 @@ export function assignThreadName(processes, rendererProcessesByFrame, threadsInP
 /**
  * Removes unneeded trace data opportunistically stored while handling events.
  * This currently does the following:
- *  - Deletes processes with an unkonwn origin.
+ *  - Deletes processes with an unknown origin.
  */
 export function sanitizeProcesses(processes) {
     const auctionWorklets = auctionWorkletsData().worklets;
@@ -312,7 +312,7 @@ export function buildHierarchy(processes, options) {
             // Update the entryToNode map with the entries from this thread
             for (const [entry, node] of treeData.entryToNode) {
                 entryToNode.set(entry, node);
-                HandlerHelpers.updateEventForEntities(entry, entityMappings);
+                HandlerHelpers.addEventToEntityMapping(entry, entityMappings);
             }
         }
     }

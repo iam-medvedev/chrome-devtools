@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { InsightCategory, InsightWarning } from './types.js';
-const UIStrings = {
+export const UIStrings = {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
      */
@@ -14,9 +14,45 @@ const UIStrings = {
      *@description Description of an insight that provides a breakdown for how long it took to download the main document.
      */
     description: 'Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.',
+    /**
+     * @description Text to tell the user that the document request does not have redirects.
+     */
+    passingRedirects: 'Avoids redirects',
+    /**
+     * @description Text to tell the user that the document request had redirects.
+     */
+    failedRedirects: 'Had redirects',
+    /**
+     * @description Text to tell the user that the time starting the document request to when the server started responding is acceptable.
+     */
+    passingServerResponseTime: 'Server responds quickly',
+    /**
+     * @description Text to tell the user that the time starting the document request to when the server started responding is not acceptable.
+     */
+    failedServerResponseTime: 'Server responded slowly',
+    /**
+     * @description Text to tell the user that text compression (like gzip) was applied.
+     */
+    passingTextCompression: 'Applies text compression',
+    /**
+     * @description Text to tell the user that text compression (like gzip) was not applied.
+     */
+    failedTextCompression: 'No compression applied',
+    /**
+     * @description Text for a label describing a network request event as having redirects.
+     */
+    redirectsLabel: 'Redirects',
+    /**
+     * @description Text for a label describing a network request event as taking too long to start delivery by the server.
+     */
+    serverResponseTimeLabel: 'Server response time',
+    /**
+     * @description Text for a label describing a network request event as taking longer to download because it wasn't compressed.
+     */
+    uncompressedDownload: 'Uncompressed download',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/DocumentLatency.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // Due to the way that DevTools throttling works we cannot see if server response took less than ~570ms.
 // We set our failure threshold to 600ms to avoid those false positives but we want devs to shoot for 100ms.
 const TOO_SLOW_THRESHOLD_MS = 600;
@@ -98,10 +134,11 @@ function getCompressionSavings(request) {
 function finalize(partialModel) {
     let hasFailure = false;
     if (partialModel.data) {
-        hasFailure = partialModel.data.redirectDuration > 0 || partialModel.data.serverResponseTooSlow ||
-            partialModel.data.uncompressedResponseBytes > 0;
+        hasFailure = !partialModel.data.checklist.usesCompression.value ||
+            !partialModel.data.checklist.serverResponseIsFast.value || !partialModel.data.checklist.noRedirects.value;
     }
     return {
+        strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
@@ -132,14 +169,33 @@ export function generateInsight(parsedTrace, context) {
         FCP: overallSavingsMs,
         LCP: overallSavingsMs,
     };
+    const uncompressedResponseBytes = getCompressionSavings(documentRequest);
+    const noRedirects = redirectDuration === 0;
+    const serverResponseIsFast = !serverResponseTooSlow;
+    const usesCompression = uncompressedResponseBytes === 0;
     return finalize({
         relatedEvents: [documentRequest],
         data: {
             serverResponseTime,
-            serverResponseTooSlow,
             redirectDuration: Types.Timing.Milli(redirectDuration),
-            uncompressedResponseBytes: getCompressionSavings(documentRequest),
+            uncompressedResponseBytes,
             documentRequest,
+            checklist: {
+                noRedirects: {
+                    label: noRedirects ? i18nString(UIStrings.passingRedirects) : i18nString(UIStrings.failedRedirects),
+                    value: noRedirects
+                },
+                serverResponseIsFast: {
+                    label: serverResponseIsFast ? i18nString(UIStrings.passingServerResponseTime) :
+                        i18nString(UIStrings.failedServerResponseTime),
+                    value: serverResponseIsFast
+                },
+                usesCompression: {
+                    label: usesCompression ? i18nString(UIStrings.passingTextCompression) :
+                        i18nString(UIStrings.failedTextCompression),
+                    value: usesCompression
+                },
+            },
         },
         metricSavings,
     });

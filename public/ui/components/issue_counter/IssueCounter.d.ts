@@ -21,7 +21,6 @@ export declare function getIssueCountsEnumeration(issuesManager: IssuesManager.I
 export declare class IssueCounter extends HTMLElement {
     #private;
     scheduleUpdate(): void;
-    connectedCallback(): void;
     set data(data: IssueCounterData);
     get data(): IssueCounterData;
 }

@@ -63,7 +63,7 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     selectProfileNode(treeNode: Trace.Extras.TraceTree.Node, suppressSelectedEvent: boolean): void;
     refreshTree(): void;
     buildTree(): Trace.Extras.TraceTree.Node;
-    buildTopDownTree(doNotAggregate: boolean, groupIdCallback: ((arg0: Trace.Types.Events.Event) => string) | null): Trace.Extras.TraceTree.Node;
+    buildTopDownTree(doNotAggregate: boolean, eventGroupIdCallback: ((arg0: Trace.Types.Events.Event) => string) | null): Trace.Extras.TraceTree.Node;
     populateColumns(columns: DataGrid.DataGrid.ColumnDescriptor[]): void;
     sortingChanged(): void;
     getSortingFunction(columnId: string): ((a: DataGrid.SortableDataGrid.SortableDataGridNode<GridNode>, b: DataGrid.SortableDataGrid.SortableDataGridNode<GridNode>) => number) | null;

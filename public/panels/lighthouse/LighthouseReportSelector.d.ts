@@ -9,7 +9,6 @@ export declare class ReportSelector {
     private setEmptyState;
     private handleChange;
     private selectedItem;
-    hasCurrentSelection(): boolean;
     hasItems(): boolean;
     comboBox(): UI.Toolbar.ToolbarComboBox;
     prepend(item: Item): void;

@@ -46,6 +46,6 @@ export default {
   color: var(--app-color-performance-bad-dim);
 }
 
-/*# sourceURL=metricValueStyles.css */
+/*# sourceURL=${import.meta.resolve('./metricValueStyles.css')} */
 `
 };

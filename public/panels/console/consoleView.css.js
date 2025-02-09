@@ -50,6 +50,10 @@ export default {
   flex: 1 1 auto;
 }
 
+#console-issues-counter {
+  margin-top: 0;
+}
+
 .console-toolbar-container > devtools-toolbar {
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);
@@ -215,6 +219,7 @@ export default {
 
     & ::selection {
       background-color: var(--sys-color-state-focus-select);
+      color: currentcolor;
     }
   }
 }
@@ -659,6 +664,6 @@ devtools-console-insight {
   }
 }
 
-/*# sourceURL=consoleView.css */
+/*# sourceURL=${import.meta.resolve('./consoleView.css')} */
 `
 };

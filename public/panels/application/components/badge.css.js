@@ -30,6 +30,6 @@ export default {
   font-family: var(--source-code-font-family);
 }
 
-/*# sourceURL=badge.css */
+/*# sourceURL=${import.meta.resolve('./badge.css')} */
 `
 };

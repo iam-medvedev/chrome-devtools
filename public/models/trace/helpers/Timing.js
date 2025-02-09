@@ -65,13 +65,6 @@ export function traceWindowMilliSeconds(bounds) {
         range: microToMilli(bounds.range),
     };
 }
-export function traceWindowMillisecondsToMicroSeconds(bounds) {
-    return {
-        min: milliToMicro(bounds.min),
-        max: milliToMicro(bounds.max),
-        range: milliToMicro(bounds.range),
-    };
-}
 export function traceWindowMicroSecondsToMilliSeconds(bounds) {
     return {
         min: microToMilli(bounds.min),

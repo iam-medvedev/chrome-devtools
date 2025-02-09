@@ -121,6 +121,6 @@ li.search-match .link-style.search-match-link {
   margin: 0 4px;
 }
 
-/*# sourceURL=searchResultsPane.css */
+/*# sourceURL=${import.meta.resolve('./searchResultsPane.css')} */
 `
 };

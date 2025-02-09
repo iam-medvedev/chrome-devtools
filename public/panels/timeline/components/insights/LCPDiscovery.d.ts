@@ -1,4 +1,4 @@
-import '../../../../ui/components/icon_button/icon_button.js';
+import './Checklist.js';
 import type { LCPDiscoveryInsightModel } from '../../../../models/trace/insights/LCPDiscovery.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';

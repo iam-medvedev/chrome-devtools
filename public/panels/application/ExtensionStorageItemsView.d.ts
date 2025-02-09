@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
-import type * as DataGridImpl from '../../ui/legacy/components/data_grid/data_grid.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import type { ExtensionStorage } from './ExtensionStorageModel.js';
-import { StorageItemsView } from './StorageItemsView.js';
+import { KeyValueStorageItemsView } from './KeyValueStorageItemsView.js';
 export declare namespace ExtensionStorageItemsDispatcher {
     const enum Events {
         ITEM_EDITED = "ItemEdited",
@@ -12,7 +12,7 @@ export declare namespace ExtensionStorageItemsDispatcher {
         [Events.ITEMS_REFRESHED]: void;
     }
 }
-export declare class ExtensionStorageItemsView extends StorageItemsView {
+export declare class ExtensionStorageItemsView extends KeyValueStorageItemsView {
     #private;
     readonly extensionStorageItemsDispatcher: Common.ObjectWrapper.ObjectWrapper<ExtensionStorageItemsDispatcher.EventTypes>;
     constructor(extensionStorage: ExtensionStorage);
@@ -21,6 +21,9 @@ export declare class ExtensionStorageItemsView extends StorageItemsView {
      * falling back to a string otherwise.
      */
     parseValue(input: string): unknown;
+    protected removeItem(key: string): void;
+    protected setItem(key: string, value: string): void;
+    protected createPreview(key: string, value: string): Promise<UI.Widget.Widget | null>;
     setStorage(extensionStorage: ExtensionStorage): void;
     deleteSelectedItem(): void;
     refreshItems(): void;
@@ -29,5 +32,4 @@ export declare class ExtensionStorageItemsView extends StorageItemsView {
         key: string;
         value: string;
     }>;
-    get dataGridForTesting(): DataGridImpl.DataGrid.DataGridImpl<unknown>;
 }

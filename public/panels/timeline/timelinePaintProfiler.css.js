@@ -31,6 +31,6 @@ export default {
   border: solid 1px var(--sys-color-inverse-surface);
 }
 
-/*# sourceURL=timelinePaintProfiler.css */
+/*# sourceURL=${import.meta.resolve('./timelinePaintProfiler.css')} */
 `
 };

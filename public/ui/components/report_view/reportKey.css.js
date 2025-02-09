@@ -23,6 +23,6 @@ export default {
   user-select: none;
 }
 
-/*# sourceURL=reportKey.css */
+/*# sourceURL=${import.meta.resolve('./reportKey.css')} */
 `
 };

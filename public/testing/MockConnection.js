@@ -27,10 +27,7 @@ export function clearAllMockConnectionResponseHandlers() {
 export function registerListenerOnOutgoingMessage(method) {
     let outgoingMessageListenerEntry = outgoingMessageListenerEntryMap.get(method);
     if (!outgoingMessageListenerEntry) {
-        let resolve = () => { };
-        const promise = new Promise(r => {
-            resolve = r;
-        });
+        const { resolve, promise } = Promise.withResolvers();
         outgoingMessageListenerEntry = { promise, resolve };
         outgoingMessageListenerEntryMap.set(method, outgoingMessageListenerEntry);
     }

@@ -10,8 +10,7 @@ export default {
  * found in the LICENSE file.
  */
 .ignore-list-setting-content {
-  padding: 0 var(--sys-size-8);
-  width: 280px;
+  max-width: var(--sys-size-30);
 }
 
 .ignore-list-setting-description {
@@ -73,6 +72,6 @@ export default {
   }
 }
 
-/*# sourceURL=ignoreListSetting.css */
+/*# sourceURL=${import.meta.resolve('./ignoreListSetting.css')} */
 `
 };

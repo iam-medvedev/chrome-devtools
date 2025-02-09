@@ -109,7 +109,7 @@ export declare class LayoutShiftRootCauses {
     /**
      * Returns a function that retrieves the active value of a given
      * CSS property within the matched styles of the param node.
-     * The first occurence within the matched styles is returned and the
+     * The first occurrence within the matched styles is returned and the
      * value is looked up in the following order, which follows CSS
      * specificity:
      * 1. Inline styles.

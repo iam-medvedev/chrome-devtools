@@ -6,7 +6,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -19,11 +18,10 @@ import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import { FileAgent, FileContext, } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext, } from './agents/NetworkAgent.js';
-import { PatchAgent, ProjectContext } from './agents/PatchAgent.js';
 import { CallTreeContext, PerformanceAgent } from './agents/PerformanceAgent.js';
-import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
+import { NodeContext, StylingAgent, StylingAgentWithFunctionCalling } from './agents/StylingAgent.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
-import { AiHistoryStorage, } from './AiHistoryStorage.js';
+import { AiHistoryStorage, Conversation } from './AiHistoryStorage.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ChatView, } from './components/ChatView.js';
 const { html } = Lit;
@@ -102,7 +100,7 @@ function defaultView(input, output, target) {
         }
         output.chatView = el;
     })}></devtools-ai-chat-view>
-  `, target, { host: input }); // eslint-disable-line rulesdir/lit-host-this
+  `, target, { host: input });
     // clang-format on
 }
 function createNodeContext(node) {
@@ -117,12 +115,6 @@ function createFileContext(file) {
     }
     return new FileContext(file);
 }
-function createProjectContext(project) {
-    if (!project) {
-        return null;
-    }
-    return new ProjectContext(project);
-}
 function createRequestContext(request) {
     if (!request) {
         return null;
@@ -134,6 +126,20 @@ function createCallTreeContext(callTree) {
         return null;
     }
     return new CallTreeContext(callTree);
+}
+function agentTypeToConversationType(type) {
+    switch (type) {
+        case "freestyler" /* AgentType.STYLING */:
+            return "freestyler" /* ConversationType.STYLING */;
+        case "drjones-network-request" /* AgentType.NETWORK */:
+            return "drjones-network-request" /* ConversationType.NETWORK */;
+        case "drjones-file" /* AgentType.FILE */:
+            return "drjones-file" /* ConversationType.FILE */;
+        case "drjones-performance" /* AgentType.PERFORMANCE */:
+            return "drjones-performance" /* ConversationType.PERFORMANCE */;
+        case "patch" /* AgentType.PATCH */:
+            throw new Error('PATCH AgentType does not have a corresponding ConversationType.');
+    }
 }
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
@@ -151,10 +157,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #newChatButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newChat), 'plus', undefined, 'freestyler.new-chat');
     #historyEntriesButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.history), 'history', undefined, 'freestyler.history');
     #deleteHistoryEntryButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteChat), 'bin', undefined, 'freestyler.delete');
-    #agents = new Set();
     #currentAgent;
+    #currentConversation;
+    #conversations = [];
     #previousSameOriginContext;
-    #project = null;
     #selectedFile = null;
     #selectedElement = null;
     #selectedCallTree = null;
@@ -194,9 +200,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             stripLinks: false,
             isReadOnly: false,
         };
-        for (const historyEntry of AiHistoryStorage.instance().getHistory()) {
-            this.#createAgent(historyEntry.type, historyEntry);
-        }
+        this.#conversations = AiHistoryStorage.instance().getHistory().map(item => Conversation.fromSerialized(item));
     }
     #createToolbar() {
         const toolbarContainer = this.contentElement.createChild('div', 'toolbar-container');
@@ -248,7 +252,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
     }
-    #createAgent(agentType, history) {
+    #createAgent(agentType) {
         const options = {
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
@@ -260,6 +264,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     ...options,
                     changeManager: this.#changeManager,
                 });
+                if (isAiAssistanceStylingWithFunctionCallingEnabled()) {
+                    agent = new StylingAgentWithFunctionCalling({
+                        ...options,
+                        changeManager: this.#changeManager,
+                    });
+                }
                 break;
             }
             case "drjones-network-request" /* AgentType.NETWORK */: {
@@ -275,18 +285,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 break;
             }
             case "patch" /* AgentType.PATCH */: {
-                agent = new PatchAgent(options);
-                break;
+                throw new Error('AI Assistance does not support direct usage of the patch agent');
             }
         }
-        if (history) {
-            agent.populateHistoryFromStorage(history);
-        }
-        this.#agents.add(agent);
         return agent;
     }
     #updateToolbarState() {
-        this.#deleteHistoryEntryButton.setVisible(Boolean(this.#currentAgent && !this.#currentAgent.isEmpty));
+        this.#deleteHistoryEntryButton.setVisible(Boolean(this.#currentConversation && !this.#currentConversation.isEmpty));
     }
     static async instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -335,7 +340,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#viewProps.messages = [];
             this.#viewProps.changeSummary = undefined;
             this.#viewProps.isLoading = false;
-            this.#viewProps.isReadOnly = this.#currentAgent?.isHistoryEntry ?? false;
+            if (this.#currentAgent?.type) {
+                this.#currentConversation =
+                    new Conversation(agentTypeToConversationType(this.#currentAgent.type), [], agent?.id, false);
+                this.#conversations.push(this.#currentConversation);
+                this.#viewProps.isReadOnly = false;
+            }
         }
         this.#onContextSelectionChanged();
         void this.doUpdate();
@@ -355,8 +365,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#selectedCallTree =
                 createCallTreeContext(UI.Context.Context.instance().flavor(TimelineUtils.AICallTree.AICallTree)),
             this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode)),
-            this.#project =
-                createProjectContext(UI.Context.Context.instance().flavor(Persistence.FileSystemWorkspaceBinding.FileSystem)),
             this.#viewProps = {
                 ...this.#viewProps,
                 agentType: this.#currentAgent?.type,
@@ -371,7 +379,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(Persistence.FileSystemWorkspaceBinding.FileSystem, this.#handlePersistenceFileSystemChange);
         UI.Context.Context.instance().addFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().addFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().addFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
@@ -454,17 +461,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedFile = new FileContext(ev.data);
         this.#updateAgentState(this.#currentAgent);
     };
-    #handlePersistenceFileSystemChange = (ev) => {
-        const newProject = ev.data;
-        if (!newProject) {
-            return;
-        }
-        if (this.#project?.getItem() === newProject) {
-            return;
-        }
-        this.#project = new ProjectContext(ev.data);
-        this.#updateAgentState(this.#currentAgent);
-    };
     #handleAiAssistanceEnabledSettingChanged = () => {
         const nextChatUiState = this.#getChatUiState();
         if (this.#viewProps.state === nextChatUiState) {
@@ -518,11 +514,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         let targetAgentType;
         switch (actionId) {
-            case 'ai-assistance.filesystem': {
-                // TODO: metrics if needed.
-                targetAgentType = "patch" /* AgentType.PATCH */;
-                break;
-            }
             case 'freestyler.elements-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromElementsPanelFloatingButton);
                 targetAgentType = "freestyler" /* AgentType.STYLING */;
@@ -563,8 +554,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         let agent = this.#currentAgent;
-        if (!this.#currentAgent || this.#currentAgent.type !== targetAgentType || this.#currentAgent.isHistoryEntry ||
-            targetAgentType === "drjones-performance" /* AgentType.PERFORMANCE */) {
+        if (!this.#currentConversation || !this.#currentAgent || this.#currentAgent.type !== targetAgentType ||
+            this.#currentConversation?.isEmpty || targetAgentType === "drjones-performance" /* AgentType.PERFORMANCE */) {
             agent = this.#createAgent(targetAgentType);
         }
         this.#updateAgentState(agent);
@@ -577,17 +568,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             y: boundingRect.bottom,
             useSoftMenu: true,
         });
-        for (const agent of [...this.#agents].reverse()) {
-            if (agent.isEmpty) {
+        for (const conversation of [...this.#conversations].reverse()) {
+            if (conversation.isEmpty) {
                 continue;
             }
-            const title = agent.title;
+            const title = conversation.title;
             if (!title) {
                 continue;
             }
             contextMenu.defaultSection().appendCheckboxItem(title, () => {
-                void this.#switchAgent(agent);
-            }, { checked: (this.#currentAgent === agent) });
+                void this.#openConversation(conversation);
+            }, { checked: (this.#currentConversation === conversation) });
         }
         const historyEmpty = contextMenu.defaultSection().items.length === 0;
         if (historyEmpty) {
@@ -603,26 +594,29 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         void contextMenu.show();
     }
     #clearHistory() {
-        this.#agents = new Set();
+        this.#conversations = [];
+        this.#currentConversation = undefined;
         void AiHistoryStorage.instance().deleteAll();
         this.#updateAgentState();
     }
     #onDeleteClicked() {
         if (this.#currentAgent) {
-            this.#agents.delete(this.#currentAgent);
+            this.#conversations = this.#conversations.filter(conversation => conversation !== this.#currentConversation);
+            this.#currentConversation = undefined;
             void AiHistoryStorage.instance().deleteHistoryEntry(this.#currentAgent.id);
         }
         this.#updateAgentState();
         this.#selectDefaultAgentIfNeeded();
         UI.ARIAUtils.alert(i18nString(UIStrings.chatDeleted));
     }
-    async #switchAgent(agent) {
-        if (this.#currentAgent === agent) {
+    async #openConversation(conversation) {
+        if (this.#currentConversation === conversation) {
             return;
         }
-        this.#updateAgentState(agent);
-        this.#viewProps.isReadOnly = true;
-        await this.#doConversation(agent.runFromHistory());
+        this.#currentConversation = conversation;
+        this.#viewProps.messages = [];
+        this.#viewProps.isReadOnly = this.#currentConversation?.isReadOnly ?? false;
+        await this.#doConversation(conversation.history);
     }
     #handleNewChatRequest() {
         this.#updateAgentState();
@@ -680,8 +674,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 context = this.#selectedCallTree;
                 break;
             case "patch" /* AgentType.PATCH */:
-                context = this.#project;
-                break;
+                throw new Error('AI Assistance does not support direct usage of the patch agent');
         }
         return context;
     }
@@ -705,10 +698,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             selected: context,
         });
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerLoading));
-        await this.#doConversation(runner);
+        await this.#doConversation(this.#saveResponsesToCurrentConversation(runner));
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
     }
-    async #doConversation(generator) {
+    async *#saveResponsesToCurrentConversation(items) {
+        for await (const data of items) {
+            this.#currentConversation?.addHistoryItem(data);
+            yield data;
+        }
+    }
+    async #doConversation(items) {
         const release = await this.#mutex.acquire();
         try {
             let systemMessage = {
@@ -725,7 +724,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 }
             }
             this.#viewProps.isLoading = true;
-            for await (const data of generator) {
+            for await (const data of items) {
                 step.sideEffect = undefined;
                 switch (data.type) {
                     case "user-query" /* ResponseType.USER_QUERY */: {
@@ -765,9 +764,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         commitStep();
                         break;
                     }
+                    case "suggestions" /* ResponseType.SUGGESTIONS */: {
+                        systemMessage.suggestions = data.suggestions;
+                        break;
+                    }
                     case "side-effect" /* ResponseType.SIDE_EFFECT */: {
                         step.isLoading = false;
-                        step.code = data.code;
+                        step.code ??= data.code;
                         step.sideEffect = {
                             onAnswer: data.confirm,
                         };
@@ -776,17 +779,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     }
                     case "action" /* ResponseType.ACTION */: {
                         step.isLoading = false;
-                        step.code = data.code;
-                        step.output = data.output;
+                        step.code ??= data.code;
+                        step.output ??= data.output;
                         step.canceled = data.canceled;
-                        if (isAiAssistanceChangeSummariesEnabled() && this.#currentAgent && !this.#currentAgent.isHistoryEntry) {
+                        if (isAiAssistancePatchingEnabled() && this.#currentAgent && !this.#currentConversation?.isReadOnly) {
                             this.#viewProps.changeSummary = this.#changeManager.formatChanges(this.#currentAgent.id);
                         }
                         commitStep();
                         break;
                     }
                     case "answer" /* ResponseType.ANSWER */: {
-                        systemMessage.suggestions = data.suggestions;
+                        systemMessage.suggestions ??= data.suggestions;
                         systemMessage.answer = data.text;
                         systemMessage.rpcId = data.rpcId;
                         // When there is an answer without any thinking steps, we don't want to show the thinking step.
@@ -845,8 +848,7 @@ export class ActionDelegate {
             case 'drjones.network-panel-context':
             case 'drjones.performance-panel-context':
             case 'drjones.sources-floating-button':
-            case 'drjones.sources-panel-context':
-            case 'ai-assistance.filesystem': {
+            case 'drjones.sources-panel-context': {
                 void (async () => {
                     const view = UI.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
                     if (view) {
@@ -861,34 +863,16 @@ export class ActionDelegate {
         return false;
     }
 }
-function setAiAssistanceChangeSummariesEnabled(enabled) {
-    if (enabled) {
-        localStorage.setItem('aiAssistance_changeSummariesEnabled', 'true');
-    }
-    else {
-        localStorage.setItem('aiAssistance_changeSummariesEnabled', 'false');
-    }
-}
-function isAiAssistanceChangeSummariesEnabled() {
-    return localStorage.getItem('aiAssistance_changeSummariesEnabled') === 'true';
-}
-function setAiAssistanceServerSideLoggingEnabled(enabled) {
-    if (enabled) {
-        localStorage.setItem('aiAssistance_enableServerSideLogging', 'true');
-    }
-    else {
-        localStorage.setItem('aiAssistance_enableServerSideLogging', 'false');
-    }
+function isAiAssistancePatchingEnabled() {
+    const config = Common.Settings.Settings.instance().getHostConfig();
+    return Boolean(config.devToolsFreestyler?.patching);
 }
 function isAiAssistanceServerSideLoggingEnabled() {
     const config = Common.Settings.Settings.instance().getHostConfig();
-    if (config.aidaAvailability?.disallowLogging) {
-        return false;
-    }
-    return localStorage.getItem('aiAssistance_enableServerSideLogging') !== 'false';
+    return !config.aidaAvailability?.disallowLogging;
 }
-// @ts-ignore
-globalThis.setAiAssistanceServerSideLoggingEnabled = setAiAssistanceServerSideLoggingEnabled;
-// @ts-ignore
-globalThis.setAiAssistanceChangeSummariesEnabled = setAiAssistanceChangeSummariesEnabled;
+function isAiAssistanceStylingWithFunctionCallingEnabled() {
+    const config = Common.Settings.Settings.instance().getHostConfig();
+    return Boolean(config.devToolsFreestyler?.functionCalling);
+}
 //# sourceMappingURL=AiAssistancePanel.js.map

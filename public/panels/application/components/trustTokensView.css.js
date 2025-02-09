@@ -36,6 +36,6 @@ devtools-icon {
   margin-top: 20px;
 }
 
-/*# sourceURL=trustTokensView.css */
+/*# sourceURL=${import.meta.resolve('./trustTokensView.css')} */
 `
 };

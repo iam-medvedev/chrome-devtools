@@ -179,6 +179,6 @@ td .text-button {
   display: none;
 }
 
-/*# sourceURL=webauthnPane.css */
+/*# sourceURL=${import.meta.resolve('./webauthnPane.css')} */
 `
 };

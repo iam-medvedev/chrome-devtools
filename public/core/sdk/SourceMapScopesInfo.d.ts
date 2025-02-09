@@ -6,6 +6,8 @@ export declare class SourceMapScopesInfo {
     constructor(sourceMap: SourceMap, originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
     addOriginalScopes(scopes: (OriginalScope | undefined)[]): void;
     addGeneratedRanges(ranges: GeneratedRange[]): void;
+    hasOriginalScopes(sourceIdx: number): boolean;
+    addOriginalScopesAtIndex(sourceIdx: number, scope: OriginalScope): void;
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their

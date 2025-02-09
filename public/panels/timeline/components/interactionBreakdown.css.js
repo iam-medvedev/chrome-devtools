@@ -27,6 +27,6 @@ export default {
   color: var(--sys-color-on-surface);
 }
 
-/*# sourceURL=interactionBreakdown.css */
+/*# sourceURL=${import.meta.resolve('./interactionBreakdown.css')} */
 `
 };

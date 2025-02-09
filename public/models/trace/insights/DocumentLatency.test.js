@@ -17,7 +17,7 @@ describeWithEnvironment('DocumentLatency', function () {
         const { data, insights } = await processTrace(this, 'lantern/paul/trace.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.serverResponseTime, 43);
-        assert(!insight.data?.serverResponseTooSlow);
+        assert(insight.data?.checklist.serverResponseIsFast.value === true);
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
     });
     it('reports savings for server with slow server response time', async function () {
@@ -42,7 +42,7 @@ describeWithEnvironment('DocumentLatency', function () {
         const context = createContextForNavigation(data, navigation, data.Meta.mainFrameId);
         const insight = Trace.Insights.Models.DocumentLatency.generateInsight(data, context);
         assert.strictEqual(insight.data?.serverResponseTime, 1043);
-        assert(insight.data?.serverResponseTooSlow);
+        assert(insight.data?.checklist.serverResponseIsFast.value === false);
         assert.deepEqual(insight.metricSavings, { FCP: 943, LCP: 943 });
     });
     it('reports no compression savings for compressed text', async () => {
@@ -78,7 +78,7 @@ describeWithEnvironment('DocumentLatency', function () {
         assert.strictEqual(insight.data?.redirectDuration, 6059);
         assert.strictEqual(insight.data?.uncompressedResponseBytes, 111506);
         assert.strictEqual(insight.data?.serverResponseTime, 2008);
-        assert(insight.data?.serverResponseTooSlow);
+        assert(insight.data?.checklist.serverResponseIsFast.value === false);
         assert.deepEqual(insight.metricSavings, { FCP: 7967, LCP: 7967 });
     });
 });

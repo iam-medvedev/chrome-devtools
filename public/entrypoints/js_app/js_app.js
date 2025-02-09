@@ -50,7 +50,7 @@ export class JsMainImpl {
         void SDK.Connections.initMainConnection(async () => {
             const target = SDK.TargetManager.TargetManager.instance().createTarget('main', i18nString(UIStrings.main), SDK.Target.Type.NODE, null);
             void target.runtimeAgent().invoke_runIfWaitingForDebugger();
-        }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
+        }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
     }
 }
 UI.ViewManager.registerViewExtension({

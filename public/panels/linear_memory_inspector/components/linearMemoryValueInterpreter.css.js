@@ -52,6 +52,6 @@ export default {
   background-color: var(--sys-color-divider);
 }
 
-/*# sourceURL=linearMemoryValueInterpreter.css */
+/*# sourceURL=${import.meta.resolve('./linearMemoryValueInterpreter.css')} */
 `
 };

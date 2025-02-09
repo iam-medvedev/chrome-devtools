@@ -9,6 +9,14 @@ export default {
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+:host {
+  display: flex;
+  height: 100%;
+}
+
+devtools-report {
+  flex-grow: 1;
+}
 
 button.link {
   color: var(--sys-color-primary);
@@ -31,6 +39,6 @@ button.link devtools-icon {
   cursor: pointer;
 }
 
-/*# sourceURL=preloadingDetailsReportView.css */
+/*# sourceURL=${import.meta.resolve('./preloadingDetailsReportView.css')} */
 `
 };

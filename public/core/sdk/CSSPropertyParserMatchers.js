@@ -230,6 +230,32 @@ export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
         return new LightDarkColorMatch(matching.ast.text(node), node, args[0], args[1]);
     }
 }
+export class AutoBaseMatch {
+    text;
+    node;
+    auto;
+    base;
+    constructor(text, node, auto, base) {
+        this.text = text;
+        this.node = node;
+        this.auto = auto;
+        this.base = base;
+    }
+}
+// clang-format off
+export class AutoBaseMatcher extends matcherBase(AutoBaseMatch) {
+    // clang-format on
+    matches(node, matching) {
+        if (node.name !== 'CallExpression' || matching.ast.text(node.getChild('Callee')) !== '-internal-auto-base') {
+            return null;
+        }
+        const args = ASTUtils.callArgs(node);
+        if (args.length !== 2 || args[0].length === 0 || args[1].length === 0) {
+            return null;
+        }
+        return new AutoBaseMatch(matching.ast.text(node), node, args[0], args[1]);
+    }
+}
 export class LinkableNameMatch {
     text;
     node;
@@ -452,8 +478,10 @@ export class LengthMatch {
 export class LengthMatcher extends matcherBase(LengthMatch) {
     // clang-format on
     static LENGTH_UNITS = new Set([
-        'cm', 'mm', 'Q', 'in', 'pc', 'pt', 'px', 'em', 'ex', 'ch', 'rem',
-        'vw', 'vh', 'vmin', 'vmax', 'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax'
+        'em', 'ex', 'ch', 'cap', 'ic', 'lh', 'rem', 'rex', 'rch', 'rlh', 'ric', 'rcap', 'px', 'pt',
+        'pc', 'in', 'cm', 'mm', 'Q', 'vw', 'vh', 'vi', 'vb', 'vmin', 'vmax', 'dvw', 'dvh', 'dvi',
+        'dvb', 'dvmin', 'dvmax', 'svw', 'svh', 'svi', 'svb', 'svmin', 'svmax', 'lvw', 'lvh', 'lvi', 'lvb', 'lvmin',
+        'lvmax', 'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch',
     ]);
     matches(node, matching) {
         if (node.name !== 'NumberLiteral') {

@@ -92,7 +92,7 @@ export class InspectorMainImpl {
             if (type !== SDK.Target.Type.TAB) {
                 void target.runtimeAgent().invoke_runIfWaitingForDebugger();
             }
-        }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
+        }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
         new SourcesPanelIndicator();
         new BackendSettingsSync();
         new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();

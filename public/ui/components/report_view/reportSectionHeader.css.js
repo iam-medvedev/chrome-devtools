@@ -28,6 +28,6 @@ export default {
   user-select: none;
 }
 
-/*# sourceURL=reportSectionHeader.css */
+/*# sourceURL=${import.meta.resolve('./reportSectionHeader.css')} */
 `
 };

@@ -25,12 +25,14 @@ describeWithMockConnection('CookieControlsView', () => {
         assert.isTrue(reloadRequiredInfobarSpy.calledOnce);
     });
     it('should invoke getAffectedUrlsForThirdPartyCookieMetadata upon construction', async () => {
+        Common.Settings.Settings.instance().setHostConfig({ thirdPartyCookieControls: { thirdPartyCookieMetadataEnabled: true } });
         target = createTarget();
         const getAffectedUrlsSpy = sinon.spy(target.storageAgent(), 'invoke_getAffectedUrlsForThirdPartyCookieMetadata');
         new Security.CookieControlsView.CookieControlsView(undefined, mockView);
         assert.isTrue(getAffectedUrlsSpy.calledOnce);
     });
     it('should invoke getAffectedUrlsForThirdPartyCookieMetadata when a resource is added', async () => {
+        Common.Settings.Settings.instance().setHostConfig({ thirdPartyCookieControls: { thirdPartyCookieMetadataEnabled: true } });
         new Security.CookieControlsView.CookieControlsView(undefined, mockView);
         target = createTarget();
         const getAffectedUrlsSpy = sinon.spy(target.storageAgent(), 'invoke_getAffectedUrlsForThirdPartyCookieMetadata');

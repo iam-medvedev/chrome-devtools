@@ -86,6 +86,6 @@ export default {
   }
 }
 
-/*# sourceURL=viewContainers.css */
+/*# sourceURL=${import.meta.resolve('./viewContainers.css')} */
 `
 };

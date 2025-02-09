@@ -26,6 +26,7 @@ import type { DebuggerSourceMapping, DebuggerWorkspaceBinding } from './Debugger
 export declare class CompilerScriptMapping implements DebuggerSourceMapping {
     #private;
     constructor(debuggerModel: SDK.DebuggerModel.DebuggerModel, workspace: Workspace.Workspace.WorkspaceImpl, debuggerWorkspaceBinding: DebuggerWorkspaceBinding);
+    setFunctionRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, ranges: SDK.SourceMapFunctionRanges.NamedFunctionRange[]): void;
     private addStubUISourceCode;
     private removeStubUISourceCode;
     getLocationRangesForSameSourceLocation(rawLocation: SDK.DebuggerModel.Location): SDK.DebuggerModel.LocationRange[];

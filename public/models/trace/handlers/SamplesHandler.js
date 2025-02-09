@@ -132,6 +132,7 @@ export function handleEvent(event) {
         const cdpProfile = profileData.rawProfile;
         const nodesAndSamples = event.args?.data?.cpuProfile || { samples: [] };
         const samples = nodesAndSamples?.samples || [];
+        const traceIds = event.args?.data?.cpuProfile?.trace_ids || {};
         const nodes = [];
         for (const n of nodesAndSamples?.nodes || []) {
             const lineNumber = typeof n.callFrame.lineNumber === 'undefined' ? -1 : n.callFrame.lineNumber;
@@ -156,6 +157,7 @@ export function handleEvent(event) {
         cdpProfile.samples?.push(...samples);
         cdpProfile.timeDeltas?.push(...timeDeltas);
         cdpProfile.lines?.push(...lines);
+        cdpProfile.traceIds = { ...(cdpProfile.traceIds || {}), ...traceIds };
         if (cdpProfile.samples && cdpProfile.timeDeltas && cdpProfile.samples.length !== cdpProfile.timeDeltas.length) {
             console.error('Failed to parse CPU profile.');
             return;

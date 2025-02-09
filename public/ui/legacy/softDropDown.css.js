@@ -42,6 +42,6 @@ export default {
   }
 }
 
-/*# sourceURL=softDropDown.css */
+/*# sourceURL=${import.meta.resolve('./softDropDown.css')} */
 `
 };

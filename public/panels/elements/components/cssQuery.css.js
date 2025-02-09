@@ -23,6 +23,6 @@ export default {
   cursor: var(--override-styles-section-text-hover-cursor);
 }
 
-/*# sourceURL=cssQuery.css */
+/*# sourceURL=${import.meta.resolve('./cssQuery.css')} */
 `
 };

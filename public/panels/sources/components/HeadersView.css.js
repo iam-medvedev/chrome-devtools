@@ -122,6 +122,6 @@ export default {
   line-height: 24px;
 }
 
-/*# sourceURL=HeadersView.css */
+/*# sourceURL=${import.meta.resolve('./HeadersView.css')} */
 `
 };

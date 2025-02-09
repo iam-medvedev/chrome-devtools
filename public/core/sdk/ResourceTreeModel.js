@@ -74,6 +74,7 @@ export class ResourceTreeModel extends SDKModel {
     static resourceForURL(url) {
         for (const resourceTreeModel of TargetManager.instance().models(ResourceTreeModel)) {
             const mainFrame = resourceTreeModel.mainFrame;
+            // Workers call into this with no #frames available.
             const result = mainFrame ? mainFrame.resourceForURL(url) : null;
             if (result) {
                 return result;
@@ -272,10 +273,6 @@ export class ResourceTreeModel extends SDKModel {
     }
     frames() {
         return [...this.framesInternal.values()];
-    }
-    resourceForURL(url) {
-        // Workers call into this with no #frames available.
-        return this.mainFrame ? this.mainFrame.resourceForURL(url) : null;
     }
     addFramesRecursively(sameTargetParentFrame, frameTreePayload) {
         const framePayload = frameTreePayload.frame;

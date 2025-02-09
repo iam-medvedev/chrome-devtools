@@ -121,6 +121,6 @@ export default {
   }
 }
 
-/*# sourceURL=releaseNoteView.css */
+/*# sourceURL=${import.meta.resolve('./releaseNoteView.css')} */
 `
 };

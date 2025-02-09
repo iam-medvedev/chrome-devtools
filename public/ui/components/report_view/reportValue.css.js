@@ -23,6 +23,6 @@ export default {
   overflow-wrap: break-word;
 }
 
-/*# sourceURL=reportValue.css */
+/*# sourceURL=${import.meta.resolve('./reportValue.css')} */
 `
 };

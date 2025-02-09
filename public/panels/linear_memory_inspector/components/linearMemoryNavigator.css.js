@@ -65,6 +65,6 @@ export default {
   color: var(--icon-default-hover);
 }
 
-/*# sourceURL=linearMemoryNavigator.css */
+/*# sourceURL=${import.meta.resolve('./linearMemoryNavigator.css')} */
 `
 };

@@ -17,6 +17,6 @@ export default {
   inset: 0;
 }
 
-/*# sourceURL=rootView.css */
+/*# sourceURL=${import.meta.resolve('./rootView.css')} */
 `
 };

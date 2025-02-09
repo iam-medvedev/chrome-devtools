@@ -183,9 +183,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.scrollContainerInternal = this.dataContainerInternal;
         // FIXME: Add a createCallback which is different from editCallback and has different
         // behavior when creating a new node.
-        if (editCallback) {
-            this.dataTable.addEventListener('dblclick', this.ondblclick.bind(this), false);
-        }
+        this.dataTable.addEventListener('dblclick', this.ondblclick.bind(this), false);
         this.dataTable.addEventListener('mousedown', this.mouseDownInDataTable.bind(this));
         this.dataTable.addEventListener('click', this.clickInDataTable.bind(this), true);
         this.inline = false;
@@ -493,12 +491,16 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         return rootNode;
     }
+    isColumnEditable(columnId) {
+        const column = this.columns[columnId];
+        return Boolean(column && column.editable && this.editCallback);
+    }
     ondblclick(event) {
-        if (this.editing || this.editingNode) {
+        if (!this.editCallback || this.editing || this.editingNode) {
             return;
         }
         const columnId = this.columnIdFromNode(event.target);
-        if (!columnId || !this.columns[columnId].editable) {
+        if (!columnId || !this.isColumnEditable(columnId)) {
             return;
         }
         this.startEditing(event.target);
@@ -675,7 +677,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         // Make the callback - expects an editing node (table row), the column number that is being edited,
         // the text that used to be there, and the new text.
-        this.editCallback(this.editingNode, columnId, valueBeforeEditing, newText);
+        this.editCallback(this.editingNode, columnId, valueBeforeEditing, newText, moveDirection);
         if (this.editingNode instanceof CreationDataGridNode && this.editingNode.isCreationNode) {
             this.addCreationNode(false);
         }
@@ -691,7 +693,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         const start = inclusive ? cellIndex : cellIndex + increment;
         const columns = this.visibleColumnsArray;
         for (let i = start; (i >= 0) && (i < columns.length); i += increment) {
-            if (columns[i].editable) {
+            if (this.isColumnEditable(columns[i].id)) {
                 return i;
             }
         }
@@ -980,7 +982,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     }
     addCreationNode(hasChildren) {
         if (this.creationNode) {
-            this.creationNode.makeNormal();
+            this.creationNode.isCreationNode = false;
         }
         const emptyData = {};
         for (const column in this.columns) {
@@ -1097,7 +1099,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             nextSelectedNode.reveal();
             nextSelectedNode.select();
         }
-        if (handled && this.element !== document.activeElement && !this.element.contains(document.activeElement)) {
+        const activeElement = Platform.DOMUtilities.deepActiveElement(this.element.ownerDocument);
+        if (handled && this.element !== activeElement && !this.element.contains(activeElement)) {
             // crbug.com/1005449, crbug.com/1329956
             // navigational or delete keys pressed but current DataGrid panel has lost focus;
             // re-focus to ensure subsequent keydowns can be registered within this DataGrid
@@ -1126,8 +1129,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         while (nextSelectedNode && !nextSelectedNode.selectable) {
             nextSelectedNode = nextSelectedNode.traverseNextNode(true);
         }
-        const isCreationNode = nextSelectedNode instanceof CreationDataGridNode && nextSelectedNode.isCreationNode;
-        if (!nextSelectedNode || isCreationNode) {
+        if (!nextSelectedNode || nextSelectedNode.isCreationNode) {
             if (!root) {
                 return;
             }
@@ -1288,14 +1290,14 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                     const firstEditColumnIndex = this.nextEditableColumn(-1);
                     if (firstEditColumnIndex > -1) {
                         const firstColumn = this.visibleColumnsArray[firstEditColumnIndex];
-                        if (firstColumn && firstColumn.editable) {
+                        if (firstColumn && this.isColumnEditable(firstColumn.id)) {
                             contextMenu.defaultSection().appendItem(i18nString(UIStrings.editS, { PH1: String(firstColumn.title) }), this.startEditingColumnOfDataGridNode.bind(this, gridNode, firstEditColumnIndex), { jslogContext: 'edit' });
                         }
                     }
                 }
                 else {
                     const columnId = this.columnIdFromNode(target);
-                    if (columnId && this.columns[columnId].editable) {
+                    if (columnId && this.isColumnEditable(columnId)) {
                         contextMenu.defaultSection().appendItem(i18nString(UIStrings.editS, { PH1: String(this.columns[columnId].title) }), this.startEditing.bind(this, target), { jslogContext: 'edit' });
                     }
                 }
@@ -1723,7 +1725,7 @@ export class DataGridNode {
         const cell = this.createTDWithClass(columnId + '-column');
         nodeToColumnIdMap.set(cell, columnId);
         if (this.dataGrid) {
-            const editableCell = this.dataGrid.columns[columnId].editable;
+            const editableCell = this.dataGrid.isColumnEditable(columnId);
             cell.setAttribute('jslog', `${VisualLogging.tableCell()
                 .track({
                 click: true,
@@ -2118,9 +2120,6 @@ export class CreationDataGridNode extends DataGridNode {
     constructor(data, hasChildren) {
         super(data, hasChildren);
         this.isCreationNode = true;
-    }
-    makeNormal() {
-        this.isCreationNode = false;
     }
 }
 export class DataGridWidget extends UI.Widget.VBox {

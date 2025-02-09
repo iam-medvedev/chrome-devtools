@@ -203,7 +203,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     colorDimmingCache = new Map();
     totalTime;
     lastPopoverState;
-    dimIndicies;
+    dimIndices;
     /** When true, all undimmed entries are outlined. When an array, only those indices are outlined (if not dimmed). */
     dimShouldOutlineUndimmedEntries = false;
     #tooltipPopoverYAdjustment = 0;
@@ -348,8 +348,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.chartViewport.disableRangeSelection();
     }
     #shouldDimEvent(entryIndex) {
-        if (this.dimIndicies) {
-            return this.dimIndicies[entryIndex] !== 0;
+        if (this.dimIndices) {
+            return this.dimIndices[entryIndex] !== 0;
         }
         return false;
     }
@@ -385,18 +385,18 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return typedIndices;
     }
     enableDimming(entryIndices, inclusive, outline) {
-        this.dimIndicies = this.#createTypedIndexArray(entryIndices, inclusive);
+        this.dimIndices = this.#createTypedIndexArray(entryIndices, inclusive);
         this.dimShouldOutlineUndimmedEntries =
             Array.isArray(outline) ? this.#createTypedIndexArray(outline, true) : outline;
         this.draw();
     }
     disableDimming() {
-        this.dimIndicies = null;
+        this.dimIndices = null;
         this.dimShouldOutlineUndimmedEntries = false;
         this.draw();
     }
     isDimming() {
-        return Boolean(this.dimIndicies);
+        return Boolean(this.dimIndices);
     }
     #transformColor(entryIndex, color) {
         if (this.#shouldDimEvent(entryIndex)) {
@@ -794,8 +794,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         /**
          * When a hovered entry on any track is double clicked, create a label for it.
          *
-         * Checking the existance of `highlightedEntryIndex` is enough to make sure that the double
-         * click happenned on the entry since an entry is only highlighted if the mouse is hovering it.
+         * Checking the existence of `highlightedEntryIndex` is enough to make sure that the double
+         * click happened on the entry since an entry is only highlighted if the mouse is hovering it.
          */
         if (this.highlightedEntryIndex !== -1) {
             this.#selectGroup(groupIndex);
@@ -1173,7 +1173,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.contextMenu = this.dataProvider.customizedContextMenu?.(event, this.selectedEntryIndex, groupIndex) ??
             new UI.ContextMenu.ContextMenu(event);
         // Generate context menu entries for annotations.
-        const annotationSection = this.contextMenu.section('annotations');
+        const annotationSection = this.contextMenu.annotationSection();
         annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
             this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: this.selectedEntryIndex, withLinkCreationButton: false });
         }, {
@@ -1612,7 +1612,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const startTime = timelineData.entryStartTimes[index];
         const duration = timelineData.entryTotalTimes[index];
         const endX = this.chartViewport.timeToPosition(startTime + duration);
-        // The arrow icon is square, thefore the width is equal to the bar height
+        // The arrow icon is square, therefore the width is equal to the bar height
         const barHeight = this.#eventBarHeight(timelineData, index);
         const arrowWidth = barHeight;
         if (endX - arrowWidth - this.hitMarginPx < x && x < endX + this.hitMarginPx) {
@@ -2068,7 +2068,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     /**
      * Draws (but does not fill) a rectangle for a given event onto the provided
      * context. Because sometimes we need to draw a portion of the rect, it
-     * optionally allows the start X and width of the rect to be overriden by
+     * optionally allows the start X and width of the rect to be overridden by
      * custom pixel values. It currently does not allow the start Y and height to
      * be changed because we have no need to do so, but this can be extended in
      * the future if required.
@@ -2121,7 +2121,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     /**
      * Preprocess the data to be drawn to speed the rendering time.
-     * Especifically:
+     * Specifically:
      *  - Groups events into draw batches - same color + same outline - to help drawing performance
      *    by reducing how often `context.fillStyle` is changed.
      *  - Discards non visible events.
@@ -2481,7 +2481,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 context.font = this.#font;
                 const hasArrowDecoration = this.entryHasDecoration(entryIndex, "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */);
                 // Set the max width to be the width of the bar plus some padding. If the bar has an arrow decoration and the bar is wide enough for the larger
-                // version of the decoration that is a square button, also substract the width of the decoration.
+                // version of the decoration that is a square button, also subtract the width of the decoration.
                 // Because the decoration is square, it's width is equal to this.barHeight
                 const maxBarWidth = (hasArrowDecoration && barWidth > barHeight * 2) ? barWidth - textPadding - this.barHeight :
                     barWidth - 2 * textPadding;
@@ -2851,7 +2851,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.rawTimelineData = null;
             this.forceDecorationCache = null;
             this.entryColorsCache = null;
-            this.dimIndicies = null;
+            this.dimIndices = null;
             this.colorDimmingCache.clear();
             this.rawTimelineDataLength = 0;
             this.#groupTreeRoot = null;
@@ -2954,7 +2954,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         };
     }
     /**
-     * Builds a tree for the given group array, the tree will be builded based on the nesting level.
+     * Builds a tree for the given group array, the tree will be built based on the nesting level.
      * We will add one fake root to represent the top level parent, and the for each tree node, its children means the
      * group nested in. The order of the children matters because it represent the order of groups.
      * So for example if there are Group 0-7, Group 0, 3, 4 have nestingLevel 0, Group 1, 2, 5, 6, 7 have nestingLevel 1.
@@ -3413,7 +3413,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.rawTimelineData = null;
         this.rawTimelineDataLength = 0;
         this.#groupTreeRoot = null;
-        this.dimIndicies = null;
+        this.dimIndices = null;
         this.colorDimmingCache.clear();
         this.highlightedMarkerIndex = -1;
         this.highlightedEntryIndex = -1;
@@ -3443,6 +3443,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     boundarySpan() {
         return Trace.Types.Timing.Milli(this.maximumBoundary() - this.minimumBoundary());
+    }
+    getDimIndices() {
+        return this.dimIndices || null;
     }
 }
 export const RulerHeight = 15;

@@ -202,6 +202,6 @@ devtools-text-prompt {
   }
 }
 
-/*# sourceURL=filteredListWidget.css */
+/*# sourceURL=${import.meta.resolve('./filteredListWidget.css')} */
 `
 };

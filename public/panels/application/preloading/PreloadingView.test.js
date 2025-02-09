@@ -423,8 +423,10 @@ describeWithMockConnection('PreloadingAttemptView', () => {
                 'Running',
             ],
         ]);
-        const placeholder = preloadingDetailsComponent.shadowRoot.querySelector('div.preloading-noselected div p');
-        assert.strictEqual(placeholder?.textContent, 'Select an element for more details');
+        const placeholderHeader = preloadingDetailsComponent.shadowRoot.querySelector('.empty-state-header');
+        assert.strictEqual(placeholderHeader?.textContent?.trim(), 'No element selected');
+        const placeholderDescription = preloadingDetailsComponent.shadowRoot.querySelector('.empty-state-description');
+        assert.strictEqual(placeholderDescription?.textContent, 'Select an element for more details');
     });
     // See https://crbug.com/1432880
     it('preserves information even if iframe loaded', async () => {
@@ -471,8 +473,10 @@ describeWithMockConnection('PreloadingAttemptView', () => {
                 'Running',
             ],
         ]);
-        const placeholder = preloadingDetailsComponent.shadowRoot.querySelector('div.preloading-noselected div p');
-        assert.strictEqual(placeholder?.textContent, 'Select an element for more details');
+        const placeholderHeader = preloadingDetailsComponent.shadowRoot.querySelector('.empty-state-header');
+        assert.strictEqual(placeholderHeader?.textContent?.trim(), 'No element selected');
+        const placeholderDescription = preloadingDetailsComponent.shadowRoot.querySelector('.empty-state-description');
+        assert.strictEqual(placeholderDescription?.textContent, 'Select an element for more details');
     });
     it('filters preloading attempts by selected rule set', async () => {
         const emulator = new NavigationEmulator();

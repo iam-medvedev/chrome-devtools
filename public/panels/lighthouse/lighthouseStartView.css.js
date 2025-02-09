@@ -166,6 +166,6 @@ input[type="radio"] {
   grid-template-rows: auto;
 }
 
-/*# sourceURL=lighthouseStartView.css */
+/*# sourceURL=${import.meta.resolve('./lighthouseStartView.css')} */
 `
 };

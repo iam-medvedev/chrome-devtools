@@ -19,6 +19,6 @@ export default {
   margin: 20px;
 }
 
-/*# sourceURL=requestHTMLView.css */
+/*# sourceURL=${import.meta.resolve('./requestHTMLView.css')} */
 `
 };

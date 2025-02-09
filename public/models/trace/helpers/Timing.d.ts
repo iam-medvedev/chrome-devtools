@@ -14,7 +14,6 @@ export interface EventTimingsData<ValueType extends Types.Timing.Micro | Types.T
 export declare function eventTimingsMicroSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.Micro>;
 export declare function eventTimingsMilliSeconds(event: Types.Events.Event): EventTimingsData<Types.Timing.Milli>;
 export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindowMicro): Types.Timing.TraceWindowMilli;
-export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilli): Types.Timing.TraceWindowMicro;
 export declare function traceWindowMicroSecondsToMilliSeconds(bounds: Types.Timing.TraceWindowMicro): Types.Timing.TraceWindowMilli;
 export declare function traceWindowFromMilliSeconds(min: Types.Timing.Milli, max: Types.Timing.Milli): Types.Timing.TraceWindowMicro;
 export declare function traceWindowFromMicroSeconds(min: Types.Timing.Micro, max: Types.Timing.Micro): Types.Timing.TraceWindowMicro;

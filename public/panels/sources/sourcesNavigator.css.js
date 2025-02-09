@@ -15,6 +15,6 @@ export default {
   flex-shrink: 0;
 }
 
-/*# sourceURL=sourcesNavigator.css */
+/*# sourceURL=${import.meta.resolve('./sourcesNavigator.css')} */
 `
 };

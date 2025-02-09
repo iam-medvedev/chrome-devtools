@@ -6,10 +6,7 @@ import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import imagePreviewStylesRaw from './imagePreview.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const imagePreviewStyles = new CSSStyleSheet();
-imagePreviewStyles.replaceSync(imagePreviewStylesRaw.cssContent);
+import imagePreviewStyles from './imagePreview.css.js';
 const UIStrings = {
     /**
      *@description Alt text description of an image's source
@@ -54,15 +51,11 @@ function isImageResource(resource) {
 export class ImagePreview {
     static async build(target, originalImageURL, showDimensions, options = { precomputedFeatures: undefined, imageAltText: undefined, align: "center" /* Align.CENTER */ }) {
         const { precomputedFeatures, imageAltText, align } = options;
-        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        if (!resourceTreeModel) {
-            return null;
-        }
-        let resource = resourceTreeModel.resourceForURL(originalImageURL);
+        let resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(originalImageURL);
         let imageURL = originalImageURL;
         if (!isImageResource(resource) && precomputedFeatures && precomputedFeatures.currentSrc) {
             imageURL = precomputedFeatures.currentSrc;
-            resource = resourceTreeModel.resourceForURL(imageURL);
+            resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(imageURL);
         }
         if (!resource || !isImageResource(resource)) {
             return null;
@@ -85,7 +78,7 @@ export class ImagePreview {
             function buildContent() {
                 const shadowBoundary = document.createElement('div');
                 const shadowRoot = shadowBoundary.attachShadow({ mode: 'open' });
-                shadowRoot.adoptedStyleSheets = [imagePreviewStyles];
+                shadowRoot.createChild('style').textContent = imagePreviewStyles.cssContent;
                 const container = shadowRoot.createChild('table');
                 container.className = 'image-preview-container';
                 const imageRow = container.createChild('tr').createChild('td', 'image-container');

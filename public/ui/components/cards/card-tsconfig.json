@@ -37,13 +37,7 @@
   ],
   "references": [
     {
-      "path": "../../../core/common/bundle-tsconfig.json"
-    },
-    {
       "path": "../../lit/bundle-tsconfig.json"
-    },
-    {
-      "path": "../icon_button/bundle-tsconfig.json"
     }
   ]
 }

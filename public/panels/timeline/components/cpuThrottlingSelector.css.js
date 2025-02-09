@@ -23,6 +23,6 @@ devtools-select-menu {
   height: 20px;
 }
 
-/*# sourceURL=cpuThrottlingSelector.css */
+/*# sourceURL=${import.meta.resolve('./cpuThrottlingSelector.css')} */
 `
 };

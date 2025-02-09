@@ -28,6 +28,6 @@ export default {
   -webkit-user-drag: auto;
 }
 
-/*# sourceURL=imageView.css */
+/*# sourceURL=${import.meta.resolve('./imageView.css')} */
 `
 };

@@ -195,7 +195,6 @@ export default {
   position: relative;
   background-color: var(--sys-color-cdt-base-container);
   user-select: text;
-  display: block;
 }
 
 .timeline-details-view-block {
@@ -426,8 +425,7 @@ export default {
   position: relative;
 }
 
-.timeline-tree-view .data-grid div.background-percent-bar {
-  float: right;
+.timeline-tree-view .data-grid div.background-bar-text {
   position: relative;
   z-index: 1;
 }
@@ -449,7 +447,6 @@ export default {
 .timeline-tree-view .data-grid .name-container {
   display: flex;
   align-items: center;
-  padding-left: 2px;
 }
 
 .timeline-tree-view .data-grid .name-container .activity-icon {
@@ -492,15 +489,16 @@ export default {
 
 .timeline-tree-view .data-grid .background-bar-container {
   position: absolute;
-  left: 3px;
-  right: 0;
+  /* Small gap on the left side so the first row (which has a 100% width bar, has a distinguishable bar */
+  inset: 0 0 0 2px;
 }
 
 .timeline-tree-view .data-grid .background-bar {
-  float: right;
   height: 18px;
   background-color: var(--sys-color-surface-yellow);
   border-bottom: 1px solid var(--sys-color-yellow-outline);
+  position: absolute;
+  right: 0;
 }
 
 .timeline-tree-view .data-grid .selected .background-bar {
@@ -550,7 +548,7 @@ export default {
   }
 
   .timeline-tree-view .data-grid tr.selected span.percent-column,
-  .timeline-tree-view .data-grid tr.selected div.background-percent-bar span,
+  .timeline-tree-view .data-grid tr.selected div.background-bar-text span,
   .timeline-tree-view .data-grid tr.selected .name-container .activity-link .devtools-link .timeline-link {
     color: HighlightText;
   }
@@ -566,8 +564,20 @@ export default {
   }
 }
 
-.timeline-details-view-body > div {
-  overflow: hidden;
+.timeline-details-range-summary {
+  height: 100%;
+  margin: var(--sys-size-4) 0;
+
+  & > devtools-performance-timeline-summary {
+    /* The category summary can't be more narrow than this, so we'll force a horizontal scrollbar
+       Also this style can't be applied on the element's :host without !important, thus its here. */
+    min-width: 192px;
+  }
+}
+
+/* Dont need to see insight chips in range summary */
+.timeline-details-range-summary + devtools-related-insight-chips {
+  display:none;
 }
 
 .timeline-details-chip-title > div {
@@ -600,6 +610,116 @@ export default {
 
 .timeline-tree-view .data-grid .name-container div {
   flex: none;
+}
+
+
+devtools-performance-third-party-tree-view {
+  .background-bar-container {
+    /* Dont need the bars in 3p table */
+    display: none;
+  }
+
+   .timeline-tree-view devtools-toolbar {
+    border: 0;
+   }
+
+  .timeline-tree-view .data-grid .odd {
+    background: none;
+  }
+
+  .timeline-tree-view .data-grid {
+    border-width: 0 !important; /* stylelint-disable-line declaration-no-important */
+
+    th {
+      background-color: var(--sys-color-cdt-base-container);
+      font-weight: var(--ref-typeface-weight-medium);
+      /* Center to give some gap against sorting triangle */
+      text-align: center;
+
+      &.site-column {
+        text-align: left;
+      }
+    }
+
+    tr .numeric-column,
+    tr .site-column {
+      border-left: none;
+      border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+      /* Don't let devtools-button size mess with things */
+      contain: strict;
+      padding: 0;
+      line-height: 21px;
+    }
+
+    .bottom-filler-td,
+    th.sortable {
+      border: none;
+    }
+
+    tr {
+      height: 22px;
+    }
+
+    devtools-button {
+      display: inline-flex;
+      visibility: hidden;
+      margin: 0 8px 0 4px;
+      vertical-align: top;
+    }
+
+    tr.revealed:hover,
+    tr.selected {
+     devtools-button {
+        visibility: visible;
+      }
+    }
+
+    /* Default data-grid has this element on the edge of the rows,
+      we don't need them for the 3P table. So for now set display to none. */
+    .corner,
+    &.data-grid-fits-viewport .corner {
+      display: none;
+    }
+
+    .data-grid-resizer:hover {
+        background: linear-gradient(to right, transparent, transparent 2px, var(--sys-color-divider) 2px, var(--sys-color-divider) 3px, transparent 3px) no-repeat 0 0 / 100% 100%;
+    }
+  }
+
+  .widget.vbox.timeline-tree-view {
+    /* See column width comments in populateColumns() */
+    max-width: min(100%, 550px);
+    min-width: 350px; /* Lower than this, there's not enough room for the entity name */
+    padding: 0 0 0 var(--sys-size-6);
+    border-left: var(--sys-size-1) solid var(--sys-color-divider);
+  }
+
+  /* While timeline treeview name-container uses flexbox to layout, it's overkill for this table's purposes.
+     By not using it, we can benefit from text-overflow:ellipsis applying correctly to names and entity-badges */
+ .timeline-tree-view .data-grid .name-container {
+    display: block;
+    padding-left: 2px;
+
+    .activity-name {
+      display: inline;
+    }
+
+    .activity-icon-container {
+      display: none;
+    }
+
+    .entity-badge {
+      margin-left: var(--sys-size-4);
+      font-weight: var(--ref-typeface-weight-medium);
+      padding: 0 var(--sys-size-2);
+      background-color: var(--sys-color-tonal-container);
+      border-radius: var(--sys-shape-corner-extra-small);
+      height: 16px;
+      line-height: 16px;
+      font-size: var(--sys-typescale-body5-size);
+      display: inline-block;
+    }
+ }
 }
 
 devtools-feedback-button {
@@ -681,6 +801,6 @@ devtools-toolbar {
   }
 }
 
-/*# sourceURL=timelinePanel.css */
+/*# sourceURL=${import.meta.resolve('./timelinePanel.css')} */
 `
 };

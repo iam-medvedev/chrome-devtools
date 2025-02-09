@@ -69,6 +69,6 @@ export default {
   }
 }
 
-/*# sourceURL=xhrBreakpointsSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./xhrBreakpointsSidebarPane.css')} */
 `
 };

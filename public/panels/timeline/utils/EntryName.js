@@ -7,7 +7,7 @@ import * as Trace from '../../../models/trace/trace.js';
 import { getEventStyle } from './EntryStyles.js';
 const UIStrings = {
     /**
-     *@description Text shown for an entry in the flame chart that has no explict name.
+     *@description Text shown for an entry in the flame chart that has no explicit name.
      */
     anonymous: '(anonymous)',
     /**

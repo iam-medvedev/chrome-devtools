@@ -55,6 +55,6 @@ export default {
   }
 }
 
-/*# sourceURL=stackTraceRow.css */
+/*# sourceURL=${import.meta.resolve('./stackTraceRow.css')} */
 `
 };

@@ -20,6 +20,6 @@ export default {
   line-height: 11px;
 }
 
-/*# sourceURL=swatchPopover.css */
+/*# sourceURL=${import.meta.resolve('./swatchPopover.css')} */
 `
 };

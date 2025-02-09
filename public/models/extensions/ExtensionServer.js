@@ -177,6 +177,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.registerHandler("setOpenResourceHandler" /* PrivateAPI.Commands.SetOpenResourceHandler */, this.onSetOpenResourceHandler.bind(this));
         this.registerHandler("setThemeChangeHandler" /* PrivateAPI.Commands.SetThemeChangeHandler */, this.onSetThemeChangeHandler.bind(this));
         this.registerHandler("setResourceContent" /* PrivateAPI.Commands.SetResourceContent */, this.onSetResourceContent.bind(this));
+        this.registerHandler("attachSourceMapToResource" /* PrivateAPI.Commands.AttachSourceMapToResource */, this.onAttachSourceMapToResource.bind(this));
         this.registerHandler("setSidebarHeight" /* PrivateAPI.Commands.SetSidebarHeight */, this.onSetSidebarHeight.bind(this));
         this.registerHandler("setSidebarContent" /* PrivateAPI.Commands.SetSidebarContent */, this.onSetSidebarContent.bind(this));
         this.registerHandler("setSidebarPage" /* PrivateAPI.Commands.SetSidebarPage */, this.onSetSidebarPage.bind(this));
@@ -192,6 +193,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.registerHandler("getWasmOp" /* PrivateAPI.Commands.GetWasmOp */, this.onGetWasmOp.bind(this));
         this.registerHandler("registerRecorderExtensionPlugin" /* PrivateAPI.Commands.RegisterRecorderExtensionPlugin */, this.registerRecorderExtensionEndpoint.bind(this));
         this.registerHandler("reportResourceLoad" /* PrivateAPI.Commands.ReportResourceLoad */, this.onReportResourceLoad.bind(this));
+        this.registerHandler("setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */, this.onSetFunctionRangesForScript.bind(this));
         this.registerHandler("createRecorderView" /* PrivateAPI.Commands.CreateRecorderView */, this.onCreateRecorderView.bind(this));
         this.registerHandler("showRecorderView" /* PrivateAPI.Commands.ShowRecorderView */, this.onShowRecorderView.bind(this));
         this.registerHandler("showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */, this.onShowNetworkPanel.bind(this));
@@ -367,6 +369,29 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             size: status.size ?? null,
         };
         SDK.PageResourceLoader.PageResourceLoader.instance().resourceLoadedThroughExtension(pageResource);
+        return this.status.OK();
+    }
+    onSetFunctionRangesForScript(message) {
+        if (message.command !== "setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */) {
+            return this.status.E_BADARG('command', `expected ${"setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */}`);
+        }
+        const { scriptUrl, ranges } = message;
+        if (!scriptUrl || !ranges || !ranges.length) {
+            return this.status.E_BADARG('command', 'expected valid scriptUrl and non-empty NamedFunctionRanges');
+        }
+        const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptUrl);
+        if (!uiSourceCode) {
+            return this.status.E_NOTFOUND(scriptUrl);
+        }
+        if (!uiSourceCode.contentType().isScript() || !uiSourceCode.contentType().isFromSourceMap()) {
+            return this.status.E_BADARG('command', `expected a source map script resource for url: ${scriptUrl}`);
+        }
+        try {
+            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().setFunctionRanges(uiSourceCode, ranges);
+        }
+        catch (e) {
+            return this.status.E_FAILED(e);
+        }
         return this.status.OK();
     }
     onShowRecorderView(message) {
@@ -827,6 +852,28 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         void this.getResourceContent(contentProvider, message, port);
         return undefined;
+    }
+    onAttachSourceMapToResource(message) {
+        if (message.command !== "attachSourceMapToResource" /* PrivateAPI.Commands.AttachSourceMapToResource */) {
+            return this.status.E_BADARG('command', `expected ${"getResourceContent" /* PrivateAPI.Commands.GetResourceContent */}`);
+        }
+        if (!message.sourceMapURL) {
+            return this.status.E_FAILED('Expected a source map URL but got null');
+        }
+        const url = message.contentUrl;
+        const contentProvider = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+        if (!contentProvider) {
+            return this.status.E_NOTFOUND(url);
+        }
+        const debuggerBindingsInstance = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+        const scriptFiles = debuggerBindingsInstance.scriptsForUISourceCode(contentProvider);
+        if (scriptFiles.length > 0) {
+            for (const script of scriptFiles) {
+                const resourceFile = debuggerBindingsInstance.scriptFile(contentProvider, script.debuggerModel);
+                resourceFile?.addSourceMapURL(message.sourceMapURL);
+            }
+        }
+        return this.status.OK();
     }
     onSetResourceContent(message, port) {
         if (message.command !== "setResourceContent" /* PrivateAPI.Commands.SetResourceContent */) {

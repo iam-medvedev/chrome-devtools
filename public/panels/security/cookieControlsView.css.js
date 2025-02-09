@@ -131,6 +131,6 @@ input[type="checkbox"] {
   color: var(--sys-color-on-surface-subtle);
 }
 
-/*# sourceURL=cookieControlsView.css */
+/*# sourceURL=${import.meta.resolve('./cookieControlsView.css')} */
 `
 };

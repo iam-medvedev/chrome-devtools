@@ -46,6 +46,6 @@ devtools-data-grid {
   vertical-align: text-bottom;
 }
 
-/*# sourceURL=reportingApiGrid.css */
+/*# sourceURL=${import.meta.resolve('./reportingApiGrid.css')} */
 `
 };

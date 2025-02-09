@@ -14,7 +14,7 @@ export declare const AI_ASSISTANCE_CSS_CLASS_NAME = "ai-style-change";
 export declare class ChangeManager {
     #private;
     clear(): Promise<void>;
-    addChange(cssModel: SDK.CSSModel.CSSModel, frameId: Protocol.Page.FrameId, change: Change): Promise<void>;
+    addChange(cssModel: SDK.CSSModel.CSSModel, frameId: Protocol.Page.FrameId, change: Change): Promise<string>;
     formatChanges(groupId: string): string;
     buildChanges(changes: Array<Change>): string;
 }

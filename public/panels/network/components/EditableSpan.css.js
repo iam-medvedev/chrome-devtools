@@ -42,6 +42,6 @@ export default {
   background-color: var(--sys-color-tonal-container);
 }
 
-/*# sourceURL=EditableSpan.css */
+/*# sourceURL=${import.meta.resolve('./EditableSpan.css')} */
 `
 };

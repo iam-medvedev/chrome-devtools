@@ -52,6 +52,6 @@ export default {
   }
 }
 
-/*# sourceURL=fileSourceIcon.css */
+/*# sourceURL=${import.meta.resolve('./fileSourceIcon.css')} */
 `
 };

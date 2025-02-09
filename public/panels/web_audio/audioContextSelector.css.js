@@ -25,6 +25,6 @@ export default {
   flex-grow: 0;
 }
 
-/*# sourceURL=audioContextSelector.css */
+/*# sourceURL=${import.meta.resolve('./audioContextSelector.css')} */
 `
 };

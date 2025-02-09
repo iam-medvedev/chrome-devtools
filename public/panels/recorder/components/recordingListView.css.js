@@ -99,6 +99,6 @@ h1 {
   margin: 0 6px;
 }
 
-/*# sourceURL=recordingListView.css */
+/*# sourceURL=${import.meta.resolve('./recordingListView.css')} */
 `
 };

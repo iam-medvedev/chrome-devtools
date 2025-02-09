@@ -299,6 +299,6 @@ devtools-icon.open-in-animations-panel {
   }
 }
 
-/*# sourceURL=stylePropertiesTreeOutline.css */
+/*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */
 `
 };

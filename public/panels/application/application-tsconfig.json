@@ -46,6 +46,7 @@
     "../../../../../../front_end/panels/application/InterestGroupStorageModel.ts",
     "../../../../../../front_end/panels/application/InterestGroupStorageView.ts",
     "../../../../../../front_end/panels/application/InterestGroupTreeElement.ts",
+    "../../../../../../front_end/panels/application/KeyValueStorageItemsView.ts",
     "../../../../../../front_end/panels/application/OpenedWindowDetailsView.ts",
     "../../../../../../front_end/panels/application/PreloadingTreeElement.ts",
     "../../../../../../front_end/panels/application/ReportingApiReportsView.ts",

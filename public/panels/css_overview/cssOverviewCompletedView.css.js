@@ -369,6 +369,6 @@ export default {
   forced-color-adjust: none; /* show colors in high contrast theme */
 }
 
-/*# sourceURL=cssOverviewCompletedView.css */
+/*# sourceURL=${import.meta.resolve('./cssOverviewCompletedView.css')} */
 `
 };

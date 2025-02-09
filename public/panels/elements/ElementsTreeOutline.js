@@ -111,7 +111,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         }
         this.treeElementByNode = new WeakMap();
         const shadowContainer = document.createElement('div');
-        this.shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(shadowContainer, { cssFile: [elementsTreeOutlineStyles, CodeHighlighter.Style.default] });
+        this.shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(shadowContainer, { cssFile: [elementsTreeOutlineStyles, CodeHighlighter.codeHighlighterStyles] });
         const outlineDisclosureElement = this.shadowRoot.createChild('div', 'elements-disclosure');
         this.elementInternal = this.element;
         this.elementInternal.classList.add('elements-tree-outline', 'source-code');

@@ -51,6 +51,6 @@ export default {
   }
 }
 
-/*# sourceURL=colorSwatch.css */
+/*# sourceURL=${import.meta.resolve('./colorSwatch.css')} */
 `
 };

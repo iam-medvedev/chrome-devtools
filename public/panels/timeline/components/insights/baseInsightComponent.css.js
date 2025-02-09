@@ -130,21 +130,6 @@ dd.dl-title {
   font-weight: bold;
 }
 
-.metric-value-bad {
-  color: var(--app-color-performance-bad);
-}
-
-.metric-value-good {
-  color: var(--app-color-performance-good);
-}
-
-.insight-entry {
-  font: var(--sys-typescale-body4-medium);
-  padding-block: var(--sys-size-3);
-  display: flex;
-  align-items: center;
-}
-
 .image-ref {
   display: inline-flex;
   align-items: center;
@@ -183,24 +168,6 @@ dd.dl-title {
   color: var(--sys-color-green);
 }
 
-ul.insight-icon-results {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: var(--sys-size-3);
-
-    span {
-      /* push the text down to align slightly better with the icons */
-      padding-top: 2px;
-    }
-  }
-}
-
 .timeline-link {
   cursor: pointer;
   text-decoration: underline;
@@ -218,11 +185,6 @@ ul.insight-icon-results {
   color: var(--sys-color-state-disabled);
 }
 
-.insight-results:not(:last-child) {
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding-bottom: var(--sys-size-5);
-}
-
-/*# sourceURL=baseInsightComponent.css */
+/*# sourceURL=${import.meta.resolve('./baseInsightComponent.css')} */
 `
 };

@@ -86,6 +86,6 @@ export default {
   color: var(--icon-toggled);
 }
 
-/*# sourceURL=stylePropertyEditor.css */
+/*# sourceURL=${import.meta.resolve('./stylePropertyEditor.css')} */
 `
 };

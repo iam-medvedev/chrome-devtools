@@ -10,7 +10,7 @@ export interface BaseInsightData {
     /** The key into `insights` that contains this particular insight. */
     insightSetKey: string | null;
 }
-export declare abstract class BaseInsightComponent<T extends InsightModel<{}>> extends HTMLElement {
+export declare abstract class BaseInsightComponent<T extends InsightModel<{}, {}>> extends HTMLElement {
     #private;
     abstract internalName: string;
     static readonly litTagName: Lit.StaticHtml.StaticValue;

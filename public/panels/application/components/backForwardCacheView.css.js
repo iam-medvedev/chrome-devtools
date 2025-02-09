@@ -86,6 +86,6 @@ export default {
   }
 }
 
-/*# sourceURL=backForwardCacheView.css */
+/*# sourceURL=${import.meta.resolve('./backForwardCacheView.css')} */
 `
 };

@@ -480,6 +480,6 @@ devtools-icon.network-panel {
   }
 }
 
-/*# sourceURL=issuesTree.css */
+/*# sourceURL=${import.meta.resolve('./issuesTree.css')} */
 `
 };

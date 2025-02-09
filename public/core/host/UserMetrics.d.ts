@@ -38,7 +38,6 @@ export declare class UserMetrics {
     cssHintShown(type: CSSHintType): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;
-    cssPropertyDocumentation(type: CSSPropertyDocumentation): void;
     swatchActivated(swatch: SwatchType): void;
     animationPlaybackRateChanged(playbackRate: AnimationsPlaybackRate): void;
     animationPointDragged(dragType: AnimationPointDragType): void;
@@ -666,12 +665,6 @@ export declare enum DevtoolsExperiments {
     'timeline-third-party-dependencies' = 106,
     MAX_VALUE = 107
 }
-export declare const enum CSSPropertyDocumentation {
-    SHOWN = 0,
-    TOGGLED_ON = 1,
-    TOGGLED_OFF = 2,
-    MAX_VALUE = 3
-}
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,
     MixedContent = 1,
@@ -781,7 +774,12 @@ export declare enum IssueCreated {
     'CookieIssue::WarnThirdPartyPhaseout::SetCookie' = 83,
     'CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie' = 84,
     'CookieIssue::ExcludeThirdPartyPhaseout::SetCookie' = 85,
-    MAX_VALUE = 86
+    'SelectElementAccessibilityIssue::DisallowedSelectChild' = 86,
+    'SelectElementAccessibilityIssue::DisallowedOptGroupChild' = 87,
+    'SelectElementAccessibilityIssue::NonPhrasingContentOptionChild' = 88,
+    'SelectElementAccessibilityIssue::InteractiveContentOptionChild' = 89,
+    'SelectElementAccessibilityIssue::InteractiveContentLegendChild' = 90,
+    MAX_VALUE = 91
 }
 export declare const enum DeveloperResourceLoaded {
     LOAD_THROUGH_PAGE_VIA_TARGET = 0,

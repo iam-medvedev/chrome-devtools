@@ -74,6 +74,6 @@ export default {
   filter: invert(80%);
 }
 
-/*# sourceURL=glassPane.css */
+/*# sourceURL=${import.meta.resolve('./glassPane.css')} */
 `
 };

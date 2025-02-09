@@ -55,10 +55,8 @@ export class SidebarWidget extends UI.Widget.VBox {
         // Swap to the Annotations tab if:
         // 1. Insights is currently selected.
         // 2. The Insights tab is disabled (which means we have no insights for this trace)
-        // 3. The annotations tab exists (we can remove this check once annotations
-        //    are non-experimental)
         if (this.#tabbedPane.selectedTabId === "insights" /* SidebarTabs.INSIGHTS */ &&
-            this.#tabbedPane.tabIsDisabled("insights" /* SidebarTabs.INSIGHTS */) && this.#tabbedPane.hasTab("annotations" /* SidebarTabs.ANNOTATIONS */)) {
+            this.#tabbedPane.tabIsDisabled("insights" /* SidebarTabs.INSIGHTS */)) {
             this.#tabbedPane.selectTab("annotations" /* SidebarTabs.ANNOTATIONS */);
         }
     }
@@ -69,7 +67,7 @@ export class SidebarWidget extends UI.Widget.VBox {
     #updateAnnotationsCountBadge() {
         const annotations = this.#annotationsView.deduplicatedAnnotations();
         if (annotations.length) {
-            this.#tabbedPane.setBadge('annotations', annotations.length.toString(), 'primary');
+            this.#tabbedPane.setBadge('annotations', annotations.length.toString());
         }
     }
     setParsedTrace(parsedTrace, metadata) {

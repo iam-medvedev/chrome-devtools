@@ -60,6 +60,7 @@ export declare class ViewportDataGridNode<T> extends DataGridNode<ViewportDataGr
     private isStripedInternal;
     constructor(data?: DataGridData | null, hasChildren?: boolean);
     element(): HTMLElement;
+    nodeSelfHeight(): number;
     setStriped(isStriped: boolean): void;
     isStriped(): boolean;
     clearFlatNodes(): void;

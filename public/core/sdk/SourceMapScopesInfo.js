@@ -22,6 +22,17 @@ export class SourceMapScopesInfo {
             this.#generatedRanges.push(range);
         }
     }
+    hasOriginalScopes(sourceIdx) {
+        return Boolean(this.#originalScopes[sourceIdx]);
+    }
+    addOriginalScopesAtIndex(sourceIdx, scope) {
+        if (!this.#originalScopes[sourceIdx]) {
+            this.#originalScopes[sourceIdx] = scope;
+        }
+        else {
+            throw new Error(`Trying to re-augment existing scopes for source at index: ${sourceIdx}`);
+        }
+    }
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their

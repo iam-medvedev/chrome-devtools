@@ -1,3 +1,4 @@
+import '../../ui/components/cards/cards.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class WorkspaceSettingsTab extends UI.Widget.VBox {
     #private;

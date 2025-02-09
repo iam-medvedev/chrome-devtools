@@ -39,6 +39,6 @@ export default {
   z-index: 2000;
 }
 
-/*# sourceURL=paintProfiler.css */
+/*# sourceURL=${import.meta.resolve('./paintProfiler.css')} */
 `
 };

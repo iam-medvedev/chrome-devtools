@@ -41,6 +41,6 @@ code {
   white-space: nowrap;
 }
 
-/*# sourceURL=cssHintDetailsView.css */
+/*# sourceURL=${import.meta.resolve('./cssHintDetailsView.css')} */
 `
 };

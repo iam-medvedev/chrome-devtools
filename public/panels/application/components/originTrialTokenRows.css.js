@@ -33,6 +33,6 @@ export default {
   font-weight: bold;
 }
 
-/*# sourceURL=originTrialTokenRows.css */
+/*# sourceURL=${import.meta.resolve('./originTrialTokenRows.css')} */
 `
 };

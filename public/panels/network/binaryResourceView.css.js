@@ -25,6 +25,6 @@ export default {
   transition: opacity 1s;
 }
 
-/*# sourceURL=binaryResourceView.css */
+/*# sourceURL=${import.meta.resolve('./binaryResourceView.css')} */
 `
 };

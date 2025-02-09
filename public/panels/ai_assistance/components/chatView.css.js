@@ -250,9 +250,9 @@ export default {
 
   .actions {
     display: flex;
+    flex-direction: column;
     gap: var(--sys-size-8);
-    justify-content: space-between;
-    align-items: flex-end;
+    max-width: 100%;
   }
 
   .aborted {
@@ -767,6 +767,6 @@ main {
   }
 }
 
-/*# sourceURL=./components/chatView.css */
+/*# sourceURL=${import.meta.resolve('././components/chatView.css')} */
 `
 };

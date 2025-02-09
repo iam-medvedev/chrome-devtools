@@ -6,7 +6,7 @@ import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { InsightCategory } from './types.js';
-const UIStrings = {
+export const UIStrings = {
     /**
      * @description Title of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated.
      */
@@ -15,9 +15,33 @@ const UIStrings = {
      * @description Description of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated. "layout reflows" are when the browser will recompute the layout of content on the page.
      */
     description: 'A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/).',
+    /**
+     * @description Header for a column containing the names of statistics as opposed to the actual statistic values.
+     */
+    statistic: 'Statistic',
+    /**
+     * @description Header for a column containing the value of a statistic.
+     */
+    value: 'Value',
+    /**
+     * @description Header for a column containing the page element related to a statistic.
+     */
+    element: 'Element',
+    /**
+     * @description Label for a value representing the total number of elements on the page.
+     */
+    totalElements: 'Total elements',
+    /**
+     * @description Label for a value representing the maximum depth of the Document Object Model (DOM). "DOM" is a acronym and should not be translated.
+     */
+    maxDOMDepth: 'DOM depth',
+    /**
+     * @description Label for a value representing the maximum number of child elements of any parent element on the page.
+     */
+    maxChildren: 'Most children',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/DOMSize.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DOM_SIZE_DURATION_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(40));
 // These thresholds were selected to maximize the number of long (>40ms) events above
 // the threshold while maximizing the number of short (<40ms) events below the threshold.
@@ -30,6 +54,7 @@ export function deps() {
 function finalize(partialModel) {
     const relatedEvents = [...partialModel.largeLayoutUpdates, ...partialModel.largeStyleRecalcs];
     return {
+        strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.INP,

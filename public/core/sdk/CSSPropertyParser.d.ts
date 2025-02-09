@@ -55,13 +55,13 @@ export type Constructor<T = any> = (abstract new (...args: any[]) => T) | (new (
 export interface Matcher<MatchT extends Match> {
     readonly matchType: Constructor<MatchT>;
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): MatchT | null;
 }
 export declare function matcherBase<MatchT extends Match>(matchT: Constructor<MatchT>): {
     new (): {
         matchType: Constructor<MatchT>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): MatchT | null;
     };
 };
 export declare class BottomUpTreeMatching extends TreeWalker {
@@ -119,13 +119,13 @@ declare const VariableMatcher_base: {
     new (): {
         matchType: Constructor<VariableMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): VariableMatch | null;
     };
 };
 export declare class VariableMatcher extends VariableMatcher_base {
     #private;
     constructor(computedTextCallback: (match: VariableMatch, matching: BottomUpTreeMatching) => string | null);
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): VariableMatch | null;
 }
 export declare class TextMatch implements Match {
     readonly text: string;

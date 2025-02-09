@@ -314,7 +314,6 @@ export interface SyncInformation {
  * Warning: There is another definition of this enum in the DevTools code
  * base, keep them in sync:
  * front_end/devtools_compatibility.js
- * @readonly
  */
 export declare const enum EnumeratedHistogram {
     ActionTaken = "DevTools.ActionTaken",
@@ -352,7 +351,6 @@ export declare const enum EnumeratedHistogram {
     CSSHintShown = "DevTools.CSSHintShown",
     LighthouseModeRun = "DevTools.LighthouseModeRun",
     LighthouseCategoryUsed = "DevTools.LighthouseCategoryUsed",
-    CSSPropertyDocumentation = "DevTools.CSSPropertyDocumentation",
     SwatchActivated = "DevTools.SwatchActivated",
     AnimationPlaybackRateChanged = "DevTools.AnimationPlaybackRateChanged",
     AnimationPointDragged = "DevTools.AnimationPointDragged"

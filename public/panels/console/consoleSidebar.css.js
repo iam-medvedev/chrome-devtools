@@ -37,6 +37,6 @@ devtools-icon {
   flex-grow: 1;
 }
 
-/*# sourceURL=consoleSidebar.css */
+/*# sourceURL=${import.meta.resolve('./consoleSidebar.css')} */
 `
 };

@@ -27,6 +27,6 @@ devtools-shared-storage-access-grid {
   }
 }
 
-/*# sourceURL=sharedStorageEventsView.css */
+/*# sourceURL=${import.meta.resolve('./sharedStorageEventsView.css')} */
 `
 };

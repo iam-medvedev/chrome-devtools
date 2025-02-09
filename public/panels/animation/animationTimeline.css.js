@@ -606,6 +606,6 @@ text.animation-timeline-grid-label {
   }
 }
 
-/*# sourceURL=animationTimeline.css */
+/*# sourceURL=${import.meta.resolve('./animationTimeline.css')} */
 `
 };

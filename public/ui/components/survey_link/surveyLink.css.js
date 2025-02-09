@@ -44,6 +44,6 @@ export default {
   text-decoration: none;
 }
 
-/*# sourceURL=surveyLink.css */
+/*# sourceURL=${import.meta.resolve('./surveyLink.css')} */
 `
 };

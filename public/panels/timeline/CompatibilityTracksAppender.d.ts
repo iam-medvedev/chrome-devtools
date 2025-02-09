@@ -154,14 +154,6 @@ export declare class CompatibilityTracksAppender {
      * views if that group was registered by the appender system.
      */
     groupEventsForTreeView(group: PerfUI.FlameChart.Group): Trace.Types.Events.Event[] | null;
-    /**
-     * Caches the track appender that owns a level. An appender takes
-     * ownership of a level when it appends data to it.
-     * The cache is useful to determine what appender should handle a
-     * query from the flame chart renderer when an event's feature (like
-     * style, title, etc.) is needed.
-     */
-    registerTrackForLevel(level: number, appender: TrackAppender): void;
     groupForLevel(level: number): PerfUI.FlameChart.Group | null;
     /**
      * Adds an event to the flame chart data at a defined level.

@@ -87,7 +87,7 @@ const colorPallettes = [
         dark: 'rgb(34, 205, 181)',
     },
 ];
-/* rulesdir/no-underscored-properties, rulesdir/no-a-tags-in-lit, rulesdir/lit-host-this */
+/* rulesdir/no-underscored-properties, rulesdir/no-a-tags-in-lit */
 export class BrickBreaker extends HTMLElement {
     timelineFlameChart;
     #canvas;
@@ -425,7 +425,7 @@ export class BrickBreaker extends HTMLElement {
         const breakBrick = (entryIndex) => {
             const entryCoordinates = this.timelineFlameChart.entryIndexToCoordinates(entryIndex);
             if (entryCoordinates) {
-                // Cap entries starting before the visibile window in the game.
+                // Cap entries starting before the visible window in the game.
                 const entryBegin = Math.max(entryCoordinates.x - timelineCanvasOffset.left, 0);
                 // Extend the patch width and height an extra 0.5 px to ensure the
                 // entry is completely covered.

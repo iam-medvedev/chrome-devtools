@@ -28,7 +28,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
         const data = null;
         const component = await renderPreloadingDetailsReportView(data);
         assert.isNotNull(component.shadowRoot);
-        const placeholder = component.shadowRoot.querySelector('.preloading-noselected');
+        const placeholder = component.shadowRoot.querySelector('.empty-state');
         assert.include(placeholder?.textContent, 'Select an element for more details');
     });
     it('renders prerendering details', async () => {

@@ -75,6 +75,6 @@ export default {
   height: var(--sys-size-11);
 }
 
-/*# sourceURL=cookieReportView.css */
+/*# sourceURL=${import.meta.resolve('./cookieReportView.css')} */
 `
 };

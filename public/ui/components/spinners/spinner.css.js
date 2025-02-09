@@ -166,6 +166,6 @@ circle {
   }
 }
 
-/*# sourceURL=spinner.css */
+/*# sourceURL=${import.meta.resolve('./spinner.css')} */
 `
 };

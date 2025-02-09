@@ -5,23 +5,33 @@ import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-function getOrMakeSummary(thirdPartySummary, event, url) {
+function getOrMakeSummaryByEntity(thirdPartySummary, event, url) {
     const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ??
         Handlers.Helpers.makeUpEntity(thirdPartySummary.madeUpEntityCache, url);
     if (!entity) {
         return null;
     }
+    const urls = thirdPartySummary.urlsByEntity.get(entity) ?? new Set();
+    urls.add(url);
+    thirdPartySummary.urlsByEntity.set(entity, urls);
     const events = thirdPartySummary.eventsByEntity.get(entity) ?? [];
     events.push(event);
     thirdPartySummary.eventsByEntity.set(entity, events);
     let summary = thirdPartySummary.byEntity.get(entity);
     if (summary) {
-        thirdPartySummary.byEvent.set(event, summary);
         return summary;
     }
     summary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
     thirdPartySummary.byEntity.set(entity, summary);
-    thirdPartySummary.byEvent.set(event, summary);
+    return summary;
+}
+function getOrMakeSummaryByURL(thirdPartySummary, url) {
+    let summary = thirdPartySummary.byUrl.get(url);
+    if (summary) {
+        return summary;
+    }
+    summary = { transferSize: 0, mainThreadTime: Types.Timing.Micro(0) };
+    thirdPartySummary.byUrl.set(url, summary);
     return summary;
 }
 function collectMainThreadActivity(thirdPartySummary, parsedTrace, bounds) {
@@ -46,7 +56,11 @@ function collectMainThreadActivity(thirdPartySummary, parsedTrace, bounds) {
                     if (!url) {
                         continue;
                     }
-                    const summary = getOrMakeSummary(thirdPartySummary, event, url);
+                    let summary = getOrMakeSummaryByEntity(thirdPartySummary, event, url);
+                    if (summary) {
+                        summary.mainThreadTime = (summary.mainThreadTime + node.selfTime);
+                    }
+                    summary = getOrMakeSummaryByURL(thirdPartySummary, url);
                     if (summary) {
                         summary.mainThreadTime = (summary.mainThreadTime + node.selfTime);
                     }
@@ -58,7 +72,11 @@ function collectMainThreadActivity(thirdPartySummary, parsedTrace, bounds) {
 function collectNetworkActivity(thirdPartySummary, requests) {
     for (const request of requests) {
         const url = request.args.data.url;
-        const summary = getOrMakeSummary(thirdPartySummary, request, url);
+        let summary = getOrMakeSummaryByEntity(thirdPartySummary, request, url);
+        if (summary) {
+            summary.transferSize += request.args.data.encodedDataLength;
+        }
+        summary = getOrMakeSummaryByURL(thirdPartySummary, url);
         if (summary) {
             summary.transferSize += request.args.data.encodedDataLength;
         }
@@ -70,7 +88,8 @@ function collectNetworkActivity(thirdPartySummary, requests) {
 export function summarizeThirdParties(parsedTrace, traceBounds, networkRequests) {
     const thirdPartySummary = {
         byEntity: new Map(),
-        byEvent: new Map(),
+        byUrl: new Map(),
+        urlsByEntity: new Map(),
         eventsByEntity: new Map(),
         madeUpEntityCache: new Map(),
     };
@@ -100,7 +119,7 @@ function getSummaryMapWithMapping(events, entityByEvent, eventsByEntity) {
         entitySummary.transferSize += requestSummary.transferSize;
         byEntity.set(entity, entitySummary);
     }
-    return { byEntity, byEvent, eventsByEntity, madeUpEntityCache: new Map() };
+    return { byEntity, eventsByEntity, madeUpEntityCache: new Map(), byUrl: new Map(), urlsByEntity: new Map() };
 }
 // TODO(crbug.com/352244718): Remove or refactor to use summarizeThirdParties/collectMainThreadActivity/etc.
 /**

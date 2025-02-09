@@ -162,6 +162,6 @@ visible. */
   color: var(--override-box-model-text-color);
 }
 
-/*# sourceURL=metricsSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./metricsSidebarPane.css')} */
 `
 };

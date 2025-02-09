@@ -57,6 +57,6 @@ export default {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=webSocketFrameView.css */
+/*# sourceURL=${import.meta.resolve('./webSocketFrameView.css')} */
 `
 };

@@ -61,6 +61,6 @@ button.view-trace {
   position: absolute;
 }
 
-/*# sourceURL=lighthousePanel.css */
+/*# sourceURL=${import.meta.resolve('./lighthousePanel.css')} */
 `
 };

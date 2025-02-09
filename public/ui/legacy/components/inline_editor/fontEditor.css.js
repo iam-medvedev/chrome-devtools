@@ -189,6 +189,6 @@ input::-webkit-inner-spin-button {
   background-color: var(--sys-color-state-focus-highlight);
 }
 
-/*# sourceURL=fontEditor.css */
+/*# sourceURL=${import.meta.resolve('./fontEditor.css')} */
 `
 };

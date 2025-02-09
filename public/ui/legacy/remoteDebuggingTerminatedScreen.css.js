@@ -37,6 +37,6 @@ export default {
   --override-reason-color: rgb(255 116 116);
 }
 
-/*# sourceURL=remoteDebuggingTerminatedScreen.css */
+/*# sourceURL=${import.meta.resolve('./remoteDebuggingTerminatedScreen.css')} */
 `
 };

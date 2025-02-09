@@ -204,6 +204,6 @@ devtools-button.link-icon {
   }
 }
 
-/*# sourceURL=settingsScreen.css */
+/*# sourceURL=${import.meta.resolve('./settingsScreen.css')} */
 `
 };

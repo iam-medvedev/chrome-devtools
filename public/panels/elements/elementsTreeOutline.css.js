@@ -377,6 +377,6 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
   padding-bottom: 1px;
 }
 
-/*# sourceURL=elementsTreeOutline.css */
+/*# sourceURL=${import.meta.resolve('./elementsTreeOutline.css')} */
 `
 };
