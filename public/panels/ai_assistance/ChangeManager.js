@@ -84,6 +84,7 @@ export class ChangeManager {
         }
         await cssModel.setStyleSheetText(stylesheetId, this.buildChanges(changes), true);
         this.#stylesheetChanges.set(stylesheetId, changes);
+        return this.buildChanges(changes);
     }
     formatChanges(groupId) {
         return Array.from(this.#stylesheetChanges.values())

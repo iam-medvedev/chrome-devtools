@@ -1,5 +1,4 @@
 import * as Host from '../../../core/host/host.js';
-import * as Bindings from '../../../models/bindings/bindings.js';
 import type * as Workspace from '../../../models/workspace/workspace.js';
 import { AgentType, AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class FileContext extends ConversationContext<Workspace.UISourceCode.UISourceCode> {
@@ -24,5 +23,3 @@ export declare class FileAgent extends AiAgent<Workspace.UISourceCode.UISourceCo
     handleContextDetails(selectedFile: ConversationContext<Workspace.UISourceCode.UISourceCode> | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, selectedFile: ConversationContext<Workspace.UISourceCode.UISourceCode> | null): Promise<string>;
 }
-export declare function formatFile(selectedFile: Workspace.UISourceCode.UISourceCode): string;
-export declare function formatSourceMapDetails(selectedFile: Workspace.UISourceCode.UISourceCode, debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): string;

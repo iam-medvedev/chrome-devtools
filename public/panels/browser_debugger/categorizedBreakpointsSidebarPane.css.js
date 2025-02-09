@@ -54,6 +54,6 @@ dt-checkbox.source-code {
   max-width: 100%;
 }
 
-/*# sourceURL=categorizedBreakpointsSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./categorizedBreakpointsSidebarPane.css')} */
 `
 };

@@ -6,17 +6,17 @@ import * as AiAssistance from './ai_assistance.js';
 describe('AiHistoryStorage', () => {
     const agent1 = {
         id: 'id1',
-        type: "freestyler" /* AiAssistance.AgentType.STYLING */,
+        type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
         history: [],
     };
     const agent2 = {
         id: 'id2',
-        type: "drjones-file" /* AiAssistance.AgentType.FILE */,
+        type: "drjones-file" /* AiAssistance.ConversationType.FILE */,
         history: [],
     };
     const agent3 = {
         id: 'id3',
-        type: "drjones-network-request" /* AiAssistance.AgentType.NETWORK */,
+        type: "drjones-network-request" /* AiAssistance.ConversationType.NETWORK */,
         history: [],
     };
     beforeEach(() => {

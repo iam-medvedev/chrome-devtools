@@ -37,6 +37,6 @@ ul {
   display: inline-block;
 }
 
-/*# sourceURL=layerDetailsView.css */
+/*# sourceURL=${import.meta.resolve('./layerDetailsView.css')} */
 `
 };

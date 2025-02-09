@@ -229,9 +229,6 @@ export class UserMetrics {
     lighthouseCategoryUsed(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MAX_VALUE */);
     }
-    cssPropertyDocumentation(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSPropertyDocumentation" /* EnumeratedHistogram.CSSPropertyDocumentation */, type, 3 /* CSSPropertyDocumentation.MAX_VALUE */);
-    }
     swatchActivated(swatch) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 11 /* SwatchType.MAX_VALUE */);
     }
@@ -1010,8 +1007,13 @@ export var IssueCreated;
     IssueCreated[IssueCreated["CookieIssue::WarnThirdPartyPhaseout::SetCookie"] = 83] = "CookieIssue::WarnThirdPartyPhaseout::SetCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie"] = 84] = "CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeThirdPartyPhaseout::SetCookie"] = 85] = "CookieIssue::ExcludeThirdPartyPhaseout::SetCookie";
+    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::DisallowedSelectChild"] = 86] = "SelectElementAccessibilityIssue::DisallowedSelectChild";
+    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::DisallowedOptGroupChild"] = 87] = "SelectElementAccessibilityIssue::DisallowedOptGroupChild";
+    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::NonPhrasingContentOptionChild"] = 88] = "SelectElementAccessibilityIssue::NonPhrasingContentOptionChild";
+    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::InteractiveContentOptionChild"] = 89] = "SelectElementAccessibilityIssue::InteractiveContentOptionChild";
+    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::InteractiveContentLegendChild"] = 90] = "SelectElementAccessibilityIssue::InteractiveContentLegendChild";
     /* eslint-enable @typescript-eslint/naming-convention */
-    IssueCreated[IssueCreated["MAX_VALUE"] = 86] = "MAX_VALUE";
+    IssueCreated[IssueCreated["MAX_VALUE"] = 91] = "MAX_VALUE";
 })(IssueCreated || (IssueCreated = {}));
 export var Language;
 (function (Language) {

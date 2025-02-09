@@ -78,6 +78,6 @@ export default {
   bottom: 0;
 }
 
-/*# sourceURL=chartViewport.css */
+/*# sourceURL=${import.meta.resolve('./chartViewport.css')} */
 `
 };

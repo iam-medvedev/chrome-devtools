@@ -37,10 +37,7 @@ class MockIssueResolver {
         if (entry) {
             return entry.promise;
         }
-        let resolve = () => { };
-        const promise = new Promise(r => {
-            resolve = r;
-        });
+        const { resolve, promise } = Promise.withResolvers();
         this.#promiseMap.set(issueId, { resolve, promise });
         return promise;
     }

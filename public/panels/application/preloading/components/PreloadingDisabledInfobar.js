@@ -6,7 +6,6 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ChromeLink from '../../../../ui/components/chrome_link/chrome_link.js';
 import * as Dialogs from '../../../../ui/components/dialogs/dialogs.js';
-import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
@@ -155,10 +154,6 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
         const iconLink = UI.Fragment.html `
       <x-link class="icon-link devtools-link" tabindex="0" href="${LINK}"></x-link>
     `;
-        const iconLinkIcon = new IconButton.Icon.Icon();
-        iconLinkIcon
-            .data = { iconName: 'open-externally', color: 'var(--icon-default-hover)', width: '16px', height: '16px' };
-        iconLink.append(iconLinkIcon);
         return html `
       <div id='contents'>
         <devtools-report>

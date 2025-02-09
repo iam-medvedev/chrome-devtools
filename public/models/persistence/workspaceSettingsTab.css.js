@@ -48,6 +48,6 @@ label {
   }
 }
 
-/*# sourceURL=workspaceSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./workspaceSettingsTab.css')} */
 `
 };

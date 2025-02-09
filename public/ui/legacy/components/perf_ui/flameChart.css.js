@@ -99,6 +99,6 @@ export default {
   right: 10px;
 }
 
-/*# sourceURL=flameChart.css */
+/*# sourceURL=${import.meta.resolve('./flameChart.css')} */
 `
 };

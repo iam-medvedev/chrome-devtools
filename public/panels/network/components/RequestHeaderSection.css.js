@@ -73,6 +73,6 @@ devtools-header-section-row:first-of-type {
   }
 }
 
-/*# sourceURL=RequestHeaderSection.css */
+/*# sourceURL=${import.meta.resolve('./RequestHeaderSection.css')} */
 `
 };

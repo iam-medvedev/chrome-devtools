@@ -15,6 +15,6 @@ export default {
   background-color: var(--sys-color-yellow-outline);
 }
 
-/*# sourceURL=highlighting.css */
+/*# sourceURL=${import.meta.resolve('./highlighting.css')} */
 `
 };

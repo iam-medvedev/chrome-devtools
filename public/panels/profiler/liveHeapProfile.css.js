@@ -27,6 +27,6 @@ devtools-toolbar {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=liveHeapProfile.css */
+/*# sourceURL=${import.meta.resolve('./liveHeapProfile.css')} */
 `
 };

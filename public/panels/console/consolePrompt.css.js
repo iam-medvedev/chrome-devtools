@@ -58,6 +58,6 @@ export default {
   opacity: 65%;
 }
 
-/*# sourceURL=consolePrompt.css */
+/*# sourceURL=${import.meta.resolve('./consolePrompt.css')} */
 `
 };

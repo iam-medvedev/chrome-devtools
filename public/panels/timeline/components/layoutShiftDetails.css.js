@@ -120,6 +120,6 @@ export default {
   font: var(--sys-typescale-body4-medium);
 }
 
-/*# sourceURL=layoutShiftDetails.css */
+/*# sourceURL=${import.meta.resolve('./layoutShiftDetails.css')} */
 `
 };

@@ -133,6 +133,6 @@ export default {
   left: 4px;
 }
 
-/*# sourceURL=mediaQueryInspector.css */
+/*# sourceURL=${import.meta.resolve('./mediaQueryInspector.css')} */
 `
 };

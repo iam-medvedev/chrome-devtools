@@ -111,22 +111,22 @@ export function showInfobar() {
 export class CookieControlsView extends UI.Widget.VBox {
     #view;
     #isGracePeriodActive;
+    #thirdPartyControlsDict;
     constructor(element, view = (input, output, target) => {
-        const thirdPartyControlsDict = Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls;
         // createSetting() allows us to initialize the settings with the UI binding values the first
         // time that the browser starts, and use the existing setting value for all subsequent uses.
-        const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting('enterprise-enabled', thirdPartyControlsDict && thirdPartyControlsDict.managedBlockThirdPartyCookies &&
-            typeof thirdPartyControlsDict.managedBlockThirdPartyCookies === 'boolean' ?
-            thirdPartyControlsDict.managedBlockThirdPartyCookies :
+        const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting('enterprise-enabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.managedBlockThirdPartyCookies &&
+            typeof this.#thirdPartyControlsDict.managedBlockThirdPartyCookies === 'boolean' ?
+            this.#thirdPartyControlsDict.managedBlockThirdPartyCookies :
             false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', thirdPartyControlsDict && thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled ?
-            thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled :
+        const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled ?
+            this.#thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled :
             false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', thirdPartyControlsDict && thirdPartyControlsDict.thirdPartyCookieMetadataEnabled ?
-            thirdPartyControlsDict.thirdPartyCookieMetadataEnabled :
+        const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled ?
+            this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled :
             true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', thirdPartyControlsDict && thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled ?
-            thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled :
+        const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled ?
+            this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled :
             true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
         // clang-format off
         const cardHeader = html `
@@ -158,7 +158,7 @@ export class CookieControlsView extends UI.Widget.VBox {
         </div>
       </div>
     `;
-        const gracePeriodControlDisabled = (thirdPartyControlsDict ? (!thirdPartyControlsDict.thirdPartyCookieMetadataEnabled) : false) ||
+        const gracePeriodControlDisabled = (this.#thirdPartyControlsDict ? (!this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled) : false) ||
             enterpriseEnabledSetting.get() || !toggleEnabledSetting.get() || !this.#isGracePeriodActive;
         const gracePeriodControl = html `
       <div class="card-row">
@@ -176,7 +176,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             i18nFormatString(UIStrings.gracePeriodExplanation, {
                 PH1: i18nString(UIStrings.gracePeriod),
             }) :
-            (thirdPartyControlsDict ? !thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled : false) ?
+            (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled : false) ?
                 i18nFormatString(UIStrings.enableFlag, {
                     PH1: this.getChromeFlagsLink(UIStrings.tpcdMetadataGrants),
                 }) :
@@ -188,7 +188,7 @@ export class CookieControlsView extends UI.Widget.VBox {
         </label>
       </div>
     `;
-        const heuristicsControlDisabled = (thirdPartyControlsDict ? (!thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled) : false) ||
+        const heuristicsControlDisabled = (this.#thirdPartyControlsDict ? (!this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled) : false) ||
             enterpriseEnabledSetting.get() || !toggleEnabledSetting.get();
         const heuristicControl = html `
       <div class="card-row">
@@ -206,7 +206,7 @@ export class CookieControlsView extends UI.Widget.VBox {
             i18nFormatString(UIStrings.heuristicExplanation, {
                 PH1: i18nString(UIStrings.scenarios),
             }) :
-            (thirdPartyControlsDict ? !thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) ?
+            (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) ?
                 i18nFormatString(UIStrings.enableFlag, {
                     PH1: this.getChromeFlagsLink(UIStrings.tpcdHeuristicsGrants),
                 }) :
@@ -239,15 +239,15 @@ export class CookieControlsView extends UI.Widget.VBox {
       <div class="overflow-auto">
         <div class="controls">
           <div class="header">
-            <div class="title">${i18nString(UIStrings.viewTitle)}</div>
+            <h1>${i18nString(UIStrings.viewTitle)}</h1>
             <div class="body">${i18nString(UIStrings.viewExplanation)}</div>
           </div>
           <devtools-card class="card-container">
-            <div slot="content" class=${Boolean(enterpriseEnabledSetting.get()) ? 'card enterprise-disabled' : 'card'}>
+            <div class=${Boolean(enterpriseEnabledSetting.get()) ? 'card enterprise-disabled' : 'card'}>
               ${cardHeader}
               <div>
                 <div class="card-row text">
-                  <div class="card-row-title main-text">${i18nString(UIStrings.exceptions)}</div>
+                  <h3 class="main-text">${i18nString(UIStrings.exceptions)}</h3>
                   <div class="body subtext">${i18nString(UIStrings.exceptionsExplanation)}</div>
                 </div>
                 ${gracePeriodControl}
@@ -264,6 +264,7 @@ export class CookieControlsView extends UI.Widget.VBox {
         super(true, undefined, element);
         this.#view = view;
         this.#isGracePeriodActive = false;
+        this.#thirdPartyControlsDict = Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls;
         this.registerRequiredCSS(Input.checkboxStylesRaw, cookieControlsViewStyles);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.ResourceAdded, this.checkGracePeriodActive, this);
@@ -300,6 +301,9 @@ export class CookieControlsView extends UI.Widget.VBox {
         UI.InspectorView.InspectorView.instance().removeDebuggedTabReloadRequiredWarning();
     }
     async checkGracePeriodActive(event) {
+        if (!this.#thirdPartyControlsDict || !this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled) {
+            return;
+        }
         if (this.#isGracePeriodActive) {
             return;
         }

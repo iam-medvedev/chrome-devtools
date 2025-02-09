@@ -44,7 +44,7 @@ import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
-import { Renderer, StringRenderer, URLRenderer } from './PropertyRenderer.js';
+import { Renderer, rendererBase, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 const { html } = Lit;
 const UIStrings = {
@@ -154,7 +154,9 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
     };
     return trace;
 };
-class ColorRenderer {
+// clang-format off
+class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMatch) {
+    // clang-format on
     render(match, context) {
         const color = Common.Color.parse(match.text);
         if (!color) {

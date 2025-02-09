@@ -120,6 +120,6 @@ export default {
   width: fit-content;
 }
 
-/*# sourceURL=networkRequestDetails.css */
+/*# sourceURL=${import.meta.resolve('./networkRequestDetails.css')} */
 `
 };

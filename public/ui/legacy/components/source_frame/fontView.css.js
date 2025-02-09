@@ -18,6 +18,6 @@ export default {
   padding: 15px;
 }
 
-/*# sourceURL=fontView.css */
+/*# sourceURL=${import.meta.resolve('./fontView.css')} */
 `
 };

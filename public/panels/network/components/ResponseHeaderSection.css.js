@@ -26,6 +26,6 @@ devtools-header-section-row:first-of-type {
   margin: -4px 0 10px 5px;
 }
 
-/*# sourceURL=ResponseHeaderSection.css */
+/*# sourceURL=${import.meta.resolve('./ResponseHeaderSection.css')} */
 `
 };

@@ -57,6 +57,6 @@ devtools-icon {
   }
 }
 
-/*# sourceURL=requestLinkIcon.css */
+/*# sourceURL=${import.meta.resolve('./requestLinkIcon.css')} */
 `
 };

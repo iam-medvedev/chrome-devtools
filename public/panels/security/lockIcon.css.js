@@ -62,6 +62,6 @@ export default {
   color: var(--sys-color-error);
 }
 
-/*# sourceURL=lockIcon.css */
+/*# sourceURL=${import.meta.resolve('./lockIcon.css')} */
 `
 };

@@ -55,6 +55,6 @@ input[type="checkbox"] {
   }
 }
 
-/*# sourceURL=checkbox.css */
+/*# sourceURL=${import.meta.resolve('./checkbox.css')} */
 `
 };

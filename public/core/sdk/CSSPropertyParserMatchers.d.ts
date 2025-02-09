@@ -14,12 +14,12 @@ declare const AngleMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<AngleMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): AngleMatch | null;
     };
 };
 export declare class AngleMatcher extends AngleMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): AngleMatch | null;
 }
 export declare class ColorMixMatch implements Match {
     readonly text: string;
@@ -33,12 +33,12 @@ declare const ColorMixMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<ColorMixMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): ColorMixMatch | null;
     };
 };
 export declare class ColorMixMatcher extends ColorMixMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): ColorMixMatch | null;
 }
 export declare class URLMatch implements Match {
     readonly url: Platform.DevToolsPath.UrlString;
@@ -50,11 +50,11 @@ declare const URLMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<URLMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): URLMatch | null;
     };
 };
 export declare class URLMatcher extends URLMatcher_base {
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): URLMatch | null;
 }
 export declare class LinearGradientMatch implements Match {
     readonly text: string;
@@ -65,7 +65,7 @@ declare const LinearGradientMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<LinearGradientMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): LinearGradientMatch | null;
     };
 };
 export declare class LinearGradientMatcher extends LinearGradientMatcher_base {
@@ -83,14 +83,14 @@ declare const ColorMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<ColorMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): ColorMatch | null;
     };
 };
 export declare class ColorMatcher extends ColorMatcher_base {
     private readonly currentColorCallback?;
     constructor(currentColorCallback?: (() => string | null) | undefined);
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): ColorMatch | null;
 }
 export declare class LightDarkColorMatch implements Match {
     readonly text: string;
@@ -103,12 +103,29 @@ declare const LightDarkColorMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<LightDarkColorMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): LightDarkColorMatch | null;
     };
 };
 export declare class LightDarkColorMatcher extends LightDarkColorMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): LightDarkColorMatch | null;
+}
+export declare class AutoBaseMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly auto: CodeMirror.SyntaxNode[];
+    readonly base: CodeMirror.SyntaxNode[];
+    constructor(text: string, node: CodeMirror.SyntaxNode, auto: CodeMirror.SyntaxNode[], base: CodeMirror.SyntaxNode[]);
+}
+declare const AutoBaseMatcher_base: {
+    new (): {
+        matchType: import("./CSSPropertyParser.js").Constructor<AutoBaseMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): AutoBaseMatch | null;
+    };
+};
+export declare class AutoBaseMatcher extends AutoBaseMatcher_base {
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): AutoBaseMatch | null;
 }
 export declare const enum LinkableNameProperties {
     ANIMATION = "animation",
@@ -134,7 +151,7 @@ declare const LinkableNameMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<LinkableNameMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): LinkableNameMatch | null;
     };
 };
 export declare class LinkableNameMatcher extends LinkableNameMatcher_base {
@@ -142,7 +159,7 @@ export declare class LinkableNameMatcher extends LinkableNameMatcher_base {
     static readonly identifierAnimationLonghandMap: Map<string, AnimationLonghandPart>;
     private matchAnimationNameInShorthand;
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): LinkableNameMatch | null;
 }
 export declare class BezierMatch implements Match {
     readonly text: string;
@@ -153,7 +170,7 @@ declare const BezierMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<BezierMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): BezierMatch | null;
     };
 };
 export declare class BezierMatcher extends BezierMatcher_base {
@@ -169,7 +186,7 @@ declare const StringMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<StringMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): StringMatch | null;
     };
 };
 export declare class StringMatcher extends StringMatcher_base {
@@ -189,12 +206,12 @@ declare const ShadowMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<ShadowMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): ShadowMatch | null;
     };
 };
 export declare class ShadowMatcher extends ShadowMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): ShadowMatch | null;
 }
 export declare class FontMatch implements Match {
     readonly text: string;
@@ -205,7 +222,7 @@ declare const FontMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<FontMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): FontMatch | null;
     };
 };
 export declare class FontMatcher extends FontMatcher_base {
@@ -222,12 +239,12 @@ declare const LengthMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<LengthMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): LengthMatch | null;
     };
 };
 export declare class LengthMatcher extends LengthMatcher_base {
     static readonly LENGTH_UNITS: Set<string>;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): LengthMatch | null;
 }
 export declare class SelectFunctionMatch implements Match {
     readonly text: string;
@@ -240,11 +257,11 @@ declare const SelectFunctionMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<SelectFunctionMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): SelectFunctionMatch | null;
     };
 };
 export declare class SelectFunctionMatcher extends SelectFunctionMatcher_base {
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): SelectFunctionMatch | null;
 }
 export declare class FlexGridMatch implements Match {
     readonly text: string;
@@ -256,14 +273,14 @@ declare const FlexGridMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<FlexGridMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): FlexGridMatch | null;
     };
 };
 export declare class FlexGridMatcher extends FlexGridMatcher_base {
     static readonly FLEX: string[];
     static readonly GRID: string[];
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): FlexGridMatch | null;
 }
 export declare class GridTemplateMatch implements Match {
     readonly text: string;
@@ -275,12 +292,12 @@ declare const GridTemplateMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<GridTemplateMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): GridTemplateMatch | null;
     };
 };
 export declare class GridTemplateMatcher extends GridTemplateMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): GridTemplateMatch | null;
 }
 export declare class AnchorFunctionMatch implements Match {
     readonly text: string;
@@ -292,12 +309,12 @@ declare const AnchorFunctionMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<AnchorFunctionMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): AnchorFunctionMatch | null;
     };
 };
 export declare class AnchorFunctionMatcher extends AnchorFunctionMatcher_base {
     anchorFunction(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): string | null;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): AnchorFunctionMatch | null;
 }
 export declare class PositionAnchorMatch implements Match {
     readonly text: string;
@@ -309,12 +326,12 @@ declare const PositionAnchorMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<PositionAnchorMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): PositionAnchorMatch | null;
     };
 };
 export declare class PositionAnchorMatcher extends PositionAnchorMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): PositionAnchorMatch | null;
 }
 export declare class CSSWideKeywordMatch implements Match {
     readonly text: CSSWideKeyword;
@@ -329,14 +346,14 @@ declare const CSSWideKeywordMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<CSSWideKeywordMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): CSSWideKeywordMatch | null;
     };
 };
 export declare class CSSWideKeywordMatcher extends CSSWideKeywordMatcher_base {
     readonly property: CSSProperty;
     readonly matchedStyles: CSSMatchedStyles;
     constructor(property: CSSProperty, matchedStyles: CSSMatchedStyles);
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): CSSWideKeywordMatch | null;
 }
 export declare class PositionTryMatch implements Match {
     readonly text: string;
@@ -349,11 +366,11 @@ declare const PositionTryMatcher_base: {
     new (): {
         matchType: import("./CSSPropertyParser.js").Constructor<PositionTryMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): PositionTryMatch | null;
     };
 };
 export declare class PositionTryMatcher extends PositionTryMatcher_base {
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): PositionTryMatch | null;
 }
 export {};

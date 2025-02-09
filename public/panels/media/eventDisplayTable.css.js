@@ -27,6 +27,6 @@ export default {
   overflow: visible;
 }
 
-/*# sourceURL=eventDisplayTable.css */
+/*# sourceURL=${import.meta.resolve('./eventDisplayTable.css')} */
 `
 };

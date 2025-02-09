@@ -83,6 +83,6 @@ li.storage-group-list-item::before {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=playerListView.css */
+/*# sourceURL=${import.meta.resolve('./playerListView.css')} */
 `
 };

@@ -11,7 +11,6 @@ export interface SurveyLinkData {
 }
 export declare class SurveyLink extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: SurveyLinkData);
 }
 declare global {

@@ -81,6 +81,6 @@ devtools-report-divider {
   background: var(--sys-color-neutral-container);
 }
 
-/*# sourceURL=usedPreloadingView.css */
+/*# sourceURL=${import.meta.resolve('./usedPreloadingView.css')} */
 `
 };

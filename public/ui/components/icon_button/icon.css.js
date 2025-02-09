@@ -51,6 +51,6 @@ span {
   }
 }
 
-/*# sourceURL=icon.css */
+/*# sourceURL=${import.meta.resolve('./icon.css')} */
 `
 };

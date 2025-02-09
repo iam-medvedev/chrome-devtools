@@ -11,12 +11,12 @@ export interface SummaryTableData {
     categories: CategoryData[];
     selectedEvents: Trace.Types.Events.Event[];
 }
-export declare class TimelineSummary extends HTMLElement {
+export declare class CategorySummary extends HTMLElement {
     #private;
     set data(data: SummaryTableData);
 }
 declare global {
     interface HTMLElementTagNameMap {
-        'devtools-performance-timeline-summary': TimelineSummary;
+        'devtools-performance-timeline-summary': CategorySummary;
     }
 }

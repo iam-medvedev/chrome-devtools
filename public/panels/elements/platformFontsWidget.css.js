@@ -49,6 +49,6 @@ export default {
   }
 }
 
-/*# sourceURL=platformFontsWidget.css */
+/*# sourceURL=${import.meta.resolve('./platformFontsWidget.css')} */
 `
 };

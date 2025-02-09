@@ -106,4 +106,3 @@ declare global {
     }
 }
 export declare function isModelUpdateDataComplete(eventData: ModelUpdateEventData): eventData is ModelUpdateEventComplete;
-export declare function isModelUpdateDataProgress(eventData: ModelUpdateEventData): eventData is ModelUpdateEventProgress;

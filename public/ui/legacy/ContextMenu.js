@@ -275,6 +275,9 @@ export class SubMenu extends Item {
     saveSection() {
         return this.section('save');
     }
+    annotationSection() {
+        return this.section('annotation');
+    }
     footerSection() {
         return this.section('footer');
     }
@@ -565,7 +568,10 @@ export class ContextMenu extends SubMenu {
     }
     static pendingMenu = null;
     static useSoftMenu = false;
-    static groupWeights = ['header', 'new', 'reveal', 'edit', 'clipboard', 'debug', 'view', 'default', 'override', 'save', 'footer'];
+    static groupWeights = [
+        'header', 'new', 'reveal', 'edit', 'clipboard', 'debug', 'view', 'default', 'override', 'save', 'annotation',
+        'footer'
+    ];
 }
 const registeredProviders = [];
 export function registerProvider(registration) {

@@ -10,15 +10,12 @@ export declare class TimelineGrid {
     static drawCanvasHeaders(context: CanvasRenderingContext2D, dividersData: DividersData, formatTimeFunction: (arg0: number) => string, paddingTop: number, headerHeight: number, freeZoneAtLeft?: number): void;
     get dividersElement(): HTMLElement;
     get dividersLabelBarElement(): HTMLElement;
-    removeDividers(): void;
     updateDividers(calculator: Calculator, freeZoneAtLeft?: number): boolean;
     addEventDivider(divider: Element): void;
     addEventDividers(dividers: Element[]): void;
     removeEventDividers(): void;
     hideEventDividers(): void;
     showEventDividers(): void;
-    hideDividers(): void;
-    showDividers(): void;
     setScrollTop(scrollTop: number): void;
 }
 export interface Calculator {

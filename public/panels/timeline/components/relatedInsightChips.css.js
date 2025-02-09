@@ -79,6 +79,6 @@ ul {
   }
 }
 
-/*# sourceURL=relatedInsightChips.css */
+/*# sourceURL=${import.meta.resolve('./relatedInsightChips.css')} */
 `
 };

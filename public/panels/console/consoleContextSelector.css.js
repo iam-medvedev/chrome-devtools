@@ -45,6 +45,6 @@ export default {
   color: inherit;
 }
 
-/*# sourceURL=consoleContextSelector.css */
+/*# sourceURL=${import.meta.resolve('./consoleContextSelector.css')} */
 `
 };

@@ -30,6 +30,6 @@ devtools-data-grid {
   margin-top: 20px;
 }
 
-/*# sourceURL=interestGroupAccessGrid.css */
+/*# sourceURL=${import.meta.resolve('./interestGroupAccessGrid.css')} */
 `
 };

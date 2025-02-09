@@ -30,6 +30,6 @@ export default {
   pointer-events: none;
 }
 
-/*# sourceURL=dropTarget.css */
+/*# sourceURL=${import.meta.resolve('./dropTarget.css')} */
 `
 };

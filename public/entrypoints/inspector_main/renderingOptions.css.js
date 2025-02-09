@@ -34,6 +34,6 @@ dt-checkbox {
   margin-bottom: 16px;
 }
 
-/*# sourceURL=renderingOptions.css */
+/*# sourceURL=${import.meta.resolve('./renderingOptions.css')} */
 `
 };

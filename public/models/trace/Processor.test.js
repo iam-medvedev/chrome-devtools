@@ -234,6 +234,10 @@ describeWithEnvironment('TraceProcessor', function () {
             sinon.stub(Trace.Processor.TraceProcessor, 'getEnabledInsightRunners').callsFake(() => {
                 return {
                     RenderBlocking: {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        UIStrings: {},
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        i18nString: (() => { }),
                         generateInsight: () => {
                             throw new Error('forced error');
                         },

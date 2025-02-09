@@ -44,6 +44,12 @@ export class CPUProfileDataModel extends ProfileTreeModel {
     profileEndTime;
     timestamps;
     samples;
+    /**
+     * Contains trace ids assigned to samples, if any. Trace ids are
+     * keyed by the sample index in the profile. These are only created
+     * for CPU profiles coming from traces.
+     */
+    traceIds;
     lines;
     totalHitCount;
     profileHead;
@@ -76,9 +82,10 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             this.profileEndTime = profile.endTime / 1000;
             this.timestamps = this.convertTimeDeltas(profile);
         }
+        this.traceIds = profile.traceIds;
         this.samples = profile.samples;
         // Lines are available only in profiles coming from tracing.
-        // Elements in the lines array have a 1 to 1 correspondance with
+        // Elements in the lines array have a 1 to 1 correspondence with
         // samples, by array position. They can be 1 or 0 and indicate if
         // there is line data for a given sample, i.e. if a given sample
         // needs to be included to calculate the line level execution time
@@ -308,7 +315,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
         // apart when they shouldn't.
         // Here's a workaround for that. When there's a single (program) sample
         // between two call stacks sharing the same bottom node, it is replaced
-        // with the preceeding sample.
+        // with the preceding sample.
         const samples = this.samples;
         if (!samples) {
             return;

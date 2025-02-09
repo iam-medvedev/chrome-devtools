@@ -194,6 +194,6 @@ header {
   margin-top: var(--sys-size-4);
 }
 
-/*# sourceURL=aiSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./aiSettingsTab.css')} */
 `
 };

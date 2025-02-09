@@ -146,6 +146,6 @@ export default {
   }
 }
 
-/*# sourceURL=timelineSection.css */
+/*# sourceURL=${import.meta.resolve('./timelineSection.css')} */
 `
 };

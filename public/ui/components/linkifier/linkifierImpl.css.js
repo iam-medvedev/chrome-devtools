@@ -18,6 +18,6 @@ export default {
   outline-offset: 2px;
 }
 
-/*# sourceURL=linkifierImpl.css */
+/*# sourceURL=${import.meta.resolve('./linkifierImpl.css')} */
 `
 };

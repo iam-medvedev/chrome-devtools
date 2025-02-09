@@ -33,6 +33,6 @@ export default {
   padding: 0;
 }
 
-/*# sourceURL=layersWidget.css */
+/*# sourceURL=${import.meta.resolve('./layersWidget.css')} */
 `
 };

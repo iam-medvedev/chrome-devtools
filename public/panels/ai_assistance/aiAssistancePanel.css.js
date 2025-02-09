@@ -27,6 +27,6 @@ export default {
   overflow: hidden;
 }
 
-/*# sourceURL=./aiAssistancePanel.css */
+/*# sourceURL=${import.meta.resolve('././aiAssistancePanel.css')} */
 `
 };

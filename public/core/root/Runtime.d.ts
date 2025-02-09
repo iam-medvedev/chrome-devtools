@@ -110,6 +110,9 @@ export interface HostConfigFreestyler {
     enabled: boolean;
     userTier: string;
     executionMode?: HostConfigFreestylerExecutionMode;
+    patching?: boolean;
+    multimodal?: boolean;
+    functionCalling?: boolean;
 }
 export interface HostConfigAiAssistanceNetworkAgent {
     modelId: string;
@@ -122,6 +125,7 @@ export interface HostConfigAiAssistancePerformanceAgent {
     temperature: number;
     enabled: boolean;
     userTier: string;
+    insightsEnabled?: boolean;
 }
 export interface HostConfigAiAssistanceFileAgent {
     modelId: string;

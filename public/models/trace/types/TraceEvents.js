@@ -112,9 +112,6 @@ export function isDrawFrame(event) {
     // The extra check for INSTANT here is because in the past DrawFrame events had an ASYNC_NESTABLE_START and ASYNC_NESTABLE_END pair. We don't want to support those old events, so we have to check we are dealing with an instant event.
     return event.name === "DrawFrame" /* Name.DRAW_FRAME */ && event.ph === "I" /* Phase.INSTANT */;
 }
-export function isLegacyTraceEventDrawFrameBegin(event) {
-    return event.name === "DrawFrame" /* Name.DRAW_FRAME */ && event.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
-}
 export function isBeginFrame(event) {
     // Old traces did not have frameSeqId; but we do not want to support these.
     return Boolean(event.name === "BeginFrame" /* Name.BEGIN_FRAME */ && event.args && 'frameSeqId' in event.args);

@@ -25,6 +25,6 @@ export default {
   z-index: 1;
 }
 
-/*# sourceURL=dialog.css */
+/*# sourceURL=${import.meta.resolve('./dialog.css')} */
 `
 };

@@ -33,6 +33,6 @@ devtools-css-angle-editor {
   display: inline-block;
 }
 
-/*# sourceURL=cssAngle.css */
+/*# sourceURL=${import.meta.resolve('./cssAngle.css')} */
 `
 };

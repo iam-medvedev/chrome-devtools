@@ -138,6 +138,6 @@ export default {
   }
 }
 
-/*# sourceURL=timespanBreakdownOverlay.css */
+/*# sourceURL=${import.meta.resolve('./timespanBreakdownOverlay.css')} */
 `
 };

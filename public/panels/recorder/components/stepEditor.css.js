@@ -102,6 +102,6 @@ export default {
   color: var(--sys-color-error);
 }
 
-/*# sourceURL=stepEditor.css */
+/*# sourceURL=${import.meta.resolve('./stepEditor.css')} */
 `
 };

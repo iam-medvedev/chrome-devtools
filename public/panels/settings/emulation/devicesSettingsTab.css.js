@@ -135,6 +135,6 @@ li.devices-edit-client-hints-field {
   margin: 8px 5px 0;
 }
 
-/*# sourceURL=devicesSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./devicesSettingsTab.css')} */
 `
 };

@@ -492,6 +492,7 @@ export class Dialog extends HTMLElement {
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
             iconName: 'cross',
             title: i18nString(UIStrings.close),
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
         }}
             jslog=${VisualLogging.close().track({ click: true })}
           ></devtools-button>

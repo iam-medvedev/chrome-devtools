@@ -6,11 +6,11 @@ import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
 export var Role;
 (function (Role) {
-    // Unspecified role.
+    /** Provide this role when giving a function call response  */
     Role[Role["ROLE_UNSPECIFIED"] = 0] = "ROLE_UNSPECIFIED";
-    // The user.
+    /** Tags the content came from the user */
     Role[Role["USER"] = 1] = "USER";
-    // The model.
+    /** Tags the content came from the LLM */
     Role[Role["MODEL"] = 2] = "MODEL";
 })(Role || (Role = {}));
 export var FunctionalityType;

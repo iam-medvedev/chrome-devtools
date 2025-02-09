@@ -28,6 +28,6 @@ export default {
   }
 }
 
-/*# sourceURL=./hideIssuesMenu.css */
+/*# sourceURL=${import.meta.resolve('././hideIssuesMenu.css')} */
 `
 };

@@ -27,6 +27,6 @@ devtools-icon {
   }
 }
 
-/*# sourceURL=bezierSwatch.css */
+/*# sourceURL=${import.meta.resolve('./bezierSwatch.css')} */
 `
 };

@@ -79,6 +79,6 @@ export default {
   opacity: 60%;
 }
 
-/*# sourceURL=consolePinPane.css */
+/*# sourceURL=${import.meta.resolve('./consolePinPane.css')} */
 `
 };

@@ -124,6 +124,6 @@ devtools-icon + .link {
   }
 }
 
-/*# sourceURL=userAgentClientHintsForm.css */
+/*# sourceURL=${import.meta.resolve('./userAgentClientHintsForm.css')} */
 `
 };

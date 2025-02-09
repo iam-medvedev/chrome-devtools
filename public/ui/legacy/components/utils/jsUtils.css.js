@@ -115,6 +115,6 @@ insert their text through css rather than put the text in the DOM. */
   content: attr(data-inserted-text);
 }
 
-/*# sourceURL=jsUtils.css */
+/*# sourceURL=${import.meta.resolve('./jsUtils.css')} */
 `
 };

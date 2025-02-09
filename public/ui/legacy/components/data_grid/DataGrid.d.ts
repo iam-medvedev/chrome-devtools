@@ -3,8 +3,8 @@ import * as UI from '../../legacy.js';
 export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
     element: HTMLDivElement;
     displayName: string;
-    private editCallback;
-    private readonly deleteCallback;
+    editCallback: ((node: any, columnId: string, valueBeforeEditing: any, newText: any, moveDirection?: string) => void) | undefined;
+    deleteCallback: ((arg0: any) => void) | undefined;
     private readonly refreshCallback;
     private dataTableHeaders;
     scrollContainerInternal: Element;
@@ -39,7 +39,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     private rootNodeInternal?;
     private editingNode?;
     private columnWeightsSetting?;
-    creationNode?: CreationDataGridNode<any>;
+    creationNode?: DataGridNode<any>;
     private currentResizer?;
     private dataGridWidget?;
     constructor(dataGridParameters: Parameters);
@@ -64,6 +64,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     protected setVerticalPadding(top: number, bottom: number, isConstructorTime?: boolean): void;
     protected setRootNode(rootNode: DataGridNode<T>): void;
     rootNode(): DataGridNode<T>;
+    isColumnEditable(columnId: string): boolean;
     private ondblclick;
     private startEditingColumnOfDataGridNode;
     startEditingNextEditableColumnOfDataGridNode(node: DataGridNode<T>, columnIdentifier: string, inclusive?: boolean): void;
@@ -251,7 +252,6 @@ export declare class CreationDataGridNode<T> extends DataGridNode<T> {
     constructor(data?: {
         [x: string]: any;
     } | null, hasChildren?: boolean);
-    makeNormal(): void;
 }
 export declare class DataGridWidget<T> extends UI.Widget.VBox {
     readonly dataGrid: DataGridImpl<T>;
@@ -277,7 +277,7 @@ export declare class DataGridWidgetElement<T> extends UI.Widget.WidgetElement<Da
 export interface Parameters {
     displayName: string;
     columns: ColumnDescriptor[];
-    editCallback?: ((arg0: any, arg1: string, arg2: any, arg3: any) => void);
+    editCallback?: ((node: any, columnId: string, valueBeforeEditing: any, newText: any, moveDirection?: string) => void);
     deleteCallback?: ((arg0: any) => void);
     refreshCallback?: (() => void);
 }

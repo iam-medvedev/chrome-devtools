@@ -18,6 +18,6 @@ devtools-css-overview-start-view {
   overflow: auto;
 }
 
-/*# sourceURL=cssOverview.css */
+/*# sourceURL=${import.meta.resolve('./cssOverview.css')} */
 `
 };

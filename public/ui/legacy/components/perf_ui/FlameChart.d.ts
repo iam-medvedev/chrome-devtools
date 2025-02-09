@@ -173,7 +173,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private colorDimmingCache;
     private totalTime?;
     private lastPopoverState;
-    private dimIndicies?;
+    private dimIndices?;
     /** When true, all undimmed entries are outlined. When an array, only those indices are outlined (if not dimmed). */
     private dimShouldOutlineUndimmedEntries;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
@@ -342,7 +342,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     entryWidth(entryIndex: number): number;
     /**
      * Preprocess the data to be drawn to speed the rendering time.
-     * Especifically:
+     * Specifically:
      *  - Groups events into draw batches - same color + same outline - to help drawing performance
      *    by reducing how often `context.fillStyle` is changed.
      *  - Discards non visible events.
@@ -410,7 +410,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private updateMarkerHighlight;
     private processTimelineData;
     /**
-     * Builds a tree for the given group array, the tree will be builded based on the nesting level.
+     * Builds a tree for the given group array, the tree will be built based on the nesting level.
      * We will add one fake root to represent the top level parent, and the for each tree node, its children means the
      * group nested in. The order of the children matters because it represent the order of groups.
      * So for example if there are Group 0-7, Group 0, 3, 4 have nestingLevel 0, Group 1, 2, 5, 6, 7 have nestingLevel 1.
@@ -486,6 +486,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     minimumBoundary(): Trace.Types.Timing.Milli;
     zeroTime(): Trace.Types.Timing.Milli;
     boundarySpan(): Trace.Types.Timing.Milli;
+    getDimIndices(): Uint8Array<ArrayBufferLike> | null;
 }
 export declare const RulerHeight = 15;
 export declare const MinimalTimeWindowMs = 0.5;
@@ -620,7 +621,7 @@ export declare const enum Events {
     ENTRY_LABEL_ANNOTATION_ADDED = "EntryLabelAnnotationAdded",
     ENTRIES_LINK_ANNOTATION_CREATED = "EntriesLinkAnnotationCreated",
     /**
-     * Emmited when the user enters or exits 'reorder tracks' view.
+     * Emitted when the user enters or exits 'reorder tracks' view.
      * If the event value is 'true', the 'reorder tracks' state was entered,
      * if it's false, the reorder state was exited.
      */

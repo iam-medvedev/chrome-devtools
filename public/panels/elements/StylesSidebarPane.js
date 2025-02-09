@@ -258,11 +258,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }, () => this.node());
         this.activeCSSAngle = null;
         const showDocumentationSetting = Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover');
-        showDocumentationSetting.addChangeListener(event => {
-            const metricType = Boolean(event.data) ? 1 /* Host.UserMetrics.CSSPropertyDocumentation.TOGGLED_ON */ :
-                2 /* Host.UserMetrics.CSSPropertyDocumentation.TOGGLED_OFF */;
-            Host.userMetrics.cssPropertyDocumentation(metricType);
-        });
         this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.contentElement, event => {
             const hoveredNode = event.composedPath()[0];
             // This is a workaround to fix hint popover not showing after icon update.
@@ -301,7 +296,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                         show: async (popover) => {
                             const popupElement = new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty);
                             popover.contentElement.appendChild(popupElement);
-                            Host.userMetrics.cssPropertyDocumentation(0 /* Host.UserMetrics.CSSPropertyDocumentation.SHOWN */);
                             return true;
                         },
                     };

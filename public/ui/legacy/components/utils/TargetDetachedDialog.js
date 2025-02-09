@@ -1,17 +1,8 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as i18n from '../../../../core/i18n/i18n.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as UI from '../../legacy.js';
-const UIStrings = {
-    /**
-     *@description Text on the remote debugging window to indicate the connection is lost
-     */
-    websocketDisconnected: 'WebSocket disconnected',
-};
-const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/utils/TargetDetachedDialog.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TargetDetachedDialog extends SDK.SDKModel.SDKModel {
     static hideCrashedDialog;
     constructor(target) {
@@ -27,8 +18,8 @@ export class TargetDetachedDialog extends SDK.SDKModel.SDKModel {
     detached({ reason }) {
         UI.RemoteDebuggingTerminatedScreen.RemoteDebuggingTerminatedScreen.show(reason);
     }
-    static webSocketConnectionLost() {
-        UI.RemoteDebuggingTerminatedScreen.RemoteDebuggingTerminatedScreen.show(i18nString(UIStrings.websocketDisconnected));
+    static connectionLost(message) {
+        UI.RemoteDebuggingTerminatedScreen.RemoteDebuggingTerminatedScreen.show(message);
     }
     targetCrashed() {
         // In case of service workers targetCrashed usually signals that the worker is stopped

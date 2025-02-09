@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../front_end/testing/AiAssistanceHelpers.ts",
     "../../../../../front_end/testing/ConsoleHelpers.ts",
     "../../../../../front_end/testing/ContextMenuHelpers.ts",
     "../../../../../front_end/testing/Cookies.ts",

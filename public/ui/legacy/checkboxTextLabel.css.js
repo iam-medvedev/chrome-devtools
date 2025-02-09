@@ -40,7 +40,6 @@ input.inside-datagrid {
 .dt-checkbox-text {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 
   input:disabled ~ & {
     opacity: 38%;
@@ -93,6 +92,6 @@ input.inside-datagrid {
   }
 }
 
-/*# sourceURL=checkboxTextLabel.css */
+/*# sourceURL=${import.meta.resolve('./checkboxTextLabel.css')} */
 `
 };

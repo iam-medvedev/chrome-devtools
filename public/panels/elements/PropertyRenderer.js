@@ -31,6 +31,17 @@ function mergeWithSpacing(nodes, merge) {
     result.push(...merge);
     return result;
 }
+// A mixin to automatically expose the match type on specific renrerers
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function rendererBase(matchT) {
+    class RendererBase {
+        matchType = matchT;
+        render(_match, _context) {
+            return [];
+        }
+    }
+    return RendererBase;
+}
 export class RenderingContext {
     ast;
     renderers;
@@ -134,7 +145,7 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
         for (const renderer of renderers) {
             const matcher = renderer.matcher();
             matchers.push(matcher);
-            rendererMap.set(matcher.matchType, renderer);
+            rendererMap.set(renderer.matchType, renderer);
         }
         const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, matchers);
         ast.trailingNodes.forEach(n => matchedResult.matchText(n));
@@ -144,10 +155,13 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
         return valueElement;
     }
 }
-export class URLRenderer {
+// clang-format off
+export class URLRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.URLMatch) {
     rule;
     node;
+    // clang-format on
     constructor(rule, node) {
+        super();
         this.rule = rule;
         this.node = node;
     }
@@ -181,7 +195,9 @@ export class URLRenderer {
         return new SDK.CSSPropertyParserMatchers.URLMatcher();
     }
 }
-export class StringRenderer {
+// clang-format off
+export class StringRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.StringMatch) {
+    // clang-format on
     render(match) {
         const element = document.createElement('span');
         element.innerText = match.text;

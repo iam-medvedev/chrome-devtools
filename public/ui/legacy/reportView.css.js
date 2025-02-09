@@ -154,6 +154,6 @@ export default {
   }
 }
 
-/*# sourceURL=reportView.css */
+/*# sourceURL=${import.meta.resolve('./reportView.css')} */
 `
 };

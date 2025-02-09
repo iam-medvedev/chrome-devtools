@@ -33,6 +33,6 @@ export default {
   border-radius: 5px;
 }
 
-/*# sourceURL=cssAngleSwatch.css */
+/*# sourceURL=${import.meta.resolve('./cssAngleSwatch.css')} */
 `
 };

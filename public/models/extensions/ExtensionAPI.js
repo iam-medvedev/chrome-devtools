@@ -674,6 +674,32 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         setContent: function (content, commit, callback) {
             extensionServer.sendRequest({ command: "setResourceContent" /* PrivateAPI.Commands.SetResourceContent */, url: this._url, content, commit }, callback);
         },
+        setFunctionRangesForScript: function (ranges) {
+            return new Promise((resolve, reject) => extensionServer.sendRequest({
+                command: "setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */,
+                scriptUrl: this._url,
+                ranges,
+            }, (response) => {
+                const result = response;
+                if (result.isError) {
+                    reject(result);
+                }
+                else {
+                    resolve();
+                }
+            }));
+        },
+        attachSourceMapURL: function (sourceMapURL) {
+            return new Promise((resolve, reject) => extensionServer.sendRequest({ command: "attachSourceMapToResource" /* PrivateAPI.Commands.AttachSourceMapToResource */, contentUrl: this._url, sourceMapURL }, (response) => {
+                const result = response;
+                if (result.isError) {
+                    reject(new Error(result.description));
+                }
+                else {
+                    resolve();
+                }
+            }));
+        },
     };
     function getTabId() {
         return inspectedTabId;

@@ -8,10 +8,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { html, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
-import chromeLinkStylesRaw from './chromeLink.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const chromeLinkStyles = new CSSStyleSheet();
-chromeLinkStyles.replaceSync(chromeLinkStylesRaw.cssContent);
+import chromeLinkStyles from './chromeLink.css.js';
 // Use this component to render links to 'chrome://...'-URLs
 // (for which regular <x-link>s do not work).
 export class ChromeLink extends HTMLElement {
@@ -19,7 +16,6 @@ export class ChromeLink extends HTMLElement {
     #boundRender = this.#render.bind(this);
     #href = '';
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [chromeLinkStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set href(href) {
@@ -53,6 +49,7 @@ export class ChromeLink extends HTMLElement {
         /* x-link doesn't work with custom click/keydown handlers */
         /* eslint-disable rulesdir/no-a-tags-in-lit */
         html `
+        <style>${chromeLinkStyles.cssContent}</style>
         <a href=${this.#href} class="link" target="_blank"
           jslog=${VisualLogging.link().track({ click: true }).context(jslogContext)}
           @click=${this.#handleClick}><slot></slot></a>

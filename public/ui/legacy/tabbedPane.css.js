@@ -66,6 +66,7 @@ export default {
   margin: 0 var(--sys-size-8);
 
   &.workspace {
+    line-height: 18px;
     display: inline-flex;
     align-items: center;
     border: var(--sys-size-2) dashed var(--sys-color-divider);
@@ -181,10 +182,15 @@ export default {
   height: var(--sys-size-8);
   width: var(--sys-size-8);
   padding-left: var(--sys-size-2);
+  align-content: center;
 
   &:has(.badge) {
     width: 17px;
     margin-left: var(--sys-size-2);
+  }
+
+  &:has(.status-dot) {
+    width: 9px;
   }
 }
 
@@ -205,11 +211,21 @@ export default {
   &.primary {
     background: var(--sys-color-cdt-base-container);
     color: var(--sys-color-primary);
-    border: 1px solid   var(--sys-color-primary);
+    border: var(--sys-size-1) solid var(--sys-color-primary);
     font-weight: normal;
   }
 }
 
+.status-dot {
+  height: var(--sys-size-4);
+  width: var(--sys-size-4);
+  border-radius: var(--sys-shape-corner-full);
+  background-color: var(--sys-color-error);
+  margin-left: var(--sys-size-1);
+  justify-self: center;
+  position: relative;
+  top: 0.75px;
+}
 
 .tabbed-pane-header-tab {
   font: var(--sys-typescale-body4-medium);
@@ -255,12 +271,12 @@ export default {
   color: var(--sys-color-primary);
 }
 
-.tabbed-pane-header-tab.dragging {
+.tabbed-pane-header-tab.selected.dragging {
   --override-dragging-box-shadow-color: rgb(0 0 0 / 37%);
 
   position: relative;
   box-shadow: 0 1px 4px 0 var(--override-dragging-box-shadow-color);
-  background-color: var(--sys-color-state-hover-on-subtle);
+  background-color: var(--app-color-toolbar-background);
 }
 
 .theme-with-dark-background .tabbed-pane-header-tab.dragging,
@@ -504,6 +520,6 @@ export default {
   }
 }
 
-/*# sourceURL=tabbedPane.css */
+/*# sourceURL=${import.meta.resolve('./tabbedPane.css')} */
 `
 };

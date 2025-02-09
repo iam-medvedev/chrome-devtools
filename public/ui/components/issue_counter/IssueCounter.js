@@ -6,10 +6,7 @@ import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { html, render } from '../../lit/lit.js';
-import issueCounterStylesRaw from './issueCounter.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const issueCounterStyles = new CSSStyleSheet();
-issueCounterStyles.replaceSync(issueCounterStylesRaw.cssContent);
+import issueCounterStyles from './issueCounter.css.js';
 const UIStrings = {
     /**
      *@description Label for link to Issues tab, specifying how many issues there are.
@@ -88,9 +85,6 @@ export class IssueCounter extends HTMLElement {
         else {
             this.#render();
         }
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [issueCounterStyles];
     }
     set data(data) {
         this.#clickHandler = data.clickHandler;
@@ -172,6 +166,7 @@ export class IssueCounter extends HTMLElement {
             compact: this.#compact,
         };
         render(html `
+        <style>${issueCounterStyles.cssContent}</style>
         <icon-button .data=${data} .accessibleName=${this.#accessibleName}></icon-button>
         `, this.#shadow, { host: this });
         this.#tooltipCallback?.();

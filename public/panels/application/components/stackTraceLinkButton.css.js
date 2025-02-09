@@ -21,6 +21,6 @@ button.link {
   font-size: inherit;
 }
 
-/*# sourceURL=stackTraceLinkButton.css */
+/*# sourceURL=${import.meta.resolve('./stackTraceLinkButton.css')} */
 `
 };

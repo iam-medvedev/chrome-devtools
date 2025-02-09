@@ -113,6 +113,6 @@ button.text-link {
   }
 }
 
-/*# sourceURL=frameDetailsReportView.css */
+/*# sourceURL=${import.meta.resolve('./frameDetailsReportView.css')} */
 `
 };

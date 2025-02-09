@@ -219,6 +219,6 @@ svg.bezier-preset-modify:active {
   stroke: var(--sys-color-on-surface-subtle);
 }
 
-/*# sourceURL=bezierEditor.css */
+/*# sourceURL=${import.meta.resolve('./bezierEditor.css')} */
 `
 };

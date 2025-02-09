@@ -116,6 +116,6 @@ devtools-user-agent-client-hints-form {
   color: var(--sys-color-tertiary);
 }
 
-/*# sourceURL=networkConfigView.css */
+/*# sourceURL=${import.meta.resolve('./networkConfigView.css')} */
 `
 };

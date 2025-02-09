@@ -88,6 +88,6 @@ export default {
   display: flex;
 }
 
-/*# sourceURL=playerMessagesView.css */
+/*# sourceURL=${import.meta.resolve('./playerMessagesView.css')} */
 `
 };

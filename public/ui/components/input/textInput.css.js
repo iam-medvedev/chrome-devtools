@@ -33,6 +33,6 @@ export default {
   color: var(--sys-color-state-disabled);
 }
 
-/*# sourceURL=textInput.css */
+/*# sourceURL=${import.meta.resolve('./textInput.css')} */
 `
 };

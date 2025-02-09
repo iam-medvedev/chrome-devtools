@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Trace from '../../../models/trace/trace.js';
+import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, getGetHostConfigStub } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
@@ -15,12 +16,6 @@ describeWithEnvironment('PerformanceAgent', () => {
                 temperature,
             },
         });
-    }
-    function mockAidaClient(fetch) {
-        return {
-            fetch,
-            registerClientEvent: () => Promise.resolve({}),
-        };
     }
     describe('getOrigin()', () => {
         it('calculates the origin of the selected node when it has a URL associated with it', async function () {
@@ -53,40 +48,27 @@ describeWithEnvironment('PerformanceAgent', () => {
             const agent = new PerformanceAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.model_id, 'test model');
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
             const agent = new PerformanceAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.temperature, 1);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
         });
-        it('structure matches the snapshot', () => {
+        it('structure matches the snapshot', async () => {
             mockHostConfig('test model');
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
             const agent = new PerformanceAgent({
-                aidaClient: {},
+                aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'question',
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: 'question',
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'answer',
-                },
-            ];
+            await Array.fromAsync(agent.run('question', { selected: null }));
             assert.deepEqual(agent.buildRequest({
                 text: 'test input',
-            }), {
+            }, Host.AidaClient.Role.USER), {
                 current_message: { role: Host.AidaClient.Role.USER, parts: [{ text: 'test input' }] },
                 client: 'CHROME_DEVTOOLS',
                 preamble: 'preamble',
@@ -122,17 +104,13 @@ describeWithEnvironment('PerformanceAgent', () => {
             assert.exists(layoutEvt);
             const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvt, parsedTrace);
             assert.exists(aiCallTree);
-            async function* generateAnswer() {
-                yield {
-                    explanation: 'This is the answer',
-                    metadata: {
-                        rpcGlobalId: 123,
-                    },
-                    completed: true,
-                };
-            }
             const agent = new PerformanceAgent({
-                aidaClient: mockAidaClient(generateAnswer),
+                aidaClient: mockAidaClient([[{
+                            explanation: 'This is the answer',
+                            metadata: {
+                                rpcGlobalId: 123,
+                            },
+                        }]]),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new CallTreeContext(aiCallTree) }));
             const expectedData = '\n\n' +
@@ -165,7 +143,6 @@ self: 3
                 },
                 {
                     type: "querying" /* ResponseType.QUERYING */,
-                    query: `${expectedData}\n\n# User request\n\ntest`,
                 },
                 {
                     type: "answer" /* ResponseType.ANSWER */,
@@ -174,7 +151,7 @@ self: 3
                     rpcId: 123,
                 },
             ]);
-            assert.deepEqual(agent.chatHistoryForTesting, [
+            assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
                 {
                     role: 1,
                     parts: [{ text: `${aiCallTree.serialize()}\n\n# User request\n\ntest` }],
@@ -196,31 +173,6 @@ self: 3
             };
             const enhancedQuery1 = await agent.enhanceQuery('What is this?', new CallTreeContext(mockAiCallTree));
             assert.strictEqual(enhancedQuery1, 'Mock call tree\n\n# User request\n\nWhat is this?');
-            // Create history state of the above query
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
-                    query: 'What is this?',
-                },
-                {
-                    type: "context" /* ResponseType.CONTEXT */,
-                    title: 'Analyzing call tree',
-                    details: [
-                        {
-                            title: 'Selected call tree',
-                            text: mockAiCallTree.serialize(),
-                        },
-                    ],
-                },
-                {
-                    type: "querying" /* ResponseType.QUERYING */,
-                    query: enhancedQuery1,
-                },
-                {
-                    type: "answer" /* ResponseType.ANSWER */,
-                    text: 'test answer',
-                },
-            ];
             const query2 = 'But what about this follow-up question?';
             const enhancedQuery2 = await agent.enhanceQuery(query2, new CallTreeContext(mockAiCallTree));
             assert.strictEqual(enhancedQuery2, query2);

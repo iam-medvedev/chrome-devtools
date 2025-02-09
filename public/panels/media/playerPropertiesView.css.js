@@ -66,6 +66,6 @@ export default {
   overflow-x: hidden;
 }
 
-/*# sourceURL=playerPropertiesView.css */
+/*# sourceURL=${import.meta.resolve('./playerPropertiesView.css')} */
 `
 };

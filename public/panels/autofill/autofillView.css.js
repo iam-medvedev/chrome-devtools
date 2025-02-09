@@ -99,6 +99,6 @@ devtools-data-grid {
   margin: auto 5px auto auto;
 }
 
-/*# sourceURL=autofillView.css */
+/*# sourceURL=${import.meta.resolve('./autofillView.css')} */
 `
 };

@@ -37,6 +37,6 @@ span {
   color: var(--sys-color-token-attribute-value);
 }
 
-/*# sourceURL=accessibilityTreeNode.css */
+/*# sourceURL=${import.meta.resolve('./accessibilityTreeNode.css')} */
 `
 };

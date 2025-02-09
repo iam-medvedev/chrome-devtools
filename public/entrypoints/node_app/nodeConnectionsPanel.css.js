@@ -115,6 +115,6 @@ export default {
   margin: 6px 9px;
 }
 
-/*# sourceURL=nodeConnectionsPanel.css */
+/*# sourceURL=${import.meta.resolve('./nodeConnectionsPanel.css')} */
 `
 };

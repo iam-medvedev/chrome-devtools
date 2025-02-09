@@ -21,6 +21,6 @@ export default {
   margin: 0;
 }
 
-/*# sourceURL=requestPayloadView.css */
+/*# sourceURL=${import.meta.resolve('./requestPayloadView.css')} */
 `
 };

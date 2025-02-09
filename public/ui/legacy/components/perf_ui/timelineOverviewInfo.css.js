@@ -26,6 +26,6 @@ export default {
   max-height: 50vh;
 }
 
-/*# sourceURL=timelineOverviewInfo.css */
+/*# sourceURL=${import.meta.resolve('./timelineOverviewInfo.css')} */
 `
 };

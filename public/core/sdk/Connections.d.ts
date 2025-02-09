@@ -14,7 +14,7 @@ export declare class MainConnection implements ProtocolClient.InspectorBackend.C
 export declare class WebSocketConnection implements ProtocolClient.InspectorBackend.Connection {
     #private;
     onMessage: ((arg0: (Object | string)) => void) | null;
-    constructor(url: Platform.DevToolsPath.UrlString, onWebSocketDisconnect: () => void);
+    constructor(url: Platform.DevToolsPath.UrlString, onWebSocketDisconnect: (message: Platform.UIString.LocalizedString) => void);
     setOnMessage(onMessage: (arg0: (Object | string)) => void): void;
     setOnDisconnect(onDisconnect: (arg0: string) => void): void;
     private onError;
@@ -49,4 +49,4 @@ export declare class ParallelConnection implements ParallelConnectionInterface {
     getSessionId(): string;
     disconnect(): Promise<void>;
 }
-export declare function initMainConnection(createRootTarget: () => Promise<void>, websocketConnectionLost: () => void): Promise<void>;
+export declare function initMainConnection(createRootTarget: () => Promise<void>, onConnectionLost: (message: Platform.UIString.LocalizedString) => void): Promise<void>;

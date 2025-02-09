@@ -119,6 +119,6 @@ export default {
   flex: auto;
 }
 
-/*# sourceURL=searchView.css */
+/*# sourceURL=${import.meta.resolve('./searchView.css')} */
 `
 };

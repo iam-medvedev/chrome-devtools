@@ -10,7 +10,6 @@ export declare class PromptInputEvent extends Event {
 }
 export declare class TextPrompt extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: TextPromptData);
     get data(): TextPromptData;
     focus(): void;

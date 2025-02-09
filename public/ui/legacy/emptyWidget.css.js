@@ -15,6 +15,6 @@ export default {
   overflow: auto;
 }
 
-/*# sourceURL=emptyWidget.css */
+/*# sourceURL=${import.meta.resolve('./emptyWidget.css')} */
 `
 };

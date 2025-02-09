@@ -32,6 +32,6 @@ export default {
   color: var(--override-node-text-multiple-descriptors-id, var(--override-node-text-id-color, var(--sys-color-token-attribute)));
 }
 
-/*# sourceURL=nodeText.css */
+/*# sourceURL=${import.meta.resolve('./nodeText.css')} */
 `
 };

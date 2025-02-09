@@ -20,6 +20,6 @@ export default {
   margin: 5px;
 }
 
-/*# sourceURL=targetCrashedScreen.css */
+/*# sourceURL=${import.meta.resolve('./targetCrashedScreen.css')} */
 `
 };

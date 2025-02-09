@@ -80,7 +80,6 @@ export declare function makeFlowPhaseEvent(name: string, ts: number, cat: string
  * flow. `events` must be ordered.
  */
 export declare function makeFlowEvents(events: Trace.Types.Events.Event[], flowId?: number): Trace.Types.Events.FlowEvent[];
-export declare function makeCompleteEventInMilliseconds(name: string, tsMillis: number, durMillis: number, cat?: string, pid?: number, tid?: number): Trace.Types.Events.Complete;
 /**
  * Builds a mock Instant.
  */

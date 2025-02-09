@@ -212,19 +212,6 @@ UI.ActionRegistration.registerActionExtension({
     condition: config => isFileAgentFeatureAvailable(config) && !isPolicyRestricted(config),
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'ai-assistance.filesystem',
-    contextTypes() {
-        return [];
-    },
-    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStrings.askAi),
-    async loadActionDelegate() {
-        const AiAssistance = await loadAiAssistanceModule();
-        return new AiAssistance.ActionDelegate();
-    },
-    condition: _config => Boolean(window.localStorage.getItem('ai_assistance_experimental_patch_do_not_use')),
-});
-UI.ActionRegistration.registerActionExtension({
     actionId: 'drjones.sources-panel-context',
     contextTypes() {
         return [];

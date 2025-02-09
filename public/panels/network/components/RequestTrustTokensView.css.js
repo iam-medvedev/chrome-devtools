@@ -27,6 +27,6 @@ export default {
   vertical-align: middle;
 }
 
-/*# sourceURL=RequestTrustTokensView.css */
+/*# sourceURL=${import.meta.resolve('./RequestTrustTokensView.css')} */
 `
 };

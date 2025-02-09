@@ -50,6 +50,6 @@ p {
   height: var(--sys-size-9);
 }
 
-/*# sourceURL=settingCheckbox.css */
+/*# sourceURL=${import.meta.resolve('./settingCheckbox.css')} */
 `
 };

@@ -152,6 +152,6 @@ export default {
   background-color: var(--sys-color-cdt-base-container);
 }
 
-/*# sourceURL=resourcesPanel.css */
+/*# sourceURL=${import.meta.resolve('./resourcesPanel.css')} */
 `
 };

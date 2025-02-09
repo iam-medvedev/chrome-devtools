@@ -15,6 +15,6 @@ export default {
   padding-left: 8px;
 }
 
-/*# sourceURL=navigatorView.css */
+/*# sourceURL=${import.meta.resolve('./navigatorView.css')} */
 `
 };

@@ -59,6 +59,6 @@ export default {
   color: var(--sys-color-primary);
 }
 
-/*# sourceURL=elementsTreeExpandButton.css */
+/*# sourceURL=${import.meta.resolve('./elementsTreeExpandButton.css')} */
 `
 };

@@ -89,6 +89,7 @@ export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<Even
     getFieldDataForPage(pageUrl: string): Promise<PageResult>;
     getFieldDataForCurrentPageForTesting(): Promise<PageResult>;
     refresh(): Promise<void>;
+    resolveDeviceOptionToScope(option: DeviceOption): DeviceScope;
     getSelectedDeviceScope(): DeviceScope;
     getSelectedScope(): Scope;
     getSelectedFieldResponse(): CrUXResponse | null | undefined;

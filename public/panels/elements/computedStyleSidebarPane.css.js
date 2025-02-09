@@ -23,6 +23,6 @@ export default {
   width: 100%;
 }
 
-/*# sourceURL=computedStyleSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./computedStyleSidebarPane.css')} */
 `
 };

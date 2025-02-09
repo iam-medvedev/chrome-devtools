@@ -28,7 +28,10 @@ export default {
 }
 
 .icon-button.with-click-handler {
-  padding: 0 4px;
+  padding: 0;
+  margin: 0;
+  height: 18px;
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 .icon-button.with-click-handler:hover {
@@ -39,20 +42,21 @@ export default {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-.icon-button-title {
-  margin-left: 0.5ex;
-}
-
 .compact .icon-button-title {
   display: none;
 }
 
-.status-icon {
-  margin-left: 1ex;
+.icon-button-title {
+  margin-right: var(--sys-size-2);
+
+  + devtools-icon {
+    margin-left: var(--sys-size-3);
+  }
 }
 
-.status-icon:first-child {
-  margin-left: inherit;
+.status-icon {
+  margin-right: var(--sys-size-1);
+  margin-left: var(--sys-size-2);
 }
 
 @media (forced-colors: active) {
@@ -68,6 +72,6 @@ export default {
   }
 }
 
-/*# sourceURL=iconButton.css */
+/*# sourceURL=${import.meta.resolve('./iconButton.css')} */
 `
 };

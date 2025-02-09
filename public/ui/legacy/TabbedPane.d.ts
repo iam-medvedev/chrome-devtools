@@ -81,7 +81,7 @@ export declare class TabbedPane extends TabbedPane_base {
     setTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
     setTrailingTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
     setSuffixElement(id: string, suffixElement: HTMLElement | null): void;
-    setBadge(id: string, content: string | null, className?: string): void;
+    setBadge(id: string, content: string | null): void;
     setTabEnabled(id: string, enabled: boolean): void;
     tabIsDisabled(id: string): boolean;
     tabIsEnabled(id: string): boolean;

@@ -103,6 +103,6 @@ export default {
   }
 }
 
-/*# sourceURL=pieChart.css */
+/*# sourceURL=${import.meta.resolve('./pieChart.css')} */
 `
 };

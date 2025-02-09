@@ -23,6 +23,6 @@ devtools-select-menu {
   height: 20px;
 }
 
-/*# sourceURL=networkThrottlingSelector.css */
+/*# sourceURL=${import.meta.resolve('./networkThrottlingSelector.css')} */
 `
 };

@@ -30,23 +30,11 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as JSON5 from '../../third_party/json5/json5.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { StorageItemsView } from './StorageItemsView.js';
+import { KeyValueStorageItemsView } from './KeyValueStorageItemsView.js';
 const UIStrings = {
-    /**
-     *@description Text in ExtensionStorage Items View of the Application panel
-     */
-    extensionStorage: 'Extension Storage',
-    /**
-     *@description Text in ExtensionStorage Items View of the Application panel
-     */
-    key: 'Key',
-    /**
-     *@description Text for the value of something
-     */
-    value: 'Value',
     /**
      *@description Name for the "Extension Storage Items" table that shows the content of the extension Storage.
      */
@@ -56,26 +44,19 @@ const UIStrings = {
      * entries were deleted.
      */
     extensionStorageItemsCleared: 'Extension Storage Items cleared',
-    /**
-     *@description Text for announcing a Extension Storage key/value item has been deleted
-     */
-    extensionStorageItemDeleted: 'The storage item was deleted.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ExtensionStorageItemsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class ExtensionStorageItemsView extends StorageItemsView {
+export class ExtensionStorageItemsView extends KeyValueStorageItemsView {
     #extensionStorage;
-    #grid;
     extensionStorageItemsDispatcher;
     constructor(extensionStorage) {
-        super(i18nString(UIStrings.extensionStorage), 'extensionStoragePanel');
-        this.#extensionStorage = extensionStorage;
+        super(i18nString(UIStrings.extensionStorageItems), 'extension-storage', true);
         this.element.setAttribute('jslog', `${VisualLogging.pane().context('extension-storage-data')}`);
         this.element.classList.add('storage-view', 'table');
         this.extensionStorageItemsDispatcher =
             new Common.ObjectWrapper.ObjectWrapper();
-        this.#grid = this.#createGrid();
-        this.refreshItems();
+        this.setStorage(extensionStorage);
     }
     get #isEditable() {
         // The managed storage area is always read only, since it exposes values
@@ -94,41 +75,18 @@ export class ExtensionStorageItemsView extends StorageItemsView {
             return input;
         }
     }
-    #createGrid() {
-        const columns = [
-            { id: 'key', title: i18nString(UIStrings.key), sortable: true, editable: true, longText: true, weight: 50 },
-            { id: 'value', title: i18nString(UIStrings.value), sortable: false, editable: true, longText: true, weight: 50 },
-        ];
-        const grid = new DataGrid.DataGridWithPreview.DataGridWithPreview('extension-storage', this.element, columns, {
-            refreshItems: this.refreshItems.bind(this),
-            edit: this.#isEditable ? {
-                removeItem: async (key) => {
-                    await this.#extensionStorage.removeItem(key);
-                    this.refreshItems();
-                },
-                setItem: async (key, value) => {
-                    await this.#extensionStorage.setItem(key, this.parseValue(value));
-                    this.refreshItems();
-                    this.extensionStorageItemsDispatcher.dispatchEventToListeners("ItemEdited" /* ExtensionStorageItemsDispatcher.Events.ITEM_EDITED */);
-                },
-            } :
-                undefined,
-            createPreview: this.#createPreview.bind(this),
-            setCanDeleteSelected: canSelect => {
-                if (!this.#isEditable) {
-                    return;
-                }
-                this.setCanDeleteSelected(canSelect);
-            },
-        }, {
-            title: i18nString(UIStrings.extensionStorageItems),
-            itemDeleted: i18nString(UIStrings.extensionStorageItemDeleted),
-            itemsCleared: i18nString(UIStrings.extensionStorageItemsCleared),
+    removeItem(key) {
+        void this.#extensionStorage.removeItem(key).then(() => {
+            this.refreshItems();
         });
-        grid.showPreview(null, null);
-        return grid;
     }
-    #createPreview(key, value) {
+    setItem(key, value) {
+        void this.#extensionStorage.setItem(key, this.parseValue(value)).then(() => {
+            this.refreshItems();
+            this.extensionStorageItemsDispatcher.dispatchEventToListeners("ItemEdited" /* ExtensionStorageItemsDispatcher.Events.ITEM_EDITED */);
+        });
+    }
+    createPreview(key, value) {
         const url = 'extension-storage://' + this.#extensionStorage.extensionId + '/' + this.#extensionStorage.storageArea +
             '/preview/' + key;
         const provider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(url, Common.ResourceType.resourceTypes.XHR, value);
@@ -136,32 +94,33 @@ export class ExtensionStorageItemsView extends StorageItemsView {
     }
     setStorage(extensionStorage) {
         this.#extensionStorage = extensionStorage;
-        // When changing storage area, recreate the grid. This is needed as
-        // DataGridImpl does not currently changing from editable to non-editable
-        // after creation.
-        this.#grid.detach();
-        this.#grid = this.#createGrid();
+        this.editable = this.#isEditable;
         this.refreshItems();
     }
     #extensionStorageItemsCleared() {
         if (!this.isShowing()) {
             return;
         }
-        this.#grid.clearItems();
+        this.itemsCleared();
+        UI.ARIAUtils.alert(i18nString(UIStrings.extensionStorageItemsCleared));
     }
     deleteSelectedItem() {
         if (!this.#isEditable) {
             return;
         }
-        this.#grid.deleteSelectedItem();
+        this.deleteSelectedItem();
     }
     refreshItems() {
-        const filteredItems = (item) => `${item[0]} ${item[1]}`;
-        void this.#extensionStorage.getItems().then(items => {
-            const itemsArray = Object.entries(items).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)]);
-            items && this.#grid.showItems(this.filter(itemsArray, filteredItems));
-            this.extensionStorageItemsDispatcher.dispatchEventToListeners("ItemsRefreshed" /* ExtensionStorageItemsDispatcher.Events.ITEMS_REFRESHED */);
-        });
+        void this.#refreshItems();
+    }
+    async #refreshItems() {
+        const items = await this.#extensionStorage.getItems();
+        if (!items) {
+            return;
+        }
+        const filteredItems = this.filter(Object.entries(items).map(([key, value]) => ({ key, value: typeof value === 'string' ? value : JSON.stringify(value) })), item => `${item.key} ${item.value}`);
+        this.showItems(filteredItems);
+        this.extensionStorageItemsDispatcher.dispatchEventToListeners("ItemsRefreshed" /* ExtensionStorageItemsDispatcher.Events.ITEMS_REFRESHED */);
     }
     deleteAllItems() {
         if (!this.#isEditable) {
@@ -174,10 +133,7 @@ export class ExtensionStorageItemsView extends StorageItemsView {
         });
     }
     getEntriesForTesting() {
-        return this.#grid.dataGridForTesting.rootNode().children.filter(node => node.data.key).map(node => node.data);
-    }
-    get dataGridForTesting() {
-        return this.#grid.dataGridForTesting;
+        return this.dataGridForTesting.rootNode().children.filter(node => node.data.key).map(node => node.data);
     }
 }
 //# sourceMappingURL=ExtensionStorageItemsView.js.map

@@ -20,7 +20,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/TimelineSummary.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class TimelineSummary extends HTMLElement {
+export class CategorySummary extends HTMLElement {
     #shadow = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummaryStyles, delegatesFocus: undefined });
     #rangeStart = 0;
     #rangeEnd = 0;
@@ -65,11 +65,11 @@ export class TimelineSummary extends HTMLElement {
                 </div>
           </div>
           </div>
-          <slot name="third-party-table"></slot>
+
         </div>`;
         // clang-format on
         render(output, this.#shadow, { host: this });
     }
 }
-customElements.define('devtools-performance-timeline-summary', TimelineSummary);
+customElements.define('devtools-performance-timeline-summary', CategorySummary);
 //# sourceMappingURL=TimelineSummary.js.map

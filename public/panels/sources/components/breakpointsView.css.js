@@ -280,6 +280,6 @@ details > summary:focus,
   outline-width: 0;
 }
 
-/*# sourceURL=breakpointsView.css */
+/*# sourceURL=${import.meta.resolve('./breakpointsView.css')} */
 `
 };

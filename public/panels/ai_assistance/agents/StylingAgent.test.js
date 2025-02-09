@@ -4,6 +4,7 @@
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { StylingAgent, ErrorType } = AiAssistance;
@@ -26,6 +27,11 @@ describeWithEnvironment('StylingAgent', () => {
             },
         };
     }
+    let element;
+    beforeEach(() => {
+        mockHostConfig();
+        element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+    });
     describe('parseResponse', () => {
         const agent = new StylingAgent({
             aidaClient: {},
@@ -259,13 +265,6 @@ c`;
         });
     });
     describe('describeElement', () => {
-        let element;
-        beforeEach(() => {
-            element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
-        });
-        afterEach(() => {
-            sinon.restore();
-        });
         it('should describe an element with no children, siblings, or parent', async () => {
             element.simpleSelector.returns('div#myElement');
             element.getChildNodesPromise.resolves(null);
@@ -337,53 +336,42 @@ c`;
             const agent = new StylingAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.model_id, 'test model');
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
             const agent = new StylingAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).options?.temperature, 1);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
         });
         it('builds a request with a user tier', async () => {
             mockHostConfig('test model', 1, 'PUBLIC');
             const agent = new StylingAgent({
                 aidaClient: {},
             });
-            assert.strictEqual(agent.buildRequest({ text: 'test input' }).metadata?.user_tier, 3);
+            assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).metadata?.user_tier, 3);
         });
-        it('structure matches the snapshot', () => {
+        it('structure matches the snapshot', async () => {
             mockHostConfig('test model');
             const agent = new StylingAgent({
-                aidaClient: {},
+                aidaClient: mockAidaClient([[{
+                            explanation: 'answer',
+                        }]]),
                 serverSideLoggingEnabled: true,
             });
             sinon.stub(agent, 'preamble').value('preamble');
-            agent.chatNewHistoryForTesting = [
-                {
-                    type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
-                    query: 'question',
-                },
-                {
-                    type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: 'question',
-                },
-                {
-                    type: "answer" /* AiAssistance.ResponseType.ANSWER */,
-                    text: 'answer',
-                },
-            ];
+            await Array.fromAsync(agent.run('question', { selected: null }));
             assert.deepEqual(agent.buildRequest({
                 text: 'test input',
-            }), {
+            }, Host.AidaClient.Role.USER), {
                 current_message: { role: Host.AidaClient.Role.USER, parts: [{ text: 'test input' }] },
                 client: 'CHROME_DEVTOOLS',
                 preamble: 'preamble',
                 historical_contexts: [
                     {
                         role: 1,
-                        parts: [{ text: 'question' }],
+                        parts: [{ text: 'QUERY: question' }],
                     },
                     {
                         role: 2,
@@ -403,46 +391,69 @@ c`;
                 functionality_type: 1,
             });
         });
-    });
-    function mockAidaClient(fetch) {
-        return {
-            fetch,
-            registerClientEvent: () => Promise.resolve({}),
-        };
-    }
-    describe('run', () => {
-        let element;
-        beforeEach(() => {
-            mockHostConfig();
-            element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        it('builds a request with aborted query in history before a real request', async () => {
+            const execJs = sinon.mock().once();
+            execJs.onCall(0).returns('result2');
+            const agent = new StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: `THOUGHT: thought2
+TITLE: title2
+ACTION
+action2
+STOP`
+                        }],
+                    [{ explanation: 'answer2' }]
+                ]),
+                createExtensionScope,
+                execJs,
+            });
+            const controller = new AbortController();
+            controller.abort();
+            await Array.fromAsync(agent.run('test', {
+                selected: null,
+                signal: controller.signal,
+            }));
+            await Array.fromAsync(agent.run('test2', { selected: null }));
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
+            assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
+            assert.deepEqual(request.historical_contexts, [
+                {
+                    parts: [{ text: 'QUERY: test2' }],
+                    role: 1,
+                },
+                {
+                    role: 2,
+                    parts: [{ text: 'THOUGHT: thought2\nTITLE: title2\nACTION\naction2\nSTOP' }],
+                },
+                {
+                    role: 1,
+                    parts: [{ text: 'OBSERVATION: result2' }],
+                },
+                {
+                    role: 2,
+                    parts: [{ text: 'ANSWER: answer2' }],
+                },
+            ]);
         });
+    });
+    describe('run', () => {
         describe('side effect handling', () => {
             it('calls confirmSideEffect when the code execution contains a side effect', async () => {
                 const promise = Promise.withResolvers();
                 const stub = sinon.stub().returns(promise);
-                let count = 0;
-                async function* generateActionAndAnswer() {
-                    if (count === 0) {
-                        yield {
-                            explanation: `ACTION
-              $0.style.backgroundColor = 'red'
-              STOP`,
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    else {
-                        yield {
-                            explanation: 'ANSWER: This is the answer',
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    count++;
-                }
                 const execJs = sinon.mock().throws(new AiAssistance.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
                 const agent = new StylingAgent({
-                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    aidaClient: mockAidaClient([
+                        [{
+                                explanation: `ACTION
+$0.style.backgroundColor = 'red'
+STOP`,
+                            }],
+                        [{
+                                explanation: 'ANSWER: This is the answer',
+                            }]
+                    ]),
                     createExtensionScope,
                     confirmSideEffectForTest: stub,
                     execJs,
@@ -454,31 +465,20 @@ c`;
             it('calls execJs with allowing side effects when confirmSideEffect resolves to true', async () => {
                 const promise = Promise.withResolvers();
                 const stub = sinon.stub().returns(promise);
-                let count = 0;
-                async function* generateActionAndAnswer() {
-                    if (count === 0) {
-                        yield {
-                            explanation: `ACTION
-              $0.style.backgroundColor = 'red'
-              STOP`,
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    else {
-                        yield {
-                            explanation: 'ANSWER: This is the answer',
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    count++;
-                }
                 const execJs = sinon.mock().twice();
                 execJs.onCall(0).throws(new AiAssistance.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
                 execJs.onCall(1).resolves('value');
                 const agent = new StylingAgent({
-                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    aidaClient: mockAidaClient([
+                        [{
+                                explanation: `ACTION
+            $0.style.backgroundColor = 'red'
+            STOP`,
+                            }],
+                        [{
+                                explanation: 'ANSWER: This is the answer',
+                            }]
+                    ]),
                     createExtensionScope,
                     confirmSideEffectForTest: stub,
                     execJs,
@@ -491,30 +491,19 @@ c`;
             it('returns side effect error when confirmSideEffect resolves to false', async () => {
                 const promise = Promise.withResolvers();
                 const stub = sinon.stub().returns(promise);
-                let count = 0;
-                async function* generateActionAndAnswer() {
-                    if (count === 0) {
-                        yield {
-                            explanation: `ACTION
-              $0.style.backgroundColor = 'red'
-              STOP`,
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    else {
-                        yield {
-                            explanation: 'ANSWER: This is the answer',
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    count++;
-                }
                 const execJs = sinon.mock().once();
                 execJs.onCall(0).throws(new AiAssistance.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
                 const agent = new StylingAgent({
-                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    aidaClient: mockAidaClient([
+                        [{
+                                explanation: `ACTION
+$0.style.backgroundColor = 'red'
+STOP`,
+                            }],
+                        [{
+                                explanation: 'ANSWER: This is the answer',
+                            }]
+                    ]),
                     createExtensionScope,
                     confirmSideEffectForTest: stub,
                     execJs,
@@ -527,19 +516,14 @@ c`;
             });
             it('returns error when side effect is aborted', async () => {
                 const selected = new AiAssistance.NodeContext(element);
-                async function* generateAction() {
-                    yield {
-                        explanation: `ACTION
-            $0.style.backgroundColor = 'red'
-            STOP`,
-                        metadata: {},
-                        completed: true,
-                    };
-                }
                 const execJs = sinon.mock().once().throws(new AiAssistance.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
                 const sideEffectConfirmationPromise = Promise.withResolvers();
                 const agent = new StylingAgent({
-                    aidaClient: mockAidaClient(generateAction),
+                    aidaClient: mockAidaClient([[{
+                                explanation: `ACTION
+$0.style.backgroundColor = 'red'
+STOP`,
+                            }]]),
                     createExtensionScope,
                     confirmSideEffectForTest: sinon.stub().returns(sideEffectConfirmationPromise),
                     execJs,
@@ -564,29 +548,18 @@ c`;
         });
         describe('long `Observation` text handling', () => {
             it('errors with too long input', async () => {
-                let count = 0;
-                async function* generateActionAndAnswer() {
-                    if (count === 0) {
-                        yield {
-                            explanation: `ACTION
-              $0.style.backgroundColor = 'red'
-              STOP`,
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    else {
-                        yield {
-                            explanation: 'ANSWER: This is the answer',
-                            metadata: {},
-                            completed: true,
-                        };
-                    }
-                    count++;
-                }
                 const execJs = sinon.mock().returns(new Array(10_000).fill('<div>...</div>').join());
                 const agent = new StylingAgent({
-                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    aidaClient: mockAidaClient([
+                        [{
+                                explanation: `ACTION
+$0.style.backgroundColor = 'red';
+STOP`,
+                            }],
+                        [{
+                                explanation: 'ANSWER: This is the answer',
+                            }]
+                    ]),
                     createExtensionScope,
                     execJs,
                 });
@@ -600,16 +573,9 @@ c`;
             });
         });
         it('generates an answer immediately', async () => {
-            async function* generateAnswer() {
-                yield {
-                    explanation: 'ANSWER: this is the answer',
-                    metadata: {},
-                    completed: true,
-                };
-            }
             const execJs = sinon.spy();
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateAnswer),
+                aidaClient: mockAidaClient([[{ explanation: 'ANSWER: this is the answer' }]]),
                 execJs,
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
@@ -630,7 +596,6 @@ c`;
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
@@ -640,7 +605,7 @@ c`;
                 },
             ]);
             sinon.assert.notCalled(execJs);
-            assert.deepEqual(agent.chatHistoryForTesting, [
+            assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
                 {
                     role: 1,
                     parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
@@ -652,42 +617,34 @@ c`;
             ]);
         });
         it('correctly handles historical_contexts in AIDA requests', async () => {
-            const requests = [];
-            let i = 0;
-            async function* generateAnswer(request) {
-                requests.push(request);
-                if (i !== 0) {
-                    yield {
-                        explanation: 'ANSWER: this is the actual answer',
-                        metadata: {},
-                        completed: true,
-                    };
-                    return;
-                }
-                yield {
-                    explanation: `THOUGHT: I am thinking.
+            const execJs = sinon.mock().once();
+            execJs.onCall(0).returns('test data');
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: `THOUGHT: I am thinking.
 TITLE: thinking
 ACTION
 const data = {"test": "observation"};
 STOP`,
-                    metadata: {},
-                    completed: false,
-                };
-                i++;
-            }
-            const execJs = sinon.mock().once();
-            execJs.onCall(0).returns('test data');
+                    }],
+                [{
+                        explanation: 'ANSWER: this is the actual answer',
+                    }]
+            ]);
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateAnswer),
+                aidaClient,
                 createExtensionScope,
                 execJs,
             });
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
+            const requests = aidaClient.fetch.args.map(arg => arg[0]);
             assert.lengthOf(requests, 2, 'Unexpected number of AIDA requests');
             assert.isUndefined(requests[0].historical_contexts, 'Unexpected historical contexts in the initial request');
             assert.exists(requests[0].current_message);
             assert.lengthOf(requests[0].current_message.parts, 1);
-            assert.deepEqual(requests[0].current_message.parts[0], { text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }, 'Unexpected input text in the initial request');
+            assert.deepEqual(requests[0].current_message.parts[0], {
+                text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
+            }, 'Unexpected input text in the initial request');
             assert.strictEqual(requests[0].current_message.role, Host.AidaClient.Role.USER);
             assert.deepEqual(requests[1].historical_contexts, [
                 {
@@ -706,17 +663,13 @@ STOP`,
             assert.deepEqual(requests[1].current_message.parts[0], { text: 'OBSERVATION: test data' }, 'Unexpected input in the follow-up request');
         });
         it('generates an rpcId for the answer', async () => {
-            async function* generateAnswer() {
-                yield {
-                    explanation: 'ANSWER: this is the answer',
-                    metadata: {
-                        rpcGlobalId: 123,
-                    },
-                    completed: true,
-                };
-            }
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateAnswer),
+                aidaClient: mockAidaClient([[{
+                            explanation: 'ANSWER: this is the answer',
+                            metadata: {
+                                rpcGlobalId: 123,
+                            },
+                        }]]),
                 execJs: sinon.spy(),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
@@ -737,7 +690,6 @@ STOP`,
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
@@ -748,18 +700,21 @@ STOP`,
             ]);
         });
         it('throws an error based on the attribution metadata including RecitationAction.BLOCK', async () => {
-            async function* generateAnswer() {
-                yield {
-                    explanation: 'ANSWER: this is the answer',
-                    metadata: {
-                        rpcGlobalId: 123,
-                    },
-                    completed: false,
-                };
-                throw new Host.AidaClient.AidaBlockError();
-            }
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateAnswer),
+                aidaClient: mockAidaClient([[
+                        {
+                            explanation: 'ANSWER: this is the answer',
+                        },
+                        {
+                            explanation: 'ANSWER: this is another answer',
+                            metadata: {
+                                attributionMetadata: {
+                                    attributionAction: Host.AidaClient.RecitationAction.BLOCK,
+                                    citations: [],
+                                },
+                            },
+                        }
+                    ]]),
                 execJs: sinon.spy(),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
@@ -780,7 +735,6 @@ STOP`,
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     text: 'this is the answer',
@@ -793,21 +747,17 @@ STOP`,
             ]);
         });
         it('does not throw an error based on attribution metadata not including RecitationAction.BLOCK', async () => {
-            async function* generateAnswer() {
-                yield {
-                    explanation: 'ANSWER: this is the answer',
-                    metadata: {
-                        rpcGlobalId: 123,
-                        attributionMetadata: {
-                            attributionAction: Host.AidaClient.RecitationAction.ACTION_UNSPECIFIED,
-                            citations: [],
-                        },
-                    },
-                    completed: true,
-                };
-            }
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateAnswer),
+                aidaClient: mockAidaClient([[{
+                            explanation: 'ANSWER: this is the answer',
+                            metadata: {
+                                rpcGlobalId: 123,
+                                attributionMetadata: {
+                                    attributionAction: Host.AidaClient.RecitationAction.ACTION_UNSPECIFIED,
+                                    citations: [],
+                                },
+                            },
+                        }]]),
                 execJs: sinon.spy(),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
@@ -828,7 +778,6 @@ STOP`,
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
@@ -840,30 +789,24 @@ STOP`,
         });
         it('should execute an action only once even when the partial response contains an action', async () => {
             const execJs = sinon.spy();
-            async function* generatePartialAndFullAction() {
-                yield {
-                    explanation: `THOUGHT: I am thinking.
+            const agent = new StylingAgent({
+                aidaClient: mockAidaClient([[
+                        {
+                            explanation: `THOUGHT: I am thinking.
 
 ACTION
 console.log('hel
           `,
-                    metadata: {},
-                    completed: false,
-                };
-                sinon.assert.notCalled(execJs);
-                yield {
-                    explanation: `THOUGHT: I am thinking.
+                        },
+                        {
+                            explanation: `THOUGHT: I am thinking.
 
 ACTION
 console.log('hello');
 STOP
           `,
-                    metadata: {},
-                    completed: true,
-                };
-            }
-            const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generatePartialAndFullAction),
+                        }
+                    ]]),
                 createExtensionScope,
                 execJs,
             });
@@ -872,16 +815,9 @@ STOP
             assert.include(execJs.lastCall.args[0], 'console.log(\'hello\');');
         });
         it('generates a response if nothing is returned', async () => {
-            async function* generateNothing() {
-                yield {
-                    explanation: '',
-                    metadata: {},
-                    completed: true,
-                };
-            }
             const execJs = sinon.spy();
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateNothing),
+                aidaClient: mockAidaClient([[{ explanation: '' }]]),
                 execJs,
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
@@ -902,7 +838,6 @@ STOP
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     type: "error" /* AiAssistance.ResponseType.ERROR */,
@@ -910,36 +845,27 @@ STOP
                 },
             ]);
             sinon.assert.notCalled(execJs);
-            assert.deepEqual(agent.chatHistoryForTesting, []);
+            assert.isUndefined(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts);
         });
         it('generates an action response if action and answer both present', async () => {
-            let i = 0;
-            async function* generateNothing() {
-                if (i !== 0) {
-                    yield {
-                        explanation: 'ANSWER: this is the actual answer',
-                        metadata: {},
-                        completed: true,
-                    };
-                    return;
-                }
-                yield {
-                    explanation: `THOUGHT: I am thinking.
-
-ACTION
-console.log('hello');
-STOP
-
-ANSWER: this is the answer`,
-                    metadata: {},
-                    completed: false,
-                };
-                i++;
-            }
             const execJs = sinon.mock().once();
             execJs.onCall(0).returns('hello');
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateNothing),
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: `THOUGHT: I am thinking.
+
+          ACTION
+          console.log('hello');
+          STOP
+
+          ANSWER: this is the answer`,
+                        }],
+                    [{
+                            explanation: 'ANSWER: this is the actual answer',
+                            metadata: {},
+                        }]
+                ]),
                 createExtensionScope,
                 execJs,
             });
@@ -961,7 +887,6 @@ ANSWER: this is the answer`,
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
                 },
                 {
                     type: "thought" /* AiAssistance.ResponseType.THOUGHT */,
@@ -976,7 +901,6 @@ ANSWER: this is the answer`,
                 },
                 {
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: 'OBSERVATION: hello',
                 },
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
@@ -988,31 +912,27 @@ ANSWER: this is the answer`,
             sinon.assert.calledOnce(execJs);
         });
         it('generates history for multiple actions', async () => {
-            let count = 0;
-            async function* generateMultipleTimes() {
-                if (count === 3) {
-                    yield {
-                        explanation: 'ANSWER: this is the answer',
-                        metadata: {},
-                        completed: true,
-                    };
-                    return;
-                }
-                count++;
-                yield {
-                    explanation: `THOUGHT: thought ${count}\nTITLE:test\nACTION\nconsole.log('test')\nSTOP\n`,
-                    metadata: {},
-                    completed: false,
-                };
-            }
             const execJs = sinon.spy(async () => 'undefined');
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateMultipleTimes),
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: 'THOUGHT: thought 1\nTITLE:test\nACTION\nconsole.log(\'test\')\nSTOP\n',
+                        }],
+                    [{
+                            explanation: 'THOUGHT: thought 2\nTITLE:test\nACTION\nconsole.log(\'test\')\nSTOP\n',
+                        }],
+                    [{
+                            explanation: 'THOUGHT: thought 3\nTITLE:test\nACTION\nconsole.log(\'test\')\nSTOP\n',
+                        }],
+                    [{
+                            explanation: 'ANSWER: this is the answer',
+                        }]
+                ]),
                 createExtensionScope,
                 execJs,
             });
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepEqual(agent.chatHistoryForTesting, [
+            assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
                 {
                     role: 1,
                     parts: [{ text: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test' }],
@@ -1048,143 +968,43 @@ ANSWER: this is the answer`,
             ]);
         });
         it('stops when aborted', async () => {
-            let count = 0;
-            async function* generateAndAbort(_, options) {
-                if (options?.signal.aborted) {
-                    throw new Host.AidaClient.AidaAbortError();
-                }
-                if (count === 3) {
-                    yield {
-                        explanation: 'ANSWER: this is the answer',
-                        metadata: {},
-                        completed: true,
-                    };
-                    return;
-                }
-                count++;
-                yield {
-                    explanation: `THOUGHT: thought ${count}\nACTION\nconsole.log('test')\nSTOP\n`,
-                    metadata: {},
-                    completed: false,
-                };
-            }
             const execJs = sinon.spy();
             const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateAndAbort),
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: 'THOUGHT: thought 1\nTITLE:test\nACTION\nconsole.log(\'test\')\nSTOP\n',
+                        }],
+                    [{
+                            explanation: 'THOUGHT: thought 2\nTITLE:test\nACTION\nconsole.log(\'test\')\nSTOP\n',
+                        }],
+                    [{
+                            explanation: 'THOUGHT: thought 3\nTITLE:test\nACTION\nconsole.log(\'test\')\nSTOP\n',
+                        }],
+                    [{
+                            explanation: 'ANSWER: this is the answer',
+                        }]
+                ]),
                 createExtensionScope,
                 execJs,
             });
             const controller = new AbortController();
             controller.abort();
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element), signal: controller.signal }));
-            assert.deepEqual(agent.chatHistoryForTesting, []);
-        });
-    });
-    describe('history', () => {
-        let element;
-        beforeEach(() => {
-            mockHostConfig();
-            element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
-        });
-        it('stores history via AiHistoryStorage', async () => {
-            let count = 0;
-            async function* generateMultipleTimes() {
-                if (count === 1) {
-                    yield {
-                        explanation: 'ANSWER: this is the answer',
-                        metadata: {},
-                        completed: true,
-                    };
-                    return;
-                }
-                count++;
-                yield {
-                    explanation: `THOUGHT: thought ${count}\nTITLE:test\nACTION\nconsole.log('test')\nSTOP\n`,
-                    metadata: {},
-                    completed: false,
-                };
-            }
-            const historyStub = sinon.stub(AiAssistance.AiHistoryStorage.instance(), 'upsertHistoryEntry');
-            const execJs = sinon.spy(async () => 'undefined');
-            const agent = new StylingAgent({
-                aidaClient: mockAidaClient(generateMultipleTimes),
-                createExtensionScope,
-                execJs,
-            });
-            await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            assert.deepEqual(historyStub.lastCall.args[0].history, [
-                {
-                    type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
-                    query: 'test',
-                },
-                {
-                    type: "context" /* AiAssistance.ResponseType.CONTEXT */,
-                    title: 'Analyzing the prompt',
-                    details: [{
-                            text: '* Its selector is `undefined`',
-                            title: 'Data used',
-                        }],
-                },
-                {
-                    type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: '# Inspected element\n\n* Its selector is `undefined`\n\n# User request\n\nQUERY: test',
-                },
-                {
-                    type: "title" /* AiAssistance.ResponseType.TITLE */,
-                    title: 'test',
-                    rpcId: undefined,
-                },
-                {
-                    type: "thought" /* AiAssistance.ResponseType.THOUGHT */,
-                    thought: 'thought 1',
-                    rpcId: undefined,
-                },
-                {
-                    type: "action" /* AiAssistance.ResponseType.ACTION */,
-                    code: 'console.log(\'test\')',
-                    output: 'undefined',
-                    canceled: false,
-                },
-                {
-                    type: "querying" /* AiAssistance.ResponseType.QUERYING */,
-                    query: 'OBSERVATION: undefined',
-                },
-                {
-                    type: "answer" /* AiAssistance.ResponseType.ANSWER */,
-                    text: 'this is the answer',
-                    suggestions: undefined,
-                    rpcId: undefined,
-                },
-            ]);
+            assert.isUndefined(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts);
         });
     });
     describe('HostConfigFreestylerExecutionMode', () => {
-        let element;
-        beforeEach(() => {
-            element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
-        });
         function getMockClient() {
-            let count = 0;
-            async function* generateActionAndAnswer() {
-                if (count === 0) {
-                    yield {
+            return mockAidaClient([
+                [{
                         explanation: `ACTION
-            $0.style.backgroundColor = 'red'
-            STOP`,
-                        metadata: {},
-                        completed: true,
-                    };
-                }
-                else {
-                    yield {
+$0.style.backgroundColor = 'red'
+STOP`,
+                    }],
+                [{
                         explanation: 'ANSWER: This is the answer',
-                        metadata: {},
-                        completed: true,
-                    };
-                }
-                count++;
-            }
-            return mockAidaClient(generateActionAndAnswer);
+                    }]
+            ]);
         }
         describe('NO_SCRIPTS', () => {
             beforeEach(() => {

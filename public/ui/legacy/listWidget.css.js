@@ -169,6 +169,6 @@ export default {
   }
 }
 
-/*# sourceURL=listWidget.css */
+/*# sourceURL=${import.meta.resolve('./listWidget.css')} */
 `
 };

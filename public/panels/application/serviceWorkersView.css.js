@@ -165,6 +165,6 @@ button.link:focus-visible {
   background-color: inherit;
 }
 
-/*# sourceURL=serviceWorkersView.css */
+/*# sourceURL=${import.meta.resolve('./serviceWorkersView.css')} */
 `
 };

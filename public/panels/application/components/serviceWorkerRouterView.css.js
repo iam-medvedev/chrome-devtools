@@ -60,6 +60,6 @@ export default {
   flex: 0 0 18%;
 }
 
-/*# sourceURL=serviceWorkerRouterView.css */
+/*# sourceURL=${import.meta.resolve('./serviceWorkerRouterView.css')} */
 `
 };

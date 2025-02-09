@@ -32,6 +32,12 @@ export class SortableDataGrid extends ViewportDataGrid {
         return aString < bString ? -1 : (aString > bString ? 1 : 0);
     }
     static Comparator(comparator, reverseMode, a, b) {
+        if (a.isCreationNode && !b.isCreationNode) {
+            return 1;
+        }
+        if (!a.isCreationNode && b.isCreationNode) {
+            return -1;
+        }
         return reverseMode ? comparator(b, a) : comparator(a, b);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

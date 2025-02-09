@@ -70,6 +70,6 @@ export default {
   color: var(--icon-default-hover);
 }
 
-/*# sourceURL=breakpointEditDialog.css */
+/*# sourceURL=${import.meta.resolve('./breakpointEditDialog.css')} */
 `
 };

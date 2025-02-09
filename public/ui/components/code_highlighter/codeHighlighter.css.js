@@ -56,6 +56,6 @@ export default {
   font-style: italic;
 }
 
-/*# sourceURL=codeHighlighter.css */
+/*# sourceURL=${import.meta.resolve('./codeHighlighter.css')} */
 `
 };

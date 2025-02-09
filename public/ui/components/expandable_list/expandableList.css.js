@@ -70,6 +70,6 @@ button.link {
   white-space: nowrap;
 }
 
-/*# sourceURL=expandableList.css */
+/*# sourceURL=${import.meta.resolve('./expandableList.css')} */
 `
 };

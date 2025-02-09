@@ -27,6 +27,6 @@ devtools-interest-group-access-grid {
   }
 }
 
-/*# sourceURL=interestGroupStorageView.css */
+/*# sourceURL=${import.meta.resolve('./interestGroupStorageView.css')} */
 `
 };

@@ -68,6 +68,6 @@ export default {
   pointer-events: none;
 }
 
-/*# sourceURL=timelineGrid.css */
+/*# sourceURL=${import.meta.resolve('./timelineGrid.css')} */
 `
 };

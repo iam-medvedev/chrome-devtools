@@ -1,5 +1,4 @@
 import '../../../ui/components/spinners/spinners.js';
-import './UserActionRow.js';
 import * as Host from '../../../core/host/host.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';

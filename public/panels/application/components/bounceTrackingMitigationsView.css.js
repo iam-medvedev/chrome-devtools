@@ -29,6 +29,6 @@ devtools-data-grid {
   }
 }
 
-/*# sourceURL=bounceTrackingMitigationsView.css */
+/*# sourceURL=${import.meta.resolve('./bounceTrackingMitigationsView.css')} */
 `
 };

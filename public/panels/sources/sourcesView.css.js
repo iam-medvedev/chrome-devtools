@@ -61,6 +61,6 @@ export default {
   --override-debugger-background-tint: rgb(61 61 0 / 50%);
 }
 
-/*# sourceURL=sourcesView.css */
+/*# sourceURL=${import.meta.resolve('./sourcesView.css')} */
 `
 };

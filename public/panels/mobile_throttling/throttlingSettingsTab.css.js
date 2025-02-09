@@ -160,6 +160,6 @@ export default {
   gap: 5px;
 }
 
-/*# sourceURL=throttlingSettingsTab.css */
+/*# sourceURL=${import.meta.resolve('./throttlingSettingsTab.css')} */
 `
 };

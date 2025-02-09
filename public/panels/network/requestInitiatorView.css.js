@@ -15,6 +15,6 @@ export default {
   margin: 6px;
 }
 
-/*# sourceURL=requestInitiatorView.css */
+/*# sourceURL=${import.meta.resolve('./requestInitiatorView.css')} */
 `
 };

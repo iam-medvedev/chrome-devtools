@@ -39,6 +39,6 @@ export default {
   pointer-events: none;
 }
 
-/*# sourceURL=networkWaterfallColumn.css */
+/*# sourceURL=${import.meta.resolve('./networkWaterfallColumn.css')} */
 `
 };

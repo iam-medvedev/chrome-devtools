@@ -129,6 +129,6 @@ export default {
   column-gap: var(--sys-size-6);
 }
 
-/*# sourceURL=lighthouseDialog.css */
+/*# sourceURL=${import.meta.resolve('./lighthouseDialog.css')} */
 `
 };

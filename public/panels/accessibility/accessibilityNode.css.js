@@ -88,6 +88,6 @@ span.ax-value-undefined {
   }
 }
 
-/*# sourceURL=accessibilityNode.css */
+/*# sourceURL=${import.meta.resolve('./accessibilityNode.css')} */
 `
 };

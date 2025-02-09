@@ -14,6 +14,8 @@ import layoutShiftDetailsStylesRaw from './layoutShiftDetails.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const layoutShiftDetailsStyles = new CSSStyleSheet();
 layoutShiftDetailsStyles.replaceSync(layoutShiftDetailsStylesRaw.cssContent);
+const textButtonStyles = new CSSStyleSheet();
+textButtonStyles.replaceSync(Buttons.textButtonStyles.cssContent);
 const { html } = Lit;
 const MAX_URL_LENGTH = 20;
 const UIStrings = {
@@ -84,7 +86,7 @@ export class LayoutShiftDetails extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [
             layoutShiftDetailsStyles,
             // Styles for linkifier button.
-            Buttons.textButtonStyles,
+            textButtonStyles,
         ];
         this.#render();
     }

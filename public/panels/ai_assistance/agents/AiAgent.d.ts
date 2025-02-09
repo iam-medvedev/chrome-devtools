@@ -6,6 +6,7 @@ export declare const enum ResponseType {
     THOUGHT = "thought",
     ACTION = "action",
     SIDE_EFFECT = "side-effect",
+    SUGGESTIONS = "suggestions",
     ANSWER = "answer",
     ERROR = "error",
     QUERYING = "querying",
@@ -22,6 +23,10 @@ export interface AnswerResponse {
     text: string;
     rpcId?: Host.AidaClient.RpcGlobalId;
     suggestions?: [string, ...string[]];
+}
+export interface SuggestionsResponse {
+    type: ResponseType.SUGGESTIONS;
+    suggestions: [string, ...string[]];
 }
 export interface ErrorResponse {
     type: ResponseType.ERROR;
@@ -49,24 +54,25 @@ export interface ThoughtResponse {
 }
 export interface SideEffectResponse {
     type: ResponseType.SIDE_EFFECT;
-    code: string;
+    code?: string;
     confirm: (confirm: boolean) => void;
 }
 export interface ActionResponse {
     type: ResponseType.ACTION;
-    code: string;
-    output: string;
+    code?: string;
+    output?: string;
     canceled: boolean;
 }
 export interface QueryResponse {
     type: ResponseType.QUERYING;
-    query: string;
+    query?: string;
 }
 export interface UserQuery {
     type: ResponseType.USER_QUERY;
     query: string;
 }
-export type ResponseData = AnswerResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
+export type ResponseData = AnswerResponse | SuggestionsResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
+export type FunctionCallResponseData = TitleResponse | ThoughtResponse | ActionResponse | SideEffectResponse | SuggestionsResponse;
 export interface BuildRequestOptions {
     text: string;
 }
@@ -77,6 +83,7 @@ export interface RequestOptions {
 export interface AgentOptions {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
+    confirmSideEffectForTest?: typeof Promise.withResolvers;
 }
 export interface ParsedAnswer {
     answer: string;
@@ -95,12 +102,7 @@ export declare const enum AgentType {
     PERFORMANCE = "drjones-performance",
     PATCH = "patch"
 }
-export interface SerializedAgent {
-    id: string;
-    type: AgentType;
-    history: HistoryEntryStorage;
-}
-export type HistoryEntryStorage = ResponseData[];
+export declare const MAX_STEPS = 10;
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
@@ -113,22 +115,65 @@ export declare abstract class ConversationContext<T> {
      */
     refresh(): Promise<void>;
 }
-export interface FunctionDeclaration<Args, ReturnType> {
+export type FunctionCallHandlerResult<Result> = {
+    result: Result;
+} | {
+    requiresApproval: true;
+} | {
+    error: string;
+};
+export interface FunctionDeclaration<Args extends Record<string, unknown>, ReturnType> {
+    /**
+     * Description of function, this is send to the LLM
+     * to explain what will the function do.
+     */
     description: string;
-    parameters: Host.AidaClient.FunctionObjectParam;
-    handler: (args: Args) => Promise<ReturnType>;
+    /**
+     * JSON schema like representation of the parameters
+     * the function needs to be called with.
+     * Provide description to all parameters as this is
+     * send to the LLM.
+     */
+    parameters: Host.AidaClient.FunctionObjectParam<keyof Args>;
+    /**
+     * Provided a way to give information back to
+     * the UI before running the the handler
+     */
+    displayInfoFromArgs?: (args: Args) => {
+        title?: string;
+        thought?: string;
+        code?: string;
+        suggestions?: [string, ...string[]];
+    };
+    /**
+     * Function implementation that the LLM will try to execute,
+     */
+    handler: (args: Args, options?: {
+        /**
+         * Shows that the user approved
+         * the execution if it was required
+         */
+        approved?: boolean;
+        signal?: AbortSignal;
+    }) => Promise<FunctionCallHandlerResult<ReturnType>>;
 }
 export declare abstract class AiAgent<T> {
     #private;
-    static validTemperature(temperature: number | undefined): number | undefined;
-    abstract type: AgentType;
-    abstract readonly preamble: string;
+    /** Subclasses need to define these. */
+    abstract readonly type: AgentType;
+    abstract readonly preamble: string | undefined;
     abstract readonly options: RequestOptions;
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
+    readonly confirmSideEffect: typeof Promise.withResolvers;
     constructor(opts: AgentOptions);
-    get chatHistoryForTesting(): Array<Host.AidaClient.Content>;
+    enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
+    buildRequest(part: Host.AidaClient.Part, role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.AidaRequest;
+    get id(): string;
+    get isEmpty(): boolean;
+    get origin(): string | undefined;
+    parseResponse(response: Host.AidaClient.AidaResponse): ParsedResponse;
     /**
      * Declare a function that the AI model can call.
      * @param name - The name of the function
@@ -140,38 +185,13 @@ export declare abstract class AiAgent<T> {
      *    with two args, `foo` and `bar`, you should instead have the function be
      *    called with one object with `foo` and `bar` keys.
      */
-    declareFunction<Args, ReturnType>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
-    callFunction(name: string, args: unknown): Promise<Record<string, unknown>>;
-    set chatNewHistoryForTesting(history: HistoryEntryStorage);
-    get id(): string;
-    get isEmpty(): boolean;
-    get origin(): string | undefined;
-    get context(): ConversationContext<T> | undefined;
-    get title(): string | undefined;
-    get isHistoryEntry(): boolean;
-    serialized(): SerializedAgent;
-    populateHistoryFromStorage(entry: SerializedAgent): void;
-    aidaFetch(request: Host.AidaClient.AidaRequest, options?: {
-        signal?: AbortSignal;
-    }): AsyncGenerator<{
-        parsedResponse: ParsedResponse;
-        completed: boolean;
-        rpcId?: Host.AidaClient.RpcGlobalId;
-    }, void, void>;
-    buildRequest(part: Host.AidaClient.Part): Host.AidaClient.AidaRequest;
-    handleAction(action: string, options?: {
+    protected declareFunction<Args extends Record<string, unknown>, ReturnType = unknown>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
+    protected formatParsedAnswer({ answer }: ParsedAnswer): string;
+    protected handleAction(action: string, options?: {
         signal?: AbortSignal;
     }): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
-    enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
-    parseResponse(response: Host.AidaClient.AidaResponse): ParsedResponse;
-    formatParsedAnswer({ answer }: ParsedAnswer): string;
-    formatParsedStep(step: ParsedStep): string;
-    buildChatHistoryForAida(): Host.AidaClient.Content[];
-    run(query: string, options: {
+    run(initialQuery: string, options: {
         signal?: AbortSignal;
         selected: ConversationContext<T> | null;
     }): AsyncGenerator<ResponseData, void, void>;
-    runFromHistory(): AsyncGenerator<ResponseData, void, void>;
 }
-export declare function isDebugMode(): boolean;
-export declare function debugLog(...log: unknown[]): void;

@@ -44,9 +44,6 @@ class TCPConnection {
     setWarmed(warmed) {
         this.warmed = warmed;
     }
-    isWarm() {
-        return this.warmed;
-    }
     isH2() {
         return this.h2;
     }

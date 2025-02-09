@@ -75,6 +75,6 @@ slot {
   height: 10px;
 }
 
-/*# sourceURL=adorner.css */
+/*# sourceURL=${import.meta.resolve('./adorner.css')} */
 `
 };

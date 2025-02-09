@@ -131,6 +131,6 @@ export default {
   display: inline-flex;
 }
 
-/*# sourceURL=originView.css */
+/*# sourceURL=${import.meta.resolve('./originView.css')} */
 `
 };

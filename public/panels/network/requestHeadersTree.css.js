@@ -231,6 +231,6 @@ export default {
   color: var(--sys-color-on-surface);
 }
 
-/*# sourceURL=requestHeadersTree.css */
+/*# sourceURL=${import.meta.resolve('./requestHeadersTree.css')} */
 `
 };

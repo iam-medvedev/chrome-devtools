@@ -42,6 +42,6 @@ export default {
   flex-shrink: 1;
 }
 
-/*# sourceURL=cookieItemsView.css */
+/*# sourceURL=${import.meta.resolve('./cookieItemsView.css')} */
 `
 };

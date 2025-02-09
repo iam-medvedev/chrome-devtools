@@ -194,7 +194,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     }
     createBreakpoint(breakpoint) {
         const labelNode = UI.UIUtils.CheckboxLabel.create(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name), undefined, undefined, Platform.StringUtilities.toKebabCase(breakpoint.name), /* small */ true);
-        labelNode.classList.add('source-code');
+        labelNode.classList.add('source-code', 'breakpoint');
         labelNode.checkboxElement.addEventListener('click', this.breakpointCheckboxClicked.bind(this, breakpoint), true);
         labelNode.checkboxElement.tabIndex = -1;
         const treeElement = new UI.TreeOutline.TreeElement(labelNode, undefined, Platform.StringUtilities.toKebabCase(breakpoint.name));

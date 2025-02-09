@@ -1,6 +1,7 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
+import { type NamedFunctionRange } from './SourceMapFunctionRanges.js';
 import { type Position as GeneratedPosition } from './SourceMapScopes.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
@@ -77,6 +78,7 @@ export declare class SourceMap {
      * for format description.
      */
     constructor(compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString, payload: SourceMapV3);
+    augmentWithScopes(scriptUrl: Platform.DevToolsPath.UrlString, ranges: NamedFunctionRange[]): void;
     compiledURL(): Platform.DevToolsPath.UrlString;
     url(): Platform.DevToolsPath.UrlString;
     sourceURLs(): Platform.DevToolsPath.UrlString[];

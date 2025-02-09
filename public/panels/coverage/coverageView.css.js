@@ -62,6 +62,6 @@ export default {
   text-align: center;
 }
 
-/*# sourceURL=coverageView.css */
+/*# sourceURL=${import.meta.resolve('./coverageView.css')} */
 `
 };

@@ -27,7 +27,6 @@ declare class TCPConnection {
     setThroughput(throughput: number): void;
     setCongestionWindow(congestion: number): void;
     setWarmed(warmed: boolean): void;
-    isWarm(): boolean;
     isH2(): boolean;
     get congestionWindow(): number;
     /**

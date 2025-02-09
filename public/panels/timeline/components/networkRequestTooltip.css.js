@@ -109,6 +109,6 @@ devtools-icon.priority {
   }
 }
 
-/*# sourceURL=networkRequestTooltip.css */
+/*# sourceURL=${import.meta.resolve('./networkRequestTooltip.css')} */
 `
 };

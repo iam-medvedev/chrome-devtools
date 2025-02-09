@@ -255,9 +255,6 @@ export function makeFlowEvents(events, flowId = 0) {
     }
     return [flowStart, ...flowSteps, flowEnd];
 }
-export function makeCompleteEventInMilliseconds(name, tsMillis, durMillis, cat = '*', pid = 0, tid = 0) {
-    return makeCompleteEvent(name, Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(tsMillis)), Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(durMillis)), cat, pid, tid);
-}
 /**
  * Builds a mock Instant.
  */

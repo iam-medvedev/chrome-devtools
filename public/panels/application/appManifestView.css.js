@@ -45,6 +45,6 @@ select {
   vertical-align: sub;
 }
 
-/*# sourceURL=appManifestView.css */
+/*# sourceURL=${import.meta.resolve('./appManifestView.css')} */
 `
 };

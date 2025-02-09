@@ -34,6 +34,6 @@ export default {
   padding-top: 32px;
 }
 
-/*# sourceURL=cssOverviewProcessingView.css */
+/*# sourceURL=${import.meta.resolve('./cssOverviewProcessingView.css')} */
 `
 };

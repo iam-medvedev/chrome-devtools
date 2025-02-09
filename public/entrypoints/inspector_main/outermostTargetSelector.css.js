@@ -40,6 +40,6 @@ export default {
   color: inherit;
 }
 
-/*# sourceURL=outermostTargetSelector.css */
+/*# sourceURL=${import.meta.resolve('./outermostTargetSelector.css')} */
 `
 };

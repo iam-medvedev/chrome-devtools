@@ -41,14 +41,14 @@ describeWithEnvironment('TimelineTreeView', function () {
             assert.strictEqual(firstNode.id.toString(), 'ienfalfjdbdpebioblfackkekamfmbnh');
             const extensionNode = new Timeline.TimelineTreeView.TreeGridNode(firstNode, firstNode.totalTime, firstNode.selfTime, firstNode.totalTime, treeView);
             const extEntity = extensionNode?.createCell('site');
-            let gotBadgeName = extEntity.querySelector('.entity-badge-name')?.textContent || '';
+            let gotBadgeName = extEntity.querySelector('.entity-badge')?.textContent || '';
             assert.strictEqual(gotBadgeName, 'Extension');
             // Node with first party
             const secondNode = topNodesIterator[1];
             assert.strictEqual(secondNode.id.toString(), 'localhost');
             const firstPartyNode = new Timeline.TimelineTreeView.TreeGridNode(secondNode, secondNode.totalTime, secondNode.selfTime, secondNode.totalTime, treeView);
             const firstPartyEntity = firstPartyNode?.createCell('site');
-            gotBadgeName = firstPartyEntity.querySelector('.entity-badge-name')?.textContent || '';
+            gotBadgeName = firstPartyEntity.querySelector('.entity-badge')?.textContent || '';
             assert.strictEqual(gotBadgeName, '1st party');
         });
     });

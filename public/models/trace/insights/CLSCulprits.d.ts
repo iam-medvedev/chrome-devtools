@@ -1,11 +1,65 @@
+import * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
-export type CLSCulpritsInsightModel = InsightModel<{
+export declare const UIStrings: {
+    /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
+    title: string;
+    /**
+     * @description Description of a DevTools insight that identifies the reasons that elements shift on the page.
+     * This is displayed after a user expands the section to see more. No character length limits.
+     */
+    description: string;
+    /**
+     *@description Text indicating the worst layout shift cluster.
+     */
+    worstLayoutShiftCluster: string;
+    /**
+     * @description Text indicating the worst layout shift cluster.
+     */
+    worstCluster: string;
+    /**
+     * @description Text indicating a layout shift cluster and its start time.
+     * @example {32 ms} PH1
+     */
+    layoutShiftCluster: string;
+    /**
+     *@description Text indicating the biggest reasons for the layout shifts.
+     */
+    topCulprits: string;
+    /**
+     * @description Text for a culprit type of Injected iframe.
+     */
+    injectedIframe: string;
+    /**
+     * @description Text for a culprit type of Font request.
+     */
+    fontRequest: string;
+    /**
+     * @description Text for a culprit type of Animation.
+     */
+    animation: string;
+    /**
+     * @description Text for a culprit type of Unsized images.
+     */
+    unsizedImages: string;
+    /**
+     * @description Text status when there were no layout shifts detected.
+     */
+    noLayoutShifts: string;
+    /**
+     * @description Text status when there no layout shifts culprits/root causes were found.
+     */
+    noCulprits: string;
+};
+export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
+export type CLSCulpritsInsightModel = InsightModel<typeof UIStrings, {
     animationFailures: readonly NoncompositedAnimationFailure[];
     shifts: Map<Types.Events.SyntheticLayoutShift, LayoutShiftRootCausesData>;
     clusters: Types.Events.SyntheticLayoutShiftCluster[];
     worstCluster: Types.Events.SyntheticLayoutShiftCluster | undefined;
+    /** The top 3 shift root causes for each cluster. */
+    topCulpritsByCluster: Map<Types.Events.SyntheticLayoutShiftCluster, Platform.UIString.LocalizedString[]>;
 }>;
 export declare function deps(): ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
 export declare const enum AnimationFailureReasons {

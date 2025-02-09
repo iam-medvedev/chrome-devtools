@@ -44,6 +44,6 @@ export default {
   z-index: 1;
 }
 
-/*# sourceURL=selfXssDialog.css */
+/*# sourceURL=${import.meta.resolve('./selfXssDialog.css')} */
 `
 };

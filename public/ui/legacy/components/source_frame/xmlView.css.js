@@ -16,6 +16,6 @@ export default {
   padding: 2px 4px;
 }
 
-/*# sourceURL=xmlView.css */
+/*# sourceURL=${import.meta.resolve('./xmlView.css')} */
 `
 };

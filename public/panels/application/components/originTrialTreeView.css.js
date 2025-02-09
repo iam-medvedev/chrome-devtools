@@ -20,6 +20,6 @@ export default {
   }
 }
 
-/*# sourceURL=originTrialTreeView.css */
+/*# sourceURL=${import.meta.resolve('./originTrialTreeView.css')} */
 `
 };

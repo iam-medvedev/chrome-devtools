@@ -60,6 +60,6 @@ button.link {
   width: 215px;
 }
 
-/*# sourceURL=permissionsPolicySection.css */
+/*# sourceURL=${import.meta.resolve('./permissionsPolicySection.css')} */
 `
 };

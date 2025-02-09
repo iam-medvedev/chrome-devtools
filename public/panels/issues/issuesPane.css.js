@@ -42,6 +42,6 @@ export default {
   padding-right: 6px;
 }
 
-/*# sourceURL=issuesPane.css */
+/*# sourceURL=${import.meta.resolve('./issuesPane.css')} */
 `
 };

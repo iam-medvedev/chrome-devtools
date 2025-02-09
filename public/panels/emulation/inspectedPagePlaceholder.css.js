@@ -14,6 +14,6 @@ export default {
   background-color: var(--sys-color-cdt-base-container);
 }
 
-/*# sourceURL=inspectedPagePlaceholder.css */
+/*# sourceURL=${import.meta.resolve('./inspectedPagePlaceholder.css')} */
 `
 };

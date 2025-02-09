@@ -65,11 +65,16 @@ dialog:focus-visible {
 
   .dialog-header-text {
     font: var(--sys-typescale-body2-medium);
+    padding-top: var(--sys-size-3);
+  }
+
+  devtools-button {
+    margin: 3px;
   }
 }
 
 .dialog-content {
-  padding: 0 0 var(--sys-size-7);
+  padding: 0 var(--sys-size-8) var(--sys-size-7) var(--sys-size-8);
   overflow: hidden;
 }
 
@@ -84,6 +89,6 @@ dialog:focus-visible {
   }
 }
 
-/*# sourceURL=dialog.css */
+/*# sourceURL=${import.meta.resolve('./dialog.css')} */
 `
 };

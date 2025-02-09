@@ -98,6 +98,6 @@ export default {
   outline: var(--sys-color-primary) auto 1px;
 }
 
-/*# sourceURL=elementsBreadcrumbs.css */
+/*# sourceURL=${import.meta.resolve('./elementsBreadcrumbs.css')} */
 `
 };

@@ -330,6 +330,6 @@ button.text-button {
   margin-bottom: 16px;
 }
 
-/*# sourceURL=sensors.css */
+/*# sourceURL=${import.meta.resolve('./sensors.css')} */
 `
 };

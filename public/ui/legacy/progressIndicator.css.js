@@ -38,6 +38,6 @@ export default {
   width: 100px;
 }
 
-/*# sourceURL=progressIndicator.css */
+/*# sourceURL=${import.meta.resolve('./progressIndicator.css')} */
 `
 };

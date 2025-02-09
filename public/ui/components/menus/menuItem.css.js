@@ -59,6 +59,6 @@ export default {
   outline: none;
 }
 
-/*# sourceURL=menuItem.css */
+/*# sourceURL=${import.meta.resolve('./menuItem.css')} */
 `
 };

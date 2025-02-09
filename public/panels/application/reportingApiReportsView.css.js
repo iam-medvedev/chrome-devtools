@@ -23,6 +23,6 @@ export default {
   }
 }
 
-/*# sourceURL=reportingApiReportsView.css */
+/*# sourceURL=${import.meta.resolve('./reportingApiReportsView.css')} */
 `
 };

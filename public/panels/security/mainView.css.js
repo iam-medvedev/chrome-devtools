@@ -192,6 +192,6 @@ export default {
   margin-bottom: 4px;
 }
 
-/*# sourceURL=mainView.css */
+/*# sourceURL=${import.meta.resolve('./mainView.css')} */
 `
 };

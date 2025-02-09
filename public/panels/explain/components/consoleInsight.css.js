@@ -394,6 +394,6 @@ details h3 {
   font: var(--sys-typescale-body4-bold);
 }
 
-/*# sourceURL=./components/consoleInsight.css */
+/*# sourceURL=${import.meta.resolve('././components/consoleInsight.css')} */
 `
 };

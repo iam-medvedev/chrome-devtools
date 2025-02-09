@@ -42,6 +42,6 @@ export default {
   }
 }
 
-/*# sourceURL=requestCookiesView.css */
+/*# sourceURL=${import.meta.resolve('./requestCookiesView.css')} */
 `
 };

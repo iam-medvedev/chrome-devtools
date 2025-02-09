@@ -23,6 +23,6 @@ img {
   background: var(--legacy-selection-bg-color);
 }
 
-/*# sourceURL=animationScreenshotPopover.css */
+/*# sourceURL=${import.meta.resolve('./animationScreenshotPopover.css')} */
 `
 };

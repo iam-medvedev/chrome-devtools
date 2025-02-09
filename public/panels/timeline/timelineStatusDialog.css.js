@@ -100,6 +100,6 @@ export default {
   }
 }
 
-/*# sourceURL=timelineStatusDialog.css */
+/*# sourceURL=${import.meta.resolve('./timelineStatusDialog.css')} */
 `
 };

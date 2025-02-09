@@ -58,6 +58,6 @@ ol.tree-outline {
   color: var(--sys-color-on-surface);
 }
 
-/*# sourceURL=xmlTree.css */
+/*# sourceURL=${import.meta.resolve('./xmlTree.css')} */
 `
 };

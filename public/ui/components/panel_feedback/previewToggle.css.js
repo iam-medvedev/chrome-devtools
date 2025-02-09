@@ -47,6 +47,6 @@ export default {
   color: var(--sys-color-token-subtle);
 }
 
-/*# sourceURL=previewToggle.css */
+/*# sourceURL=${import.meta.resolve('./previewToggle.css')} */
 `
 };

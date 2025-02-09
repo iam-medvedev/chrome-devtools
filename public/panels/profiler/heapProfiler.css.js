@@ -241,6 +241,6 @@ export default {
   overflow: auto;
 }
 
-/*# sourceURL=heapProfiler.css */
+/*# sourceURL=${import.meta.resolve('./heapProfiler.css')} */
 `
 };

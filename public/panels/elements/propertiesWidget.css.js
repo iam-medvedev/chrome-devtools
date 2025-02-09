@@ -24,6 +24,6 @@ export default {
   width: 100%;
 }
 
-/*# sourceURL=propertiesWidget.css */
+/*# sourceURL=${import.meta.resolve('./propertiesWidget.css')} */
 `
 };

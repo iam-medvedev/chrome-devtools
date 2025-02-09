@@ -255,6 +255,6 @@ li.selected:hover devtools-button {
   }
 }
 
-/*# sourceURL=profilesSidebarTree.css */
+/*# sourceURL=${import.meta.resolve('./profilesSidebarTree.css')} */
 `
 };

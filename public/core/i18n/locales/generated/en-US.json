@@ -215,6 +215,9 @@
   "core/sdk/CompilerSourceMappingContentProvider.ts | couldNotLoadContentForSS": {
     "message": "Could not load content for {PH1} ({PH2})"
   },
+  "core/sdk/Connections.ts | websocketDisconnected": {
+    "message": "WebSocket disconnected"
+  },
   "core/sdk/ConsoleModel.ts | bfcacheNavigation": {
     "message": "Navigation to {PH1} was restored from back/forward cache (see https://web.dev/bfcache/)"
   },
@@ -1721,38 +1724,137 @@
   "models/persistence/WorkspaceSettingsTab.ts | workspace": {
     "message": "Workspace"
   },
+  "models/trace/insights/CLSCulprits.ts | animation": {
+    "message": "Animation"
+  },
   "models/trace/insights/CLSCulprits.ts | description": {
     "message": "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads."
+  },
+  "models/trace/insights/CLSCulprits.ts | fontRequest": {
+    "message": "Font request"
+  },
+  "models/trace/insights/CLSCulprits.ts | injectedIframe": {
+    "message": "Injected iframe"
+  },
+  "models/trace/insights/CLSCulprits.ts | layoutShiftCluster": {
+    "message": "Layout shift cluster @ {PH1}"
+  },
+  "models/trace/insights/CLSCulprits.ts | noCulprits": {
+    "message": "Could not detect any layout shift culprits"
+  },
+  "models/trace/insights/CLSCulprits.ts | noLayoutShifts": {
+    "message": "No layout shifts"
   },
   "models/trace/insights/CLSCulprits.ts | title": {
     "message": "Layout shift culprits"
   },
+  "models/trace/insights/CLSCulprits.ts | topCulprits": {
+    "message": "Top layout shift culprits"
+  },
+  "models/trace/insights/CLSCulprits.ts | unsizedImages": {
+    "message": "Unsized Images"
+  },
+  "models/trace/insights/CLSCulprits.ts | worstCluster": {
+    "message": "Worst cluster"
+  },
+  "models/trace/insights/CLSCulprits.ts | worstLayoutShiftCluster": {
+    "message": "Worst layout shift cluster"
+  },
   "models/trace/insights/DocumentLatency.ts | description": {
     "message": "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression."
+  },
+  "models/trace/insights/DocumentLatency.ts | failedRedirects": {
+    "message": "Had redirects"
+  },
+  "models/trace/insights/DocumentLatency.ts | failedServerResponseTime": {
+    "message": "Server responded slowly"
+  },
+  "models/trace/insights/DocumentLatency.ts | failedTextCompression": {
+    "message": "No compression applied"
+  },
+  "models/trace/insights/DocumentLatency.ts | passingRedirects": {
+    "message": "Avoids redirects"
+  },
+  "models/trace/insights/DocumentLatency.ts | passingServerResponseTime": {
+    "message": "Server responds quickly"
+  },
+  "models/trace/insights/DocumentLatency.ts | passingTextCompression": {
+    "message": "Applies text compression"
+  },
+  "models/trace/insights/DocumentLatency.ts | redirectsLabel": {
+    "message": "Redirects"
+  },
+  "models/trace/insights/DocumentLatency.ts | serverResponseTimeLabel": {
+    "message": "Server response time"
   },
   "models/trace/insights/DocumentLatency.ts | title": {
     "message": "Document request latency"
   },
+  "models/trace/insights/DocumentLatency.ts | uncompressedDownload": {
+    "message": "Uncompressed download"
+  },
   "models/trace/insights/DOMSize.ts | description": {
     "message": "A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/)."
+  },
+  "models/trace/insights/DOMSize.ts | element": {
+    "message": "Element"
+  },
+  "models/trace/insights/DOMSize.ts | maxChildren": {
+    "message": "Most children"
+  },
+  "models/trace/insights/DOMSize.ts | maxDOMDepth": {
+    "message": "DOM depth"
+  },
+  "models/trace/insights/DOMSize.ts | statistic": {
+    "message": "Statistic"
   },
   "models/trace/insights/DOMSize.ts | title": {
     "message": "Optimize DOM size"
   },
+  "models/trace/insights/DOMSize.ts | totalElements": {
+    "message": "Total elements"
+  },
+  "models/trace/insights/DOMSize.ts | value": {
+    "message": "Value"
+  },
   "models/trace/insights/FontDisplay.ts | description": {
     "message": "Consider setting [font-display](https://developer.chrome.com/blog/font-display) to swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
+  },
+  "models/trace/insights/FontDisplay.ts | fontColumn": {
+    "message": "Font"
   },
   "models/trace/insights/FontDisplay.ts | title": {
     "message": "Font display"
   },
+  "models/trace/insights/FontDisplay.ts | wastedTimeColumn": {
+    "message": "Wasted time"
+  },
   "models/trace/insights/ForcedReflow.ts | description": {
     "message": "Many APIs, typically reading layout geometry, force the rendering engine to pause script execution in order to calculate the style and layout. Learn more about [forced reflow](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and its mitigations."
+  },
+  "models/trace/insights/ForcedReflow.ts | relatedStackTrace": {
+    "message": "Stack trace"
   },
   "models/trace/insights/ForcedReflow.ts | title": {
     "message": "Forced reflow"
   },
+  "models/trace/insights/ForcedReflow.ts | topTimeConsumingFunctionCall": {
+    "message": "Top function call"
+  },
+  "models/trace/insights/ForcedReflow.ts | totalReflowTime": {
+    "message": "Total reflow time"
+  },
   "models/trace/insights/ImageDelivery.ts | description": {
     "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)"
+  },
+  "models/trace/insights/ImageDelivery.ts | noOptimizableImages": {
+    "message": "No optimizable images"
+  },
+  "models/trace/insights/ImageDelivery.ts | optimizeFile": {
+    "message": "Optimize file size"
+  },
+  "models/trace/insights/ImageDelivery.ts | others": {
+    "message": "{PH1} others"
   },
   "models/trace/insights/ImageDelivery.ts | title": {
     "message": "Improve image delivery"
@@ -1772,11 +1874,50 @@
   "models/trace/insights/InteractionToNextPaint.ts | description": {
     "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
   },
+  "models/trace/insights/InteractionToNextPaint.ts | duration": {
+    "message": "Duration"
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | inputDelay": {
+    "message": "Input delay"
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | noInteractions": {
+    "message": "No interactions detected"
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | phase": {
+    "message": "Phase"
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | presentationDelay": {
+    "message": "Presentation delay"
+  },
+  "models/trace/insights/InteractionToNextPaint.ts | processingDuration": {
+    "message": "Processing duration"
+  },
   "models/trace/insights/InteractionToNextPaint.ts | title": {
     "message": "INP by phase"
   },
   "models/trace/insights/LCPDiscovery.ts | description": {
     "message": "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)"
+  },
+  "models/trace/insights/LCPDiscovery.ts | fetchPriorityApplied": {
+    "message": "fetchpriority=high applied"
+  },
+  "models/trace/insights/LCPDiscovery.ts | fetchPriorityShouldBeApplied": {
+    "message": "fetchpriority=high should be applied"
+  },
+  "models/trace/insights/LCPDiscovery.ts | lazyLoadNotApplied": {
+    "message": "lazy load not applied"
+  },
+  "models/trace/insights/LCPDiscovery.ts | lcpLoadDelay": {
+    "message": "LCP image loaded {PH1} after earliest start point."
+  },
+  "models/trace/insights/LCPDiscovery.ts | noLcp": {
+    "message": "No LCP detected"
+  },
+  "models/trace/insights/LCPDiscovery.ts | noLcpResource": {
+    "message": "No LCP resource detected because the LCP is not an image"
+  },
+  "models/trace/insights/LCPDiscovery.ts | requestDiscoverable": {
+    "message": "Request is discoverable in initial document"
   },
   "models/trace/insights/LCPDiscovery.ts | title": {
     "message": "LCP request discovery"
@@ -1784,11 +1925,35 @@
   "models/trace/insights/LCPPhases.ts | description": {
     "message": "Each [phase has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays."
   },
+  "models/trace/insights/LCPPhases.ts | elementRenderDelay": {
+    "message": "Element render delay"
+  },
+  "models/trace/insights/LCPPhases.ts | noLcp": {
+    "message": "No LCP detected"
+  },
+  "models/trace/insights/LCPPhases.ts | percentLCP": {
+    "message": "% of LCP"
+  },
+  "models/trace/insights/LCPPhases.ts | phase": {
+    "message": "Phase"
+  },
+  "models/trace/insights/LCPPhases.ts | resourceLoadDelay": {
+    "message": "Resource load delay"
+  },
+  "models/trace/insights/LCPPhases.ts | resourceLoadDuration": {
+    "message": "Resource load duration"
+  },
+  "models/trace/insights/LCPPhases.ts | timeToFirstByte": {
+    "message": "Time to first byte"
+  },
   "models/trace/insights/LCPPhases.ts | title": {
     "message": "LCP by phase"
   },
   "models/trace/insights/LongCriticalNetworkTree.ts | description": {
     "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
+  },
+  "models/trace/insights/LongCriticalNetworkTree.ts | noLongCriticalNetworkTree": {
+    "message": "No rendering tasks impacted by long critical network tree"
   },
   "models/trace/insights/LongCriticalNetworkTree.ts | title": {
     "message": "Long critical network tree"
@@ -1796,17 +1961,56 @@
   "models/trace/insights/RenderBlocking.ts | description": {
     "message": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) can move these network requests out of the critical path."
   },
+  "models/trace/insights/RenderBlocking.ts | duration": {
+    "message": "Duration"
+  },
+  "models/trace/insights/RenderBlocking.ts | noRenderBlocking": {
+    "message": "No render blocking requests for this navigation"
+  },
+  "models/trace/insights/RenderBlocking.ts | renderBlockingRequest": {
+    "message": "Request"
+  },
   "models/trace/insights/RenderBlocking.ts | title": {
     "message": "Render blocking requests"
   },
   "models/trace/insights/SlowCSSSelector.ts | description": {
     "message": "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs."
   },
+  "models/trace/insights/SlowCSSSelector.ts | elapsed": {
+    "message": "Elapsed time"
+  },
+  "models/trace/insights/SlowCSSSelector.ts | enableSelectorData": {
+    "message": "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings."
+  },
+  "models/trace/insights/SlowCSSSelector.ts | matchAttempts": {
+    "message": "Match attempts"
+  },
+  "models/trace/insights/SlowCSSSelector.ts | matchCount": {
+    "message": "Match count"
+  },
   "models/trace/insights/SlowCSSSelector.ts | title": {
     "message": "CSS Selector costs"
   },
+  "models/trace/insights/SlowCSSSelector.ts | topSelectors": {
+    "message": "Top selectors"
+  },
+  "models/trace/insights/SlowCSSSelector.ts | total": {
+    "message": "Total"
+  },
+  "models/trace/insights/ThirdParties.ts | columnMainThreadTime": {
+    "message": "Main thread time"
+  },
+  "models/trace/insights/ThirdParties.ts | columnThirdParty": {
+    "message": "Third party"
+  },
+  "models/trace/insights/ThirdParties.ts | columnTransferSize": {
+    "message": "Transfer size"
+  },
   "models/trace/insights/ThirdParties.ts | description": {
     "message": "Third party code can significantly impact load performance. [Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page's content."
+  },
+  "models/trace/insights/ThirdParties.ts | noThirdParties": {
+    "message": "No third parties found"
   },
   "models/trace/insights/ThirdParties.ts | title": {
     "message": "Third parties"
@@ -3779,9 +3983,6 @@
   "panels/application/CookieItemsView.ts | showUrlDecoded": {
     "message": "Show URL-decoded"
   },
-  "panels/application/DOMStorageItemsView.ts | domStorage": {
-    "message": "DOM Storage"
-  },
   "panels/application/DOMStorageItemsView.ts | domStorageItemDeleted": {
     "message": "The storage item was deleted."
   },
@@ -3791,29 +3992,11 @@
   "panels/application/DOMStorageItemsView.ts | domStorageItemsCleared": {
     "message": "DOM Storage Items cleared"
   },
-  "panels/application/DOMStorageItemsView.ts | key": {
-    "message": "Key"
-  },
-  "panels/application/DOMStorageItemsView.ts | value": {
-    "message": "Value"
-  },
-  "panels/application/ExtensionStorageItemsView.ts | extensionStorage": {
-    "message": "Extension Storage"
-  },
-  "panels/application/ExtensionStorageItemsView.ts | extensionStorageItemDeleted": {
-    "message": "The storage item was deleted."
-  },
   "panels/application/ExtensionStorageItemsView.ts | extensionStorageItems": {
     "message": "Extension Storage Items"
   },
   "panels/application/ExtensionStorageItemsView.ts | extensionStorageItemsCleared": {
     "message": "Extension Storage Items cleared"
-  },
-  "panels/application/ExtensionStorageItemsView.ts | key": {
-    "message": "Key"
-  },
-  "panels/application/ExtensionStorageItemsView.ts | value": {
-    "message": "Value"
   },
   "panels/application/IndexedDBViews.ts | clearObjectStore": {
     "message": "Clear object store"
@@ -3892,6 +4075,21 @@
   },
   "panels/application/InterestGroupTreeElement.ts | interestGroups": {
     "message": "Interest groups"
+  },
+  "panels/application/KeyValueStorageItemsView.ts | key": {
+    "message": "Key"
+  },
+  "panels/application/KeyValueStorageItemsView.ts | noPreviewSelected": {
+    "message": "No value selected"
+  },
+  "panels/application/KeyValueStorageItemsView.ts | numberEntries": {
+    "message": "Number of entries shown in table: {PH1}"
+  },
+  "panels/application/KeyValueStorageItemsView.ts | selectAValueToPreview": {
+    "message": "Select a value to preview"
+  },
+  "panels/application/KeyValueStorageItemsView.ts | value": {
+    "message": "Value"
   },
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "Access to opener"
@@ -4021,6 +4219,9 @@
   },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailsStatus": {
     "message": "Status"
+  },
+  "panels/application/preloading/components/PreloadingDetailsReportView.ts | noElementSelected": {
+    "message": "No element selected"
   },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | selectAnElementForMoreDetails": {
     "message": "Select an element for more details"
@@ -4666,6 +4867,9 @@
   },
   "panels/application/SharedStorageItemsView.ts | key": {
     "message": "Key"
+  },
+  "panels/application/SharedStorageItemsView.ts | noValueSelected": {
+    "message": "No value selected"
   },
   "panels/application/SharedStorageItemsView.ts | selectAValueToPreview": {
     "message": "Select a value to preview"
@@ -6820,6 +7024,12 @@
   },
   "panels/issues/AffectedCookiesView.ts | path": {
     "message": "Path"
+  },
+  "panels/issues/AffectedDescendantsWithinSelectElementView.ts | disallowedNode": {
+    "message": "Disallowed descendant"
+  },
+  "panels/issues/AffectedDescendantsWithinSelectElementView.ts | nDescendants": {
+    "message": "{n, plural, =1 { descendant} other { descendants}}"
   },
   "panels/issues/AffectedDirectivesView.ts | blocked": {
     "message": "blocked"
@@ -13139,215 +13349,11 @@
   "panels/timeline/components/insights/BaseInsightComponent.ts | viewDetails": {
     "message": "View details for {PH1}"
   },
-  "panels/timeline/components/insights/CLSCulprits.ts | animation": {
-    "message": "Animation"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | fontRequest": {
-    "message": "Font request"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | injectedIframe": {
-    "message": "Injected iframe"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | layoutShiftCluster": {
-    "message": "Layout shift cluster @ {PH1}"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | noCulprits": {
-    "message": "Could not detect any layout shift culprits"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | noLayoutShifts": {
-    "message": "No layout shifts"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | topCulprits": {
-    "message": "Top layout shift culprits"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | unsizedImages": {
-    "message": "Unsized Images"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | worstCluster": {
-    "message": "Worst cluster"
-  },
-  "panels/timeline/components/insights/CLSCulprits.ts | worstLayoutShiftCluster": {
-    "message": "Worst layout shift cluster"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | failedAriaLabel": {
+  "panels/timeline/components/insights/Checklist.ts | failedAriaLabel": {
     "message": "Insight check failed: {PH1}"
   },
-  "panels/timeline/components/insights/DocumentLatency.ts | failedRedirects": {
-    "message": "Had redirects"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | failedServerResponseTime": {
-    "message": "Server responded slowly"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | failedTextCompression": {
-    "message": "No compression applied"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | passingRedirects": {
-    "message": "Avoids redirects"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | passingServerResponseTime": {
-    "message": "Server responds quickly"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | passingTextCompression": {
-    "message": "Applies text compression"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | redirectsLabel": {
-    "message": "Redirects"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | serverResponseTimeLabel": {
-    "message": "Server response time"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | successAriaLabel": {
+  "panels/timeline/components/insights/Checklist.ts | successAriaLabel": {
     "message": "Insight check passed: {PH1}"
-  },
-  "panels/timeline/components/insights/DocumentLatency.ts | uncompressedDownload": {
-    "message": "Uncompressed download"
-  },
-  "panels/timeline/components/insights/DOMSize.ts | element": {
-    "message": "Element"
-  },
-  "panels/timeline/components/insights/DOMSize.ts | maxChildren": {
-    "message": "Most children"
-  },
-  "panels/timeline/components/insights/DOMSize.ts | maxDOMDepth": {
-    "message": "DOM depth"
-  },
-  "panels/timeline/components/insights/DOMSize.ts | statistic": {
-    "message": "Statistic"
-  },
-  "panels/timeline/components/insights/DOMSize.ts | totalElements": {
-    "message": "Total elements"
-  },
-  "panels/timeline/components/insights/DOMSize.ts | value": {
-    "message": "Value"
-  },
-  "panels/timeline/components/insights/FontDisplay.ts | fontColumn": {
-    "message": "Font"
-  },
-  "panels/timeline/components/insights/FontDisplay.ts | wastedTimeColumn": {
-    "message": "Wasted time"
-  },
-  "panels/timeline/components/insights/ForcedReflow.ts | relatedStackTrace": {
-    "message": "Stack trace"
-  },
-  "panels/timeline/components/insights/ForcedReflow.ts | topTimeConsumingFunctionCall": {
-    "message": "Top function call"
-  },
-  "panels/timeline/components/insights/ForcedReflow.ts | totalReflowTime": {
-    "message": "Total reflow time"
-  },
-  "panels/timeline/components/insights/ImageDelivery.ts | noOptimizableImages": {
-    "message": "No optimizable images"
-  },
-  "panels/timeline/components/insights/ImageDelivery.ts | optimizeFile": {
-    "message": "Optimize file size"
-  },
-  "panels/timeline/components/insights/ImageDelivery.ts | others": {
-    "message": "{PH1} others"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | duration": {
-    "message": "Duration"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | inputDelay": {
-    "message": "Input delay"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | noInteractions": {
-    "message": "No interactions detected"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | phase": {
-    "message": "Phase"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | presentationDelay": {
-    "message": "Presentation delay"
-  },
-  "panels/timeline/components/insights/InteractionToNextPaint.ts | processingDuration": {
-    "message": "Processing duration"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | failedAriaLabel": {
-    "message": "Insight check failed: {PH1}"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | fetchPriorityApplied": {
-    "message": "fetchpriority=high applied"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | lazyLoadNotApplied": {
-    "message": "lazy load not applied"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | lcpLoadDelay": {
-    "message": "LCP image loaded {PH1} after earliest start point."
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | noLcp": {
-    "message": "No LCP detected"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | noLcpResource": {
-    "message": "No LCP resource detected because the LCP is not an image"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | requestDiscoverable": {
-    "message": "Request is discoverable in initial document"
-  },
-  "panels/timeline/components/insights/LCPDiscovery.ts | successAriaLabel": {
-    "message": "Insight check passed: {PH1}"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
-    "message": "Element render delay"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | noLcp": {
-    "message": "No LCP detected"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | percentLCP": {
-    "message": "% of LCP"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | phase": {
-    "message": "Phase"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDelay": {
-    "message": "Resource load delay"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDuration": {
-    "message": "Resource load duration"
-  },
-  "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
-    "message": "Time to first byte"
-  },
-  "panels/timeline/components/insights/LongCriticalNetworkTree.ts | noLongCriticalNetworkTree": {
-    "message": "No rendering tasks impacted by long critical network tree"
-  },
-  "panels/timeline/components/insights/RenderBlocking.ts | duration": {
-    "message": "Duration"
-  },
-  "panels/timeline/components/insights/RenderBlocking.ts | noRenderBlocking": {
-    "message": "No render blocking requests for this navigation"
-  },
-  "panels/timeline/components/insights/RenderBlocking.ts | renderBlockingRequest": {
-    "message": "Request"
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | elapsed": {
-    "message": "Elapsed time"
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | enableSelectorData": {
-    "message": "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings."
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | matchAttempts": {
-    "message": "Match attempts"
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | matchCount": {
-    "message": "Match count"
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | topSelectors": {
-    "message": "Top selectors"
-  },
-  "panels/timeline/components/insights/SlowCSSSelector.ts | total": {
-    "message": "Total"
-  },
-  "panels/timeline/components/insights/ThirdParties.ts | columnBlockingTime": {
-    "message": "Blocking time"
-  },
-  "panels/timeline/components/insights/ThirdParties.ts | columnThirdParty": {
-    "message": "Third party"
-  },
-  "panels/timeline/components/insights/ThirdParties.ts | columnTransferSize": {
-    "message": "Transfer size"
-  },
-  "panels/timeline/components/insights/ThirdParties.ts | noThirdParties": {
-    "message": "No third parties found"
   },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
@@ -15812,15 +15818,6 @@
   "ui/legacy/components/data_grid/DataGrid.ts | sSUseTheUpAndDownArrowKeysTo": {
     "message": "{PH1} {PH2}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell."
   },
-  "ui/legacy/components/data_grid/DataGridWithPreview.ts | noPreviewSelected": {
-    "message": "No value selected"
-  },
-  "ui/legacy/components/data_grid/DataGridWithPreview.ts | numberEntries": {
-    "message": "Number of entries shown in table: {PH1}"
-  },
-  "ui/legacy/components/data_grid/DataGridWithPreview.ts | selectAValueToPreview": {
-    "message": "Select a value to preview"
-  },
   "ui/legacy/components/data_grid/ShowMoreDataGridNode.ts | showAllD": {
     "message": "Show all {PH1}"
   },
@@ -16294,9 +16291,6 @@
   },
   "ui/legacy/components/utils/Linkifier.ts | unknown": {
     "message": "(unknown)"
-  },
-  "ui/legacy/components/utils/TargetDetachedDialog.ts | websocketDisconnected": {
-    "message": "WebSocket disconnected"
   },
   "ui/legacy/DockController.ts | close": {
     "message": "Close"

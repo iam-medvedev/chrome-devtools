@@ -92,6 +92,6 @@ devtools-editable-content:focus ~ devtools-suggestion-box {
   text-decoration: line-through;
 }
 
-/*# sourceURL=suggestionInput.css */
+/*# sourceURL=${import.meta.resolve('./suggestionInput.css')} */
 `
 };

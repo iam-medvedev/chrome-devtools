@@ -100,6 +100,6 @@ export default {
   text-align: inherit;
 }
 
-/*# sourceURL=editFileSystemView.css */
+/*# sourceURL=${import.meta.resolve('./editFileSystemView.css')} */
 `
 };

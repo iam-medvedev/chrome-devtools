@@ -26,6 +26,6 @@ export default {
   overflow: hidden;
 }
 
-/*# sourceURL=reportSection.css */
+/*# sourceURL=${import.meta.resolve('./reportSection.css')} */
 `
 };

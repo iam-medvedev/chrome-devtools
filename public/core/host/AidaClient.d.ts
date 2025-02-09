@@ -1,8 +1,11 @@
 import * as Common from '../common/common.js';
 import type { AidaClientResult } from './InspectorFrontendHostAPI.js';
 export declare enum Role {
+    /** Provide this role when giving a function call response  */
     ROLE_UNSPECIFIED = 0,
+    /** Tags the content came from the user */
     USER = 1,
+    /** Tags the content came from the LLM */
     MODEL = 2
 }
 export declare const enum Rating {
@@ -10,8 +13,12 @@ export declare const enum Rating {
     POSITIVE = "POSITIVE",
     NEGATIVE = "NEGATIVE"
 }
+/**
+ * A `Content` represents a single turn message.
+ */
 export interface Content {
     parts: Part[];
+    /** The producer of the content. */
     role: Role;
 }
 export type Part = {
@@ -27,6 +34,7 @@ export type Part = {
         response: Record<string, unknown>;
     };
 } | {
+    /** Inline media bytes. */
     inlineData: MediaBlob;
 };
 export declare const enum ParametersTypes {
@@ -48,23 +56,21 @@ interface FunctionArrayParam extends BaseFunctionParam {
     type: ParametersTypes.ARRAY;
     items: FunctionPrimitiveParams;
 }
-export interface FunctionObjectParam extends BaseFunctionParam {
+export interface FunctionObjectParam<T extends string | number | symbol = string> extends BaseFunctionParam {
     type: ParametersTypes.OBJECT;
-    properties: {
-        [Key in string]: FunctionPrimitiveParams | FunctionArrayParam;
-    };
+    properties: Record<T, FunctionPrimitiveParams | FunctionArrayParam>;
 }
 /**
  * More about function declaration can be read at
  * https://ai.google.dev/gemini-api/docs/function-calling
  */
-export interface FunctionDeclaration {
+export interface FunctionDeclaration<T extends string | number | symbol = string> {
     name: string;
     /**
      * A description for the LLM to understand what the specific function will do once called.
      */
     description: string;
-    parameters: FunctionObjectParam | FunctionPrimitiveParams | FunctionArrayParam;
+    parameters: FunctionObjectParam<T>;
 }
 export interface MediaBlob {
     mimeType: string;

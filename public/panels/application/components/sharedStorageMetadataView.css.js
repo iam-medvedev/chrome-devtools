@@ -27,6 +27,6 @@ devtools-button {
   vertical-align: sub;
 }
 
-/*# sourceURL=sharedStorageMetadataView.css */
+/*# sourceURL=${import.meta.resolve('./sharedStorageMetadataView.css')} */
 `
 };

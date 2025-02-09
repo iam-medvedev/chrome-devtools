@@ -110,6 +110,6 @@ export default {
   overflow: hidden;
 }
 
-/*# sourceURL=indexedDBViews.css */
+/*# sourceURL=${import.meta.resolve('./indexedDBViews.css')} */
 `
 };

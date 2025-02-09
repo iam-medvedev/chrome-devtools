@@ -81,7 +81,7 @@ export class LayoutShiftRootCauses {
         for (let i = 0; i < backendNodeIds.length; i++) {
             nodeIdsByBackendIdMap.set(backendNodeIds[i], nodes[i]);
         }
-        // Maps from PrePaint events to LayoutShifts that occured in each one.
+        // Maps from PrePaint events to LayoutShifts that occurred in each one.
         const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
         for (const layoutInvalidation of eventsForLayoutInvalidation) {
             // Get the first PrePaint event that happened after the current LayoutInvalidation event.
@@ -150,7 +150,7 @@ export class LayoutShiftRootCauses {
      */
     linkShiftsToLayoutEvents(layoutShifts, modelData) {
         const { prePaintEvents } = modelData.LayoutShifts;
-        // Maps from PrePaint events to LayoutShifts that occured in each one.
+        // Maps from PrePaint events to LayoutShifts that occurred in each one.
         const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
         const eventTriggersLayout = ({ name }) => {
             const knownName = name;
@@ -349,7 +349,7 @@ export class LayoutShiftRootCauses {
     /**
      * Returns a function that retrieves the active value of a given
      * CSS property within the matched styles of the param node.
-     * The first occurence within the matched styles is returned and the
+     * The first occurrence within the matched styles is returned and the
      * value is looked up in the following order, which follows CSS
      * specificity:
      * 1. Inline styles.
@@ -493,7 +493,7 @@ function dimensionsAreExplicit(dimensions) {
  * PrePaint events to layout shifts dispatched within it.
  */
 function getShiftsByPrePaintEvents(layoutShifts, prePaintEvents) {
-    // Maps from PrePaint events to LayoutShifts that occured in each one.
+    // Maps from PrePaint events to LayoutShifts that occurred in each one.
     const shiftsByPrePaint = new Map();
     // Associate all shifts to their corresponding PrePaint.
     for (const prePaintEvent of prePaintEvents) {

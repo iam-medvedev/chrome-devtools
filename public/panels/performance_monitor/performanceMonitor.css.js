@@ -90,6 +90,6 @@ export default {
   opacity: 0%;
 }
 
-/*# sourceURL=performanceMonitor.css */
+/*# sourceURL=${import.meta.resolve('./performanceMonitor.css')} */
 `
 };

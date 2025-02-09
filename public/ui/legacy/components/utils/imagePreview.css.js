@@ -78,6 +78,6 @@ export default {
   cursor: pointer;
 }
 
-/*# sourceURL=imagePreview.css */
+/*# sourceURL=${import.meta.resolve('./imagePreview.css')} */
 `
 };

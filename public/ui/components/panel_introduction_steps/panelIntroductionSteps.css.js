@@ -61,6 +61,6 @@ h1 {
   justify-content: center;
 }
 
-/*# sourceURL=panelIntroductionSteps.css */
+/*# sourceURL=${import.meta.resolve('./panelIntroductionSteps.css')} */
 `
 };

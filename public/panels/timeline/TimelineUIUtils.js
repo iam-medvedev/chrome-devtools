@@ -1892,14 +1892,15 @@ export class TimelineUIUtils {
     }
     // Generates a Summary component given a aggregated stats for categories.
     static generateSummaryDetails(aggregatedStats, rangeStart, rangeEnd, selectedEvents, thirdPartyTree) {
+        const element = document.createElement('div');
+        element.classList.add('timeline-details-range-summary', 'hbox');
+        // First, the category bar chart.
         let total = 0;
+        let categories = [];
         // Calculate total of all categories.
         for (const categoryName in aggregatedStats) {
             total += aggregatedStats[categoryName];
         }
-        const element = document.createElement('div');
-        element.classList.add('timeline-details-view-summary');
-        let categories = [];
         // Get stats values from categories.
         for (const categoryName in Utils.EntryStyles.getCategoryStyles()) {
             const category = Utils.EntryStyles.getCategoryStyles()[categoryName];
@@ -1918,30 +1919,21 @@ export class TimelineUIUtils {
         categories = categories.sort((a, b) => b.value - a.value);
         const start = Trace.Types.Timing.Milli(rangeStart);
         const end = Trace.Types.Timing.Milli(rangeEnd);
-        const summaryTable = new TimelineComponents.TimelineSummary.TimelineSummary();
-        summaryTable.data = {
+        const categorySummaryTable = new TimelineComponents.TimelineSummary.CategorySummary();
+        categorySummaryTable.data = {
             rangeStart: start,
             rangeEnd: end,
             total,
             categories,
             selectedEvents,
         };
-        const summaryTableContainer = element.createChild('div');
-        summaryTableContainer.appendChild(summaryTable);
-        if (!Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */)) {
-            return element;
-        }
-        const treeView = new ThirdPartyTreeView.ThirdPartyTreeView();
-        treeView.treeView = thirdPartyTree;
-        const treeSlot = document.createElement('slot');
-        const thirdPartyDiv = document.createElement('div');
-        thirdPartyDiv.className = 'third-party-table';
-        UI.ARIAUtils.setLabel(thirdPartyDiv, i18nString(UIStrings.thirdPartyTable));
-        treeSlot.name = 'third-party-table';
-        treeSlot.append(treeView);
-        thirdPartyDiv.appendChild(treeSlot);
-        if (summaryTable.shadowRoot) {
-            summaryTable.shadowRoot?.appendChild(thirdPartyDiv);
+        element.append(categorySummaryTable);
+        if (Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */)) {
+            // Add the 3p datagrid
+            const treeView = new ThirdPartyTreeView.ThirdPartyTreeElement();
+            treeView.treeView = thirdPartyTree;
+            UI.ARIAUtils.setLabel(treeView, i18nString(UIStrings.thirdPartyTable));
+            element.append(treeView);
         }
         return element;
     }

@@ -157,11 +157,10 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
         this.appendTab(headersTab, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
         if (this.requestInternal.hasOverriddenHeaders()) {
-            const icon = new IconButton.Icon.Icon();
-            icon.data =
-                { iconName: 'small-status-dot', color: 'var(--sys-color-purple-bright)', width: '16px', height: '16px' };
-            icon.title = i18nString(UIStrings.containsOverriddenHeaders);
-            this.setTabIcon("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, icon);
+            const statusDot = document.createElement('div');
+            statusDot.className = 'status-dot';
+            statusDot.title = i18nString(UIStrings.containsOverriddenHeaders);
+            this.setSuffixElement("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, statusDot);
         }
         this.payloadView = null;
         void this.maybeAppendPayloadPanel();
@@ -188,11 +187,10 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             }
             this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
             if (this.requestInternal.hasOverriddenContent) {
-                const icon = new IconButton.Icon.Icon();
-                icon.title = i18nString(UIStrings.responseIsOverridden);
-                icon.data =
-                    { iconName: 'small-status-dot', color: 'var(--sys-color-purple-bright)', width: '16px', height: '16px' };
-                this.setTabIcon("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, icon);
+                const statusDot = document.createElement('div');
+                statusDot.className = 'status-dot';
+                statusDot.title = i18nString(UIStrings.responseIsOverridden);
+                this.setSuffixElement("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, statusDot);
             }
         }
         this.appendTab("initiator" /* NetworkForward.UIRequestLocation.UIRequestTabs.INITIATOR */, i18nString(UIStrings.initiator), new RequestInitiatorView(request), i18nString(UIStrings.requestInitiatorCallStack));
@@ -241,7 +239,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             const icon = new IconButton.Icon.Icon();
             icon.data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
             icon.title = i18nString(UIStrings.thirdPartyPhaseout);
-            this.setTabIcon("cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.COOKIES */, icon);
+            this.setTrailingTabIcon("cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.COOKIES */, icon);
         }
     }
     async maybeAppendPayloadPanel() {

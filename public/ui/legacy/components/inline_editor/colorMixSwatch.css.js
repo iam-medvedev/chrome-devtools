@@ -43,6 +43,6 @@ export default {
   mask: radial-gradient(circle at 0% center, rgb(0 0 0) 50%, rgb(0 0 0 / 0%) calc(50% + 0.5px));
 }
 
-/*# sourceURL=colorMixSwatch.css */
+/*# sourceURL=${import.meta.resolve('./colorMixSwatch.css')} */
 `
 };

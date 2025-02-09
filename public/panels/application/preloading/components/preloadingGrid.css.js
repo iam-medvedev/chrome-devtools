@@ -44,6 +44,6 @@ devtools-data-grid {
   vertical-align: text-bottom;
 }
 
-/*# sourceURL=preloadingGrid.css */
+/*# sourceURL=${import.meta.resolve('./preloadingGrid.css')} */
 `
 };

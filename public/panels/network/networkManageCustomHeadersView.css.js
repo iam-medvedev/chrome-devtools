@@ -44,6 +44,6 @@ export default {
   margin-top: 5px;
 }
 
-/*# sourceURL=networkManageCustomHeadersView.css */
+/*# sourceURL=${import.meta.resolve('./networkManageCustomHeadersView.css')} */
 `
 };

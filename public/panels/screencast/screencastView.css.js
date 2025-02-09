@@ -136,6 +136,6 @@ export default {
   align-items: center;
 }
 
-/*# sourceURL=screencastView.css */
+/*# sourceURL=${import.meta.resolve('./screencastView.css')} */
 `
 };

@@ -37,7 +37,6 @@ import * as ARIAUtils from './ARIAUtils.js';
 import filterStyles from './filter.css.js';
 import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { bindCheckbox } from './SettingsUI.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { ToolbarFilter, ToolbarSettingToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, createTextChild } from './UIUtils.js';
@@ -173,7 +172,8 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     constructor() {
         super();
         this.filterElement = document.createElement('div');
-        const filterToolbar = this.filterElement.createChild('devtools-toolbar', 'text-filter');
+        this.filterElement.classList.add('text-filter');
+        const filterToolbar = this.filterElement.createChild('devtools-toolbar');
         // Set the style directly on the element to overwrite parent css styling.
         filterToolbar.style.borderBottom = 'none';
         this.#filter = new ToolbarFilter(undefined, 1, 1, UIStrings.egSmalldUrlacomb, this.completions.bind(this));
@@ -214,6 +214,9 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.setValue('');
     }
 }
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const filterStyleSheet = new CSSStyleSheet();
+filterStyleSheet.replaceSync(filterStyles.cssContent);
 export class NamedBitSetFilterUIElement extends HTMLElement {
     #options = { items: [] };
     #shadow = this.attachShadow({ mode: 'open' });
@@ -243,7 +246,9 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
         return this.#namedBitSetFilterUI;
     }
     connectedCallback() {
-        ThemeSupport.ThemeSupport.instance().appendStyle(this.#shadow, filterStyles);
+        // TODO(crbug.com/391381439): We cannot simply add a `<style>` element here, because
+        // the `options` setter above clears the shadow DOM.
+        this.#shadow.adoptedStyleSheets = [filterStyleSheet];
     }
     #filterChanged() {
         const domEvent = new CustomEvent('filterChanged');

@@ -58,6 +58,6 @@ input.devtools-text-input[type="text"]::placeholder {
   }
 }
 
-/*# sourceURL=protocolHandlersView.css */
+/*# sourceURL=${import.meta.resolve('./protocolHandlersView.css')} */
 `
 };

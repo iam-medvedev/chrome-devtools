@@ -4,10 +4,9 @@
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Bindings from '../../../models/bindings/bindings.js';
 import * as PanelUtils from '../../utils/utils.js';
+import { FileFormatter } from '../data_formatters/FileFormatter.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
-import { formatRequestInitiatorChain } from './NetworkAgent.js';
 const preamble = `You are a highly skilled software engineer with expertise in various programming languages and frameworks.
 You are provided with the content of a file from the Chrome DevTools Sources panel. To aid your analysis, you've been given the below links to understand the context of the code and its relationship to other files. When answering questions, prioritize providing these links directly.
 * Source-mapped from: If this code is the source for a mapped file, you'll have a link to that generated file.
@@ -55,7 +54,6 @@ const UIStringsNotTranslate = {
     analyzingFile: 'Analyzing file',
 };
 const lockedString = i18n.i18n.lockedString;
-const MAX_FILE_SIZE = 10000;
 export class FileContext extends ConversationContext {
     #file;
     constructor(file) {
@@ -110,7 +108,9 @@ export class FileAgent extends AiAgent {
         };
     }
     async enhanceQuery(query, selectedFile) {
-        const fileEnchantmentQuery = selectedFile ? `# Selected file\n${formatFile(selectedFile.getItem())}\n\n# User request\n\n` : '';
+        const fileEnchantmentQuery = selectedFile ?
+            `# Selected file\n${new FileFormatter(selectedFile.getItem()).formatFile()}\n\n# User request\n\n` :
+            '';
         return `${fileEnchantmentQuery}${query}`;
     }
 }
@@ -118,66 +118,8 @@ function createContextDetailsForFileAgent(selectedFile) {
     return [
         {
             title: 'Selected file',
-            text: formatFile(selectedFile.getItem()),
+            text: new FileFormatter(selectedFile.getItem()).formatFile(),
         },
     ];
-}
-export function formatFile(selectedFile) {
-    const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-    const sourceMapDetails = formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding);
-    const lines = [
-        `File name: ${selectedFile.displayName()}`,
-        `URL: ${selectedFile.url()}`,
-        sourceMapDetails,
-    ];
-    const resource = Bindings.ResourceUtils.resourceForURL(selectedFile.url());
-    if (resource?.request) {
-        lines.push(`Request initiator chain:
-${formatRequestInitiatorChain(resource?.request)}`);
-    }
-    lines.push(`File content:
-${formatFileContent(selectedFile)}`);
-    return lines.filter(line => line.trim() !== '').join('\n');
-}
-function formatFileContent(selectedFile) {
-    const contentData = selectedFile.workingCopyContentData();
-    const content = contentData.isTextContent ? contentData.text : '<binary data>';
-    const truncated = content.length > MAX_FILE_SIZE ? content.slice(0, MAX_FILE_SIZE) + '...' : content;
-    return `\`\`\`
-${truncated}
-\`\`\``;
-}
-export function formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding) {
-    const mappedFileUrls = [];
-    const sourceMapUrls = [];
-    if (selectedFile.contentType().isFromSourceMap()) {
-        for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(selectedFile)) {
-            const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
-            if (uiSourceCode) {
-                mappedFileUrls.push(uiSourceCode.url());
-                if (script.sourceMapURL !== undefined) {
-                    sourceMapUrls.push(script.sourceMapURL);
-                }
-            }
-        }
-        for (const originURL of Bindings.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(selectedFile)) {
-            mappedFileUrls.push(originURL);
-        }
-    }
-    else if (selectedFile.contentType().isScript()) {
-        for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(selectedFile)) {
-            if (script.sourceMapURL !== undefined && script.sourceMapURL !== '') {
-                sourceMapUrls.push(script.sourceMapURL);
-            }
-        }
-    }
-    if (sourceMapUrls.length === 0) {
-        return '';
-    }
-    let sourceMapDetails = 'Source map: ' + sourceMapUrls;
-    if (mappedFileUrls.length > 0) {
-        sourceMapDetails += '\nSource mapped from: ' + mappedFileUrls;
-    }
-    return sourceMapDetails;
 }
 //# sourceMappingURL=FileAgent.js.map

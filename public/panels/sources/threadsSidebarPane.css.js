@@ -68,6 +68,6 @@ export default {
   }
 }
 
-/*# sourceURL=threadsSidebarPane.css */
+/*# sourceURL=${import.meta.resolve('./threadsSidebarPane.css')} */
 `
 };

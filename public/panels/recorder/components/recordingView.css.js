@@ -365,6 +365,6 @@ devtools-recorder-extension-view {
   flex: 1;
 }
 
-/*# sourceURL=recordingView.css */
+/*# sourceURL=${import.meta.resolve('./recordingView.css')} */
 `
 };

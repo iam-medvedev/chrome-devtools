@@ -15,6 +15,6 @@ export default {
   overflow: auto;
 }
 
-/*# sourceURL=jsonView.css */
+/*# sourceURL=${import.meta.resolve('./jsonView.css')} */
 `
 };

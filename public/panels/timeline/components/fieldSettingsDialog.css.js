@@ -50,7 +50,6 @@ details > summary {
 
 .content {
   max-width: 360px;
-  padding: 0 var(--sys-size-8) var(--sys-size-2);
   box-sizing: border-box;
 }
 
@@ -85,9 +84,13 @@ details > summary {
 
 .buttons-section {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 6px;
-  gap: 8px;
+  justify-content: space-between;
+  margin-top: var(--sys-size-6);
+  margin-bottom: var(--sys-size-2);
+
+  devtools-button.enable {
+    float: right;
+  }
 }
 
 input[type="checkbox"] {
@@ -118,6 +121,6 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   border-top: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=fieldSettingsDialog.css */
+/*# sourceURL=${import.meta.resolve('./fieldSettingsDialog.css')} */
 `
 };

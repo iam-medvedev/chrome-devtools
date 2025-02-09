@@ -7,36 +7,8 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
+const { UIStrings, i18nString } = Trace.Insights.Models.InteractionToNextPaint;
 const { html } = Lit;
-const UIStrings = {
-    /**
-     *@description Label used for the phase/component/stage/section of a larger duration.
-     */
-    phase: 'Phase',
-    /**
-     *@description Label used for a time duration.
-     */
-    duration: 'Duration',
-    // TODO: these are repeated in InteractionBreakdown. Add a place for common strings?
-    /**
-     *@description Text shown next to the interaction event's input delay time in the detail view.
-     */
-    inputDelay: 'Input delay',
-    /**
-     *@description Text shown next to the interaction event's thread processing duration in the detail view.
-     */
-    processingDuration: 'Processing duration',
-    /**
-     *@description Text shown next to the interaction event's presentation delay time in the detail view.
-     */
-    presentationDelay: 'Presentation delay',
-    /**
-     * @description Text status indicating that no user interactions were detected.
-     */
-    noInteractions: 'No interactions detected',
-};
-const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/InteractionToNextPaint.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class InteractionToNextPaint extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-inp`;
     internalName = 'inp';

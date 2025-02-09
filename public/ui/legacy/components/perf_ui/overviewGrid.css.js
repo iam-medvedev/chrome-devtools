@@ -161,6 +161,6 @@ export default {
   }
 }
 
-/*# sourceURL=overviewGrid.css */
+/*# sourceURL=${import.meta.resolve('./overviewGrid.css')} */
 `
 };

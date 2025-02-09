@@ -32,6 +32,6 @@ export default {
   color: color-mix(in srgb, var(--ref-palette-neutral100) 50%, transparent); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
-/*# sourceURL=srgbOverlay.css */
+/*# sourceURL=${import.meta.resolve('./srgbOverlay.css')} */
 `
 };

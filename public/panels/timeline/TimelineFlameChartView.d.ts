@@ -58,7 +58,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
     containingElement(): HTMLElement;
-    setActiveThirdPartyDimmingSetting(thirdPartyEvents: Trace.Types.Events.Event[] | null): void;
+    dimThirdPartiesIfRequired(): void;
     setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
     setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;

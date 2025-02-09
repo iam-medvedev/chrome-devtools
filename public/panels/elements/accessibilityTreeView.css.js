@@ -15,6 +15,6 @@ export default {
   overflow: auto;
 }
 
-/*# sourceURL=accessibilityTreeView.css */
+/*# sourceURL=${import.meta.resolve('./accessibilityTreeView.css')} */
 `
 };

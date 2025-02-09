@@ -101,6 +101,6 @@ ul {
   border-top: 1px solid var(--sys-color-divider);
 }
 
-/*# sourceURL=JSONEditor.css */
+/*# sourceURL=${import.meta.resolve('./JSONEditor.css')} */
 `
 };

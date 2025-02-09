@@ -48,7 +48,14 @@ export declare class TopDownRootNode extends TopDownNode {
     readonly includeInstantEvents?: boolean;
     totalTime: number;
     selfTime: number;
-    constructor(events: Types.Events.Event[], filters: TraceFilter[], startTime: Types.Timing.Milli, endTime: Types.Timing.Milli, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null, includeInstantEvents?: boolean);
+    constructor(events: Types.Events.Event[], { filters, startTime, endTime, doNotAggregate, eventGroupIdCallback, includeInstantEvents }: {
+        filters: TraceFilter[];
+        startTime: Types.Timing.Milli;
+        endTime: Types.Timing.Milli;
+        doNotAggregate?: boolean;
+        eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null;
+        includeInstantEvents?: boolean;
+    });
     children(): ChildrenCache;
     private grouppedTopNodes;
     getEventGroupIdCallback(): ((arg0: Types.Events.Event) => string) | null | undefined;
@@ -61,7 +68,13 @@ export declare class BottomUpRootNode extends Node {
     readonly endTime: Types.Timing.Milli;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: Types.Events.Event[], textFilter: TraceFilter, filters: readonly TraceFilter[], startTime: Types.Timing.Milli, endTime: Types.Timing.Milli, eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null);
+    constructor(events: Types.Events.Event[], { textFilter, filters, startTime, endTime, eventGroupIdCallback }: {
+        textFilter: TraceFilter;
+        filters: readonly TraceFilter[];
+        startTime: Types.Timing.Milli;
+        endTime: Types.Timing.Milli;
+        eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null;
+    });
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;

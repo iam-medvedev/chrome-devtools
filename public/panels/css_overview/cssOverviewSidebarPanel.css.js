@@ -65,6 +65,6 @@ export default {
   }
 }
 
-/*# sourceURL=cssOverviewSidebarPanel.css */
+/*# sourceURL=${import.meta.resolve('./cssOverviewSidebarPanel.css')} */
 `
 };

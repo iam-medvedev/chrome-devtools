@@ -308,7 +308,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.show(document.body);
         await refreshedPromise;
         assert.notInstanceOf(view.outerSplitWidget.sidebarWidget(), UI.SearchableView.SearchableView);
-        assert.exists(view.contentElement.querySelector('.placeholder'));
+        assert.exists(view.contentElement.querySelector('.empty-state'));
         view.detach();
     });
     it('updates sidebarWidget upon receiving SelectedNode Event', async () => {

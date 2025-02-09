@@ -101,6 +101,6 @@ export default {
   }
 }
 
-/*# sourceURL=sidebarInsightsTab.css */
+/*# sourceURL=${import.meta.resolve('./sidebarInsightsTab.css')} */
 `
 };

@@ -85,6 +85,6 @@ export default {
   background-color: var(--sys-color-cdt-base-container);
 }
 
-/*# sourceURL=sourcesPanel.css */
+/*# sourceURL=${import.meta.resolve('./sourcesPanel.css')} */
 `
 };

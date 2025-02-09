@@ -28,6 +28,6 @@ input[type="text"].add-source-map {
   margin: 0 8px 0 5px;
 }
 
-/*# sourceURL=dialog.css */
+/*# sourceURL=${import.meta.resolve('./dialog.css')} */
 `
 };

@@ -125,6 +125,6 @@ export default {
   }
 }
 
-/*# sourceURL=computedStyleProperty.css */
+/*# sourceURL=${import.meta.resolve('./computedStyleProperty.css')} */
 `
 };

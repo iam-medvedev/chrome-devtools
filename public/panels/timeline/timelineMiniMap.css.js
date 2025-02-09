@@ -124,6 +124,6 @@ export default {
   background-color: var(--sys-color-cdt-base-container);
 }
 
-/*# sourceURL=timelineMiniMap.css */
+/*# sourceURL=${import.meta.resolve('./timelineMiniMap.css')} */
 `
 };

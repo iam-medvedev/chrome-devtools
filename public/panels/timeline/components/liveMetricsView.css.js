@@ -397,6 +397,6 @@ x-link { /* stylelint-disable-line selector-type-no-unknown */
   margin-bottom: 12px;
 }
 
-/*# sourceURL=liveMetricsView.css */
+/*# sourceURL=${import.meta.resolve('./liveMetricsView.css')} */
 `
 };

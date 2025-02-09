@@ -54,6 +54,6 @@ button.soft-dropdown:hover:not(:active) > .title {
   }
 }
 
-/*# sourceURL=softDropDownButton.css */
+/*# sourceURL=${import.meta.resolve('./softDropDownButton.css')} */
 `
 };

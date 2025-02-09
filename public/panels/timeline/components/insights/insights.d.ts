@@ -1,4 +1,5 @@
 import * as BaseInsightComponent from './BaseInsightComponent.js';
+import * as Checklist from './Checklist.js';
 import * as CLSCulprits from './CLSCulprits.js';
 import * as DocumentLatency from './DocumentLatency.js';
 import * as DOMSize from './DOMSize.js';
@@ -19,4 +20,4 @@ import * as Table from './Table.js';
 import * as ThirdParties from './ThirdParties.js';
 import * as Types from './types.js';
 import * as Viewport from './Viewport.js';
-export { BaseInsightComponent, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, LongCriticalNetworkTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };
+export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, LongCriticalNetworkTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };

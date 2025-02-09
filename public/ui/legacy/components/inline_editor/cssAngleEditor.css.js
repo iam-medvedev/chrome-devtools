@@ -109,6 +109,6 @@ export default {
   background-color: hsl(225deg 5% 27%);
 }
 
-/*# sourceURL=cssAngleEditor.css */
+/*# sourceURL=${import.meta.resolve('./cssAngleEditor.css')} */
 `
 };

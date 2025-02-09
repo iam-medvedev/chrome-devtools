@@ -7,7 +7,7 @@ import * as Extras from '../extras/extras.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory } from './types.js';
-const UIStrings = {
+export const UIStrings = {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
     title: 'Third parties',
     /**
@@ -16,9 +16,19 @@ const UIStrings = {
      */
     description: 'Third party code can significantly impact load performance. ' +
         '[Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page\'s content.',
+    /** Label for a table column that displays the name of a third-party provider. */
+    columnThirdParty: 'Third party',
+    /** Label for a column in a data table; entries will be the download size of a web resource in kilobytes. */
+    columnTransferSize: 'Transfer size',
+    /** Label for a table column that displays how much time each row spent running on the main thread, entries will be the number of milliseconds spent. */
+    columnMainThreadTime: 'Main thread time',
+    /**
+     * @description Text block indicating that no third party content was detected on the page
+     */
+    noThirdParties: 'No third parties found',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/ThirdParties.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function deps() {
     return ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
 }
@@ -33,6 +43,7 @@ function getRelatedEvents(summaries, firstPartyEntity) {
 }
 function finalize(partialModel) {
     return {
+        strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
@@ -58,6 +69,8 @@ export function generateInsight(parsedTrace, context) {
         relatedEvents: getRelatedEvents(thirdPartySummary, firstPartyEntity),
         eventsByEntity: thirdPartySummary.eventsByEntity,
         summaryByEntity: thirdPartySummary.byEntity,
+        summaryByUrl: thirdPartySummary.byUrl,
+        urlsByEntity: thirdPartySummary.urlsByEntity,
         firstPartyEntity,
     });
 }

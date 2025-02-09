@@ -61,6 +61,6 @@ devtools-icon {
   }
 }
 
-/*# sourceURL=issueLinkIcon.css */
+/*# sourceURL=${import.meta.resolve('./issueLinkIcon.css')} */
 `
 };

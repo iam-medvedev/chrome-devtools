@@ -14,6 +14,6 @@ export default {
   white-space: normal;
 }
 
-/*# sourceURL=buttonDialog.css */
+/*# sourceURL=${import.meta.resolve('./buttonDialog.css')} */
 `
 };

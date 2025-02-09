@@ -115,6 +115,6 @@ input:disabled:checked {
   }
 }
 
-/*# sourceURL=switch.css */
+/*# sourceURL=${import.meta.resolve('./switch.css')} */
 `
 };

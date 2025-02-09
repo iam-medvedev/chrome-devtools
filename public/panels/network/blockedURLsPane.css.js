@@ -92,6 +92,6 @@ export default {
   height: 22px;
 }
 
-/*# sourceURL=blockedURLsPane.css */
+/*# sourceURL=${import.meta.resolve('./blockedURLsPane.css')} */
 `
 };

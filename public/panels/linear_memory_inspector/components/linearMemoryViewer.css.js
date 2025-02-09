@@ -81,6 +81,6 @@ export default {
   background-color: var(--sys-color-surface-variant);
 }
 
-/*# sourceURL=linearMemoryViewer.css */
+/*# sourceURL=${import.meta.resolve('./linearMemoryViewer.css')} */
 `
 };

@@ -37,7 +37,7 @@ export class NodeMainImpl {
         void SDK.Connections.initMainConnection(async () => {
             const target = SDK.TargetManager.TargetManager.instance().createTarget('main', i18nString(UIStrings.main), SDK.Target.Type.BROWSER, null);
             target.setInspectedURL('Node.js');
-        }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
+        }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
     }
 }
 export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {

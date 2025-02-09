@@ -52,6 +52,6 @@ export default {
   margin-bottom: 4px;
 }
 
-/*# sourceURL=elementStatePaneWidget.css */
+/*# sourceURL=${import.meta.resolve('./elementStatePaneWidget.css')} */
 `
 };

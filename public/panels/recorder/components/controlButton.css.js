@@ -87,6 +87,6 @@ export default {
   color: var(--sys-color-on-surface);
 }
 
-/*# sourceURL=controlButton.css */
+/*# sourceURL=${import.meta.resolve('./controlButton.css')} */
 `
 };

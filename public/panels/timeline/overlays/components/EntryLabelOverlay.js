@@ -57,7 +57,7 @@ export class EntryLabelOverlay extends HTMLElement {
     // causes errors when we try to delete an already deleted annotation.
     #isPendingRemoval = false;
     // The label is set to editable when it is double clicked. If the user clicks away from the label box
-    // element, the lable is set to not editable until it double clicked.s
+    // element, the label is set to not editable until it double clicked.s
     #isLabelEditable = true;
     #entryLabelVisibleHeight = null;
     #labelPartsWrapper = null;
@@ -207,7 +207,7 @@ export class EntryLabelOverlay extends HTMLElement {
         }
         // PART 2: draw the connector from label to the entry
         // Set the width of the canvas that draws the connector to be equal to the length of the shift multiplied by two.
-        // That way, we can draw the connector from its corner to its middle. Since all elements are alligned in the middle, the connector
+        // That way, we can draw the connector from its corner to its middle. Since all elements are aligned in the middle, the connector
         // will end in the middle of the entry.
         this.#connectorLineContainer.setAttribute('width', (EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * 2).toString());
         this.#connectorLineContainer.setAttribute('height', EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
+import * as Types from '../types/types.js';
 import { getLogNormalScore } from './Statistics.js';
+const GRAPH_SAVINGS_PRECISION = 50;
 export function getInsight(insightName, insights, key) {
     if (!insights || !key) {
         return null;
@@ -143,5 +145,57 @@ export function calculateMetricWeightsForSorting(insightSet, metadata) {
     weights.inp = fieldInpScoreInverted / invertedSum;
     weights.cls = fieldClsScoreInverted / invertedSum;
     return weights;
+}
+/**
+ * Simulates the provided graph before and after the byte savings from `wastedBytesByRequestId` are applied.
+ */
+function estimateSavingsWithGraphs(wastedBytesByRequestId, simulator, graph) {
+    const simulationBeforeChanges = simulator.simulate(graph);
+    const originalTransferSizes = new Map();
+    graph.traverse(node => {
+        if (node.type !== 'network') {
+            return;
+        }
+        const wastedBytes = wastedBytesByRequestId.get(node.request.requestId);
+        if (!wastedBytes) {
+            return;
+        }
+        const original = node.request.transferSize;
+        originalTransferSizes.set(node.request.requestId, original);
+        node.request.transferSize = Math.max(original - wastedBytes, 0);
+    });
+    const simulationAfterChanges = simulator.simulate(graph);
+    // Restore the original transfer size after we've done our simulation
+    graph.traverse(node => {
+        if (node.type !== 'network') {
+            return;
+        }
+        const originalTransferSize = originalTransferSizes.get(node.request.requestId);
+        if (originalTransferSize === undefined) {
+            return;
+        }
+        node.request.transferSize = originalTransferSize;
+    });
+    let savings = simulationBeforeChanges.timeInMs - simulationAfterChanges.timeInMs;
+    savings = Math.round(savings / GRAPH_SAVINGS_PRECISION) * GRAPH_SAVINGS_PRECISION;
+    return Types.Timing.Milli(savings);
+}
+/**
+ * Estimates the FCP & LCP savings for wasted bytes in `wastedBytesByRequestId`.
+ */
+export function metricSavingsForWastedBytes(wastedBytesByRequestId, context) {
+    if (!context.navigation || !context.lantern) {
+        return;
+    }
+    if (!wastedBytesByRequestId.size) {
+        return { FCP: Types.Timing.Milli(0), LCP: Types.Timing.Milli(0) };
+    }
+    const simulator = context.lantern.simulator;
+    const fcpGraph = context.lantern.metrics.firstContentfulPaint.optimisticGraph;
+    const lcpGraph = context.lantern.metrics.largestContentfulPaint.optimisticGraph;
+    return {
+        FCP: estimateSavingsWithGraphs(wastedBytesByRequestId, simulator, fcpGraph),
+        LCP: estimateSavingsWithGraphs(wastedBytesByRequestId, simulator, lcpGraph),
+    };
 }
 //# sourceMappingURL=Common.js.map

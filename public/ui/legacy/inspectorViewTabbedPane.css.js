@@ -18,6 +18,6 @@ export default {
   }
 }
 
-/*# sourceURL=inspectorViewTabbedPane.css */
+/*# sourceURL=${import.meta.resolve('./inspectorViewTabbedPane.css')} */
 `
 };

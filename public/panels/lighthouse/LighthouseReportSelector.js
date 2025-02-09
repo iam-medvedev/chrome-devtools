@@ -51,9 +51,6 @@ export class ReportSelector {
         const option = this.comboBoxInternal.selectedOption();
         return this.itemByOptionElement.get(option);
     }
-    hasCurrentSelection() {
-        return Boolean(this.selectedItem());
-    }
     hasItems() {
         return this.itemByOptionElement.size > 0;
     }

@@ -88,6 +88,6 @@ export default {
   }
 }
 
-/*# sourceURL=coverageListView.css */
+/*# sourceURL=${import.meta.resolve('./coverageListView.css')} */
 `
 };

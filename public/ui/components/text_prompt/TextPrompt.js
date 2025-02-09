@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import { html, render } from '../../lit/lit.js';
-import textPromptStylesRaw from './textPrompt.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const textPromptStyles = new CSSStyleSheet();
-textPromptStyles.replaceSync(textPromptStylesRaw.cssContent);
+import textPromptStyles from './textPrompt.css.js';
 export class PromptInputEvent extends Event {
     static eventName = 'promptinputchanged';
     data;
@@ -20,9 +17,6 @@ export class TextPrompt extends HTMLElement {
     #ariaLabelText = '';
     #prefixText = '';
     #suggestionText = '';
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [textPromptStyles];
-    }
     set data(data) {
         this.#ariaLabelText = data.ariaLabel;
         this.#prefixText = data.prefix;
@@ -100,6 +94,7 @@ export class TextPrompt extends HTMLElement {
     }
     #render() {
         const output = html `
+      <style>${textPromptStyles.cssContent}</style>
       <span class="prefix">${this.#prefixText} </span>
       <span class="text-prompt-input"><input class="input" aria-label=${this.#ariaLabelText} spellcheck="false" @input=${this.onInput} @keydown=${this.onKeyDown}/><input class="suggestion" aria-label=${this.#ariaLabelText + ' Suggestion'}></span>`;
         render(output, this.#shadow, { host: this });

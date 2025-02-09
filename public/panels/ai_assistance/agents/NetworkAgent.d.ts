@@ -22,17 +22,3 @@ export declare class NetworkAgent extends AiAgent<SDK.NetworkRequest.NetworkRequ
     handleContextDetails(selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): AsyncGenerator<ContextResponse, void, void>;
     enhanceQuery(query: string, selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): Promise<string>;
 }
-export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
-export declare function formatHeaders(title: string, headers: SDK.NetworkRequest.NameValue[]): string;
-export declare function formatNetworkRequestTiming(request: SDK.NetworkRequest.NetworkRequest): string;
-export declare function formatInitiatorUrl(initiatorUrl: string, allowedOrigin: string): string;
-/**
- * Note: nothing here should include information from origins other than
- * the request's origin.
- */
-export declare function formatRequestInitiatorChain(request: SDK.NetworkRequest.NetworkRequest): string;
-/**
- * Note: nothing here should include information from origins other than
- * the request's origin.
- */
-export declare function formatNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): string;

@@ -720,6 +720,6 @@ div.palette-preview {
   }
 }
 
-/*# sourceURL=spectrum.css */
+/*# sourceURL=${import.meta.resolve('./spectrum.css')} */
 `
 };

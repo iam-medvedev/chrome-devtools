@@ -128,6 +128,6 @@ export default {
   }
 }
 
-/*# sourceURL=objectPropertiesSection.css */
+/*# sourceURL=${import.meta.resolve('./objectPropertiesSection.css')} */
 `
 };

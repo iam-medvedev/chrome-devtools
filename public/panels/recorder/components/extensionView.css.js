@@ -61,6 +61,6 @@ header > div {
   font-weight: 500;
 }
 
-/*# sourceURL=extensionView.css */
+/*# sourceURL=${import.meta.resolve('./extensionView.css')} */
 `
 };

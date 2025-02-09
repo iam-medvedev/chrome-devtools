@@ -21,7 +21,11 @@ describeWithEnvironment('TraceTree', () => {
                 eventB,
                 eventC,
             ];
-            const root = new TraceTree.TopDownRootNode(events, [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000));
+            const root = new TraceTree.TopDownRootNode(events, {
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const children = root.children();
             assert.strictEqual(children.size, 3);
             const nodesIterator = children.values();
@@ -45,7 +49,11 @@ describeWithEnvironment('TraceTree', () => {
                 eventD,
                 eventB,
             ];
-            const root = new TraceTree.TopDownRootNode(events, [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000));
+            const root = new TraceTree.TopDownRootNode(events, {
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const rootChildren = root.children();
             assert.strictEqual(rootChildren.size, 2);
             const rootChildIterator = rootChildren.values();
@@ -74,7 +82,11 @@ describeWithEnvironment('TraceTree', () => {
                 eventC,
                 eventD,
             ];
-            const root = new TraceTree.TopDownRootNode(events, [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000));
+            const root = new TraceTree.TopDownRootNode(events, {
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const rootChildren = root.children();
             assert.strictEqual(rootChildren.size, 2);
             const rootChildIterator = rootChildren.values();
@@ -106,7 +118,11 @@ describeWithEnvironment('TraceTree', () => {
                 eventD,
                 eventE,
             ];
-            const root = new TraceTree.TopDownRootNode(events, [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000));
+            const root = new TraceTree.TopDownRootNode(events, {
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const rootChildren = root.children();
             assert.strictEqual(rootChildren.size, 2);
             const rootChildIterator = rootChildren.values();
@@ -141,7 +157,11 @@ describeWithEnvironment('TraceTree', () => {
                 eventB,
                 eventC,
             ];
-            const root = new TraceTree.TopDownRootNode(events, [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000));
+            const root = new TraceTree.TopDownRootNode(events, {
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const children = root.children();
             assert.strictEqual(children.size, 3);
             const nodesIterator = children.values();
@@ -165,7 +185,12 @@ describeWithEnvironment('TraceTree', () => {
                 eventD,
                 eventB,
             ];
-            const root = new TraceTree.BottomUpRootNode(events, new Trace.Extras.TraceFilter.InvisibleEventsFilter([]), [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000), null);
+            const root = new TraceTree.BottomUpRootNode(events, {
+                textFilter: new Trace.Extras.TraceFilter.InvisibleEventsFilter([]),
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const rootChildren = root.children();
             assert.strictEqual(rootChildren.size, 4);
             const rootChildIterator = rootChildren.values();
@@ -206,7 +231,12 @@ describeWithEnvironment('TraceTree', () => {
                 eventC,
                 eventD,
             ];
-            const root = new TraceTree.BottomUpRootNode(events, new Trace.Extras.TraceFilter.InvisibleEventsFilter([]), [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000), null);
+            const root = new TraceTree.BottomUpRootNode(events, {
+                textFilter: new Trace.Extras.TraceFilter.InvisibleEventsFilter([]),
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const rootChildren = root.children();
             assert.strictEqual(rootChildren.size, 4);
             const rootChildIterator = rootChildren.values();
@@ -250,7 +280,12 @@ describeWithEnvironment('TraceTree', () => {
                 eventD,
                 eventE,
             ];
-            const root = new TraceTree.BottomUpRootNode(events, new Trace.Extras.TraceFilter.InvisibleEventsFilter([]), [], Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(200_000), null);
+            const root = new TraceTree.BottomUpRootNode(events, {
+                textFilter: new Trace.Extras.TraceFilter.InvisibleEventsFilter([]),
+                filters: [],
+                startTime: Trace.Types.Timing.Milli(0),
+                endTime: Trace.Types.Timing.Milli(200_000),
+            });
             const rootChildren = root.children();
             assert.strictEqual(rootChildren.size, 5);
             const rootChildIterator = rootChildren.values();
@@ -270,7 +305,7 @@ describeWithEnvironment('TraceTree', () => {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'mainWasm_profile.json.gz');
             const mainThread = getMainThread(parsedTrace.Renderer);
             const bounds = Trace.Helpers.Timing.traceWindowMilliSeconds(parsedTrace.Meta.traceBounds);
-            // Replicate the filters as they would be when renderering in the actual panel.
+            // Replicate the filters as they would be when rendering in the actual panel.
             const textFilter = new Timeline.TimelineFilters.TimelineRegExp();
             const modelFilters = [
                 Timeline.TimelineUIUtils.TimelineUIUtils.visibleEventsFilter(),
@@ -278,7 +313,12 @@ describeWithEnvironment('TraceTree', () => {
                     "RunTask" /* Trace.Types.Events.Name.RUN_TASK */,
                 ]),
             ];
-            const root = new TraceTree.BottomUpRootNode(mainThread.entries, textFilter, modelFilters, bounds.min, bounds.max, null);
+            const root = new TraceTree.BottomUpRootNode(mainThread.entries, {
+                textFilter,
+                filters: modelFilters,
+                startTime: bounds.min,
+                endTime: bounds.max,
+            });
             const rootChildren = root.children();
             const values = Array.from(rootChildren.values());
             // Find the list of profile calls that have been calculated as the top level rows in the Bottom Up table.

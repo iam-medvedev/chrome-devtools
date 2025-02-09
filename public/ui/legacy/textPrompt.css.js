@@ -71,6 +71,7 @@ export default {
 
 .text-prompt-root:not(:focus-within) ::selection {
   background: transparent;
+  color: currentcolor;
 }
 
 @media (forced-colors: active) {
@@ -83,6 +84,6 @@ export default {
   }
 }
 
-/*# sourceURL=textPrompt.css */
+/*# sourceURL=${import.meta.resolve('./textPrompt.css')} */
 `
 };

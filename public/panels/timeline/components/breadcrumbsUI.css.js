@@ -41,6 +41,6 @@ export default {
   color: var(--app-color-active-breadcrumb);
 }
 
-/*# sourceURL=breadcrumbsUI.css */
+/*# sourceURL=${import.meta.resolve('./breadcrumbsUI.css')} */
 `
 };

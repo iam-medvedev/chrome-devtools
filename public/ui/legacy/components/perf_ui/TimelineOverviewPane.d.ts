@@ -41,7 +41,6 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     scheduleUpdate(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
     update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
     setMarkers(markers: Map<number, HTMLDivElement>): void;
-    getMarkers(): Map<number, HTMLDivElement>;
     private updateMarkers;
     reset(): void;
     private onClick;

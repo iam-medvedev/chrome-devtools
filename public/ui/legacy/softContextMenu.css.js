@@ -150,6 +150,6 @@ export default {
   }
 }
 
-/*# sourceURL=softContextMenu.css */
+/*# sourceURL=${import.meta.resolve('./softContextMenu.css')} */
 `
 };

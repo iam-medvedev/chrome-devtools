@@ -66,6 +66,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private onGetWasmOp;
     private registerRecorderExtensionEndpoint;
     private onReportResourceLoad;
+    private onSetFunctionRangesForScript;
     private onShowRecorderView;
     private onShowNetworkPanel;
     private onCreateRecorderView;
@@ -100,6 +101,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private getResourceContent;
     private onGetRequestContent;
     private onGetResourceContent;
+    private onAttachSourceMapToResource;
     private onSetResourceContent;
     private requestId;
     private requestById;

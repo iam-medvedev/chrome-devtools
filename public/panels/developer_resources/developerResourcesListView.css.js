@@ -33,6 +33,6 @@ export default {
   flex: none;
 }
 
-/*# sourceURL=developerResourcesListView.css */
+/*# sourceURL=${import.meta.resolve('./developerResourcesListView.css')} */
 `
 };

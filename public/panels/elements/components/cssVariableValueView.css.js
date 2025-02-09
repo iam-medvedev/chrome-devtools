@@ -55,6 +55,6 @@ export default {
   color: var(--sys-color-state-disabled);
 }
 
-/*# sourceURL=cssVariableValueView.css */
+/*# sourceURL=${import.meta.resolve('./cssVariableValueView.css')} */
 `
 };

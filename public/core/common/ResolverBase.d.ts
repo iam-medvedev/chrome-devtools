@@ -15,7 +15,7 @@ export declare abstract class ResolverBase<Id, T> {
      */
     waitFor(id: Id): Promise<T>;
     /**
-     * Resolve the `id`. Returns the object immediatelly if it can be resolved,
+     * Resolve the `id`. Returns the object immediately if it can be resolved,
      * and otherwise waits for the object to appear and calls `callback` once
      * it is resolved.
      */

@@ -102,6 +102,7 @@ li.is-top-level:last-child {
 
   & ::selection {
     background-color: var(--sys-color-state-focus-select);
+    color: currentcolor;
   }
 }
 
@@ -134,6 +135,6 @@ ul[role="tree"]:focus-within [role="treeitem"].selected > .arrow-and-key-wrapper
   }
 }
 
-/*# sourceURL=treeOutline.css */
+/*# sourceURL=${import.meta.resolve('./treeOutline.css')} */
 `
 };

@@ -109,6 +109,6 @@ button[disabled] {
   }
 }
 
-/*# sourceURL=selectMenuButton.css */
+/*# sourceURL=${import.meta.resolve('./selectMenuButton.css')} */
 `
 };

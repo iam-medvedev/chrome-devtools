@@ -62,7 +62,7 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
     #originGroups;
     securityOverviewElement;
     #cookieControlsTreeElement;
-    #cookieReportTreeElement;
+    cookieReportTreeElement;
     #elementsByOrigin;
     #mainViewReloadMessage;
     #mainOrigin;
@@ -80,8 +80,8 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
             this.#cookieControlsTreeElement =
                 new CookieControlsTreeElement(i18nString(UIStrings.flagControls), 'cookie-flag-controls');
             privacyTreeSection.appendChild(this.#cookieControlsTreeElement);
-            this.#cookieReportTreeElement = new CookieReportTreeElement(i18nString(UIStrings.cookieReport), 'cookie-report');
-            privacyTreeSection.appendChild(this.#cookieReportTreeElement);
+            this.cookieReportTreeElement = new CookieReportTreeElement(i18nString(UIStrings.cookieReport), 'cookie-report');
+            privacyTreeSection.appendChild(this.cookieReportTreeElement);
             // If this if the first time this setting is set, go to the controls tool
             if (this.#securitySidebarLastItemSetting.get() === '') {
                 this.#securitySidebarLastItemSetting.set(this.#cookieControlsTreeElement.elemId);
@@ -142,10 +142,10 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
             this.#cookieControlsTreeElement.select();
             this.#cookieControlsTreeElement.showElement();
         }
-        else if (this.#cookieReportTreeElement &&
-            this.#securitySidebarLastItemSetting.get() === this.#cookieReportTreeElement.elemId) {
-            this.#cookieReportTreeElement.select();
-            this.#cookieReportTreeElement.showElement();
+        else if (this.cookieReportTreeElement &&
+            this.#securitySidebarLastItemSetting.get() === this.cookieReportTreeElement.elemId) {
+            this.cookieReportTreeElement.select();
+            this.cookieReportTreeElement.showElement();
         }
         else {
             this.securityOverviewElement.select();
